@@ -99,8 +99,7 @@ Try {
     ## Set the script execution policy for this process
     Try {
         Set-ExecutionPolicy -ExecutionPolicy 'ByPass' -Scope 'Process' -Force -ErrorAction 'Stop'
-    }
-    Catch {
+    } Catch {
     }
 
     ##*===============================================
@@ -109,7 +108,7 @@ Try {
     ## Variables: Application
     [String]$appVendor = 'Martin Prikryl'
     [String]$appName = 'WinSCP'
-    [String]$appVersion = '6.3.3'
+    [String]$appVersion = '6.3.4'
     [String]$appArch = 'x64'
     [String]$appLang = 'EN'
     [String]$appRevision = '01'
@@ -207,7 +206,7 @@ Try {
 
         ## <Perform Installation tasks here>
 
-        Execute-MSI -Action Install -Path 'WinSCP-6.3.3.msi'
+        Execute-MSI -Action Install -Path "WinSCP-$($appVersion).msi"
 
         ##*===============================================
         ##* MARK: POST-INSTALLATION
@@ -261,7 +260,7 @@ Try {
 
         ## <Perform Uninstallation tasks here>
 
-        Execute-MSI -Action Uninstall -Path 'WinSCP-6.3.3.msi'
+        Execute-MSI -Action Uninstall -Path "WinSCP-$($appVersion).msi"
 
         ##*===============================================
         ##* MARK: POST-UNINSTALLATION
@@ -300,7 +299,7 @@ Try {
         }
         ## <Perform Repair tasks here>
 
-        Execute-MSI -Action Repair -Path 'WinSCP-6.3.3.msi' -RepairFromSource $true
+        Execute-MSI -Action Repair -Path "WinSCP-$($appVersion).msi" -RepairFromSource $true
 
         ##*===============================================
         ##* MARK: POST-REPAIR

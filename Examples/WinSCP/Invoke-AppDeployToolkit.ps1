@@ -4,11 +4,11 @@
 PSAppDeployToolkit - This script performs the installation or uninstallation of an application(s).
 
 .DESCRIPTION
-- The script is provided as a template to perform an install or uninstall of an application(s).
-- The script either performs an "Install" deployment type or an "Uninstall" deployment type.
+- The script is provided as a template to perform an install, uninstall, or repair of an application(s).
+- The script either performs an "Install", "Uninstall", or "Repair" deployment type.
 - The install deployment type is broken down into 3 main sections/phases: Pre-Install, Install, and Post-Install.
 
-The script dot-sources the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
+The script imports the PSAppDeployToolkit module which contains the logic and functions required to install or uninstall an application.
 
 PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani).
 
@@ -33,13 +33,13 @@ Changes to "user install mode" and back to "user execute mode" for installing/un
 Disables logging to file for the script. Default is: $false.
 
 .EXAMPLE
-powershell.exe -Command "& { & '.\Deploy-Application.ps1' -DeployMode 'Silent'; Exit $LastExitCode }"
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
 
 .EXAMPLE
-powershell.exe -Command "& { & '.\Deploy-Application.ps1' -AllowRebootPassThru; Exit $LastExitCode }"
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -AllowRebootPassThru
 
 .EXAMPLE
-powershell.exe -Command "& { & '.\Deploy-Application.ps1' -DeploymentType 'Uninstall'; Exit $LastExitCode }"
+powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeploymentType Uninstall
 
 .EXAMPLE
 Deploy-Application.exe -DeploymentType "Install" -DeployMode "Silent"
@@ -52,8 +52,8 @@ None. This script does not generate any output.
 
 .NOTES
 Toolkit Exit Code Ranges:
-- 60000 - 68999: Reserved for built-in exit codes in Deploy-Application.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
-- 69000 - 69999: Recommended for user customized exit codes in Deploy-Application.ps1
+- 60000 - 68999: Reserved for built-in exit codes in Invoke-AppDeployToolkit.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
+- 69000 - 69999: Recommended for user customized exit codes in Invoke-AppDeployToolkit.ps1
 - 70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
 
 .LINK
@@ -83,7 +83,7 @@ $adtSession = @{
     # App variables.
     AppVendor = 'Martin Prikryl'
     AppName = 'WinSCP'
-    AppVersion = '6.3.3'
+    AppVersion = '6.3.4'
     AppArch = 'x64'
     AppLang = 'EN'
     AppRevision = '01'
@@ -141,7 +141,7 @@ function Install-ADTApplication
     }
 
     ## <Perform Installation tasks here>
-    Start-ADTMsiProcess -Action Install -Path 'WinSCP-6.3.3.msi'
+    Start-ADTMsiProcess -Action Install -Path "WinSCP-$($adtSession.AppVersion).msi"
 
 
     ##================================================
@@ -152,10 +152,10 @@ function Install-ADTApplication
     ## <Perform Post-Installation tasks here>
     Remove-ADTFile -Path "$envCommonDesktop\WinSCP.lnk"
     Invoke-ADTAllUsersRegistryChange -RegistrySettings {
-        Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface' -Name 'CollectUsage' -Value 0 -Type DWord -SID $_.SID
-        Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'Period' -Value 0 -Type DWord -SID $_.SID
-        Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'BetaVersions' -Value 1 -Type DWord -SID $_.SID
-        Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'ShowOnStartup' -Value 0 -Type DWord -SID $_.SID
+        Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface' -Name 'CollectUsage' -Value 0 -Type DWord -SID $_.SID
+        Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'Period' -Value 0 -Type DWord -SID $_.SID
+        Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'BetaVersions' -Value 1 -Type DWord -SID $_.SID
+        Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'ShowOnStartup' -Value 0 -Type DWord -SID $_.SID
     }
 
 
@@ -199,7 +199,7 @@ function Uninstall-ADTApplication
     }
 
     ## <Perform Uninstallation tasks here>
-    Start-ADTMsiProcess -Action Uninstall -Path 'WinSCP-6.3.3.msi'
+    Start-ADTMsiProcess -Action Uninstall -Path "WinSCP-$($adtSession.AppVersion).msi"
 
 
     ##================================================
@@ -243,7 +243,7 @@ function Repair-ADTApplication
     }
 
     ## <Perform Repair tasks here>
-    Start-ADTMsiProcess -Action Repair -Path 'WinSCP-6.3.3.msi' -RepairFromSource
+    Start-ADTMsiProcess -Action Repair -Path "WinSCP-$($adtSession.AppVersion).msi" -RepairFromSource
 
 
     ##================================================
@@ -254,10 +254,10 @@ function Repair-ADTApplication
     ## <Perform Post-Repair tasks here>
     Remove-ADTFile -Path "$envCommonDesktop\WinSCP.lnk"
     Invoke-ADTAllUsersRegistryChange -RegistrySettings {
-        Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface' -Name 'CollectUsage' -Value 0 -Type DWord -SID $_.SID
-        Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'Period' -Value 0 -Type DWord -SID $_.SID
-        Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'BetaVersions' -Value 1 -Type DWord -SID $_.SID
-        Set-RegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'ShowOnStartup' -Value 0 -Type DWord -SID $_.SID
+        Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface' -Name 'CollectUsage' -Value 0 -Type DWord -SID $_.SID
+        Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'Period' -Value 0 -Type DWord -SID $_.SID
+        Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'BetaVersions' -Value 1 -Type DWord -SID $_.SID
+        Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'ShowOnStartup' -Value 0 -Type DWord -SID $_.SID
     }
 }
 
@@ -274,7 +274,7 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
-    Import-Module -Name $PSScriptRoot\AppDeployToolkit\PSAppDeployToolkit -Force
+    Import-Module -Name $PSScriptRoot\..\..\PSAppDeployToolkit -Force
     try
     {
         $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @PSBoundParameters @adtSession -PassThru
