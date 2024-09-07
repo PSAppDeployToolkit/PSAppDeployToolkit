@@ -114,15 +114,43 @@ function Get-ADTWindowTitle
                 $processes = [System.Diagnostics.Process]::GetProcesses()
 
                 # Get all window handles for visible windows and loop through the visible ones.
-                foreach ($VisibleWindowHandle in ([PSADT.UiAutomation]::EnumWindows() | & { process { if ($_ -and [PSADT.UiAutomation]::IsWindowVisible($_)) { return $_ } } }))
-                {
-                    # Only process handles with window text and an associated running process, and only save/return the window and process details which match the search criteria.
-                    if (($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($VisibleWindowHandle)) -and ($process = $processes | & { process { if ($_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($VisibleWindowHandle)) { return $_ } } }) -and ($GetAllWindowTitles -or ($VisibleWindowTitle -notmatch $WindowTitle)))
+                [PSADT.UiAutomation]::EnumWindows() | & {
+                    process
                     {
+                        # Return early if we're null.
+                        if ($null -eq $_)
+                        {
+                            return
+                        }
+
+                        # Return early if window isn't visible.
+                        if (![PSADT.UiAutomation]::IsWindowVisible($_))
+                        {
+                            return
+                        }
+
+                        # Return early if the window doesn't have any text.
+                        if (!($VisibleWindowTitle = [PSADT.UiAutomation]::GetWindowText($_)))
+                        {
+                            return
+                        }
+
+                        # Return early if the window doesn't have an associated process.
+                        if (!($process = $processes | & { process { if ($_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($_)) { return $_ } } }))
+                        {
+                            return
+                        }
+
+                        # Return early if the window title doesn't match the search criteria.
+                        if (!$GetAllWindowTitles -or ($VisibleWindowTitle -notmatch $WindowTitle))
+                        {
+                            return
+                        }
+
                         # Build custom object with details about the window and the process.
-                        [PSADT.Types.WindowInfo]@{
+                        return [PSADT.Types.WindowInfo]@{
                             WindowTitle = $VisibleWindowTitle
-                            WindowHandle = $VisibleWindowHandle
+                            WindowHandle = $_
                             ParentProcess = $Process.ProcessName
                             ParentProcessMainWindowHandle = $Process.MainWindowHandle
                             ParentProcessId = $Process.Id

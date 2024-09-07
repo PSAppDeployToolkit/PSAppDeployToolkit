@@ -180,30 +180,38 @@ function Set-ADTItemPermission
                 $Acl = & $Script:CommandTable.'Get-Acl' -Path $Path
 
                 # Apply permissions on each user.
-                foreach ($U in $User.Trim() | & { process { if ($_.Length) { return $_ } } })
-                {
-                    # Set Username.
-                    [System.Security.Principal.NTAccount]$Username = if ($U.StartsWith('*'))
+                $User.Trim() | & {
+                    process
                     {
-                        try
+                        # Return early if the string is empty.
+                        if (!$_.Length)
                         {
-                            # Translate the SID.
-                            ConvertTo-ADTNTAccountOrSID -SID ($U = $U.Remove(0, 1))
+                            return
                         }
-                        catch
-                        {
-                            Write-ADTLogEntry "Failed to translate SID [$U]. Skipping..." -Severity 2
-                            continue
-                        }
-                    }
-                    else
-                    {
-                        $U
-                    }
 
-                    # Set/Add/Remove/Replace permissions and log the changes.
-                    Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
-                    $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
+                        # Set Username.
+                        [System.Security.Principal.NTAccount]$Username = if ($_.StartsWith('*'))
+                        {
+                            try
+                            {
+                                # Translate the SID.
+                                ConvertTo-ADTNTAccountOrSID -SID ($_ = $_.Remove(0, 1))
+                            }
+                            catch
+                            {
+                                Write-ADTLogEntry "Failed to translate SID [$_]. Skipping..." -Severity 2
+                                continue
+                            }
+                        }
+                        else
+                        {
+                            $_
+                        }
+
+                        # Set/Add/Remove/Replace permissions and log the changes.
+                        Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
+                        $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
+                    }
                 }
 
                 # Use the prepared ACL.

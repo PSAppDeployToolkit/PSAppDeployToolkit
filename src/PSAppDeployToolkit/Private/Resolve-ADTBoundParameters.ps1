@@ -76,36 +76,44 @@ function Resolve-ADTBoundParameters
                 }
 
                 # Process the piped hashtable.
-                foreach ($param in ($InputObject.GetEnumerator() | & { process { if ($Exclude -notcontains $_.Key) { return $_ } } }))
-                {
-                    # Recursively expand child hashtables.
-                    if ($param.Value -isnot [System.Collections.IDictionary])
+                $InputObject.GetEnumerator() | & {
+                    process
                     {
-                        # Determine value.
-                        $val = if ($param.Value -is [System.String])
+                        # Return early if the key is excluded.
+                        if ($Exclude -contains $_.Key)
                         {
-                            "'$($param.Value.Replace("'", "''"))'"
+                            return
                         }
-                        elseif ($param.Value -is [System.Collections.IEnumerable])
+
+                        # Recursively expand child hashtables.
+                        if ($_.Value -isnot [System.Collections.IDictionary])
                         {
-                            if ($param.Value[0] -is [System.String])
+                            # Determine value.
+                            $val = if ($_.Value -is [System.String])
                             {
-                                "'$([System.String]::Join("','", $param.Value.Replace("'", "''")))'"
+                                "'$($_.Value.Replace("'", "''"))'"
                             }
-                            else
+                            elseif ($_.Value -is [System.Collections.IEnumerable])
                             {
-                                [System.String]::Join(',', $param.Value)
+                                if ($_.Value[0] -is [System.String])
+                                {
+                                    "'$([System.String]::Join("','", $_.Value.Replace("'", "''")))'"
+                                }
+                                else
+                                {
+                                    [System.String]::Join(',', $_.Value)
+                                }
                             }
+                            elseif ($_.Value -isnot [System.Management.Automation.SwitchParameter])
+                            {
+                                $_.Value
+                            }
+                            $null = $paramsArr.Add("-$($_.Key)$(if ($val) {":$val"})")
                         }
-                        elseif ($param.Value -isnot [System.Management.Automation.SwitchParameter])
+                        else
                         {
-                            $param.Value
+                            $_.Value | & $thisFunc
                         }
-                        $null = $paramsArr.Add("-$($param.Key)$(if ($val) {":$val"})")
-                    }
-                    else
-                    {
-                        $param.Value | & $thisFunc
                     }
                 }
 

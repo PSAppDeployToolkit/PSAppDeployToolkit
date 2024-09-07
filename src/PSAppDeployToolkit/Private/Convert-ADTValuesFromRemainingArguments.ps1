@@ -47,15 +47,21 @@ function Convert-ADTValuesFromRemainingArguments
     # Process input into a dictionary and return it. Assume anything starting with a '-' is a new variable.
     try
     {
-        foreach ($item in ($RemainingArguments | & { process { if ($null -ne $_) { return $_ } } }))
-        {
-            if (($item -is [System.String]) -and ($item -match '^-'))
+        $RemainingArguments | & {
+            process
             {
-                $boundParams.Add(($thisvar = $item -replace '(^-|:$)'), [System.Management.Automation.SwitchParameter]$true)
-            }
-            else
-            {
-                $boundParams.$thisvar = $item
+                if ($null -eq $_)
+                {
+                    return
+                }
+                if (($_ -is [System.String]) -and ($_ -match '^-'))
+                {
+                    $boundParams.Add(($thisvar = $_ -replace '(^-|:$)'), [System.Management.Automation.SwitchParameter]$true)
+                }
+                else
+                {
+                    $boundParams.$thisvar = $_
+                }
             }
         }
     }
