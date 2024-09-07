@@ -176,7 +176,6 @@ function Set-ADTRegistryKey
                     else
                     {
                         # Update registry value if it does exist.
-                        $RegistryValueWriteAction = 'update'
                         if ($Name -eq '(Default)')
                         {
                             # Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value.
@@ -197,7 +196,7 @@ function Set-ADTRegistryKey
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$Key]", "$RegistryValueWriteAction value [$Value] for registry key [$Key] [$Name]")[!!$Name])."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$Key]", "update value [$Value] for registry key [$Key] [$Name]")[!!$Name])."
         }
     }
 
