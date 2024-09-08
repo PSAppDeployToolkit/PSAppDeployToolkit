@@ -382,38 +382,36 @@ function Copy-ADTFile
                         }
 
                         # Set up parameters for Copy-Item operation.
-                        $ciParams = if ($ContinueFileCopyOnError)
-                        {
-                            @{
-                                ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                                ErrorVariable = 'FileCopyError'
-                            }
+                        $ciParams = @{
+                            Destination = $Destination
+                            Force = $true
                         }
-                        else
+                        if ($ContinueFileCopyOnError)
                         {
-                            @{}
+                            $ciParams.Add('ErrorAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
+                            $ciParams.Add('ErrorVariable', 'FileCopyError')
                         }
 
                         # Perform copy operation.
-                        if ($Flatten)
+                        $null = if ($Flatten)
                         {
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
-                            $null = & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | & {
+                            & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction Ignore | & {
                                 process
                                 {
-                                    & $Script:CommandTable.'Copy-Item' -Path $_.FullName -Destination $Destination -Force @ciParams
+                                    & $Script:CommandTable.'Copy-Item' -Path $_.FullName @ciParams
                                 }
                             }
                         }
                         elseif ($Recurse)
                         {
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]."
-                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -Recurse @ciParams
+                            & $Script:CommandTable.'Copy-Item' -Path $srcPath -Recurse @ciParams
                         }
                         else
                         {
                             Write-ADTLogEntry -Message "Copying file in path [$srcPath] to destination [$Destination]."
-                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force @ciParams
+                            & $Script:CommandTable.'Copy-Item' -Path $srcPath @ciParams
                         }
 
                         # Measure success.
