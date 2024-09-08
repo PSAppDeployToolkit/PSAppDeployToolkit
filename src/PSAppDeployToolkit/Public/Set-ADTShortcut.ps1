@@ -174,9 +174,9 @@ function Set-ADTShortcut
                     # Set the WindowStyle based on input.
                     $windowStyleInt = switch ($WindowStyle)
                     {
-                        Normal { 1 }
-                        Maximized { 3 }
-                        Minimized { 7 }
+                        Normal { 1; break }
+                        Maximized { 3; break }
+                        Minimized { 7; break }
                     }
                     If ($null -ne $windowStyleInt)
                     {

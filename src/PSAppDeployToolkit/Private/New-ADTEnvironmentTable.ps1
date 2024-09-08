@@ -177,10 +177,10 @@ function New-ADTEnvironmentTable
     $variables.Add('IsMultiSessionOS', (Test-ADTIsMultiSessionOS))
     $variables.Add('envOSProductTypeName', $(switch ($variables.envOSProductType)
             {
-                3 { 'Server' }
-                2 { 'Domain Controller' }
-                1 { 'Workstation' }
-                default { 'Unknown' }
+                3 { 'Server'; break }
+                2 { 'Domain Controller'; break }
+                1 { 'Workstation'; break }
+                default { 'Unknown'; break }
             }))
 
     ## Variables: Office C2R version, bitness and channel
@@ -197,13 +197,13 @@ function New-ADTEnvironmentTable
     {
         $variables.envOfficeVars.CDNBaseURL
     }
-    $variables.Add('envOfficeChannel', [string]$(switch -regex ($officeChannelProperty)
+    $variables.Add('envOfficeChannel', [string]$(switch ($officeChannelProperty -replace '^.+/')
             {
-                "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" { "monthly" }
-                "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" { "semi-annual" }
-                "64256afe-f5d9-4f86-8936-8840a6a4f5be" { "monthly targeted" }
-                "b8f9b850-328d-4355-9145-c59439a0c4cf" { "semi-annual targeted" }
-                "55336b82-a18d-4dd6-b5f6-9e5095c314a6" { "monthly enterprise" }
+                "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" { "monthly"; break }
+                "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" { "semi-annual"; break }
+                "64256afe-f5d9-4f86-8936-8840a6a4f5be" { "monthly targeted"; break }
+                "b8f9b850-328d-4355-9145-c59439a0c4cf" { "semi-annual targeted"; break }
+                "55336b82-a18d-4dd6-b5f6-9e5095c314a6" { "monthly enterprise"; break }
             }))
 
     ## Variables: Hardware

@@ -290,35 +290,40 @@ function Start-ADTMsiProcess
                 # Build the MSI parameters.
                 switch ($action)
                 {
-                    'Install'
+                    Install
                     {
                         $option = '/i'
                         $msiLogFile = "$logPath" + '_Install'
                         $msiDefaultParams = $msiInstallDefaultParams
+                        break
                     }
-                    'Uninstall'
+                    Uninstall
                     {
                         $option = '/x'
                         $msiLogFile = "$logPath" + '_Uninstall'
                         $msiDefaultParams = $msiUninstallDefaultParams
+                        break
                     }
-                    'Patch'
+                    Patch
                     {
                         $option = '/update'
                         $msiLogFile = "$logPath" + '_Patch'
                         $msiDefaultParams = $msiInstallDefaultParams
+                        break
                     }
-                    'Repair'
+                    Repair
                     {
                         $option = "/f$(if ($RepairFromSource) {'vomus'})"
                         $msiLogFile = "$logPath" + '_Repair'
                         $msiDefaultParams = $msiInstallDefaultParams
+                        break
                     }
-                    'ActiveSetup'
+                    ActiveSetup
                     {
                         $option = '/fups'
                         $msiLogFile = "$logPath" + '_ActiveSetup'
                         $msiDefaultParams = $null
+                        break
                     }
                 }
 

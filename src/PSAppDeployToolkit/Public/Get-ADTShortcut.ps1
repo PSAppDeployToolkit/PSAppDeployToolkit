@@ -129,10 +129,10 @@ function Get-ADTShortcut
                     $Output.RunAsAdmin = !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
                     $Output.WindowStyle = switch ($shortcut.WindowStyle)
                     {
-                        1 { 'Normal' }
-                        3 { 'Maximized' }
-                        7 { 'Minimized' }
-                        default { 'Normal' }
+                        1 { 'Normal'; break }
+                        3 { 'Maximized'; break }
+                        7 { 'Minimized'; break }
+                        default { 'Normal'; break }
                     }
                     return [PSADT.Types.ShortcutLnk]$Output
                 }
