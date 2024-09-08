@@ -98,16 +98,19 @@ function Install-ADTMSUpdates
                             {
                                 # Installation type for executables (i.e., Microsoft Office Updates).
                                 Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                                break
                             }
                             '.msu'
                             {
                                 # Installation type for Windows updates using Windows Update Standalone Installer.
                                 Start-ADTProcess -Path "$([System.Environment]::SystemDirectory)\wusa.exe" -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                                break
                             }
                             '.msp'
                             {
                                 # Installation type for Windows Installer Patch
                                 Start-ADTMsiProcess -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
+                                break
                             }
                         }
                     }

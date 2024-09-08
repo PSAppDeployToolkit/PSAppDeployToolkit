@@ -231,10 +231,10 @@ function New-ADTShortcut
                     }
                     $shortcut.WindowStyle = switch ($WindowStyle)
                     {
-                        Normal { 1 }
-                        Maximized { 3 }
-                        Minimized { 7 }
-                        default { 1 }
+                        Normal { 1; break }
+                        Maximized { 3; break }
+                        Minimized { 7; break }
+                        default { 1; break }
                     }
 
                     # Save the changes.

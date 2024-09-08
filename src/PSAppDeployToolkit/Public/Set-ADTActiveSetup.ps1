@@ -454,6 +454,7 @@ function Set-ADTActiveSetup
                         {
                             "`"$CUStubExePath`" $CUArguments"
                         }
+                        break
                     }
                     { $_ -in '.js', '.vbs' }
                     {
@@ -467,6 +468,7 @@ function Set-ADTActiveSetup
                             "//nologo `"$StubExePath`"  $Arguments"
                         }
                         $StubPath = "`"$CUStubExePath`" $CUArguments"
+                        break
                     }
                     { $_ -in '.cmd', '.bat' }
                     {
@@ -489,6 +491,7 @@ function Set-ADTActiveSetup
                             "/C `"`"$StubExePath`" $Arguments`""
                         }
                         $StubPath = "`"$CUStubExePath`" $CUArguments"
+                        break
                     }
                     '.ps1'
                     {
@@ -502,6 +505,7 @@ function Set-ADTActiveSetup
                             "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
                         }
                         $StubPath = "`"$CUStubExePath`" $CUArguments"
+                        break
                     }
                 }
 

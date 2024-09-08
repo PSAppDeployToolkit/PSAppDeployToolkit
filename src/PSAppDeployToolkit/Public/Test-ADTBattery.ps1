@@ -113,11 +113,13 @@ function Test-ADTBattery
                             {
                                 Write-ADTLogEntry -Message 'System is using AC power.'
                                 $true
+                                break
                             }
                             Offline
                             {
                                 Write-ADTLogEntry -Message 'System is using battery power.'
                                 $false
+                                break
                             }
                             Unknown
                             {
@@ -131,6 +133,7 @@ function Test-ADTBattery
                                     Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
                                     $false
                                 }
+                                break
                             }
                         }))
 

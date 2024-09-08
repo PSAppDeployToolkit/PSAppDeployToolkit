@@ -80,10 +80,12 @@ function Invoke-ADTDllFileAction
             Register
             {
                 "/s `"$FilePath`""
+                break
             }
             Unregister
             {
                 "/s /u `"$FilePath`""
+                break
             }
         }
     }

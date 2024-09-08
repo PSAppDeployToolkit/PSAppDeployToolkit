@@ -328,19 +328,19 @@ function Show-ADTInstallationPromptClassic
     # Return the button text to the caller.
     switch ($formResult)
     {
-        'Yes'
+        Yes
         {
             return $ButtonRightText
         }
-        'No'
+        No
         {
             return $ButtonLeftText
         }
-        'Ignore'
+        Ignore
         {
             return $ButtonMiddleText
         }
-        'Abort'
+        Abort
         {
             # Restore minimized windows.
             $null = $shellApp.UndoMinimizeAll()
@@ -355,6 +355,7 @@ function Show-ADTInstallationPromptClassic
             {
                 Write-ADTLogEntry -Message 'UI timed out but $NoExitOnTimeout specified. Continue...'
             }
+            break
         }
     }
 }
