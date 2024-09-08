@@ -175,28 +175,29 @@ function Copy-ADTFile
             {
                 try
                 {
-                    # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
-                    if (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
+                    # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path.
+                    if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
                     {
                         Write-ADTLogEntry -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]."
-                        $null = & $Script:CommandTable.'New-Item' -Path $Destination -Type 'Directory' -Force
+                        $null = & $Script:CommandTable.'New-Item' -Path $Destination -Type Directory -Force
                     }
+
+                    # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native PowerShell.
                     if (& $Script:CommandTable.'Test-Path' -LiteralPath $srcPath -PathType Container)
                     {
-                        # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native Powershell
-                        # Trim ending backslash from paths which can cause problems with Robocopy
-                        # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                        # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths
+                        # Trim ending backslash from paths which can cause problems with Robocopy.
+                        # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
+                        # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
                         $robocopySource = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         $robocopyDestination = & $Script:CommandTable.'Join-Path' ((& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
                         $robocopyFile = '*'
                     }
                     else
                     {
-                        # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>
-                        # Trim ending backslash from paths which can cause problems with Robocopy
-                        # Resolve paths in case relative paths beggining with .\, ..\, or \ are used
-                        # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths
+                        # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>.
+                        # Trim ending backslash from paths which can cause problems with Robocopy.
+                        # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
+                        # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
                         $ParentPath = & $Script:CommandTable.'Split-Path' -Path $srcPath -Parent
                         $robocopySource = if ([System.String]::IsNullOrWhiteSpace($ParentPath))
                         {
@@ -209,14 +210,15 @@ function Copy-ADTFile
                         $robocopyDestination = (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Destination.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         $robocopyFile = (& $Script:CommandTable.'Split-Path' -Path $srcPath -Leaf)
                     }
+
+                    # Set up copy operation.
                     if ($Flatten)
                     {
-                        Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
-                        [Hashtable]$copyFileSplat = @{
-                            Path                     = (& $Script:CommandTable.'Join-Path' $robocopySource $robocopyFile) # This will ensure that the source dir will have \* appended if it was a folder (which prevents creation of a folder at the destination), or keeps the original file name if it was a file
-                            Destination              = $Destination # Use the original destination path, not $robocopyDestination which could have had a subfolder appended to it
-                            Recurse                  = $false # Disable recursion as this will create subfolders in the destination
-                            Flatten                  = $false # Disable flattening to prevent infinite loops
+                        # Copy all files from the root source folder.
+                        $copyFileSplat = @{
+                            Destination              = $Destination  # Use the original destination path, not $robocopyDestination which could have had a subfolder appended to it.
+                            Recurse                  = $false  # Disable recursion as this will create subfolders in the destination.
+                            Flatten                  = $false  # Disable flattening to prevent infinite loops.
                             ContinueFileCopyOnError  = $ContinueFileCopyOnError
                             FileCopyMode             = $FileCopyMode
                             RobocopyParams           = $RobocopyParams
@@ -226,20 +228,23 @@ function Copy-ADTFile
                         {
                             $copyFileSplat.ErrorAction = $PSBoundParameters.ErrorAction
                         }
-                        # Copy all files from the root source folder
-                        Copy-ADTFile @copyFileSplat
-                        # Copy all files from subfolders
-                        & $Script:CommandTable.'Get-ChildItem' -Path $robocopySource -Directory -Recurse -Force -ErrorAction 'Ignore' | & $Script:CommandTable.'ForEach-Object' {
-                            # Append file name to subfolder path and repeat Copy-ADTFile
-                            $copyFileSplat.Path = & $Script:CommandTable.'Join-Path' $_.FullName $robocopyFile
-                            Copy-ADTFile @copyFileSplat
+                        Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
+                        Copy-ADTFile @copyFileSplat -Path ((& $Script:CommandTable.'Join-Path' $robocopySource $robocopyFile))
+
+                        # Copy all files from subfolders, appending file name to subfolder path and repeat Copy-ADTFile.
+                        & $Script:CommandTable.'Get-ChildItem' -Path $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
+                            process
+                            {
+                                Copy-ADTFile @copyFileSplat -Path (& $Script:CommandTable.'Join-Path' $_.FullName $robocopyFile)
+                            }
                         }
-                        # Skip to next $SrcPath in $Path since we have handed off all copy tasks to separate executions of the function
+
+                        # Skip to next $srcPath in $Path since we have handed off all copy tasks to separate executions of the function.
                         continue
                     }
-                    if ($Recurse)
+                    elseif ($Recurse)
                     {
-                        # Add /E to Robocopy parameters if it is not already included
+                        # Add /E to Robocopy parameters if it is not already included.
                         if ($RobocopyParams -notmatch '/E(\s+|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s+|$)')
                         {
                             $RobocopyParams = $RobocopyParams + " /E"
@@ -248,84 +253,90 @@ function Copy-ADTFile
                     }
                     else
                     {
-                        # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders
+                        # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders.
                         $RobocopyParams = $RobocopyParams -replace '/E(\s+|$)'
                         $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s+|$)'
                         Write-ADTLogEntry -Message "Copying file(s) in path [$srcPath] to destination [$Destination]."
                     }
 
-                    # Older versions of Robocopy do not support /IM, remove if unsupported
-                    if (!((&Robocopy /?) -match '/IM\s'))
+                    # Older versions of Robocopy do not support /IM, remove if unsupported.
+                    if (!((robocopy.exe /?) -match '/IM\s'))
                     {
                         $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
                         $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
                     }
 
-                    if (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $robocopyDestination -PathType Container))
+                    # Create new directory if it doesn't exist.
+                    if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $robocopyDestination -PathType Container))
                     {
-                        $null = & $Script:CommandTable.'New-Item' -Path $robocopyDestination -Type 'Directory' -Force
+                        $null = & $Script:CommandTable.'New-Item' -Path $robocopyDestination -Type Directory -Force
                     }
 
-                    # Backup destination folder attributes in case known Robocopy bug overwrites them
+                    # Backup destination folder attributes in case known Robocopy bug overwrites them.
                     $destFolderAttributes = [System.IO.File]::GetAttributes($robocopyDestination)
 
+                    # Begin copy operation.
                     $robocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$robocopySource`" `"$robocopyDestination`" `"$robocopyFile`""
                     Write-ADTLogEntry -Message "Executing Robocopy command: $robocopyCommand $robocopyArgs"
                     $robocopyResult = Start-ADTProcess -Path $robocopyCommand -Parameters $robocopyArgs -CreateNoWindow -NoExitOnProcessFailure -PassThru -SuccessCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
-                    # Trim the last line plus leading whitespace from each line of Robocopy output
+
+                    # Trim the last line plus leading whitespace from each line of Robocopy output.
                     $robocopyOutput = $robocopyResult.StdOut.Trim() -Replace '\n\s+', "`n"
                     Write-ADTLogEntry -Message "Robocopy output:`n$robocopyOutput"
 
-                    # Restore folder attributes in case Robocopy overwrote them
+                    # Restore folder attributes in case Robocopy overwrote them.
                     try
                     {
                         [System.IO.File]::SetAttributes($robocopyDestination, $destFolderAttributes)
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to apply attributes $destFolderAttributes destination folder $robocopyDestination : $($_.Exception.Message)" -Severity 2
+                        Write-ADTLogEntry -Message "Failed to apply attributes [$destFolderAttributes] destination folder [$robocopyDestination]: $($_.Exception.Message)" -Severity 2
                     }
 
+                    # Process the resulting exit code.
                     switch ($robocopyResult.ExitCode)
                     {
-                        0 { Write-ADTLogEntry -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped." }
-                        1 { Write-ADTLogEntry -Message "Robocopy completed. All files were copied successfully." }
-                        2 { Write-ADTLogEntry -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied." }
-                        3 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered." }
-                        4 { Write-ADTLogEntry -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2 }
-                        5 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered." }
-                        6 { Write-ADTLogEntry -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2 }
-                        7 { Write-ADTLogEntry -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2 }
-                        8 { Write-ADTLogEntry -Message "Robocopy completed. Several files didn't copy." -Severity 2 }
+                        0 { Write-ADTLogEntry -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped."; break }
+                        1 { Write-ADTLogEntry -Message "Robocopy completed. All files were copied successfully."; break }
+                        2 { Write-ADTLogEntry -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied."; break }
+                        3 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered."; break }
+                        4 { Write-ADTLogEntry -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity 2; break }
+                        5 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered."; break }
+                        6 { Write-ADTLogEntry -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity 2; break }
+                        7 { Write-ADTLogEntry -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity 2; break }
+                        8 { Write-ADTLogEntry -Message "Robocopy completed. Several files didn't copy." -Severity 2; break }
                         16
                         {
-                            Write-ADTLogEntry -Message "Robocopy error $($robocopyResult.ExitCode): Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.." -Severity 3
-                            if (-not $ContinueFileCopyOnError)
+                            Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]: Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories." -Severity 3
+                            if (!$ContinueFileCopyOnError)
                             {
                                 $naerParams = @{
-                                    Exception         = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
-                                    Category          = [System.Management.Automation.ErrorCategory]::OperationStopped
-                                    ErrorId           = 'RobocopyError'
-                                    TargetObject      = $srcPath
+                                    Exception = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
+                                    Category = [System.Management.Automation.ErrorCategory]::OperationStopped
+                                    ErrorId = 'RobocopyError'
+                                    TargetObject = $srcPath
                                     RecommendedAction = "Please verify that Path and Destination are accessible and try again."
                                 }
                                 & $Script:CommandTable.'Write-Error' -ErrorRecord (New-ADTErrorRecord @naerParams)
                             }
+                            break
                         }
                         default
                         {
-                            Write-ADTLogEntry -Message "Robocopy error $($robocopyResult.ExitCode). Unknown Robocopy error." -Severity 3
-                            if (-not $ContinueFileCopyOnError)
+                            Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]. Unknown Robocopy error." -Severity 3
+                            if (!$ContinueFileCopyOnError)
                             {
                                 $naerParams = @{
-                                    Exception         = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
-                                    Category          = [System.Management.Automation.ErrorCategory]::OperationStopped
-                                    ErrorId           = 'RobocopyError'
-                                    TargetObject      = $srcPath
+                                    Exception = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
+                                    Category = [System.Management.Automation.ErrorCategory]::OperationStopped
+                                    ErrorId = 'RobocopyError'
+                                    TargetObject = $srcPath
                                     RecommendedAction = "Please verify that Path and Destination are accessible and try again."
                                 }
                                 & $Script:CommandTable.'Write-Error' -ErrorRecord (New-ADTErrorRecord @naerParams)
                             }
+                            break
                         }
                     }
                 }
