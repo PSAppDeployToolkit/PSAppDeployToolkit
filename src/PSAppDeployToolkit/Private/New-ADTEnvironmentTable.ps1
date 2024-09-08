@@ -151,9 +151,9 @@ function New-ADTEnvironmentTable
     }
     else
     {
-        $variables.Add('envProgramFiles', [Environment]::GetFolderPath('ProgramFiles'))
+        $variables.Add('envProgramFiles', [System.Environment]::GetFolderPath('ProgramFiles'))
         $variables.Add('envProgramFilesX86', [System.String]::Empty)
-        $variables.Add('envCommonProgramFiles', [Environment]::GetFolderPath('CommonProgramFiles'))
+        $variables.Add('envCommonProgramFiles', [System.Environment]::GetFolderPath('CommonProgramFiles'))
         $variables.Add('envCommonProgramFilesX86', [System.String]::Empty)
         $variables.Add('envSysNativeDirectory', [System.Environment]::SystemDirectory)
         $variables.Add('envSYSWOW64Directory', [System.String]::Empty)
@@ -209,7 +209,7 @@ function New-ADTEnvironmentTable
     ## Variables: Hardware
     $w32b = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_BIOS -Verbose:$false
     $variables.Add('envSystemRAM', [System.Math]::Round($w32cs.TotalPhysicalMemory / 1GB))
-    $variables.Add('envHardwareType', $(if ($w32b.Version -match 'VRTUAL')
+    $variables.Add('envHardwareType', $(if (($w32b.Version -match 'VRTUAL') -or (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*')))
             {
                 'Virtual:Hyper-V'
             }
@@ -221,23 +221,11 @@ function New-ADTEnvironmentTable
             {
                 'Virtual:Xen'
             }
-            elseif ($w32b.SerialNumber -like '*VMware*')
+            elseif (($w32b.SerialNumber -like '*VMware*') -or ($w32cs.Manufacturer -like '*VMWare*'))
             {
                 'Virtual:VMware'
             }
-            elseif ($w32b.SerialNumber -like '*Parallels*')
-            {
-                'Virtual:Parallels'
-            }
-            elseif (($w32cs.Manufacturer -like '*Microsoft*') -and ($w32cs.Model -notlike '*Surface*'))
-            {
-                'Virtual:Hyper-V'
-            }
-            elseif ($w32cs.Manufacturer -like '*VMWare*')
-            {
-                'Virtual:VMware'
-            }
-            elseif ($w32cs.Manufacturer -like '*Parallels*')
+            elseif (($w32b.SerialNumber -like '*Parallels*') -or ($w32cs.Manufacturer -like '*Parallels*'))
             {
                 'Virtual:Parallels'
             }
@@ -303,24 +291,24 @@ function New-ADTEnvironmentTable
     $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser))
 
     ## Variables: User profile information.
-    $variables.Add('dirUserProfile', (& $Script:CommandTable.'Split-Path' -LiteralPath $variables.envPublic))
+    $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
     $variables.Add('userProfileName', $variables.RunAsActiveUser.UserName)
     $variables.Add('runasUserProfile', (& $Script:CommandTable.'Join-Path' -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
     $variables.Add('loggedOnUserTempPath', $null)  # This will be set in Import-ADTConfig.
 
     ## Variables: Executables
-    $variables.Add('exeSchTasks', "$($variables.envWinDir)\System32\schtasks.exe")
+    $variables.Add('exeSchTasks', "$($variables.envSystem32Directory)\schtasks.exe")
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
 
     ## Variables: RegEx Patterns
     $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
-    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "[$([regex]::Escape('\/:*?"<>|'))]")
+    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "[$([System.Text.RegularExpressions.Regex]::Escape('\/:*?"<>|'))]")
 
     # Add in WScript shell variables.
-    $variables.Add('Shell', (& $Script:CommandTable.'New-Object' -ComObject 'WScript.Shell'))
-    $variables.Add('ShellApp', (& $Script:CommandTable.'New-Object' -ComObject 'Shell.Application'))
+    $variables.Add('Shell', [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')))
+    $variables.Add('ShellApp', [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('Shell.Application')))
 
     # Return variables for use within the module.
     return $variables
