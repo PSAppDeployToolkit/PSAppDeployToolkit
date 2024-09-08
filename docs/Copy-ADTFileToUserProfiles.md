@@ -13,41 +13,41 @@ Copy one or more items to each user profile on the system.
 ## SYNTAX
 
 ```
-Copy-ADTFileToUserProfiles [-Path] <String[]> [[-Destination] <String>] [-Recurse] [-Flatten]
+Copy-ADTFileToUserProfiles [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten]
  [-FileCopyMode <String>] [-ExcludeNTAccount <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles]
  [-ExcludeDefaultUser] [-ContinueFileCopyOnError] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-The Copy-FileToUserProfiles function copies one or more items to each user profile on the system.
+The Copy-ADTFileToUserProfiles function copies one or more items to each user profile on the system.
 It supports various options such as recursion, flattening files, and using Robocopy to overcome the 260 character limit.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
+Copy-ADTFileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
 ```
 
 Copy a single file to C:\Users\\\<UserName\>\AppData\Roaming\MyApp for each user.
 
 ### EXAMPLE 2
 ```
-Copy-FileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
+Copy-ADTFileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
 ```
 
 Copy two files to C:\Users\\\<UserName\>\AppData\Roaming\MyApp for each user.
 
 ### EXAMPLE 3
 ```
-Copy-FileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
+Copy-ADTFileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
 ```
 
 Copy an entire folder to C:\Users\\\<UserName\>\AppData\Local for each user.
 
 ### EXAMPLE 4
 ```
-Copy-FileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
+Copy-ADTFileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
 ```
 
 Copy an entire folder to C:\Users\\\<UserName\> for each user.
@@ -77,7 +77,7 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 3
 Default value: None
 Accept pipeline input: False
@@ -126,7 +126,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: (Get-ADTConfig).Toolkit.FileCopyMode
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
