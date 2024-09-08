@@ -409,7 +409,7 @@ function Start-ADTMsiProcess
                     {
                         [Hashtable]$GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }
                         if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
-                        Get-ADTMsiTableProperty @GetMsiTablePropertySplat | & $Script:CommandTable.'Select-Object' -ExpandProperty ProductCode -ErrorAction Stop
+                        Get-ADTMsiTableProperty @GetMsiTablePropertySplat | & $Script:CommandTable.'Select-Object' -ExpandProperty ProductCode
                     }
                     catch
                     {
