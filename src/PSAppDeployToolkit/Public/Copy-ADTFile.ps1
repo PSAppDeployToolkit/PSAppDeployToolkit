@@ -169,11 +169,11 @@ function Copy-ADTFile
 
     process
     {
-        foreach ($srcPath in $Path)
+        if ($FileCopyMode -eq 'Robocopy')
         {
-            try
+            foreach ($srcPath in $Path)
             {
-                if ($FileCopyMode -eq 'Robocopy')
+                try
                 {
                     # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path
                     if (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
@@ -329,7 +329,22 @@ function Copy-ADTFile
                         }
                     }
                 }
-                elseif ($FileCopyMode -eq 'Native')
+                catch
+                {
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
+                    if (!$ContinueFileCopyOnError)
+                    {
+                        Write-ADTLogEntry -Message 'ContinueFileCopyOnError not specified, exiting function.'
+                        return
+                    }
+                }
+            }
+        }
+        elseif ($FileCopyMode -eq 'Native')
+        {
+            foreach ($srcPath in $Path)
+            {
+                try
                 {
                     try
                     {
@@ -397,14 +412,14 @@ function Copy-ADTFile
                         & $Script:CommandTable.'Write-Error' -ErrorRecord $_
                     }
                 }
-            }
-            catch
-            {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
-                if (!$ContinueFileCopyOnError)
+                catch
                 {
-                    Write-ADTLogEntry -Message 'ContinueFileCopyOnError not specified, exiting function.'
-                    return
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
+                    if (!$ContinueFileCopyOnError)
+                    {
+                        Write-ADTLogEntry -Message 'ContinueFileCopyOnError not specified, exiting function.'
+                        return
+                    }
                 }
             }
         }
