@@ -134,7 +134,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: (Get-ADTConfig).Toolkit.FileCopyMode
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

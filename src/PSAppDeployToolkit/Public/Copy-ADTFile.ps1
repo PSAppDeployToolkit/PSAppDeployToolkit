@@ -90,17 +90,25 @@ function Copy-ADTFile
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Native', 'Robocopy')]
-        [System.String]$FileCopyMode = (Get-ADTConfig).Toolkit.FileCopyMode
+        [System.String]$FileCopyMode
 
     )
 
     dynamicparam
     {
-        # Define parameter dictionary for returning at the end.
-        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+        # If a FileCopyMode hasn't been specified, potentially initialise the module so we can get it from the config.
+        if (!$FileCopyMode)
+        {
+            $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+            $FileCopyMode = (Get-ADTConfig).Toolkit.FileCopyMode
+        }
 
+        # Add in extra params for Robocopy mode.
         if ($FileCopyMode -eq 'Robocopy')
         {
+            # Define parameter dictionary for returning at the end.
+            $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
             # Define the RobocopyParams parameter
             $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
                     'RobocopyParams', [System.String], $(
@@ -116,10 +124,10 @@ function Copy-ADTFile
                         [System.Management.Automation.AllowEmptyStringAttribute]::new()
                     )
                 ))
-        }
 
-        # Return the populated dictionary.
-        return $paramDictionary
+            # Return the populated dictionary.
+            return $paramDictionary
+        }
     }
 
     begin
