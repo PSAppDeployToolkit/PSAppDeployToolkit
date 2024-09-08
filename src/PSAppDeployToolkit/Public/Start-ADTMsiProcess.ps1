@@ -101,7 +101,7 @@ function Start-ADTMsiProcess
         Install an MSI, applying a transform and overriding the default MSI toolkit parameters.
 
     .EXAMPLE
-        [PSObject]$ExecuteMSIResult = Start-ADTMsiProcess -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -PassThru
+        $ExecuteMSIResult = Start-ADTMsiProcess -Action 'Install' -Path 'Adobe_FlashPlayer_11.2.202.233_x64_EN.msi' -PassThru
 
         Install an MSI and stores the result of the execution into a variable by using the -PassThru option.
 
