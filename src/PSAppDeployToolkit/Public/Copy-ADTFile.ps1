@@ -396,11 +396,9 @@ function Copy-ADTFile
                         $null = if ($Flatten)
                         {
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
-                            & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction Ignore | & {
-                                process
-                                {
-                                    & $Script:CommandTable.'Copy-Item' -Path $_.FullName @ciParams
-                                }
+                            if ($srcPaths = & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction Ignore)
+                            {
+                                & $Script:CommandTable.'Copy-Item' -LiteralPath $srcPaths.PSPath @ciParams
                             }
                         }
                         elseif ($Recurse)
