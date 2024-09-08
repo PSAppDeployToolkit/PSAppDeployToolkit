@@ -140,36 +140,38 @@ function Copy-ADTFile
         {
             if (& $Script:CommandTable.'Test-Path' -Path "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
             {
-                $robocopyCommand = "$([System.Environment]::SystemDirectory)\Robocopy.exe"
-                $RobocopyParams = if ($PSBoundParameters.ContainsKey('RobocopyParams'))
+                # Disable Robocopy if $Path has a folder containing a * wildcard.
+                if ($Path -match '\*.*\\')
                 {
-                    $PSBoundParameters.RobocopyParams
+                    Write-ADTLogEntry -Message "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Severity 2
+                    $FileCopyMode = 'Native'
+                }
+                # Don't just check for an extension here, also check for base name without extension to allow copying to a directory such as .config.
+                elseif ([System.IO.Path]::HasExtension($Destination) -and [System.IO.Path]::GetFileNameWithoutExtension($Destination) -and !(& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
+                {
+                    Write-ADTLogEntry -Message "Destination path appears to be a file. Falling back to native PowerShell method." -Severity 2
+                    $FileCopyMode = 'Native'
                 }
                 else
                 {
-                    '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1'
-                }
-                $RobocopyAdditionalParams = if ($PSBoundParameters.ContainsKey('RobocopyAdditionalParams'))
-                {
-                    $PSBoundParameters.RobocopyAdditionalParams
+                    $robocopyCommand = "$([System.Environment]::SystemDirectory)\Robocopy.exe"
+                    $RobocopyParams = if ($PSBoundParameters.ContainsKey('RobocopyParams'))
+                    {
+                        $PSBoundParameters.RobocopyParams
+                    }
+                    else
+                    {
+                        '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1'
+                    }
+                    $RobocopyAdditionalParams = if ($PSBoundParameters.ContainsKey('RobocopyAdditionalParams'))
+                    {
+                        $PSBoundParameters.RobocopyAdditionalParams
+                    }
                 }
             }
             else
             {
                 Write-ADTLogEntry -Message "Robocopy is not available on this system. Falling back to native PowerShell method." -Severity 2
-                $FileCopyMode = 'Native'
-            }
-
-            # Disable Robocopy if $Path has a folder containing a * wildcard.
-            if ($Path -match '\*.*\\')
-            {
-                Write-ADTLogEntry -Message "Asterisk wildcard specified in folder portion of path variable. Falling back to native PowerShell method." -Severity 2
-                $FileCopyMode = 'Native'
-            }
-            # Don't just check for an extension here, also check for base name without extension to allow copying to a directory such as .config.
-            elseif ([System.IO.Path]::HasExtension($Destination) -and [System.IO.Path]::GetFileNameWithoutExtension($Destination) -and !(& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
-            {
-                Write-ADTLogEntry -Message "Destination path appears to be a file. Falling back to native PowerShell method." -Severity 2
                 $FileCopyMode = 'Native'
             }
         }
