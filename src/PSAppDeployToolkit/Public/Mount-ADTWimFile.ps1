@@ -161,7 +161,7 @@ function Mount-ADTWimFile
                 if ([System.IO.Directory]::Exists($Path) -and $Force)
                 {
                     Write-ADTLogEntry -Message "Removing pre-existing path [$Path] as [-Force] was provided."
-                    Remove-Item -LiteralPath $Path -Force -Confirm:$false
+                    & $Script:CommandTable.'Remove-Item' -LiteralPath $Path -Force -Confirm:$false
                 }
 
                 # If the path doesn't exist, create it.
