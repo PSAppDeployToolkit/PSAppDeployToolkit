@@ -63,7 +63,7 @@ function Show-ADTInstallationPrompt
         Show-ADTInstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling today?' -ButtonRightText 'Good' -ButtonLeftText 'Bad' -ButtonMiddleText 'Indifferent'
 
     .EXAMPLE
-        Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
+        Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
 
     .NOTES
         An active ADT session is NOT required to use this function.
