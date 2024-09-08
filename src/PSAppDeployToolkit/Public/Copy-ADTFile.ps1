@@ -333,38 +333,64 @@ function Copy-ADTFile
                 {
                     try
                     {
-                        # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist
-                        if ((-not ([IO.Path]::HasExtension($Destination))) -or ([IO.Path]::HasExtension($Destination) -and -not [IO.Path]::GetFileNameWithoutExtension($Destination)) -and (-not (& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType 'Container')))
+                        # If destination has no extension, or if it has an extension only and no name (e.g. a .config folder) and the destination folder does not exist.
+                        if ((![System.IO.Path]::HasExtension($Destination) -or ([System.IO.Path]::HasExtension($Destination) -and ![System.IO.Path]::GetFileNameWithoutExtension($Destination))) -and !(& $Script:CommandTable.'Test-Path' -LiteralPath $Destination -PathType Container))
                         {
                             Write-ADTLogEntry -Message "Destination assumed to be a folder which does not exist, creating destination folder [$Destination]."
-                            $null = & $Script:CommandTable.'New-Item' -Path $Destination -Type 'Directory' -Force
+                            $null = & $Script:CommandTable.'New-Item' -Path $Destination -Type Directory -Force
                         }
-                        # If destination appears to be a file name but parent folder does not exist, create it
-                        $destinationParent = & $Script:CommandTable.'Split-Path' $Destination -Parent
-                        if ([IO.Path]::HasExtension($Destination) -and [IO.Path]::GetFileNameWithoutExtension($Destination) -and -not (& $Script:CommandTable.'Test-Path' -LiteralPath $destinationParent -PathType 'Container'))
+
+                        # If destination appears to be a file name but parent folder does not exist, create it.
+                        if ([System.IO.Path]::HasExtension($Destination) -and [System.IO.Path]::GetFileNameWithoutExtension($Destination) -and !(& $Script:CommandTable.'Test-Path' -LiteralPath ($destinationParent = & $Script:CommandTable.'Split-Path' $Destination -Parent) -PathType Container))
                         {
                             Write-ADTLogEntry -Message "Destination assumed to be a file whose parent folder does not exist, creating destination folder [$destinationParent]."
-                            $null = & $Script:CommandTable.'New-Item' -Path $destinationParent -Type 'Directory' -Force
+                            $null = & $Script:CommandTable.'New-Item' -Path $destinationParent -Type Directory -Force
                         }
+
+                        # Set up parameters for Copy-Item operation.
+                        $ciParams = if ($ContinueFileCopyOnError)
+                        {
+                            @{
+                                ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                                ErrorVariable = 'FileCopyError'
+                            }
+                        }
+                        else
+                        {
+                            @{}
+                        }
+
+                        # Perform copy operation.
                         if ($Flatten)
                         {
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
-                            $null = & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | & $Script:CommandTable.'ForEach-Object' {
-                                & $Script:CommandTable.'Copy-Item' -Path ($_.FullName) -Destination $Destination -Force
+                            $null = & $Script:CommandTable.'Get-ChildItem' -Path $srcPath -File -Recurse -Force -ErrorAction 'Ignore' | & {
+                                process
+                                {
+                                    & $Script:CommandTable.'Copy-Item' -Path $_.FullName -Destination $Destination -Force @ciParams
+                                }
                             }
                         }
                         elseif ($Recurse)
                         {
                             Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]."
-                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -Recurse
+                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force -Recurse @ciParams
                         }
                         else
                         {
                             Write-ADTLogEntry -Message "Copying file in path [$srcPath] to destination [$Destination]."
-                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force
+                            $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force @ciParams
                         }
-
-                        Write-ADTLogEntry -Message 'File copy completed successfully.'
+                        
+                        # Measure success.
+                        if ($ContinueFileCopyOnError -and (& $Script:CommandTable.'Test-Path' -LiteralPath Microsoft.PowerShell.Core\Variable::FileCopyError))
+                        {
+                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n$FileCopyError" -Severity 2
+                        }
+                        else
+                        {
+                            Write-ADTLogEntry -Message 'File copy completed successfully.'
+                        }
                     }
                     catch
                     {
@@ -375,7 +401,7 @@ function Copy-ADTFile
             catch
             {
                 Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy file(s) in path [$srcPath] to destination [$Destination]."
-                if (-not $ContinueFileCopyOnError)
+                if (!$ContinueFileCopyOnError)
                 {
                     Write-ADTLogEntry -Message 'ContinueFileCopyOnError not specified, exiting function.'
                     return
