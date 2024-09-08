@@ -407,7 +407,7 @@ function Copy-ADTFile
                             Write-ADTLogEntry -Message "Copying file in path [$srcPath] to destination [$Destination]."
                             $null = & $Script:CommandTable.'Copy-Item' -Path $srcPath -Destination $Destination -Force @ciParams
                         }
-                        
+
                         # Measure success.
                         if ($ContinueFileCopyOnError -and (& $Script:CommandTable.'Test-Path' -LiteralPath Microsoft.PowerShell.Core\Variable::FileCopyError))
                         {

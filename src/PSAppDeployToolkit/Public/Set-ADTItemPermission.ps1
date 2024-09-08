@@ -84,6 +84,8 @@ function Set-ADTItemPermission
         https://psappdeploytoolkit.com
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PermissionType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Method', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -195,11 +197,11 @@ function Set-ADTItemPermission
                             try
                             {
                                 # Translate the SID.
-                                ConvertTo-ADTNTAccountOrSID -SID ($_ = $_.Remove(0, 1))
+                                ConvertTo-ADTNTAccountOrSID -SID ($sid = $_.Remove(0, 1))
                             }
                             catch
                             {
-                                Write-ADTLogEntry "Failed to translate SID [$_]. Skipping..." -Severity 2
+                                Write-ADTLogEntry "Failed to translate SID [$sid]. Skipping..." -Severity 2
                                 continue
                             }
                         }

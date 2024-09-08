@@ -15,7 +15,7 @@ Executes msiexec.exe to perform actions such as install, uninstall, patch, repai
 ```
 Start-ADTMsiProcess [[-Action] <String>] [-Path] <String> [[-Transforms] <String[]>] [[-Parameters] <String>]
  [[-AddParameters] <String>] [-SecureParameters] [[-Patches] <String[]>] [[-LoggingOptions] <String>]
- [[-LogName] <String>] [[-WorkingDirectory] <String>] [-SkipMSIAlreadyInstalledCheck]
+ [[-LogFileName] <String>] [[-WorkingDirectory] <String>] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [[-IgnoreExitCodes] <String[]>]
  [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
 ```
@@ -197,10 +197,10 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -LogName
+### -LogFileName
 Overrides the default log file name.
 The default log file name is generated from the MSI file name.
-If LogName does not end in .log, it will be automatically appended.
+If LogFileName does not end in .log, it will be automatically appended.
 
 For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 

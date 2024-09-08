@@ -170,9 +170,13 @@ class ADTSession
         'DirFiles', 'DirSupportFiles' | & {
             process
             {
-                if ([System.String]::IsNullOrWhiteSpace($this.$_) -and [System.IO.Directory]::Exists(($dir = "$($this.ScriptDirectory)\$($_ -replace '^Dir')")))
+                if ([System.String]::IsNullOrWhiteSpace($this.$_))
                 {
-                    $this.$_ = $dir
+                    $dir = "$($this.ScriptDirectory)\$($_ -replace '^Dir')"
+                    if ([System.IO.Directory]::Exists($dir))
+                    {
+                        $this.$_ = $dir
+                    }
                 }
             }
         }
