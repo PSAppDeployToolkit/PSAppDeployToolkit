@@ -40,6 +40,7 @@ foreach ($module in $modulesToInstall) {
         Repository         = 'PSGallery'
         SkipPublisherCheck = $true
         Force              = $true
+        Scope              = 'CurrentUser'
         ErrorAction        = 'Stop'
     }
     try {
