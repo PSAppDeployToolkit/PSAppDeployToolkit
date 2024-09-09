@@ -22,15 +22,6 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 # Ensure module operates under the strictest of conditions.
 & $CommandTable.'Set-StrictMode' -Version 3
 
-# Add the custom types required for the toolkit.
-& $CommandTable.'Add-Type' -LiteralPath "$PSScriptRoot\PSAppDeployToolkit.cs" -ReferencedAssemblies $(
-    'System.DirectoryServices'
-    if ($PSVersionTable.PSEdition.Equals('Core'))
-    {
-        'System.Net.NameResolution', 'System.Collections', 'System.Collections.Specialized', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'
-    }
-)
-
 # Set the process as HiDPI so long as we're in a real console.
 if ($Host.Name.Equals('ConsoleHost'))
 {
@@ -80,6 +71,3 @@ if ($MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1'))
     & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Microsoft.PowerShell.Core\Function::$($_.Name)" } } })
     & $CommandTable.'Remove-Item' -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
 }
-
-# Import all classes.
-[System.IO.Directory]::GetFiles("$PSScriptRoot\Classes") | . { process { . $_ } }
