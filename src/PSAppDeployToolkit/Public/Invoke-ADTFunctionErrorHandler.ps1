@@ -110,9 +110,9 @@ function Invoke-ADTFunctionErrorHandler
     {
         if (!$DisableErrorResolving)
         {
-            $LogMessage += "`n$(Resolve-ADTErrorRecord -ErrorRecord $ErrorRecord)"
+            $LogMessage += "`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $ErrorRecord)"
         }
-        Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
     }
 
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
@@ -120,10 +120,10 @@ function Invoke-ADTFunctionErrorHandler
     if ($ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
     {
         # Restore original global verbosity before terminating.
-        Undo-ADTGlobalVerbosePreferenceChange -Cmdlet $Cmdlet
+        & $Script:CommandTable.'Undo-ADTGlobalVerbosePreferenceChange' -Cmdlet $Cmdlet
         $Cmdlet.ThrowTerminatingError($ErrorRecord)
     }
-    elseif (!(Test-ADTSessionActive) -or ($ErrorActionPreference -notmatch '^(SilentlyContinue|Ignore)$'))
+    elseif (!(& $Script:CommandTable.'Test-ADTSessionActive') -or ($ErrorActionPreference -notmatch '^(SilentlyContinue|Ignore)$'))
     {
         $Cmdlet.WriteError($ErrorRecord)
     }

@@ -8,6 +8,10 @@
 & $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
 & $CommandTable.'Export-ModuleMember' -Function $ModuleManifest.FunctionsToExport
 
+# Add all module functions to the command table and make it read-only.
+& $CommandTable.'Get-Item' -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
+& $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
+
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
         Callbacks = [pscustomobject]@{
@@ -61,20 +65,20 @@
 # Define dialog function dispatcher between classic/fluent dialogs.
 & $CommandTable.'New-Variable' -Name DialogDispatcher -Option Constant -Value ([ordered]@{
         Classic = ([ordered]@{
-                'Close-ADTInstallationProgress'     = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Close-ADTInstallationProgressClassic
-                'Show-ADTBalloonTip'                = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTBalloonTipClassic
-                'Show-ADTInstallationProgress'      = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationProgressClassic
-                'Show-ADTInstallationPrompt'        = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationPromptClassic
-                'Show-ADTInstallationRestartPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationRestartPromptClassic
-                'Show-ADTInstallationWelcome'       = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTWelcomePromptClassic
+                'Close-ADTInstallationProgress'     = $CommandTable.'Close-ADTInstallationProgressClassic'
+                'Show-ADTBalloonTip'                = $CommandTable.'Show-ADTBalloonTipClassic'
+                'Show-ADTInstallationProgress'      = $CommandTable.'Show-ADTInstallationProgressClassic'
+                'Show-ADTInstallationPrompt'        = $CommandTable.'Show-ADTInstallationPromptClassic'
+                'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptClassic'
+                'Show-ADTInstallationWelcome'       = $CommandTable.'Show-ADTWelcomePromptClassic'
             }).AsReadOnly()
         Fluent = ([ordered]@{
-                'Close-ADTInstallationProgress'     = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Close-ADTInstallationProgressFluent
-                'Show-ADTBalloonTip'                = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTBalloonTipFluent
-                'Show-ADTInstallationProgress'      = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationProgressFluent
-                'Show-ADTInstallationPrompt'        = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationPromptClassic
-                'Show-ADTInstallationRestartPrompt' = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTInstallationRestartPromptClassic
-                'Show-ADTInstallationWelcome'       = & $CommandTable.'Get-Item' -LiteralPath Microsoft.PowerShell.Core\Function::Show-ADTWelcomePromptClassic
+                'Close-ADTInstallationProgress'     = $CommandTable.'Close-ADTInstallationProgressFluent'
+                'Show-ADTBalloonTip'                = $CommandTable.'Show-ADTBalloonTipFluent'
+                'Show-ADTInstallationProgress'      = $CommandTable.'Show-ADTInstallationProgressFluent'
+                'Show-ADTInstallationPrompt'        = $CommandTable.'Show-ADTInstallationPromptClassic'
+                'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptClassic'
+                'Show-ADTInstallationWelcome'       = $CommandTable.'Show-ADTWelcomePromptClassic'
             }).AsReadOnly()
     }).AsReadOnly()
 

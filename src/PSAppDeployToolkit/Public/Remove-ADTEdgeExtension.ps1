@@ -59,26 +59,26 @@ function Remove-ADTEdgeExtension
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
-        Write-ADTLogEntry -Message "Removing extension with ID [$ExtensionID]."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing extension with ID [$ExtensionID]."
         try
         {
             try
             {
                 # Return early if the extension isn't installed.
-                if (!($installedExtensions = Get-ADTEdgeExtensions).PSObject.Properties -or ($installedExtensions.PSObject.Properties.Name -notcontains $ExtensionID))
+                if (!($installedExtensions = & $Script:CommandTable.'Get-ADTEdgeExtensions').PSObject.Properties -or ($installedExtensions.PSObject.Properties.Name -notcontains $ExtensionID))
                 {
-                    Write-ADTLogEntry -Message "Extension with ID [$ExtensionID] is not configured. Removal not required."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Extension with ID [$ExtensionID] is not configured. Removal not required."
                     return
                 }
 
                 # If the deploymentmode is Remove, remove the extension from the list.
                 $installedExtensions.PSObject.Properties.Remove($ExtensionID)
-                $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | & $Script:CommandTable.'ConvertTo-Json' -Compress)
+                $null = & $Script:CommandTable.'Set-ADTRegistryKey' -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | & $Script:CommandTable.'ConvertTo-Json' -Compress)
             }
             catch
             {
@@ -87,12 +87,12 @@ function Remove-ADTEdgeExtension
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

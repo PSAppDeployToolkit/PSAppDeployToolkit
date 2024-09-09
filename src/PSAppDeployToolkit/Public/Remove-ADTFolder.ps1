@@ -65,7 +65,7 @@ function Remove-ADTFolder
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -73,7 +73,7 @@ function Remove-ADTFolder
         # Return early if the folder doesn't exist.
         if (!($Path | & $Script:CommandTable.'Test-Path' -PathType Container))
         {
-            Write-ADTLogEntry -Message "Folder [$Path] does not exist."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Folder [$Path] does not exist."
             return
         }
 
@@ -84,16 +84,16 @@ function Remove-ADTFolder
                 # With -Recurse, we can just send it and return early.
                 if (!$DisableRecursion)
                 {
-                    Write-ADTLogEntry -Message "Deleting folder [$Path] recursively..."
-                    Invoke-ADTCommandWithRetries -Command Remove-Item -LiteralPath $Path -Force -Recurse
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Deleting folder [$Path] recursively..."
+                    & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command Remove-Item -LiteralPath $Path -Force -Recurse
                     return
                 }
 
                 # Without recursion, we can only send it if the folder has no items as Remove-Item will ask for confirmation without recursion.
-                Write-ADTLogEntry -Message "Deleting folder [$Path] without recursion..."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Deleting folder [$Path] without recursion..."
                 if (!($ListOfChildItems = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $Path -Force))
                 {
-                    Invoke-ADTCommandWithRetries -Command Remove-Item -LiteralPath $Path -Force
+                    & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command Remove-Item -LiteralPath $Path -Force
                     return
                 }
 
@@ -107,7 +107,7 @@ function Remove-ADTFolder
                         if (($item | & $Script:CommandTable.'Get-ChildItem' -Force | & $Script:CommandTable.'Measure-Object').Count -eq 0)
                         {
                             # The folder is empty, delete it
-                            $item | Invoke-ADTCommandWithRetries -Command Remove-Item -Force
+                            $item | & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command Remove-Item -Force
                         }
                         else
                         {
@@ -118,7 +118,7 @@ function Remove-ADTFolder
                     else
                     {
                         # Item is a file. Delete it.
-                        $item | Invoke-ADTCommandWithRetries -Command Remove-Item -Force
+                        $item | & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command Remove-Item -Force
                     }
                 }
                 if ($SubfoldersSkipped)
@@ -130,7 +130,7 @@ function Remove-ADTFolder
                         TargetObject = $SubfoldersSkipped
                         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
             }
             catch
@@ -140,12 +140,12 @@ function Remove-ADTFolder
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete folder(s) and file(s) from path [$Path]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete folder(s) and file(s) from path [$Path]."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

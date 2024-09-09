@@ -7,8 +7,8 @@
 function Get-ADTSCCMClientVersion
 {
     # Make sure SCCM client is installed and running.
-    Write-ADTLogEntry -Message 'Checking to see if SCCM Client service [ccmexec] is installed and running.'
-    if (!(Test-ADTServiceExists -Name ccmexec))
+    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Checking to see if SCCM Client service [ccmexec] is installed and running.'
+    if (!(& $Script:CommandTable.'Test-ADTServiceExists' -Name ccmexec))
     {
         $naerParams = @{
             Exception = [System.ApplicationException]::new('SCCM Client Service [ccmexec] does not exist. The SCCM Client may not be installed.')
@@ -16,7 +16,7 @@ function Get-ADTSCCMClientVersion
             ErrorId = 'CcmExecServiceMissing'
             RecommendedAction = "Please check the availability of this service and try again."
         }
-        throw (New-ADTErrorRecord @naerParams)
+        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
     }
     if (($svc = & $Script:CommandTable.'Get-Service' -Name ccmexec).Status -ne 'Running')
     {
@@ -27,7 +27,7 @@ function Get-ADTSCCMClientVersion
             TargetObject = $svc
             RecommendedAction = "Please check the status of this service and try again."
         }
-        throw (New-ADTErrorRecord @naerParams)
+        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
     }
 
     # Determine the SCCM Client Version.
@@ -37,7 +37,7 @@ function Get-ADTSCCMClientVersion
     }
     catch
     {
-        Write-ADTLogEntry -Message "Failed to query the system for the SCCM client version number.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to query the system for the SCCM client version number.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 2
         throw
     }
     if (!$SCCMClientVersion)
@@ -48,8 +48,8 @@ function Get-ADTSCCMClientVersion
             ErrorId = 'CcmExecVersionNullOrEmpty'
             RecommendedAction = "Please check the installed version and try again."
         }
-        throw (New-ADTErrorRecord @naerParams)
+        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
     }
-    Write-ADTLogEntry -Message "Installed SCCM Client Version Number [$SCCMClientVersion]."
+    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Installed SCCM Client Version Number [$SCCMClientVersion]."
     return $SCCMClientVersion
 }

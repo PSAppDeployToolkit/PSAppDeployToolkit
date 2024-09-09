@@ -172,13 +172,13 @@ function Start-ADTProcess
     begin
     {
         # Initalise function and get required objects.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
         {
-            $MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime
+            $MsiExecWaitTime = (& $Script:CommandTable.'Get-ADTConfig').MSI.MutexWaitTime
         }
         if (!$PSBoundParameters.ContainsKey('SuccessCodes'))
         {
@@ -224,7 +224,7 @@ function Start-ADTProcess
                 {
                     if (![System.IO.File]::Exists($Path))
                     {
-                        Write-ADTLogEntry -Message "File [$Path] not found." -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "File [$Path] not found." -Severity 3
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("File [$Path] not found.")
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
@@ -232,16 +232,16 @@ function Start-ADTProcess
                             TargetObject = $Path
                             RecommendedAction = "Please confirm the path of the specified file and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                     }
-                    Write-ADTLogEntry -Message "[$Path] is a valid fully qualified path, continue."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "[$Path] is a valid fully qualified path, continue."
                 }
                 else
                 {
                     # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
                     if (!($fqPath = & $Script:CommandTable.'Get-Item' -Path ("$(if ($adtSession) { "$($adtSession.GetPropertyValue('DirFiles'));" })$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$Path") -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
                     {
-                        Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "[$Path] contains an invalid path or file name." -Severity 3
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("[$Path] contains an invalid path or file name.")
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
@@ -249,9 +249,9 @@ function Start-ADTProcess
                             TargetObject = $Path
                             RecommendedAction = "Please confirm the path of the specified file and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                     }
-                    Write-ADTLogEntry -Message "[$Path] successfully resolved to fully qualified path [$fqPath]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "[$Path] successfully resolved to fully qualified path [$fqPath]."
                     $Path = $fqPath
                 }
 
@@ -272,12 +272,12 @@ function Start-ADTProcess
                 # to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
                 if (($Path -match 'msiexec') -or $WaitForMsiExec)
                 {
-                    $MsiExecAvailable = Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime ([System.TimeSpan]::FromSeconds($MsiExecWaitTime))
+                    $MsiExecAvailable = & $Script:CommandTable.'Test-ADTIsMutexAvailable' -MutexName 'Global\_MSIExecute' -MutexWaitTime ([System.TimeSpan]::FromSeconds($MsiExecWaitTime))
                     [System.Threading.Thread]::Sleep(1000)
                     if (!$MsiExecAvailable)
                     {
                         # Default MSI exit code for install already in progress.
-                        Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
                         $returnCode = 1618
                         $naerParams = @{
                             Exception = [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
@@ -286,7 +286,7 @@ function Start-ADTProcess
                             TargetObject = $Path
                             RecommendedAction = "Please wait for the current MSI operation to finish and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                     }
                 }
 
@@ -314,7 +314,7 @@ function Start-ADTProcess
                     }
                     if ($process.StartInfo.UseShellExecute)
                     {
-                        Write-ADTLogEntry -Message 'UseShellExecute is set to true, standard output and error will not be available.'
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'UseShellExecute is set to true, standard output and error will not be available.'
                         $process.StartInfo.RedirectStandardOutput = $false
                         $process.StartInfo.RedirectStandardError = $false
                     }
@@ -327,25 +327,25 @@ function Start-ADTProcess
                     }
 
                     # Start Process.
-                    Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Working Directory is [$WorkingDirectory]."
                     if ($Parameters)
                     {
                         if ($SecureParameters)
                         {
-                            Write-ADTLogEntry -Message "Executing [$Path (Parameters Hidden)]..."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Executing [$Path (Parameters Hidden)]..."
                         }
                         elseif ($Parameters -match '-Command \&')
                         {
-                            Write-ADTLogEntry -Message "Executing [$Path [PowerShell ScriptBlock]]..."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Executing [$Path [PowerShell ScriptBlock]]..."
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "Executing [$Path $Parameters]..."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Executing [$Path $Parameters]..."
                         }
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [$Path]..."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Executing [$Path]..."
                     }
                     $null = $process.Start()
 
@@ -356,29 +356,29 @@ function Start-ADTProcess
                         {
                             if (!$process.HasExited)
                             {
-                                Write-ADTLogEntry -Message "Changing the priority class for the process to [$PriorityClass]"
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Changing the priority class for the process to [$PriorityClass]"
                                 $process.PriorityClass = $PriorityClass
                             }
                             else
                             {
-                                Write-ADTLogEntry -Message "Cannot change the priority class for the process to [$PriorityClass], because the process has exited already." -Severity 2
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Cannot change the priority class for the process to [$PriorityClass], because the process has exited already." -Severity 2
                             }
                         }
                         catch
                         {
-                            Write-ADTLogEntry -Message 'Failed to change the priority class for the process.' -Severity 2
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Failed to change the priority class for the process.' -Severity 2
                         }
                     }
 
                     # NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams.
                     if ($NoWait)
                     {
-                        Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
                         if ($PassThru)
                         {
                             if (!$process.HasExited)
                             {
-                                Write-ADTLogEntry -Message 'PassThru parameter specified, returning process details object.'
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'PassThru parameter specified, returning process details object.'
                                 $PSCmdlet.WriteObject([PSADT.Types.ProcessInfo]@{
                                         Id = $process.Id
                                         Handle = $process.Handle
@@ -387,7 +387,7 @@ function Start-ADTProcess
                             }
                             else
                             {
-                                Write-ADTLogEntry -Message 'PassThru parameter specified, however the process has already exited.'
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'PassThru parameter specified, however the process has already exited.'
                             }
                         }
                     }
@@ -435,7 +435,7 @@ function Start-ADTProcess
                             $stdErr = $stdErrBuilder.ToString().Trim()
                             if (![System.String]::IsNullOrWhiteSpace($stdErr))
                             {
-                                Write-ADTLogEntry -Message "Standard error output from the process: $stdErr" -Severity 3
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Standard error output from the process: $stdErr" -Severity 3
                             }
                         }
                     }
@@ -476,7 +476,7 @@ function Start-ADTProcess
                     # If the passthru switch is specified, return the exit code and any output from process.
                     if ($PassThru)
                     {
-                        Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'PassThru parameter specified, returning execution results object.'
                         $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
                                 ExitCode = $returnCode
                                 StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
@@ -487,42 +487,42 @@ function Start-ADTProcess
                     # Check to see whether we should ignore exit codes.
                     if ($IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($returnCode)))
                     {
-                        Write-ADTLogEntry -Message "Execution completed and the exit code [$returnCode] is being ignored."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution completed and the exit code [$returnCode] is being ignored."
                     }
                     elseif ($RebootCodes.Contains($returnCode))
                     {
-                        Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
                     }
                     elseif (($returnCode -eq 1605) -and ($Path -match 'msiexec'))
                     {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3
                     }
                     elseif (($returnCode -eq -2145124329) -and ($Path -match 'wusa'))
                     {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3
                     }
                     elseif (($returnCode -eq 17025) -and ($Path -match 'fullfile'))
                     {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
                     }
                     elseif ($SuccessCodes.Contains($returnCode))
                     {
-                        Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0
                     }
                     else
                     {
                         if (($MsiExitCodeMessage = if ($Path -match 'msiexec') { [PSADT.Msi]::GetMessageFromMsiExitCode($returnCode).Trim() }))
                         {
-                            Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]." -Severity 3
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution failed with exit code [$returnCode]." -Severity 3
                         }
 
                         if ($adtSession -and !$NoExitOnProcessFailure)
                         {
-                            Close-ADTSession -ExitCode $returnCode
+                            & $Script:CommandTable.'Close-ADTSession' -ExitCode $returnCode
                         }
                     }
                 }
@@ -545,11 +545,11 @@ function Start-ADTProcess
 
             if ($returnCode.Equals(60002))
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Function failed, setting exit code to [$returnCode]."
+                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Function failed, setting exit code to [$returnCode]."
             }
             else
             {
-                Write-ADTLogEntry -Message "Execution completed with exit code [$returnCode]. Function failed.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution completed with exit code [$returnCode]. Function failed.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
             }
 
             if ($PassThru)
@@ -563,13 +563,13 @@ function Start-ADTProcess
 
             if ($adtSession -and !$NoExitOnProcessFailure)
             {
-                Close-ADTSession -ExitCode $returnCode
+                & $Script:CommandTable.'Close-ADTSession' -ExitCode $returnCode
             }
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

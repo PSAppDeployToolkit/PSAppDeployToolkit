@@ -48,19 +48,19 @@ function Initialize-ADTModule
     begin
     {
         # Ensure this function isn't being called mid-flight.
-        if (Test-ADTSessionActive)
+        if (& $Script:CommandTable.'Test-ADTSessionActive')
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new("This function cannot be called while there is an active ADTSession in progress.")
                 Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                 ErrorId = 'InitWithActiveSessionError'
-                TargetObject = Get-ADTSession
+                TargetObject = & $Script:CommandTable.'Get-ADTSession'
                 RecommendedAction = "Please attempt module re-initialisation once the active ADTSession(s) have been closed."
             }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtData = Get-ADTModuleData
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
     }
 
     process
@@ -76,10 +76,10 @@ function Initialize-ADTModule
                 $adtData.Callbacks.Closing.Clear()
                 $adtData.Callbacks.Finishing.Clear()
                 $adtData.Sessions.Clear()
-                $adtData.Environment = New-ADTEnvironmentTable
-                $adtData.Config = Import-ADTConfig
-                $adtData.Language = Get-ADTStringLanguage
-                $adtData.Strings = Import-ADTStringTable -UICulture $adtData.Language
+                $adtData.Environment = & $Script:CommandTable.'New-ADTEnvironmentTable'
+                $adtData.Config = & $Script:CommandTable.'Import-ADTConfig'
+                $adtData.Language = & $Script:CommandTable.'Get-ADTStringLanguage'
+                $adtData.Strings = & $Script:CommandTable.'Import-ADTStringTable' -UICulture $adtData.Language
                 $adtData.LastExitCode = 0
                 $adtData.TerminalServerMode = $false
 
@@ -95,12 +95,12 @@ function Initialize-ADTModule
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

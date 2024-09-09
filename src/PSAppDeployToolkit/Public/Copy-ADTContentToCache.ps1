@@ -56,20 +56,20 @@ function Copy-ADTContentToCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).GetPropertyValue('installName'))"
+        [System.String]$Path = "$((& $Script:CommandTable.'Get-ADTConfig').Toolkit.CachePath)\$((& $Script:CommandTable.'Get-ADTSession').GetPropertyValue('installName'))"
     )
 
     begin
     {
         try
         {
-            $adtSession = Get-ADTSession
+            $adtSession = & $Script:CommandTable.'Get-ADTSession'
         }
         catch
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -77,7 +77,7 @@ function Copy-ADTContentToCache
         # Create the cache folder if it does not exist.
         if (![System.IO.Directory]::Exists($Path))
         {
-            Write-ADTLogEntry -Message "Creating cache folder [$Path]."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating cache folder [$Path]."
             try
             {
                 try
@@ -91,17 +91,17 @@ function Copy-ADTContentToCache
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create cache folder [$Path]."
+                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create cache folder [$Path]."
                 return
             }
         }
         else
         {
-            Write-ADTLogEntry -Message "Cache folder [$Path] already exists."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Cache folder [$Path] already exists."
         }
 
         # Copy the toolkit content to the cache folder.
-        Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$Path]."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Copying toolkit content to cache folder [$Path]."
         try
         {
             try
@@ -117,12 +117,12 @@ function Copy-ADTContentToCache
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy toolkit content to cache folder [$Path]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy toolkit content to cache folder [$Path]."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

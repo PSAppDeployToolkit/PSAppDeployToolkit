@@ -11,7 +11,8 @@
 if (!(& $CommandTable.'Test-Path' -LiteralPath Microsoft.PowerShell.Core\Variable::FunctionPaths))
 {
     & $CommandTable.'New-Variable' -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Classes"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
-    & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($ModuleFiles.BaseName -replace '^', 'Microsoft.PowerShell.Core\Function::')
+    & $CommandTable.'New-Variable' -Name FunctionNames -Option Constant -Value ($ModuleFiles | & { process { if ($_.FullName -notmatch '\\Classes\\') { return $_.BaseName } } })
+    & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($FunctionNames -replace '^', 'Microsoft.PowerShell.Core\Function::')
     & $CommandTable.'Remove-Item' -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
     $ModuleFiles.FullName | . { process { . $_ } }
 }

@@ -109,7 +109,7 @@ function Get-ADTRegistryKey
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -121,27 +121,27 @@ function Get-ADTRegistryKey
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
                 [String]$Key = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
+                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
+                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node
                 }
 
                 # Check if the registry key exists before continuing.
                 if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $Key))
                 {
-                    Write-ADTLogEntry -Message "Registry key [$Key] does not exist. Return `$null." -Severity 2
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key [$Key] does not exist. Return `$null." -Severity 2
                     return
                 }
 
                 if ($PSBoundParameters.ContainsKey('Value'))
                 {
-                    Write-ADTLogEntry -Message "Getting registry key [$Key] value [$Value]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting registry key [$Key] value [$Value]."
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Getting registry key [$Key] and all property values."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting registry key [$Key] and all property values."
                 }
 
                 # Get all property values for registry key.
@@ -154,7 +154,7 @@ function Get-ADTRegistryKey
                     # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
                     if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -notcontains $Value)
                     {
-                        Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
                         return
                     }
                     if ($DoNotExpandEnvironmentNames)
@@ -183,12 +183,12 @@ function Get-ADTRegistryKey
                     # Select all properties or return empty key object.
                     if ($ReturnEmptyKeyIfExists)
                     {
-                        Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$Key]."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "No property values found for registry key. Return empty registry key object [$Key]."
                         return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key -Force)
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "No property values found for registry key. Return `$null."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "No property values found for registry key. Return `$null."
                         return
                     }
                 }
@@ -203,12 +203,12 @@ function Get-ADTRegistryKey
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read registry key [$Key]$(if ($Value) {" value [$Value]"})."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read registry key [$Key]$(if ($Value) {" value [$Value]"})."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

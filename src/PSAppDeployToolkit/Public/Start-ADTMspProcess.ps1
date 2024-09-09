@@ -61,7 +61,7 @@ function Start-ADTMspProcess
         [ValidateScript({
                 if (('.msp' -contains [System.IO.Path]::GetExtension($_)))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is not an .msp file.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is not an .msp file.'))
                 }
                 return !!$_
             })]
@@ -75,8 +75,8 @@ function Start-ADTMspProcess
 
     begin
     {
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -96,7 +96,7 @@ function Start-ADTMspProcess
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Failed to find MSP file [$Path]." -Severity 3
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to find MSP file [$Path]." -Severity 3
                     $naerParams = @{
                         Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$Path].")
                         Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
@@ -104,17 +104,17 @@ function Start-ADTMspProcess
                         TargetObject = $Path
                         RecommendedAction = "Please confirm the path of the MSP file and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
 
                 # Create a Windows Installer object and open the database in read-only mode.
-                Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Checking MSP file for valid product codes.'
                 [__ComObject]$Installer = & $Script:CommandTable.'New-Object' -ComObject WindowsInstaller.Installer
-                [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
+                [__ComObject]$Database = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
 
                 # Get the SummaryInformation from the windows installer database and store all product codes found.
-                [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
-                $AllTargetedProductCodes = Get-ADTInstalledApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
+                [__ComObject]$SummaryInformation = & $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $Database -PropertyName SummaryInformation
+                $AllTargetedProductCodes = & $Script:CommandTable.'Get-ADTInstalledApplication' -ProductCode (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
 
                 # Free our COM objects.
                 [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)
@@ -124,7 +124,7 @@ function Start-ADTMspProcess
                 # If the application is installed, patch it.
                 if ($AllTargetedProductCodes)
                 {
-                    Start-ADTMsiProcess -Action Patch @PSBoundParameters
+                    & $Script:CommandTable.'Start-ADTMsiProcess' -Action Patch @PSBoundParameters
                 }
             }
             catch
@@ -134,12 +134,12 @@ function Start-ADTMspProcess
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

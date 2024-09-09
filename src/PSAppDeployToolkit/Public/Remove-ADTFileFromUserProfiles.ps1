@@ -99,7 +99,7 @@ function Remove-ADTFileFromUserProfiles
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $RemoveFileSplat = @{
             Recurse = $Recurse
         }
@@ -119,15 +119,15 @@ function Remove-ADTFileFromUserProfiles
 
     process
     {
-        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
+        foreach ($UserProfilePath in (& $Script:CommandTable.'Get-ADTUserProfiles' @GetUserProfileSplat).ProfilePath)
         {
             $RemoveFileSplat.Path = $pathVar.Value | & { process { [System.IO.Path]::Combine($UserProfilePath, $_) } }
-            Write-ADTLogEntry -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
             try
             {
                 try
                 {
-                    Remove-ADTFile @RemoveFileSplat
+                    & $Script:CommandTable.'Remove-ADTFile' @RemoveFileSplat
                 }
                 catch
                 {
@@ -136,13 +136,13 @@ function Remove-ADTFileFromUserProfiles
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

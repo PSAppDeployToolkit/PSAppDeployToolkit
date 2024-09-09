@@ -85,7 +85,7 @@ function Invoke-ADTCommandWithRetries
     }
 
     # Convert the passed parameters into a dictionary for splatting onto the command.
-    $boundParams = Convert-ADTValuesFromRemainingArguments -RemainingArguments $Parameters
+    $boundParams = & $Script:CommandTable.'Convert-ADTValuesFromRemainingArguments' -RemainingArguments $Parameters
     $callerName = (& $Script:CommandTable.'Get-PSCallStack')[1].Command
 
     # Perform the request, and retry it as per the configured values.
@@ -98,7 +98,7 @@ function Invoke-ADTCommandWithRetries
         }
         catch
         {
-            Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $SleepSeconds second$(if (!$SleepSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $SleepSeconds second$(if (!$SleepSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
             [System.Threading.Thread]::Sleep($SleepSeconds * 1000)
             $errorRecord = $_
         }

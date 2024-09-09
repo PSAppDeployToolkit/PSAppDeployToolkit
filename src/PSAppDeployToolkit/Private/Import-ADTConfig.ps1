@@ -7,7 +7,7 @@
 function Import-ADTConfig
 {
     # Get the current environment and root module.
-    $adtEnv = Get-ADTEnvironment
+    $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
 
     # Create variables within this scope from the database, it's needed during the config import.
     $adtEnv.GetEnumerator() | . { process { & $Script:CommandTable.'New-Variable' -Name $_.Name -Value $_.Value -Option Constant } }
@@ -26,7 +26,7 @@ function Import-ADTConfig
             TargetObject = $config
             RecommendedAction = "Please review the supplied configuration file and try again."
         }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
     }
 
     # Confirm the specified dialog type is valid.
@@ -39,7 +39,7 @@ function Import-ADTConfig
             TargetObject = $config
             RecommendedAction = "Please review the supplied configuration file and try again."
         }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
     }
 
     # Process the config and expand out variables.

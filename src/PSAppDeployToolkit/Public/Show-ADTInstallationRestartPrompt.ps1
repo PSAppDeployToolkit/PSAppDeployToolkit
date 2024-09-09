@@ -96,7 +96,7 @@ function Show-ADTInstallationRestartPrompt
     dynamicparam
     {
         # Initialise variables.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -116,7 +116,7 @@ function Show-ADTInstallationRestartPrompt
     begin
     {
         # Initialise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
@@ -136,21 +136,21 @@ function Show-ADTInstallationRestartPrompt
                 {
                     if ($SilentRestart)
                     {
-                        Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.GetPropertyValue('DeployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
-                        & $Script:CommandTable.'Start-Process' -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & $Script:CommandTable.'Start-Sleep' -Seconds $SilentCountdownSeconds; & $Script:CommandTable.'Restart-Computer' -Force" -WindowStyle Hidden -ErrorAction Ignore
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.GetPropertyValue('DeployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
+                        & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & $Script:CommandTable.'Start-Sleep' -Seconds $SilentCountdownSeconds; & $Script:CommandTable.'Restart-Computer' -Force" -WindowStyle Hidden -ErrorAction Ignore
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($adtSession.GetPropertyValue('DeployMode'))] and [SilentRestart] is false."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping restart, because the deploy mode is set to [$($adtSession.GetPropertyValue('DeployMode'))] and [SilentRestart] is false."
                     }
                     return
                 }
 
                 # Check if we are already displaying a restart prompt.
-                $restartPromptTitle = (Get-ADTStringTable).RestartPrompt.Title
+                $restartPromptTitle = (& $Script:CommandTable.'Get-ADTStringTable').RestartPrompt.Title
                 if (& $Script:CommandTable.'Get-Process' | & { process { if ($_.MainWindowTitle -match $restartPromptTitle) { return $_ } } })
                 {
-                    Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
                     return
                 }
 
@@ -159,20 +159,20 @@ function Show-ADTInstallationRestartPrompt
                 {
                     if ($NoCountdown)
                     {
-                        Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with no countdown..."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with no countdown..."
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$CountdownSeconds] second countdown..."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$CountdownSeconds] second countdown..."
                     }
 
                     # Start another powershell instance silently with function parameters from this function.
-                    & $Script:CommandTable.'Start-Process' -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$Script:PSScriptRoot'; `$null = $($MyInvocation.MyCommand.Name) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart, SilentCountdownSeconds)" -WindowStyle Hidden -ErrorAction Ignore
+                    & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$Script:PSScriptRoot'; `$null = $($MyInvocation.MyCommand.Name) $($PSBoundParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters' -Exclude SilentRestart, SilentCountdownSeconds)" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
                 # Call the underlying function to open the restart prompt.
-                Show-ADTInstallationRestartPromptClassic @PSBoundParameters
+                & $Script:CommandTable.'Show-ADTInstallationRestartPromptClassic' @PSBoundParameters
             }
             catch
             {
@@ -181,12 +181,12 @@ function Show-ADTInstallationRestartPrompt
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

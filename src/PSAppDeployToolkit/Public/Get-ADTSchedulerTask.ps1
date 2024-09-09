@@ -66,15 +66,15 @@ function Get-ADTSchedulerTask
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Advise that this function is considered deprecated.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
     }
 
     process
     {
-        Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Retrieving Scheduled Tasks...'
         try
         {
             try
@@ -90,7 +90,7 @@ function Get-ADTSchedulerTask
                         TargetObject = $exeSchtasksResults
                         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
 
                 # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
@@ -111,12 +111,12 @@ function Get-ADTSchedulerTask
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to retrieve scheduled tasks."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to retrieve scheduled tasks."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

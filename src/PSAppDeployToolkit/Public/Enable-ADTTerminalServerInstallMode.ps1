@@ -48,8 +48,8 @@ function Enable-ADTTerminalServerInstallMode
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-        $adtData = Get-ADTModuleData
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
     }
 
     process
@@ -63,8 +63,8 @@ function Enable-ADTTerminalServerInstallMode
         {
             try
             {
-                Invoke-ADTTerminalServerModeChange -Mode Install
-                Add-ADTSessionClosingCallback -Callback $MyInvocation.MyCommand.Module.ExportedCommands.'Disable-ADTTerminalServerInstallMode'
+                & $Script:CommandTable.'Invoke-ADTTerminalServerModeChange' -Mode Install
+                & $Script:CommandTable.'Add-ADTSessionClosingCallback' -Callback $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'
                 $adtData.TerminalServerMode = $true
             }
             catch
@@ -74,12 +74,12 @@ function Enable-ADTTerminalServerInstallMode
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

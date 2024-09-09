@@ -103,7 +103,7 @@ function Resolve-ADTErrorRecord
     begin
     {
         # Initialise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Allows selecting and filtering the properties on the error object if they exist.
         filter Get-ErrorPropertyNames
@@ -208,6 +208,6 @@ function Resolve-ADTErrorRecord
     end
     {
         # Finalise function.
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

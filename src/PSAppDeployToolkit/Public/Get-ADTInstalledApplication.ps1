@@ -99,7 +99,7 @@ function Get-ADTInstalledApplication
     begin
     {
         # Announce start.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Enumerate the installed applications from the registry for applications that have the "DisplayName" property.
         $regUninstallPaths = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
@@ -138,11 +138,11 @@ function Get-ADTInstalledApplication
     {
         if ($Name)
         {
-            Write-ADTLogEntry -Message "Getting information for installed Application Name(s) [$($Name -join ', ')]..."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting information for installed Application Name(s) [$($Name -join ', ')]..."
         }
         if ($ProductCode)
         {
-            Write-ADTLogEntry -Message "Getting information for installed Product Code [$ProductCode]..."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting information for installed Product Code [$ProductCode]..."
         }
         try
         {
@@ -167,7 +167,7 @@ function Get-ADTInstalledApplication
                     # Verify if there is a match with the product code passed to the script.
                     if ($ProductCode -contains $regKeyApp.PSChildName)
                     {
-                        Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$ProductCode]."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] matching product code [$ProductCode]."
                         Out-InstalledAppObject
                     }
 
@@ -176,22 +176,22 @@ function Get-ADTInstalledApplication
                     {
                         if ($Exact -and ($regKeyApp.DisplayName -eq $application))
                         {
-                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using exact name matching for search term [$application]."
                             Out-InstalledAppObject
                         }
                         elseif ($WildCard -and ($regKeyApp.DisplayName -like $application))
                         {
-                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using wildcard matching for search term [$application]."
                             Out-InstalledAppObject
                         }
                         elseif ($RegEx -and ($regKeyApp.DisplayName -match $application))
                         {
-                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using regex matching for search term [$application]."
                             Out-InstalledAppObject
                         }
                         elseif ($regKeyApp.DisplayName -match [System.Text.RegularExpressions.Regex]::Escape($application))
                         {
-                            Write-ADTLogEntry -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName] version [$appDisplayVersion] using contains matching for search term [$application]."
                             Out-InstalledAppObject
                         }
                     }
@@ -202,11 +202,11 @@ function Get-ADTInstalledApplication
                 {
                     if ($updatesSkippedCounter -eq 1)
                     {
-                        Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
                     }
                 }
 
@@ -214,7 +214,7 @@ function Get-ADTInstalledApplication
                 {
                     return $installedApplication
                 }
-                Write-ADTLogEntry -Message 'Found no application based on the supplied parameters.'
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Found no application based on the supplied parameters.'
             }
             catch
             {
@@ -223,12 +223,12 @@ function Get-ADTInstalledApplication
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

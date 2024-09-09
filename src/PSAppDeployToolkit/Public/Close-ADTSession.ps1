@@ -60,18 +60,18 @@ function Close-ADTSession
     {
         # Make this function continue on error and ensure the caller doesn't override ErrorAction.
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         # Return early if there's no active session to close.
-        if (!(Test-ADTSessionActive))
+        if (!(& $Script:CommandTable.'Test-ADTSessionActive'))
         {
             return
         }
-        $adtSession = Get-ADTSession
-        $adtData = Get-ADTModuleData
+        $adtSession = & $Script:CommandTable.'Get-ADTSession'
+        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
 
         # Update the session's exit code with the provided value.
         if ($PSBoundParameters.ContainsKey('ExitCode'))
@@ -95,7 +95,7 @@ function Close-ADTSession
             }
             catch
             {
-                $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking callback [$($callback.Name)]."
+                $_; & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking callback [$($callback.Name)]."
             }
         }
 
@@ -113,7 +113,7 @@ function Close-ADTSession
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
         }
         finally
         {
@@ -147,6 +147,6 @@ function Close-ADTSession
     end
     {
         # Finalise function.
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

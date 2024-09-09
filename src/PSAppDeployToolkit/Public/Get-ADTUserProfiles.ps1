@@ -94,7 +94,7 @@ function Get-ADTUserProfiles
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $userProfileListRegKey = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
         $excludedSids = "^S-1-5-($([System.String]::Join('|', $(
             if (!$IncludeSystemProfiles)
@@ -116,7 +116,7 @@ function Get-ADTUserProfiles
 
     process
     {
-        Write-ADTLogEntry -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Getting the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine.'
         try
         {
             try
@@ -132,7 +132,7 @@ function Get-ADTUserProfiles
                         }
 
                         # Return early for accounts that have a null NTAccount.
-                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | & $Script:CommandTable.'Select-Object' -ExpandProperty Value))
+                        if (!($ntAccount = & $Script:CommandTable.'ConvertTo-ADTNTAccountOrSID' -SID $_.PSChildName | & $Script:CommandTable.'Select-Object' -ExpandProperty Value))
                         {
                             return
                         }
@@ -170,12 +170,12 @@ function Get-ADTUserProfiles
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

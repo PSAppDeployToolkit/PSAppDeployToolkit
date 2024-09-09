@@ -61,7 +61,7 @@ function Invoke-ADTSCCMTask
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Create a hashtable of Schedule IDs compatible with SCCM Client 2007.
         [Hashtable]$ScheduleIds = @{
@@ -97,8 +97,8 @@ function Invoke-ADTSCCMTask
             try
             {
                 # If SCCM 2012 Client or higher, modify hashtabe containing Schedule IDs so that it only has the ones compatible with this version of the SCCM client.
-                Write-ADTLogEntry -Message "Invoke SCCM Schedule Task ID [$ScheduleId]..."
-                if ((Get-ADTSCCMClientVersion).Major -ge 5)
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoke SCCM Schedule Task ID [$ScheduleId]..."
+                if ((& $Script:CommandTable.'Get-ADTSCCMClientVersion').Major -ge 5)
                 {
                     $ScheduleIds.Remove('PeerDistributionPointStatus')
                     $ScheduleIds.Remove('PeerDistributionPointProvisioning')
@@ -118,11 +118,11 @@ function Invoke-ADTSCCMTask
                         ErrorId           = 'CcmExecInvalidScheduleId'
                         RecommendedAction = 'Please check the supplied ScheduleId and try again.'
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
 
                 # Trigger SCCM task.
-                Write-ADTLogEntry -Message "Triggering SCCM Task ID [$ScheduleId]."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Triggering SCCM Task ID [$ScheduleId]."
                 $null = (& $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM -ClassName SMS_Client).TriggerSchedule($ScheduleIds.$ScheduleID)
             }
             catch
@@ -132,12 +132,12 @@ function Invoke-ADTSCCMTask
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

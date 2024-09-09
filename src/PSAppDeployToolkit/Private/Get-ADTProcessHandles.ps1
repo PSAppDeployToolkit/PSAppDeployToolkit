@@ -23,7 +23,7 @@ function Get-ADTProcessHandles
             TargetObject = $exeHandleResults
             RecommendedAction = "Please review the result in this error's TargetObject property and try again."
         }
-        throw (New-ADTErrorRecord @naerParams)
+        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
     }
 
     # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.

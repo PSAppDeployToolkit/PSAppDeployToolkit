@@ -16,7 +16,6 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 $ModuleManifest = [System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\PSAppDeployToolkit.psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
 $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & { process { if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) { $CommandTable.Add($_.Name, $_) } } }
 & $CommandTable.'Get-Command' -FullyQualifiedModule $ModuleManifest.RequiredModules | & { process { $CommandTable.Add($_.Name, $_) } }
-& $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
 & $CommandTable.'New-Variable' -Name ModuleManifest -Value $ModuleManifest -Option Constant -Force -Confirm:$false
 
 # Ensure module operates under the strictest of conditions.
@@ -68,6 +67,7 @@ catch
 # Remove any previous functions that may have been defined.
 if ($MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1'))
 {
-    & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Microsoft.PowerShell.Core\Function::$($_.Name)" } } })
+    & $CommandTable.'New-Variable' -Name FunctionNames -Option Constant -Value ($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return $_.Name } } })
+    & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($FunctionNames -replace '^', 'Microsoft.PowerShell.Core\Function::')
     & $CommandTable.'Remove-Item' -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
 }

@@ -174,7 +174,7 @@ function New-ADTEnvironmentTable
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
-    $variables.Add('IsMultiSessionOS', (Test-ADTIsMultiSessionOS))
+    $variables.Add('IsMultiSessionOS', (& $Script:CommandTable.'Test-ADTIsMultiSessionOS'))
     $variables.Add('envOSProductTypeName', $(switch ($variables.envOSProductType)
             {
                 3 { 'Server'; break }
@@ -240,7 +240,7 @@ function New-ADTEnvironmentTable
 
     ## Variables: PowerShell And CLR (.NET) Versions
     $variables.Add('envPSVersionTable', $PSVersionTable)
-    $variables.Add('envPSProcessPath', (Get-ADTPowerShellProcessPath))
+    $variables.Add('envPSProcessPath', (& $Script:CommandTable.'Get-ADTPowerShellProcessPath'))
 
     # PowerShell Version
     $variables.Add('envPSVersion', $variables.envPSVersionTable.PSVersion)
@@ -272,15 +272,15 @@ function New-ADTEnvironmentTable
     $variables.Add('CurrentProcessSID', [System.Security.Principal.SecurityIdentifier]$variables.CurrentProcessToken.User)
     $variables.Add('ProcessNTAccount', $variables.CurrentProcessToken.Name)
     $variables.Add('ProcessNTAccountSID', $variables.CurrentProcessSID.Value)
-    $variables.Add('IsAdmin', (Test-ADTCallerIsAdmin))
+    $variables.Add('IsAdmin', (& $Script:CommandTable.'Test-ADTCallerIsAdmin'))
     $variables.Add('IsLocalSystemAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
     $variables.Add('IsLocalServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalServiceSid))
     $variables.Add('IsNetworkServiceAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::NetworkServiceSid))
     $variables.Add('IsServiceAccount', ($variables.CurrentProcessToken.Groups -contains ([System.Security.Principal.SecurityIdentifier]'S-1-5-6')))
     $variables.Add('IsProcessUserInteractive', [System.Environment]::UserInteractive)
-    $variables.Add('LocalSystemNTAccount', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName LocalSystemSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
-    $variables.Add('LocalUsersGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinUsersSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
-    $variables.Add('LocalAdministratorsGroup', (ConvertTo-ADTNTAccountOrSID -WellKnownSIDName BuiltinAdministratorsSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
+    $variables.Add('LocalSystemNTAccount', (& $Script:CommandTable.'ConvertTo-ADTNTAccountOrSID' -WellKnownSIDName LocalSystemSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
+    $variables.Add('LocalUsersGroup', (& $Script:CommandTable.'ConvertTo-ADTNTAccountOrSID' -WellKnownSIDName BuiltinUsersSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
+    $variables.Add('LocalAdministratorsGroup', (& $Script:CommandTable.'ConvertTo-ADTNTAccountOrSID' -WellKnownSIDName BuiltinAdministratorsSid -WellKnownToNTAccount -LocalHost 4>$null).Value)
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     ## Variables: Logged on user information
@@ -288,13 +288,13 @@ function New-ADTEnvironmentTable
     $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & { process { $_.NTAccount } }))
     $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsCurrentSession) { return $_ } } }))
     $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsConsoleSession) { return $_ } } }))
-    $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser))
+    $variables.Add('RunAsActiveUser', (& $Script:CommandTable.'Get-ADTRunAsActiveUser'))
 
     ## Variables: User profile information.
     $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
     $variables.Add('userProfileName', $variables.RunAsActiveUser.UserName)
     $variables.Add('runasUserProfile', (& $Script:CommandTable.'Join-Path' -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
-    $variables.Add('loggedOnUserTempPath', $null)  # This will be set in Import-ADTConfig.
+    $variables.Add('loggedOnUserTempPath', $null)  # This will be set in & $Script:CommandTable.'Import-ADTConfig'.
 
     ## Variables: Executables
     $variables.Add('exeSchTasks', "$($variables.envSystem32Directory)\schtasks.exe")

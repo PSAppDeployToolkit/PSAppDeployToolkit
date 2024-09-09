@@ -46,7 +46,7 @@ function Get-ADTConfig
     )
 
     # Return the config database if initialised.
-    if (!($adtData = Get-ADTModuleData).Config -or !$adtData.Config.Count)
+    if (!($adtData = & $Script:CommandTable.'Get-ADTModuleData').Config -or !$adtData.Config.Count)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
@@ -55,7 +55,7 @@ function Get-ADTConfig
             TargetObject = $adtData.Config
             RecommendedAction = "Please ensure the module is initialised via [Initialize-ADTModule] and try again."
         }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
     }
     return $adtData.Config
 }

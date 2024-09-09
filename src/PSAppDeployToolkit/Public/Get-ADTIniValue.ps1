@@ -57,7 +57,7 @@ function Get-ADTIniValue
         [ValidateScript({
                 if (![System.IO.File]::Exists($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
                 }
                 return !!$_
             })]
@@ -74,18 +74,18 @@ function Get-ADTIniValue
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
-        Write-ADTLogEntry -Message "Reading INI Key: [Section = $Section] [Key = $Key]."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Reading INI Key: [Section = $Section] [Key = $Key]."
         try
         {
             try
             {
                 $iniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
-                Write-ADTLogEntry -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $iniValue]."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $iniValue]."
                 return $iniValue
             }
             catch
@@ -95,12 +95,12 @@ function Get-ADTIniValue
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read INI file key value."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read INI file key value."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

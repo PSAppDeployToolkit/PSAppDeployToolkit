@@ -50,7 +50,7 @@ function Get-ADTServiceStartMode
         [ValidateScript({
                 if (!$_.Name)
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
@@ -60,12 +60,12 @@ function Get-ADTServiceStartMode
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
-        Write-ADTLogEntry -Message "Getting the service [$($Service.Name)] startup mode."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting the service [$($Service.Name)] startup mode."
         try
         {
             try
@@ -77,7 +77,7 @@ function Get-ADTServiceStartMode
                 }
 
                 # Return startup type to the caller.
-                Write-ADTLogEntry -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
                 return $serviceStartMode
             }
             catch
@@ -87,12 +87,12 @@ function Get-ADTServiceStartMode
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

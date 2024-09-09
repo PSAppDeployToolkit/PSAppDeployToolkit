@@ -47,9 +47,9 @@ function Close-ADTInstallationProgress
 
     begin
     {
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtConfig = Get-ADTConfig
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
+        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -59,19 +59,19 @@ function Close-ADTInstallationProgress
             try
             {
                 # Return early if we're silent, a window wouldn't have ever opened.
-                if (!(Test-ADTInstallationProgressRunning))
+                if (!(& $Script:CommandTable.'Test-ADTInstallationProgressRunning'))
                 {
                     return
                 }
                 if ($adtSession -and $adtSession.IsSilent())
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]"
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]"
                     return
                 }
 
                 # Call the underlying function to close the progress window.
                 & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name)
-                Remove-ADTSessionFinishingCallback -Callback $MyInvocation.MyCommand
+                & $Script:CommandTable.'Remove-ADTSessionFinishingCallback' -Callback $MyInvocation.MyCommand
 
                 # We only send balloon tips when a session is active.
                 if (!$adtSession)
@@ -84,17 +84,17 @@ function Close-ADTInstallationProgress
                 {
                     FastRetry
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
+                        & $Script:CommandTable.'Show-ADTBalloonTip' -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((& $Script:CommandTable.'Get-ADTStringTable').BalloonText.$_)"
                         break
                     }
                     Error
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
+                        & $Script:CommandTable.'Show-ADTBalloonTip' -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((& $Script:CommandTable.'Get-ADTStringTable').BalloonText.$_)"
                         break
                     }
                     default
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
+                        & $Script:CommandTable.'Show-ADTBalloonTip' -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((& $Script:CommandTable.'Get-ADTStringTable').BalloonText.$_)"
                         break
                     }
                 }
@@ -106,12 +106,12 @@ function Close-ADTInstallationProgress
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

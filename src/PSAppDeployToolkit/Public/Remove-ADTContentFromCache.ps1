@@ -48,32 +48,32 @@ function Remove-ADTContentFromCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).GetPropertyValue('installName'))"
+        [System.String]$Path = "$((& $Script:CommandTable.'Get-ADTConfig').Toolkit.CachePath)\$((& $Script:CommandTable.'Get-ADTSession').GetPropertyValue('installName'))"
     )
 
     begin
     {
         try
         {
-            $adtSession = Get-ADTSession
+            $adtSession = & $Script:CommandTable.'Get-ADTSession'
             $parentPath = $adtSession.GetPropertyValue('scriptParentPath')
         }
         catch
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         if (![System.IO.Directory]::Exists($Path))
         {
-            Write-ADTLogEntry -Message "Cache folder [$Path] does not exist."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Cache folder [$Path] does not exist."
             return
         }
 
-        Write-ADTLogEntry -Message "Removing cache folder [$Path]."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing cache folder [$Path]."
         try
         {
             try
@@ -89,12 +89,12 @@ function Remove-ADTContentFromCache
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove cache folder [$Path]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove cache folder [$Path]."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }
