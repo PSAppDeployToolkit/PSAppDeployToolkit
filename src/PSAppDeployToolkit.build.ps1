@@ -138,7 +138,7 @@ Add-BuildTask TestModuleManifest -Before CompileModuleDll {
 # Synopsis: Import the current module manifest file for processing
 Add-BuildTask CompileModuleDll -Before ImportModuleManifest {
     Write-Build White '      Compiling module DLL file...'
-    & "$PSHOME\$(('powershell.exe', 'pwsh.exe')[$PSVersionTable.PSEdition.Equals('Core')])" -ExecutionPolicy Bypass -NoProfile -EncodedCommand ([System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("Add-Type -LiteralPath `"$PSScriptRoot\$ModuleName.CSharp.cs`" -OutputAssembly `"$PSScriptRoot\$ModuleName\$ModuleName.dll`" -ReferencedAssemblies `$('System.DirectoryServices'; if (`$PSVersionTable.PSEdition.Equals('Core')) {'System.Net.NameResolution', 'System.Collections', 'System.Collections.Specialized', 'System.Text.RegularExpressions', 'System.Security.Principal.Windows', 'System.ComponentModel.Primitives', 'Microsoft.Win32.Primitives'}) -ErrorAction Stop")))
+    & "$([System.Environment]::SystemDirectory)\WindowsPowerShell\v1.0\powershell.exe" -ExecutionPolicy Bypass -NoProfile -EncodedCommand ([System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("Add-Type -LiteralPath `"$PSScriptRoot\$ModuleName.CSharp.cs`" -OutputAssembly `"$PSScriptRoot\$ModuleName\$ModuleName.dll`" -ReferencedAssemblies System.DirectoryServices -ErrorAction Stop")))
     Assert-Build ($LASTEXITCODE.Equals(0)) 'Failed to compile module DLL file.'
     Write-Build Green '      ...Module DLL Compilation Complete!'
 } #f5b33218-bde4-4028-b2a1-9c206f089503
