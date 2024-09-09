@@ -86,7 +86,7 @@ function Remove-ADTRegistryKey
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -98,30 +98,30 @@ function Remove-ADTRegistryKey
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
                 $Key = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    Convert-ADTRegistryPath -Key $Key -SID $SID
+                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -SID $SID
                 }
                 else
                 {
-                    Convert-ADTRegistryPath -Key $Key
+                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key
                 }
 
                 if (!$Name)
                 {
                     if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $Key))
                     {
-                        Write-ADTLogEntry -Message "Unable to delete registry key [$Key] because it does not exist." -Severity 2
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to delete registry key [$Key] because it does not exist." -Severity 2
                         return
                     }
 
                     if ($Recurse)
                     {
-                        Write-ADTLogEntry -Message "Deleting registry key recursively [$Key]."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Deleting registry key recursively [$Key]."
                         $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $Key -Force -Recurse
                     }
                     elseif (!(& $Script:CommandTable.'Get-ChildItem' -LiteralPath $Key))
                     {
                         # Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
-                        Write-ADTLogEntry -Message "Deleting registry key [$Key]."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Deleting registry key [$Key]."
                         $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $Key -Force
                     }
                     else
@@ -133,17 +133,17 @@ function Remove-ADTRegistryKey
                             TargetObject = $Key
                             RecommendedAction = "Please run this command again with [-Recurse]."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                     }
                 }
                 else
                 {
                     if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $Key))
                     {
-                        Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2
                         return
                     }
-                    Write-ADTLogEntry -Message "Deleting registry value [$Key] [$Name]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Deleting registry value [$Key] [$Name]."
                     if ($Name -eq '(Default)')
                     {
                         # Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value.
@@ -162,16 +162,16 @@ function Remove-ADTRegistryKey
         }
         catch [System.Management.Automation.PSArgumentException]
         {
-            Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because it does not exist." -Severity 2
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to delete registry value [$Key] [$Name] because it does not exist." -Severity 2
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete registry $(("key [$Key]", "value [$Key] [$Name]")[!!$Name])."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete registry $(("key [$Key]", "value [$Key] [$Name]")[!!$Name])."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

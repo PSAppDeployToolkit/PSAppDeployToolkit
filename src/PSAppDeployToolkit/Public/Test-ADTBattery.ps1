@@ -73,12 +73,12 @@ function Test-ADTBattery
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
-        Write-ADTLogEntry -Message 'Checking if system is using AC power or if it is running on battery...'
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Checking if system is using AC power or if it is running on battery...'
         try
         {
             try
@@ -111,13 +111,13 @@ function Test-ADTBattery
                         {
                             Online
                             {
-                                Write-ADTLogEntry -Message 'System is using AC power.'
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'System is using AC power.'
                                 $true
                                 break
                             }
                             Offline
                             {
-                                Write-ADTLogEntry -Message 'System is using battery power.'
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'System is using battery power.'
                                 $false
                                 break
                             }
@@ -125,12 +125,12 @@ function Test-ADTBattery
                             {
                                 if ($invalidBattery)
                                 {
-                                    Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. This is most likely due to a damaged battery so we will report system is using AC power."
+                                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. This is most likely due to a damaged battery so we will report system is using AC power."
                                     $true
                                 }
                                 else
                                 {
-                                    Write-ADTLogEntry -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
+                                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "System power status is [$($powerStatus.ACPowerLineStatus)] and battery charge status is [$($powerStatus.BatteryChargeStatus)]. Therefore, we will report system is using battery power."
                                     $false
                                 }
                                 break
@@ -154,12 +154,12 @@ function Test-ADTBattery
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

@@ -102,7 +102,7 @@ function Send-ADTKeys
     begin
     {
         # Initialise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Internal worker filter.
         filter Send-ADTKeysToWindow
@@ -137,7 +137,7 @@ function Send-ADTKeys
                             TargetObject = $WindowHandle
                             RecommendedAction = "Please check the status of this window and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                     }
                     if (![PSADT.UiAutomation]::IsWindowEnabled($WindowHandle))
                     {
@@ -148,15 +148,15 @@ function Send-ADTKeys
                             TargetObject = $WindowHandle
                             RecommendedAction = "Please check the status of this window and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                     }
 
                     # Send the Key sequence.
-                    Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]."
                     [System.Windows.Forms.SendKeys]::SendWait($Keys)
                     if ($WaitSeconds)
                     {
-                        Write-ADTLogEntry -Message "Sleeping for [$WaitSeconds] seconds."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Sleeping for [$WaitSeconds] seconds."
                         & $Script:CommandTable.'Start-Sleep' -Seconds $WaitSeconds
                     }
                 }
@@ -167,7 +167,7 @@ function Send-ADTKeys
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
             }
         }
 
@@ -184,21 +184,21 @@ function Send-ADTKeys
                 # Process the specified input.
                 if ($WindowHandle)
                 {
-                    if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | & { process { if ($_.WindowHandle -eq $WindowHandle) { return $_ } } }))
+                    if (!($Window = & $Script:CommandTable.'Get-ADTWindowTitle' -GetAllWindowTitles | & { process { if ($_.WindowHandle -eq $WindowHandle) { return $_ } } }))
                     {
-                        Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                         return
                     }
-                    Send-ADTKeysToWindow -WindowHandle $Window.WindowHandle @sktwParams
+                    & $Script:CommandTable.'Send-ADTKeys'ToWindow -WindowHandle $Window.WindowHandle @sktwParams
                 }
                 else
                 {
-                    if (!($AllWindows = if ($GetAllWindowTitles) { Get-ADTWindowTitle -GetAllWindowTitles $GetAllWindowTitles } else { Get-ADTWindowTitle -WindowTitle $WindowTitle } ))
+                    if (!($AllWindows = if ($GetAllWindowTitles) { & $Script:CommandTable.'Get-ADTWindowTitle' -GetAllWindowTitles $GetAllWindowTitles } else { & $Script:CommandTable.'Get-ADTWindowTitle' -WindowTitle $WindowTitle } ))
                     {
-                        Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'No windows with the specified details were discovered.' -Severity 2
                         return
                     }
-                    $AllWindows | Send-ADTKeysToWindow @sktwParams
+                    $AllWindows | & $Script:CommandTable.'Send-ADTKeys'ToWindow @sktwParams
                 }
             }
             catch
@@ -208,12 +208,12 @@ function Send-ADTKeys
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to send keys to specified window.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to send keys to specified window.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

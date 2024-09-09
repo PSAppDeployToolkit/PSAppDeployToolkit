@@ -75,7 +75,7 @@ function Test-ADTServiceExists
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -102,10 +102,10 @@ function Test-ADTServiceExists
                 # Return early if null.
                 if (!$ServiceObject)
                 {
-                    Write-ADTLogEntry -Message "Service [$Name] does not exist."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Service [$Name] does not exist."
                     return $false
                 }
-                Write-ADTLogEntry -Message "Service [$Name] exists."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Service [$Name] exists."
 
                 # Return the CIM object if passing through.
                 if ($PassThru)
@@ -121,12 +121,12 @@ function Test-ADTServiceExists
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed check to see if service [$Name] exists."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed check to see if service [$Name] exists."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

@@ -79,8 +79,8 @@ function Show-ADTDialogBox
     dynamicparam
     {
         # Initialise the module if there's no session and it hasn't been previously initialised.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtConfig = Get-ADTConfig
+        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
+        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -98,7 +98,7 @@ function Show-ADTDialogBox
                     [System.Management.Automation.ValidateScriptAttribute]::new({
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
                             {
-                                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
+                                $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
                             }
                             return !!$_
                         })
@@ -112,7 +112,7 @@ function Show-ADTDialogBox
     begin
     {
         # Initialise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
         $Title = if (!$PSBoundParameters.ContainsKey('Title'))
@@ -138,11 +138,11 @@ function Show-ADTDialogBox
         # Bypass if in silent mode.
         if ($adtSession -and $adtSession.IsSilent())
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Text: $Text"
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Text: $Text"
             return
         }
 
-        Write-ADTLogEntry -Message "Displaying Dialog Box with message: $Text..."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying Dialog Box with message: $Text..."
         try
         {
             try
@@ -162,7 +162,7 @@ function Show-ADTDialogBox
                     default { 'Unknown'; break }
                 }
 
-                Write-ADTLogEntry -Message "Dialog Box Response: $result"
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Dialog Box Response: $result"
                 return $result
             }
             catch
@@ -172,12 +172,12 @@ function Show-ADTDialogBox
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

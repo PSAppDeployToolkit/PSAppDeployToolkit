@@ -137,9 +137,9 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
         [ValidateScript({
-                if (($_ -notmatch (Get-ADTEnvironment).MSIProductCodeRegExPattern) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
+                if (($_ -notmatch (& $Script:CommandTable.'Get-ADTEnvironment').MSIProductCodeRegExPattern) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
                 }
                 return !!$_
             })]
@@ -207,8 +207,8 @@ function Start-ADTMsiProcess
 
     begin
     {
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet; $adtConfig = Get-ADTConfig
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet; $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -218,11 +218,11 @@ function Start-ADTMsiProcess
             try
             {
                 # If the path matches a product code.
-                if (($pathIsProductCode = $Path -match (Get-ADTEnvironment).MSIProductCodeRegExPattern))
+                if (($pathIsProductCode = $Path -match (& $Script:CommandTable.'Get-ADTEnvironment').MSIProductCodeRegExPattern))
                 {
                     # Resolve the product code to a publisher, application name, and version.
-                    Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.'
-                    $productCodeNameVersion = Get-ADTInstalledApplication -ProductCode $Path -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | & $Script:CommandTable.'Select-Object' -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Resolving product code to a publisher, application name, and version.'
+                    $productCodeNameVersion = & $Script:CommandTable.'Get-ADTInstalledApplication' -ProductCode $Path -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | & $Script:CommandTable.'Select-Object' -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
 
                     # Build the log file name.
                     if (!$LogFileName)
@@ -231,11 +231,11 @@ function Start-ADTMsiProcess
                         {
                             if ($productCodeNameVersion.Publisher)
                             {
-                                (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
+                                (& $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
                             }
                             else
                             {
-                                (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
+                                (& $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
                             }
                         }
                         else
@@ -328,9 +328,9 @@ function Start-ADTMsiProcess
                 }
 
                 # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                if (!(Test-ADTCallerIsAdmin))
+                if (!(& $Script:CommandTable.'Test-ADTCallerIsAdmin'))
                 {
-                    $msiLogFile = $msiLogFile + '_' + (Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))
+                    $msiLogFile = $msiLogFile + '_' + (& $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name ([System.Environment]::UserName))
                 }
 
                 # Append ".log" to the MSI logfile path and enclose in quotes.
@@ -354,7 +354,7 @@ function Start-ADTMsiProcess
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Failed to find MSI file [$Path]." -Severity 3
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to find MSI file [$Path]." -Severity 3
                     $naerParams = @{
                         Exception = [System.IO.FileNotFoundException]::new("Failed to find MSI file [$Path].")
                         Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
@@ -362,7 +362,7 @@ function Start-ADTMsiProcess
                         TargetObject = $Path
                         RecommendedAction = "Please confirm the path of the MSI file and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
 
                 # Set the working directory of the MSI.
@@ -414,11 +414,11 @@ function Start-ADTMsiProcess
                     {
                         [Hashtable]$GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }
                         if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
-                        Get-ADTMsiTableProperty @GetMsiTablePropertySplat | & $Script:CommandTable.'Select-Object' -ExpandProperty ProductCode
+                        & $Script:CommandTable.'Get-ADTMsiTableProperty' @GetMsiTablePropertySplat | & $Script:CommandTable.'Select-Object' -ExpandProperty ProductCode
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..."
                     }
                 }
 
@@ -472,7 +472,7 @@ function Start-ADTMsiProcess
                 # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
                 $IsMsiInstalled = if ($MSIProductCode -and !$SkipMSIAlreadyInstalledCheck)
                 {
-                    !!(Get-ADTInstalledApplication -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes)
+                    !!(& $Script:CommandTable.'Get-ADTInstalledApplication' -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes)
                 }
                 else
                 {
@@ -482,13 +482,13 @@ function Start-ADTMsiProcess
                 # Bypass if we're installing and the MSI is already installed, otherwise proceed.
                 $ExecuteResults = if ($IsMsiInstalled -and ($Action -eq 'Install'))
                 {
-                    Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "The MSI is already installed on this system. Skipping action [$Action]..."
                     [PSADT.Types.ProcessResult]@{ ExitCode = 1638; StdOut = [System.String]::Empty; StdErr = [System.String]::Empty }
                 }
                 elseif ((!$IsMsiInstalled -and ($Action -eq 'Install')) -or $IsMsiInstalled)
                 {
-                    # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
-                    Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
+                    # Build the hashtable with the options that will be passed to & $Script:CommandTable.'Start-ADTProcess' using splatting.
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Executing MSI action [$Action]..."
                     $ExecuteProcessSplat = @{
                         Path = "$([System.Environment]::SystemDirectory)\msiexec.exe"
                         Parameters = $argsMSI
@@ -520,15 +520,15 @@ function Start-ADTMsiProcess
                         $ExecuteProcessSplat.Add('NoWait', $NoWait)
                     }
 
-                    # Call the Start-ADTProcess function.
-                    Start-ADTProcess @ExecuteProcessSplat
+                    # Call the & $Script:CommandTable.'Start-ADTProcess' function.
+                    & $Script:CommandTable.'Start-ADTProcess' @ExecuteProcessSplat
 
                     # Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs.
-                    Update-ADTDesktop
+                    & $Script:CommandTable.'Update-ADTDesktop'
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "The MSI is not installed on this system. Skipping action [$Action]..."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "The MSI is not installed on this system. Skipping action [$Action]..."
                 }
 
                 # Return the results if passing through.
@@ -544,12 +544,12 @@ function Start-ADTMsiProcess
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

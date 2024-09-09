@@ -75,8 +75,8 @@ function Show-ADTBalloonTip
     dynamicparam
     {
         # Initialise the module first if needed.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtConfig = Get-ADTConfig
+        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
+        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -96,7 +96,7 @@ function Show-ADTBalloonTip
     begin
     {
         # Initialise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
@@ -114,17 +114,17 @@ function Show-ADTBalloonTip
                 # Skip balloon if in silent mode, disabled in the config or presentation is detected.
                 if (!$adtConfig.UI.BalloonNotifications)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
                     return
                 }
                 if ($adtSession -and $adtSession.IsSilent())
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. BalloonTipText: $BalloonTipText"
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. BalloonTipText: $BalloonTipText"
                     return
                 }
-                if (Test-ADTPowerPoint)
+                if (& $Script:CommandTable.'Test-ADTPowerPoint')
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation Detected: $true]. BalloonTipText: $BalloonTipText"
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation Detected: $true]. BalloonTipText: $BalloonTipText"
                     return
                 }
 
@@ -138,12 +138,12 @@ function Show-ADTBalloonTip
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

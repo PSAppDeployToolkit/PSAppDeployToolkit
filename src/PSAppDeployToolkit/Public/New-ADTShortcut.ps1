@@ -79,7 +79,7 @@ function New-ADTShortcut
         [ValidateScript({
                 if (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url'))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not have the correct extension.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not have the correct extension.'))
                 }
                 return !!$_
             })]
@@ -124,7 +124,7 @@ function New-ADTShortcut
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -144,7 +144,7 @@ function New-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$Path] is not valid."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$Path] is not valid."
             return
         }
 
@@ -166,19 +166,19 @@ function New-ADTShortcut
                             TargetObject = $FullPath
                             RecommendedAction = "Please confirm the provided value and try again."
                         }
-                        throw (New-ADTErrorRecord @naerParams)
+                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                     }
                 }
                 elseif (!(& $Script:CommandTable.'Test-Path' -LiteralPath $PathDirectory -PathType Container))
                 {
                     try
                     {
-                        Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating shortcut directory [$PathDirectory]."
                         $null = & $Script:CommandTable.'New-Item' -LiteralPath $PathDirectory -ItemType Directory -Force
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to create shortcut directory [$PathDirectory].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
                         throw
                     }
                 }
@@ -186,12 +186,12 @@ function New-ADTShortcut
                 # Remove any pre-existing shortcut first.
                 if (& $Script:CommandTable.'Test-Path' -LiteralPath $FullPath -PathType Leaf)
                 {
-                    Write-ADTLogEntry -Message "The shortcut [$FullPath] already exists. Deleting the file..."
-                    Remove-ADTFile -LiteralPath $FullPath
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "The shortcut [$FullPath] already exists. Deleting the file..."
+                    & $Script:CommandTable.'Remove-ADTFile' -LiteralPath $FullPath
                 }
 
                 # Build out the shortcut.
-                Write-ADTLogEntry -Message "Creating shortcut [$FullPath]."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating shortcut [$FullPath]."
                 if ($Path -match '\.url$')
                 {
                     [String[]]$URLFile = '[InternetShortcut]', "URL=$TargetPath"
@@ -243,7 +243,7 @@ function New-ADTShortcut
                     # Set shortcut to run program as administrator.
                     if ($RunAsAdmin)
                     {
-                        Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Setting shortcut to run program as administrator.'
                         $fileBytes = [System.IO.FIle]::ReadAllBytes($FullPath)
                         $fileBytes[21] = $filebytes[21] -bor 32
                         [System.IO.FIle]::WriteAllBytes($FullPath, $fileBytes)
@@ -257,12 +257,12 @@ function New-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create shortcut [$Path]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create shortcut [$Path]."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

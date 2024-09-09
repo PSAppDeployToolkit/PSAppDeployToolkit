@@ -67,7 +67,7 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: (Get-ADTUserProfiles)
+Default value: (& $Script:CommandTable.'Get-ADTUserProfiles')
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

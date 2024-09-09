@@ -55,16 +55,16 @@ function Unblock-ADTAppExecution
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $uaaeiParams = @{}; if ($Tasks) { $uaaeiParams.Add('Tasks', $Tasks) }
     }
 
     process
     {
         # Bypass if no admin rights.
-        if (!(Test-ADTCallerIsAdmin))
+        if (!(& $Script:CommandTable.'Test-ADTCallerIsAdmin'))
         {
-            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)] is not admin."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)] is not admin."
             return
         }
 
@@ -73,7 +73,7 @@ function Unblock-ADTAppExecution
         {
             try
             {
-                Unblock-ADTAppExecutionInternal @uaaeiParams -Verbose 4>&1 | Write-ADTLogEntry
+                & $Script:CommandTable.'Unblock-ADTAppExecutionInternal' @uaaeiParams -Verbose 4>&1 | & $Script:CommandTable.'Write-ADTLogEntry'
             }
             catch
             {
@@ -82,12 +82,12 @@ function Unblock-ADTAppExecution
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

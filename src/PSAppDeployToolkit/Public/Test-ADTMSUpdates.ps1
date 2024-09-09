@@ -56,12 +56,12 @@ function Test-ADTMSUpdates
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
-        Write-ADTLogEntry -Message "Checking if Microsoft Update [$KbNumber] is installed."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking if Microsoft Update [$KbNumber] is installed."
         try
         {
             try
@@ -69,7 +69,7 @@ function Test-ADTMSUpdates
                 # Attempt to get the update via Get-HotFix first as it's cheap.
                 if (!($kbFound = !!(& $Script:CommandTable.'Get-HotFix' -Id $KbNumber -ErrorAction Ignore)))
                 {
-                    Write-ADTLogEntry -Message 'Unable to detect Windows update history via & $Script:CommandTable.'Get-Hotfix' cmdlet. Trying via COM object.'
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Unable to detect Windows update history via & $Script:CommandTable.'Get-Hotfix' cmdlet. Trying via COM object.'
                     $updateSearcher = (& $Script:CommandTable.'New-Object' -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
                     $updateSearcher.IncludePotentiallySupersededUpdates = $false
                     $updateSearcher.Online = $false
@@ -79,7 +79,7 @@ function Test-ADTMSUpdates
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message 'Unable to detect Windows Update history via COM object.'
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Unable to detect Windows Update history via COM object.'
                         return
                     }
                 }
@@ -87,10 +87,10 @@ function Test-ADTMSUpdates
                 # Return result.
                 if ($kbFound)
                 {
-                    Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is installed."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Microsoft Update [$KbNumber] is installed."
                     return $true
                 }
-                Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is not installed."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Microsoft Update [$KbNumber] is not installed."
                 return $false
             }
             catch
@@ -100,12 +100,12 @@ function Test-ADTMSUpdates
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed discovering Microsoft Update [$kbNumber]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed discovering Microsoft Update [$kbNumber]."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

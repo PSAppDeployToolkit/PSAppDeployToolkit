@@ -15,11 +15,11 @@ function Initialize-ADTModuleIfUnitialized
     )
 
     # Initialise the module if there's no session and it hasn't been previously initialised.
-    if (!($adtSession = if (Test-ADTSessionActive) { Get-ADTSession }) -and !(Test-ADTModuleInitialised))
+    if (!($adtSession = if (& $Script:CommandTable.'Test-ADTSessionActive') { & $Script:CommandTable.'Get-ADTSession' }) -and !(& $Script:CommandTable.'Test-ADTModuleInitialised'))
     {
         try
         {
-            Initialize-ADTModule
+            & $Script:CommandTable.'Initialize-ADTModule'
         }
         catch
         {

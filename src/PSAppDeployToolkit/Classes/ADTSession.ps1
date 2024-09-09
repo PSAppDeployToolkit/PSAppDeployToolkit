@@ -10,7 +10,7 @@ class ADTSession
     hidden [AllowEmptyCollection()][System.Collections.Hashtable]$ExtensionData = @{}
 
     # Internal variables that aren't for public access.
-    hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode = (Test-ADTNonNativeCaller)
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode = (& $Script:CommandTable.'Test-ADTNonNativeCaller')
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
     hidden [AllowEmptyCollection()][System.Collections.Generic.List[System.IO.FileInfo]]$MountedWimFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
@@ -93,7 +93,7 @@ class ADTSession
                 TargetType = $State
                 RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being $($State.ToLower()) twice."
             }
-            throw (New-ADTErrorRecord @naerParams)
+            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
         }
     }
 
@@ -119,7 +119,7 @@ class ADTSession
                         TargetType = 'Init()'
                         RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
                 if (!$Parameters.$_)
                 {
@@ -132,7 +132,7 @@ class ADTSession
                         TargetType = 'Init()'
                         RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
             }
         }
@@ -216,7 +216,7 @@ class ADTSession
         # Mount the WIM file and reset DirFiles to the mount point.
         $this.WriteZeroConfigDivider()
         $this.WriteLogEntry("Discovered Zero-Config WIM file [$wimFile].")
-        Mount-ADTWimFile -ImagePath $wimFile -Path ($this.DirFiles = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())) -Index 1 -InformationAction Ignore
+        & $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $wimFile -Path ($this.DirFiles = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())) -Index 1 -InformationAction Ignore
         $this.WriteLogEntry("Successfully mounted WIM file to [$($this.DirFiles)].")
         $this.WriteLogEntry("Using [$($this.DirFiles)] as the base DirFiles directory.")
     }
@@ -282,7 +282,7 @@ class ADTSession
 
         # Read the MSI and get the installation details.
         $gmtpParams = @{ Path = $this.DefaultMsiFile }; if ($this.DefaultMstFile) { $gmtpParams.Add('TransformPath', $this.DefaultMstFile) }
-        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File 6>$null
+        $msiProps = & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File 6>$null
 
         # Generate list of MSI executables for testing later on.
         if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { @{ Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_' } } } }))
@@ -291,7 +291,7 @@ class ADTSession
         }
 
         # Update our app variables with new values.
-        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property 6>$null
+        $msiProps = & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property 6>$null
         $this.WriteLogEntry("App Vendor [$($msiProps.Manufacturer)].")
         $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
         $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
@@ -324,12 +324,12 @@ class ADTSession
         }
 
         # Sanitize the application details, as they can cause issues in the script.
-        $this.AppVendor = Remove-ADTInvalidFileNameChars -Name $this.AppVendor
-        $this.AppName = Remove-ADTInvalidFileNameChars -Name $this.AppName
-        $this.AppVersion = Remove-ADTInvalidFileNameChars -Name $this.AppVersion
-        $this.AppArch = Remove-ADTInvalidFileNameChars -Name $this.AppArch
-        $this.AppLang = Remove-ADTInvalidFileNameChars -Name $this.AppLang
-        $this.AppRevision = Remove-ADTInvalidFileNameChars -Name $this.AppRevision
+        $this.AppVendor = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppVendor
+        $this.AppName = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppName
+        $this.AppVersion = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppVersion
+        $this.AppArch = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppArch
+        $this.AppLang = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppLang
+        $this.AppRevision = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppRevision
     }
 
     hidden [System.Void] SetInstallProperties([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
@@ -388,7 +388,7 @@ class ADTSession
         }
         else
         {
-            "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(Remove-ADTInvalidFileNameChars -Name $ADTEnv.envUserName).log"
+            "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(& $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $ADTEnv.envUserName).log"
         }
         $logFile = [System.IO.Path]::Combine($this.LogPath, $this.LogName)
 
@@ -430,7 +430,7 @@ class ADTSession
                 }
                 catch
                 {
-                    $this.WriteLogEntry("Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)", 3)
+                    $this.WriteLogEntry("Failed to rotate the log file [$($logFile)].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)", 3)
                 }
             }
         }
@@ -461,7 +461,7 @@ class ADTSession
         }
         if ($this.DeployAppScriptParameters -and $this.DeployAppScriptParameters.Count)
         {
-            $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | Resolve-ADTBoundParameters)]")
+            $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters')]")
         }
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module version is [$($ADTEnv.appDeployMainScriptVersion)]")
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module imported in [$($ADTData.Durations.ModuleImport.TotalSeconds)] seconds.")
@@ -624,7 +624,7 @@ class ADTSession
         }
 
         # Check deployment type (install/uninstall).
-        $this.WriteLogEntry("Deployment type is [$(($this.DeploymentTypeName = (Get-ADTStringTable).DeploymentType.($this.DeploymentType)))].")
+        $this.WriteLogEntry("Deployment type is [$(($this.DeploymentTypeName = (& $Script:CommandTable.'Get-ADTStringTable').DeploymentType.($this.DeploymentType)))].")
     }
 
     hidden [System.Void] TestDefaultMsi()
@@ -651,8 +651,8 @@ class ADTSession
                 RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
             }
             $this.WriteLogEntry($naerParams.Exception.Message, 3)
-            Show-ADTDialogBox -Text $naerParams.Exception.Message -Icon Stop
-            throw (New-ADTErrorRecord @naerParams)
+            & $Script:CommandTable.'Show-ADTDialogBox' -Text $naerParams.Exception.Message -Icon Stop
+            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
         }
     }
 
@@ -687,7 +687,7 @@ class ADTSession
 
     [System.String] GetDeploymentStatus()
     {
-        if (($this.ExitCode -eq ($adtConfig = Get-ADTConfig).UI.DefaultExitCode) -or ($this.ExitCode -eq $adtConfig.UI.DeferExitCode))
+        if (($this.ExitCode -eq ($adtConfig = & $Script:CommandTable.'Get-ADTConfig').UI.DefaultExitCode) -or ($this.ExitCode -eq $adtConfig.UI.DeferExitCode))
         {
             return 'FastRetry'
         }
@@ -708,9 +708,9 @@ class ADTSession
     hidden [System.Void] Open()
     {
         # Get the current environment and config.
-        $adtData = Get-ADTModuleData
-        $adtEnv = Get-ADTEnvironment
-        $adtConfig = Get-ADTConfig
+        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
+        $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
+        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
         # Ensure this session isn't being opened twice.
         $this.TestClassState('Opened')
@@ -735,7 +735,7 @@ class ADTSession
         # If terminal server mode was specified, change the installation mode to support it.
         if ($this.TerminalServerMode)
         {
-            Enable-ADTTerminalServerInstallMode
+            & $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'
         }
 
         # Change the install phase since we've finished initialising. This should get overwritten shortly.
@@ -783,7 +783,7 @@ class ADTSession
                 if ($this.RegKeyDeferHistory -and (& $Script:CommandTable.'Test-Path' -LiteralPath $this.RegKeyDeferHistory))
                 {
                     $this.WriteLogEntry('Removing deferral history...')
-                    Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
+                    & $Script:CommandTable.'Remove-ADTRegistryKey' -Key $this.RegKeyDeferHistory -Recurse
                 }
 
                 # Handle reboot prompts on successful script completion.
@@ -803,13 +803,13 @@ class ADTSession
         # Update the module's last tracked exit code.
         if ($this.ExitCode)
         {
-            (Get-ADTModuleData).LastExitCode = $this.ExitCode
+            (& $Script:CommandTable.'Get-ADTModuleData').LastExitCode = $this.ExitCode
         }
 
         # Unmount any stored WIM file entries.
         if ($this.MountedWimFiles.Count)
         {
-            $this.MountedWimFiles.Reverse(); Dismount-ADTWimFile -ImagePath $this.MountedWimFiles
+            $this.MountedWimFiles.Reverse(); & $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $this.MountedWimFiles
             $this.MountedWimFiles.Clear()
         }
 
@@ -819,7 +819,7 @@ class ADTSession
         $this.Closed = $true
 
         # Return early if we're not archiving log files.
-        if (!($adtConfig = Get-ADTConfig).Toolkit.CompressLogs)
+        if (!($adtConfig = & $Script:CommandTable.'Get-ADTConfig').Toolkit.CompressLogs)
         {
             return
         }
@@ -842,14 +842,14 @@ class ADTSession
         }
         catch
         {
-            $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)", 3)
+            $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)", 3)
         }
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage, [System.String]$LogType, [System.String]$LogFileDirectory, [System.String]$LogFileName)
     {
         # Get the current config.
-        $adtConfig = Get-ADTConfig
+        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
         # Perform early return checks before wasting time.
         if (($this.GetPropertyValue('DisableLogging') -and !$adtConfig.Toolkit.LogWriteToHost) -or ($DebugMessage -and !$adtConfig.Toolkit.LogDebugMessage))

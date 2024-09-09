@@ -81,7 +81,7 @@ function Convert-ADTRegistryPath
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -133,7 +133,7 @@ function Convert-ADTRegistryPath
                     }
                     elseif ($Logging)
                     {
-                        Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
                         return
                     }
                 }
@@ -148,11 +148,11 @@ function Convert-ADTRegistryPath
                         TargetObject = $Key
                         RecommendedAction = "Please confirm the supplied value is correct and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
                 if ($Logging)
                 {
-                    Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Return fully qualified registry key path [$Key]."
                 }
                 return $Key
             }
@@ -163,12 +163,12 @@ function Convert-ADTRegistryPath
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

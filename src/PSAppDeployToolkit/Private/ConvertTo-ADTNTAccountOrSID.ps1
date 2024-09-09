@@ -94,7 +94,7 @@ function ConvertTo-ADTNTAccountOrSID
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -104,7 +104,7 @@ function ConvertTo-ADTNTAccountOrSID
             SIDToNTAccount
             {
                 $msg = "the SID [$SID] to an NT Account name"
-                Write-ADTLogEntry -Message "Converting $msg."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Converting $msg."
 
                 try
                 {
@@ -112,14 +112,14 @@ function ConvertTo-ADTNTAccountOrSID
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 2
                 }
                 break
             }
             NTAccountToSID
             {
                 $msg = "the NT Account [$AccountName] to a SID"
-                Write-ADTLogEntry -Message "Converting $msg."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Converting $msg."
 
                 try
                 {
@@ -127,14 +127,14 @@ function ConvertTo-ADTNTAccountOrSID
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 2
                 }
                 break
             }
             WellKnownName
             {
                 $msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"
-                Write-ADTLogEntry -Message "Converting $msg."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Converting $msg."
 
                 # Get the SID for the root domain.
                 $DomainSid = if (!$LocalHost)
@@ -145,7 +145,7 @@ function ConvertTo-ADTNTAccountOrSID
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
                     }
                 }
 
@@ -161,7 +161,7 @@ function ConvertTo-ADTNTAccountOrSID
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
                 }
                 break
             }
@@ -170,6 +170,6 @@ function ConvertTo-ADTNTAccountOrSID
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

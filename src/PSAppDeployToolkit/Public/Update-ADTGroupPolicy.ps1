@@ -48,7 +48,7 @@ function Update-ADTGroupPolicy
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -61,7 +61,7 @@ function Update-ADTGroupPolicy
                 try
                 {
                     # Invoke gpupdate.exe and cache the results. An exit code of 0 is considered successful.
-                    Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(($msg = "Updating Group Policies for the $target"))."
                     $gpUpdateResult = cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
                     if (!$LASTEXITCODE)
                     {
@@ -69,7 +69,7 @@ function Update-ADTGroupPolicy
                     }
 
                     # If we're here, we had a bad exit code.
-                    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
                     $naerParams = @{
                         Exception = [System.ApplicationException]::new($msg)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
@@ -77,7 +77,7 @@ function Update-ADTGroupPolicy
                         TargetObject = $gpUpdateResult
                         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
                 catch
                 {
@@ -86,13 +86,13 @@ function Update-ADTGroupPolicy
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

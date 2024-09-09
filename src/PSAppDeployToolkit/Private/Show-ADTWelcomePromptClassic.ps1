@@ -76,13 +76,13 @@ function Show-ADTWelcomePromptClassic
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-                if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
+                if ($_ -gt (& $Script:CommandTable.'Get-ADTConfig').UI.DefaultTimeout)
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
                 }
                 return !!$_
             })]
-        [System.UInt32]$CloseAppsCountdown = $(if ((Get-ADTSession).ExtensionData.ContainsKey('CloseAppsCountdownGlobal')) { (Get-ADTSession).ExtensionData.CloseAppsCountdownGlobal }),
+        [System.UInt32]$CloseAppsCountdown = $(if ((& $Script:CommandTable.'Get-ADTSession').ExtensionData.ContainsKey('CloseAppsCountdownGlobal')) { (& $Script:CommandTable.'Get-ADTSession').ExtensionData.CloseAppsCountdownGlobal }),
 
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$DeferTimes,
@@ -102,9 +102,9 @@ function Show-ADTWelcomePromptClassic
     )
 
     # Perform initial setup.
-    $adtConfig = Get-ADTConfig
-    $adtStrings = Get-ADTStringTable
-    $adtSession = Get-ADTSession
+    $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+    $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
+    $adtSession = & $Script:CommandTable.'Get-ADTSession'
 
     # Initialise variables.
     $countdownTime = $startTime = [System.DateTime]::Now
@@ -116,14 +116,14 @@ function Show-ADTWelcomePromptClassic
     # Initial form layout: Close Applications
     if ($adtSession.ExtensionData.RunningProcessDescriptions)
     {
-        Write-ADTLogEntry -Message "Prompting the user to close application(s) [$($adtSession.ExtensionData.RunningProcessDescriptions -join ',')]..."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Prompting the user to close application(s) [$($adtSession.ExtensionData.RunningProcessDescriptions -join ',')]..."
         $showCloseApps = $true
     }
 
     # Initial form layout: Allow Deferral
     if ($AllowDefer -and (($DeferTimes -ge 0) -or $DeferDeadline))
     {
-        Write-ADTLogEntry -Message 'The user has the option to defer.'
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'The user has the option to defer.'
         $showDeference = $true
 
         # Remove the Z from universal sortable date time format, otherwise it could be converted to a different time zone.
@@ -138,7 +138,7 @@ function Show-ADTWelcomePromptClassic
     {
         if ($CloseAppsCountdown -gt 0)
         {
-            Write-ADTLogEntry -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining."
             $showCountdown = $true
         }
     }
@@ -150,14 +150,14 @@ function Show-ADTWelcomePromptClassic
     # If 'force close apps countdown' was specified, enable that feature.
     if ($ForceCloseAppsCountdown)
     {
-        Write-ADTLogEntry -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Close applications countdown has [$closeAppsCountdown] seconds remaining."
         $showCountdown = $true
     }
 
     # If 'force countdown' was specified, enable that feature.
     if ($ForceCountdown)
     {
-        Write-ADTLogEntry -Message "Countdown has [$closeAppsCountdown] seconds remaining."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Countdown has [$closeAppsCountdown] seconds remaining."
         $showCountdown = $true
     }
 
@@ -184,12 +184,12 @@ function Show-ADTWelcomePromptClassic
         # Disable the X button.
         try
         {
-            Disable-ADTWindowCloseButton -WindowHandle $formWelcome.Handle
+            & $Script:CommandTable.'Disable-ADTWindowCloseButton' -WindowHandle $formWelcome.Handle
         }
         catch
         {
             # Not a terminating error if we can't disable the button. Just disable the Control Box instead
-            Write-ADTLogEntry 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
+            & $Script:CommandTable.'Write-ADTLogEntry' 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
             $formWelcome.ControlBox = $false
         }
 
@@ -223,12 +223,12 @@ function Show-ADTWelcomePromptClassic
             {
                 if ($forceCountdown -eq $true)
                 {
-                    Write-ADTLogEntry -Message 'Countdown timer has elapsed. Force continue.'
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Countdown timer has elapsed. Force continue.'
                     $buttonContinue.PerformClick()
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message 'Close application(s) countdown timer has elapsed. Force closing application(s).'
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Close application(s) countdown timer has elapsed. Force closing application(s).'
                     if ($buttonCloseApps.CanFocus)
                     {
                         $buttonCloseApps.PerformClick()
@@ -261,7 +261,7 @@ function Show-ADTWelcomePromptClassic
     }
     $timerRunningProcesses_Tick = {
         # Grab current list of running processes.
-        $dynamicRunningProcesses = if ($ProcessObjects) { $ProcessObjects | Get-ADTRunningProcesses -DisableLogging }
+        $dynamicRunningProcesses = if ($ProcessObjects) { $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -DisableLogging }
         $dynamicRunningProcessDescriptions = $dynamicRunningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
         $previousRunningProcessDescriptions = $adtSession.ExtensionData.RunningProcessDescriptions
 
@@ -272,7 +272,7 @@ function Show-ADTWelcomePromptClassic
             $listboxCloseApps.Items.Clear()
             if (($adtSession.ExtensionData.RunningProcessDescriptions = $dynamicRunningProcessDescriptions))
             {
-                Write-ADTLogEntry -Message "The running processes have changed. Updating the apps to close: [$($adtSession.ExtensionData.RunningProcessDescriptions -join ',')]..."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "The running processes have changed. Updating the apps to close: [$($adtSession.ExtensionData.RunningProcessDescriptions -join ',')]..."
                 $listboxCloseApps.Items.AddRange($adtSession.ExtensionData.RunningProcessDescriptions)
             }
         }
@@ -282,14 +282,14 @@ function Show-ADTWelcomePromptClassic
         {
             if (!$dynamicRunningProcesses)
             {
-                Write-ADTLogEntry -Message 'Previously detected running processes are no longer running.'
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Previously detected running processes are no longer running.'
                 $formWelcome.Dispose()
             }
         }
         elseif ($dynamicRunningProcesses)
         {
             # If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
-            Write-ADTLogEntry -Message 'New running processes detected. Updating the form to prompt to close the running applications.'
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'New running processes detected. Updating the form to prompt to close the running applications.'
             $formWelcome.Dispose()
         }
     }
@@ -615,7 +615,7 @@ function Show-ADTWelcomePromptClassic
     # Minimize all other windows.
     if (!$NoMinimizeWindows)
     {
-        $null = (Get-ADTEnvironment).ShellApp.MinimizeAll()
+        $null = (& $Script:CommandTable.'Get-ADTEnvironment').ShellApp.MinimizeAll()
     }
 
     # Run the form and store the result.

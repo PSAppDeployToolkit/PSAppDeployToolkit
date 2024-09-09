@@ -92,18 +92,18 @@ function Get-ADTWindowTitle
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         if ($GetAllWindowTitles)
         {
-            Write-ADTLogEntry -Message 'Finding all open window title(s).' -DebugMessage:$DisableFunctionLogging
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Finding all open window title(s).' -DebugMessage:$DisableFunctionLogging
         }
         else
         {
-            Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching." -DebugMessage:$DisableFunctionLogging
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Finding open window title(s) [$WindowTitle] using regex matching." -DebugMessage:$DisableFunctionLogging
         }
 
         try
@@ -165,12 +165,12 @@ function Get-ADTWindowTitle
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to get requested window title(s).`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3 -DebugMessage:$DisableFunctionLogging
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to get requested window title(s).`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3 -DebugMessage:$DisableFunctionLogging
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

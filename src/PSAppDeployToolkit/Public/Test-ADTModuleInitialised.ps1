@@ -40,5 +40,5 @@ function Test-ADTModuleInitialised
         https://psappdeploytoolkit.com
     #>
 
-    return (Get-ADTModuleData).Initialised
+    return (& $Script:CommandTable.'Get-ADTModuleData').Initialised
 }

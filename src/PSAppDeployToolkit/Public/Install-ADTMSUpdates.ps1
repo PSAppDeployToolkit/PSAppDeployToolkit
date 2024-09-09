@@ -54,14 +54,14 @@ function Install-ADTMSUpdates
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $kbPattern = '(?i)kb\d{6,8}'
     }
 
     process
     {
         # Get all hotfixes and install if required.
-        Write-ADTLogEntry -Message "Recursively installing all Microsoft Updates in directory [$Directory]."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Recursively installing all Microsoft Updates in directory [$Directory]."
         foreach ($file in (& $Script:CommandTable.'Get-ChildItem' -LiteralPath $Directory -Recurse -Include ('*.exe', '*.msu', '*.msp')))
         {
             try
@@ -73,43 +73,43 @@ function Install-ADTMSUpdates
                         # Handle older redistributables (ie, VC++ 2005)
                         [System.Version]$redistVersion = $file.VersionInfo.ProductVersion
                         [System.String]$redistDescription = $file.VersionInfo.FileDescription
-                        Write-ADTLogEntry -Message "Installing [$redistDescription $redistVersion]..."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Installing [$redistDescription $redistVersion]..."
                         if ($redistDescription -match 'Win32 Cabinet Self-Extractor')
                         {
-                            Start-ADTProcess -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                            & $Script:CommandTable.'Start-ADTProcess' -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
                         else
                         {
-                            Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                            & $Script:CommandTable.'Start-ADTProcess' -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
                     }
                     elseif ($kbNumber = [System.Text.RegularExpressions.Regex]::Match($file.Name, $kbPattern).ToString())
                     {
                         # Check to see whether the KB is already installed
-                        if (Test-ADTMSUpdates -KBNumber $kbNumber)
+                        if (& $Script:CommandTable.'Test-ADTMSUpdates' -KBNumber $kbNumber)
                         {
-                            Write-ADTLogEntry -Message "KB Number [$kbNumber] is already installed. Continue..."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "KB Number [$kbNumber] is already installed. Continue..."
                             continue
                         }
-                        Write-ADTLogEntry -Message "KB Number [$KBNumber] was not detected and will be installed."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "KB Number [$KBNumber] was not detected and will be installed."
                         switch ($file.Extension)
                         {
                             '.exe'
                             {
                                 # Installation type for executables (i.e., Microsoft Office Updates).
-                                Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                                & $Script:CommandTable.'Start-ADTProcess' -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                                 break
                             }
                             '.msu'
                             {
                                 # Installation type for Windows updates using Windows Update Standalone Installer.
-                                Start-ADTProcess -Path "$([System.Environment]::SystemDirectory)\wusa.exe" -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                                & $Script:CommandTable.'Start-ADTProcess' -Path "$([System.Environment]::SystemDirectory)\wusa.exe" -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                                 break
                             }
                             '.msp'
                             {
                                 # Installation type for Windows Installer Patch
-                                Start-ADTMsiProcess -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
+                                & $Script:CommandTable.'Start-ADTMsiProcess' -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
                                 break
                             }
                         }
@@ -122,13 +122,13 @@ function Install-ADTMSUpdates
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

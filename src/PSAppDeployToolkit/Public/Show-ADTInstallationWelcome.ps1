@@ -218,27 +218,27 @@ function Show-ADTInstallationWelcome
 
             if ($PSBoundParameters.ContainsKey('DeferTimesRemaining'))
             {
-                Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
-                Set-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ErrorAction Ignore
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
+                & $Script:CommandTable.'Set-ADTRegistryKey' -Key $adtSession.RegKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ErrorAction Ignore
             }
             if (![System.String]::IsNullOrWhiteSpace($DeferDeadline))
             {
-                Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
-                Set-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline -ErrorAction Ignore
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
+                & $Script:CommandTable.'Set-ADTRegistryKey' -Key $adtSession.RegKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline -ErrorAction Ignore
             }
         }
 
         try
         {
-            $adtEnv = Get-ADTEnvironment
-            $adtConfig = Get-ADTConfig
-            $adtSession = Get-ADTSession
+            $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
+            $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+            $adtSession = & $Script:CommandTable.'Get-ADTSession'
         }
         catch
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -262,7 +262,7 @@ function Show-ADTInstallationWelcome
                 # Check disk space requirements if specified
                 if ($CheckDiskSpace)
                 {
-                    Write-ADTLogEntry -Message 'Evaluating disk space requirements.'
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Evaluating disk space requirements.'
                     if (!$RequiredDiskSpace)
                     {
                         try
@@ -273,7 +273,7 @@ function Show-ADTInstallationWelcome
                         }
                         catch
                         {
-                            Write-ADTLogEntry -Message "Failed to calculate disk space requirement from source files.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to calculate disk space requirement from source files.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
                         }
                         finally
                         {
@@ -287,16 +287,16 @@ function Show-ADTInstallationWelcome
                             }
                         }
                     }
-                    if (($freeDiskSpace = Get-ADTFreeDiskSpace) -lt $RequiredDiskSpace)
+                    if (($freeDiskSpace = & $Script:CommandTable.'Get-ADTFreeDiskSpace') -lt $RequiredDiskSpace)
                     {
-                        Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
                         if (!$Silent)
                         {
-                            Show-ADTInstallationPrompt -Message ((Get-ADTStringTable).DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
+                            & $Script:CommandTable.'Show-ADTInstallationPrompt' -Message ((& $Script:CommandTable.'Get-ADTStringTable').DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
                         }
-                        Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                        & $Script:CommandTable.'Close-ADTSession' -ExitCode $adtConfig.UI.DefaultExitCode
                     }
-                    Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.'
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Successfully passed minimum disk space requirement check.'
                 }
 
                 # Check Deferral history and calculate remaining deferrals.
@@ -307,8 +307,8 @@ function Show-ADTInstallationWelcome
                     $AllowDefer = $true
 
                     # Get the deferral history from the registry.
-                    Write-ADTLogEntry -Message 'Getting deferral history...'
-                    $deferHistory = Get-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Getting deferral history...'
+                    $deferHistory = & $Script:CommandTable.'Get-ADTRegistryKey' -Key $adtSession.RegKeyDeferHistory
                     $deferHistoryTimes = $deferHistory | & $Script:CommandTable.'Select-Object' -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
                     $deferHistoryDeadline = $deferHistory | & $Script:CommandTable.'Select-Object' -ExpandProperty DeferDeadline -ErrorAction Ignore
 
@@ -320,18 +320,18 @@ function Show-ADTInstallationWelcome
                     {
                         $DeferTimes = if ($deferHistoryTimes -ge 0)
                         {
-                            Write-ADTLogEntry -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
                             $deferHistory.DeferTimesRemaining - 1
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "The user has [$DeferTimes] deferrals remaining."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "The user has [$DeferTimes] deferrals remaining."
                             $DeferTimes - 1
                         }
 
                         if ($DeferTimes -lt 0)
                         {
-                            Write-ADTLogEntry -Message 'Deferral has expired.'
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Deferral has expired.'
                             $DeferTimes = 0
                             $AllowDefer = $false
                         }
@@ -341,18 +341,18 @@ function Show-ADTInstallationWelcome
                     {
                         $deferDeadlineUniversal = if ($deferHistoryDeadline)
                         {
-                            Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
-                            Get-ADTUniversalDate -DateTime $deferHistoryDeadline
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
+                            & $Script:CommandTable.'Get-ADTUniversalDate' -DateTime $deferHistoryDeadline
                         }
                         else
                         {
-                            Get-ADTUniversalDate -DateTime ([System.DateTime]::Now.AddDays($DeferDays).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
+                            & $Script:CommandTable.'Get-ADTUniversalDate' -DateTime ([System.DateTime]::Now.AddDays($DeferDays).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
                         }
-                        Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
 
-                        if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
+                        if ((& $Script:CommandTable.'Get-ADTUniversalDate') -gt $deferDeadlineUniversal)
                         {
-                            Write-ADTLogEntry -Message 'Deferral has expired.'
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Deferral has expired.'
                             $AllowDefer = $false
                         }
                     }
@@ -362,18 +362,18 @@ function Show-ADTInstallationWelcome
                         # Validate date.
                         try
                         {
-                            $deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
-                            Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
+                            $deferDeadlineUniversal = & $Script:CommandTable.'Get-ADTUniversalDate' -DateTime $DeferDeadline
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "The user has until [$deferDeadlineUniversal] remaining."
 
-                            if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
+                            if ((& $Script:CommandTable.'Get-ADTUniversalDate') -gt $deferDeadlineUniversal)
                             {
-                                Write-ADTLogEntry -Message 'Deferral has expired.'
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Deferral has expired.'
                                 $AllowDefer = $false
                             }
                         }
                         catch
                         {
-                            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'."
+                            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'."
                         }
                     }
                 }
@@ -398,7 +398,7 @@ function Show-ADTInstallationWelcome
                     $adtSession.ExtensionData.CloseAppsCountdownGlobal = $CloseAppsCountdown
                     $promptResult = $null
 
-                    while (($runningProcesses = if ($ProcessObjects) { $ProcessObjects | Get-ADTRunningProcesses }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningProcesses = if ($ProcessObjects) { $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
                         $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
@@ -445,7 +445,7 @@ function Show-ADTInstallationWelcome
                         if ($promptResult -eq 'Continue')
                         {
                             # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
-                            Write-ADTLogEntry -Message 'The user selected to continue...'
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'The user selected to continue...'
                             if (!$runningProcesses)
                             {
                                 # Break the while loop if there are no processes to close and the user has clicked OK to continue.
@@ -456,17 +456,17 @@ function Show-ADTInstallationWelcome
                         elseif ($promptResult -eq 'Close')
                         {
                             # Force the applications to close.
-                            Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'The user selected to force the application(s) to close...'
                             if ($PromptToSave -and $adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive)
                             {
-                                Write-ADTLogEntry -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2
                             }
 
                             # Update the process list right before closing, in case it changed.
-                            $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -DisableFunctionLogging
+                            $AllOpenWindows = & $Script:CommandTable.'Get-ADTWindowTitle' -GetAllWindowTitles -DisableFunctionLogging
                             $PromptToSaveTimeout = & $Script:CommandTable.'New-TimeSpan' -Seconds $adtConfig.UI.PromptToSaveTimeout
                             $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
-                            foreach ($runningProcess in ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
+                            foreach ($runningProcess in ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses'))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
                                 if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & { process { if ($_.ParentProcess -eq $runningProcess.ProcessName) { return $_ } } }) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
@@ -475,11 +475,11 @@ function Show-ADTInstallationWelcome
                                     {
                                         try
                                         {
-                                            Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
+                                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
                                             $null = [PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
                                             if (!$runningProcess.CloseMainWindow())
                                             {
-                                                Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
+                                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
                                             }
                                             else
                                             {
@@ -497,17 +497,17 @@ function Show-ADTInstallationWelcome
 
                                                 if ($IsWindowOpen)
                                                 {
-                                                    Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
+                                                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
                                                 }
                                                 else
                                                 {
-                                                    Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed."
+                                                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed."
                                                 }
                                             }
                                         }
                                         catch
                                         {
-                                            Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
                                         }
                                         finally
                                         {
@@ -517,22 +517,22 @@ function Show-ADTInstallationWelcome
                                 }
                                 else
                                 {
-                                    Write-ADTLogEntry -Message "Stopping process $($runningProcess.ProcessName)..."
+                                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Stopping process $($runningProcess.ProcessName)..."
                                     & $Script:CommandTable.'Stop-Process' -Name $runningProcess.ProcessName -Force -ErrorAction Ignore
                                 }
                             }
 
-                            if ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses -DisableLogging)
+                            if ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -DisableLogging)
                             {
                                 # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
-                                Write-ADTLogEntry -Message 'Sleeping for 2 seconds because the processes are still not closed...'
+                                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Sleeping for 2 seconds because the processes are still not closed...'
                                 [System.Threading.Thread]::Sleep(2000)
                             }
                         }
                         elseif ($promptResult -eq 'Timeout')
                         {
                             # Stop the script (if not actioned before the timeout value).
-                            Write-ADTLogEntry -Message 'Installation not actioned before the timeout value.'
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Installation not actioned before the timeout value.'
                             $BlockExecution = $false
                             if (($DeferTimes -ge 0) -or $deferDeadlineUniversal)
                             {
@@ -555,26 +555,26 @@ function Show-ADTInstallationWelcome
 
                             # Restore minimized windows.
                             $null = $adtEnv.ShellApp.UndoMinimizeAll()
-                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                            & $Script:CommandTable.'Close-ADTSession' -ExitCode $adtConfig.UI.DefaultExitCode
                         }
                         elseif ($promptResult -eq 'Defer')
                         {
                             #  Stop the script (user chose to defer)
-                            Write-ADTLogEntry -Message 'Installation deferred by the user.'
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Installation deferred by the user.'
                             $BlockExecution = $false
                             Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 
                             # Restore minimized windows.
                             $null = $adtEnv.ShellApp.UndoMinimizeAll()
-                            Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
+                            & $Script:CommandTable.'Close-ADTSession' -ExitCode $adtConfig.UI.DeferExitCode
                         }
                     }
                 }
 
                 # Force the processes to close silently, without prompting the user.
-                if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = $ProcessObjects | Get-ADTRunningProcesses))
+                if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses'))
                 {
-                    Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique) -join ',')] without prompting user."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique) -join ',')] without prompting user."
                     $runningProcesses.ProcessName | & $Script:CommandTable.'Stop-Process' -Force -ErrorAction Ignore
                     [System.Threading.Thread]::Sleep(2000)
                 }
@@ -582,8 +582,8 @@ function Show-ADTInstallationWelcome
                 # If block execution switch is true, call the function to block execution of these processes.
                 if ($BlockExecution -and $ProcessObjects)
                 {
-                    Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
-                    Block-ADTAppExecution -ProcessName $ProcessObjects.Name
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message '[-BlockExecution] parameter specified.'
+                    & $Script:CommandTable.'Block-ADTAppExecution' -ProcessName $ProcessObjects.Name
                 }
             }
             catch
@@ -593,12 +593,12 @@ function Show-ADTInstallationWelcome
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

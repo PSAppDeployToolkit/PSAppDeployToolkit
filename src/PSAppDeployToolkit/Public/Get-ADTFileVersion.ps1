@@ -58,7 +58,7 @@ function Get-ADTFileVersion
         [ValidateScript({
                 if (!$_.VersionInfo -or (!$_.VersionInfo.FileVersion -and !$_.VersionInfo.ProductVersion))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The file does not exist or does not have any version info.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The file does not exist or does not have any version info.'))
                 }
                 return !!$_.VersionInfo
             })]
@@ -70,22 +70,22 @@ function Get-ADTFileVersion
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         if ($ProductVersion)
         {
-            Write-ADTLogEntry -Message "Product version is [$($File.VersionInfo.ProductVersion)]."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Product version is [$($File.VersionInfo.ProductVersion)]."
             return $File.VersionInfo.ProductVersion.Trim()
         }
-        Write-ADTLogEntry -Message "File version is [$($File.VersionInfo.FileVersion)]."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "File version is [$($File.VersionInfo.FileVersion)]."
         return $File.VersionInfo.FileVersion.Trim()
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

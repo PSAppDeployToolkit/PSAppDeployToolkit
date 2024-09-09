@@ -93,8 +93,8 @@ function Show-ADTBalloonTipFluent
     }
 
     # Initialise variables.
-    $adtEnv = Get-ADTEnvironment
-    $adtConfig = Get-ADTConfig
+    $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
+    $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
     # Build out parameters for internal worker function.
     $natnParams = [ordered]@{
@@ -106,13 +106,13 @@ function Show-ADTBalloonTipFluent
         ToastText = $BalloonTipText
     }
 
-    # If we're running as the active user, display directly; otherwise, run via Execute-ProcessAsUser.
+    # If we're running as the active user, display directly; otherwise, run via & $Script:CommandTable.'Execute-ProcessAsUser'.
     if ($adtEnv.ProcessNTAccount -ne $adtEnv.runAsActiveUser.NTAccount)
     {
-        Write-ADTLogEntry -Message "Displaying toast notification with message [$BalloonTipText] using Execute-ProcessAsUser."
-        Execute-ProcessAsUser -Path $adtEnv.envPSProcessPath -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {${Function:New-ADTToastNotification}} $(($natnParams | Resolve-ADTBoundParameters).Replace('"', '\"'))")" -Wait -RunLevel LeastPrivilege
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying toast notification with message [$BalloonTipText] using & $Script:CommandTable.'Execute-ProcessAsUser'."
+        & $Script:CommandTable.'Execute-ProcessAsUser' -Path $adtEnv.envPSProcessPath -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "& {${Function:New-ADTToastNotification}} $(($natnParams | & $Script:CommandTable.'Resolve-ADTBoundParameters').Replace('"', '\"'))")" -Wait -RunLevel LeastPrivilege
         return
     }
-    Write-ADTLogEntry -Message "Displaying toast notification with message [$BalloonTipText]."
+    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying toast notification with message [$BalloonTipText]."
     New-ADTToastNotification @natnParams
 }

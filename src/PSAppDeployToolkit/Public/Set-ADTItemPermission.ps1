@@ -94,7 +94,7 @@ function Set-ADTItemPermission
         [ValidateScript({
                 if (!(& $Script:CommandTable.'Test-Path' -Path $_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
                 return !!$_
             })]
@@ -135,7 +135,7 @@ function Set-ADTItemPermission
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -145,23 +145,23 @@ function Set-ADTItemPermission
             try
             {
                 # Test elevated permissions.
-                if (!(Test-ADTCallerIsAdmin))
+                if (!(& $Script:CommandTable.'Test-ADTCallerIsAdmin'))
                 {
-                    Write-ADTLogEntry -Message 'Unable to use the function [Set-ADTItemPermission] without elevated permissions.' -Severity 3
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Unable to use the function [Set-ADTItemPermission] without elevated permissions.' -Severity 3
                     $naerParams = @{
                         Exception = [System.UnauthorizedAccessException]::new('Unable to use the function [Set-ADTItemPermission] without elevated permissions.')
                         Category = [System.Management.Automation.ErrorCategory]::PermissionDenied
                         ErrorId = 'CallerNotLocalAdmin'
                         RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
 
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
                 {
                     ($Acl = & $Script:CommandTable.'Get-Acl' -Path $Path).SetAccessRuleProtection($false, $true)
-                    Write-ADTLogEntry -Message "Enabling Inheritance on path [$Path]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Enabling Inheritance on path [$Path]."
                     $null = & $Script:CommandTable.'Set-Acl' -Path $Path -AclObject $Acl
                     return
                 }
@@ -197,11 +197,11 @@ function Set-ADTItemPermission
                             try
                             {
                                 # Translate the SID.
-                                ConvertTo-ADTNTAccountOrSID -SID ($sid = $_.Remove(0, 1))
+                                & $Script:CommandTable.'ConvertTo-ADTNTAccountOrSID' -SID ($sid = $_.Remove(0, 1))
                             }
                             catch
                             {
-                                Write-ADTLogEntry "Failed to translate SID [$sid]. Skipping..." -Severity 2
+                                & $Script:CommandTable.'Write-ADTLogEntry' "Failed to translate SID [$sid]. Skipping..." -Severity 2
                                 continue
                             }
                         }
@@ -211,7 +211,7 @@ function Set-ADTItemPermission
                         }
 
                         # Set/Add/Remove/Replace permissions and log the changes.
-                        Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
                         $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
                     }
                 }
@@ -226,12 +226,12 @@ function Set-ADTItemPermission
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

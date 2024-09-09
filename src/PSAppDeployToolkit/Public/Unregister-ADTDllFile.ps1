@@ -50,7 +50,7 @@ function Unregister-ADTDllFile
         [ValidateScript({
                 if (![System.IO.File]::Exists($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
                 }
                 return !!$_
             })]
@@ -59,14 +59,14 @@ function Unregister-ADTDllFile
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         try
         {
-            Invoke-ADTDllFileAction @PSBoundParameters -DLLAction Unregister
+            & $Script:CommandTable.'Invoke-ADTDllFileAction' @PSBoundParameters -DLLAction Unregister
         }
         catch
         {
@@ -76,6 +76,6 @@ function Unregister-ADTDllFile
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

@@ -54,7 +54,7 @@ function Add-ADTSessionFinishingCallback
     # Send it off to the backend function.
     try
     {
-        Invoke-ADTSessionCallbackOperation -Type Finishing -Action Add @PSBoundParameters
+        & $Script:CommandTable.'Invoke-ADTSessionCallbackOperation' -Type Finishing -Action Add @PSBoundParameters
     }
     catch
     {

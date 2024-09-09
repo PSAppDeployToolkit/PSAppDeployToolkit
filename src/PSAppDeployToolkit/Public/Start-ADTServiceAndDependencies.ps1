@@ -60,7 +60,7 @@ function Start-ADTServiceAndDependencies
         [ValidateScript({
                 if (!$_.Name)
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
@@ -79,7 +79,7 @@ function Start-ADTServiceAndDependencies
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -88,7 +88,7 @@ function Start-ADTServiceAndDependencies
         {
             try
             {
-                Invoke-ADTServiceAndDependencyOperation -Operation Start @PSBoundParameters
+                & $Script:CommandTable.'Invoke-ADTServiceAndDependencyOperation' -Operation Start @PSBoundParameters
             }
             catch
             {
@@ -97,12 +97,12 @@ function Start-ADTServiceAndDependencies
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to start the service [$($Service.Name)]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to start the service [$($Service.Name)]."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

@@ -58,7 +58,7 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: (Get-ADTRunAsActiveUser).NTAccount
+Default value: (& $Script:CommandTable.'Get-ADTRunAsActiveUser').NTAccount
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

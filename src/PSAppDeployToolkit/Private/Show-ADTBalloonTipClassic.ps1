@@ -73,10 +73,10 @@ function Show-ADTBalloonTipClassic
         BalloonTipTitle = $BalloonTipTitle
         BalloonTipIcon = $BalloonTipIcon
         BalloonTipTime = $BalloonTipTime
-        TrayIcon = (Get-ADTConfig).Assets.Icon
+        TrayIcon = (& $Script:CommandTable.'Get-ADTConfig').Assets.Icon
     }
 
     # Create in an asynchronous process so that disposal is managed for us.
-    Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-    Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {${Function:New-ADTBalloonTip}} $(($nabtParams | Resolve-ADTBoundParameters).Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
+    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying balloon tip notification with message [$BalloonTipText]."
+    & $Script:CommandTable.'Start-ADTProcess' -Path (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "& {${Function:New-ADTBalloonTip}} $(($nabtParams | & $Script:CommandTable.'Resolve-ADTBoundParameters').Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
 }

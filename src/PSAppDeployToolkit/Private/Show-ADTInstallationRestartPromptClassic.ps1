@@ -31,8 +31,8 @@ function Show-ADTInstallationRestartPromptClassic
     )
 
     # Initialise variables.
-    $adtConfig = Get-ADTConfig
-    $adtStrings = Get-ADTStringTable
+    $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+    $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
 
     # Define starting counters.
     $startTime = [System.DateTime]::Now
@@ -48,12 +48,12 @@ function Show-ADTInstallationRestartPromptClassic
         # Disable the X button.
         try
         {
-            Disable-ADTWindowCloseButton -WindowHandle $formRestart.Handle
+            & $Script:CommandTable.'Disable-ADTWindowCloseButton' -WindowHandle $formRestart.Handle
         }
         catch
         {
             # Not a terminating error if we can't disable the button. Just disable the Control Box instead
-            Write-ADTLogEntry 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
+            & $Script:CommandTable.'Write-ADTLogEntry' 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
             $formRestart.ControlBox = $false
         }
 
@@ -95,7 +95,7 @@ function Show-ADTInstallationRestartPromptClassic
         }
     }
     $buttonRestartNow_Click = {
-        Write-ADTLogEntry -Message 'Forcefully restarting the computer...'
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Forcefully restarting the computer...'
         & $Script:CommandTable.'Restart-Computer' -Force
     }
     $timerCountdown_Tick = {
@@ -301,11 +301,11 @@ function Show-ADTInstallationRestartPromptClassic
     # Show the Form.
     if ($NoCountdown)
     {
-        Write-ADTLogEntry -Message 'Displaying restart prompt with no countdown.'
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Displaying restart prompt with no countdown.'
     }
     else
     {
-        Write-ADTLogEntry -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."
     }
     return $formRestart.ShowDialog()
 }

@@ -62,38 +62,38 @@ function Set-ADTMsiProperty
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
-        Write-ADTLogEntry -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
         try
         {
             try
             {
                 # Open the requested table view from the database.
-                $View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
-                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
+                $View = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $DataBase -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
+                $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Execute
 
                 # Retrieve the requested property from the requested table and close off the view.
                 # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                $Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
-                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @()
+                $Record = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Fetch
+                $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Close -ArgumentList @()
                 $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
 
                 # Set the MSI property.
                 $View = if ($Record)
                 {
                     # If the property already exists, then create the view for updating the property.
-                    Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
+                    & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $DataBase -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
                 }
                 else
                 {
                     # If property does not exist, then create view for inserting the property.
-                    Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
+                    & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $DataBase -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
                 }
-                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
+                $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Execute
             }
             catch
             {
@@ -102,7 +102,7 @@ function Set-ADTMsiProperty
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
         }
         finally
         {
@@ -110,7 +110,7 @@ function Set-ADTMsiProperty
             {
                 if (& $Script:CommandTable.'Test-Path' -LiteralPath Microsoft.PowerShell.Core\Variable::View)
                 {
-                    Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @()
+                    & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Close -ArgumentList @()
                     [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
                 }
             }
@@ -123,6 +123,6 @@ function Set-ADTMsiProperty
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

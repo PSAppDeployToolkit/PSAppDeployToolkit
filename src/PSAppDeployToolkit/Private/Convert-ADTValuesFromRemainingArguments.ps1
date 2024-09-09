@@ -74,7 +74,7 @@ function Convert-ADTValuesFromRemainingArguments
             TargetObject = $RemainingArguments
             RecommendedAction = "Please ensure that only PowerShell-style arguments are provided and try again."
         }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
     }
 
     # Return dictionary, even if its empty to match $PSBoundParameters API.

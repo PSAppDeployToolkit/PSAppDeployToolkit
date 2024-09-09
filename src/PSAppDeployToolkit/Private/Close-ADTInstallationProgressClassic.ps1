@@ -11,7 +11,7 @@ function Close-ADTInstallationProgressClassic
     {
         if (!$Script:Dialogs.Classic.ProgressWindow.Invocation.IsCompleted)
         {
-            Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Closing the installation progress dialog.'
             $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Dispatcher.Invoke({ $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Close() }, [System.Windows.Threading.DispatcherPriority]::Send)
             while (!$Script:Dialogs.Classic.ProgressWindow.Invocation.IsCompleted) {}
         }
@@ -21,7 +21,7 @@ function Close-ADTInstallationProgressClassic
     # End the PowerShell instance if it's invoked.
     if ($Script:Dialogs.Classic.ProgressWindow.Invocation)
     {
-        Write-ADTLogEntry -Message "Closing the installation progress dialog's invocation."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Closing the installation progress dialog's invocation."
         $null = $Script:Dialogs.Classic.ProgressWindow.PowerShell.EndInvoke($Script:Dialogs.Classic.ProgressWindow.Invocation)
         $Script:Dialogs.Classic.ProgressWindow.Invocation = $null
     }
@@ -32,7 +32,7 @@ function Close-ADTInstallationProgressClassic
         # Close down the runspace.
         if ($Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace -and $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.RunspaceStateInfo.State.Equals([System.Management.Automation.Runspaces.RunspaceState]::Opened))
         {
-            Write-ADTLogEntry -Message "Closing the installation progress dialog's runspace."
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Closing the installation progress dialog's runspace."
             $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.Close()
             $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.Dispose()
             $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace = $null

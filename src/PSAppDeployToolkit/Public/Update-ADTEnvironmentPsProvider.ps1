@@ -54,10 +54,10 @@ function Update-ADTEnvironmentPsProvider
     begin
     {
         # Perform initial setup.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Determine the user SID to base things off of.
-        $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and ($runAsActiveUser = Get-ADTRunAsActiveUser))
+        $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and ($runAsActiveUser = & $Script:CommandTable.'Get-ADTRunAsActiveUser'))
         {
             $runAsActiveUser.SID
         }
@@ -69,7 +69,7 @@ function Update-ADTEnvironmentPsProvider
 
     process
     {
-        Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.'
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Refreshing the environment variables for this PowerShell session.'
         try
         {
             try
@@ -100,12 +100,12 @@ function Update-ADTEnvironmentPsProvider
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to refresh the environment variables for this PowerShell session."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to refresh the environment variables for this PowerShell session."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

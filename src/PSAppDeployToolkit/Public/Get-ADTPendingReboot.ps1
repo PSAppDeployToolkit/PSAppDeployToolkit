@@ -69,7 +69,7 @@ function Get-ADTPendingReboot
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $PendRebootErrorMsg = [System.Collections.Specialized.StringCollection]::new()
         $HostName = [System.Net.Dns]::GetHostName()
     }
@@ -81,7 +81,7 @@ function Get-ADTPendingReboot
             try
             {
                 # Get the date/time that the system last booted up.
-                Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$HostName]."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting the pending reboot status on the local computer [$HostName]."
                 $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([System.Environment]::TickCount)
 
                 # Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation.
@@ -94,7 +94,7 @@ function Get-ADTPendingReboot
                 $IsAppVRebootPending = & $Script:CommandTable.'Test-Path' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks'
 
                 # Get the value of PendingFileRenameOperations.
-                $PendingFileRenameOperations = if ($IsFileRenameRebootPending = Test-ADTRegistryValue -Key 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations')
+                $PendingFileRenameOperations = if ($IsFileRenameRebootPending = & $Script:CommandTable.'Test-ADTRegistryValue' -Key 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations')
                 {
                     try
                     {
@@ -102,7 +102,7 @@ function Get-ADTPendingReboot
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to get PendingFileRenameOperations.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
                         $null = $PendRebootErrorMsg.Add("Failed to get PendingFileRenameOperations: $($_.Exception.Message)")
                     }
                 }
@@ -117,7 +117,7 @@ function Get-ADTPendingReboot
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to get IsSCCMClientRebootPending.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
                     $null = $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
                 }
 
@@ -134,7 +134,7 @@ function Get-ADTPendingReboot
                     PendingFileRenameOperations  = $PendingFileRenameOperations
                     ErrorMsg                     = $PendRebootErrorMsg
                 }
-                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')"
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')"
                 return $PendingRebootInfo
             }
             catch
@@ -144,12 +144,12 @@ function Get-ADTPendingReboot
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

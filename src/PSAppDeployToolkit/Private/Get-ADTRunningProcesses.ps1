@@ -55,7 +55,7 @@ function Get-ADTRunningProcesses
     begin
     {
         # Initalise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $processObjects = [System.Collections.Generic.List[PSADT.Types.ProcessObject]]::new()
     }
 
@@ -78,7 +78,7 @@ function Get-ADTRunningProcesses
                 try
                 {
                     # Get all running processes and append properties.
-                    Write-ADTLogEntry -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$DisableLogging
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$DisableLogging
                     $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $processObjects.Name -ErrorAction Ignore | & {
                         process
                         {
@@ -105,12 +105,12 @@ function Get-ADTRunningProcesses
                     # Return output if there's any.
                     if ($runningProcesses)
                     {
-                        Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]." -DebugMessage:$DisableLogging
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]." -DebugMessage:$DisableLogging
                         $runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
                     }
                 }
                 catch
@@ -120,11 +120,11 @@ function Get-ADTRunningProcesses
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
 
         # Finalise function.
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

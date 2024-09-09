@@ -111,7 +111,7 @@ function Set-ADTRegistryKey
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -123,17 +123,17 @@ function Set-ADTRegistryKey
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
                 $Key = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
+                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
+                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node
                 }
 
                 # Create registry key if it doesn't exist.
                 if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $Key))
                 {
-                    Write-ADTLogEntry -Message "Creating registry key [$Key]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating registry key [$Key]."
                     if (($Key.Split('/').Count - 1) -eq 0)
                     {
                         # No forward slash found in Key. Use New-Item cmdlet to create registry key.
@@ -160,7 +160,7 @@ function Set-ADTRegistryKey
                                 TargetObject = $CreateRegKeyResult
                                 RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                             }
-                            throw (New-ADTErrorRecord @naerParams)
+                            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                         }
                     }
                 }
@@ -170,7 +170,7 @@ function Set-ADTRegistryKey
                     if (!(& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $Key -Name $Name -ErrorAction Ignore))
                     {
                         # Set registry value if it doesn't exist.
-                        Write-ADTLogEntry -Message "Setting registry key value: [$Key] [$Name = $Value]."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Setting registry key value: [$Key] [$Name = $Value]."
                         $null = & $Script:CommandTable.'New-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type
                     }
                     else
@@ -183,7 +183,7 @@ function Set-ADTRegistryKey
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "Updating registry key value: [$Key] [$Name = $Value]."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Updating registry key value: [$Key] [$Name = $Value]."
                             $null = & $Script:CommandTable.'Set-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value
                         }
                     }
@@ -196,12 +196,12 @@ function Set-ADTRegistryKey
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$Key]", "update value [$Value] for registry key [$Key] [$Name]")[!!$Name])."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$Key]", "update value [$Value] for registry key [$Key] [$Name]")[!!$Name])."
         }
     }
 
     end
     {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }
