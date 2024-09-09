@@ -38,7 +38,7 @@ Show-ADTInstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling t
 
 ### EXAMPLE 3
 ```
-Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -Icon Information -NoWait
+Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
 ```
 
 ## PARAMETERS
