@@ -13,6 +13,9 @@ function Initialize-ADTModule
     .DESCRIPTION
         The Initialize-ADTModule function sets up the environment for the ADT module by initializing necessary variables, configurations, and string tables. It ensures that the module is not initialized while there is an active ADT session in progress. This function prepares the module for use by clearing callbacks, sessions, and setting up the environment table.
 
+    .PARAMETER ScriptDirectory
+        An override directory to use for config and string loading.
+
     .INPUTS
         None
 
