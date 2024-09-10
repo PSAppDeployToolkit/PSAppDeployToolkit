@@ -10,7 +10,7 @@ class ADTSession
     hidden [AllowEmptyCollection()][System.Collections.Hashtable]$ExtensionData = @{}
 
     # Internal variables that aren't for public access.
-    hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode = (& $Script:CommandTable.'Test-ADTNonNativeCaller')
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
     hidden [AllowEmptyCollection()][System.Collections.Generic.List[System.IO.FileInfo]]$MountedWimFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
@@ -149,24 +149,6 @@ class ADTSession
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
         # Establish script directories before returning.
-        if ([System.String]::IsNullOrWhiteSpace($this.ScriptDirectory))
-        {
-            $this.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $this.CallerVariables.GetValue('PSScriptRoot', $null))))
-            {
-                if ($this.CompatibilityMode)
-                {
-                    [System.IO.Directory]::GetParent($scriptRoot).FullName
-                }
-                else
-                {
-                    $scriptRoot
-                }
-            }
-            else
-            {
-                $PWD.Path
-            }
-        }
         'DirFiles', 'DirSupportFiles' | & {
             process
             {

@@ -6,14 +6,31 @@
 
 function Import-ADTConfig
 {
-    # Get the current environment and root module.
-    $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Alias('ScriptDirectory')]
+        [System.String]$BaseDirectory
+    )
 
-    # Create variables within this scope from the database, it's needed during the config import.
+    # Process the incoming $BaseDirectory value.
+    $PSBoundParameters.BaseDirectory = if (![System.IO.Directory]::Exists([System.IO.Path]::Combine($BaseDirectory, 'Config')))
+    {
+        [System.IO.Path]::Combine($Script:PSScriptRoot, 'Config')
+    }
+    else
+    {
+        [System.IO.Path]::Combine($PSBoundParameters.BaseDirectory, 'Config')
+    }
+
+    # Get the current environment and create variables within this scope from the database, it's needed during the config import.
+    $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
     $adtEnv.GetEnumerator() | . { process { & $Script:CommandTable.'New-Variable' -Name $_.Name -Value $_.Value -Option Constant } }
 
     # Read config file and cast the version into an object.
-    $config = & $Script:CommandTable.'Import-LocalizedData' -BaseDirectory $Script:PSScriptRoot\Config -FileName config.psd1
+    $config = & $Script:CommandTable.'Import-LocalizedData' -FileName config.psd1 @PSBoundParameters
     $config.File.Version = [version]$config.File.Version
 
     # Confirm the config version meets our minimum requirements.
