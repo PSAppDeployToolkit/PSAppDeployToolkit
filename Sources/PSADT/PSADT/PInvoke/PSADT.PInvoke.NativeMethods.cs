@@ -178,7 +178,7 @@ namespace PSADT.PInvoke
         /// </returns>
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool CreatePipe(out SafeFileHandle hReadPipe, out SafeFileHandle hWritePipe, [In, Optional] SECURITY_ATTRIBUTES? lpPipeAttributes, [In, Optional] uint nSize);
+        public static extern bool CreatePipe(out SafeFileHandle hReadPipe, out SafeFileHandle hWritePipe, [In, Optional] SECURITY_ATTRIBUTES lpPipeAttributes, [In, Optional] uint nSize);
 
         /// <summary>
         /// Retrieves the Terminal Services session associated with a specified process.
