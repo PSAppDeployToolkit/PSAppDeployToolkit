@@ -78,7 +78,7 @@ function Show-ADTDialogBox
 
     dynamicparam
     {
-        # Initialise the module if there's no session and it hasn't been previously initialised.
+        # Initialize the module if there's no session and it hasn't been previously initialized.
         $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
         $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
@@ -111,7 +111,7 @@ function Show-ADTDialogBox
 
     begin
     {
-        # Initialise function.
+        # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.

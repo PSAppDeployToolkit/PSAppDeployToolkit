@@ -465,7 +465,7 @@ class ADTSession
         }
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module version is [$($ADTEnv.appDeployMainScriptVersion)]")
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module imported in [$($ADTData.Durations.ModuleImport.TotalSeconds)] seconds.")
-        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module initialised in [$($ADTData.Durations.ModuleInit.TotalSeconds)] seconds.")
+        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module initialized in [$($ADTData.Durations.ModuleInit.TotalSeconds)] seconds.")
 
         # Announce session instantiation mode.
         if ($this.CompatibilityMode)
@@ -716,7 +716,7 @@ class ADTSession
         $this.TestClassState('Opened')
         $this.TestClassState('Closed')
 
-        # Initialise PSADT session.
+        # Initialize PSADT session.
         $this.DetectDefaultWimFile()
         $this.DetectDefaultMsi($adtEnv)
         $this.SetAppProperties($adtEnv)

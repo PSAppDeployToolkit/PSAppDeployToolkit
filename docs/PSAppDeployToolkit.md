@@ -275,7 +275,7 @@ Tests whether the local machine is running on AC power or not.
 ### [Test-ADTCallerIsAdmin](Test-ADTCallerIsAdmin.md)
 Checks if the current user has administrative privileges.
 
-### [Test-ADTModuleInitialised](Test-ADTModuleInitialised.md)
+### [Test-ADTModuleInitialized](Test-ADTModuleInitialized.md)
 Checks if the ADT (PSAppDeployToolkit) module is initialized.
 
 ### [Test-ADTMSUpdates](Test-ADTMSUpdates.md)

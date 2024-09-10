@@ -101,7 +101,7 @@ function Send-ADTKeys
 
     begin
     {
-        # Initialise function.
+        # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Internal worker filter.

@@ -92,7 +92,7 @@ function Show-ADTBalloonTipFluent
         [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($ToolkitName).Show($toastXml)
     }
 
-    # Initialise variables.
+    # Initialize variables.
     $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
     $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 

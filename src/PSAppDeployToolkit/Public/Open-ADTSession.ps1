@@ -238,7 +238,7 @@ function Open-ADTSession
 
     begin
     {
-        # Initialise function.
+        # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtData = & $Script:CommandTable.'Get-ADTModuleData'
         $adtSession = $null
@@ -258,7 +258,7 @@ function Open-ADTSession
         {
             try
             {
-                # Initialise the module before opening the first session.
+                # Initialize the module before opening the first session.
                 if (($firstSession = !$adtData.Sessions.Count))
                 {
                     & $Script:CommandTable.'Initialize-ADTModule'
@@ -312,7 +312,7 @@ function Open-ADTSession
 
     end
     {
-        # Finalise function.
+        # Finalize function.
         & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

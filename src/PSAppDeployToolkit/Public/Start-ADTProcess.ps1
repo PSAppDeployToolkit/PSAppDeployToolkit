@@ -171,7 +171,7 @@ function Start-ADTProcess
 
     begin
     {
-        # Initalise function and get required objects.
+        # Initalize function and get required objects.
         $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 

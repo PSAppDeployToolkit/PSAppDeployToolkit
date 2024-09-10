@@ -13,7 +13,7 @@ function New-ADTFunction
 
     begin
     {
-        # Initialise function.
+        # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -39,7 +39,7 @@ function New-ADTFunction
 
     end
     {
-        # Finalise function.
+        # Finalize function.
         & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

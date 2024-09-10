@@ -30,7 +30,7 @@ function Show-ADTInstallationRestartPromptClassic
         [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
-    # Initialise variables.
+    # Initialize variables.
     $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
     $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
 

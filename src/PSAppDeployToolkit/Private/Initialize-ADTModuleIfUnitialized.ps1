@@ -14,8 +14,8 @@ function Initialize-ADTModuleIfUnitialized
         [System.Management.Automation.PSCmdlet]$Cmdlet
     )
 
-    # Initialise the module if there's no session and it hasn't been previously initialised.
-    if (!($adtSession = if (& $Script:CommandTable.'Test-ADTSessionActive') { & $Script:CommandTable.'Get-ADTSession' }) -and !(& $Script:CommandTable.'Test-ADTModuleInitialised'))
+    # Initialize the module if there's no session and it hasn't been previously initialized.
+    if (!($adtSession = if (& $Script:CommandTable.'Test-ADTSessionActive') { & $Script:CommandTable.'Get-ADTSession' }) -and !(& $Script:CommandTable.'Test-ADTModuleInitialized'))
     {
         try
         {

@@ -106,7 +106,7 @@ function Show-ADTWelcomePromptClassic
     $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
     $adtSession = & $Script:CommandTable.'Get-ADTSession'
 
-    # Initialise variables.
+    # Initialize variables.
     $countdownTime = $startTime = [System.DateTime]::Now
     $showCountdown = $false
     $showCloseApps = $false

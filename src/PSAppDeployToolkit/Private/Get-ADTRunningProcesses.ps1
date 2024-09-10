@@ -54,7 +54,7 @@ function Get-ADTRunningProcesses
 
     begin
     {
-        # Initalise function.
+        # Initalize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $processObjects = [System.Collections.Generic.List[PSADT.Types.ProcessObject]]::new()
     }
@@ -124,7 +124,7 @@ function Get-ADTRunningProcesses
             }
         }
 
-        # Finalise function.
+        # Finalize function.
         & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }
