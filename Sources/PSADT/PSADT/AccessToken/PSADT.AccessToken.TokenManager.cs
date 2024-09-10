@@ -1,172 +1,509 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Security.Principal;
-using System.Text;
-using PSADT.ConsoleEx;
+using System.Linq;
 using PSADT.PInvoke;
+using Microsoft.Win32;
+using System.Security;
+using PSADT.ConsoleEx;
+using System.ComponentModel;
+using System.Security.Principal;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace PSADT.AccessToken
 {
-    internal class TokenManager
+    public static class TokenManager
     {
-        internal static readonly Dictionary<TokenPrivilege, string> _privilegeLookup = new(35)
-        {
-            { TokenPrivilege.AssignPrimaryToken, "AssignPrimaryToken" },
-            { TokenPrivilege.Audit, "Audit" },
-            { TokenPrivilege.Backup, "Backup" },
-            { TokenPrivilege.ChangeNotify, "ChangeNotify" },
-            { TokenPrivilege.CreateGlobal, "CreateGlobal" },
-            { TokenPrivilege.CreatePageFile, "CreatePagefile" },
-            { TokenPrivilege.CreatePermanent, "CreatePermanent" },
-            { TokenPrivilege.CreateSymbolicLink, "CreateSymbolicLink" },
-            { TokenPrivilege.CreateToken, "CreateToken" },
-            { TokenPrivilege.Debug, "Debug" },
-            { TokenPrivilege.DelegateSessionUserImpersonate, "DelegateSessionUserImpersonate" },
-            { TokenPrivilege.EnableDelegation, "EnableDelegation" },
-            { TokenPrivilege.Impersonate, "Impersonate" },
-            { TokenPrivilege.IncreaseBasePriority, "IncreaseBasePriority" },
-            { TokenPrivilege.IncreaseQuota, "IncreaseQuota" },
-            { TokenPrivilege.IncreaseWorkingSet, "IncreaseWorkingSet" },
-            { TokenPrivilege.LoadDriver, "LoadDriver" },
-            { TokenPrivilege.LockMemory, "LockMemory" },
-            { TokenPrivilege.MachineAccount, "MachineAccount" },
-            { TokenPrivilege.ManageVolume, "ManageVolume" },
-            { TokenPrivilege.ProfileSingleProcess, "ProfileSingleProcess" },
-            { TokenPrivilege.Relabel, "Relabel" },
-            { TokenPrivilege.RemoteShutdown, "RemoteShutdown" },
-            { TokenPrivilege.Restore, "Restore" },
-            { TokenPrivilege.Security, "Security" },
-            { TokenPrivilege.Shutdown, "Shutdown" },
-            { TokenPrivilege.SyncAgent, "SyncAgent" },
-            { TokenPrivilege.SystemEnvironment, "SystemEnvironment" },
-            { TokenPrivilege.SystemProfile, "SystemProfile" },
-            { TokenPrivilege.SystemTime, "SystemTime" },
-            { TokenPrivilege.TakeOwnership, "TakeOwnership" },
-            { TokenPrivilege.TrustedComputerBase, "Tcb" },
-            { TokenPrivilege.TimeZone, "TimeZone" },
-            { TokenPrivilege.TrustedCredentialManagerAccess, "TrustedCredManAccess" },
-            { TokenPrivilege.Undock, "UndockPrivilege" },
-            { TokenPrivilege.UnsolicitedInput, "UnsolicitedInput" },
-            { TokenPrivilege.InteractiveLogon, "InteractiveLogonRight" },
-            { TokenPrivilege.NetworkLogon, "NetworkLogonRight" },
-            { TokenPrivilege.BatchLogon, "BatchLogonRight" },
-            { TokenPrivilege.ServiceLogon, "ServiceLogonRight" },
-            { TokenPrivilege.DenyInteractiveLogon, "DenyInteractiveLogonRight" },
-            { TokenPrivilege.DenyNetworkLogon, "DenyNetworkLogonRight" },
-            { TokenPrivilege.DenyBatchLogon, "DenyBatchLogonRight" },
-            { TokenPrivilege.DenyServiceLogon, "DenyServiceLogonRight" },
-            { TokenPrivilege.RemoteInteractiveLogon, "RemoteInteractiveLogonRight" },
-            { TokenPrivilege.DenyRemoteInteractiveLogon, "DenyRemoteInteractiveLogonRight" }
-        };
-
-        // AdjustCurrentProcessTokenPrivilege
         /// <summary>
-        /// Enables or disables a specific privilege on the current process token.
+        /// Get's the token for a given session id. Returns a token with a SecurityIdentification level.
+        /// Can obtain the client's security information but cannot fully impersonate the client.
         /// </summary>
-        /// <param name="privilege">The privilege to adjust.</param>
-        /// <param name="enable">True to enable the privilege, false to disable it.</param>
-        /// <exception cref="SecureNamedPipesException">Thrown when the privilege adjustment fails.</exception>
-        public static void AdjustTokenPrivilege(TokenPrivilege privilege, bool enable)
+        /// <param name="sessionId">The session ID to query the user token for.</param>
+        /// <returns><c>true</c> if we obtained the access token of the log-on user specified by the session ID.</returns>
+        /// <exception cref="Win32Exception">Thrown if we fail to obtain the access token.</exception>
+        [SecurityCritical]
+        public static bool GetSecurityIdentificationTokenForSessionId(uint sessionId, out SafeAccessToken securityIdentificationToken)
         {
-            if (!SafeAccessToken.TryCreate(WindowsIdentity.GetCurrent().Token, out var safeTokenHandle))
+            try
             {
-                throw new InvalidOperationException("Failed to get current process token.");
-            }
+                if (!NativeMethods.WTSQueryUserToken(sessionId, out securityIdentificationToken))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"'WTSQueryUserToken' failed to obtain the access token of the logged-on user specified by the session id [{sessionId}].");
+                }
 
-            using (safeTokenHandle)
+                ConsoleHelper.DebugWrite($"User token queried successfully for session id [{sessionId}].", MessageType.Debug);
+                return true;
+            }
+            catch (Exception ex)
             {
-                AdjustTokenPrivilegeInternal(safeTokenHandle.DangerousGetHandle(), privilege, enable);
+                ConsoleHelper.DebugWrite($"Failed to query user token for session id [{sessionId}].", MessageType.Error, ex);
+                securityIdentificationToken = SafeAccessToken.Invalid;
+                return false;
             }
         }
 
         /// <summary>
-        /// Enables or disables a specific privilege on the given token.
+        /// Duplicates a given access token as an primary token. Primarily used to create new processes
+        /// in the user's context, allowing the process to run as if the user themselves launched it.
         /// </summary>
-        /// <param name="tokenHandle">The handle to the token.</param>
-        /// <param name="privilege">The privilege to adjust.</param>
-        /// <param name="enable">True to enable the privilege, false to disable it.</param>
-        /// <exception cref="SecureNamedPipesException">Thrown when the privilege adjustment fails.</exception>
-        public static void AdjustTokenPrivilegeInternal(IntPtr tokenHandle, TokenPrivilege privilege, bool enable)
+        /// <param name="token">The token to duplicate.</param>
+        /// <returns><c>true</c> if token duplication was successful.</returns>
+        /// <exception cref="Win32Exception">Thrown if the token duplication fails.</exception>
+        [SecurityCritical]
+        public static bool CreatePrimaryToken(SafeAccessToken token, out SafeAccessToken primaryToken)
         {
-            // Attempt to lookup the privilege value
-            if (!NativeMethods.LookupPrivilegeValue(null, privilege.ToString(), out var luid))
+            try
             {
-                int error = Marshal.GetLastWin32Error();
-                throw new Win32Exception(error, $"Failed to lookup privilege value for [{privilege}]. Error code: {error}");
-            }
+                if (!NativeMethods.DuplicateTokenEx(
+                    token,
+                    TokenAccess.TOKEN_ALL_ACCESS,
+                    SECURITY_ATTRIBUTES.Create(),
+                    SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
+                    TOKEN_TYPE.TokenPrimary,
+                    out primaryToken))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"'DuplicateTokenEx' failed to create a primary access token from the existing token.");
+                }
 
-            // Set up the TOKEN_PRIVILEGES structure
-            var tokenPrivileges = new TOKEN_PRIVILEGES
-            {
-                PrivilegeCount = 1,
-                Privileges = new LUID_AND_ATTRIBUTES[1]
-            };
-            tokenPrivileges.Privileges[0].Luid = luid;
-            tokenPrivileges.Privileges[0].Attributes = enable ? NativeMethods.SE_PRIVILEGE_ENABLED : 0;
+                ConsoleHelper.DebugWrite("Successfully duplicated token as a primary token.", MessageType.Debug);
 
-            // Attempt to adjust the token privileges
-            if (!NativeMethods.AdjustTokenPrivileges(tokenHandle, false, ref tokenPrivileges, 0, IntPtr.Zero, IntPtr.Zero))
-            {
-                int error = Marshal.GetLastWin32Error();
-                throw new Win32Exception(error, $"Failed to adjust token privileges for [{privilege}]. Error code: {error}");
+                // This assumes that the caller had no further use for the token.
+                if (!token.IsInvalid)
+                {
+                    token.Dispose();
+                }
+
+                return true;
             }
-            
-            // Check if all privileges were assigned successfully
-            int lastError = Marshal.GetLastWin32Error();
-            if (lastError == NativeMethods.ERROR_NOT_ALL_ASSIGNED)
+            catch (Exception ex)
             {
-                throw new Win32Exception(lastError, $"Failed to assign all requested privileges for [{privilege}].");
+                ConsoleHelper.DebugWrite($"Failed to duplicate token as primary token.", MessageType.Error, ex);
+                primaryToken = SafeAccessToken.Invalid;
+                return false;
             }
         }
 
-        public static TokenPrivilege GetTokenPrivilegeByName(string privilegeName)
+        /// <summary>
+        /// Duplicates a given access token as an impersonation token. The impersonation
+        /// token allows a process or thread to temporarily impersonate the user's
+        /// security contex but cannot be used to create a new process.
+        /// </summary>
+        /// <param name="token">The token to duplicate.</param>
+        /// <returns><c>true</c> if token duplication was successful.</returns>
+        /// <exception cref="Win32Exception">Thrown if the token duplication fails.</exception>
+        [SecurityCritical]
+        public static bool CreateImpersonationToken(SafeAccessToken token, out SafeAccessToken impersonationToken)
         {
-            // Iterate through the dictionary to find the first matching value
-            foreach (var kvp in _privilegeLookup)
+            try
             {
-                if (kvp.Value.Equals(privilegeName, StringComparison.OrdinalIgnoreCase))
+                if (!NativeMethods.DuplicateTokenEx(
+                    token,
+                    TokenAccess.TOKEN_ALL_ACCESS,
+                    SECURITY_ATTRIBUTES.Create(),
+                    SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
+                    TOKEN_TYPE.TokenImpersonation,
+                    out impersonationToken))
                 {
-                    return kvp.Key;
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"'DuplicateTokenEx' failed to create an impersonation token from the existing token.");
+                }
+
+                ConsoleHelper.DebugWrite("Successfully duplicated token as an impersonation token.", MessageType.Debug);
+
+                // This assumes that the caller had no further use for the token.
+                if (!token.IsInvalid)
+                {
+                    token.Dispose();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to duplicate token as an impersonation token.", MessageType.Error, ex);
+                impersonationToken = SafeAccessToken.Invalid;
+                return false;
+            }
+        }
+
+        public static bool TryGetWindowsIdentity(in SafeAccessToken token, out WindowsIdentity? windowsIdentity, out WindowsPrincipal? windowsPrincipal)
+        {
+            windowsIdentity = null;
+            windowsPrincipal = null;
+
+            try
+            {
+                windowsIdentity = new WindowsIdentity(token.DangerousGetHandle());
+                ConsoleHelper.DebugWrite("WindowsIdentity created successfully from token.", MessageType.Debug);
+
+                windowsPrincipal = new WindowsPrincipal(windowsIdentity);
+                ConsoleHelper.DebugWrite("WindowsPrincipal created successfully from WindowsIdentity.", MessageType.Debug);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite("Failed to get WindowsIdentity or WindowsPrincipal from token.", MessageType.Error, ex);
+                return false;
+            }
+        }
+
+        /// <summary>Determines whether UAC is enabled on this system.</summary>
+		/// <returns><c>true</c> if UAC is enabled; otherwise, <c>false</c>.</returns>
+		public static bool IsUACEnabled()
+        {
+            if (Environment.OSVersion.Version.Major < 6)
+                return false;
+
+            try
+            {
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", false))
+                {
+                    if (key != null)
+                    {
+                        var uacValue = key.GetValue("EnableLUA");
+                        return uacValue != null && Convert.ToInt32(uacValue) != 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to check UAC status: {ex.Message}", MessageType.Warning);
+            }
+
+            return false; // Default to false if we can't determine the UAC status
+        }
+
+        public static T GetTokenInformation<T>(SafeAccessToken tokenHandle, TOKEN_INFORMATION_CLASS tokenInformationClass)
+        {
+
+            // First, get the required buffer size
+            if (!NativeMethods.GetTokenInformation(tokenHandle, tokenInformationClass, IntPtr.Zero, 0, out int tokenInfoLength))
+            {
+                int error = Marshal.GetLastWin32Error();
+                if (error != 122) // ERROR_INSUFFICIENT_BUFFER
+                {
+                    throw new Win32Exception(error, $"Failed to get token information size for type [{typeof(T)}]. Error code [{error}].");
                 }
             }
 
-            // If no match is found, throw an exception
-            throw new KeyNotFoundException($"Privilege with name '{privilegeName}' was not found in the lookup.");
+            IntPtr tokenInfo = Marshal.AllocHGlobal(tokenInfoLength);
+
+            try
+            {
+                if (!NativeMethods.GetTokenInformation(tokenHandle, tokenInformationClass, tokenInfo, tokenInfoLength, out _))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"Failed to retrieve token information of type [{typeof(T)}].");
+                }
+
+                if (typeof(T).IsEnum)
+                {
+                    int enumValue = Marshal.ReadInt32(tokenInfo);
+                    return (T)Enum.ToObject(typeof(T), enumValue);
+                }
+                else
+                {
+                    return Marshal.PtrToStructure<T>(tokenInfo) ?? throw new InvalidOperationException($"Failed to marshal token information to type [{typeof(T)}].");
+                }
+            }
+            finally
+            {
+                if (tokenInfo != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(tokenInfo);
+                }
+            }
         }
 
-        public static void SetStandardUserPrivileges(SafeAccessToken tokenHandle, bool enable = true)
+        public static TOKEN_ELEVATION_TYPE GetTokenElevationType(SafeAccessToken tokenHandle)
         {
-            // Define the standard user privileges by their string names
-            var standardUserPrivileges = new List<string>
+            try
             {
-                "ChangeNotify",
-                "Shutdown",
-                "Undock",
-                "IncreaseWorkingSet",
-                "TimeZone"
-            };
-
-            // Iterate over each standard user privilege
-            foreach (var privilegeName in standardUserPrivileges)
+                return GetTokenInformation<TOKEN_ELEVATION_TYPE>(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevationType);
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    // Get the corresponding TokenPrivilege from the PrivLookup dictionary
-                    var privilege = GetTokenPrivilegeByName(privilegeName);
+                ConsoleHelper.DebugWrite($"Failed to get token elevation type.", MessageType.Error, ex);
+                throw;
+            }
+        }
 
-                    // Adjust the token privileges based on the enable flag
-                    AdjustTokenPrivilegeInternal(tokenHandle.DangerousGetHandle(), privilege, enable);
-                }
-                catch (KeyNotFoundException ex)
+        public static bool IsTokenElevated(SafeAccessToken tokenHandle)
+        {
+            try
+            {
+                TOKEN_ELEVATION elevation = GetTokenInformation<TOKEN_ELEVATION>(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation);
+                return elevation.TokenIsElevated;
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to determine if the token is elevated.", MessageType.Error, ex);
+                throw;
+            }
+        }
+
+        public static bool GetLinkedElevatedToken(in SafeAccessToken hToken, out SafeAccessToken hElevatedLinkedToken)
+        {
+            hElevatedLinkedToken = SafeAccessToken.Invalid;
+
+            try
+            {
+                TOKEN_ELEVATION_TYPE elevationType = GetTokenElevationType(hToken);
+
+                if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeFull)
                 {
-                    ConsoleHelper.DebugWrite($"Privilege [{privilegeName}] not found: {ex.Message}", MessageType.Error);
+                    hElevatedLinkedToken = hToken;
+                    return true;
                 }
-                catch (Exception ex)
+
+                if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
                 {
-                    ConsoleHelper.DebugWrite($"Failed to adjust privilege [{privilegeName}]: {ex.Message}", MessageType.Error);
+                    // No linked token available
+                    return false;
                 }
+
+                // Determine whether system is running Windows Vista or later operating systems (major version >= 6) because they support linked tokens, but
+                // previous versions (major version < 6) do not.
+                if (Environment.OSVersion.Version.Major >= 6 && IsUACEnabled())
+                {
+                    // If limited, get the linked elevated token for further check.
+                    if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited)
+                    {
+                        return GetLinkedToken(hToken, out hElevatedLinkedToken);
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to get linked elevated token: {ex.Message}", MessageType.Error, ex);
+                return false;
+            }
+        }
+
+        public static bool GetLinkedStandardToken(in SafeAccessToken hToken, out SafeAccessToken hStandardLinkedToken)
+        {
+            hStandardLinkedToken = SafeAccessToken.Invalid;
+
+            try
+            {
+                TOKEN_ELEVATION_TYPE elevationType = GetTokenElevationType(hToken);
+
+                if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited)
+                {
+                    hStandardLinkedToken = hToken;
+                    return true;
+                }
+
+                if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
+                {
+                    // No linked token available
+                    return false;
+                }
+
+                // Determine whether system is running Windows Vista or later operating systems (major version >= 6) because they support linked tokens
+                if (Environment.OSVersion.Version.Major >= 6 && IsUACEnabled())
+                {
+                    // If full, get the linked limited token
+                    if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeFull)
+                    {
+                        return GetLinkedToken(hToken, out hStandardLinkedToken);
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to get linked standard token: {ex.Message}", MessageType.Error, ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The function checks whether a primary access token belongs to a user account that is a member of the local Administrators group.
+        /// </summary>
+        /// <param name="hToken">The process to check.</param>
+        /// <returns>
+        /// Returns true if the primary access token belongs to a user account that is a member of the local Administrators group. Returns false
+        /// if the token does not.
+        /// </returns>
+        public static bool IsTokenLocalAdmin(in SafeAccessToken hToken)
+        {
+            try
+            {
+                if (!GetLinkedElevatedToken(in hToken, out SafeAccessToken hLinkedToken))
+                    return false;
+
+                if (hLinkedToken.IsInvalid)
+                    return false;
+
+                // Check if the token to be checked contains local admin SID.
+                using (hLinkedToken)
+                {
+                    if (!TryGetWindowsIdentity(hLinkedToken, out _, out WindowsPrincipal? userPrincipal))
+                    {
+                        return false;
+                    }
+
+                    return userPrincipal!.IsInRole(WindowsBuiltInRole.Administrator);
+                }
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to determine if token is local admin: {ex.Message}", MessageType.Error, ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the linked token associated with a given access token, if available.
+        /// </summary>
+        /// <param name="token">The token to retrieve the linked token for.</param>
+        /// <returns>A <see cref="SafeAccessToken"/> representing the linked token, or null if no linked token is available.</returns>
+        /// <exception cref="Win32Exception">Thrown if an error occurs while retrieving the linked token.</exception>
+        public static bool GetLinkedToken(SafeAccessToken token, out SafeAccessToken hLinkedToken)
+        {
+            hLinkedToken = SafeAccessToken.Invalid;
+
+            try
+            {
+                TOKEN_LINKED_TOKEN tokenLinkedToken = GetTokenInformation<TOKEN_LINKED_TOKEN>(token, TOKEN_INFORMATION_CLASS.TokenLinkedToken);
+
+                hLinkedToken = new SafeAccessToken(tokenLinkedToken.LinkedToken);
+                return true;
+            }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == NativeMethods.ERROR_NO_SUCH_LOGON_SESSION ||
+                                            ex.NativeErrorCode == NativeMethods.ERROR_NOT_FOUND)
+            {
+                // These error codes indicate that there's no linked token, which is not necessarily an error
+                ConsoleHelper.DebugWrite($"No linked token found. Error code [{ex.NativeErrorCode}].", MessageType.Info);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to get linked token: {ex.Message}", MessageType.Error, ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Creates a restricted token with the SANDBOX_INERT flag. If set, the system does not check
+        /// AppLocker rules or apply Software Restriction Policies.
+        /// </summary>
+        /// <param name="existingTokenHandle">The handle to the existing token.</param>
+        /// <returns>A SafeAccessTokenHandle representing the new restricted token.</returns>
+        /// <exception cref="SecureNamedPipeException">Thrown when the creation of the restricted token fails.</exception>
+        public static void CreateSandboxInertToken(SafeAccessToken existingTokenHandle, out SafeAccessToken newTokenHandle)
+        {
+            if (!NativeMethods.CreateRestrictedToken(
+                existingTokenHandle.DangerousGetHandle(),
+                NativeMethods.SANDBOX_INERT,
+                0, IntPtr.Zero, 0, IntPtr.Zero, 0, IntPtr.Zero,
+                out newTokenHandle))
+            {
+                throw new InvalidOperationException("Failed to create restricted token.", new Win32Exception(Marshal.GetLastWin32Error()));
+            }
+        }
+
+        /// <summary>
+        /// Creates an environment block for the specified user token, optionally inheriting the parent environment and adding additional variables.
+        /// </summary>
+        /// <param name="token">The user token to create the environment block for.</param>
+        /// <param name="additionalVariables">Additional environment variables to include in the block.</param>
+        /// <param name="inherit">Specifies whether to inherit the parent's environment variables.</param>
+        /// <returns>A <see cref="SafeEnvironmentBlock"/> containing the created environment block.</returns>
+        /// <exception cref="Win32Exception">Thrown if the environment block creation fails.</exception>
+        public static SafeEnvironmentBlock CreateTokenEnvironmentBlock(SafeAccessToken token, IDictionary<string, string>? additionalVariables, bool inherit)
+        {
+            try
+            {
+                if (!NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlock envBlock, token, inherit))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+
+                if (additionalVariables != null && additionalVariables.Count > 0)
+                {
+                    var environmentVars = ConvertEnvironmentBlockToDictionary(envBlock);
+
+                    foreach (var kvp in additionalVariables)
+                    {
+                        environmentVars[kvp.Key] = kvp.Value;
+                    }
+
+                    envBlock.Dispose();
+                    envBlock = CreateEnvironmentBlockFromDictionary(environmentVars);
+                }
+
+                ConsoleHelper.DebugWrite("Environment block created successfully.", MessageType.Debug);
+                return envBlock;
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to create environment block.", MessageType.Error, ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Converts an environment block to a dictionary of key-value pairs.
+        /// </summary>
+        /// <param name="pEnvBlock">A pointer to the environment block.</param>
+        /// <returns>A dictionary containing the environment variables and their values.</returns>
+        public static Dictionary<string, string> ConvertEnvironmentBlockToDictionary(SafeEnvironmentBlock pEnvBlock)
+        {
+            var result = new Dictionary<string, string>();
+            var offset = 0;
+
+            try
+            {
+                while (true)
+                {
+                    string entry = Marshal.PtrToStringUni(pEnvBlock.DangerousGetHandle(), offset);
+                    if (string.IsNullOrEmpty(entry)) break;
+
+                    int equalsIndex = entry.IndexOf('=');
+                    if (equalsIndex > 0)
+                    {
+                        string key = entry.Substring(0, equalsIndex);
+                        string value = entry.Substring(equalsIndex + 1);
+                        result[key] = value;
+                    }
+
+                    offset += (entry.Length + 1) * 2;
+                }
+
+                ConsoleHelper.DebugWrite($"Converted environment block to dictionary with [{result.Count}] entries.", MessageType.Debug);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to convert environment block to dictionary.", MessageType.Error, ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Creates an environment block from a dictionary of key-value pairs.
+        /// </summary>
+        /// <param name="environmentVars">The dictionary containing environment variables and their values.</param>
+        /// <returns>A <see cref="SafeEnvironmentBlock"/> containing the created environment block.</returns>
+        public static SafeEnvironmentBlock CreateEnvironmentBlockFromDictionary(Dictionary<string, string> environmentVars)
+        {
+            try
+            {
+                var environmentString = string.Join("\0", environmentVars.Select(kvp => $"{kvp.Key}={kvp.Value}")) + "\0\0";
+                var environmentBytes = System.Text.Encoding.Unicode.GetBytes(environmentString);
+                var envBlockPtr = Marshal.AllocHGlobal(environmentBytes.Length);
+                Marshal.Copy(environmentBytes, 0, envBlockPtr, environmentBytes.Length);
+
+                ConsoleHelper.DebugWrite($"Created environment block from dictionary with [{environmentVars.Count}] entries.", MessageType.Debug);
+                return new SafeEnvironmentBlock(envBlockPtr);
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.DebugWrite($"Failed to create environment block from dictionary.", MessageType.Error, ex);
+                throw;
             }
         }
     }

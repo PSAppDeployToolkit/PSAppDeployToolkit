@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Security;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Management.Automation.Host;
 using System.Management.Automation;
-using System.Security;
-using System.Text;
+using System.Management.Automation.Host;
 
 namespace PSADT.PowerShellHost
 {

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using PSADT.PInvoke;
 
-namespace PSADT.Impersonation
+namespace PSADT.AccessToken
 {
     /// <summary>
     /// Represents the options for impersonation.
     /// </summary>
-    public class ImpersonateOptions
+    public class ImpersonationOptions
     {
         /// <summary>
         /// Gets or sets a value indicating whether to reduce privileges when impersonating an administrator.
