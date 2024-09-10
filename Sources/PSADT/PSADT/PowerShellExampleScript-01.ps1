@@ -110,3 +110,27 @@ finally {
     $server.Disconnect()
     $server.Dispose()
 }
+
+<#
+Explanation of the asynchronous execution:
+
+1. We use [PSADT.PowerShellHost.PSADTShell]::ExecuteAsync to start the asynchronous execution.
+   This method returns a Task<PSDataCollection<PSObject>>.
+
+2. We use the ContinueWith method to register a continuation action. This action will be executed
+   when the task completes successfully. It stores the result in a script-scoped variable ($script:asyncResult)
+   so we can access it later.
+
+3. While the async task is running, we perform other work. This demonstrates how asynchronous
+   execution allows us to utilize our time effectively instead of blocking and waiting.
+
+4. After our "other work" is done, we wait for the async result using a simple polling loop.
+   In a real-world scenario, you might want to use a more sophisticated waiting mechanism or
+   continue with other tasks.
+
+5. Once the result is available, we process and display it.
+
+This approach allows for truly asynchronous operation in PowerShell, letting you continue executing
+other code while waiting for the ExecuteAsync task to complete. It's particularly useful for long-running
+operations or when you need to maintain responsiveness in your script.
+#>

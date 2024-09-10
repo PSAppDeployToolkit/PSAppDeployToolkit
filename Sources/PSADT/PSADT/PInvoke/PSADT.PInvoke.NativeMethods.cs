@@ -334,6 +334,7 @@ namespace PSADT.PInvoke
 
         /// <summary>
         /// Obtains the access token of the logged-on user specified by the session ID.
+        /// Returns a token with a SecurityIdentification level.
         /// </summary>
         /// <param name="sessionId">The session ID of the user to obtain the token for.</param>
         /// <param name="phToken">A pointer to a handle that receives the token.</param>
@@ -590,7 +591,7 @@ namespace PSADT.PInvoke
         public static extern bool CreateEnvironmentBlock(out SafeEnvironmentBlock lpEnvironment, SafeHandle hToken, bool bInherit);
 
         /// <summary>
-        /// Destroys an environment block created by the CreateEnvironmentBlock function.
+        /// Destroys an environment block created by the CreateTokenEnvironmentBlock function.
         /// </summary>
         /// <param name="lpEnvironment">A pointer to the environment block to be destroyed.</param>
         /// <returns>If the function succeeds, the return value is true.</returns>

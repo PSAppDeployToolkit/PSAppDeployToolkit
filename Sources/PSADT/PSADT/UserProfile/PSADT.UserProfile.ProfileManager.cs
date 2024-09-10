@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace PSADT.UserProfile
 {
-    public class ProfileHelper
+    public class ProfileManager
     {
         private const string ProfileListSubKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList";
         private const string LocalSystemSid = "S-1-5-18";

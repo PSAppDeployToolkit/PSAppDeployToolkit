@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 using System.Collections.Specialized;
+using PSADT.AccessToken;
 
 namespace PSADT.ProcessEx
 {
@@ -65,7 +66,7 @@ namespace PSADT.ProcessEx
                 }
                 else
                 {
-                    options.SessionId = SessionHelper.GetCurrentProcessSessionId();
+                    options.SessionId = SessionManager.GetCurrentProcessSessionId();
                     options.UpdateUsername(@$"{Environment.UserDomainName}\{Environment.UserName}");
                     ConsoleHelper.DebugWrite($"Executing process in current session with id [{options.SessionId.Value}].", MessageType.Info);
                     await ExecuteProcessInCurrentSessionAsync(options);
@@ -136,7 +137,7 @@ namespace PSADT.ProcessEx
         /// <param name="options">The launch options for the processes.</param>
         private async Task ExecuteInAllActiveSessionsAsync(LaunchOptions options)
         {
-            List<SessionInfo>? sessions = SessionHelper.GetAllActiveUserSessions();
+            List<SessionInfo>? sessions = SessionManager.GetAllActiveUserSessions();
             if (sessions != null && sessions.Count != 0)
             {
                 foreach (SessionInfo session in sessions)
@@ -144,7 +145,7 @@ namespace PSADT.ProcessEx
                     options.SessionId = session.SessionId;
                     try
                     {
-                        options.UpdateUsername(SessionHelper.GetWtsUsernameById(session.SessionId));
+                        options.UpdateUsername(SessionManager.GetWtsUsernameById(session.SessionId));
                         await ExecuteProcessInSessionAsync(options);
                     }
                     catch (Exception ex)
@@ -168,13 +169,13 @@ namespace PSADT.ProcessEx
         /// <param name="options">The launch options for the process.</param>
         private async Task ExecuteInPrimaryActiveSessionAsync(LaunchOptions options)
         {
-            SessionInfo? session = SessionHelper.GetPrimaryActiveUserSession();
+            SessionInfo? session = SessionManager.GetPrimaryActiveUserSession();
             if (session != null)
             {
                 options.SessionId = session.SessionId;
                 try
                 {
-                    options.UpdateUsername(SessionHelper.GetWtsUsernameById(session.SessionId));
+                    options.UpdateUsername(SessionManager.GetWtsUsernameById(session.SessionId));
                     await ExecuteProcessInSessionAsync(options);
                 }
                 catch (Exception ex)
@@ -249,7 +250,7 @@ namespace PSADT.ProcessEx
             {
                 if (!options.SessionId.HasValue)
                 {
-                    options.SessionId = SessionHelper.GetCurrentProcessSessionId();
+                    options.SessionId = SessionManager.GetCurrentProcessSessionId();
                 }
 
                 if (string.IsNullOrEmpty(options.Username))
@@ -338,6 +339,23 @@ namespace PSADT.ProcessEx
             }
         }
 
+        /// <summary>
+        /// Converts a <see cref="System.Collections.Specialized.StringDictionary"/> of environment variables into an 
+        /// <see cref="IDictionary{TKey, TValue}"/> of key-value pairs.
+        /// </summary>
+        /// <param name="environmentVariables">
+        /// The environment variables to convert. This is a <see cref="StringDictionary"/> where both keys and values are strings. 
+        /// If <paramref name="environmentVariables"/> is <c>null</c>, an empty dictionary is returned.
+        /// </param>
+        /// <returns>
+        /// A case-insensitive <see cref="IDictionary{TKey, TValue}"/> containing the environment variables from the input.
+        /// Keys are the environment variable names, and values are the corresponding environment variable values.
+        /// </returns>
+        /// <remarks>
+        /// This method ensures that only non-null values are included in the result.
+        /// If <paramref name="environmentVariables"/> is <c>null</c>, an empty dictionary with a case-insensitive key comparison 
+        /// is returned.
+        /// </remarks>
         public static IDictionary<string, string> ConvertEnvironmentVariables(StringDictionary? environmentVariables)
         {
             if (environmentVariables == null)
@@ -384,14 +402,14 @@ namespace PSADT.ProcessEx
 
             try
             {
-                if (!SessionHelper.QueryUserToken(sessionId, out SafeAccessToken impersonationToken))
+                if (!TokenManager.GetSecurityIdentificationTokenForSessionId(sessionId, out SafeAccessToken securityIdentificationToken))
                 {
-                    throw new InvalidOperationException($"Failed to obtain the access token for session id [{sessionId}].");
+                    throw new InvalidOperationException($"Failed to obtain the security identification token for session id [{sessionId}].");
                 }
 
-                using (impersonationToken)
+                using (securityIdentificationToken)
                 {
-                    if (!SessionHelper.DuplicateTokenAsPrimary(impersonationToken, out primaryToken))
+                    if (!TokenManager.CreatePrimaryToken(securityIdentificationToken, out primaryToken))
                     {
                         throw new InvalidOperationException("Failed to duplicate token as a primary token.");
                     }
@@ -400,7 +418,7 @@ namespace PSADT.ProcessEx
                 using (primaryToken)
                 {
                     tokenToUse = primaryToken;
-                    if (useLinkedAdminToken && SessionHelper.GetLinkedElevatedToken(primaryToken, out SafeAccessToken linkedAdminToken))
+                    if (useLinkedAdminToken && TokenManager.GetLinkedElevatedToken(primaryToken, out SafeAccessToken linkedAdminToken))
                     {
                         if (linkedAdminToken.IsInvalid)
                         {
@@ -429,7 +447,7 @@ namespace PSADT.ProcessEx
 
                     IDictionary<string, string> envVars = ConvertEnvironmentVariables(startInfo.EnvironmentVariables);
 
-                    using (var environmentBlock = SessionHelper.CreateEnvironmentBlock(tokenToUse, envVars, inheritEnvironment))
+                    using (var environmentBlock = TokenManager.CreateTokenEnvironmentBlock(tokenToUse, envVars, inheritEnvironment))
                     {
                         ConsoleHelper.DebugWrite($"Attempting to start process with CreateProcessAsUser with: FileName [{startInfo.FileName}], Arguments [{string.Join(", ", startInfo.Arguments)}], WorkingDirectory [{startInfo.WorkingDirectory}].", MessageType.Debug);
 

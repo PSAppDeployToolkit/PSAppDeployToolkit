@@ -1,32 +1,33 @@
 ﻿using System;
 using System.Threading;
-using PSADT.Impersonation;
+using PSADT.PowerShellHost;
+using PSADT.AccessToken;
 
-namespace PSADT.PowerShellHost
+namespace PSADT.Shared
 {
     /// <summary>
-    /// Represents the context for executing PowerShell scripts.
+    /// Represents the context for executing commands and PowerShell scripts.
     /// </summary>
     public class ExecutionContext
     {
         /// <summary>
         /// The options for configuring PowerShell execution.
         /// </summary>
-        public PSExecutionOptions Options { get; set; }
+        public PSExecutionOptions PSOptions { get; set; }
 
         /// <summary>
         /// The impersonator object to be used for executing actions under a different security context.
         /// </summary>
-        public Impersonator? Impersonator { get; set; }
+        public ImpersonationManager? Impersonator { get; set; }
 
         /// <summary>
         /// The cancellation token to signal cancellation of operations.
         /// </summary>
         public CancellationToken CancellationToken { get; set; }
 
-        public ExecutionContext(PSExecutionOptions options, CancellationToken cancellationToken, Impersonator? impersonator = null)
+        public ExecutionContext(PSExecutionOptions psOptions, CancellationToken cancellationToken, ImpersonationManager? impersonator = null)
         {
-            Options = options ?? throw new ArgumentNullException(nameof(options));
+            PSOptions = psOptions ?? throw new ArgumentNullException(nameof(psOptions));
             Impersonator = impersonator;
             CancellationToken = cancellationToken;
         }

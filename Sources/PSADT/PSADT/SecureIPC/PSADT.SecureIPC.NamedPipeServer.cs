@@ -1,342 +1,133 @@
 ﻿using System;
-using System.Text;
-using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Security.AccessControl;
-using PSADT.Trust;
-using PSADT.PInvoke;
-using PSADT.PathEx;
-using PSADT.Impersonation;
-using PSADT.PowerShellHost;
-using PSADT.ConsoleEx;
+using PSADT.Shared;
 
 namespace PSADT.SecureIPC
 {
     /// <summary>
-    /// Represents a secure named pipe server that supports impersonation and privilege management.
+    /// Represents a secure named pipe server.
+    /// Inherits common functionality from <see cref="NamedPipeBase"/> and handles server-specific operations.
     /// </summary>
-    internal class NamedPipeServer : IDisposable
+    public class NamedPipeServer : NamedPipeBase
     {
-        private readonly NamedPipeServerOptions _options;
-        private NamedPipeServerStream? _pipeStream;
-        private bool _isDisposed;
+        /// <summary>
+        /// Event triggered when a client connects to the named pipe server.
+        /// </summary>
+        public event EventHandler<EventArgs>? Connected;
 
         /// <summary>
-        /// Initializes a new instance of the SecureNamedPipeServer class.
+        /// Named pipe server stream for handling client connections.
         /// </summary>
-        /// <param name="options">The options for configuring the server.</param>
-        public NamedPipeServer(NamedPipeServerOptions options)
-        {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-        }
+        private readonly NamedPipeServerStream _serverPipeStream;
 
         /// <summary>
-        /// Creates and starts listening on the named pipe.
+        /// Initializes a new instance of the <see cref="NamedPipeServer"/> class with the specified options.
         /// </summary>
-        /// <exception cref="SecureNamedPipeException">Thrown when the pipe creation fails.</exception>
-        public void Start()
+        /// <param name="options">The named pipe options, including pipe name and encoding.</param>
+        public NamedPipeServer(NamedPipeOptions options, [PowerShellScriptBlock] Action<NamedPipeBase> asyncReader)
+            : base(options, asyncReader)
         {
             try
             {
-                _pipeStream = new NamedPipeServerStream(
-                    _options.PipeName,
+                _serverPipeStream = new NamedPipeServerStream(
+                    options.PipeName,
                     PipeDirection.InOut,
-                    _options.MaxServerInstances,
+                    options.MaxNumberOfServerInstances,
                     PipeTransmissionMode.Message,
-                    PipeOptions.Asynchronous,
-                    _options.InBufferSize,
-                    _options.OutBufferSize);
+                    PipeOptions.Asynchronous | (options.SecurityOptions?.AsPipeOptions() ?? PipeOptions.None));
 
-                _pipeStream.SetAccessControl(GetPipeSecurity());
+                if (options.WriteTimeout > 0)
+                {
+                    _serverPipeStream.WriteTimeout = options.WriteTimeout;
+                }
+
+                _serverPipeStream.SetAccessControl(GetPipeSecurity());
+
+                _pipeStream = _serverPipeStream;
             }
             catch (Exception ex)
             {
-                throw new SecureNamedPipeException("Failed to create named pipe.", ex);
+                throw new SecureNamedPipeException("Failed to initialize named pipe server.", ex);
             }
         }
 
         /// <summary>
-        /// Defines the security settings for the named pipe.
+        /// Waits for a client to connect to the pipe asynchronously.
         /// </summary>
-        /// <returns>A PipeSecurity object with the defined access rules.</returns>
+        /// <returns>A task that represents the asynchronous wait for a client connection.</returns>
+        public async Task WaitForConnectionAsync(CancellationToken cancellationToken)
+        {
+            await _serverPipeStream.WaitForConnectionAsync(cancellationToken);
+            Connected?.Invoke(this, EventArgs.Empty);
+
+            if (_options.VerifyPowerShellClient && !IsPipeConnectedProcessPowerShell(_serverPipeStream.SafePipeHandle))
+            {
+                throw new SecureNamedPipeException("Connected client is not a PowerShell process.");
+            }
+        }
+
+        /// <summary>
+        /// Start reading data from the client asynchronously with the configured reader action.
+        /// </summary>
+        public void StartAsyncReaderAction()
+        {
+            // Begin reading data from the client after connection
+            _asyncReader(this);
+        }
+
+        /// <summary>
+        /// Configures the security settings for the named pipe.
+        /// </summary>
+        /// <returns>The pipe security settings.</returns>
         private PipeSecurity GetPipeSecurity()
         {
-            var pipeSecurity = new PipeSecurity();
+            PipeSecurity pipeSecurity = new PipeSecurity();
 
-            pipeSecurity.AddAccessRule(new PipeAccessRule("SYSTEM", PipeAccessRights.FullControl, AccessControlType.Allow));
+            // Grant FullControl to SYSTEM
+            pipeSecurity.AddAccessRule(new PipeAccessRule(
+                new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null),
+                PipeAccessRights.FullControl,
+                AccessControlType.Allow));
 
-            if (_options.AllowedUserSid == null)
-            {
-                pipeSecurity.AddAccessRule(new PipeAccessRule("Authenticated Users", PipeAccessRights.ReadWrite, AccessControlType.Allow));
-            }
-            else
-            {
-                pipeSecurity.AddAccessRule(new PipeAccessRule(_options.AllowedUserSid, PipeAccessRights.ReadWrite, AccessControlType.Allow));
-            }
+            // Grant ReadWrite access to Authenticated Users
+            SecurityIdentifier allowedUserSid = _options.AllowedUserSid ?? new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+            pipeSecurity.AddAccessRule(new PipeAccessRule(
+                allowedUserSid,
+                PipeAccessRights.ReadWrite,
+                AccessControlType.Allow));
+
+            // Deny access to Everyone
+            pipeSecurity.AddAccessRule(new PipeAccessRule(
+                new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                PipeAccessRights.FullControl,
+                AccessControlType.Deny));
 
             return pipeSecurity;
         }
 
         /// <summary>
-        /// Waits for a client connection asynchronously.
+        /// Closes and disposes of the server pipe stream.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token to observe while waiting for a connection.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        /// <exception cref="SecureNamedPipeException">Thrown when the connection fails.</exception>
-        public async Task WaitForConnectionAsync(CancellationToken cancellationToken = default)
+        public void Stop()
         {
-            if (_pipeStream == null)
-            {
-                throw new SecureNamedPipeException("Named pipe has not been created or is invalid.");
-            }
-
-            using var cancellationRegistration = cancellationToken.Register(() => _pipeStream.Dispose());
-
-            try
-            {
-                await _pipeStream.WaitForConnectionAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                throw new SecureNamedPipeException("Waiting for connection was canceled.");
-            }
-            catch (Exception ex)
-            {
-                throw new SecureNamedPipeException("Failed to wait for connection.", ex);
-            }
-
-            ValidateClientProcess();
+            Close();
         }
 
         /// <summary>
-        /// Waits for a client connection and reads data from the pipe asynchronously.
+        /// Disposes the resources used by the <see cref="NamedPipeServer"/> class.
         /// </summary>
-        /// <returns>The data read from the pipe.</returns>
-        /// <exception cref="SecureNamedPipeException">Thrown when the connection fails or reading fails.</exception>
-        public async Task<string> WaitForConnectionAndReadDataAsync(CancellationToken cancellationToken = default)
+        /// <param name="disposing">Indicates whether managed resources should be disposed.</param>
+        protected override void Dispose(bool disposing)
         {
-            if (_pipeStream == null || !_pipeStream.IsConnected)
-            {
-                throw new SecureNamedPipeException("Named pipe is not connected.");
-            }
-
-            await _pipeStream.WaitForConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-            using (var reader = new StreamReader(_pipeStream))
-            {
-                var messageBuilder = new StringBuilder();
-                char[] buffer = new char[1024]; // Buffer size can be adjusted based on expected message size.
-
-                do
-                {
-                    int bytesRead = await reader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
-                    messageBuilder.Append(buffer, 0, bytesRead);
-                }
-                while (!_pipeStream.IsMessageComplete); // Continue reading until the entire message is received.
-
-                return messageBuilder.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Writes data to the pipe asynchronously.
-        /// </summary>
-        /// <param name="data">The data to write to the pipe.</param>
-        /// <exception cref="SecureNamedPipeException">Thrown when writing fails.</exception>
-        public async Task WriteDataAsync(string data)
-        {
-            if (_pipeStream == null || !_pipeStream.IsConnected)
-            {
-                throw new SecureNamedPipeException("Named pipe is not connected.");
-            }
-
-            using (var writer = new StreamWriter(_pipeStream, _options.Encoding))
-            {
-                int chunkSize = _options.OutBufferSize;
-
-                if (_options.UseByteArrayConversion)
-                {
-                    // Convert the data to a byte array using the specified encoding
-                    byte[] dataBytes = _options.Encoding.GetBytes(data);
-                    int totalBytes = dataBytes.Length;
-                    int offset = 0;
-
-                    // Write the data in chunks
-                    while (offset < totalBytes)
-                    {
-                        int currentChunkSize = Math.Min(chunkSize, totalBytes - offset);
-                        await _pipeStream.WriteAsync(dataBytes, offset, currentChunkSize).ConfigureAwait(false);
-                        offset += currentChunkSize;
-                    }
-                }
-                else
-                {
-                    // Use string slicing based on chunk size
-                    int totalLength = data.Length;
-                    int offset = 0;
-
-                    while (offset < totalLength)
-                    {
-                        int currentChunkSize = Math.Min(chunkSize, totalLength - offset);
-                        string chunkData = data.Substring(offset, currentChunkSize);
-
-                        await writer.WriteAsync(chunkData).ConfigureAwait(false);
-                        await writer.FlushAsync().ConfigureAwait(false);
-
-                        offset += currentChunkSize;
-                    }
-                }
-
-                await writer.FlushAsync().ConfigureAwait(false);
-            }
-        }
-
-
-        /// <summary>
-        /// Validates the client process based on the server options.
-        /// </summary>
-        /// <exception cref="SecureNamedPipeException">Thrown when the client process is not allowed to connect.</exception>
-        private void ValidateClientProcess()
-        {
-            if (!_options.RestrictToPowerShellOnly)
-            {
-                return;
-            }
-
-            var clientProcessId = GetClientProcessId();
-            var clientProcess = System.Diagnostics.Process.GetProcessById(clientProcessId);
-
-            if (!clientProcess.ProcessName.Equals("powershell", StringComparison.OrdinalIgnoreCase) &&
-                !clientProcess.ProcessName.Equals("pwsh", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new SecureNamedPipeException("Only PowerShell processes are allowed to connect.");
-            }
-
-            // Use the SignatureVerifier class to verify the digital signature of the file.
-            using (var verifier = new DigitalSignature())
-            {
-                string filePath = PathHelper.ResolveExecutableFullPath(clientProcess.StartInfo.FileName)
-                    ?? throw new SecureNamedPipeException("Failed to resolve executable path so that we could validate the client process is a PowerShell host.");
-
-                var result = verifier.Verify(filePath);
-                ConsoleHelper.DebugWrite($"Client process with path [{filePath}] is {(result.IsAuthenticodeSigned ? "" : "not")} [AuthenticodeSigned].", MessageType.Debug);
-                ConsoleHelper.DebugWrite($"Client process with path [{filePath}] is {(result.IsCatalogSigned ? "" : "not")} [CatalogSigned].", MessageType.Debug);
-
-                if (!result.IsAuthenticodeSigned && !result.IsCatalogSigned)
-                {
-                    throw new SecureNamedPipeException("Only PowerShell processes with a verified authenticode or catalog signature are allowed to connect.");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the process ID of the connected client.
-        /// </summary>
-        /// <returns>The process ID of the connected client.</returns>
-        /// <exception cref="SecureNamedPipeException">Thrown when unable to get the client process ID.</exception>
-        private int GetClientProcessId()
-        {
-            if (_pipeStream == null)
-            {
-                throw new SecureNamedPipeException("Pipe stream is not initialized.");
-            }
-
-            if (!NativeMethods.GetNamedPipeClientProcessId(_pipeStream.SafePipeHandle.DangerousGetHandle(), out var clientProcessId))
-            {
-                throw new SecureNamedPipeException("Failed to get client process id.", new Win32Exception(Marshal.GetLastWin32Error()));
-            }
-            return (int)clientProcessId;
-        }
-
-        /// <summary>
-        /// Impersonates the connected client.
-        /// </summary>
-        /// <returns>An Impersonator object that can be used to revert the impersonation.</returns>
-        /// <exception cref="SecureNamedPipeException">Thrown when impersonation fails.</exception>
-        public Impersonator ImpersonateClient()
-        {
-            if (_pipeStream == null || !_pipeStream.IsConnected)
-            {
-                throw new SecureNamedPipeException("Named pipe is not connected.");
-            }
-
-            Impersonator? impersonator = null;
-            PSADTShell.ExecuteWithMTA(() =>
-            {
-                impersonator = new Impersonator(_options.ImpersonationOptions);
-                impersonator.ImpersonateNamedPipeClient(_pipeStream.SafePipeHandle);
-            });
-
-            if (impersonator == null)
-            {
-                throw new SecureNamedPipeException("Failed to create impersonator.");
-            }
-
-            return impersonator;
-        }
-
-        /// <summary>
-        /// Gets a stream for reading from and writing to the pipe.
-        /// </summary>
-        /// <returns>A PipeStream object for the connected pipe.</returns>
-        /// <exception cref="SecureNamedPipeException">Thrown when the pipe is not connected.</exception>
-        public PipeStream GetStream()
-        {
-            if (_pipeStream == null || !_pipeStream.IsConnected)
-            {
-                throw new SecureNamedPipeException("Named pipe is not connected.");
-            }
-
-            return _pipeStream;
-        }
-
-        public void Disconnect()
-        {
-            if (_pipeStream == null || !_pipeStream.IsConnected)
-            {
-                throw new InvalidOperationException("No connected client to disconnect.");
-            }
-
-            try
-            {
-                _pipeStream.Disconnect();
-            }
-            catch (Exception ex)
-            {
-                throw new SecureNamedPipeException("Failed to disconnect the named pipe.", ex);
-            }
-        }
-
-        /// <summary>
-        /// Disposes the SecureNamedPipeServer instance.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Disposes the SecureNamedPipeServer instance.
-        /// </summary>
-        /// <param name="disposing">True if disposing managed resources, false otherwise.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-
             if (disposing)
             {
-                _pipeStream?.Dispose();
+                _serverPipeStream.Dispose();
             }
-
-            _isDisposed = true;
+            base.Dispose(disposing);
         }
     }
 }

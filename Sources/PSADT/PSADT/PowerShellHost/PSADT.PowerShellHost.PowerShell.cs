@@ -5,7 +5,6 @@ using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.PathEx;
-using PSADT.Impersonation;
 
 
 namespace PSADT.PowerShellHost
@@ -20,136 +19,71 @@ namespace PSADT.PowerShellHost
         /// </summary>
         /// <param name="context">The execution context containing configuration options, impersonator, and cancellation token.</param>
         /// <returns>A collection of <see cref="PSObject"/> representing the output of the PowerShell script.</returns>
-        public static PSDataCollection<PSObject> Execute(ExecutionContext context)
+        public static PSDataCollection<PSObject> ExecutePS(Shared.ExecutionContext context)
         {
-            return ExecuteAsync(context).GetAwaiter().GetResult();
+            return ExecutePSAsync(context).GetAwaiter().GetResult();
         }
 
         /// <summary>
         /// Executes a PowerShell script asynchronously using the provided execution context.
         /// </summary>
-        /// <param name="context">The execution context containing configuration options, impersonator, and cancellation token.</param>
+        /// <param name="executionContext">The execution context containing configuration options, impersonator, and cancellation token.</param>
         /// <returns>A task representing the asynchronous operation, with a collection of <see cref="PSObject"/> as the result.</returns>
-        public static async Task<PSDataCollection<PSObject>> ExecuteAsync(ExecutionContext context)
+        public static async Task<PSDataCollection<PSObject>> ExecutePSAsync(Shared.ExecutionContext executionContext)
         {
-            ValidateOptions(context.Options);
+            ValidateCommandOptions(executionContext.PSOptions);
 
             PSDataCollection<PSObject> output = new PSDataCollection<PSObject>();
 
             await Task.Run(async () =>
             {
-                await ExecuteWithMTAAsync(async () =>
-                {
-                    using Runspace runspace = CreateRunspace(context);
-                    using PowerShell powershell = System.Management.Automation.PowerShell.Create();
-                    powershell.Runspace = runspace;
+                using Runspace runspace = CreateRunspace(executionContext);
+                using PowerShell powershell = System.Management.Automation.PowerShell.Create();
+                powershell.Runspace = runspace;
 
-                    ConfigureExecutionPolicy(powershell, context.Options);
-                    ConfigureEnvironment(powershell, context);
+                ConfigureExecutionPolicy(powershell, executionContext.PSOptions);
+                ConfigureEnvironment(powershell, executionContext);
 
-                    try
-                    {
-                        output = await InvokePowerShellAsync(powershell, context).ConfigureAwait(false);
+                Command command = CreateCommand(executionContext.PSOptions);
+                powershell.Commands.AddCommand(command);
 
-                        if (context.Options.CollectStreams)
-                        {
-                            CollectStreams(powershell, ref output);
-                        }
-
-                        if (context.Options.ErrorActionPreference == ActionPreference.Stop && powershell.HadErrors)
-                        {
-                            throw new InvalidOperationException("PowerShell execution encountered errors.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new InvalidOperationException("PowerShell invocation failed.", ex);
-                    }
-                }, context.Impersonator);
-            }, context.CancellationToken).ConfigureAwait(false);
-
-            return output;
-        }
-
-        /// <summary>
-        /// Executes an action within a new thread configured to use the Multi-Threaded Apartment (MTA) model asynchronously.
-        /// </summary>
-        /// <param name="action">The action to execute.</param>
-        /// <param name="impersonator">The impersonator object used to run the action under a different security context.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        private static async Task ExecuteWithMTAAsync(
-            Func<Task> action,
-            Impersonator? impersonator = null)
-        {
-            Exception? exception = null;
-            var taskCompletionSource = new TaskCompletionSource<object?>();
-
-            var thread = new Thread(async () =>
-            {
                 try
                 {
-                    if (impersonator != null)
+                    if (executionContext.Impersonator == null)
                     {
-                        impersonator.Impersonate(async () =>
+                        // Simply execute the provided action directly without impersonation
+                        await Shared.ExecuteMethod.RunMethodAsync(async () =>
                         {
-                            await action().ConfigureAwait(false);
+                            output = await InvokePowerShellAsync(powershell, executionContext).ConfigureAwait(false);
                         });
                     }
                     else
                     {
-                        await action().ConfigureAwait(false);
+                        // Execute the provided action in the MTA thread with impersonation. MTA is required for impersonation if executing this method from PowerShell.
+                        await executionContext.Impersonator.RunImpersonatedMethodWithMTAAsync(async () =>
+                        {
+                            output = await InvokePowerShellAsync(powershell, executionContext).ConfigureAwait(false);
+                        });
                     }
 
-                    taskCompletionSource.SetResult(null);
+                    if (executionContext.PSOptions.CollectStreams)
+                    {
+                        CollectStreams(powershell, ref output);
+                    }
+
+                    if (executionContext.PSOptions.ErrorActionPreference == ActionPreference.Stop && powershell.HadErrors)
+                    {
+                        throw new InvalidOperationException("PowerShell execution encountered errors.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    exception = ex;
-                    taskCompletionSource.SetException(exception);
+                    throw new InvalidOperationException("PowerShell invocation failed.", ex);
                 }
-            });
+            }, executionContext.CancellationToken).ConfigureAwait(false);
 
-            thread.SetApartmentState(ApartmentState.MTA);
-            thread.Start();
-
-            await taskCompletionSource.Task.ConfigureAwait(false);
-
-            if (exception != null)
-            {
-                throw new InvalidOperationException("Execution in MTA thread failed.", exception);
-            }
+            return output;
         }
-
-        /// <summary>
-        /// Executes an action within a new thread configured to use the Multi-Threaded Apartment (MTA) model synchronously.
-        /// </summary>
-        /// <param name="action">The action to execute.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the action execution encounters errors.</exception>
-        public static void ExecuteWithMTA(Action action)
-        {
-            Exception? exception = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-                }
-            });
-
-            thread.SetApartmentState(ApartmentState.MTA);
-            thread.Start();
-            thread.Join();
-
-            if (exception != null)
-            {
-                throw new InvalidOperationException("Execution in MTA thread failed.", exception);
-            }
-        }
-
 
         /// <summary>
         /// Invokes the PowerShell script asynchronously using the provided PowerShell instance and execution context.
@@ -159,14 +93,14 @@ namespace PSADT.PowerShellHost
         /// <returns>A task representing the asynchronous operation, with a collection of <see cref="PSObject"/> as the result.</returns>
         private static async Task<PSDataCollection<PSObject>> InvokePowerShellAsync(
             PowerShell powershell,
-            ExecutionContext context)
+            Shared.ExecutionContext context)
         {
             PSDataCollection<PSObject> output = new PSDataCollection<PSObject>();
 
-            if (context.Options.Timeout.HasValue)
+            if (context.PSOptions.Timeout.HasValue)
             {
                 using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
-                cts.CancelAfter(context.Options.Timeout.Value);
+                cts.CancelAfter(context.PSOptions.Timeout.Value);
                 using (cts.Token.Register(() => powershell.Stop()))
                 {
 #if !CoreCLR
@@ -196,18 +130,33 @@ namespace PSADT.PowerShellHost
         /// </summary>
         /// <param name="context">The execution context containing configuration options.</param>
         /// <returns>A configured <see cref="Runspace"/> object.</returns>
-        private static Runspace CreateRunspace(ExecutionContext context)
+        private static Runspace CreateRunspace(Shared.ExecutionContext context)
         {
             Runspace runspace;
 
-            if (context.Options.IsOutOfProcessRunspace == true)
+            if (context.PSOptions.IsOutOfProcessRunspace == true)
             {
-                string psFilePath = GetPowerShellPath(context.Options);
+                var processStartInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = GetPowerShellPath(context.PSOptions),
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
+
+                if (context.PSOptions.RunAsAdministrator)
+                {
+                    processStartInfo.Verb = "runas";
+                }
+
+                string psFilePath = GetPowerShellPath(context.PSOptions);
                 var psi = new PowerShellProcessInstance
                 {
                     Process =
                     {
-                        StartInfo = { FileName = psFilePath }
+                        StartInfo = processStartInfo
                     }
                 };
 
@@ -215,15 +164,15 @@ namespace PSADT.PowerShellHost
             }
             else
             {
-                InitialSessionState iss = context.Options.InitialSessionState ?? InitialSessionState.CreateDefault();
-                ConfigureInitialSessionState(iss, context.Options);
-                runspace = RunspaceFactory.CreateRunspace(context.Options.PSADTHost ?? new DefaultHost(), iss);
+                InitialSessionState iss = context.PSOptions.InitialSessionState ?? InitialSessionState.CreateDefault();
+                ConfigureInitialSessionState(iss, context.PSOptions);
+                runspace = RunspaceFactory.CreateRunspace(context.PSOptions.PSADTHost ?? new DefaultHost(), iss);
             }
 
-            runspace.ThreadOptions = context.Options.ThreadOptions;
-            if (context.Options.ApartmentState != ApartmentState.Unknown)
+            runspace.ThreadOptions = context.PSOptions.ThreadOptions;
+            if (context.PSOptions.ApartmentState != ApartmentState.Unknown)
             {
-                runspace.ApartmentState = context.Options.ApartmentState;
+                runspace.ApartmentState = context.PSOptions.ApartmentState;
             }
 
             runspace.Open();
@@ -255,27 +204,27 @@ namespace PSADT.PowerShellHost
         /// <param name="powershell">The <see cref="PowerShell"/> instance to configure.</param>
         private static void ConfigureEnvironment(
             PowerShell powershell,
-            ExecutionContext context)
+            Shared.ExecutionContext context)
         {
-            if (!string.IsNullOrEmpty(context.Options.WorkingDirectory))
+            if (!string.IsNullOrEmpty(context.PSOptions.WorkingDirectory))
             {
-                powershell.AddCommand("Set-Location").AddParameter("Path", context.Options.WorkingDirectory).Invoke();
+                powershell.AddCommand("Set-Location").AddParameter("Path", context.PSOptions.WorkingDirectory).Invoke();
                 powershell.Commands.Clear();
             }
 
-            if (context.Options.Culture != null)
+            if (context.PSOptions.Culture != null)
             {
-                powershell.AddScript($"[System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::GetCultureInfo('{context.Options.Culture.Name}')").Invoke();
+                powershell.AddScript($"[System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::GetCultureInfo('{context.PSOptions.Culture.Name}')").Invoke();
                 powershell.Commands.Clear();
             }
 
-            if (context.Options.UICulture != null)
+            if (context.PSOptions.UICulture != null)
             {
-                powershell.AddScript($"[System.Threading.Thread]::CurrentThread.CurrentUICulture = [System.Globalization.CultureInfo]::GetCultureInfo('{context.Options.UICulture.Name}')").Invoke();
+                powershell.AddScript($"[System.Threading.Thread]::CurrentThread.CurrentUICulture = [System.Globalization.CultureInfo]::GetCultureInfo('{context.PSOptions.UICulture.Name}')").Invoke();
                 powershell.Commands.Clear();
             }
 
-            LoadAssemblies(context.Options, powershell);
+            LoadAssemblies(context.PSOptions, powershell);
         }
 
         /// <summary>
@@ -352,17 +301,40 @@ namespace PSADT.PowerShellHost
         /// </summary>
         /// <param name="options">The execution options to validate.</param>
         /// <exception cref="ArgumentException">Thrown if neither ScriptPath nor ScriptText is provided.</exception>
-        private static void ValidateOptions(PSExecutionOptions options)
+        private static void ValidateCommandOptions(PSExecutionOptions options)
         {
-            if (string.IsNullOrWhiteSpace(options.ScriptText) && string.IsNullOrWhiteSpace(options.ScriptPath))
+            if (String.IsNullOrWhiteSpace(options.ScriptText) && String.IsNullOrWhiteSpace(options.ScriptPath))
             {
-                throw new ArgumentException("Either ScriptPath or ScriptText must be provided in the options.");
+                throw new ArgumentException("Either 'ScriptPath' or 'ScriptText' must be provided as a configuration option.");
             }
 
-            if (!string.IsNullOrWhiteSpace(options.ScriptPath))
+            if (!String.IsNullOrWhiteSpace(options.ScriptText) && !String.IsNullOrWhiteSpace(options.ScriptPath))
+            {
+                throw new ArgumentException("Both 'ScriptPath' and 'ScriptText' cannot be provided as a configuration option.");
+            }
+        }
+
+        private static Command CreateCommand(PSExecutionOptions options)
+        {
+            if (!String.IsNullOrWhiteSpace(options.ScriptPath))
             {
                 options.ScriptText = File.ReadAllText(options.ScriptPath);
+                if (String.IsNullOrWhiteSpace(options.ScriptText))
+                {
+                    throw new ArgumentException($"The file specified in the 'ScriptPath' option [{options.ScriptPath}] contains no data.");
+                }
             }
+
+            var command = new Command(options.ScriptText!, true);
+            if (options.Parameters != null)
+            {
+                foreach (var parameter in options.Parameters)
+                {
+                    command.Parameters.Add(parameter.Key, parameter.Value);
+                }
+            }
+
+            return command;
         }
 
         /// <summary>
