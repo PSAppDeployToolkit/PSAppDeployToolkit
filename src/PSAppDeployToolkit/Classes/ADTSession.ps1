@@ -216,7 +216,7 @@ class ADTSession
         # Mount the WIM file and reset DirFiles to the mount point.
         $this.WriteZeroConfigDivider()
         $this.WriteLogEntry("Discovered Zero-Config WIM file [$wimFile].")
-        & $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $wimFile -Path ($this.DirFiles = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())) -Index 1 -InformationAction Ignore
+        & $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $wimFile -Path ($this.DirFiles = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())) -Index 1 6>$null
         $this.WriteLogEntry("Successfully mounted WIM file to [$($this.DirFiles)].")
         $this.WriteLogEntry("Using [$($this.DirFiles)] as the base DirFiles directory.")
     }
