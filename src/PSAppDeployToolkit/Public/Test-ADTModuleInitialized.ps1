@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Test-ADTModuleInitialised
+# MARK: Test-ADTModuleInitialized
 #
 #-----------------------------------------------------------------------------
 
-function Test-ADTModuleInitialised
+function Test-ADTModuleInitialized
 {
     <#
     .SYNOPSIS
@@ -24,7 +24,7 @@ function Test-ADTModuleInitialised
         Returns $true if the ADT module is initialized, otherwise $false.
 
     .EXAMPLE
-        Test-ADTModuleInitialised
+        Test-ADTModuleInitialized
 
         Checks if the ADT module is initialized and returns true or false.
 
@@ -40,5 +40,5 @@ function Test-ADTModuleInitialised
         https://psappdeploytoolkit.com
     #>
 
-    return (& $Script:CommandTable.'Get-ADTModuleData').Initialised
+    return (& $Script:CommandTable.'Get-ADTModuleData').Initialized
 }

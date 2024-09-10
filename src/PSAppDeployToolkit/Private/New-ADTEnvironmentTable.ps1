@@ -129,7 +129,7 @@ function New-ADTEnvironmentTable
     $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
     $variables.Add('psArchitecture', $archArr[$variables.Is64BitProcess])
 
-    ## Variables: Get normalised paths that vary depending on process bitness.
+    ## Variables: Get normalized paths that vary depending on process bitness.
     if ($variables.Is64Bit)
     {
         if ($variables.Is64BitProcess)

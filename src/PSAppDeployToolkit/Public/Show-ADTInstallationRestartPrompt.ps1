@@ -95,7 +95,7 @@ function Show-ADTInstallationRestartPrompt
 
     dynamicparam
     {
-        # Initialise variables.
+        # Initialize variables.
         $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
 
         # Define parameter dictionary for returning at the end.
@@ -115,7 +115,7 @@ function Show-ADTInstallationRestartPrompt
 
     begin
     {
-        # Initialise function.
+        # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.

@@ -45,7 +45,7 @@ function Get-ADTConfig
     (
     )
 
-    # Return the config database if initialised.
+    # Return the config database if initialized.
     if (!($adtData = & $Script:CommandTable.'Get-ADTModuleData').Config -or !$adtData.Config.Count)
     {
         $naerParams = @{
@@ -53,7 +53,7 @@ function Get-ADTConfig
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTConfigNotLoaded'
             TargetObject = $adtData.Config
-            RecommendedAction = "Please ensure the module is initialised via [Initialize-ADTModule] and try again."
+            RecommendedAction = "Please ensure the module is initialized via [Initialize-ADTModule] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
     }

@@ -157,7 +157,7 @@ function Copy-ADTFileToUserProfiles
 
     begin
     {
-        # Initalise function.
+        # Initalize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Define default params for & $Script:CommandTable.'Copy-ADTFile'.
@@ -214,7 +214,7 @@ function Copy-ADTFileToUserProfiles
             & $Script:CommandTable.'Copy-ADTFile' -Path $sourcePaths -Destination $dest @CopyFileSplat
         }
 
-        # Finalise function.
+        # Finalize function.
         & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

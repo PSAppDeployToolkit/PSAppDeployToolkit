@@ -126,8 +126,8 @@ function Close-ADTSession
             return
         }
 
-        # Flag the module as uninitialised upon last session closure.
-        $adtData.Initialised = $false
+        # Flag the module as uninitialized upon last session closure.
+        $adtData.Initialized = $false
 
         # Return early if this function was called from the command line.
         if ($adtSession.RunspaceOrigin)
@@ -146,7 +146,7 @@ function Close-ADTSession
 
     end
     {
-        # Finalise function.
+        # Finalize function.
         & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }

@@ -31,7 +31,7 @@
         Config = $null
         Strings = $null
         LastExitCode = 0
-        Initialised = $false
+        Initialized = $false
     })
 
 # Define object for holding all dialog window variables.

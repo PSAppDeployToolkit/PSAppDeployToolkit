@@ -45,7 +45,7 @@ function Get-ADTEnvironment
     (
     )
 
-    # Return the environment database if initialised.
+    # Return the environment database if initialized.
     if (!($adtData = & $Script:CommandTable.'Get-ADTModuleData').Environment -or !$adtData.Environment.Count)
     {
         $naerParams = @{
@@ -53,7 +53,7 @@ function Get-ADTEnvironment
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTEnvironmentDatabaseEmpty'
             TargetObject = $adtData.Environment
-            RecommendedAction = "Please ensure the module is initialised via [Initialize-ADTModule] and try again."
+            RecommendedAction = "Please ensure the module is initialized via [Initialize-ADTModule] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
     }

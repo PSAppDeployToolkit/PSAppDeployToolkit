@@ -135,7 +135,7 @@ function Show-ADTInstallationPrompt
             $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
         }
 
-        # Initialise variables.
+        # Initialize variables.
         $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
         $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
@@ -168,7 +168,7 @@ function Show-ADTInstallationPrompt
 
     begin
     {
-        # Initialise function.
+        # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.

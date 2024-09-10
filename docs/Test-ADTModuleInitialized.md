@@ -5,7 +5,7 @@ online version: https://psappdeploytoolkit.com
 schema: 2.0.0
 ---
 
-# Test-ADTModuleInitialised
+# Test-ADTModuleInitialized
 
 ## SYNOPSIS
 Checks if the ADT (PSAppDeployToolkit) module is initialized.
@@ -13,7 +13,7 @@ Checks if the ADT (PSAppDeployToolkit) module is initialized.
 ## SYNTAX
 
 ```
-Test-ADTModuleInitialised
+Test-ADTModuleInitialized
 ```
 
 ## DESCRIPTION
@@ -23,7 +23,7 @@ This function checks if the ADT (PSAppDeployToolkit) module is initialized by re
 
 ### EXAMPLE 1
 ```
-Test-ADTModuleInitialised
+Test-ADTModuleInitialized
 ```
 
 Checks if the ADT module is initialized and returns true or false.

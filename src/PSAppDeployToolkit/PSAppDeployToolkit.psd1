@@ -168,7 +168,7 @@
         'Stop-ADTServiceAndDependencies'
         'Test-ADTBattery'
         'Test-ADTCallerIsAdmin'
-        'Test-ADTModuleInitialised'
+        'Test-ADTModuleInitialized'
         'Test-ADTMSUpdates'
         'Test-ADTNetworkConnection'
         'Test-ADTPowerPoint'

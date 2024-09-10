@@ -88,7 +88,7 @@ function Show-ADTInstallationProgress
 
     dynamicparam
     {
-        # Initialise the module first if needed.
+        # Initialize the module first if needed.
         $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
         $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
@@ -127,7 +127,7 @@ function Show-ADTInstallationProgress
 
     begin
     {
-        # Initialise function.
+        # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
         $errRecord = $null

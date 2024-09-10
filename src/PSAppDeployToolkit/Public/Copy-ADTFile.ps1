@@ -96,7 +96,7 @@ function Copy-ADTFile
 
     dynamicparam
     {
-        # If a FileCopyMode hasn't been specified, potentially initialise the module so we can get it from the config.
+        # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
         if (!$FileCopyMode)
         {
             $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
