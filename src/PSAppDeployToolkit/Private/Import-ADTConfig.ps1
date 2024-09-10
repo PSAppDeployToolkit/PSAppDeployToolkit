@@ -16,13 +16,13 @@ function Import-ADTConfig
     )
 
     # Process the incoming $BaseDirectory value.
-    $PSBoundParameters.BaseDirectory = if (![System.IO.Directory]::Exists([System.IO.Path]::Combine($BaseDirectory, 'Config')))
+    $PSBoundParameters.BaseDirectory = if (![System.IO.Directory]::Exists(($dataDir = [System.IO.Path]::Combine($BaseDirectory, 'Config'))))
     {
         [System.IO.Path]::Combine($Script:PSScriptRoot, 'Config')
     }
     else
     {
-        [System.IO.Path]::Combine($PSBoundParameters.BaseDirectory, 'Config')
+        $dataDir
     }
 
     # Get the current environment and create variables within this scope from the database, it's needed during the config import.
