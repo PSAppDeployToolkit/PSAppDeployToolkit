@@ -243,12 +243,36 @@ function Open-ADTSession
         $adtData = & $Script:CommandTable.'Get-ADTModuleData'
         $adtSession = $null
         $errRecord = $null
+
+        # Determine whether this session is to be in compatibility mode.
+        $PSBoundParameters.CompatibilityMode = (& $Script:CommandTable.'Get-PSCallStack').Command.Contains('AppDeployToolkitMain.ps1')
+        $PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)
+
+        # Set up the ScriptDirectory if one wasn't provided.
+        if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))
+        {
+            $PSBoundParameters.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
+            {
+                if ($PSBoundParameters.CompatibilityMode)
+                {
+                    [System.IO.Directory]::GetParent($scriptRoot).FullName
+                }
+                else
+                {
+                    $scriptRoot
+                }
+            }
+            else
+            {
+                $PWD.Path
+            }
+        }
     }
 
     process
     {
         # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialisation.
-        if (($PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)) -or (& $Script:CommandTable.'Test-ADTNonNativeCaller'))
+        if ($PSBoundParameters.RunspaceOrigin -or $PSBoundParameters.CompatibilityMode)
         {
             $adtData.Sessions.Clear()
         }
@@ -261,7 +285,7 @@ function Open-ADTSession
                 # Initialize the module before opening the first session.
                 if (($firstSession = !$adtData.Sessions.Count))
                 {
-                    & $Script:CommandTable.'Initialize-ADTModule'
+                    & $Script:CommandTable.'Initialize-ADTModule' -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
                 $adtData.Sessions.Add(($adtSession = [ADTSession]::new($PSBoundParameters)))
                 $adtSession.Open()

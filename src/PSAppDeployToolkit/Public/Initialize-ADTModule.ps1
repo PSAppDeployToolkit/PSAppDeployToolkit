@@ -43,6 +43,9 @@ function Initialize-ADTModule
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ScriptDirectory
     )
 
     begin
@@ -77,9 +80,9 @@ function Initialize-ADTModule
                 $adtData.Callbacks.Finishing.Clear()
                 $adtData.Sessions.Clear()
                 $adtData.Environment = & $Script:CommandTable.'New-ADTEnvironmentTable'
-                $adtData.Config = & $Script:CommandTable.'Import-ADTConfig'
+                $adtData.Config = & $Script:CommandTable.'Import-ADTConfig' @PSBoundParameters
                 $adtData.Language = & $Script:CommandTable.'Get-ADTStringLanguage'
-                $adtData.Strings = & $Script:CommandTable.'Import-ADTStringTable' -UICulture $adtData.Language
+                $adtData.Strings = & $Script:CommandTable.'Import-ADTStringTable' -UICulture $adtData.Language @PSBoundParameters
                 $adtData.LastExitCode = 0
                 $adtData.TerminalServerMode = $false
 
