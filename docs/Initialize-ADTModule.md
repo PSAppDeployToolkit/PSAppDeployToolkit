@@ -13,7 +13,7 @@ Initializes the ADT module by setting up necessary configurations and environmen
 ## SYNTAX
 
 ```
-Initialize-ADTModule [<CommonParameters>]
+Initialize-ADTModule [[-ScriptDirectory] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,6 +31,21 @@ Initialize-ADTModule
 Initializes the ADT module with the default settings and configurations.
 
 ## PARAMETERS
+
+### -ScriptDirectory
+An override directory to use for config and string loading.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
