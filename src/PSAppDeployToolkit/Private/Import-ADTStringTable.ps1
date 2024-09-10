@@ -20,13 +20,13 @@ function Import-ADTStringTable
     )
 
     # Process the incoming $BaseDirectory value.
-    $PSBoundParameters.BaseDirectory = if (![System.IO.Directory]::Exists([System.IO.Path]::Combine($BaseDirectory, 'Strings')))
+    $PSBoundParameters.BaseDirectory = if (![System.IO.Directory]::Exists(($dataDir = [System.IO.Path]::Combine($BaseDirectory, 'Strings'))))
     {
         [System.IO.Path]::Combine($Script:PSScriptRoot, 'Strings')
     }
     else
     {
-        [System.IO.Path]::Combine($PSBoundParameters.BaseDirectory, 'Strings')
+        $dataDir
     }
 
     # Store the chosen language within this session.
