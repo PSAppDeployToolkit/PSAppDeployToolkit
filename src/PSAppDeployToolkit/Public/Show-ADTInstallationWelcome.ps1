@@ -149,7 +149,7 @@ function Show-ADTInstallationWelcome
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$CloseAppsCountdown,
+        [System.Double]$CloseAppsCountdown,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
@@ -395,16 +395,17 @@ function Show-ADTInstallationWelcome
                     {
                         $CloseAppsCountdown = $ForceCountdown
                     }
-                    $adtSession.ExtensionData.CloseAppsCountdownGlobal = $CloseAppsCountdown
+                    $adtSession.CloseAppsCountdownGlobal = $CloseAppsCountdown
                     $promptResult = $null
 
                     while (($runningProcesses = if ($ProcessObjects) { $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
-                        $adtSession.ExtensionData.RunningProcessDescriptions = $runningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
+                        $adtSession.RunningProcessDescriptions = $runningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
 
                         # Define parameters for welcome prompt.
                         $promptParams = @{
+                            CloseAppsCountdown = $adtSession.CloseAppsCountdownGlobal
                             ForceCloseAppsCountdown = !!$ForceCloseAppsCountdown
                             ForceCountdown = $ForceCountdown
                             PersistPrompt = $PersistPrompt
@@ -418,11 +419,11 @@ function Show-ADTInstallationWelcome
                         if ($AllowDefer)
                         {
                             # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
-                            if ($AllowDeferCloseApps -and !$adtSession.ExtensionData.RunningProcessDescriptions)
+                            if ($AllowDeferCloseApps -and !$adtSession.RunningProcessDescriptions)
                             {
                                 break
                             }
-                            elseif (($promptResult -ne 'Close') -or ($adtSession.ExtensionData.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
+                            elseif (($promptResult -ne 'Close') -or ($adtSession.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
                             {
                                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
                                 $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }
@@ -430,7 +431,7 @@ function Show-ADTInstallationWelcome
                                 [String]$promptResult = & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @promptParams @deferParams
                             }
                         }
-                        elseif ($adtSession.ExtensionData.RunningProcessDescriptions -or !!$forceCountdown)
+                        elseif ($adtSession.RunningProcessDescriptions -or !!$forceCountdown)
                         {
                             # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
                             [String]$promptResult = & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @promptParams
@@ -540,12 +541,12 @@ function Show-ADTInstallationWelcome
                             }
 
                             # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
-                            if ($adtSession.ExtensionData.ContainsKey('WelcomeTimer') -and $adtSession.ExtensionData.WelcomeTimer)
+                            if ($adtSession.WelcomeTimer)
                             {
                                 try
                                 {
-                                    $adtSession.ExtensionData.WelcomeTimer.Dispose()
-                                    $adtSession.ExtensionData.WelcomeTimer = $null
+                                    $adtSession.WelcomeTimer.Dispose()
+                                    $adtSession.WelcomeTimer = $null
                                 }
                                 catch
                                 {
