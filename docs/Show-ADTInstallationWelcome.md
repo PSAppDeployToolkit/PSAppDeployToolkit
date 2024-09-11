@@ -14,7 +14,7 @@ Show a welcome dialog prompting the user with information about the installation
 
 ### None (Default)
 ```
-Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <UInt32>]
+Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
  [-ForceCloseAppsCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseApps] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] [<CommonParameters>]
@@ -22,7 +22,7 @@ Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-Clos
 
 ### CheckDiskSpace
 ```
-Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <UInt32>]
+Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
  [-ForceCloseAppsCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseApps] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-CheckDiskSpace]
  [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText]
@@ -131,7 +131,7 @@ Option to provide a countdown in seconds until the specified applications are au
 This only takes effect if deferral is not allowed or has expired.
 
 ```yaml
-Type: UInt32
+Type: Double
 Parameter Sets: (All)
 Aliases:
 

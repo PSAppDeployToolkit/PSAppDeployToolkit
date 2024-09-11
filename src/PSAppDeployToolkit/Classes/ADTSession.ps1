@@ -6,9 +6,6 @@
 
 class ADTSession
 {
-    # Private variables for modules to use that aren't for public access.
-    hidden [AllowEmptyCollection()][System.Collections.Hashtable]$ExtensionData = @{}
-
     # Internal variables that aren't for public access.
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
@@ -25,6 +22,12 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$Closed
     hidden [ValidateNotNullOrEmpty()][System.String]$LogPath
     hidden [ValidateNotNullOrEmpty()][System.Int32]$ExitCode
+
+    # Internal variables used within classic welcome dialog.
+    hidden [ValidateNotNullOrEmpty()][System.Drawing.Point]$FormWelcomeStartPosition
+    hidden [ValidateNotNullOrEmpty()][System.Double]$CloseAppsCountdownGlobal
+    hidden [AllowEmptyCollection()][System.String[]]$RunningProcessDescriptions
+    hidden [AllowNull()][System.Windows.Forms.Timer]$WelcomeTimer
 
     # Deploy-Application.ps1 parameters.
     [ValidateSet('Install', 'Uninstall', 'Repair')][System.String]$DeploymentType = 'Install'
