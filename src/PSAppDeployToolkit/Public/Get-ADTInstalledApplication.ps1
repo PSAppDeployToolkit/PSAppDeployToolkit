@@ -80,6 +80,7 @@ function Get-ADTInstalledApplication
         $logSource = $MyInvocation.MyCommand.Name
         $updatesSkippedCounter = 0
     }
+
     process
     {
         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting information for installed applications..."
@@ -111,7 +112,7 @@ function Get-ADTInstalledApplication
                         }
 
                         # Test the filterscript and return if it fails.
-                        if ($FilterScript -and !(ForEach-Object -InputObject $_ -Process $FilterScript))
+                        if ($FilterScript -and !(& $Script:CommandTable.'ForEach-Object' -InputObject $_ -Process $FilterScript))
                         {
                             return
                         }
