@@ -112,7 +112,7 @@ function Get-ADTInstalledApplication
                         }
 
                         # Test the filterscript and return if it fails.
-                        if ($FilterScript -and !(& $Script:CommandTable.'ForEach-Object' -InputObject $_ -Process $FilterScript))
+                        if ($FilterScript -and !(& $Script:CommandTable.'ForEach-Object' -InputObject $_ -Process $FilterScript -ErrorAction Ignore))
                         {
                             return
                         }
