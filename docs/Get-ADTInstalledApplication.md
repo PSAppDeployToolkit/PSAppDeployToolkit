@@ -13,8 +13,7 @@ Retrieves information about installed applications.
 ## SYNTAX
 
 ```
-Get-ADTInstalledApplication [[-Name] <String[]>] [[-ProductCode] <String[]>] [-Exact] [-WildCard] [-RegEx]
- [-IncludeUpdatesAndHotfixes] [<CommonParameters>]
+Get-ADTInstalledApplication [[-FilterScript] <ScriptBlock>] [-IncludeUpdatesAndHotfixes] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -26,92 +25,31 @@ Returns information about application publisher, name & version, product code, u
 
 ### EXAMPLE 1
 ```
-Get-ADTInstalledApplication -Name 'Adobe Flash'
+Get-ADTInstalledApplication
+```
+
+This example retrieves information about all installed applications.
+
+### EXAMPLE 2
+```
+Get-ADTInstalledApplication -FilterScript { $_.DisplayName -eq 'Adobe Flash' }
 ```
 
 This example retrieves information about installed applications with the name 'Adobe Flash'.
 
-### EXAMPLE 2
-```
-Get-ADTInstalledApplication -ProductCode '{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
-```
-
-This example retrieves information about the installed application with the specified product code.
-
 ## PARAMETERS
 
-### -Name
-The name of the application to retrieve information for.
-Performs a contains match on the application display name by default.
+### -FilterScript
+A script used to filter the results as they're processed.
 
 ```yaml
-Type: String[]
+Type: ScriptBlock
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: 1
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProductCode
-The product code of the application to retrieve information for.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Exact
-Specifies that the named application must be matched using the exact name.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -WildCard
-Specifies that the named application must be matched using a wildcard search.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RegEx
-Specifies that the named application must be matched using a regular expression search.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

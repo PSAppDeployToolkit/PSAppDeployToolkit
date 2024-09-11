@@ -351,10 +351,57 @@ function Get-InstalledApplication
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
     )
 
+    # Announce overall deprecation.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTInstalledApplication]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Build out filterscript based on provided input.
+    $filterScript = $(
+            if ($ProductCode)
+            {
+                # The usage of regex here is to 1:1 match the 3.x API as this is what it did internally.
+                "(`$_.PSChildName -match '$([System.Text.RegularExpressions.Regex]::Escape($ProductCode))')"
+            }
+
+            if ($Name)
+            {
+                $Name | & {
+                    process
+                    {
+                        if ($Exact)
+                        {
+                            "(`$_.DisplayName -eq '$_')"
+                        }
+                        elseif ($WildCard)
+                        {
+                            "(`$_.DisplayName -like '$_')"
+                        }
+                        elseif ($RegEx)
+                        {
+                            "(`$_.DisplayName -match '$_')"
+                        }
+                        else
+                        {
+                            "(`$_.DisplayName -match '$([System.Text.RegularExpressions.Regex]::Escape($_))')"
+                        }
+                    }
+                }
+            }
+        )
+
+    # Build out hashtable for splatting.
+    $gaiaParams = if ($filterScript)
+    {
+        @{ FilterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript -join ' -or ') }
+    }
+    else
+    {
+        @{}
+    }
+
+    # Invoke execution.
     try
     {
-        Get-ADTInstalledApplication @PSBoundParameters
+        Get-ADTInstalledApplication @gaiaParams
     }
     catch
     {
