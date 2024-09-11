@@ -16,7 +16,7 @@ function Import-ADTConfig
     )
 
     # Process the incoming $BaseDirectory value.
-    $PSBoundParameters.BaseDirectory = if (![System.IO.Directory]::Exists(($dataDir = [System.IO.Path]::Combine($BaseDirectory, 'Config'))))
+    $PSBoundParameters.BaseDirectory = if (![System.IO.File]::Exists([System.IO.Path]::Combine(($dataDir = [System.IO.Path]::Combine($BaseDirectory, 'Config')), 'config.psd1')))
     {
         [System.IO.Path]::Combine($Script:PSScriptRoot, 'Config')
     }

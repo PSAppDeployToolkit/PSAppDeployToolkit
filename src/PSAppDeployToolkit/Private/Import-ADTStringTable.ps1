@@ -20,7 +20,7 @@ function Import-ADTStringTable
     )
 
     # Process the incoming $BaseDirectory value.
-    $PSBoundParameters.BaseDirectory = if (![System.IO.Directory]::Exists(($dataDir = [System.IO.Path]::Combine($BaseDirectory, 'Strings'))))
+    $PSBoundParameters.BaseDirectory = if (![System.IO.File]::Exists([System.IO.Path]::Combine(($dataDir = [System.IO.Path]::Combine($BaseDirectory, 'Strings')), 'strings.psd1')))
     {
         [System.IO.Path]::Combine($Script:PSScriptRoot, 'Strings')
     }
