@@ -143,19 +143,41 @@ function Write-Log
         {
             $null = $PSBoundParameters.Remove('ContinueOnError')
         }
+
+        # Set up collector for piped in path objects.
+        $messages = [System.Collections.Specialized.StringCollection]::new()
     }
 
     process
     {
-        try
-        {
-            Write-ADTLogEntry @PSBoundParameters
-        }
-        catch
-        {
-            if (!$ContinueOnError)
+        # Add all non-null messages to the collector.
+        $Message | & {
+            process
             {
-                $PSCmdlet.ThrowTerminatingError($_)
+                if (![System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $null = $messages.Add($_)
+                }
+            }
+        }
+    }
+
+    end
+    {
+        # Process provided messages if we have any.
+        if ($messages.Count)
+        {
+            try
+            {
+                $PSBoundParameters.Message = $messages
+                Write-ADTLogEntry @PSBoundParameters
+            }
+            catch
+            {
+                if (!$ContinueOnError)
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
+                }
             }
         }
     }
@@ -234,12 +256,23 @@ function Get-HardwarePlatform
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [`$envHardwareType]. Please migrate your scripts to use the new function." -Severity 2
-    return $envHardwareType
+    try
+    {
+        return $envHardwareType
+    }
+    catch
+    {
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+    }
 }
 
 
@@ -302,12 +335,14 @@ function Remove-InvalidFileNameChars
 
     begin
     {
+        # Announce deprecation of function and set up accumulator for all piped in names.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity 2
         $names = [System.Collections.Specialized.StringCollection]::new()
     }
 
     process
     {
+        # Add all non-null names to the collector.
         if (![System.String]::IsNullOrWhiteSpace($Name))
         {
             $null = $names.Add($Name)
@@ -316,13 +351,17 @@ function Remove-InvalidFileNameChars
 
     end
     {
-        try
+        # Process provided names if we have any.
+        if ($names.Count)
         {
-            $names | Remove-ADTInvalidFileNameChars
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
+            try
+            {
+                $names | Remove-ADTInvalidFileNameChars
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
         }
     }
 }
@@ -336,6 +375,9 @@ function Remove-InvalidFileNameChars
 
 function Get-InstalledApplication
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Exact', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WildCard', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'RegEx', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -401,7 +443,7 @@ function Get-InstalledApplication
     # Invoke execution.
     try
     {
-        Get-ADTInstalledApplication @gaiaParams
+        Get-ADTInstalledApplication @gaiaParams -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes
     }
     catch
     {
@@ -576,7 +618,6 @@ Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironment
 
 function Copy-File
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -654,7 +695,10 @@ function Copy-File
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -703,7 +747,10 @@ function Remove-File
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -716,7 +763,7 @@ function Remove-File
 
 function Copy-FileToUserProfiles
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -765,42 +812,74 @@ function Copy-FileToUserProfiles
         [System.Boolean]$ContinueFileCopyOnError
     )
 
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
-    $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
-            if (!$PSBoundParameters."Exclude$_")
+    begin
+    {
+        # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
+        $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
+                if (!$PSBoundParameters."Exclude$_")
+                {
+                    $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
+                }
+                $PSBoundParameters.Remove("Exclude$_")
+            })
+        if ($PSBoundParameters.ContainsKey('UseRobocopy'))
+        {
+            $PSBoundParameters.FileCopyMode = if ($PSBoundParameters.UseRobocopy)
             {
-                $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
+                'Robocopy'
             }
-            $PSBoundParameters.Remove("Exclude$_")
-        })
-    if ($PSBoundParameters.ContainsKey('UseRobocopy'))
-    {
-        $PSBoundParameters.FileCopyMode = if ($PSBoundParameters.UseRobocopy)
-        {
-            'Robocopy'
+            else
+            {
+                'Native'
+            }
+            $null = $PSBoundParameters.Remove('UseRobocopy')
         }
-        else
+        if ($PSBoundParameters.ContainsKey('ContinueOnError'))
         {
-            'Native'
+            $null = $PSBoundParameters.Remove('ContinueOnError')
         }
-        $null = $PSBoundParameters.Remove('UseRobocopy')
+        if (!$ContinueOnError)
+        {
+            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+        }
+
+        # Set up collector for piped in path objects.
+        $srcPaths = [System.Collections.Specialized.StringCollection]::new()
     }
-    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+
+    process
     {
-        $null = $PSBoundParameters.Remove('ContinueOnError')
+        # Add all non-null strings to the collector.
+        $Path | & {
+            process
+            {
+                if (![System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $null = $srcPaths.Add($_)
+                }
+            }
+        }
     }
-    if (!$ContinueOnError)
+
+    end
     {
-        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
-    }
-    try
-    {
-        Copy-ADTFileToUserProfiles @PSBoundParameters
-    }
-    catch
-    {
-        $PSCmdlet.ThrowTerminatingError($_)
+        # Process provided paths if we have any.
+        if ($srcPaths.Count)
+        {
+            try
+            {
+                $PSBoundParameters.Path = $srcPaths
+                Copy-ADTFileToUserProfiles @PSBoundParameters
+            }
+            catch
+            {
+                if (!$ContinueOnError)
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
+                }
+            }
+        }
     }
 }
 
@@ -1492,7 +1571,10 @@ function New-Folder
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -1550,7 +1632,10 @@ function Update-GroupPolicy
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -1678,7 +1763,10 @@ function Disable-TerminalServerInstallMode
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -1715,7 +1803,10 @@ function Enable-TerminalServerInstallMode
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -1818,9 +1909,14 @@ function Resolve-Error
     process
     {
         # Process piped input and collect ErrorRecord objects.
-        foreach ($errRecord in ($ErrorRecord | & { process { if ($_ -is [System.Management.Automation.ErrorRecord]) { return $_ } } }))
-        {
-            $errRecords.Add($errRecord)
+        $ErrorRecord | & {
+            process
+            {
+                if ($_ -is [System.Management.Automation.ErrorRecord])
+                {
+                    $errRecords.Add($_)
+                }
+            }
         }
     }
 
@@ -1843,6 +1939,10 @@ function Resolve-Error
             }
             else
             {
+                if ($PSBoundParameters.ContainsKey('ErrorRecord'))
+                {
+                    $null = $PSBoundParameters.Remove('ErrorRecord')
+                }
                 $errRecords | Resolve-ADTErrorRecord @PSBoundParameters
             }
         }
@@ -1902,7 +2002,10 @@ function Get-ServiceStartMode
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -1950,7 +2053,10 @@ function Set-ServiceStartMode
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2050,7 +2156,10 @@ function Execute-Process
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2168,7 +2277,10 @@ function Execute-MSI
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2267,11 +2379,11 @@ function Test-RegistryValue
     (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        $Key,
+        [System.Object]$Key,
 
         [Parameter(Mandatory = $true, Position = 1)]
         [ValidateNotNullOrEmpty()]
-        $Value,
+        [System.Object]$Value,
 
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNullOrEmpty()]
@@ -2283,18 +2395,34 @@ function Test-RegistryValue
 
     begin
     {
+        # Announce deprecation of function and set up accumulator for all piped in keys.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
+        $keys = [System.Collections.Generic.List[System.Object]]::new()
     }
 
     process
     {
-        try
+        # Add all keys to the collector.
+        $keys.Add($Key)
+    }
+
+    end
+    {
+        # Process provided keys if we have any.
+        if ($keys.Count)
         {
-            $Key | Test-ADTRegistryValue @PSBoundParameters
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
+            try
+            {
+                if ($PSBoundParameters.ContainsKey('Key'))
+                {
+                    $null = $PSBoundParameters.Remove('Key')
+                }
+                $keys | Test-ADTRegistryValue @PSBoundParameters
+            }
+            catch
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
         }
     }
 }
@@ -2380,7 +2508,10 @@ function Test-MSUpdates
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2619,7 +2750,10 @@ function Set-RegistryKey
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2672,7 +2806,10 @@ function Remove-RegistryKey
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2803,7 +2940,10 @@ function Get-RegistryKey
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2873,7 +3013,10 @@ function Get-SchedulerTask
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2938,7 +3081,10 @@ function Invoke-RegisterOrUnregisterDLL
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -2979,7 +3125,10 @@ function Register-DLL
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3020,7 +3169,10 @@ function Unregister-DLL
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3065,7 +3217,10 @@ function Remove-Folder
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3145,7 +3300,10 @@ function Set-ActiveSetup
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3268,7 +3426,10 @@ function New-MsiTransform
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3309,7 +3470,10 @@ function Invoke-SCCMTask
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3355,7 +3519,10 @@ function Install-SCCMSoftwareUpdates
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3421,7 +3588,10 @@ function Get-Shortcut
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
@@ -3498,21 +3668,37 @@ function Set-Shortcut
         {
             $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
         }
+
+        # Set up collector for piped in path objects.
+        $paths = [System.Collections.Specialized.StringCollection]::new()
     }
 
     process
     {
-        try
+        # Add all paths to the collector.
+        $paths.Add($Path)
+    }
+
+    end
+    {
+        # Process provided paths if we have any.
+        if ($paths.Count)
         {
-            if ($PathHash)
+            try
             {
-                $Path = $PathHash.Path
+                if ($PSBoundParameters.ContainsKey('Path'))
+                {
+                    $null = $PSBoundParameters.Remove('Path')
+                }
+                $paths | Test-ADTRegistryValue @PSBoundParameters
             }
-            $Path | Set-ADTShortcut @PSBoundParameters
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
+            catch
+            {
+                if (!$ContinueOnError)
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
+                }
+            }
         }
     }
 }
@@ -3590,7 +3776,10 @@ function New-Shortcut
     }
     catch
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 }
 
