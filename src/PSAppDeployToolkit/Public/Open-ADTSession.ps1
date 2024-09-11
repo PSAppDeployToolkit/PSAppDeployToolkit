@@ -309,14 +309,8 @@ function Open-ADTSession
         }
         catch
         {
-            # Cache off the ErrorRecord object.
-            $errRecord = $_
-
-            # Only verbosely log error output for unexpected errors.
-            if (!$_.FullyQualifiedErrorId.StartsWith('CallerNotLocalAdmin') -or $PSBoundParameters.CompatibilityMode)
-            {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while opening new ADTSession object."
-            }
+            # Process the caught error, log it and throw depending on the specified ErrorAction.
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while opening new ADTSession object."
         }
         finally
         {
