@@ -14,12 +14,12 @@ Search for an open window title and return details about the window.
 
 ### SearchWinTitle
 ```
-Get-ADTWindowTitle -WindowTitle <String> [-DisableFunctionLogging] [<CommonParameters>]
+Get-ADTWindowTitle -WindowTitle <String> [-Silent] [<CommonParameters>]
 ```
 
 ### GetAllWinTitles
 ```
-Get-ADTWindowTitle [-GetAllWindowTitles] [-DisableFunctionLogging] [<CommonParameters>]
+Get-ADTWindowTitle [-GetAllWindowTitles] [-Silent] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -90,7 +90,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DisableFunctionLogging
+### -Silent
 Disables logging messages to the script log file.
 
 ```yaml

@@ -13,7 +13,7 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 ## SYNTAX
 
 ```
-Show-ADTInstallationProgress [[-WindowLocation] <String>] [-NotTopMost] [-Quiet] [-NoRelocation]
+Show-ADTInstallationProgress [[-WindowLocation] <String>] [-NotTopMost] [-Silent] [-NoRelocation]
  -WindowTitle <String> [-WindowSubtitle <String>] -StatusMessage <String> -StatusMessageDetail <String>
  [<CommonParameters>]
 ```
@@ -88,7 +88,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Quiet
+### -Silent
 Specifies whether to not log the success of updating the progress message.
 Default: $false.
 
