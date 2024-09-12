@@ -246,7 +246,7 @@ function Repair-ADTApplication
 
 
 ##================================================
-## MARK: Initialisation
+## MARK: Initialization
 ##================================================
 
 # Set strict error handling across entire operation.

@@ -56,7 +56,7 @@ class ADTSession
     [AllowEmptyCollection()][System.Collections.IDictionary]$DeployAppScriptParameters
     [ValidateNotNullOrEmpty()][System.String]$InstallPhase = 'Initialization'
 
-    # Calculated variables we publicise.
+    # Calculated variables we publicize.
     [ValidateNotNullOrEmpty()][System.DateTime]$CurrentDateTime = [System.DateTime]::Now
     [ValidateNotNullOrEmpty()][System.String]$CurrentTime
     [ValidateNotNullOrEmpty()][System.String]$CurrentDate

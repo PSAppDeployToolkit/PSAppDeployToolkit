@@ -61,7 +61,7 @@ function Initialize-ADTModule
                 Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                 ErrorId = 'InitWithActiveSessionError'
                 TargetObject = & $Script:CommandTable.'Get-ADTSession'
-                RecommendedAction = "Please attempt module re-initialisation once the active ADTSession(s) have been closed."
+                RecommendedAction = "Please attempt module re-initialization once the active ADTSession(s) have been closed."
             }
             $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
         }

@@ -271,7 +271,7 @@ function Open-ADTSession
 
     process
     {
-        # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialisation.
+        # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialization.
         if ($PSBoundParameters.RunspaceOrigin -or $PSBoundParameters.CompatibilityMode)
         {
             $adtData.Sessions.Clear()
