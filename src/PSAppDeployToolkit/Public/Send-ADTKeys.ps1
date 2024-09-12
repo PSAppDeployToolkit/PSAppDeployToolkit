@@ -101,8 +101,8 @@ function Send-ADTKeys
 
     begin
     {
-        # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        # Make this function continue on error.
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Internal worker filter.
         filter Send-ADTKeysToWindow
@@ -208,7 +208,7 @@ function Send-ADTKeys
         }
         catch
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to send keys to specified window.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to send keys to specified window."
         }
     }
 
