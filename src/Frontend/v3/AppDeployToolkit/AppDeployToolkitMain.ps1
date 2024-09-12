@@ -195,6 +195,7 @@ function Exit-Script
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$ExitCode
     )
@@ -287,9 +288,11 @@ function Get-FreeDiskSpace
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Drive,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
@@ -381,15 +384,21 @@ function Get-InstalledApplication
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$ProductCode,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Exact,
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$WildCard,
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RegEx,
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
     )
 
@@ -508,15 +517,19 @@ function Get-UserProfiles
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ExcludeNTAccount,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ExcludeSystemProfiles = $true,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ExcludeServiceProfiles = $true,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser
     )
 
@@ -553,6 +566,7 @@ function Update-Desktop
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
@@ -987,16 +1001,21 @@ function Show-InstallationProgress
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$StatusMessage,
 
+        [Parameter(Mandatory = $false)]
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
         [System.String]$WindowLocation,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$TopMost = $true,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Quiet,
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation
     )
 
@@ -1235,21 +1254,27 @@ function Show-InstallationRestartPrompt
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$CountdownSeconds,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$CountdownNoHideSeconds,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$NoSilentRestart = $true,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$SilentCountdownSeconds,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$TopMost = $true,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoCountdown
     )
 
@@ -1651,9 +1676,11 @@ function Get-UniversalDate
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DateTime,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $false
     )
