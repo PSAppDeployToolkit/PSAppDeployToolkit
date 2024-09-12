@@ -28,7 +28,7 @@ function Get-ADTWindowTitle
     .PARAMETER GetAllWindowTitles
         Get titles for all open windows on the system.
 
-    .PARAMETER DisableFunctionLogging
+    .PARAMETER Silent
         Disables logging messages to the script log file.
 
     .INPUTS
@@ -87,7 +87,7 @@ function Get-ADTWindowTitle
         [System.Management.Automation.SwitchParameter]$GetAllWindowTitles,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$DisableFunctionLogging
+        [System.Management.Automation.SwitchParameter]$Silent
     )
 
     begin
@@ -100,11 +100,11 @@ function Get-ADTWindowTitle
     {
         if ($GetAllWindowTitles)
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Finding all open window title(s).' -DebugMessage:$DisableFunctionLogging
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Finding all open window title(s).' -DebugMessage:$Silent
         }
         else
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Finding open window title(s) [$WindowTitle] using regex matching." -DebugMessage:$DisableFunctionLogging
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Finding open window title(s) [$WindowTitle] using regex matching." -DebugMessage:$Silent
         }
 
         try

@@ -1001,6 +1001,7 @@ function Show-InstallationProgress
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Quiet,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation
     )
@@ -1011,6 +1012,11 @@ function Show-InstallationProgress
     {
         $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
         $null = $PSBoundParameters.Remove('TopMost')
+    }
+    if ($PSBoundParameters.ContainsKey('Quiet'))
+    {
+        $PSBoundParameters.Silent = $PSBoundParameters.Quiet
+        $null = $PSBoundParameters.Remove('Quiet')
     }
     try
     {
@@ -1218,6 +1224,11 @@ function Get-WindowTitle
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
+    {
+        $PSBoundParameters.Silent = $PSBoundParameters.DisableFunctionLogging
+        $null = $PSBoundParameters.Remove('DisableFunctionLogging')
+    }
     try
     {
         Get-ADTWindowTitle @PSBoundParameters
@@ -2469,9 +2480,13 @@ function Convert-RegistryPath
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Convert-ADTRegistryPath]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
+    {
+        $null = $PSBoundParameters.Remove('DisableFunctionLogging')
+    }
     if (!$DisableFunctionLogging)
     {
-        $PSBoundParameters.Logging = [System.Management.Automation.SwitchParameter]$true
+        $PSBoundParameters.Logging = $true
     }
     try
     {

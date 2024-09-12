@@ -80,7 +80,7 @@ function Show-ADTInstallationProgress
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Quiet,
+        [System.Management.Automation.SwitchParameter]$Silent,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation
@@ -157,7 +157,7 @@ function Show-ADTInstallationProgress
         {
             if ($adtSession.IsSilent())
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)" -DebugMessage:$Quiet
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)" -DebugMessage:$Silent
                 return
             }
 
