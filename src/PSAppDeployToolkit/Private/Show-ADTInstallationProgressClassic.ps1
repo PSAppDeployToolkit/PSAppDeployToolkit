@@ -182,7 +182,7 @@ function Show-ADTInstallationProgressClassic
                     $SyncHash.Error = $_
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
-            }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}).AddArgument(${Function:& $Script:CommandTable.'Disable-ADTWindowCloseButton'})
+            }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}).AddArgument($Script:CommandTable.'Disable-ADTWindowCloseButton'.ScriptBlock)
 
         # Commence invocation.
         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
