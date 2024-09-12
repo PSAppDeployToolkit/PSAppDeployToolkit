@@ -110,11 +110,9 @@ function Get-ADTInstalledApplication
                             # Remove any control characters which may interfere with logging and creating file path names from these variables.
                             $appDisplayName = $_.DisplayName -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]'
                             $appDisplayVersion = ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]'
-                            $appPublisher = ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]'
-                            $Is64BitApp = [System.Environment]::Is64BitOperatingSystem -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
 
                             # Build out an object and return it to the pipeline.
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName] version [$appDisplayVersion]$(if ($FilterScript) {' matching the provided FilterScript'})."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName]$(if (![System.String]::IsNullOrWhiteSpace($appDisplayVersion)) {" version [$appDisplayVersion]"})$(if ($FilterScript) {' matching the provided FilterScript'})."
                             return [PSADT.Types.InstalledApplication]@{
                                 UninstallSubkey    = $_.PSChildName
                                 ProductCode        = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
@@ -124,8 +122,8 @@ function Get-ADTInstalledApplication
                                 InstallSource      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallSource -ErrorAction Ignore
                                 InstallLocation    = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallLocation -ErrorAction Ignore
                                 InstallDate        = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallDate -ErrorAction Ignore
-                                Publisher          = $appPublisher
-                                Is64BitApplication = $Is64BitApp
+                                Publisher          = ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore) -replace '[^\p{L}\p{Nd}\p{Z}\p{P}]'
+                                Is64BitApplication = [System.Environment]::Is64BitOperatingSystem -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
                             }
                         }
                     }
