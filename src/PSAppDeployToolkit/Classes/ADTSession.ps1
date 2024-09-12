@@ -848,7 +848,7 @@ class ADTSession
         $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
 
         # Get caller's invocation info, we'll need it for some variables.
-        $caller = & $Script:CommandTable.'Get-PSCallStack' | & { process { if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$')) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1
+        $caller = Get-ADTLogEntryCaller
 
         # Set up default values if not specified.
         if ($null -eq $Severity)
