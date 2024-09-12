@@ -21,7 +21,7 @@ function Show-ADTInstallationProgress
     .PARAMETER NotTopMost
         Specifies whether the progress window shouldn't be topmost. Default: $false.
 
-    .PARAMETER Quiet
+    .PARAMETER Silent
         Specifies whether to not log the success of updating the progress message. Default: $false.
 
     .PARAMETER NoRelocation

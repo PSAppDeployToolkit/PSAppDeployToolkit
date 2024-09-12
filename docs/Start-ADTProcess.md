@@ -233,7 +233,7 @@ Accept wildcard characters: False
 
 ### -SuccessCodes
 List of exit codes to be considered successful.
-Defaults to values set during ADTSession initialisation, otherwise: 0
+Defaults to values set during ADTSession initialization, otherwise: 0
 
 ```yaml
 Type: Int32[]
@@ -249,7 +249,7 @@ Accept wildcard characters: False
 
 ### -RebootCodes
 List of exit codes to indicate a reboot is required.
-Defaults to values set during ADTSession initialisation, otherwise: 1641, 3010
+Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
 ```yaml
 Type: Int32[]
