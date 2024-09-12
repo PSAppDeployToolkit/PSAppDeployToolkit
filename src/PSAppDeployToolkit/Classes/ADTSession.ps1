@@ -431,25 +431,25 @@ class ADTSession
         # Announce provided deployment script info.
         if ($this.AppScriptVersion)
         {
-            $this.WriteLogEntry("[$($this.InstallName)] script version is [$($this.AppScriptVersion)]")
+            $this.WriteLogEntry("[$($this.InstallName)] script version is [$($this.AppScriptVersion)].")
         }
         if ($this.AppScriptDate)
         {
-            $this.WriteLogEntry("[$($this.InstallName)] script date is [$($this.AppScriptDate)]")
+            $this.WriteLogEntry("[$($this.InstallName)] script date is [$($this.AppScriptDate)].")
         }
         if ($this.AppScriptAuthor)
         {
-            $this.WriteLogEntry("[$($this.InstallName)] script author is [$($this.AppScriptAuthor)]")
+            $this.WriteLogEntry("[$($this.InstallName)] script author is [$($this.AppScriptAuthor)].")
         }
         if ($this.DeployAppScriptFriendlyName -and $this.DeployAppScriptVersion)
         {
-            $this.WriteLogEntry("[$($this.DeployAppScriptFriendlyName)] script version is [$($this.DeployAppScriptVersion)]")
+            $this.WriteLogEntry("[$($this.DeployAppScriptFriendlyName)] script version is [$($this.DeployAppScriptVersion)].")
         }
         if ($this.DeployAppScriptParameters -and $this.DeployAppScriptParameters.Count)
         {
-            $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters')]")
+            $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters')].")
         }
-        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module version is [$($ADTEnv.appDeployMainScriptVersion)]")
+        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module version is [$($ADTEnv.appDeployMainScriptVersion)].")
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module imported in [$($ADTData.Durations.ModuleImport.TotalSeconds)] seconds.")
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module initialized in [$($ADTData.Durations.ModuleInit.TotalSeconds)] seconds.")
 
@@ -466,17 +466,17 @@ class ADTSession
     hidden [System.Void] LogSystemInfo([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
     {
         # Report on all determined system info.
-        $this.WriteLogEntry("Computer Name is [$($ADTEnv.envComputerNameFQDN)]")
-        $this.WriteLogEntry("Current User is [$($ADTEnv.ProcessNTAccount)]")
-        $this.WriteLogEntry("OS Version is [$($ADTEnv.envOSName)$(if ($ADTEnv.envOSServicePack) {" $($ADTEnv.envOSServicePack)"}) $($ADTEnv.envOSArchitecture) $($ADTEnv.envOSVersion)]")
-        $this.WriteLogEntry("OS Type is [$($ADTEnv.envOSProductTypeName)]")
-        $this.WriteLogEntry("Current Culture is [$($ADTEnv.culture.Name)], language is [$($ADTEnv.currentLanguage)] and UI language is [$($ADTEnv.currentUILanguage)]")
-        $this.WriteLogEntry("Hardware Platform is [$($ADTEnv.envHardwareType)]")
-        $this.WriteLogEntry("PowerShell Host is [$($ADTEnv.envHost.Name)] with version [$($ADTEnv.envHost.Version)]")
-        $this.WriteLogEntry("PowerShell Version is [$($ADTEnv.envPSVersion) $($ADTEnv.psArchitecture)]")
+        $this.WriteLogEntry("Computer Name is [$($ADTEnv.envComputerNameFQDN)].")
+        $this.WriteLogEntry("Current User is [$($ADTEnv.ProcessNTAccount)].")
+        $this.WriteLogEntry("OS Version is [$($ADTEnv.envOSName)$(if ($ADTEnv.envOSServicePack) {" $($ADTEnv.envOSServicePack)"}) $($ADTEnv.envOSArchitecture) $($ADTEnv.envOSVersion)].")
+        $this.WriteLogEntry("OS Type is [$($ADTEnv.envOSProductTypeName)].")
+        $this.WriteLogEntry("Current Culture is [$($ADTEnv.culture.Name)], language is [$($ADTEnv.currentLanguage)] and UI language is [$($ADTEnv.currentUILanguage)].")
+        $this.WriteLogEntry("Hardware Platform is [$($ADTEnv.envHardwareType)].")
+        $this.WriteLogEntry("PowerShell Host is [$($ADTEnv.envHost.Name)] with version [$($ADTEnv.envHost.Version)].")
+        $this.WriteLogEntry("PowerShell Version is [$($ADTEnv.envPSVersion) $($ADTEnv.psArchitecture)].")
         if ($ADTEnv.envCLRVersion)
         {
-            $this.WriteLogEntry("PowerShell CLR (.NET) version is [$($ADTEnv.envCLRVersion)]")
+            $this.WriteLogEntry("PowerShell CLR (.NET) version is [$($ADTEnv.envCLRVersion)].")
         }
     }
 
