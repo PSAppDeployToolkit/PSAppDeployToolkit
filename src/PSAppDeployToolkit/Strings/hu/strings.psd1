@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Telepítés folyamatban. Kérem várjon..."
-        MessageInstallDetail = ""
+        MessageInstallDetail = "This window will close automatically when the installation is complete."
         MessageRepair = "Javítás folyamatban. Kérem várjon..."
-        MessageRepairDetail = ""
+        MessageRepairDetail = "This window will close automatically when the repair is complete."
         MessageUninstall = "Eltávolítás folyamatban. Kérem várjon..."
-        MessageUninstallDetail = ""
+        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimalizál"

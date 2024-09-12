@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Instalación en curso. Por favor, espere..."
-        MessageInstallDetail = ""
+        MessageInstallDetail = "This window will close automatically when the installation is complete."
         MessageRepair = "Reparación en curso. Por favor, espere..."
-        MessageRepairDetail = ""
+        MessageRepairDetail = "This window will close automatically when the repair is complete."
         MessageUninstall = "Desinstalación en curso. Por favor, espere..."
-        MessageUninstallDetail = ""
+        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimizar"
