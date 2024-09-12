@@ -136,7 +136,6 @@ function Set-ADTItemPermission
     begin
     {
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $logSource = $MyInvocation.MyCommand.Name
     }
 
     process
@@ -202,7 +201,7 @@ function Set-ADTItemPermission
                             }
                             catch
                             {
-                                & $Script:CommandTable.'Write-ADTLogEntry' "Failed to translate SID [$sid]. Skipping..." -Severity 2 -Source $logSource
+                                & $Script:CommandTable.'Write-ADTLogEntry' "Failed to translate SID [$sid]. Skipping..." -Severity 2
                                 continue
                             }
                         }
@@ -212,7 +211,7 @@ function Set-ADTItemPermission
                         }
 
                         # Set/Add/Remove/Replace permissions and log the changes.
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]." -Source $logSource
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
                         $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
                     }
                 }
