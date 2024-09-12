@@ -693,14 +693,7 @@ function Copy-File
     }
     if ($PSBoundParameters.ContainsKey('UseRobocopy'))
     {
-        if ($PSBoundParameters.UseRobocopy)
-        {
-            $null = $PSBoundParameters.Add('FileCopyMode', 'Robocopy')
-        }
-        else
-        {
-            $null = $PSBoundParameters.Add('FileCopyMode', 'Native')
-        }
+        $null = $PSBoundParameters.Add('FileCopyMode', ('Native', 'Robocopy')[$PSBoundParameters.UseRobocopy])
         $null = $PSBoundParameters.Remove('UseRobocopy')
     }
     try
@@ -839,14 +832,7 @@ function Copy-FileToUserProfiles
             })
         if ($PSBoundParameters.ContainsKey('UseRobocopy'))
         {
-            $PSBoundParameters.FileCopyMode = if ($PSBoundParameters.UseRobocopy)
-            {
-                'Robocopy'
-            }
-            else
-            {
-                'Native'
-            }
+            $PSBoundParameters.FileCopyMode = ('Native', 'Robocopy')[$PSBoundParameters.UseRobocopy]
             $null = $PSBoundParameters.Remove('UseRobocopy')
         }
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -2172,7 +2158,7 @@ function Execute-Process
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        $PSBoundParameters.ErrorAction = if ($ContinueOnError) { [System.Management.Automation.ActionPreference]::SilentlyContinue } else { [System.Management.Automation.ActionPreference]::Stop }
+        $PSBoundParameters.ErrorAction = ([System.Management.Automation.ActionPreference]::Stop, [System.Management.Automation.ActionPreference]::SilentlyContinue)[$ContinueOnError]
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
@@ -2293,7 +2279,7 @@ function Execute-MSI
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        $PSBoundParameters.ErrorAction = if ($ContinueOnError) { [System.Management.Automation.ActionPreference]::SilentlyContinue } else { [System.Management.Automation.ActionPreference]::Stop }
+        $PSBoundParameters.ErrorAction = ([System.Management.Automation.ActionPreference]::Stop, [System.Management.Automation.ActionPreference]::SilentlyContinue)[$ContinueOnError]
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
