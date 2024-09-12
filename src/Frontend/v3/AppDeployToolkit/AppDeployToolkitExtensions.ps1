@@ -1,7 +1,7 @@
 ﻿<#
 
 .SYNOPSIS
-PSAppDeployToolkit - Provides the ability to extend and customise the toolkit by adding your own functions that can be re-used.
+PSAppDeployToolkit - Provides the ability to extend and customize the toolkit by adding your own functions that can be re-used.
 
 .DESCRIPTION
 This script is a template that allows you to extend the toolkit with your own custom functions.

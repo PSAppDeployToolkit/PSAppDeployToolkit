@@ -49,10 +49,10 @@ function Start-ADTProcess
     Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
 
     .PARAMETER SuccessCodes
-    List of exit codes to be considered successful. Defaults to values set during ADTSession initialisation, otherwise: 0
+    List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
 
     .PARAMETER RebootCodes
-    List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialisation, otherwise: 1641, 3010
+    List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
     .PARAMETER IgnoreExitCodes
     List the exit codes to ignore or * to ignore all exit codes.
