@@ -14,7 +14,7 @@ function Set-ADTMsiProperty
     .DESCRIPTION
     Set a property in the MSI property table.
 
-    .PARAMETER DataBase
+    .PARAMETER Database
     Specify a ComObject representing an MSI database opened in view/modify/update mode.
 
     .PARAMETER PropertyName
@@ -30,7 +30,7 @@ function Set-ADTMsiProperty
     None. This function does not generate any output.
 
     .EXAMPLE
-    Set-ADTMsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
+    Set-ADTMsiProperty -Database $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
 
     .NOTES
     This is an internal script function and should typically not be called directly.
@@ -48,7 +48,7 @@ function Set-ADTMsiProperty
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.__ComObject]$DataBase,
+        [System.__ComObject]$Database,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -73,7 +73,7 @@ function Set-ADTMsiProperty
             try
             {
                 # Open the requested table view from the database.
-                $View = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $DataBase -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
+                $View = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
                 $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Execute
 
                 # Retrieve the requested property from the requested table and close off the view.
@@ -86,12 +86,12 @@ function Set-ADTMsiProperty
                 $View = if ($Record)
                 {
                     # If the property already exists, then create the view for updating the property.
-                    & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $DataBase -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
+                    & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Database -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
                 }
                 else
                 {
                     # If property does not exist, then create view for inserting the property.
-                    & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $DataBase -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
+                    & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Database -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
                 }
                 $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Execute
             }
