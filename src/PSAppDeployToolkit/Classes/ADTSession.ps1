@@ -387,7 +387,7 @@ class ADTSession
                 # Get new log file path.
                 $logFileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($logFile)
                 $logFileExtension = [System.IO.Path]::GetExtension($logFile)
-                $Timestamp = $logFileInfo.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
+                $Timestamp = $logFileInfo.LastWriteTime.ToString('O').Split('.')[0].Replace(':', $null)
                 $ArchiveLogFileName = [System.String]::Format("{0}_{1}{2}", $logFileNameWithoutExtension, $Timestamp, $logFileExtension)
                 $ArchiveLogFilePath = & $Script:CommandTable.'Join-Path' -Path $this.LogPath -ChildPath $ArchiveLogFileName
 
@@ -816,7 +816,7 @@ class ADTSession
         {
             # Get all archive files sorted by last write time
             $ArchiveFiles = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | & $Script:CommandTable.'Sort-Object' LastWriteTime
-            $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('yyyy-MM-dd-HH-mm-ss'))
+            $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('O').Split('.')[0].Replace(':', $null))
 
             # Keep only the max number of archive files
             if ($ArchiveFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
