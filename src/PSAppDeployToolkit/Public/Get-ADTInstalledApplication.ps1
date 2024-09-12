@@ -82,7 +82,7 @@ function Get-ADTInstalledApplication
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting information for installed applications..."
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting information for installed applications$(if ($FilterScript) {' matching the provided FilterScript'})..."
         try
         {
             try
@@ -108,7 +108,7 @@ function Get-ADTInstalledApplication
                         if (!$FilterScript -or (& $Script:CommandTable.'ForEach-Object' -InputObject $_ -Process $FilterScript -ErrorAction Ignore))
                         {
                             $appDisplayVersion = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$($_.DisplayName)]$(if ($appDisplayVersion) {" version [$appDisplayVersion]"})$(if ($FilterScript) {' matching the provided FilterScript'})."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$($_.DisplayName)]$(if ($appDisplayVersion) {" version [$appDisplayVersion]"})."
                             return [PSADT.Types.InstalledApplication]@{
                                 UninstallSubkey    = $_.PSChildName
                                 ProductCode        = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
