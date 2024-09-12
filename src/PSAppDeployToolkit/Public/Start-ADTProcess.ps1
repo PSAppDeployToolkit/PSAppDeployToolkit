@@ -110,13 +110,13 @@ function Start-ADTProcess
     param
     (
         [Parameter(Mandatory = $true)]
-        [Alias('FilePath')]
         [ValidateNotNullOrEmpty()]
+        [Alias('FilePath')]
         [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
-        [Alias('Arguments')]
         [ValidateNotNullOrEmpty()]
+        [Alias('Arguments')]
         [System.String[]]$Parameters,
 
         [Parameter(Mandatory = $false)]
@@ -124,7 +124,7 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Hidden', 'Maximized', 'Minimized')]
-        [System.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
+        [System.Diagnostics.ProcessWindowStyle]$WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Normal,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
@@ -160,7 +160,7 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
-        [System.Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
+        [System.Diagnostics.ProcessPriorityClass]$PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoExitOnProcessFailure,
