@@ -179,7 +179,7 @@ function Show-ADTInstallationProgressClassic
                 }
                 catch
                 {
-                    $SyncHash.Error = $_
+                    $SyncHash.Add('Error', $_)
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
             }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}.Ast.Body.GetScriptBlock()).AddArgument($Script:CommandTable.'Disable-ADTWindowCloseButton'.ScriptBlock.Ast.Body.GetScriptBlock())
