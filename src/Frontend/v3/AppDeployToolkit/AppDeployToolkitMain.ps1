@@ -28,7 +28,7 @@ https://psappdeploytoolkit.com
 
 #---------------------------------------------------------------------------
 #
-# Initialisation code.
+# MARK: Initialisation code
 #
 #---------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Write-ADTLogEntry
+# MARK: Wrapper around Write-ADTLogEntry
 #
 #---------------------------------------------------------------------------
 
@@ -186,7 +186,7 @@ function Write-Log
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Close-ADTSession
+# MARK: Wrapper around Close-ADTSession
 #
 #---------------------------------------------------------------------------
 
@@ -214,7 +214,7 @@ function Exit-Script
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Invoke-ADTAllUsersRegistryChange
+# MARK: Wrapper around Invoke-ADTAllUsersRegistryChange
 #
 #---------------------------------------------------------------------------
 
@@ -248,7 +248,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
 
 #---------------------------------------------------------------------------
 #
-# Replacement for Get-HardwarePlatform
+# MARK: Replacement for Get-HardwarePlatform
 #
 #---------------------------------------------------------------------------
 
@@ -279,7 +279,7 @@ function Get-HardwarePlatform
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTFreeDiskSpace
+# MARK: Wrapper around Get-ADTFreeDiskSpace
 #
 #---------------------------------------------------------------------------
 
@@ -320,7 +320,7 @@ function Get-FreeDiskSpace
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Remove-ADTInvalidFileNameChars
+# MARK: Wrapper around Remove-ADTInvalidFileNameChars
 #
 #---------------------------------------------------------------------------
 
@@ -372,7 +372,7 @@ function Remove-InvalidFileNameChars
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTInstalledApplication
+# MARK: Wrapper around Get-ADTInstalledApplication
 #
 #---------------------------------------------------------------------------
 
@@ -463,7 +463,7 @@ function Get-InstalledApplication
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTFileVersion
+# MARK: Wrapper around Get-ADTFileVersion
 #
 #---------------------------------------------------------------------------
 
@@ -507,7 +507,7 @@ function Get-FileVersion
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTUserProfiles
+# MARK: Wrapper around Get-ADTUserProfiles
 #
 #---------------------------------------------------------------------------
 
@@ -556,7 +556,7 @@ function Get-UserProfiles
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTDesktop
+# MARK: Wrapper around Get-ADTDesktop
 #
 #---------------------------------------------------------------------------
 
@@ -590,7 +590,7 @@ Set-Alias -Name Refresh-Desktop -Value Update-Desktop
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Update-ADTEnvironmentPsProvider
+# MARK: Wrapper around Update-ADTEnvironmentPsProvider
 #
 #---------------------------------------------------------------------------
 
@@ -626,7 +626,7 @@ Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironment
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Copy-ADTFile
+# MARK: Wrapper around Copy-ADTFile
 #
 #---------------------------------------------------------------------------
 
@@ -712,7 +712,7 @@ function Copy-File
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Remove-ADTFile
+# MARK: Wrapper around Remove-ADTFile
 #
 #---------------------------------------------------------------------------
 
@@ -764,7 +764,7 @@ function Remove-File
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Copy-ADTFileToUserProfiles
+# MARK: Wrapper around Copy-ADTFileToUserProfiles
 #
 #---------------------------------------------------------------------------
 
@@ -886,7 +886,7 @@ function Copy-FileToUserProfiles
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Show-ADTInstallationPrompt
+# MARK: Wrapper around Show-ADTInstallationPrompt
 #
 #---------------------------------------------------------------------------
 
@@ -978,7 +978,7 @@ function Show-InstallationPrompt
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Show-ADTInstallationProgress
+# MARK: Wrapper around Show-ADTInstallationProgress
 #
 #---------------------------------------------------------------------------
 
@@ -1025,7 +1025,7 @@ function Show-InstallationProgress
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Show-ADTDialogBox
+# MARK: Wrapper around Show-ADTDialogBox
 #
 #---------------------------------------------------------------------------
 
@@ -1083,7 +1083,7 @@ function Show-DialogBox
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Show-ADTInstallationWelcome
+# MARK: Wrapper around Show-ADTInstallationWelcome
 #
 #---------------------------------------------------------------------------
 
@@ -1197,7 +1197,7 @@ function Show-InstallationWelcome
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTWindowTitle
+# MARK: Wrapper around Get-ADTWindowTitle
 #
 #---------------------------------------------------------------------------
 
@@ -1231,7 +1231,7 @@ function Get-WindowTitle
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Show-ADTInstallationRestartPrompt
+# MARK: Wrapper around Show-ADTInstallationRestartPrompt
 #
 #---------------------------------------------------------------------------
 
@@ -1289,7 +1289,7 @@ function Show-InstallationRestartPrompt
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Show-ADTBalloonTip
+# MARK: Wrapper around Show-ADTBalloonTip
 #
 #---------------------------------------------------------------------------
 
@@ -1337,7 +1337,7 @@ function Show-BalloonTip
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Copy-ADTContentToCache
+# MARK: Wrapper around Copy-ADTContentToCache
 #
 #---------------------------------------------------------------------------
 
@@ -1365,7 +1365,7 @@ function Copy-ContentToCache
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Remove-ADTContentFromCache
+# MARK: Wrapper around Remove-ADTContentFromCache
 #
 #---------------------------------------------------------------------------
 
@@ -1394,7 +1394,7 @@ function Remove-ContentFromCache
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Test-ADTNetworkConnection
+# MARK: Wrapper around Test-ADTNetworkConnection
 #
 #---------------------------------------------------------------------------
 
@@ -1414,7 +1414,7 @@ function Test-NetworkConnection
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTLoggedOnUser
+# MARK: Wrapper around Get-ADTLoggedOnUser
 #
 #---------------------------------------------------------------------------
 
@@ -1434,7 +1434,7 @@ function Get-LoggedOnUser
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTIniValue
+# MARK: Wrapper around Get-ADTIniValue
 #
 #---------------------------------------------------------------------------
 
@@ -1488,7 +1488,7 @@ function Get-IniValue
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Set-ADTIniValue
+# MARK: Wrapper around Set-ADTIniValue
 #
 #---------------------------------------------------------------------------
 
@@ -1547,7 +1547,7 @@ function Set-IniValue
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around New-ADTFolder
+# MARK: Wrapper around New-ADTFolder
 #
 #---------------------------------------------------------------------------
 
@@ -1592,7 +1592,7 @@ function New-Folder
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Test-ADTPowerPoint
+# MARK: Wrapper around Test-ADTPowerPoint
 #
 #---------------------------------------------------------------------------
 
@@ -1612,7 +1612,7 @@ function Test-PowerPoint
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Update-ADTGroupPolicy
+# MARK: Wrapper around Update-ADTGroupPolicy
 #
 #---------------------------------------------------------------------------
 
@@ -1653,7 +1653,7 @@ function Update-GroupPolicy
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTUniversalDate
+# MARK: Wrapper around Get-ADTUniversalDate
 #
 #---------------------------------------------------------------------------
 
@@ -1693,7 +1693,7 @@ function Get-UniversalDate
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Test-ADTServiceExists
+# MARK: Wrapper around Test-ADTServiceExists
 #
 #---------------------------------------------------------------------------
 
@@ -1746,7 +1746,7 @@ function Test-ServiceExists
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Disable-ADTTerminalServerInstallMode
+# MARK: Wrapper around Disable-ADTTerminalServerInstallMode
 #
 #---------------------------------------------------------------------------
 
@@ -1786,7 +1786,7 @@ function Disable-TerminalServerInstallMode
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Disable-ADTTerminalServerInstallMode
+# MARK: Wrapper around Disable-ADTTerminalServerInstallMode
 #
 #---------------------------------------------------------------------------
 
@@ -1826,7 +1826,7 @@ function Enable-TerminalServerInstallMode
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Add-ADTEdgeExtension and Remove-ADTEdgeExtension
+# MARK: Wrapper around Add-ADTEdgeExtension and Remove-ADTEdgeExtension
 #
 #---------------------------------------------------------------------------
 
@@ -1875,7 +1875,7 @@ function Configure-EdgeExtension
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Resolve-ADTErrorRecord
+# MARK: Wrapper around Resolve-ADTErrorRecord
 #
 #---------------------------------------------------------------------------
 
@@ -1969,7 +1969,7 @@ function Resolve-Error
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTServiceStartMode
+# MARK: Wrapper around Get-ADTServiceStartMode
 #
 #---------------------------------------------------------------------------
 
@@ -2025,7 +2025,7 @@ function Get-ServiceStartMode
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Set-ADTServiceStartMode
+# MARK: Wrapper around Set-ADTServiceStartMode
 #
 #---------------------------------------------------------------------------
 
@@ -2076,7 +2076,7 @@ function Set-ServiceStartMode
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Start-ADTProcess
+# MARK: Wrapper around Start-ADTProcess
 #
 #---------------------------------------------------------------------------
 
@@ -2179,7 +2179,7 @@ function Execute-Process
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Start-ADTMsiProcess
+# MARK: Wrapper around Start-ADTMsiProcess
 #
 #---------------------------------------------------------------------------
 
@@ -2300,7 +2300,7 @@ function Execute-MSI
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Start-ADTMspProcess
+# MARK: Wrapper around Start-ADTMspProcess
 #
 #---------------------------------------------------------------------------
 
@@ -2334,7 +2334,7 @@ function Execute-MSP
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Unblock-ADTAppExecution
+# MARK: Wrapper around Unblock-ADTAppExecution
 #
 #---------------------------------------------------------------------------
 
@@ -2354,7 +2354,7 @@ function Unblock-AppExecution
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Block-ADTAppExecution
+# MARK: Wrapper around Block-ADTAppExecution
 #
 #---------------------------------------------------------------------------
 
@@ -2381,7 +2381,7 @@ function Block-AppExecution
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Test-ADTRegistryValue
+# MARK: Wrapper around Test-ADTRegistryValue
 #
 #---------------------------------------------------------------------------
 
@@ -2443,7 +2443,7 @@ function Test-RegistryValue
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Convert-ADTRegistryPath
+# MARK: Wrapper around Convert-ADTRegistryPath
 #
 #---------------------------------------------------------------------------
 
@@ -2486,7 +2486,7 @@ function Convert-RegistryPath
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Test-ADTMSUpdates
+# MARK: Wrapper around Test-ADTMSUpdates
 #
 #---------------------------------------------------------------------------
 
@@ -2531,7 +2531,7 @@ function Test-MSUpdates
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Test-ADTBattery
+# MARK: Wrapper around Test-ADTBattery
 #
 #---------------------------------------------------------------------------
 
@@ -2558,7 +2558,7 @@ function Test-Battery
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Start-ADTServiceAndDependencies
+# MARK: Wrapper around Start-ADTServiceAndDependencies
 #
 #---------------------------------------------------------------------------
 
@@ -2634,7 +2634,7 @@ function Start-ServiceAndDependencies
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Stop-ADTServiceAndDependencies
+# MARK: Wrapper around Stop-ADTServiceAndDependencies
 #
 #---------------------------------------------------------------------------
 
@@ -2710,7 +2710,7 @@ function Stop-ServiceAndDependencies
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Set-ADTRegistryKey
+# MARK: Wrapper around Set-ADTRegistryKey
 #
 #---------------------------------------------------------------------------
 
@@ -2773,7 +2773,7 @@ function Set-RegistryKey
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Remove-ADTRegistryKey
+# MARK: Wrapper around Remove-ADTRegistryKey
 #
 #---------------------------------------------------------------------------
 
@@ -2829,7 +2829,7 @@ function Remove-RegistryKey
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Remove-ADTFileFromUserProfiles
+# MARK: Wrapper around Remove-ADTFileFromUserProfiles
 #
 #---------------------------------------------------------------------------
 
@@ -2902,7 +2902,7 @@ function Remove-FileFromUserProfiles
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTRegistryKey
+# MARK: Wrapper around Get-ADTRegistryKey
 #
 #---------------------------------------------------------------------------
 
@@ -2963,7 +2963,7 @@ function Get-RegistryKey
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Install-ADTMSUpdates
+# MARK: Wrapper around Install-ADTMSUpdates
 #
 #---------------------------------------------------------------------------
 
@@ -2992,7 +2992,7 @@ function Install-MSUpdates
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTSchedulerTask
+# MARK: Wrapper around Get-ADTSchedulerTask
 #
 #---------------------------------------------------------------------------
 
@@ -3036,7 +3036,7 @@ function Get-SchedulerTask
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTPendingReboot
+# MARK: Wrapper around Get-ADTPendingReboot
 #
 #---------------------------------------------------------------------------
 
@@ -3056,7 +3056,7 @@ function Get-PendingReboot
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Invoke-ADTDllFileAction
+# MARK: Wrapper around Invoke-ADTDllFileAction
 #
 #---------------------------------------------------------------------------
 
@@ -3104,7 +3104,7 @@ function Invoke-RegisterOrUnregisterDLL
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Register-ADTDllFile
+# MARK: Wrapper around Register-ADTDllFile
 #
 #---------------------------------------------------------------------------
 
@@ -3148,7 +3148,7 @@ function Register-DLL
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Unregister-ADTDllFile
+# MARK: Wrapper around Unregister-ADTDllFile
 #
 #---------------------------------------------------------------------------
 
@@ -3192,7 +3192,7 @@ function Unregister-DLL
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Remove-ADTFolder
+# MARK: Wrapper around Remove-ADTFolder
 #
 #---------------------------------------------------------------------------
 
@@ -3240,7 +3240,7 @@ function Remove-Folder
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Set-ADTActiveSetup
+# MARK: Wrapper around Set-ADTActiveSetup
 #
 #---------------------------------------------------------------------------
 
@@ -3323,7 +3323,7 @@ function Set-ActiveSetup
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Set-ADTItemPermission
+# MARK: Wrapper around Set-ADTItemPermission
 #
 #---------------------------------------------------------------------------
 
@@ -3392,7 +3392,7 @@ function Set-ItemPermission
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around New-ADTMsiTransform
+# MARK: Wrapper around New-ADTMsiTransform
 #
 #---------------------------------------------------------------------------
 
@@ -3449,7 +3449,7 @@ function New-MsiTransform
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Invoke-ADTSCCMTask
+# MARK: Wrapper around Invoke-ADTSCCMTask
 #
 #---------------------------------------------------------------------------
 
@@ -3493,7 +3493,7 @@ function Invoke-SCCMTask
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Install-ADTSCCMSoftwareUpdates
+# MARK: Wrapper around Install-ADTSCCMSoftwareUpdates
 #
 #---------------------------------------------------------------------------
 
@@ -3542,7 +3542,7 @@ function Install-SCCMSoftwareUpdates
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Send-ADTKeys
+# MARK: Wrapper around Send-ADTKeys
 #
 #---------------------------------------------------------------------------
 
@@ -3567,7 +3567,7 @@ function Send-Keys
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Get-ADTShortcut
+# MARK: Wrapper around Get-ADTShortcut
 #
 #---------------------------------------------------------------------------
 
@@ -3611,7 +3611,7 @@ function Get-Shortcut
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around Set-ADTShortcut
+# MARK: Wrapper around Set-ADTShortcut
 #
 #---------------------------------------------------------------------------
 
@@ -3719,7 +3719,7 @@ function Set-Shortcut
 
 #---------------------------------------------------------------------------
 #
-# Wrapper around New-ADTShortcut
+# MARK: Wrapper around New-ADTShortcut
 #
 #---------------------------------------------------------------------------
 
@@ -3799,7 +3799,7 @@ function New-Shortcut
 
 #---------------------------------------------------------------------------
 #
-# Module and session code.
+# MARK: Module and session code
 #
 #---------------------------------------------------------------------------
 
@@ -3825,7 +3825,7 @@ Remove-Variable -Name sessionProps -Force -Confirm:$false
 
 #---------------------------------------------------------------------------
 #
-# Compatibility extension support.
+# MARK: Compatibility extension support
 #
 #---------------------------------------------------------------------------
 
