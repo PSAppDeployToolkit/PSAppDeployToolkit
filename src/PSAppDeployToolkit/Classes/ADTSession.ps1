@@ -724,9 +724,6 @@ class ADTSession
             & $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'
         }
 
-        # Change the install phase since we've finished initialising. This should get overwritten shortly.
-        $this.InstallPhase = 'Execution'
-
         # Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
         # PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
         if ($this.CompatibilityMode)
