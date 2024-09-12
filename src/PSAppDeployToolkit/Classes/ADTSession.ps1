@@ -890,13 +890,13 @@ class ADTSession
         if (![System.String]::IsNullOrWhiteSpace(($outFile = [System.IO.Path]::Combine($LogFileDirectory, $LogFileName))) -and !$this.GetPropertyValue('DisableLogging'))
         {
             $logLine = $logFormats.$LogType
-            $Message | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { [System.String]::Format($logLine, $_) } } } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+            $Message | & { process { [System.String]::Format($logLine, $_) } } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
         }
         if ($adtConfig.Toolkit.LogWriteToHost)
         {
             $conLine = $logFormats.Legacy
             $colours = $sevData.Colours
-            $Message | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { [System.String]::Format($conLine, $_) } } } | & $Script:CommandTable.'Write-Host' @colours
+            $Message | & { process { [System.String]::Format($conLine, $_) } } | & $Script:CommandTable.'Write-Host' @colours
         }
     }
 
