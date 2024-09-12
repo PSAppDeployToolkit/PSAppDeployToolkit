@@ -376,47 +376,48 @@ class ADTSession
             "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(& $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $ADTEnv.envUserName).log"
         }
         $logFile = [System.IO.Path]::Combine($this.LogPath, $this.LogName)
+        $logFileInfo = [System.IO.FileInfo]$logFile
+        $logFileSizeExceeded = ($ADTConfig.Toolkit.LogMaxSize -gt 0) -and (($logFileInfo.Length / 1MB) -gt $ADTConfig.Toolkit.LogMaxSize)
 
         # Check if log file needs to be rotated.
-        if ([System.IO.File]::Exists($logFile) -and !$ADTConfig.Toolkit.LogAppend)
+        if (([System.IO.File]::Exists($logFile) -and !$ADTConfig.Toolkit.LogAppend) -or $logFileSizeExceeded)
         {
-            $logFileInfo = [System.IO.FileInfo]$logFile
-            $logFileSizeMB = $logFileInfo.Length / 1MB
-
-            # Rotate if we've exceeded the size already.
-            if (($ADTConfig.Toolkit.LogMaxSize -gt 0) -and ($logFileSizeMB -gt $ADTConfig.Toolkit.LogMaxSize))
+            try
             {
-                try
-                {
-                    # Get new log file path.
-                    $logFileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($logFile)
-                    $logFileExtension = [System.IO.Path]::GetExtension($logFile)
-                    $Timestamp = $logFileInfo.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
-                    $ArchiveLogFileName = "{0}_{1}{2}" -f $logFileNameWithoutExtension, $Timestamp, $logFileExtension
-                    [String]$ArchiveLogFilePath = & $Script:CommandTable.'Join-Path' -Path $this.LogPath -ChildPath $ArchiveLogFileName
+                # Get new log file path.
+                $logFileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($logFile)
+                $logFileExtension = [System.IO.Path]::GetExtension($logFile)
+                $Timestamp = $logFileInfo.LastWriteTime.ToString('yyyy-MM-dd-HH-mm-ss')
+                $ArchiveLogFileName = [System.String]::Format("{0}_{1}{2}", $logFileNameWithoutExtension, $Timestamp, $logFileExtension)
+                $ArchiveLogFilePath = & $Script:CommandTable.'Join-Path' -Path $this.LogPath -ChildPath $ArchiveLogFileName
 
-                    # Log message about archiving the log file.
+                # Log message about archiving the log file.
+                if ($logFileSizeExceeded)
+                {
                     $this.WriteLogEntry("Maximum log file size [$($ADTConfig.Toolkit.LogMaxSize) MB] reached. Rename log file to [$ArchiveLogFileName].", 2)
-
-                    # Rename the file
-                    & $Script:CommandTable.'Move-Item' -LiteralPath $logFileInfo.FullName -Destination $ArchiveLogFilePath -Force
-
-                    # Start new log file and log message about archiving the old log file.
-                    $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($ADTConfig.Toolkit.LogMaxSize) MB] was reached.", 2)
-
-                    # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time
-                    $logFiles = $(& $Script:CommandTable.'Get-ChildItem' -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); & $Script:CommandTable.'Get-Item' -LiteralPath ([IO.Path]::ChangeExtension($logFile, 'lo_')) -ErrorAction Ignore) | & $Script:CommandTable.'Sort-Object' -Property LastWriteTime
-
-                    # Keep only the max number of log files
-                    if ($logFiles.Count -gt $ADTConfig.Toolkit.LogMaxHistory)
-                    {
-                        $logFiles | & $Script:CommandTable.'Select-Object' -First ($logFiles.Count - $ADTConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
-                    }
                 }
-                catch
+
+                # Rename the file.
+                & $Script:CommandTable.'Move-Item' -LiteralPath $logFileInfo.FullName -Destination $ArchiveLogFilePath -Force
+
+                # Start new log file and log message about archiving the old log file.
+                if ($logFileSizeExceeded)
                 {
-                    $this.WriteLogEntry("Failed to rotate the log file [$($logFile)].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)", 3)
+                    $this.WriteLogEntry("Previous log file was renamed to [$ArchiveLogFileName] because maximum log file size of [$($ADTConfig.Toolkit.LogMaxSize) MB] was reached.", 2)
                 }
+
+                # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time.
+                $logFiles = $(& $Script:CommandTable.'Get-ChildItem' -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); & $Script:CommandTable.'Get-Item' -LiteralPath ([IO.Path]::ChangeExtension($logFile, 'lo_')) -ErrorAction Ignore) | & $Script:CommandTable.'Sort-Object' -Property LastWriteTime
+
+                # Keep only the max number of log files.
+                if ($logFiles.Count -gt $ADTConfig.Toolkit.LogMaxHistory)
+                {
+                    $logFiles | & $Script:CommandTable.'Select-Object' -First ($logFiles.Count - $ADTConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
+                }
+            }
+            catch
+            {
+                $this.WriteLogEntry("Failed to rotate the log file [$($logFile)].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)", 3)
             }
         }
 
