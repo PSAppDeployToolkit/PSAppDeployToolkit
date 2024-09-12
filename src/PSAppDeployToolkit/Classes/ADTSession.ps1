@@ -423,7 +423,7 @@ class ADTSession
 
         # Open log file with commencement message.
         $this.WriteLogDivider(2)
-        $this.WriteLogEntry("[$($this.InstallName)] setup started.")
+        $this.WriteLogEntry("[$($this.InstallName)] $(($this.DeploymentTypeName = (& $Script:CommandTable.'Get-ADTStringTable').DeploymentType.($this.DeploymentType)).ToLower()) started.")
     }
 
     hidden [System.Void] LogScriptInfo([System.Management.Automation.PSObject]$ADTData, [System.Collections.Specialized.OrderedDictionary]$ADTEnv)
@@ -610,7 +610,7 @@ class ADTSession
         }
 
         # Check deployment type (install/uninstall).
-        $this.WriteLogEntry("Deployment type is [$(($this.DeploymentTypeName = (& $Script:CommandTable.'Get-ADTStringTable').DeploymentType.($this.DeploymentType)))].")
+        $this.WriteLogEntry("Deployment type is [$($this.GetDeploymentTypeName())].")
     }
 
     hidden [System.Void] TestDefaultMsi()
@@ -743,7 +743,7 @@ class ADTSession
         $this.InstallPhase = 'Finalization'
 
         # Store app/deployment details string. If we're exiting before properties are set, use a generic string.
-        if ([System.String]::IsNullOrWhiteSpace(($deployString = "$($this.GetPropertyValue('InstallName')) $($this.GetDeploymentTypeName().ToLower())".Trim())))
+        if ([System.String]::IsNullOrWhiteSpace(($deployString = "[$($this.GetPropertyValue('InstallName'))] $($this.GetDeploymentTypeName().ToLower())".Trim())))
         {
             $deployString = "$($Script:MyInvocation.MyCommand.ScriptBlock.Module.Name) deployment"
         }
