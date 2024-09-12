@@ -77,7 +77,6 @@ function Get-ADTInstalledApplication
     {
         # Announce start.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $logSource = $MyInvocation.MyCommand.Name
         $updatesSkippedCounter = 0
     }
 
@@ -124,7 +123,7 @@ function Get-ADTInstalledApplication
                         $Is64BitApp = [System.Environment]::Is64BitOperatingSystem -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
 
                         # Build out an object and return it to the pipeline.
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName] version [$appDisplayVersion]$(if ($FilterScript) {' matching the provided FilterScript'})." -Source $logSource
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$appDisplayName] version [$appDisplayVersion]$(if ($FilterScript) {' matching the provided FilterScript'})."
                         return [PSADT.Types.InstalledApplication]@{
                             UninstallSubkey    = $_.PSChildName
                             ProductCode        = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
