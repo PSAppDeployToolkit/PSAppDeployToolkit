@@ -144,19 +144,19 @@ function Write-Log
             $null = $PSBoundParameters.Remove('ContinueOnError')
         }
 
-        # Set up collector for piped in path objects.
+        # Set up collector for piped in messages.
         $messages = [System.Collections.Specialized.StringCollection]::new()
     }
 
     process
     {
         # Add all non-null messages to the collector.
-        $Message | & {
+        $null = $Message | & {
             process
             {
                 if (![System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $null = $messages.Add($_)
+                    $messages.Add($_)
                 }
             }
         }
@@ -851,12 +851,12 @@ function Copy-FileToUserProfiles
     process
     {
         # Add all non-null strings to the collector.
-        $Path | & {
+        $null = $Path | & {
             process
             {
                 if (![System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $null = $srcPaths.Add($_)
+                    $srcPaths.Add($_)
                 }
             }
         }
