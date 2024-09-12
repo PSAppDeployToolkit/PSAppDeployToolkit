@@ -261,7 +261,7 @@ function Show-ADTWelcomePromptClassic
     }
     $timerRunningProcesses_Tick = {
         # Grab current list of running processes.
-        $dynamicRunningProcesses = if ($ProcessObjects) { $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -DisableLogging }
+        $dynamicRunningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -Silent
         $dynamicRunningProcessDescriptions = $dynamicRunningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
         $previousRunningProcessDescriptions = $adtSession.RunningProcessDescriptions
 

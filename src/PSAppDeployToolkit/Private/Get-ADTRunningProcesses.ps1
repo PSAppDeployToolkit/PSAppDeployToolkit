@@ -17,7 +17,7 @@ function Get-ADTRunningProcesses
     .PARAMETER InputObject
     Custom object containing the process objects to search for.
 
-    .PARAMETER DisableLogging
+    .PARAMETER Silent
     Disables function logging.
 
     .INPUTS
@@ -42,14 +42,14 @@ function Get-ADTRunningProcesses
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
+    [OutputType([System.Diagnostics.Process])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [AllowNull()]
         [PSADT.Types.ProcessObject]$InputObject,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$DisableLogging
+        [System.Management.Automation.SwitchParameter]$Silent
     )
 
     begin
@@ -78,7 +78,7 @@ function Get-ADTRunningProcesses
                 try
                 {
                     # Get all running processes and append properties.
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$DisableLogging
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$Silent
                     $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $processObjects.Name -ErrorAction Ignore | & {
                         process
                         {
@@ -105,12 +105,12 @@ function Get-ADTRunningProcesses
                     # Return output if there's any.
                     if ($runningProcesses)
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]." -DebugMessage:$DisableLogging
-                        $runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]." -DebugMessage:$Silent
+                        return ($runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription)
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.' -DebugMessage:$DisableLogging
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.' -DebugMessage:$Silent
                     }
                 }
                 catch

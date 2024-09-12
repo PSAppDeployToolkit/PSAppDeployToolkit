@@ -398,7 +398,7 @@ function Show-ADTInstallationWelcome
                     $adtSession.CloseAppsCountdownGlobal = $CloseAppsCountdown
                     $promptResult = $null
 
-                    while (($runningProcesses = if ($ProcessObjects) { $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
                         $adtSession.RunningProcessDescriptions = $runningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
@@ -523,7 +523,7 @@ function Show-ADTInstallationWelcome
                                 }
                             }
 
-                            if ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -DisableLogging)
+                            if ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -Silent)
                             {
                                 # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
                                 & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Sleeping for 2 seconds because the processes are still not closed...'
