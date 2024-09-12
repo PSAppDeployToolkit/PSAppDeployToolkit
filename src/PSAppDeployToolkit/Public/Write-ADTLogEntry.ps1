@@ -112,26 +112,52 @@ function Write-ADTLogEntry
         [System.Management.Automation.SwitchParameter]$DebugMessage
     )
 
+    begin
+    {
+        # Set up collector for piped in messages.
+        $messages = [System.Collections.Specialized.StringCollection]::new()
+    }
+
     process
     {
-        # If we don't have an active session, write the message to the verbose stream (4).
-        if ($adtSession = if (& $Script:CommandTable.'Test-ADTSessionActive') { & $Script:CommandTable.'Get-ADTSession' })
+        # Add all non-null messages to the collector.
+        $null = $Message | & {
+            process
+            {
+                if (![System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $messages.Add($_)
+                }
+            }
+        }
+    }
+
+    end
+    {
+        # Return early if we have no messages to write out.
+        if (!$messages.Count)
         {
-            $adtSession.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
+            return
+        }
+
+        # If we don't have an active session, write the message to the verbose stream (4).
+        if (& $Script:CommandTable.'Test-ADTSessionActive')
+        {
+            (& $Script:CommandTable.'Get-ADTSession').WriteLogEntry($messages, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
         }
         elseif (!$DebugMessage)
         {
             if ([System.String]::IsNullOrWhiteSpace($Source))
             {
-                $Source = & $Script:CommandTable.'Get-PSCallStack' | & { process { if (![System.String]::IsNullOrWhiteSpace($_.Command) -and ($_.Command -notmatch '^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$')) { return $_.Command } } } | & $Script:CommandTable.'Select-Object' -First 1
+                $Source = (& $Script:CommandTable.'Get-ADTLogEntryCaller').Command
             }
-            $Message -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
+            $messages -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
         }
 
         # Return the provided message if PassThru is true.
         if ($PassThru)
         {
-            return $Message
+            return $messages
         }
     }
 }
