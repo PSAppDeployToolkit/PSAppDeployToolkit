@@ -832,7 +832,7 @@ function Copy-FileToUserProfiles
             })
         if ($PSBoundParameters.ContainsKey('UseRobocopy'))
         {
-            $PSBoundParameters.FileCopyMode = ('Native', 'Robocopy')[$PSBoundParameters.UseRobocopy]
+            $PSBoundParameters.Add('FileCopyMode', ('Native', 'Robocopy')[$PSBoundParameters.UseRobocopy])
             $null = $PSBoundParameters.Remove('UseRobocopy')
         }
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -955,12 +955,12 @@ function Show-InstallationPrompt
     }
     if ($PSBoundParameters.ContainsKey('ExitOnTimeout'))
     {
-        $PSBoundParameters.NoExitOnTimeout = !$PSBoundParameters.ExitOnTimeout
+        $PSBoundParameters.Add('NoExitOnTimeout', !$PSBoundParameters.ExitOnTimeout)
         $null = $PSBoundParameters.Remove('ExitOnTimeout')
     }
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
-        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
         $null = $PSBoundParameters.Remove('TopMost')
     }
 
@@ -1010,12 +1010,12 @@ function Show-InstallationProgress
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
-        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
         $null = $PSBoundParameters.Remove('TopMost')
     }
     if ($PSBoundParameters.ContainsKey('Quiet'))
     {
-        $PSBoundParameters.Silent = $PSBoundParameters.Quiet
+        $PSBoundParameters.Add('Silent', $PSBoundParameters.Quiet)
         $null = $PSBoundParameters.Remove('Quiet')
     }
     try
@@ -1073,7 +1073,7 @@ function Show-DialogBox
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTDialogBox]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
-        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
         $null = $PSBoundParameters.Remove('TopMost')
     }
     try
@@ -1180,12 +1180,12 @@ function Show-InstallationWelcome
     }
     if ($PSBoundParameters.ContainsKey('MinimizeWindows'))
     {
-        $PSBoundParameters.NoMinimizeWindows = !$PSBoundParameters.MinimizeWindows
+        $PSBoundParameters.Add('NoMinimizeWindows', !$PSBoundParameters.MinimizeWindows)
         $null = $PSBoundParameters.Remove('MinimizeWindows')
     }
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
-        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
         $null = $PSBoundParameters.Remove('TopMost')
     }
 
@@ -1226,7 +1226,7 @@ function Get-WindowTitle
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
     {
-        $PSBoundParameters.Silent = $PSBoundParameters.DisableFunctionLogging
+        $PSBoundParameters.Add('Silent', $PSBoundParameters.DisableFunctionLogging)
         $null = $PSBoundParameters.Remove('DisableFunctionLogging')
     }
     try
@@ -1279,12 +1279,12 @@ function Show-InstallationRestartPrompt
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationRestartPrompt]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('NoSilentRestart'))
     {
-        $PSBoundParameters.SilentRestart = !$PSBoundParameters.NoSilentRestart
+        $PSBoundParameters.Add('SilentRestart', !$PSBoundParameters.NoSilentRestart)
         $null = $PSBoundParameters.Remove('NoSilentRestart')
     }
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
-        $PSBoundParameters.NotTopMost = !$PSBoundParameters.TopMost
+        $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
         $null = $PSBoundParameters.Remove('TopMost')
     }
     try
@@ -2017,7 +2017,7 @@ function Get-ServiceStartMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    $PSBoundParameters.Service = $Name
+    $PSBoundParameters.Add('Service', $Name)
     $null = $PSBoundParameters.Remove('Name')
 
     try
@@ -2061,8 +2061,6 @@ function Set-ServiceStartMode
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2
-    $PSBoundParameters.Service = $Name
-    $null = $PSBoundParameters.Remove('Name')
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2071,6 +2069,9 @@ function Set-ServiceStartMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
+    $PSBoundParameters.Add('Service', $Name)
+    $null = $PSBoundParameters.Remove('Name')
+
     try
     {
         Set-ADTServiceStartMode @PSBoundParameters
@@ -2164,7 +2165,7 @@ function Execute-Process
     }
     if ($PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
     {
-        $PSBoundParameters.NoExitOnProcessFailure = !$PSBoundParameters.ExitOnProcessFailure
+        $PSBoundParameters.Add('NoExitOnProcessFailure', !$PSBoundParameters.ExitOnProcessFailure)
         $null = $PSBoundParameters.Remove('ExitOnProcessFailure')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -2285,7 +2286,7 @@ function Execute-MSI
     }
     if ($PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
     {
-        $PSBoundParameters.NoExitOnProcessFailure = !$PSBoundParameters.ExitOnProcessFailure
+        $PSBoundParameters.Add('NoExitOnProcessFailure', !$PSBoundParameters.ExitOnProcessFailure)
         $null = $PSBoundParameters.Remove('ExitOnProcessFailure')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -2486,7 +2487,7 @@ function Convert-RegistryPath
     }
     if (!$DisableFunctionLogging)
     {
-        $PSBoundParameters.Logging = $true
+        $PSBoundParameters.Add('Logging', $true)
     }
     try
     {
@@ -2630,7 +2631,7 @@ function Start-ServiceAndDependencies
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    $PSBoundParameters.Service = $Name
+    $PSBoundParameters.Add('Service', $Name)
     $null = $PSBoundParameters.Remove('Name')
 
     try
@@ -2706,7 +2707,7 @@ function Stop-ServiceAndDependencies
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    $PSBoundParameters.Service = $Name
+    $PSBoundParameters.Add('Service', $Name)
     $null = $PSBoundParameters.Remove('Name')
 
     try
@@ -3311,7 +3312,7 @@ function Set-ActiveSetup
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTActiveSetup]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ExecuteForCurrentUser'))
     {
-        $PSBoundParameters.NoExecuteForCurrentUser = !$PSBoundParameters.ExecuteForCurrentUser
+        $PSBoundParameters.Add('NoExecuteForCurrentUser', !$PSBoundParameters.ExecuteForCurrentUser)
         $null = $PSBoundParameters.Remove('ExecuteForCurrentUser')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
