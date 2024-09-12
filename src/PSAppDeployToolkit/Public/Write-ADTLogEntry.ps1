@@ -74,7 +74,7 @@ function Write-ADTLogEntry
     #>
 
     [CmdletBinding()]
-    [OutputType([System.String[]])]
+    [OutputType([System.Collections.Specialized.StringCollection])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
