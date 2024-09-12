@@ -301,6 +301,9 @@ function Open-ADTSession
                 {
                     $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)
                 }
+
+                # Change the install phase since we've finished initialising. This should get overwritten shortly.
+                $adtSession.SetPropertyValue('InstallPhase', 'Execution')
             }
             catch
             {
