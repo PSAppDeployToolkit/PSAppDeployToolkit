@@ -1,10 +1,9 @@
 ﻿<#
-.SYNOPSIS
 
+.SYNOPSIS
 PSAppDeployToolkit - Provides the ability to extend and customise the toolkit by adding your own functions that can be re-used.
 
 .DESCRIPTION
-
 This script is a template that allows you to extend the toolkit with your own custom functions.
 
 This script is dot-sourced by the AppDeployToolkitMain.ps1 script which contains the logic and functions required to install or uninstall an application.
@@ -16,66 +15,36 @@ Free Software Foundation, either version 3 of the License, or any later version.
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 for more details. You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-.EXAMPLE
-
-powershell.exe -File .\AppDeployToolkitHelp.ps1
-
 .INPUTS
-
-None
-
-You cannot pipe objects to this script.
+None. You cannot pipe objects to this script.
 
 .OUTPUTS
-
-None
-
-This script does not generate any output.
-
-.NOTES
+None. This script does not generate any output.
 
 .LINK
-
 https://psappdeploytoolkit.com
+
 #>
 
-
-[CmdletBinding()]
-Param (
-)
-
 ##*===============================================
-##* VARIABLE DECLARATION
+##* MARK: VARIABLE DECLARATION
 ##*===============================================
 
-# Variables: Script
-[string]$appDeployToolkitExtName = 'PSAppDeployToolkitExt'
-[string]$appDeployExtScriptFriendlyName = 'App Deploy Toolkit Extensions'
-[version]$appDeployExtScriptVersion = [version]'3.91.0'
-[string]$appDeployExtScriptDate = '05/03/2024'
-[hashtable]$appDeployExtScriptParameters = $PSBoundParameters
 
 ##*===============================================
-##* FUNCTION LISTINGS
+##* MARK: FUNCTION LISTINGS
 ##*===============================================
 
-# <Your custom functions go here>
 
 ##*===============================================
-##* END FUNCTION LISTINGS
+##* MARK: SCRIPT BODY
 ##*===============================================
 
-##*===============================================
-##* SCRIPT BODY
-##*===============================================
-
-If ($scriptParentPath) {
-    Write-Log -Message "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$(((Get-Variable -Name MyInvocation).Value).ScriptName)]" -Source $appDeployToolkitExtName
+if ((Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::scriptParentPath) -and $scriptParentPath)
+{
+    Write-ADTLogEntry -Message "Script [$($MyInvocation.MyCommand.Definition)] dot-source invoked by [$(((Get-Variable -Name MyInvocation).Value).ScriptName)]" -ScriptSection Initialization
 }
-Else {
-    Write-Log -Message "Script [$($MyInvocation.MyCommand.Definition)] invoked directly" -Source $appDeployToolkitExtName
+else
+{
+    Write-ADTLogEntry -Message "Script [$($MyInvocation.MyCommand.Definition)] invoked directly" -ScriptSection Initialization
 }
-
-##*===============================================
-##* END SCRIPT BODY
-##*===============================================
