@@ -172,8 +172,8 @@ function Show-ADTInstallationProgressClassic
                     $SyncHash.Window.add_MouseLeftButtonDown({ $this.DragMove() })
                     $SyncHash.Window.add_Loaded({
                             # Relocate the window and disable the X button.
-                            & $UpdateWindowLocation.GetNewClosure() -Window $this -Location $WindowLocation
-                            & $DisableWindowCloseButton.GetNewClosure() -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
+                            & $UpdateWindowLocation -Window $this -Location $WindowLocation
+                            & $DisableWindowCloseButton -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
                         })
                     $null = $SyncHash.Window.ShowDialog()
                 }
@@ -182,7 +182,7 @@ function Show-ADTInstallationProgressClassic
                     $SyncHash.Error = $_
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
-            }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}).AddArgument($Script:CommandTable.'Disable-ADTWindowCloseButton'.ScriptBlock)
+            }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}.Ast.Body.GetScriptBlock()).AddArgument($Script:CommandTable.'Disable-ADTWindowCloseButton'.ScriptBlock.Ast.Body.GetScriptBlock())
 
         # Commence invocation.
         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
