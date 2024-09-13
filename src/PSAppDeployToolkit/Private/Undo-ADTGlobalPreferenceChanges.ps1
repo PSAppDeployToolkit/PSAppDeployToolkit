@@ -22,7 +22,7 @@ function Undo-ADTGlobalPreferenceChanges
         {
             if ($null -ne ($original = $Cmdlet.SessionState.PSVariable.GetValue("Original$_", $null)))
             {
-                Set-Variable -Name $_ -Value $original -Scope Global
+                & $Script:CommandTable.'Set-Variable' -Name $_ -Value $original -Scope Global
             }
         }
     }
