@@ -59,6 +59,7 @@ function Convert-ADTRegistryPath
     #>
 
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true)]
