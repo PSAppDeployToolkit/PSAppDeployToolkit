@@ -120,6 +120,12 @@ function Write-ADTLogEntry
 
     process
     {
+        # Return early if the InformationPreference is silent.
+        if ($InformationPreference -match '^(SilentlyContinue|Ignore)$')
+        {
+            return
+        }
+
         # Add all non-null messages to the collector.
         $null = $Message | & {
             process
