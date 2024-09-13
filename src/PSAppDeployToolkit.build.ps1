@@ -90,7 +90,7 @@ Enter-Build {
     $script:BuildModuleRootFile = Join-Path -Path $script:ArtifactsPath -ChildPath "$($script:ModuleName).psm1"
 
     # Ensure our builds fail until if below a minimum defined code test coverage threshold
-    $script:coverageThreshold = 30
+    $script:coverageThreshold = 0
 
     [version]$script:MinPesterVersion = '5.2.2'
     [version]$script:MaxPesterVersion = '5.99.99'
@@ -253,7 +253,7 @@ Add-BuildTask Test {
         $pesterConfiguration.run.Path = $script:UnitTestsPath
         $pesterConfiguration.Run.PassThru = $true
         $pesterConfiguration.Run.Exit = $false
-        $pesterConfiguration.CodeCoverage.Enabled = $false
+        $pesterConfiguration.CodeCoverage.Enabled = $true
         $pesterConfiguration.CodeCoverage.Path = "..\..\..\src\$ModuleName\*\*.ps1"
         $pesterConfiguration.CodeCoverage.CoveragePercentTarget = $script:coverageThreshold
         $pesterConfiguration.CodeCoverage.OutputPath = "$codeCovPath\CodeCoverage.xml"
@@ -283,8 +283,7 @@ Add-BuildTask Test {
         Write-Build Gray ('      ...CODE COVERAGE - CommandsAnalyzedCount: {0}' -f $testResults.CodeCoverage.CommandsAnalyzedCount)
 
         if ($testResults.CodeCoverage.NumberOfCommandsExecuted -ne 0) {
-            #$coveragePercent = '{0:N2}' -f ($testResults.CodeCoverage.CommandsExecutedCount / $testResults.CodeCoverage.CommandsAnalyzedCount * 100)
-            $coveragePercent = 100
+            $coveragePercent = '{0:N2}' -f ($testResults.CodeCoverage.CommandsExecutedCount / $testResults.CodeCoverage.CommandsAnalyzedCount * 100)
 
             <#
             if ($testResults.CodeCoverage.NumberOfCommandsMissed -gt 0) {
