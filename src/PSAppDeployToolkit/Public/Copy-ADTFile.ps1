@@ -97,7 +97,7 @@ function Copy-ADTFile
     dynamicparam
     {
         # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
-        if (!$FileCopyMode)
+        if (!(Test-Path Variable:\FileCopyMode) -or !$FileCopyMode)
         {
             $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
             $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
@@ -167,11 +167,12 @@ function Copy-ADTFile
                     {
                         $PSBoundParameters.RobocopyAdditionalParams
                     }
-                    else {
+                    else
+                    {
                         $null
                     }
 
-                    if ($Recurse -and -not $Flatten)
+                    if ($Recurse -and !$Flatten)
                     {
                         # Add /E to Robocopy parameters if it is not already included.
                         if ($RobocopyParams -notmatch '/E(\s+|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s+|$)')
@@ -332,10 +333,10 @@ function Copy-ADTFile
                             if (!$ContinueFileCopyOnError)
                             {
                                 $naerParams = @{
-                                    Exception = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
-                                    Category = [System.Management.Automation.ErrorCategory]::OperationStopped
-                                    ErrorId = 'RobocopyError'
-                                    TargetObject = $srcPath
+                                    Exception         = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
+                                    Category          = [System.Management.Automation.ErrorCategory]::OperationStopped
+                                    ErrorId           = 'RobocopyError'
+                                    TargetObject      = $srcPath
                                     RecommendedAction = "Please verify that Path and Destination are accessible and try again."
                                 }
                                 & $Script:CommandTable.'Write-Error' -ErrorRecord (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
@@ -348,10 +349,10 @@ function Copy-ADTFile
                             if (!$ContinueFileCopyOnError)
                             {
                                 $naerParams = @{
-                                    Exception = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
-                                    Category = [System.Management.Automation.ErrorCategory]::OperationStopped
-                                    ErrorId = 'RobocopyError'
-                                    TargetObject = $srcPath
+                                    Exception         = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
+                                    Category          = [System.Management.Automation.ErrorCategory]::OperationStopped
+                                    ErrorId           = 'RobocopyError'
+                                    TargetObject      = $srcPath
                                     RecommendedAction = "Please verify that Path and Destination are accessible and try again."
                                 }
                                 & $Script:CommandTable.'Write-Error' -ErrorRecord (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
@@ -396,7 +397,7 @@ function Copy-ADTFile
                         # Set up parameters for Copy-Item operation.
                         $ciParams = @{
                             Destination = $Destination
-                            Force = $true
+                            Force       = $true
                         }
                         if ($ContinueFileCopyOnError)
                         {
