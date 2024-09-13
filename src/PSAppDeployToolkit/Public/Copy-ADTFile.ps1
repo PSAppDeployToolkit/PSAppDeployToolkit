@@ -97,7 +97,7 @@ function Copy-ADTFile
     dynamicparam
     {
         # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
-        if (!(Test-Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native','Robocopy')
+        if (!(& $Script:CommandTable.'Test-Path' -Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native','Robocopy')
         {
             $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
             $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
@@ -136,7 +136,7 @@ function Copy-ADTFile
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
-        if (!(Test-Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native', 'Robocopy')
+        if (!(& $Script:CommandTable.'Test-Path' -Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native', 'Robocopy')
         {
             $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
             $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
@@ -218,16 +218,16 @@ function Copy-ADTFile
             {
                 try
                 {
-                    if (!(Test-Path $srcPath))
+                    if (!(& $Script:CommandTable.'Test-Path' -Path $srcPath))
                     {
                         if ($ContinueFileCopyOnError)
                         {
-                            Write-ADTLogEntry -Message "Source path [$srcPath] not found. Will continue due to ContinueFileCopyOnError = `$true." -Severity 2
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Source path [$srcPath] not found. Will continue due to ContinueFileCopyOnError = `$true." -Severity 2
                             continue
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "Source path [$srcPath] not found." -Severity 2
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Source path [$srcPath] not found." -Severity 2
                             $naerParams = @{
                                 Exception         = [System.IO.FileNotFoundException]::new("Source path [$srcPath] not found.")
                                 Category          = [System.Management.Automation.ErrorCategory]::ObjectNotFound
