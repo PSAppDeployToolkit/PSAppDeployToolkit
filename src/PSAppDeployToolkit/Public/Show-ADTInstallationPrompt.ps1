@@ -198,7 +198,7 @@ function Show-ADTInstallationPrompt
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
-                    & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$Script:PSScriptRoot'; `$null = $($MyInvocation.MyCommand.Name) $(($PSBoundParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters' -Exclude NoWait).Replace('"', '\"'))" -WindowStyle Hidden -ErrorAction Ignore
+                    & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'; `$null = $($MyInvocation.MyCommand.Name) $(($PSBoundParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters' -Exclude NoWait).Replace('"', '\"'))" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 

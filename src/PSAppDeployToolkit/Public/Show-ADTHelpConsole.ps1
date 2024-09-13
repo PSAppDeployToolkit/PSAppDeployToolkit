@@ -47,7 +47,7 @@ function Show-ADTHelpConsole
         (
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
-            [System.String[]]$ModuleBase
+            [System.String[]]$ModulePath
         )
 
         # Ensure job runs in strict mode since its in a new scope.
@@ -57,7 +57,7 @@ function Show-ADTHelpConsole
         Set-StrictMode -Version 3
 
         # Import the module and store its passthru data so we can access it later.
-        $module = Import-Module -Name $ModuleBase -DisableNameChecking -PassThru
+        $module = Import-Module -Name $ModulePath -DisableNameChecking -PassThru
 
         # Build out the form's listbox.
         $helpListBox = [System.Windows.Forms.ListBox]::new()
@@ -91,5 +91,5 @@ function Show-ADTHelpConsole
 
         # Show the form. Using Application.Run automatically manages disposal for us.
         [System.Windows.Forms.Application]::Run($helpForm)
-    })} -ModuleBase '$Script:PSScriptRoot'")"
+    })} -ModulePath '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'")"
 }
