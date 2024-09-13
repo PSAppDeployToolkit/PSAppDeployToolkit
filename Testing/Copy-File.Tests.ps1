@@ -3,7 +3,7 @@ BeforeAll {
 		$DeployMode = 'NonInteractive'
 		$null = . "$PSScriptRoot\..\src\Frontend\v3\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
 		#Mock Write-Host {}
-		$DebugPreference = 'Continue'
+		#$DebugPreference = 'Continue'
 	} catch {
 		# Error may be thrown if dot-sourcing main without elevation, but elevation is not required for these tests.
 		Write-Warning $_
@@ -270,6 +270,11 @@ Describe 'Copy-File'-ForEach @(
 		"$DestinationPath\test2.txt" | Should -Exist
 	}
 
+	It 'Handles -ContinueOnError correctly when copying a file that does not exist ($UseRobocopy = $<UseRobocopy>)' {
+		{ Copy-File -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -UseRobocopy $UseRobocopy -ContinueOnError $true } | Should -Not -Throw
+		{ Copy-File -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -UseRobocopy $UseRobocopy -ContinueOnError $false } | Should -Throw
+	}
+
 	It 'Copies files to and from paths longer than 260 characters ($UseRobocopy = $<UseRobocopy>)' {
 		if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1) {
 			Write-Debug 'Long paths are enabled.'
@@ -288,5 +293,4 @@ Describe 'Copy-File'-ForEach @(
 		"$LongDestinationPath\test.txt" | Should -Exist
 		"$LongDestinationPath\test2.txt" | Should -Exist
 	}
-
 }
