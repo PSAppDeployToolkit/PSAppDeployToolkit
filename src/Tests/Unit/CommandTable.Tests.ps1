@@ -1,10 +1,8 @@
 BeforeAll {
     Set-Location -Path $PSScriptRoot
     $ModuleName = 'PSAppDeployToolkit'
-    $PathToManifest = [System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psd1")
     Get-Module $ModuleName -ErrorAction SilentlyContinue | Remove-Module -Force
-    Import-Module $PathToManifest -Force
-    $moduleFiles = Get-ChildItem -LiteralPath (('Classes', 'Private', 'Public') -replace '^', "$([System.IO.Path]::Combine('..', '..', $ModuleName))\")
+    Import-Module ([System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psd1")) -Force
     $commandArray = (Get-Command).Name
     $fileCountOverrides = @{
         'Show-ADTBalloonTipClassic.ps1' = 2
@@ -18,16 +16,7 @@ BeforeAll {
 BeforeDiscovery {
     Set-Location -Path $PSScriptRoot
     $ModuleName = 'PSAppDeployToolkit'
-    $PathToManifest = [System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psd1")
     $moduleFiles = Get-ChildItem -LiteralPath (('Classes', 'Private', 'Public') -replace '^', "$([System.IO.Path]::Combine('..', '..', $ModuleName))\")
-    $commandArray = (Get-Command).Name
-    $fileCountOverrides = @{
-        'Show-ADTBalloonTipClassic.ps1' = 2
-        'Show-ADTBalloonTipFluent.ps1' = 5
-        'Show-ADTInstallationProgressClassic.ps1' = 1
-        'Unblock-ADTAppExecutionInternal.ps1' = 9
-        'Show-ADTHelpConsole.ps1' = 5
-    }
 }
 
 Describe $ModuleName {
@@ -35,8 +24,7 @@ Describe $ModuleName {
     Context 'Command Map Utilization' {
 
         It 'File <_> has all command calls defined via the module CommandTable' -ForEach $moduleFiles {
-            $script = [scriptblock]::Create([System.IO.File]::ReadAllText($_.FullName))
-            $script.Ast.FindAll(
+            [System.Management.Automation.ScriptBlock]::Create([System.IO.File]::ReadAllText($_.FullName)).Ast.FindAll(
                 {
                     # Is a raw statement.
                     ($args[0] -is [System.Management.Automation.Language.StringConstantExpressionAst]) -and
