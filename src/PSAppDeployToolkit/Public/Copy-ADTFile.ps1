@@ -97,7 +97,7 @@ function Copy-ADTFile
     dynamicparam
     {
         # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
-        if (!(Test-Path Variable:\FileCopyMode) -or !$FileCopyMode)
+        if (!(Test-Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native','Robocopy')
         {
             $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
             $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
@@ -134,6 +134,13 @@ function Copy-ADTFile
     {
         # Make this function continue on error.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+
+        # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
+        if (!(Test-Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native', 'Robocopy')
+        {
+            $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
+            $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
+        }
 
         # Check if Robocopy is on the system.
         if ($FileCopyMode -eq 'Robocopy')
