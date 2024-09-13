@@ -120,7 +120,7 @@ function Invoke-ADTFunctionErrorHandler
     if ($ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
     {
         # Restore original global verbosity before terminating.
-        & $Script:CommandTable.'Undo-ADTGlobalVerbosePreferenceChange' -Cmdlet $Cmdlet
+        & $Script:CommandTable.'Undo-ADTGlobalPreferenceChanges' -Cmdlet $Cmdlet
         $Cmdlet.ThrowTerminatingError($ErrorRecord)
     }
     elseif (!(& $Script:CommandTable.'Test-ADTSessionActive') -or ($ErrorActionPreference -notmatch '^(SilentlyContinue|Ignore)$'))

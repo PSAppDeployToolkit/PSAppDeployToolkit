@@ -53,5 +53,5 @@ function Complete-ADTFunction
 
     # Write debug log messages and restore original global verbosity if a value was archived off.
     & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Function End' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
-    & $Script:CommandTable.'Undo-ADTGlobalVerbosePreferenceChange' -Cmdlet $Cmdlet
+    & $Script:CommandTable.'Undo-ADTGlobalPreferenceChanges' -Cmdlet $Cmdlet
 }
