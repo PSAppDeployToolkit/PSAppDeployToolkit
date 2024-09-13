@@ -845,7 +845,7 @@ class ADTSession
         $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
 
         # Get caller's invocation info, we'll need it for some variables.
-        $caller = Get-ADTLogEntryCaller
+        $caller = & $Script:CommandTable.'Get-ADTLogEntryCaller'
 
         # Set up default values if not specified.
         if ($null -eq $Severity)

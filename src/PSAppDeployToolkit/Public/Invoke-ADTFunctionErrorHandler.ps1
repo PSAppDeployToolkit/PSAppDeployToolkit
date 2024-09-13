@@ -100,7 +100,7 @@ function Invoke-ADTFunctionErrorHandler
     }
 
     # Write-Error enforces its own name against the Activity, let's re-write it.
-    if ($ErrorRecord.CategoryInfo.Activity.Equals('Write-Error'))
+    if ($ErrorRecord.CategoryInfo.Activity -match '^Write-Error$')
     {
         $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name
     }

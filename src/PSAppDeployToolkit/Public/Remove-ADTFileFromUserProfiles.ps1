@@ -114,7 +114,7 @@ function Remove-ADTFileFromUserProfiles
         }
 
         # Store variable based on ParameterSetName.
-        $pathVar = Get-Variable -Name $PSCmdlet.ParameterSetName
+        $pathVar = & $Script:CommandTable.'Get-Variable' -Name $PSCmdlet.ParameterSetName
     }
 
     process
