@@ -425,7 +425,7 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
 } #CreateMarkdownHelp
 
 # Synopsis: Build the external xml help file from markdown help files with PlatyPS
-Add-BuildTask CreateExternalHelp -After CreateMarkdownHelp {
+Add-BuildTask CreateExternalHelp -After CreateMarkdownHelp $null; $null = {
     Write-Build Gray '           Creating external xml help file...'
     $null = New-ExternalHelp "$script:ArtifactsPath\docs" -OutputPath "$script:ArtifactsPath\en-US\" -Force
     Write-Build Gray '           ...External xml help file created!'
@@ -436,7 +436,7 @@ Add-BuildTask CreateHelpComplete -After CreateExternalHelp {
 } #CreateHelpStart
 
 # Synopsis: Replace comment based help (CBH) with external help in all public functions for this project
-Add-BuildTask UpdateCBH -After AssetCopy {
+Add-BuildTask UpdateCBH -After AssetCopy $null; $null = {
     $ExternalHelp = @"
 <#
     .EXTERNALHELP $($ModuleName)-help.xml
