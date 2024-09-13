@@ -21,9 +21,6 @@ function Show-ADTInstallationProgress
     .PARAMETER NotTopMost
         Specifies whether the progress window shouldn't be topmost. Default: $false.
 
-    .PARAMETER Silent
-        Specifies whether to not log the success of updating the progress message. Default: $false.
-
     .PARAMETER NoRelocation
         Specifies whether to not reposition the window upon updating the message. Default: $false.
 
@@ -78,9 +75,6 @@ function Show-ADTInstallationProgress
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Silent,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation
@@ -157,7 +151,7 @@ function Show-ADTInstallationProgress
         {
             if ($adtSession.IsSilent())
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)" -DebugMessage:$Silent
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)"
                 return
             }
 

@@ -1014,7 +1014,7 @@ function Show-InstallationProgress
     }
     if ($PSBoundParameters.ContainsKey('Quiet'))
     {
-        $PSBoundParameters.Add('Silent', $PSBoundParameters.Quiet)
+        $PSBoundParameters.Add('InformationAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
         $null = $PSBoundParameters.Remove('Quiet')
     }
     try
@@ -1225,7 +1225,7 @@ function Get-WindowTitle
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
     {
-        $PSBoundParameters.Add('Silent', $PSBoundParameters.DisableFunctionLogging)
+        $PSBoundParameters.Add('InformationAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
         $null = $PSBoundParameters.Remove('DisableFunctionLogging')
     }
     try
@@ -2486,7 +2486,7 @@ function Convert-RegistryPath
     }
     if (!$DisableFunctionLogging)
     {
-        $PSBoundParameters.Add('Logging', $true)
+        $PSBoundParameters.Add('InformationAction', [System.Management.Automation.ActionPreference]::Continue)
     }
     try
     {

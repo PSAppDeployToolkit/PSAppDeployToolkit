@@ -523,7 +523,7 @@ function Show-ADTInstallationWelcome
                                 }
                             }
 
-                            if ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -Silent)
+                            if ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -InformationAction SilentlyContinue)
                             {
                                 # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
                                 & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Sleeping for 2 seconds because the processes are still not closed...'
