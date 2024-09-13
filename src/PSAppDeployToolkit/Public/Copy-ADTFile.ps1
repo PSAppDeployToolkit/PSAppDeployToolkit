@@ -167,6 +167,9 @@ function Copy-ADTFile
                     {
                         $PSBoundParameters.RobocopyAdditionalParams
                     }
+                    else {
+                        $null
+                    }
                 }
             }
             else
