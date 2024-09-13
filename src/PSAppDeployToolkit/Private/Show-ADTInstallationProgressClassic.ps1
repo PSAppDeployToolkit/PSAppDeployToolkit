@@ -30,9 +30,6 @@ function Show-ADTInstallationProgressClassic
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Silent,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
@@ -230,6 +227,6 @@ function Show-ADTInstallationProgressClassic
             },
             [System.Windows.Threading.DispatcherPriority]::Send
         )
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Updated the progress message: [$StatusMessage]." -DebugMessage:$Silent
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Updated the progress message: [$StatusMessage]."
     }
 }

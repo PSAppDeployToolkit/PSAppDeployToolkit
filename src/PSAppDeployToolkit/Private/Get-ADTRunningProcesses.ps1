@@ -17,9 +17,6 @@ function Get-ADTRunningProcesses
     .PARAMETER InputObject
     Custom object containing the process objects to search for.
 
-    .PARAMETER Silent
-    Disables function logging.
-
     .INPUTS
     System.Management.Automation.PSObject. One or more process objects as established in the Winforms code.
 
@@ -46,10 +43,7 @@ function Get-ADTRunningProcesses
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [PSADT.Types.ProcessObject]$InputObject,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Silent
+        [PSADT.Types.ProcessObject]$InputObject
     )
 
     begin
@@ -78,7 +72,7 @@ function Get-ADTRunningProcesses
                 try
                 {
                     # Get all running processes and append properties.
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking for running applications: [$($processObjects.Name -join ',')]" -DebugMessage:$Silent
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking for running applications: [$($processObjects.Name -join ',')]"
                     $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $processObjects.Name -ErrorAction Ignore | & {
                         process
                         {
@@ -105,12 +99,12 @@ function Get-ADTRunningProcesses
                     # Return output if there's any.
                     if ($runningProcesses)
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]." -DebugMessage:$Silent
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]."
                         return ($runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription)
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.' -DebugMessage:$Silent
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.'
                     }
                 }
                 catch

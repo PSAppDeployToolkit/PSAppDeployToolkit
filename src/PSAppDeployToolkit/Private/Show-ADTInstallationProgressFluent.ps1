@@ -33,9 +33,6 @@ function Show-ADTInstallationProgressFluent
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Silent,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation
     )
 
@@ -165,6 +162,6 @@ function Show-ADTInstallationProgressFluent
     {
         # Update all values.
         Update-ProgressWindowValues
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Updated the progress message: [$StatusMessage]." -DebugMessage:$Silent
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Updated the progress message: [$StatusMessage]."
     }
 }

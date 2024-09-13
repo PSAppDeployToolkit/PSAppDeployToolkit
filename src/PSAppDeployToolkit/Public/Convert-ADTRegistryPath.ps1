@@ -26,9 +26,6 @@ function Convert-ADTRegistryPath
 
         Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-    .PARAMETER Logging
-        Enables logging of this function. Default: $false
-
     .INPUTS
         None
 
@@ -73,15 +70,19 @@ function Convert-ADTRegistryPath
         [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Wow6432Node,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Logging
+        [System.Management.Automation.SwitchParameter]$Wow6432Node
     )
 
     begin
     {
+        # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Suppress logging output unless the caller has said otherwise.
+        if (!$PSBoundParameters.ContainsKey('InformationAction'))
+        {
+            $InformationPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+        }
     }
 
     process
@@ -131,7 +132,7 @@ function Convert-ADTRegistryPath
                     {
                         $Key = $Key -replace '^Microsoft\.PowerShell\.Core\\Registry::HKEY_CURRENT_USER\\', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$SID\"
                     }
-                    elseif ($Logging)
+                    else
                     {
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
                         return
@@ -150,10 +151,7 @@ function Convert-ADTRegistryPath
                     }
                     throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                 }
-                if ($Logging)
-                {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Return fully qualified registry key path [$Key]."
-                }
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Return fully qualified registry key path [$Key]."
                 return $Key
             }
             catch
@@ -169,6 +167,7 @@ function Convert-ADTRegistryPath
 
     end
     {
+        # Finalize function.
         & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }
