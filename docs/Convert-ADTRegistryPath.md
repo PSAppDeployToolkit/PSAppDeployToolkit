@@ -13,7 +13,7 @@ Converts the specified registry key path to a format that is compatible with bui
 ## SYNTAX
 
 ```
-Convert-ADTRegistryPath [-Key] <String> [[-SID] <String>] [-Wow6432Node] [-Logging] [<CommonParameters>]
+Convert-ADTRegistryPath [-Key] <String> [[-SID] <String>] [-Wow6432Node] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -75,22 +75,6 @@ Accept wildcard characters: False
 
 ### -Wow6432Node
 Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit system.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Logging
-Enables logging of this function.
-Default: $false
 
 ```yaml
 Type: SwitchParameter

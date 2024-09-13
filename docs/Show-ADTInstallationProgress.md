@@ -13,9 +13,8 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 ## SYNTAX
 
 ```
-Show-ADTInstallationProgress [[-WindowLocation] <String>] [-NotTopMost] [-Silent] [-NoRelocation]
- -WindowTitle <String> [-WindowSubtitle <String>] -StatusMessage <String> -StatusMessageDetail <String>
- [<CommonParameters>]
+Show-ADTInstallationProgress [[-WindowLocation] <String>] [-NotTopMost] [-NoRelocation] -WindowTitle <String>
+ [-WindowSubtitle <String>] -StatusMessage <String> -StatusMessageDetail <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -74,22 +73,6 @@ Accept wildcard characters: False
 
 ### -NotTopMost
 Specifies whether the progress window shouldn't be topmost.
-Default: $false.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Silent
-Specifies whether to not log the success of updating the progress message.
 Default: $false.
 
 ```yaml

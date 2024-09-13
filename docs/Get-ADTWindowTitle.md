@@ -14,12 +14,12 @@ Search for an open window title and return details about the window.
 
 ### SearchWinTitle
 ```
-Get-ADTWindowTitle -WindowTitle <String> [-Silent] [<CommonParameters>]
+Get-ADTWindowTitle -WindowTitle <String> [<CommonParameters>]
 ```
 
 ### GetAllWinTitles
 ```
-Get-ADTWindowTitle [-GetAllWindowTitles] [-Silent] [<CommonParameters>]
+Get-ADTWindowTitle [-GetAllWindowTitles] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -84,21 +84,6 @@ Parameter Sets: GetAllWinTitles
 Aliases:
 
 Required: True
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Silent
-Disables logging messages to the script log file.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
 Position: Named
 Default value: False
 Accept pipeline input: False
