@@ -121,7 +121,7 @@ function Write-ADTLogEntry
     process
     {
         # Return early if the InformationPreference is silent.
-        if ($InformationPreference -match '^(SilentlyContinue|Ignore)$')
+        if (($Severity -le 1) -and ($InformationPreference -match '^(SilentlyContinue|Ignore)$'))
         {
             return
         }
