@@ -170,6 +170,28 @@ function Copy-ADTFile
                     else {
                         $null
                     }
+
+                    if ($Recurse -and -not $Flatten)
+                    {
+                        # Add /E to Robocopy parameters if it is not already included.
+                        if ($RobocopyParams -notmatch '/E(\s+|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s+|$)')
+                        {
+                            $RobocopyParams = $RobocopyParams + " /E"
+                        }
+                    }
+                    else
+                    {
+                        # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders.
+                        $RobocopyParams = $RobocopyParams -replace '/E(\s+|$)'
+                        $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s+|$)'
+                    }
+
+                    # Older versions of Robocopy do not support /IM, remove if unsupported.
+                    if ((robocopy.exe /?) -notmatch '/IM\s')
+                    {
+                        $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
+                        $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
+                    }
                 }
             }
             else
@@ -257,26 +279,11 @@ function Copy-ADTFile
                     }
                     elseif ($Recurse)
                     {
-                        # Add /E to Robocopy parameters if it is not already included.
-                        if ($RobocopyParams -notmatch '/E(\s+|$)' -and $RobocopyAdditionalParams -notmatch '/E(\s+|$)')
-                        {
-                            $RobocopyParams = $RobocopyParams + " /E"
-                        }
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]."
                     }
                     else
                     {
-                        # Ensure that /E is not included in the Robocopy parameters as it will copy recursive folders.
-                        $RobocopyParams = $RobocopyParams -replace '/E(\s+|$)'
-                        $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/E(\s+|$)'
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Copying file(s) in path [$srcPath] to destination [$Destination]."
-                    }
-
-                    # Older versions of Robocopy do not support /IM, remove if unsupported.
-                    if (!((robocopy.exe /?) -match '/IM\s'))
-                    {
-                        $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
-                        $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
                     }
 
                     # Create new directory if it doesn't exist.
