@@ -41,15 +41,7 @@ function Show-ADTHelpConsole
     #>
 
     # Run this via a new PowerShell window so it doesn't stall the main thread.
-    & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -NoNewWindow -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "& {$({
-        [CmdletBinding()]
-        param
-        (
-            [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
-            [System.String[]]$ModulePath
-        )
-
+    & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -NoNewWindow -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "$({
         # Ensure job runs in strict mode since its in a new scope.
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
@@ -91,5 +83,5 @@ function Show-ADTHelpConsole
 
         # Show the form. Using Application.Run automatically manages disposal for us.
         [System.Windows.Forms.Application]::Run($helpForm)
-    })} -ModulePath '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'")"
+    }.ToString().Replace('$ModulePath', "$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1"))")"
 }
