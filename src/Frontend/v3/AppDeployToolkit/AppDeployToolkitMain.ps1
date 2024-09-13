@@ -44,7 +44,6 @@ Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock
 
 function Write-Log
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = "There is nothing wrong with Write-Host in PowerShell 5.0+ contexts. Lastly, this code block is only executed during an unexpected issue.")]
     [CmdletBinding()]
     param
     (

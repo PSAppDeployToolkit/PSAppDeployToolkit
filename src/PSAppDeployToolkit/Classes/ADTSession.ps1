@@ -896,7 +896,7 @@ class ADTSession
         {
             $conLine = $logFormats.Legacy
             $colours = $sevData.Colours
-            $Message | & { process { [System.String]::Format($conLine, $_) } } | & $Script:CommandTable.'Write-Host' @colours
+            $Message | & { process { [System.String]::Format($conLine, $_) } } | & $Script:CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $Source
         }
     }
 

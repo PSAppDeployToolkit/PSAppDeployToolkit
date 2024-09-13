@@ -10,6 +10,7 @@ $ModuleImportStart = [System.DateTime]::Now
 
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+$InformationPreference = [System.Management.Automation.ActionPreference]::Continue
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 
 # Build out lookup table for all cmdlets used within module, starting with the core cmdlets.
