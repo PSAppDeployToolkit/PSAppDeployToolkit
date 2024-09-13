@@ -62,6 +62,12 @@
 
     # Assemblies that must be loaded prior to importing this module
     RequiredAssemblies = @(
+        'System.ServiceProcess'
+        'System.Drawing'
+        'System.Windows.Forms'
+        'PresentationCore'
+        'PresentationFramework'
+        'WindowsBase'
         'PSAppDeployToolkit.dll'
         'lib\ProgressWindow\PSADT.UserInterface.dll'
     )

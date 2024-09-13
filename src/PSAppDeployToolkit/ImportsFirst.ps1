@@ -50,9 +50,6 @@ if ($Host.Name.Equals('ConsoleHost'))
     }
 }
 
-# Add system types required by the module.
-& $CommandTable.'Add-Type' -AssemblyName System.ServiceProcess, System.Drawing, System.Windows.Forms, PresentationCore, PresentationFramework, WindowsBase
-
 # All WinForms-specific initialistion code.
 try
 {
