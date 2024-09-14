@@ -20,8 +20,9 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-D
  [[-InstallName] <String>] [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>]
  [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <String>]
  [[-DeployAppScriptParameters] <IDictionary>] [[-AppExitCodes] <Int32[]>] [[-AppRebootCodes] <Int32[]>]
- [[-ScriptDirectory] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
- [[-DefaultMspFiles] <String[]>] [-PassThru] [<CommonParameters>]
+ [[-ScriptDirectory] <String>] [[-DirFiles] <String>] [[-DirSupportFiles] <String>]
+ [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>] [[-DefaultMspFiles] <String[]>] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -400,6 +401,36 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -DirFiles
+Specifies the override path to Files.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 22
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DirSupportFiles
+Specifies the override path to SupportFiles.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 23
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -DefaultMsiFile
 Specifies the default MSI file.
 
@@ -409,7 +440,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 22
+Position: 24
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -424,7 +455,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 23
+Position: 25
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -439,7 +470,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 24
+Position: 26
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
