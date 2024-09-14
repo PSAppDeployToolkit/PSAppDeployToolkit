@@ -18,13 +18,13 @@ function Get-ADTRunningProcesses
     Custom object containing the process objects to search for.
 
     .INPUTS
-    System.Management.Automation.PSObject. One or more process objects as established in the Winforms code.
+    None. You cannot pipe objects to this function.
 
     .OUTPUTS
     System.Diagnostics.Process. Returns one or more process objects representing each running process found.
 
     .EXAMPLE
-    $processObjects | Get-ADTRunningProcesses
+    Get-ADTRunningProcesses -ProcessObjects $processObjects
 
     .NOTES
     This is an internal script function and should typically not be called directly.
@@ -42,83 +42,50 @@ function Get-ADTRunningProcesses
     [OutputType([System.Diagnostics.Process])]
     param
     (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [PSADT.Types.ProcessObject]$InputObject
+        [Parameter(Mandatory = $true)]
+        [AllowNull()][AllowEmptyCollection()]
+        [PSADT.Types.ProcessObject[]]$ProcessObjects
     )
 
-    begin
+    # Return early if we've received no input.
+    if ($null -eq $ProcessObjects)
     {
-        # Initalize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $processObjects = [System.Collections.Generic.List[PSADT.Types.ProcessObject]]::new()
+        return
     }
 
-    process
-    {
-        # Filter out any null input.
-        if ($null -ne $InputObject)
+    # Get all running processes and append properties.
+    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking for running applications: [$($ProcessObjects.Name -join ',')]"
+    $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $ProcessObjects.Name -ErrorAction Ignore | & {
+        process
         {
-            $processObjects.Add($InputObject)
+            return $_ | & $Script:CommandTable.'Add-Member' -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | & $Script:CommandTable.'Where-Object' -Property Name -EQ -Value $_.ProcessName | & $Script:CommandTable.'Select-Object' -ExpandProperty Description -ErrorAction Ignore)))
+                {
+                    # The description of the process provided with the object.
+                    $objDescription
+                }
+                elseif ($_.Description)
+                {
+                    # If the process already has a description field specified, then use it.
+                    $_.Description
+                }
+                else
+                {
+                    # Fall back on the process name if no description is provided by the process or as a parameter to the function.
+                    $_.ProcessName
+                }
+            )
         }
     }
 
-    end
+    # Return output if there's any.
+    if ($runningProcesses)
     {
-        # Proceed only if we collected process objects.
-        if ($processObjects.Count)
-        {
-            try
-            {
-                try
-                {
-                    # Get all running processes and append properties.
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking for running applications: [$($processObjects.Name -join ',')]"
-                    $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $processObjects.Name -ErrorAction Ignore | & {
-                        process
-                        {
-                            return $_ | & $Script:CommandTable.'Add-Member' -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                                if (![System.String]::IsNullOrWhiteSpace(($objDescription = $processObjects | & $Script:CommandTable.'Where-Object' -Property Name -EQ -Value $_.ProcessName | & $Script:CommandTable.'Select-Object' -ExpandProperty Description -ErrorAction Ignore)))
-                                {
-                                    # The description of the process provided with the object.
-                                    $objDescription
-                                }
-                                elseif ($_.Description)
-                                {
-                                    # If the process already has a description field specified, then use it.
-                                    $_.Description
-                                }
-                                else
-                                {
-                                    # Fall back on the process name if no description is provided by the process or as a parameter to the function.
-                                    $_.ProcessName
-                                }
-                            )
-                        }
-                    }
-
-                    # Return output if there's any.
-                    if ($runningProcesses)
-                    {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]."
-                        return ($runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription)
-                    }
-                    else
-                    {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.'
-                    }
-                }
-                catch
-                {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
-                }
-            }
-            catch
-            {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
-            }
-        }
-
-        # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]."
+        return ($runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription)
+    }
+    else
+    {
+        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.'
     }
 }

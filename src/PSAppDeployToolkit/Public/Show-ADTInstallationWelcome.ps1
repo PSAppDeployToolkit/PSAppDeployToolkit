@@ -398,7 +398,7 @@ function Show-ADTInstallationWelcome
                     $adtSession.CloseAppsCountdownGlobal = $CloseAppsCountdown
                     $promptResult = $null
 
-                    while (($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses') -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningProcesses = & $Script:CommandTable.'Get-ADTRunningProcesses' -ProcessObject $ProcessObjects) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
                         $adtSession.RunningProcessDescriptions = $runningProcesses | & $Script:CommandTable.'Select-Object' -ExpandProperty ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique
@@ -467,7 +467,7 @@ function Show-ADTInstallationWelcome
                             $AllOpenWindows = & $Script:CommandTable.'Get-ADTWindowTitle' -GetAllWindowTitles -DisableFunctionLogging
                             $PromptToSaveTimeout = & $Script:CommandTable.'New-TimeSpan' -Seconds $adtConfig.UI.PromptToSaveTimeout
                             $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
-                            foreach ($runningProcess in ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses'))
+                            foreach ($runningProcess in ($runningProcesses = & $Script:CommandTable.'Get-ADTRunningProcesses' -ProcessObject $ProcessObjects))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
                                 if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & { process { if ($_.ParentProcess -eq $runningProcess.ProcessName) { return $_ } } }) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
@@ -523,7 +523,7 @@ function Show-ADTInstallationWelcome
                                 }
                             }
 
-                            if ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses' -InformationAction SilentlyContinue)
+                            if ($runningProcesses = & $Script:CommandTable.'Get-ADTRunningProcesses' -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue)
                             {
                                 # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
                                 & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Sleeping for 2 seconds because the processes are still not closed...'
@@ -573,7 +573,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Force the processes to close silently, without prompting the user.
-                if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = $ProcessObjects | & $Script:CommandTable.'Get-ADTRunningProcesses'))
+                if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = & $Script:CommandTable.'Get-ADTRunningProcesses' -ProcessObjects $ProcessObjects))
                 {
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | & $Script:CommandTable.'Sort-Object' -Unique) -join ',')] without prompting user."
                     $runningProcesses.ProcessName | & $Script:CommandTable.'Stop-Process' -Force -ErrorAction Ignore
