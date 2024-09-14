@@ -114,7 +114,8 @@ function Start-ADTMspProcess
 
                 # Get the SummaryInformation from the windows installer database and store all product codes found.
                 [__ComObject]$SummaryInformation = & $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $Database -PropertyName SummaryInformation
-                $AllTargetedProductCodes = & $Script:CommandTable.'Get-ADTInstalledApplication' -ProductCode (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
+                $msiProductCode = (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
+                $AllTargetedProductCodes = & $Script:CommandTable.'Get-ADTInstalledApplication' -FilterScript { $_.PSChildItem -eq $msiProductCode }
 
                 # Free our COM objects.
                 [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)

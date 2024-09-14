@@ -222,7 +222,7 @@ function Start-ADTMsiProcess
                 {
                     # Resolve the product code to a publisher, application name, and version.
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Resolving product code to a publisher, application name, and version.'
-                    $productCodeNameVersion = & $Script:CommandTable.'Get-ADTInstalledApplication' -ProductCode $Path -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | & $Script:CommandTable.'Select-Object' -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
+                    $productCodeNameVersion = & $Script:CommandTable.'Get-ADTInstalledApplication' -FilterScript { $_.PSChildName -eq $Path } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | & $Script:CommandTable.'Select-Object' -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
 
                     # Build the log file name.
                     if (!$LogFileName)
@@ -472,7 +472,7 @@ function Start-ADTMsiProcess
                 # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
                 $IsMsiInstalled = if ($MSIProductCode -and !$SkipMSIAlreadyInstalledCheck)
                 {
-                    !!(& $Script:CommandTable.'Get-ADTInstalledApplication' -ProductCode $MSIProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes)
+                    !!(& $Script:CommandTable.'Get-ADTInstalledApplication' -FilterScript { $_.PSChildName -eq $MSIProductCode } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes)
                 }
                 else
                 {
