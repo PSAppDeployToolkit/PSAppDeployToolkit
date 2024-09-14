@@ -90,45 +90,15 @@ function Copy-ADTFile
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Native', 'Robocopy')]
-        [System.String]$FileCopyMode
+        [System.String]$FileCopyMode,
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$RobocopyAdditionalParams
 
     )
-
-    dynamicparam
-    {
-        # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
-        if (!(& $Script:CommandTable.'Test-Path' -Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native', 'Robocopy')
-        {
-            $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
-            $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
-        }
-
-        # Add in extra params for Robocopy mode.
-        if ($FileCopyMode -eq 'Robocopy')
-        {
-            # Define parameter dictionary for returning at the end.
-            $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-
-            # Define the RobocopyParams parameter
-            $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyParams', [System.String], $(
-                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Override the default Robocopy parameters when FileCopyMode = Robocopy. Default value is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1' }
-                        [System.Management.Automation.AllowEmptyStringAttribute]::new()
-                    )
-                ))
-
-            # Define the RobocopyAdditionalParams parameter
-            $paramDictionary.Add('RobocopyAdditionalParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyAdditionalParams', [System.String], $(
-                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Append to the default Robocopy parameters when FileCopyMode = Robocopy.' }
-                        [System.Management.Automation.AllowEmptyStringAttribute]::new()
-                    )
-                ))
-
-            # Return the populated dictionary.
-            return $paramDictionary
-        }
-    }
 
     begin
     {
@@ -142,9 +112,10 @@ function Copy-ADTFile
             $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
         }
 
-        # Check if Robocopy is on the system.
+        # Verify that Robocopy can be used if selected
         if ($FileCopyMode -eq 'Robocopy')
         {
+            # Check if Robocopy is on the system.
             if (& $Script:CommandTable.'Test-Path' -Path "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
             {
                 # Disable Robocopy if $Path has a folder containing a * wildcard.
@@ -162,22 +133,6 @@ function Copy-ADTFile
                 else
                 {
                     $robocopyCommand = "$([System.Environment]::SystemDirectory)\Robocopy.exe"
-                    $RobocopyParams = if ($PSBoundParameters.ContainsKey('RobocopyParams'))
-                    {
-                        $PSBoundParameters.RobocopyParams
-                    }
-                    else
-                    {
-                        '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1'
-                    }
-                    $RobocopyAdditionalParams = if ($PSBoundParameters.ContainsKey('RobocopyAdditionalParams'))
-                    {
-                        $PSBoundParameters.RobocopyAdditionalParams
-                    }
-                    else
-                    {
-                        $null
-                    }
 
                     if ($Recurse -and !$Flatten)
                     {

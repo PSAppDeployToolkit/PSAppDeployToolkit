@@ -107,6 +107,12 @@ function Copy-ADTFileToUserProfiles
         [System.String]$FileCopyMode,
 
         [Parameter(Mandatory = $false)]
+        [System.String]$RobocopyParams,
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$RobocopyAdditionalParams,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ExcludeNTAccount,
 
@@ -126,34 +132,6 @@ function Copy-ADTFileToUserProfiles
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$ContinueFileCopyOnError
     )
-
-    dynamicparam
-    {
-        # Define parameter dictionary for returning at the end.
-        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-
-        if ($PSBoundParameters.ContainsKey('FileCopyMode') -and ($PSBoundParameters.FileCopyMode -eq 'Robocopy'))
-        {
-            # Define the RobocopyParams parameter.
-            $paramDictionary.Add('RobocopyParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyParams', [System.String], $(
-                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Override the default Robocopy parameters when FileCopyMode = Robocopy. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1' }
-                        [System.Management.Automation.AllowEmptyStringAttribute]::new()
-                    )
-                ))
-
-            # Define the RobocopyAdditionalParams parameter.
-            $paramDictionary.Add('RobocopyAdditionalParams', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'RobocopyAdditionalParams', [System.String], $(
-                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Append to the default Robocopy parameters when FileCopyMode = Robocopy.' }
-                        [System.Management.Automation.AllowEmptyStringAttribute]::new()
-                    )
-                ))
-        }
-
-        # Return the populated dictionary.
-        return $paramDictionary
-    }
 
     begin
     {
