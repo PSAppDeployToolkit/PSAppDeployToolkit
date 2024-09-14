@@ -442,13 +442,16 @@ class ADTSession
         {
             $this.WriteLogEntry("[$($this.InstallName)] script author is [$($this.AppScriptAuthor)].")
         }
-        if ($this.DeployAppScriptFriendlyName -and $this.DeployAppScriptVersion)
+        if ($this.DeployAppScriptFriendlyName)
         {
-            $this.WriteLogEntry("[$($this.DeployAppScriptFriendlyName)] script version is [$($this.DeployAppScriptVersion)].")
-        }
-        if ($this.DeployAppScriptParameters -and $this.DeployAppScriptParameters.Count)
-        {
-            $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters')].")
+            if ($this.DeployAppScriptVersion)
+            {
+                $this.WriteLogEntry("[$($this.DeployAppScriptFriendlyName)] script version is [$($this.DeployAppScriptVersion)].")
+            }
+            if ($this.DeployAppScriptParameters -and $this.DeployAppScriptParameters.Count)
+            {
+                $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters')].")
+            }
         }
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module version is [$($ADTEnv.appDeployMainScriptVersion)].")
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module imported in [$($ADTData.Durations.ModuleImport.TotalSeconds)] seconds.")
