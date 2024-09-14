@@ -10,6 +10,7 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
     hidden [AllowEmptyCollection()][System.Collections.Generic.List[System.IO.FileInfo]]$MountedWimFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
+    hidden [AllowEmptyCollection()][System.Collections.Generic.List[PSADT.Types.LogObject]]$LogBuffer = [System.Collections.Generic.List[PSADT.Types.LogObject]]::new()
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$ZeroConfigInitiated
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
@@ -843,9 +844,7 @@ class ADTSession
         # Establish logging date/time vars.
         $dateNow = [System.DateTime]::Now
         $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
-
-        # Get caller's invocation info, we'll need it for some variables.
-        $caller = & $Script:CommandTable.'Get-ADTLogEntryCaller'
+        $invoker = & $Script:CommandTable.'Get-ADTLogEntryCaller'
 
         # Set up default values if not specified.
         if ($null -eq $Severity)
@@ -854,7 +853,7 @@ class ADTSession
         }
         if ([System.String]::IsNullOrWhiteSpace($Source))
         {
-            $Source = $caller.Command
+            $Source = $invoker.Command
         }
         if ([System.String]::IsNullOrWhiteSpace($ScriptSection))
         {
@@ -883,8 +882,18 @@ class ADTSession
         # Store log string to format with message.
         $logFormats = @{
             Legacy = [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern), $logTime, $ScriptSection, $Source, $sevData.Name)
-            CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $caller.ScriptName)
+            CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $invoker.ScriptName)
         }
+
+        # Add this log message to the session's buffer.
+        $logObject = @{
+            Timestamp = $dateNow
+            Invoker = $invoker
+            Severity = $Severity
+            Source = $Source
+            ScriptSection = $ScriptSection
+        }
+        $Message | & { process { $logObject.Message = $_; $this.LogBuffer.Add($logObject) } }
 
         # Write out all non-null messages to disk or host if configured/permitted to do so.
         if (![System.String]::IsNullOrWhiteSpace(($outFile = [System.IO.Path]::Combine($LogFileDirectory, $LogFileName))) -and !$this.GetPropertyValue('DisableLogging'))

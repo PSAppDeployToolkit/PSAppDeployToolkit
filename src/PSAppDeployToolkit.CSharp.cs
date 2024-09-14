@@ -10,6 +10,7 @@ using System.DirectoryServices;
 using System.Security.Principal;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
@@ -134,6 +135,16 @@ namespace PSADT
             public Nullable<int> CharacterCount;
             public string CreatingApplication;
             public int Security;
+        }
+
+        public struct LogObject
+        {
+            public DateTime Timestamp;
+            public CallStackFrame Invoker;
+            public string Message;
+            public int Severity;
+            public string Source;
+            public string ScriptSection;
         }
     }
 
