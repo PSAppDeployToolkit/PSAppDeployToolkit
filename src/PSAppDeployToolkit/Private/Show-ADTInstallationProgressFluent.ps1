@@ -48,9 +48,14 @@ function Show-ADTInstallationProgressFluent
 
         # Blanketly update values from incoming parameters.
         $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
-        $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
         $Script:Dialogs.Fluent.ProgressWindow.Window.SetProgressMessage($StatusMessage)
         $Script:Dialogs.Fluent.ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
+
+        # Only update the window subtitle if it's been specified.
+        if ($WindowSubtitle)
+        {
+            $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
+        }
     }
     function Update-WindowLocation
     {
