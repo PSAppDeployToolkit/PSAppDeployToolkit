@@ -85,6 +85,12 @@ function Open-ADTSession
     .PARAMETER ScriptDirectory
         Specifies the base path for Files and SupportFiles.
 
+    .PARAMETER DirFiles
+        Specifies the override path to Files.
+
+    .PARAMETER DirSupportFiles
+        Specifies the override path to SupportFiles.
+
     .PARAMETER DefaultMsiFile
         Specifies the default MSI file.
 
@@ -219,6 +225,14 @@ function Open-ADTSession
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$ScriptDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DirFiles,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DirSupportFiles,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
