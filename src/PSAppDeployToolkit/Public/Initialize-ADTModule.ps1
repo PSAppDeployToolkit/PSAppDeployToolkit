@@ -86,7 +86,6 @@ function Initialize-ADTModule
                 $adtData.Config = & $Script:CommandTable.'Import-ADTConfig' @PSBoundParameters
                 $adtData.Language = & $Script:CommandTable.'Get-ADTStringLanguage'
                 $adtData.Strings = & $Script:CommandTable.'Import-ADTStringTable' -UICulture $adtData.Language @PSBoundParameters
-                $adtData.LastExitCode = 0
                 $adtData.TerminalServerMode = $false
 
                 # Mark the environment table as read-only before finishing.

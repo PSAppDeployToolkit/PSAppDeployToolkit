@@ -737,7 +737,7 @@ class ADTSession
         $this.Opened = $true
     }
 
-    hidden [System.Void] Close()
+    hidden [System.Int32] Close()
     {
         # Ensure this session isn't being closed twice.
         $this.TestClassState('Closed')
@@ -787,12 +787,6 @@ class ADTSession
             }
         }
 
-        # Update the module's last tracked exit code.
-        if ($this.ExitCode)
-        {
-            (& $Script:CommandTable.'Get-ADTModuleData').LastExitCode = $this.ExitCode
-        }
-
         # Unmount any stored WIM file entries.
         if ($this.MountedWimFiles.Count)
         {
@@ -806,31 +800,32 @@ class ADTSession
         $this.Closed = $true
 
         # Return early if we're not archiving log files.
-        if (!($adtConfig = & $Script:CommandTable.'Get-ADTConfig').Toolkit.CompressLogs)
+        if (($adtConfig = & $Script:CommandTable.'Get-ADTConfig').Toolkit.CompressLogs)
         {
-            return
-        }
-
-        # Archive the log files to zip format and then delete the temporary logs folder.
-        $DestinationArchiveFileName = "$($this.GetPropertyValue('InstallName'))_$($this.GetPropertyValue('DeploymentType'))_{0}.zip"
-        try
-        {
-            # Get all archive files sorted by last write time
-            $ArchiveFiles = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | & $Script:CommandTable.'Sort-Object' LastWriteTime
-            $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('O').Split('.')[0].Replace(':', $null))
-
-            # Keep only the max number of archive files
-            if ($ArchiveFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
+            # Archive the log files to zip format and then delete the temporary logs folder.
+            $DestinationArchiveFileName = "$($this.GetPropertyValue('InstallName'))_$($this.GetPropertyValue('DeploymentType'))_{0}.zip"
+            try
             {
-                $ArchiveFiles | & $Script:CommandTable.'Select-Object' -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
+                # Get all archive files sorted by last write time
+                $ArchiveFiles = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | & $Script:CommandTable.'Sort-Object' LastWriteTime
+                $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('O').Split('.')[0].Replace(':', $null))
+
+                # Keep only the max number of archive files
+                if ($ArchiveFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
+                {
+                    $ArchiveFiles | & $Script:CommandTable.'Select-Object' -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
+                }
+                & $Script:CommandTable.'Compress-Archive' -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
+                [System.IO.Directory]::Delete($this.GetPropertyValue('LogTempFolder'), $true)
             }
-            & $Script:CommandTable.'Compress-Archive' -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
-            [System.IO.Directory]::Delete($this.GetPropertyValue('LogTempFolder'), $true)
+            catch
+            {
+                $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)", 3)
+            }
         }
-        catch
-        {
-            $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)", 3)
-        }
+
+        # Return this session's exit code to the caller.
+        return $this.ExitCode
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage, [System.String]$LogType, [System.String]$LogFileDirectory, [System.String]$LogFileName)
