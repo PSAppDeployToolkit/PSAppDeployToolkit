@@ -16,6 +16,9 @@ function Close-ADTSession
     .PARAMETER ExitCode
         The exit code to set for the session.
 
+    .PARAMETER Force
+        Forcibly exits PowerShell upon closing of the final session.
+
     .INPUTS
         None
 
@@ -53,7 +56,10 @@ function Close-ADTSession
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$ExitCode
+        [System.Int32]$ExitCode,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     begin
@@ -130,14 +136,14 @@ function Close-ADTSession
         $adtData.Initialized = $false
 
         # Return early if this function was called from the command line.
-        if ($adtSession.RunspaceOrigin)
+        if ($adtSession.RunspaceOrigin -and !$Force)
         {
             return
         }
 
         # If a callback failed and we're in a proper console, forcibly exit the process.
         # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
-        if ($Host.Name.Equals('ConsoleHost') -and $callbackErrors)
+        if ($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
         {
             [System.Environment]::Exit($adtData.LastExitCode)
         }
