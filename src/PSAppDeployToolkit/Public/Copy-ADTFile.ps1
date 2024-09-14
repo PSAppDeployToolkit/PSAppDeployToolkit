@@ -97,7 +97,7 @@ function Copy-ADTFile
     dynamicparam
     {
         # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
-        if (!(& $Script:CommandTable.'Test-Path' -Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native','Robocopy')
+        if (!(& $Script:CommandTable.'Test-Path' -Path Variable:\FileCopyMode) -or $FileCopyMode -notin 'Native', 'Robocopy')
         {
             $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
             $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
