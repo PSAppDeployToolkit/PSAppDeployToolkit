@@ -13,7 +13,7 @@ Closes the active ADT session.
 ## SYNTAX
 
 ```
-Close-ADTSession [[-ExitCode] <Int32>] [<CommonParameters>]
+Close-ADTSession [[-ExitCode] <Int32>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -49,6 +49,21 @@ Aliases:
 Required: False
 Position: 1
 Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Forcibly exits PowerShell upon closing of the final session.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
