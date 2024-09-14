@@ -110,7 +110,7 @@ function Close-ADTSession
         {
             try
             {
-                $adtSession.Close()
+                $ExitCode = $adtSession.Close()
             }
             catch
             {
@@ -148,9 +148,9 @@ function Close-ADTSession
         # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
         if ($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
         {
-            [System.Environment]::Exit($adtData.LastExitCode)
+            [System.Environment]::Exit($ExitCode)
         }
-        exit $adtData.LastExitCode
+        exit $ExitCode
     }
 
     end
