@@ -743,6 +743,10 @@ class ADTSession
         $this.TestClassState('Closed')
         $this.InstallPhase = 'Finalization'
 
+        # Set up initial variables.
+        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
+        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+
         # Store app/deployment details string. If we're exiting before properties are set, use a generic string.
         if ([System.String]::IsNullOrWhiteSpace(($deployString = "[$($this.GetPropertyValue('InstallName'))] $($this.GetDeploymentTypeName().ToLower())".Trim())))
         {
@@ -787,6 +791,12 @@ class ADTSession
             }
         }
 
+        # Update the module's last tracked exit code.
+        if ($this.ExitCode)
+        {
+            $adtData.LastExitCode = $this.ExitCode
+        }
+
         # Unmount any stored WIM file entries.
         if ($this.MountedWimFiles.Count)
         {
@@ -800,7 +810,7 @@ class ADTSession
         $this.Closed = $true
 
         # Return early if we're not archiving log files.
-        if (($adtConfig = & $Script:CommandTable.'Get-ADTConfig').Toolkit.CompressLogs)
+        if ($adtConfig.Toolkit.CompressLogs)
         {
             # Archive the log files to zip format and then delete the temporary logs folder.
             $DestinationArchiveFileName = "$($this.GetPropertyValue('InstallName'))_$($this.GetPropertyValue('DeploymentType'))_{0}.zip"
@@ -824,8 +834,8 @@ class ADTSession
             }
         }
 
-        # Return this session's exit code to the caller.
-        return $this.ExitCode
+        # Return the module's cached exit code to the caller.
+        return $adtData.LastExitCode
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage, [System.String]$LogType, [System.String]$LogFileDirectory, [System.String]$LogFileName)

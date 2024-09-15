@@ -30,6 +30,7 @@
         Language = $null
         Config = $null
         Strings = $null
+        LastExitCode = 0
         Initialized = $false
     })
 
