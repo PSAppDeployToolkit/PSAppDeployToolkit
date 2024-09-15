@@ -108,15 +108,15 @@ function Copy-ADTFile
 
     begin
     {
-        # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
         # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
         if (!$PSBoundParameters.ContainsKey('FileCopyMode'))
         {
             $null = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
             $FileCopyMode = (& $Script:CommandTable.'Get-ADTConfig').Toolkit.FileCopyMode
         }
+
+        # Make this function continue on error.
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Verify that Robocopy can be used if selected
         if ($FileCopyMode -eq 'Robocopy')
