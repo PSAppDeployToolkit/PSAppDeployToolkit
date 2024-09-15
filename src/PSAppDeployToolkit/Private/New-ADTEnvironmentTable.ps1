@@ -121,13 +121,12 @@ function New-ADTEnvironmentTable
     }
 
     # Get the OS Architecture.
-    $archArr = @('x86', 'x64')
     $variables.Add('Is64Bit', [System.Environment]::Is64BitOperatingSystem)
-    $variables.Add('envOSArchitecture', $archArr[$variables.Is64Bit])
+    $variables.Add('envOSArchitecture', [System.Runtime.InteropServices.RuntimeInformation, mscorlib, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089]::OSArchitecture)
 
     ## Variables: Current Process Architecture
     $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
-    $variables.Add('psArchitecture', $archArr[$variables.Is64BitProcess])
+    $variables.Add('psArchitecture', ('32-bit', '64-bit')[$variables.Is64BitProcess])
 
     ## Variables: Get normalized paths that vary depending on process bitness.
     if ($variables.Is64Bit)
