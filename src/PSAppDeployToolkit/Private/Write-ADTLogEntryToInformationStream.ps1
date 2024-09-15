@@ -35,6 +35,19 @@ function Write-ADTLogEntryToInformationStream
 
     begin
     {
+        # Ensure this function is only called from `[ADTSession]::WriteLogEntry()`.
+        if (!($caller = (Get-PSCallStack)[1]).FunctionName.Equals('WriteLogEntry'))
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The function [$($MyInvocation.MyCommand.Name)] can only be called by [ADTSession]::WriteLogEntry().")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'InvalidFunctionCaller'
+                TargetObject = $caller
+                RecommendedAction = "Please review your code to ensure that [$($MyInvocation.MyCommand.Name)] is not directly called and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+        }
+
         # Reset NoNewLine to be a proper bool within $PSBoundParameters.
         if ($PSBoundParameters.ContainsKey('NoNewLine'))
         {
