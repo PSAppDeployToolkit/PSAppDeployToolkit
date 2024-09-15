@@ -17,6 +17,10 @@ function Write-ADTLogEntryToInformationStream
         [ValidateNotNullOrEmpty()]
         [System.String]$Source,
 
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Format,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoNewLine,
 
@@ -37,6 +41,7 @@ function Write-ADTLogEntryToInformationStream
             $PSBoundParameters.NoNewLine = $NoNewLine.IsPresent
         }
         $null = $PSBoundParameters.Remove('Source')
+        $null = $PSBoundParameters.Remove('Format')
 
         # Establish the base InformationRecord to write out.
         $infoRecord = [System.Management.Automation.InformationRecord]::new([System.Management.Automation.HostInformationMessage]$PSBoundParameters, $Source)
@@ -45,7 +50,7 @@ function Write-ADTLogEntryToInformationStream
     process
     {
         # Update the message for piped operations and write out to the InformationStream.
-        $infoRecord.MessageData.Message = $Message
+        $infoRecord.MessageData.Message = [System.String]::Format($Format, $Message)
         $PSCmdlet.WriteInformation($infoRecord)
     }
 }
