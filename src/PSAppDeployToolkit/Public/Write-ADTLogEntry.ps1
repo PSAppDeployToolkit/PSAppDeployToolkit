@@ -149,7 +149,7 @@ function Write-ADTLogEntry
         # If we don't have an active session, write the message to the verbose stream (4).
         if (& $Script:CommandTable.'Test-ADTSessionActive')
         {
-            (& $Script:CommandTable.'Get-ADTSession').WriteLogEntry($messages, $Severity, $Source, $ScriptSection, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
+            (& $Script:CommandTable.'Get-ADTSession').WriteLogEntry($messages, $Severity, $Source, $ScriptSection, $null, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
         }
         elseif (!$DebugMessage)
         {

@@ -487,7 +487,7 @@ class ADTSession
     hidden [System.Void] LogUserInfo([System.Management.Automation.PSObject]$ADTData, [System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Log details for all currently logged in users.
-        $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')", $true)
+        $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')", $false)
 
         # Provide detailed info about current process state.
         if ($ADTEnv.usersLoggedOn)
@@ -838,13 +838,19 @@ class ADTSession
         return $adtData.LastExitCode
     }
 
-    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage, [System.String]$LogType, [System.String]$LogFileDirectory, [System.String]$LogFileName)
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Nullable[System.Boolean]]$WriteHost, [System.Boolean]$DebugMessage, [System.String]$LogType, [System.String]$LogFileDirectory, [System.String]$LogFileName)
     {
         # Get the current config.
         $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
 
+        # Determine whether we can write to the console.
+        if ($null -eq $WriteHost)
+        {
+            $WriteHost = $adtConfig.Toolkit.LogWriteToHost
+        }
+
         # Perform early return checks before wasting time.
-        if (($this.GetPropertyValue('DisableLogging') -and !$adtConfig.Toolkit.LogWriteToHost) -or ($DebugMessage -and !$adtConfig.Toolkit.LogDebugMessage))
+        if (($this.GetPropertyValue('DisableLogging') -and !$WriteHost) -or ($DebugMessage -and !$adtConfig.Toolkit.LogDebugMessage))
         {
             return
         }
@@ -909,7 +915,7 @@ class ADTSession
             $logLine = $logFormats.$LogType
             $Message | & { process { [System.String]::Format($logLine, $_) } } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
         }
-        if ($adtConfig.Toolkit.LogWriteToHost)
+        if ($WriteHost)
         {
             $conLine = $logFormats.Legacy
             $colours = $sevData.Colours
@@ -919,27 +925,17 @@ class ADTSession
 
     [System.Void] WriteLogEntry([System.String[]]$Message)
     {
-        $this.WriteLogEntry($Message, $null, $null, $null, $false, $null, $null, $null)
+        $this.WriteLogEntry($Message, $null, $null, $null, $null, $false, $null, $null, $null)
     }
 
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity)
     {
-        $this.WriteLogEntry($Message, $Severity, $null, $null, $false, $null, $null, $null)
+        $this.WriteLogEntry($Message, $Severity, $null, $null, $null, $false, $null, $null, $null)
     }
 
-    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Boolean]$DebugMessage)
+    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Boolean]$WriteHost)
     {
-        $this.WriteLogEntry($Message, $null, $null, $null, $DebugMessage, $null, $null, $null)
-    }
-
-    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.Boolean]$DebugMessage)
-    {
-        $this.WriteLogEntry($Message, $Severity, $null, $null, $DebugMessage, $null, $null, $null)
-    }
-
-    [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Boolean]$DebugMessage)
-    {
-        $this.WriteLogEntry($Message, $Severity, $Source, $ScriptSection, $DebugMessage, $null, $null, $null)
+        $this.WriteLogEntry($Message, $null, $null, $null, $WriteHost, $false, $null, $null, $null)
     }
 
     [System.Collections.Generic.List[System.IO.FileInfo]] GetMountedWimFiles()
