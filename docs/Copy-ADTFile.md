@@ -14,7 +14,7 @@ Copies files and directories from a source to a destination.
 
 ```
 Copy-ADTFile [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten] [-ContinueFileCopyOnError]
- [-FileCopyMode <String>] [<CommonParameters>]
+ [-FileCopyMode <String>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -126,6 +126,38 @@ Accept wildcard characters: False
 Select from 'Native' or 'Robocopy'.
 Default is configured in config.psd1.
 Note that Robocopy supports * in file names, but not folders, in source paths.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RobocopyParams
+Override the default Robocopy parameters.
+Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RobocopyAdditionalParams
+Append to the default Robocopy parameters.
+Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
 ```yaml
 Type: String
