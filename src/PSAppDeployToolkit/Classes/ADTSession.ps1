@@ -917,9 +917,8 @@ class ADTSession
         }
         if ($WriteHost)
         {
-            $conLine = $logFormats.Legacy
             $colours = $sevData.Colours
-            $Message | & $Script:CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $Source -Format $conLine
+            $Message | & $Script:CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $Source -Format $logFormats.Legacy
         }
     }
 
