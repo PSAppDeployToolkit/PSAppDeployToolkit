@@ -6,7 +6,7 @@
 
 # Set all functions as read-only and define module exports.
 & $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
-& $CommandTable.'Export-ModuleMember' -Function $ModuleManifest.FunctionsToExport
+& $CommandTable.'Export-ModuleMember' -Function ([System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\PSAppDeployToolkit.psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue().FunctionsToExport)
 
 # Add all module functions to the command table and make it read-only.
 & $CommandTable.'Get-Item' -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
