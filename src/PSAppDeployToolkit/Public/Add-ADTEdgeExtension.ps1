@@ -64,7 +64,7 @@ function Add-ADTEdgeExtension
         [System.String]$ExtensionID,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ [System.Uri]::IsWellFormedUriString($_, [System.UriKind]::Absolute) })]
         [System.String]$UpdateUrl,
 
         [Parameter(Mandatory = $true)]
