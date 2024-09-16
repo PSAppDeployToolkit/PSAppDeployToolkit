@@ -36,7 +36,7 @@ function Write-ADTLogEntryToInformationStream
     begin
     {
         # Ensure this function is only called from `[ADTSession]::WriteLogEntry()`.
-        if (!($caller = (Get-PSCallStack)[1]).FunctionName.Equals('WriteLogEntry'))
+        if (!($caller = (& $Script:CommandTable.'Get-PSCallStack')[1]).FunctionName.Equals('WriteLogEntry'))
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new("The function [$($MyInvocation.MyCommand.Name)] can only be called by [ADTSession]::WriteLogEntry().")
