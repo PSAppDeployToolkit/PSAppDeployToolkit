@@ -20,19 +20,20 @@ Describe 'Add-ADTEdgeExtension' {
 			$extensionId = 'abc123'
 			$updateUrl = 'https://edge.microsoft.com/blah'
 			$installationMode = 'force_installed'
-
-			Add-ADTEdgeExtension -ExtensionId $extensionId -UpdateUrl $updateUrl -InstallationMode $installationMode
+			$minimumVersionRequired = '1.0'
+			Add-ADTEdgeExtension -ExtensionId $extensionId -UpdateUrl $updateUrl -InstallationMode $installationMode -MinimumVersionRequired $minimumVersionRequired
 
 			$Extensions = Get-ItemPropertyValue -Path $RedirectedEdgeKey -Name 'ExtensionSettings' | ConvertFrom-Json
 			$Extensions.$extensionId.update_url | Should -Be $updateUrl
 			$Extensions.$extensionId.installation_mode | Should -Be $installationMode
+			$Extensions.$extensionId.minimum_version_required | Should -Be $minimumVersionRequired
 			$Extensions.PSObject.Properties.Name.Count | Should -Be 1
 		}
 
-		It 'Should update an existing extension registration' {
+		It 'Should update an existing extension registration, removing minimum version required' {
 
 			New-Item -Path $RedirectedEdgeKey -Force | Out-Null
-			New-ItemProperty -Path $RedirectedEdgeKey -Name 'ExtensionSettings' -Value '{"abc123":{"installation_mode":"blocked","update_url":"https://edge.microsoft.com/old"}}' -Force | Out-Null
+			New-ItemProperty -Path $RedirectedEdgeKey -Name 'ExtensionSettings' -Value '{"abc123":{"installation_mode":"blocked","update_url":"https://edge.microsoft.com/old","minimum_version_required":"1.0"}}' -Force | Out-Null
 
 			$extensionId = 'abc123'
 			$updateUrl = 'https://edge.microsoft.com/blah'
@@ -43,6 +44,7 @@ Describe 'Add-ADTEdgeExtension' {
 			$Extensions = Get-ItemPropertyValue -Path $RedirectedEdgeKey -Name 'ExtensionSettings' | ConvertFrom-Json
 			$Extensions.$extensionId.update_url | Should -Be $updateUrl
 			$Extensions.$extensionId.installation_mode | Should -Be $installationMode
+			$Extensions.$extensionId.minimum_version_required | Should -BeNullOrEmpty
 			$Extensions.PSObject.Properties.Name.Count | Should -Be 1
 		}
 
@@ -66,5 +68,9 @@ Describe 'Add-ADTEdgeExtension' {
 
 			$Extensions.PSObject.Properties.Name.Count | Should -Be 2
 		}
+	}
+
+	Context 'Input Validation' {
+
 	}
 }
