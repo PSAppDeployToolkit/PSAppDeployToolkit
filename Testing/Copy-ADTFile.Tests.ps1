@@ -1,5 +1,6 @@
 BeforeAll {
-	Import-Module "$PSScriptRoot\..\src\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
+	Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
+	Import-Module "$PSScriptRoot\..\src\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
 }
 
 Describe 'Copy-ADTFile'-ForEach @(
