@@ -22,9 +22,6 @@ function Write-ADTLogEntryToInformationStream
         [System.String]$Format,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoNewLine,
-
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.ConsoleColor]$ForegroundColor,
 
@@ -48,11 +45,7 @@ function Write-ADTLogEntryToInformationStream
             $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
         }
 
-        # Reset NoNewLine to be a proper bool within $PSBoundParameters.
-        if ($PSBoundParameters.ContainsKey('NoNewLine'))
-        {
-            $PSBoundParameters.NoNewLine = $NoNewLine.IsPresent
-        }
+        # Remove parameters that aren't used to generate an InformationRecord object.
         $null = $PSBoundParameters.Remove('Source')
         $null = $PSBoundParameters.Remove('Format')
 
