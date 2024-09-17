@@ -136,9 +136,9 @@ function Get-ADTRegistryKey
                     return
                 }
 
-                if ($PSBoundParameters.ContainsKey('Value'))
+                if ($PSBoundParameters.ContainsKey('Name'))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting registry key [$Key] value [$Value]."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting registry key [$Key] value [$Name]."
                 }
                 else
                 {
@@ -153,30 +153,30 @@ function Get-ADTRegistryKey
                 if ($PSBoundParameters.ContainsKey('Value'))
                 {
                     # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-                    if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -notcontains $Value)
+                    if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -notcontains $Name)
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Name] does not exist. Return `$null."
                         return
                     }
                     if ($DoNotExpandEnvironmentNames)
                     {
                         # Only useful on 'ExpandString' values.
-                        if ($Value -like '(Default)')
+                        if ($Name -like '(Default)')
                         {
                             return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                         }
                         else
                         {
-                            return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                            return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).GetValue($Name, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                         }
                     }
-                    elseif ($Value -like '(Default)')
+                    elseif ($Name -like '(Default)')
                     {
                         return (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).GetValue($null)
                     }
                     else
                     {
-                        return $regKeyValue | & $Script:CommandTable.'Select-Object' -ExpandProperty $Value
+                        return $regKeyValue | & $Script:CommandTable.'Select-Object' -ExpandProperty $Name
                     }
                 }
                 elseif ($regKeyValuePropertyCount -eq 0)
@@ -204,7 +204,7 @@ function Get-ADTRegistryKey
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read registry key [$Key]$(if ($Value) {" value [$Value]"})."
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read registry key [$Key]$(if ($Name) {" value [$Name]"})."
         }
     }
 
