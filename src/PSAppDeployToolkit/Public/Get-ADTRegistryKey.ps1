@@ -18,8 +18,8 @@ function Get-ADTRegistryKey
     .PARAMETER Key
         Path of the registry key.
 
-    .PARAMETER Value
-        Value to retrieve (optional).
+    .PARAMETER Name
+        Value name to retrieve (optional).
 
     .PARAMETER Wow6432Node
         Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
@@ -55,17 +55,17 @@ function Get-ADTRegistryKey
         This example retrieves all value names and data for the specified registry key.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
+        Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Name 'Version'
 
         This example retrieves the 'Version' value data for the specified registry key.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames
+        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'Path' -DoNotExpandEnvironmentNames
 
         This example retrieves the 'Path' value data without expanding environment variables.
 
     .EXAMPLE
-        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
+        Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 
         This example retrieves the default value data for the specified registry key.
 
@@ -89,8 +89,9 @@ function Get-ADTRegistryKey
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
+        [Alias("Value")]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Value,
+        [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
