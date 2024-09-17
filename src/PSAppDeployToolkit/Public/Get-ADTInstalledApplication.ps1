@@ -121,7 +121,7 @@ function Get-ADTInstalledApplication
                         # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
                         if (!$FilterScript -or (& $Script:CommandTable.'ForEach-Object' -InputObject $app -Process $FilterScript -ErrorAction Ignore))
                         {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$($_.DisplayName)]$(if ($app.DisplayVersion) {" version [$($app.DisplayVersion)]"})."
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$($app.DisplayName)]$(if ($app.DisplayVersion) {" version [$($app.DisplayVersion)]"})."
                             return $app
                         }
                     }
