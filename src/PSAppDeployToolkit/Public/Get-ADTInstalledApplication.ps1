@@ -106,16 +106,19 @@ function Get-ADTInstalledApplication
 
                         # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                         $app = [PSADT.Types.InstalledApplication]@{
-                            UninstallSubkey    = $_.PSChildName
-                            ProductCode        = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
-                            DisplayName        = $_.DisplayName
-                            DisplayVersion     = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore
-                            UninstallString    = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty UninstallString -ErrorAction Ignore
-                            InstallSource      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallSource -ErrorAction Ignore
-                            InstallLocation    = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallLocation -ErrorAction Ignore
-                            InstallDate        = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallDate -ErrorAction Ignore
-                            Publisher          = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore
-                            Is64BitApplication = [System.Environment]::Is64BitOperatingSystem -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
+                            UninstallSubkey      = $_.PSChildName
+                            ProductCode          = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
+                            DisplayName          = $_.DisplayName
+                            DisplayVersion       = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore
+                            UninstallString      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty UninstallString -ErrorAction Ignore
+                            QuietUninstallString = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty QuietUninstallString -ErrorAction Ignore
+                            InstallSource        = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallSource -ErrorAction Ignore
+                            InstallLocation      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallLocation -ErrorAction Ignore
+                            InstallDate          = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallDate -ErrorAction Ignore
+                            Publisher            = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore
+                            SystemComponent      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore
+                            WindowsInstaller     = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore
+                            Is64BitApplication   = [System.Environment]::Is64BitOperatingSystem -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
                         }
 
                         # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
