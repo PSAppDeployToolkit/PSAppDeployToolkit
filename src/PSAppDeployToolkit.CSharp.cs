@@ -26,10 +26,13 @@ namespace PSADT
             public string DisplayName;
             public string DisplayVersion;
             public string UninstallString;
+            public string QuietUninstallString;
             public string InstallSource;
             public string InstallLocation;
             public string InstallDate;
             public string Publisher;
+            public bool SystemComponent;
+            public bool WindowsInstaller;
             public bool Is64BitApplication;
         }
 
