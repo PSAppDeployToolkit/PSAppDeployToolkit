@@ -13,7 +13,7 @@ Test if a registry value exists.
 ## SYNTAX
 
 ```
-Test-ADTRegistryValue [-Key] <String> [-Value] <Object> [[-SID] <String>] [-Wow6432Node] [<CommonParameters>]
+Test-ADTRegistryValue [-Key] <String> [-Name] <Object> [[-SID] <String>] [-Wow6432Node] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,7 +24,7 @@ Can correctly handle cases where a value simply has an empty or null value.
 
 ### EXAMPLE 1
 ```
-Test-ADTRegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations'
+Test-ADTRegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations'
 ```
 
 Checks if the registry value 'PendingFileRenameOperations' exists under the specified key.
@@ -46,13 +46,13 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -Value
-Specify the registry key value to check the existence of.
+### -Name
+Specify the name of the value to check the existence of.
 
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases:
+Aliases: Value
 
 Required: True
 Position: 2

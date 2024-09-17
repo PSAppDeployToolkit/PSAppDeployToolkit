@@ -94,7 +94,7 @@ function Get-ADTPendingReboot
                 $IsAppVRebootPending = & $Script:CommandTable.'Test-Path' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks'
 
                 # Get the value of PendingFileRenameOperations.
-                $PendingFileRenameOperations = if ($IsFileRenameRebootPending = & $Script:CommandTable.'Test-ADTRegistryValue' -Key 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations')
+                $PendingFileRenameOperations = if ($IsFileRenameRebootPending = & $Script:CommandTable.'Test-ADTRegistryValue' -Key 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations')
                 {
                     try
                     {
