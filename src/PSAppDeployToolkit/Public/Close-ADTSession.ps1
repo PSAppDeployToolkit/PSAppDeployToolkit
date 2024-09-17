@@ -132,9 +132,6 @@ function Close-ADTSession
             return
         }
 
-        # Flag the module as uninitialized upon last session closure.
-        $adtData.Initialized = $false
-
         # Attempt to close down any progress dialog here as an additional safety item.
         $progressOpen = if (& $Script:CommandTable.'Test-ADTInstallationProgressRunning')
         {
@@ -147,6 +144,9 @@ function Close-ADTSession
                 $_
             }
         }
+
+        # Flag the module as uninitialized upon last session closure.
+        $adtData.Initialized = $false
 
         # Return early if this function was called from the command line.
         if ($adtSession.RunspaceOrigin -and !$Force)
