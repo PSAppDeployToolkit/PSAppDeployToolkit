@@ -16,8 +16,8 @@ function Test-ADTRegistryValue
     .PARAMETER Key
         Path of the registry key.
 
-    .PARAMETER Value
-        Specify the registry key value to check the existence of.
+    .PARAMETER Name
+        Specify the name of the value to check the existence of.
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
@@ -38,7 +38,7 @@ function Test-ADTRegistryValue
         Returns $true if the registry value exists, $false if it does not.
 
     .EXAMPLE
-        Test-ADTRegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations'
+        Test-ADTRegistryValue -Key 'HKLM:SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations'
 
         Checks if the registry value 'PendingFileRenameOperations' exists under the specified key.
 
@@ -65,8 +65,9 @@ function Test-ADTRegistryValue
         [System.String]$Key,
 
         [Parameter(Mandatory = $true, Position = 1)]
+        [Alias("Value")]
         [ValidateNotNullOrEmpty()]
-        [System.Object]$Value,
+        [System.Object]$Name,
 
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNullOrEmpty()]
@@ -98,12 +99,12 @@ function Test-ADTRegistryValue
                 }
 
                 # Test whether value exists or not.
-                if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -contains $Value)
+                if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -contains $Name)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Value] does exist."
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Name] does exist."
                     return $true
                 }
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Value] does not exist."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Name] does not exist."
                 return $false
             }
             catch

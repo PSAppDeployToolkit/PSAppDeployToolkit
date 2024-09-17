@@ -2421,6 +2421,11 @@ function Test-RegistryValue
     {
         # Announce deprecation of function and set up accumulator for all piped in keys.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
+        if ($PSBoundParameters.ContainsKey('Value'))
+        {
+            $PSBoundParameters.Add('Name', $Value)
+            $null = $PSBoundParameters.Remove('Value')
+        }
         $keys = [System.Collections.Generic.List[System.Object]]::new()
     }
 
