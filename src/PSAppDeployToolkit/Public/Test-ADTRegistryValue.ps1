@@ -65,7 +65,6 @@ function Test-ADTRegistryValue
         [System.String]$Key,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [Alias("Value")]
         [ValidateNotNullOrEmpty()]
         [System.Object]$Name,
 

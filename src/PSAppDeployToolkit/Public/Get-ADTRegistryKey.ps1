@@ -89,7 +89,6 @@ function Get-ADTRegistryKey
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
-        [Alias("Value")]
         [ValidateNotNullOrEmpty()]
         [System.String]$Name,
 
@@ -150,7 +149,7 @@ function Get-ADTRegistryKey
                 $regKeyValuePropertyCount = $regKeyValue | & $Script:CommandTable.'Measure-Object' | & $Script:CommandTable.'Select-Object' -ExpandProperty Count
 
                 # Select requested property.
-                if ($PSBoundParameters.ContainsKey('Value'))
+                if ($PSBoundParameters.ContainsKey('Name'))
                 {
                     # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
                     if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -notcontains $Name)
