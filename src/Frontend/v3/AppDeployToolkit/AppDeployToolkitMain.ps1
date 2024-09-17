@@ -2954,6 +2954,11 @@ function Get-RegistryKey
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('Value'))
+    {
+        $PSBoundParameters.Add('Name', $Value)
+        $null = $PSBoundParameters.Remove('Value')
+    }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')

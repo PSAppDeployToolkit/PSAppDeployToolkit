@@ -13,7 +13,7 @@ Retrieves value names and value data for a specified registry key or optionally,
 ## SYNTAX
 
 ```
-Get-ADTRegistryKey [-Key] <String> [[-Value] <String>] [-Wow6432Node] [[-SID] <String>]
+Get-ADTRegistryKey [-Key] <String> [[-Name] <String>] [-Wow6432Node] [[-SID] <String>]
  [-ReturnEmptyKeyIfExists] [-DoNotExpandEnvironmentNames] [<CommonParameters>]
 ```
 
@@ -40,21 +40,21 @@ This example retrieves all value names and data for the specified registry key.
 
 ### EXAMPLE 3
 ```
-Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
+Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Name 'Version'
 ```
 
 This example retrieves the 'Version' value data for the specified registry key.
 
 ### EXAMPLE 4
 ```
-Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames
+Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'Path' -DoNotExpandEnvironmentNames
 ```
 
 This example retrieves the 'Path' value data without expanding environment variables.
 
 ### EXAMPLE 5
 ```
-Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
+Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 ```
 
 This example retrieves the default value data for the specified registry key.
@@ -76,13 +76,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Value
-Value to retrieve (optional).
+### -Name
+Value name to retrieve (optional).
 
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases:
+Aliases: Value
 
 Required: False
 Position: 2
