@@ -268,22 +268,22 @@ Describe 'Copy-ADTFile'-ForEach @(
 		{ Copy-ADTFile -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction Stop } | Should -Throw
 	}
 
-	It 'Copies files to and from paths longer than 260 characters ($FileCopyMode = $<FileCopyMode>)' {
-		if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1) {
-			Write-Debug 'Long paths are enabled.'
-		} else {
-			Write-Debug 'Long paths are not enabled.'
+	if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1) {
+		It 'Copies files to and from paths longer than 260 characters ($FileCopyMode = $<FileCopyMode>)' {
+
+			$LongDestinationPath = "$DestinationPath\"
+			$LongDestinationPath = $LongDestinationPath.PadRight(265, 'a')
+
+			Write-Debug "Destination path length: $($LongDestinationPath.Length)"
+
+			Copy-ADTFile -Path "$SourcePath\test.txt" -Destination $LongDestinationPath -FileCopyMode $FileCopyMode
+			Copy-ADTFile -Path "$LongDestinationPath\test.txt" -Destination "$LongDestinationPath\test2.txt" -FileCopyMode $FileCopyMode
+
+			"$LongDestinationPath\test.txt" | Should -Exist
+			"$LongDestinationPath\test2.txt" | Should -Exist
 		}
-
-		$LongDestinationPath = "$DestinationPath\"
-		$LongDestinationPath = $LongDestinationPath.PadRight(265, 'a')
-
-		Write-Debug "Destination path length: $($LongDestinationPath.Length)"
-
-		Copy-ADTFile -Path "$SourcePath\test.txt" -Destination $LongDestinationPath -FileCopyMode $FileCopyMode
-		Copy-ADTFile -Path "$LongDestinationPath\test.txt" -Destination "$LongDestinationPath\test2.txt" -FileCopyMode $FileCopyMode
-
-		"$LongDestinationPath\test.txt" | Should -Exist
-		"$LongDestinationPath\test2.txt" | Should -Exist
+	} else {
+		Write-Warning 'Long paths are not enabled, skipping test.'
 	}
+
 }
