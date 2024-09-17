@@ -136,7 +136,17 @@ function Close-ADTSession
         $adtData.Initialized = $false
 
         # Attempt to close down any progress dialog here as an additional safety item.
-        & $Script:CommandTable.'Close-ADTInstallationProgress'
+        $progressOpen = if (& $Script:CommandTable.'Test-ADTInstallationProgressRunning')
+        {
+            try
+            {
+                & $Script:CommandTable.'Close-ADTInstallationProgress'
+            }
+            catch
+            {
+                $_
+            }
+        }
 
         # Return early if this function was called from the command line.
         if ($adtSession.RunspaceOrigin -and !$Force)
@@ -146,7 +156,7 @@ function Close-ADTSession
 
         # If a callback failed and we're in a proper console, forcibly exit the process.
         # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
-        if ($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
+        if ($Force -or ($Host.Name.Equals('ConsoleHost') -and ($callbackErrors -or $progressOpen)))
         {
             [System.Environment]::Exit($ExitCode)
         }
