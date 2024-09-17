@@ -422,7 +422,7 @@ function Set-ADTActiveSetup
                     if (& $Script:CommandTable.'Test-Path' -LiteralPath $StubExeFile -PathType Leaf)
                     {
                         # This will overwrite the StubPath file if $StubExePath already exists on target.
-                        Copy-ADTFile -Path $StubExeFile -Destination $StubExePath -ErrorAction Stop
+                        & $Script:CommandTable.'Copy-ADTFile' -Path $StubExeFile -Destination $StubExePath -ErrorAction Stop
                     }
                 }
 
