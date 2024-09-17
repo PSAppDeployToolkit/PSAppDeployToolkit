@@ -72,7 +72,8 @@ Describe 'Add-ADTEdgeExtension' {
 
 	Context 'Input Validation' {
 		It 'Should only accept InstallationMode as: blocked, allowed, removed, force_installed, normal_installed' {
-			foreach ($mode in 'blocked', 'allowed', 'removed', 'force_installed', 'normal_installed') {
+			foreach ($mode in 'blocked', 'allowed', 'removed', 'force_installed', 'normal_installed')
+			{
 				{ Add-ADTEdgeExtension -ExtensionId 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode $mode } | Should -Not -Throw
 			}
 

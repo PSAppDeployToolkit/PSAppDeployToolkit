@@ -1,10 +1,13 @@
 BeforeAll {
-	try {
+	try
+	{
 		$DeployMode = 'NonInteractive'
 		$null = . "$PSScriptRoot\..\src\Frontend\v3\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
 		#Mock Write-Host {}
 		#$DebugPreference = 'Continue'
-	} catch {
+	}
+	catch
+	{
 		# Error may be thrown if dot-sourcing main without elevation, but elevation is not required for these tests.
 		Write-Warning $_
 	}
@@ -39,16 +42,20 @@ Describe 'Copy-File'-ForEach @(
 		Set-ItemProperty -Path "$SourcePath\SubfolderHidden" -Name Attributes -Value 'Hidden'
 	}
 	BeforeEach {
-		if (Test-Path -Path $DestinationPath -PathType Container) {
+		if (Test-Path -Path $DestinationPath -PathType Container)
+		{
 			Remove-Item -Path $DestinationPath -Recurse -Force
 		}
 	}
 	AfterEach {
 		$DestinationFiles = Get-ChildItem -Path $DestinationPath -Recurse -Force
-		if ($DestinationFiles) {
+		if ($DestinationFiles)
+		{
 			$DebugMessage = $DestinationFiles.FullName -join "`n"
 			Write-Debug "Destination files:`n$DebugMessage"
-		} else {
+		}
+		else
+		{
 			Write-Debug 'No files in destination.'
 		}
 	}
@@ -58,7 +65,8 @@ Describe 'Copy-File'-ForEach @(
 		@{ PreCreateDestination = $true }
 	) {
 		BeforeEach {
-			if ($PreCreateDestination) {
+			if ($PreCreateDestination)
+			{
 				New-Item -Path $DestinationPath -ItemType Directory | Out-Null
 			}
 		}
@@ -121,19 +129,26 @@ Describe 'Copy-File'-ForEach @(
 			It 'Copies a folder ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $UseRobocopy = $<UseRobocopy>)' {
 				Copy-File -Path $SourcePath -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -UseRobocopy $UseRobocopy
 
-				if ($Flatten) {
+				if ($Flatten)
+				{
 					"$DestinationPath\test.txt" | Should -Exist
 					"$DestinationPath\test1.txt" | Should -Exist
 					"$DestinationPath\test2.txt" | Should -Exist
 					"$DestinationPath\test3.txt" | Should -Exist
-				} else {
-					if ($UseRobocopy) {
+				}
+				else
+				{
+					if ($UseRobocopy)
+					{
 						# Known issue - "$DestinationPath\Source\test.txt" will only exist when using Robocopy
 						"$DestinationPath\Source\test.txt" | Should -Exist
 					}
-					if ($Recurse) {
+					if ($Recurse)
+					{
 						"$DestinationPath\Source\Subfolder1\test1.txt" | Should -Exist
-					} else {
+					}
+					else
+					{
 						"$DestinationPath\Source\Subfolder1\test1.txt" | Should -Not -Exist
 					}
 				}
@@ -145,16 +160,20 @@ Describe 'Copy-File'-ForEach @(
 				"$DestinationPath\test.txt" | Should -Exist
 				"$DestinationPath\test3.txt" | Should -Exist
 
-				if ($Flatten) {
+				if ($Flatten)
+				{
 					"$DestinationPath\test1.txt" | Should -Exist
 					"$DestinationPath\test2.txt" | Should -Exist
 					"$DestinationPath\Subfolder1" | Should -Not -Exist
 				}
 				# Known issue that * includes empty folders in non-recursive native copy
-				elseif ($Recurse) {
+				elseif ($Recurse)
+				{
 					"$DestinationPath\Subfolder1\test1.txt" | Should -Exist
 					"$DestinationPath\Subfolder2\test2.txt" | Should -Exist
-				} else {
+				}
+				else
+				{
 					"$DestinationPath\Subfolder1\test1.txt" | Should -Not -Exist
 					"$DestinationPath\Subfolder2\test2.txt" | Should -Not -Exist
 					# Known issue that * copies empty folders with native copy but not Robocopy
@@ -168,17 +187,21 @@ Describe 'Copy-File'-ForEach @(
 				"$DestinationPath\test.txt" | Should -Exist
 				"$DestinationPath\test3.txt" | Should -Exist
 
-				if ($Flatten) {
+				if ($Flatten)
+				{
 					"$DestinationPath\test1.txt" | Should -Exist
 					"$DestinationPath\test2.txt" | Should -Exist
 					"$DestinationPath\Subfolder1" | Should -Not -Exist
 				}
 				# Known issue that recursive copy of files only works with Robocopy currently
 				#elseif ($Recurse) {
-				elseif ($Recurse -and $UseRobocopy) {
+				elseif ($Recurse -and $UseRobocopy)
+				{
 					"$DestinationPath\Subfolder1\test1.txt" | Should -Exist
 					"$DestinationPath\Subfolder2\test2.txt" | Should -Exist
-				} else {
+				}
+				else
+				{
 					"$DestinationPath\Subfolder1\test1.txt" | Should -Not -Exist
 					"$DestinationPath\Subfolder2\test2.txt" | Should -Not -Exist
 				}
@@ -187,14 +210,19 @@ Describe 'Copy-File'-ForEach @(
 			It 'Copies files with a wildcard in the source folder path ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $UseRobocopy = $<UseRobocopy>)' {
 				Copy-File -Path "$SourcePath*\test.txt" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -UseRobocopy $UseRobocopy
 
-				if ($Flatten) {
+				if ($Flatten)
+				{
 					# Flatten does not currently work in this scenario
 					#"$DestinationPath\test.txt" | Should -Exist
 					"$DestinationPath\Subfolder1" | Should -Not -Exist
-				} elseif ($Recurse) {
+				}
+				elseif ($Recurse)
+				{
 					# Known issue - using a * in the path reverts to native file copy, but recursive copy of files only works with Robocopy currently
 					#"$DestinationPath\Subfolder1\test.txt" | Should -Exist
-				} else {
+				}
+				else
+				{
 					"$DestinationPath\test.txt" | Should -Exist
 					"$DestinationPath\Subfolder1" | Should -Not -Exist
 				}
@@ -203,18 +231,23 @@ Describe 'Copy-File'-ForEach @(
 			It 'Copies files with wildcards in the source folder path and filenames ($PreCreateDestination = $<PreCreateDestination>; $Recurse = $<Recurse>; $Flatten = $<Flatten>; $UseRobocopy = $<UseRobocopy>)' {
 				Copy-File -Path "$SourcePath*\test*.txt" -Destination $DestinationPath -Recurse:$Recurse -Flatten:$Flatten -UseRobocopy $UseRobocopy
 
-				if ($Flatten) {
+				if ($Flatten)
+				{
 					# Flatten does not currently work in this scenario
 					#"$DestinationPath\test1.txt" | Should -Exist
 					#"$DestinationPath\test2.txt" | Should -Exist
 					#"$DestinationPath\test3.txt" | Should -Exist
 					"$DestinationPath\Subfolder1" | Should -Not -Exist
-				} elseif ($Recurse) {
+				}
+				elseif ($Recurse)
+				{
 					"$DestinationPath\test.txt" | Should -Exist
 					"$DestinationPath\test3.txt" | Should -Exist
 					# Known issue that recurse doesn't currently work in this scenario
 					#"$DestinationPath\Subfolder1\test1.txt" | Should -Exist
-				} else {
+				}
+				else
+				{
 					"$DestinationPath\test.txt" | Should -Exist
 					"$DestinationPath\test3.txt" | Should -Exist
 					"$DestinationPath\Subfolder1" | Should -Not -Exist
@@ -275,7 +308,8 @@ Describe 'Copy-File'-ForEach @(
 		{ Copy-File -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -UseRobocopy $UseRobocopy -ContinueOnError $false } | Should -Throw
 	}
 
-	if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1) {
+	if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1)
+	{
 		It 'Copies files to and from paths longer than 260 characters ($UseRobocopy = $<UseRobocopy>)' {
 			$LongDestinationPath = "$DestinationPath\"
 			$LongDestinationPath = $LongDestinationPath.PadRight(265, 'a')
@@ -288,7 +322,9 @@ Describe 'Copy-File'-ForEach @(
 			"$LongDestinationPath\test.txt" | Should -Exist
 			"$LongDestinationPath\test2.txt" | Should -Exist
 		}
-	} else {
+	}
+	else
+	{
 		Write-Warning 'Long paths are not enabled, skipping test.'
 	}
 }

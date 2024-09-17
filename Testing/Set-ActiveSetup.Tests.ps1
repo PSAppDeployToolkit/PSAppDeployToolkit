@@ -1,7 +1,8 @@
 BeforeAll {
 	$DeployMode = 'NonInteractive'
 	$null = . "$PSScriptRoot\..\Toolkit\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
-	if (-not $SessionZero -or -not $RunAsActiveUser) {
+	if (-not $SessionZero -or -not $RunAsActiveUser)
+	{
 		throw 'This test should be run under the system account with another user logged in.'
 	}
 	Mock Write-Host {}

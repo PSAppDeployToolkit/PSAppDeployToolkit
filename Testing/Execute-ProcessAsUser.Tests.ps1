@@ -138,15 +138,15 @@ Describe 'Execute-ProcessAsUser' {
 			$ProcessExitCode = Execute-ProcessAsUser -Path 'powershell.exe' -Parameters '-ExecutionPolicy Bypass -NoProfile -Command exit 42' -Wait -PassThru
 			$ProcessExitCode | Should -Be 42
 		}
-		It 'Should run powershell.exe with -Command & {} syntax'{
+		It 'Should run powershell.exe with -Command & {} syntax' {
 			$ProcessExitCode = Execute-ProcessAsUser -Path 'powershell.exe' -Parameters '-ExecutionPolicy Bypass -NoProfile -Command "&{ exit 42 }"' -Wait -PassThru
 			$ProcessExitCode | Should -Be 42
 		}
-		It 'Should run powershell.exe with -Command & {} syntax, returning $LastExitCode'{
+		It 'Should run powershell.exe with -Command & {} syntax, returning $LastExitCode' {
 			$ProcessExitCode = Execute-ProcessAsUser -Path 'powershell.exe' -Parameters '-ExecutionPolicy Bypass -NoProfile -Command "&{ &cmd.exe /c exit 42; exit $LastExitCode }"' -Wait -PassThru
 			$ProcessExitCode | Should -Be 42
 		}
-		It 'Should run powershell.exe with -Command & {} syntax to run a .ps1 file'{
+		It 'Should run powershell.exe with -Command & {} syntax to run a .ps1 file' {
 			$ScriptContent = 'exit 0'
 			Set-Content -Path "$UserTestDrive\test.ps1" -Value $ScriptContent -Encoding UTF8
 			$ProcessExitCode = Execute-ProcessAsUser -Path 'powershell.exe' -Parameters '-ExecutionPolicy Bypass -NoProfile -Command "&{ & .\Test.ps1 }"' -WorkingDirectory $UserTestDrive -Wait -PassThru
@@ -179,26 +179,34 @@ exit $ExitCode
 		It 'Should not produce an error when no users are logged on and ContinueOnError=$true' {
 			$BackupRunAsActiveUser = $RunAsActiveUser
 			$RunAsActiveUser = $null
-			try {
+			try
+			{
 				Execute-ProcessAsUser -Path 'C:\Windows\System32\cmd.exe' -Parameters '/c echo Hello World' -ContinueOnError $true
 				$? | Should -BeTrue
 			}
-			catch {
+			catch
+			{
 				$_ | Should -BeNullOrEmpty
 			}
-			finally {
+			finally
+			{
 				$RunAsActiveUser = $BackupRunAsActiveUser
 			}
 		}
 		It 'Should produce an error when no users are logged on and ContinueOnError=$false' {
 			$BackupRunAsActiveUser = $RunAsActiveUser
 			$RunAsActiveUser = $null
-			try {
+			try
+			{
 				Execute-ProcessAsUser -Path 'C:\Windows\System32\cmd.exe' -Parameters '/c echo Hello World' -ContinueOnError $false
 				$? | Should -BeFalse
-			} catch {
+			}
+			catch
+			{
 				$_ | Should -Not -BeNullOrEmpty
-			} finally {
+			}
+			finally
+			{
 				$RunAsActiveUser = $BackupRunAsActiveUser
 			}
 		}
