@@ -106,7 +106,7 @@ function Copy-ADTContentToCache
         {
             try
             {
-                Copy-File -Path (& $Script:CommandTable.'Join-Path' $adtSession.GetPropertyValue('ScriptDirectory') '*') -Destination $Path -Recurse
+                Copy-ADTFile -Path (& $Script:CommandTable.'Join-Path' $adtSession.GetPropertyValue('ScriptDirectory') '*') -Destination $Path -Recurse
                 $adtSession.SetPropertyValue('DirFiles', "$Path\Files")
                 $adtSession.SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")
             }
