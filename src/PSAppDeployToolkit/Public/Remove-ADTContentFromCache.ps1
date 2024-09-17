@@ -56,7 +56,7 @@ function Remove-ADTContentFromCache
         try
         {
             $adtSession = & $Script:CommandTable.'Get-ADTSession'
-            $parentPath = $adtSession.GetPropertyValue('scriptParentPath')
+            $parentPath = $adtSession.GetPropertyValue('ScriptDirectory')
         }
         catch
         {
