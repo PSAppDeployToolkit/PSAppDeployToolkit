@@ -275,22 +275,20 @@ Describe 'Copy-File'-ForEach @(
 		{ Copy-File -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -UseRobocopy $UseRobocopy -ContinueOnError $false } | Should -Throw
 	}
 
-	It 'Copies files to and from paths longer than 260 characters ($UseRobocopy = $<UseRobocopy>)' {
-		if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1) {
-			Write-Debug 'Long paths are enabled.'
-		} else {
-			Write-Debug 'Long paths are not enabled.'
+	if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1) {
+		It 'Copies files to and from paths longer than 260 characters ($UseRobocopy = $<UseRobocopy>)' {
+			$LongDestinationPath = "$DestinationPath\"
+			$LongDestinationPath = $LongDestinationPath.PadRight(265, 'a')
+
+			Write-Debug "Destination path length: $($LongDestinationPath.Length)"
+
+			Copy-File -Path "$SourcePath\test.txt" -Destination $LongDestinationPath -UseRobocopy $UseRobocopy
+			Copy-File -Path "$LongDestinationPath\test.txt" -Destination "$LongDestinationPath\test2.txt" -UseRobocopy $UseRobocopy
+
+			"$LongDestinationPath\test.txt" | Should -Exist
+			"$LongDestinationPath\test2.txt" | Should -Exist
 		}
-
-		$LongDestinationPath = "$DestinationPath\"
-		$LongDestinationPath = $LongDestinationPath.PadRight(265, 'a')
-
-		Write-Debug "Destination path length: $($LongDestinationPath.Length)"
-
-		Copy-File -Path "$SourcePath\test.txt" -Destination $LongDestinationPath -UseRobocopy $UseRobocopy
-		Copy-File -Path "$LongDestinationPath\test.txt" -Destination "$LongDestinationPath\test2.txt" -UseRobocopy $UseRobocopy
-
-		"$LongDestinationPath\test.txt" | Should -Exist
-		"$LongDestinationPath\test2.txt" | Should -Exist
+	} else {
+		Write-Warning 'Long paths are not enabled, skipping test.'
 	}
 }
