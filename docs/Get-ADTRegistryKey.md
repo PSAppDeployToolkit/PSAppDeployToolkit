@@ -82,7 +82,7 @@ Value name to retrieve (optional).
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: Value
+Aliases:
 
 Required: False
 Position: 2
