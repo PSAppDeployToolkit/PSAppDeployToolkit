@@ -464,7 +464,7 @@ function Show-ADTInstallationWelcome
                             }
 
                             # Update the process list right before closing, in case it changed.
-                            $AllOpenWindows = & $Script:CommandTable.'Get-ADTWindowTitle' -GetAllWindowTitles -DisableFunctionLogging
+                            $AllOpenWindows = & $Script:CommandTable.'Get-ADTWindowTitle' -GetAllWindowTitles -InformationAction SilentlyContinue
                             $PromptToSaveTimeout = & $Script:CommandTable.'New-TimeSpan' -Seconds $adtConfig.UI.PromptToSaveTimeout
                             $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
                             foreach ($runningProcess in ($runningProcesses = & $Script:CommandTable.'Get-ADTRunningProcesses' -ProcessObject $ProcessObjects))
