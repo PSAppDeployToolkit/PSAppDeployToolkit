@@ -380,7 +380,7 @@ namespace PSADT
         public static extern bool BringWindowToTop(IntPtr hWnd);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-        public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+        private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int GetCurrentThreadId();
