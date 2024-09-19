@@ -254,14 +254,14 @@ function Set-ADTActiveSetup
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
-            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } }))))
+            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1))))
             {
                 & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
-            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } }))))
+            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1))))
             {
                 & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
@@ -404,7 +404,7 @@ function Set-ADTActiveSetup
                     if ($runAsActiveUser)
                     {
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
-                        & $Script:CommandTable.'Invoke-ADTAllUsersRegistryChange' -UserProfiles (& $Script:CommandTable.'Get-ADTUserProfiles' -ExcludeDefaultUser | & { process { if ($_.SID -eq $runAsActiveUser.SID) { return $_ } } }) -RegistrySettings {
+                        & $Script:CommandTable.'Invoke-ADTAllUsersRegistryChange' -UserProfiles (& $Script:CommandTable.'Get-ADTUserProfiles' -ExcludeDefaultUser | & { process { if ($_.SID -eq $runAsActiveUser.SID) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1) -RegistrySettings {
                             if (& $Script:CommandTable.'Get-ADTRegistryKey' -Key $HKCURegKey -SID $_.SID)
                             {
                                 & $Script:CommandTable.'Remove-ADTRegistryKey' -Key $HKCURegKey -SID $_.SID -Recurse

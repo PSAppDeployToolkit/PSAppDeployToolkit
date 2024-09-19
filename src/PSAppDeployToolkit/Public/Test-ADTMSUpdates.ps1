@@ -75,7 +75,7 @@ function Test-ADTMSUpdates
                     $updateSearcher.Online = $false
                     if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -gt 0)
                     {
-                        $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | & { process { if (($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)) { return $_ } } })
+                        $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | & { process { if (($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1)
                     }
                     else
                     {

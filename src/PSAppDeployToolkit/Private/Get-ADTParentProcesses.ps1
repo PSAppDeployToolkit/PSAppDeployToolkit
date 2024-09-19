@@ -16,10 +16,10 @@ function Get-ADTParentProcesses
 
     # Get all processes from the system. WMI consistently gives us the parent on PowerShell 5.x and Core targets.
     $processes = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_Process
-    $process = $processes | & { process { if ($_.ProcessId -eq $PID) { return $_ } } }
+    $process = $processes | & { process { if ($_.ProcessId -eq $PID) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1
 
     # Get all parents for the currently stored process.
-    while ($process = $processes | & { process { if ($_.ProcessId -eq $process.ParentProcessId) { return $_ } } })
+    while ($process = $processes | & { process { if ($_.ProcessId -eq $process.ParentProcessId) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1)
     {
         if ($parents.Contains($process))
         {

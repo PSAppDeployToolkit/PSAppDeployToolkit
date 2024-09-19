@@ -67,14 +67,14 @@ function New-ADTEnvironmentTable
 
     ## Variables: Domain Membership
     $w32cs = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_ComputerSystem -Verbose:$false
-    $w32csd = $w32cs.Domain | & { process { if ($_) { return $_ } } }
+    $w32csd = $w32cs.Domain | & { process { if ($_) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1
     $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
     $variables.Add('envMachineWorkgroup', [System.String]::Empty)
     $variables.Add('envMachineADDomain', [System.String]::Empty)
     $variables.Add('envLogonServer', [System.String]::Empty)
     $variables.Add('MachineDomainController', [System.String]::Empty)
-    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLower() } } }))
-    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLower() } } }))
+    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLower() } } } | & $Script:CommandTable.'Select-Object' -First 1))
+    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLower() } } } | & $Script:CommandTable.'Select-Object' -First 1))
     $variables.Add('envUserDomain', [string]$(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpper() }))
     $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpper())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
@@ -285,8 +285,8 @@ function New-ADTEnvironmentTable
     ## Variables: Logged on user information
     $variables.Add('LoggedOnUserSessions', [PSADT.QueryUser]::GetUserSessionInfo())
     $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & { process { $_.NTAccount } }))
-    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsCurrentSession) { return $_ } } }))
-    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsConsoleSession) { return $_ } } }))
+    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsCurrentSession) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1))
+    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsConsoleSession) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1))
     $variables.Add('RunAsActiveUser', (& $Script:CommandTable.'Get-ADTRunAsActiveUser'))
 
     ## Variables: User profile information.

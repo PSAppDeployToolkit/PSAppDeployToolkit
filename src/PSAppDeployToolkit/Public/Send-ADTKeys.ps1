@@ -184,7 +184,7 @@ function Send-ADTKeys
                 # Process the specified input.
                 if ($WindowHandle)
                 {
-                    if (!($Window = & $Script:CommandTable.'Get-ADTWindowTitle' -GetAllWindowTitles | & { process { if ($_.WindowHandle -eq $WindowHandle) { return $_ } } }))
+                    if (!($Window = & $Script:CommandTable.'Get-ADTWindowTitle' -GetAllWindowTitles | & { process { if ($_.WindowHandle -eq $WindowHandle) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1))
                     {
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                         return

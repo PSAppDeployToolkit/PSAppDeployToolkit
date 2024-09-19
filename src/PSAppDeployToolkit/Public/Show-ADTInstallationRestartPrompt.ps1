@@ -148,7 +148,7 @@ function Show-ADTInstallationRestartPrompt
 
                 # Check if we are already displaying a restart prompt.
                 $restartPromptTitle = (& $Script:CommandTable.'Get-ADTStringTable').RestartPrompt.Title
-                if (& $Script:CommandTable.'Get-Process' | & { process { if ($_.MainWindowTitle -match $restartPromptTitle) { return $_ } } })
+                if (& $Script:CommandTable.'Get-Process' | & { process { if ($_.MainWindowTitle -match $restartPromptTitle) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1)
                 {
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
                     return
