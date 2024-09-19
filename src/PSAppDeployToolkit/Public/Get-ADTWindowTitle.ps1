@@ -130,14 +130,14 @@ function Get-ADTWindowTitle
                             return
                         }
 
-                        # Return early if the window doesn't have an associated process.
-                        if (!($process = $processes | & { process { if ($_.Id -eq [PSADT.UiAutomation]::GetWindowThreadProcessId($_)) { return $_ } } }))
+                        # Return early if the window title doesn't match the search criteria.
+                        if (!$GetAllWindowTitles -or ($VisibleWindowTitle -notmatch $WindowTitle))
                         {
                             return
                         }
 
-                        # Return early if the window title doesn't match the search criteria.
-                        if (!$GetAllWindowTitles -or ($VisibleWindowTitle -notmatch $WindowTitle))
+                        # Return early if the window doesn't have an associated process.
+                        if (!($process = $processes | & $Script:CommandTable.'Where-Object' -Property Id -EQ -Value ([PSADT.UiAutomation]::GetWindowThreadProcessId($_)) | & $Script:CommandTable.'Select-Object' -First 1))
                         {
                             return
                         }
