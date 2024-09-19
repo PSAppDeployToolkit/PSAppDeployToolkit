@@ -14,7 +14,7 @@ function Get-ADTRunningProcesses
     .DESCRIPTION
     Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
 
-    .PARAMETER InputObject
+    .PARAMETER ProcessObjects
     Custom object containing the process objects to search for.
 
     .INPUTS
@@ -84,8 +84,5 @@ function Get-ADTRunningProcesses
         & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]."
         return ($runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription)
     }
-    else
-    {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.'
-    }
+    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.'
 }
