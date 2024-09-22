@@ -100,7 +100,7 @@ function Invoke-ADTWebDownload
                 # Commence download and return the result if passing through.
                 & $Script:CommandTable.'Write-ADTLogEntry' -Message "Downloading $Uri."
                 $iwrParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Sha256Hash
-                $res = & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command $Script:CommandTable.'Invoke-WebRequest' -UseBasicParsing @iwrParams -Verbose:$false
+                $iwrResult = & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command $Script:CommandTable.'Invoke-WebRequest' -UseBasicParsing @iwrParams -Verbose:$false
 
                 # Validate the hash if one was provided.
                 if ($PSBoundParameters.ContainsKey('Sha256Hash') -and (($fileHash = & $Script:CommandTable.'Get-FileHash' -LiteralPath $OutFile).Hash -ne $Sha256Hash))
@@ -116,9 +116,9 @@ function Invoke-ADTWebDownload
                 }
 
                 # Return any results from Invoke-WebRequest if we have any and we're passing through.
-                if ($PassThru -and $res)
+                if ($PassThru -and $iwrResult)
                 {
-                    return $res
+                    return $iwrResult
                 }
             }
             catch
