@@ -112,6 +112,7 @@
         'Get-ADTShortcut'
         'Get-ADTStringTable'
         'Get-ADTUniversalDate'
+        'Get-ADTUriFileName'
         'Get-ADTUserProfiles'
         'Get-ADTWindowTitle'
         'Initialize-ADTFunction'
