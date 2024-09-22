@@ -126,6 +126,7 @@
         'Invoke-ADTDllFileAction'
         'Invoke-ADTFunctionErrorHandler'
         'Invoke-ADTSCCMTask'
+        'Invoke-ADTWebDownload'
         'Mount-ADTWimFile'
         'New-ADTErrorRecord'
         'New-ADTFolder'
