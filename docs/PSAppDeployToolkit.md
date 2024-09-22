@@ -41,6 +41,9 @@ Completes the execution of an ADT function.
 ### [Convert-ADTRegistryPath](Convert-ADTRegistryPath.md)
 Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 
+### [Convert-ADTValuesFromRemainingArguments](Convert-ADTValuesFromRemainingArguments.md)
+Converts the collected values from a ValueFromRemainingArguments parameter value into a dictionary or PowerShell.exe command line arguments.
+
 ### [Copy-ADTContentToCache](Copy-ADTContentToCache.md)
 Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
 
@@ -61,6 +64,9 @@ Changes to user install mode for Remote Desktop Session Host/Citrix servers.
 
 ### [Execute-ProcessAsUser](Execute-ProcessAsUser.md)
 Execute a process with a logged in user account, by using a scheduled task, to provide interaction with user in the SYSTEM context.
+
+### [Get-ADTBoundParametersAndDefaultValues](Get-ADTBoundParametersAndDefaultValues.md)
+Returns a hashtable with the output of $PSBoundParameters and default-valued parameters for the given InvocationInfo.
 
 ### [Get-ADTConfig](Get-ADTConfig.md)
 Retrieves the configuration data for the ADT module.
@@ -89,6 +95,9 @@ Get the pending reboot status on a local computer.
 ### [Get-ADTPowerShellProcessPath](Get-ADTPowerShellProcessPath.md)
 Retrieves the path to the PowerShell executable.
 
+### [Get-ADTRedirectedUri](Get-ADTRedirectedUri.md)
+Returns the resolved URI from the provided permalink.
+
 ### [Get-ADTRegistryKey](Get-ADTRegistryKey.md)
 Retrieves value names and value data for a specified registry key or optionally, a specific value.
 
@@ -113,6 +122,9 @@ Retrieves the string database from the ADT module.
 ### [Get-ADTUniversalDate](Get-ADTUniversalDate.md)
 Returns the date/time for the local culture in a universal sortable date time pattern.
 
+### [Get-ADTUriFileName](Get-ADTUriFileName.md)
+Returns the filename of the provided URI.
+
 ### [Get-ADTUserProfiles](Get-ADTUserProfiles.md)
 Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine and also the Default User.
 
@@ -134,6 +146,9 @@ Scans for outstanding SCCM updates to be installed and installs the pending upda
 ### [Invoke-ADTAllUsersRegistryChange](Invoke-ADTAllUsersRegistryChange.md)
 Set current user registry settings for all current users and any new users in the future.
 
+### [Invoke-ADTCommandWithRetries](Invoke-ADTCommandWithRetries.md)
+Drop-in replacement for any cmdlet/function where a retry is desirable due to transient issues.
+
 ### [Invoke-ADTDllFileAction](Invoke-ADTDllFileAction.md)
 Register or unregister a DLL file.
 
@@ -142,6 +157,9 @@ Handles errors within ADT functions by logging and optionally passing through th
 
 ### [Invoke-ADTSCCMTask](Invoke-ADTSCCMTask.md)
 Triggers SCCM to invoke the requested schedule task ID.
+
+### [Invoke-ADTWebDownload](Invoke-ADTWebDownload.md)
+Wraps around Invoke-WebRequest to provide logging and retry support.
 
 ### [Mount-ADTWimFile](Mount-ADTWimFile.md)
 Mounts a WIM file to a specified directory.
