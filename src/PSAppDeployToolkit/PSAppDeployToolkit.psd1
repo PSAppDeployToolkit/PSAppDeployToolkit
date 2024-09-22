@@ -103,6 +103,7 @@
         'Get-ADTLoggedOnUser'
         'Get-ADTPendingReboot'
         'Get-ADTPowerShellProcessPath'
+        'Get-ADTRedirectedUri'
         'Get-ADTRegistryKey'
         'Get-ADTRunAsActiveUser'
         'Get-ADTSchedulerTask'
