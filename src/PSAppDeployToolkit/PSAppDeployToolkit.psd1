@@ -95,6 +95,7 @@
         'Dismount-ADTWimFile'
         'Enable-ADTTerminalServerInstallMode'
         'Execute-ProcessAsUser'
+        'Get-ADTBoundParametersAndDefaultValues'
         'Get-ADTConfig'
         'Get-ADTEnvironment'
         'Get-ADTFileVersion'
