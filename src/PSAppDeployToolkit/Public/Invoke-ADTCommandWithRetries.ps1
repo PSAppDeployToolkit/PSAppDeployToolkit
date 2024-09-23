@@ -98,14 +98,7 @@ function Invoke-ADTCommandWithRetries
                 }
                 else
                 {
-                    try
-                    {
-                        & $Script:CommandTable.'Get-Command' -Name $Command
-                    }
-                    catch
-                    {
-                        $PSCmdlet.ThrowTerminatingError($_)
-                    }
+                    & $Script:CommandTable.'Get-Command' -Name $Command
                 }
 
                 # Convert the passed parameters into a dictionary for splatting onto the command.
