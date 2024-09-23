@@ -505,7 +505,7 @@ class ADTSession
             }
 
             # Guard Intune detection code behind a variable.
-            if ($ADTConfig.Toolkit.OobeDetection -and ([System.Environment]::OSVersion.Version -ge '10.0.16299.0') -and ![PSADT.Utilities]::OobeCompleted())
+            if ($ADTConfig.Toolkit.OobeDetection -and ([System.Environment]::OSVersion.Version -ge '10.0.16299.0') -and !(& $Script:CommandTable.'Test-ADTOobeCompleted'))
             {
                 $this.WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.")
                 $this.DeployMode = 'Silent'
