@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 
 namespace PSADT.PInvoke
 {
@@ -184,23 +183,155 @@ namespace PSADT.PInvoke
     }
 
     [Flags]
+    /// <summary>
+    /// Flags used to specify how a process's main window and startup behavior are configured in the <see cref="STARTUPINFO"/> structure.
+    /// </summary>
     public enum STARTF : uint
     {
+        /// <summary>
+        /// The <see cref="STARTUPINFO.wShowWindow"/> member contains additional information.
+        /// </summary>
         STARTF_USESHOWWINDOW = 0x00000001,
+
+        /// <summary>
+        /// The <see cref="STARTUPINFO.dwXSize"/> and <see cref="STARTUPINFO.dwYSize"/> members contain additional information.
+        /// </summary>
         STARTF_USESIZE = 0x00000002,
+
+        /// <summary>
+        /// The <see cref="STARTUPINFO.dwX"/> and <see cref="STARTUPINFO.dwY"/> members contain additional information.
+        /// </summary>
         STARTF_USEPOSITION = 0x00000004,
+
+        /// <summary>
+        /// The <see cref="STARTUPINFO.dwXCountChars"/> and <see cref="STARTUPINFO.dwYCountChars"/> members contain additional information.
+        /// </summary>
         STARTF_USECOUNTCHARS = 0x00000008,
+
+        /// <summary>
+        /// The <see cref="STARTUPINFO.dwFillAttribute"/> member contains additional information.
+        /// </summary>
         STARTF_USEFILLATTRIBUTE = 0x00000010,
+
+        /// <summary>
+        /// The process is running in full-screen mode.
+        /// </summary>
         STARTF_RUNFULLSCREEN = 0x00000020,
+
+        /// <summary>
+        /// Indicates that the feedback cursor is forced on during the startup process.
+        /// </summary>
         STARTF_FORCEONFEEDBACK = 0x00000040,
+
+        /// <summary>
+        /// Indicates that the feedback cursor is forced off during the startup process.
+        /// </summary>
         STARTF_FORCEOFFFEEDBACK = 0x00000080,
+
+        /// <summary>
+        /// The standard handles <see cref="STARTUPINFO.hStdInput"/>, <see cref="STARTUPINFO.hStdOutput"/>, and <see cref="STARTUPINFO.hStdError"/> fields contain additional information.
+        /// </summary>
         STARTF_USESTDHANDLES = 0x00000100,
+
+        /// <summary>
+        /// The <see cref="STARTUPINFO.hStdInput"/> member contains a hotkey value to be used with the process.
+        /// </summary>
         STARTF_USEHOTKEY = 0x00000200,
+
+        /// <summary>
+        /// The window title contains the shortcut's link name.
+        /// </summary>
         STARTF_TITLEISLINKNAME = 0x00000800,
+
+        /// <summary>
+        /// The <see cref="STARTUPINFO.lpTitle"/> field contains an AppUserModelID identifier for the process.
+        /// </summary>
         STARTF_TITLEISAPPID = 0x00001000,
+
+        /// <summary>
+        /// Prevents the process from being pinned to the taskbar.
+        /// </summary>
         STARTF_PREVENTPINNING = 0x00002000,
+
+        /// <summary>
+        /// Indicates that the source of the process is untrusted.
+        /// </summary>
         STARTF_UNTRUSTEDSOURCE = 0x00008000,
     }
+
+
+    /// <summary>
+    /// Flags that control the behavior of the <see cref="LoadLibraryEx"/> function, which is used to load a dynamic-link library (DLL).
+    /// </summary>
+    [Flags]
+    public enum LoadLibraryExFlags : int
+    {
+        /// <summary>
+        /// No flags. The default behavior for loading the library.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// If this value is used, the system does not call <c>DllMain</c> for process and thread initialization and termination.
+        /// This prevents the execution of any DLL initialization code, such as registering window classes.
+        /// </summary>
+        DONT_RESOLVE_DLL_REFERENCES = 0x00000001,
+
+        /// <summary>
+        /// If this value is used, the system does not check AppLocker rules or Software Restriction Policies for the DLL.
+        /// This action applies only to the DLL being loaded and not to its dependencies.
+        /// </summary>
+        LOAD_IGNORE_CODE_AUTHZ_LEVEL = 0x00000010,
+
+        /// <summary>
+        /// If this value is used, the system maps the file into the calling process's address space as if it were a data file.
+        /// The file is not executed, which allows read-only access.
+        /// </summary>
+        LOAD_LIBRARY_AS_DATAFILE = 0x00000002,
+
+        /// <summary>
+        /// Similar to <see cref="LOAD_LIBRARY_AS_DATAFILE"/>, but the file cannot be mapped by another process until it is closed.
+        /// </summary>
+        LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE = 0x00000040,
+
+        /// <summary>
+        /// If this value is used, the system maps the file into memory as an image resource.
+        /// The file cannot be executed or directly read.
+        /// </summary>
+        LOAD_LIBRARY_AS_IMAGE_RESOURCE = 0x00000020,
+
+        /// <summary>
+        /// If this value is used, the system searches the application directory for the DLL and its dependencies.
+        /// </summary>
+        LOAD_LIBRARY_SEARCH_APPLICATION_DIR = 0x00000200,
+
+        /// <summary>
+        /// If this value is used, the system uses the standard search strategy that is specified by the application.
+        /// This flag includes the application directory, <c>System32</c>, and the user's directories.
+        /// </summary>
+        LOAD_LIBRARY_SEARCH_DEFAULT_DIRS = 0x00001000,
+
+        /// <summary>
+        /// If this value is used, the system searches the directory from which the application loaded before searching other directories.
+        /// </summary>
+        LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR = 0x00000100,
+
+        /// <summary>
+        /// If this value is used, the system searches the <c>System32</c> directory for the DLL and its dependencies.
+        /// </summary>
+        LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x00000800,
+
+        /// <summary>
+        /// If this value is used, the system searches directories that are specified in the registry key for per-user paths.
+        /// </summary>
+        LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400,
+
+        /// <summary>
+        /// If this value is used, the system uses an altered search path to load the library, which can be specified in the <paramref name="lpFileName"/> parameter of <see cref="LoadLibraryEx"/>.
+        /// </summary>
+        LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008
+    }
+
 
     #endregion
 
@@ -1303,6 +1434,122 @@ namespace PSADT.PInvoke
         SM_YVIRTUALSCREEN = 77,
     }
 
+    /// <summary>
+    /// Specifies how the window should be shown.
+    /// </summary>
+    public enum ShowWindowEnum
+    {
+        /// <summary>
+        /// Hides the window and activates another window.
+        /// </summary>
+        Hide = 0,
+
+        /// <summary>
+        /// Activates and displays the window. If the window is minimized or maximized, it is restored to its original size and position.
+        /// </summary>
+        ShowNormal = 1,
+
+        /// <summary>
+        /// Activates the window and displays it as a minimized window.
+        /// </summary>
+        ShowMinimized = 2,
+
+        /// <summary>
+        /// Activates the window and displays it as a maximized window.
+        /// </summary>
+        ShowMaximized = 3,
+
+        /// <summary>
+        /// Displays the window in its most recent size and position. This value is similar to ShowNormal, except the window is not activated.
+        /// </summary>
+        ShowNormalNoActivate = 4,
+
+        /// <summary>
+        /// Activates the window and displays it in its current size and position.
+        /// </summary>
+        Show = 5,
+
+        /// <summary>
+        /// Minimizes the specified window and activates the next top-level window in the Z order.
+        /// </summary>
+        Minimize = 6,
+
+        /// <summary>
+        /// Displays the window as a minimized window. This value is similar to ShowMinimized, except the window is not activated.
+        /// </summary>
+        ShowMinNoActivate = 7,
+
+        /// <summary>
+        /// Displays the window in its current size and position. This value is similar to Show, except the window is not activated.
+        /// </summary>
+        ShowNoActivate = 8,
+
+        /// <summary>
+        /// Activates and displays the window. If the window is minimized or maximized, it is restored to its original size and position. 
+        /// </summary>
+        Restore = 9,
+
+        /// <summary>
+        /// Sets the show state based on the SW_ value specified in the STARTUPINFO structure passed to the CreateProcess function by the program that started the application.
+        /// </summary>
+        ShowDefault = 10,
+
+        /// <summary>
+        /// Minimizes a window, even if the thread that owns the window is not responding. Use this only when minimizing windows from a different thread.
+        /// </summary>
+        ForceMinimized = 11
+    }
+
+    /// <summary>The relationship between the specified window and the window whose handle is to be retrieved. Used with GetWindow method.</summary>
+    public enum GetWindowCmd : int
+    {
+        /// <summary>
+        /// The retrieved handle identifies the window of the same type that is highest in the Z order. If the specified window is a
+        /// topmost window, the handle identifies a topmost window. If the specified window is a top-level window, the handle identifies
+        /// a top-level window. If the specified window is a child window, the handle identifies a sibling window.
+        /// </summary>
+        GW_HWNDFIRST = 0,
+
+        /// <summary>
+        /// The retrieved handle identifies the window of the same type that is lowest in the Z order. If the specified window is a
+        /// topmost window, the handle identifies a topmost window. If the specified window is a top-level window, the handle identifies
+        /// a top-level window. If the specified window is a child window, the handle identifies a sibling window.
+        /// </summary>
+        GW_HWNDLAST = 1,
+
+        /// <summary>
+        /// The retrieved handle identifies the window below the specified window in the Z order. If the specified window is a topmost
+        /// window, the handle identifies a topmost window. If the specified window is a top-level window, the handle identifies a
+        /// top-level window. If the specified window is a child window, the handle identifies a sibling window.
+        /// </summary>
+        GW_HWNDNEXT = 2,
+
+        /// <summary>
+        /// The retrieved handle identifies the window above the specified window in the Z order. If the specified window is a topmost
+        /// window, the handle identifies a topmost window. If the specified window is a top-level window, the handle identifies a
+        /// top-level window. If the specified window is a child window, the handle identifies a sibling window.
+        /// </summary>
+        GW_HWNDPREV = 3,
+
+        /// <summary>
+        /// The retrieved handle identifies the specified window's owner window, if any. For more information, see Owned Windows.
+        /// </summary>
+        GW_OWNER = 4,
+
+        /// <summary>
+        /// The retrieved handle identifies the child window at the top of the Z order, if the specified window is a parent window;
+        /// otherwise, the retrieved handle is NULL. The function examines only child windows of the specified window. It does not
+        /// examine descendant windows.
+        /// </summary>
+        GW_CHILD = 5,
+
+        /// <summary>
+        /// The retrieved handle identifies the enabled popup window owned by the specified window (the search uses the first such window
+        /// found using GW_HWNDNEXT); otherwise, if there are no enabled popup windows, the retrieved handle is that of the specified window.
+        /// </summary>
+        GW_ENABLEDPOPUP = 6
+    }
+
     #endregion
 
     #region ntdll.dll
@@ -1962,6 +2209,108 @@ namespace PSADT.PInvoke
         SHGFI_OVERLAYINDEX = 0x000000040
     }
 
+    /// <summary>
+    /// Enum representing the state of user notifications.
+    /// </summary>
+    public enum UserNotificationState
+    {
+        /// <summary>
+        /// Indicates that a screensaver is running, the system is locked, or fast user switching is enabled.
+        /// </summary>
+        ScreenSaverOrLockedOrFastUserSwitching = 1,
+
+        /// <summary>
+        /// Indicates that the user is in full-screen mode, in presentation mode, or the login screen is active.
+        /// </summary>
+        FullScreenOrPresentationModeOrLoginScreen = 2,
+
+        /// <summary>
+        /// Indicates that a Direct3D full-screen application is running.
+        /// </summary>
+        RunningDirect3DFullScreen = 3,
+
+        /// <summary>
+        /// Indicates that the system is in presentation mode, meaning that notifications and interruptions are minimized.
+        /// </summary>
+        PresentationMode = 4,
+
+        /// <summary>
+        /// Indicates that the system is accepting user notifications.
+        /// </summary>
+        AcceptsNotifications = 5,
+
+        /// <summary>
+        /// Indicates that the system is in quiet time, a period during which notifications are suppressed or reduced.
+        /// </summary>
+        QuietTime = 6,
+
+        /// <summary>
+        /// Indicates that a Windows Store app is running and likely to be in the foreground.
+        /// </summary>
+        WindowsStoreAppRunning = 7
+    }
+
+    #endregion
+
+    #region shcore.dll
+
+    /// <summary>Identifies the dots per inch (dpi) setting for a monitor.</summary>
+    /// <remarks>All of these settings are affected by the PROCESS_DPI_AWARENESS of your application</remarks>
+    public enum MONITOR_DPI_TYPE : int
+    {
+        /// <summary>
+        /// The effective DPI. This value should be used when determining the correct scale factor for scaling UI elements. This
+        /// incorporates the scale factor set by the user for this specific display.
+        /// </summary>
+        MDT_EFFECTIVE_DPI = 0,
+
+        /// <summary>
+        /// The angular DPI. This DPI ensures rendering at a compliant angular resolution on the screen. This does not include the scale
+        /// factor set by the user for this specific display.
+        /// </summary>
+        MDT_ANGULAR_DPI = 1,
+
+        /// <summary>
+        /// The raw DPI. This value is the linear DPI of the screen as measured on the screen itself. Use this value when you want to
+        /// read the pixel density and not the recommended scaling setting. This does not include the scale factor set by the user for
+        /// this specific display and is not guaranteed to be a supported DPI value.
+        /// </summary>
+        MDT_RAW_DPI = 2,
+
+        /// <summary>The default DPI setting for a monitor is MDT_EFFECTIVE_DPI.</summary>
+        MDT_DEFAULT = MDT_EFFECTIVE_DPI
+    }
+
+    #endregion
+
+    #region gdi32.dll
+
+    /// <summary>
+    /// Enum representing device capabilities.
+    /// </summary>
+    public enum DeviceCap
+    {
+        /// <summary>
+        /// The horizontal width, in pixels, of the screen or display device.
+        /// </summary>
+        HORZRES = 8,
+
+        /// <summary>
+        /// The vertical height, in pixels, of the screen or display device.
+        /// </summary>
+        VERTRES = 10,
+
+        /// <summary>
+        /// The vertical height, in pixels, of the entire desktop for a display device. This includes all monitors in the desktop.
+        /// </summary>
+        DESKTOPVERTRES = 117,
+
+        /// <summary>
+        /// The horizontal width, in pixels, of the entire desktop for a display device. This includes all monitors in the desktop.
+        /// </summary>
+        DESKTOPHORZRES = 118
+    }
+
     #endregion
 
     #region shared_pinvoke
@@ -1973,6 +2322,12 @@ namespace PSADT.PInvoke
         /// </summary>
         STATUS_SUCCESS = 0x00000000
     }
+
+    #endregion
+
+    #region name.dll
+
+    
 
     #endregion
 }

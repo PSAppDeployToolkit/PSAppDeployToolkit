@@ -1,0 +1,80 @@
+﻿using System;
+using System.Text;
+using Microsoft.Win32.SafeHandles;
+using System.Runtime.InteropServices;
+using PSADT.PInvoke;
+
+namespace PSADT.GUI
+{
+    public static class Explorer
+    {
+        /// <summary>
+        /// Refreshes the desktop icons and updates the environment variables in the system.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the operation fails.</exception>
+        public static void RefreshDesktopAndEnvironmentVariables()
+        {
+            try
+            {
+                // Update desktop icons using SHChangeNotify
+                NativeMethods.SHChangeNotify(NativeMethods.SHCNE_ASSOCCHANGED, NativeMethods.SHCNF_FLUSHNOWAIT, IntPtr.Zero, IntPtr.Zero);
+
+                // Notify all top-level windows that the environment variables have changed
+                if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST,
+                                                     NativeMethods.WM_SETTINGCHANGE,
+                                                     IntPtr.Zero,
+                                                     null,
+                                                     NativeMethods.SMTO_ABORTIFHUNG,
+                                                     100,
+                                                     IntPtr.Zero) == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException($"Failed to send WM_SETTINGCHANGE message. Error code [{Marshal.GetLastWin32Error()}].");
+                }
+
+                if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST, NativeMethods.WM_SETTINGCHANGE,
+                                                     IntPtr.Zero, "Environment", NativeMethods.SMTO_ABORTIFHUNG, 100,
+                                                     IntPtr.Zero) == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException($"Failed to send WM_SETTINGCHANGE message for environment variables. Error code [{Marshal.GetLastWin32Error()}].");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An error occurred while refreshing desktop and environment variables.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a string resource from the shell32.dll library.
+        /// </summary>
+        /// <param name="verbId">The identifier of the string resource.</param>
+        /// <returns>The loaded string resource.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the library or string resource fails to load.</exception>
+        public static string GetPinVerb(int verbId)
+        {
+            const string libraryName = "shell32.dll";
+
+            // Create a SafeFileHandle with IntPtr.Zero since no specific file handle is needed.
+            using SafeFileHandle hFile = new(IntPtr.Zero, false);
+
+            // Load the shell32 library with the appropriate flags
+            using SafeLibraryHandle hShell32 = NativeMethods.LoadLibraryEx(libraryName, hFile, LoadLibraryExFlags.LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE);
+            if (hShell32.IsInvalid || hShell32.IsClosed)
+            {
+                throw new InvalidOperationException($"Failed to load library [{libraryName}]. Error code [{Marshal.GetLastWin32Error()}].");
+            }
+
+            // Load the string resource into a StringBuilder
+            StringBuilder buffer = new StringBuilder(256);
+            int length = NativeMethods.LoadString(hShell32, verbId, buffer, buffer.Capacity);
+
+            if (length == 0)
+            {
+                throw new InvalidOperationException($"Failed to load string resource with ID [{verbId}]. Error code [{Marshal.GetLastWin32Error()}].");
+            }
+
+            return buffer.ToString();
+        }
+
+    }
+}

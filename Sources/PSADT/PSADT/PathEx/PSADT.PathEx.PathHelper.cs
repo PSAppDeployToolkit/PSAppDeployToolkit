@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using PSADT.PInvoke;
 using PSADT.ConsoleEx;
-using Microsoft.Win32;
 using System.Collections.Generic;
+using System.Reflection;
+using PSADT.Logging;
 
 namespace PSADT.PathEx
 {
@@ -31,7 +32,7 @@ namespace PSADT.PathEx
                 ? ResolveFullPathForFileName(fileName, searchDirectories)
                 : ResolveFullPathByProbingExtensions(fileName, searchDirectories);
 
-            ConsoleHelper.DebugWrite($"File name [{fileName}] resolved to fully-qualified path [{result ?? ""}].", MessageType.Debug);
+            UnifiedLogger.Create().Message($"File name [{fileName}] resolved to fully-qualified path [{result ?? ""}].").Severity(LogLevel.Debug);
 
             return result;
         }
@@ -54,7 +55,7 @@ namespace PSADT.PathEx
             var appPathsExecutables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             const string appPathsSubKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
 
-            using var appPathsKey = Registry.LocalMachine.OpenSubKey(appPathsSubKey);
+            using var appPathsKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(appPathsSubKey);
             if (appPathsKey != null)
             {
                 foreach (var exeName in appPathsKey.GetSubKeyNames())
@@ -142,26 +143,112 @@ namespace PSADT.PathEx
         }
 
         /// <summary>
-        /// Gets the name of the executing assembly file.
+        /// Gets the directory path of the executing assembly.
         /// </summary>
-        /// <returns>The name of the executing assembly file.</returns>
-        public static string GetExecutingAssemblyFileName()
+        /// <returns>
+        /// The directory path of the executing assembly, or <see cref="AppDomain.CurrentDomain.BaseDirectory"/> if the path cannot be determined.
+        /// </returns>
+        /// <remarks>
+        /// This method retrieves the directory path by using <see cref="GetExecutingAssemblyFilePath"/> to obtain the full file path
+        /// and then extracting the directory name. If it cannot determine the file path, it defaults to <see cref="AppDomain.CurrentDomain.BaseDirectory"/>.
+        /// </remarks>
+        public static string GetExecutingAssemblyDirectory()
         {
-            // Use AppContext.BaseDirectory to get the directory containing the executable
-            var location = AppContext.BaseDirectory;
-            return new FileInfo(location).Name;
+            string? assemblyLocation = GetExecutingAssemblyFilePath();
+
+            // If we managed to get a valid file path, get its directory, else return the application base directory
+            string assemblyDirectory = !string.IsNullOrEmpty(assemblyLocation)
+                ? Path.GetDirectoryName(assemblyLocation) ?? AppDomain.CurrentDomain.BaseDirectory
+                : AppDomain.CurrentDomain.BaseDirectory;
+
+            return RemoveTrailingSlash(assemblyDirectory);
         }
 
         /// <summary>
-        /// Gets the directory path of the executing assembly.
+        /// Gets the file name of the executing assembly.
         /// </summary>
-        /// <returns>The directory path of the executing assembly.</returns>
-        public static string GetExecutingAssemblyDirectoryPath()
+        /// <returns>
+        /// The file name of the executing assembly, or <c>null</c> if it cannot be determined.
+        /// </returns>
+        /// <remarks>
+        /// This method retrieves the file name (including the extension) of the executing assembly by using <see cref="GetExecutingAssemblyFilePath"/> 
+        /// to obtain the full file path and then extracting the file name from the path.
+        /// </remarks>
+        public static string? GetExecutingAssemblyFileName()
         {
-            // Use AppContext.BaseDirectory to get the directory containing the executable
-            var executingAssemblyDirectoryPath = AppContext.BaseDirectory;
-            return RemoveTrailingSlash(executingAssemblyDirectoryPath);
+            string? assemblyLocation = GetExecutingAssemblyFilePath();
+
+            // If we managed to get a valid file path, return the file name
+            return assemblyLocation != null ? Path.GetFileName(assemblyLocation) : null;
         }
+
+        /// <summary>
+        /// Gets the file name of the executing assembly minus the file extension, or returns an empty string if it cannot be determined.
+        /// </summary>
+        /// <returns>
+        /// The file name of the executing assembly without the extension, or an empty string if it cannot be determined.
+        /// </returns>
+        /// <remarks>
+        /// This method returns the file name (without the extension) of the executing assembly. 
+        /// If the file name cannot be determined, it defaults to an empty string.
+        /// </remarks>
+        public static string? GetExecutingAssemblyFileNameWithoutExtension()
+        {
+            string? fileName = GetExecutingAssemblyFileName();
+            return !string.IsNullOrEmpty(fileName) ? Path.GetFileNameWithoutExtension(fileName) : null;
+        }
+
+        /// <summary>
+        /// Gets the file path of the executing assembly, considering various execution scenarios.
+        /// </summary>
+        /// <returns>
+        /// The full file path of the executing assembly, or <c>null</c> if it cannot be determined.
+        /// </returns>
+        /// <remarks>
+        /// This method attempts to retrieve the location of the executing assembly using several strategies:
+        /// <list type="number">
+        /// <item><description>Tries <see cref="Assembly.GetExecutingAssembly().Location"/> to get the executing assembly's file path.</description></item>
+        /// <item><description>If the assembly location is empty (e.g., single-file deployment), falls back to <see cref="AppContext.BaseDirectory"/>.</description></item>
+        /// <item><description>If the entry assembly's location is available, it uses that as a fallback.</description></item>
+        /// <item><description>Falls back to <see cref="AppDomain.CurrentDomain.BaseDirectory"/> if all else fails.</description></item>
+        /// </list>
+        /// </remarks>
+        public static string? GetExecutingAssemblyFilePath()
+        {
+            // 1. Try to get the assembly location using the most direct approach: GetExecutingAssembly().Location
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            string location = executingAssembly.Location;
+
+            // 2. Handle cases where the location is empty (e.g., single-file executables, dynamically generated assemblies)
+            if (string.IsNullOrEmpty(location))
+            {
+                // Fallback to AppContext.BaseDirectory for single-file executables and other scenarios
+                string baseDirectory = AppContext.BaseDirectory;
+                if (!string.IsNullOrEmpty(baseDirectory))
+                {
+                    var entryAssembly = Assembly.GetEntryAssembly();
+                    if (entryAssembly != null && !string.IsNullOrEmpty(entryAssembly.Location))
+                    {
+                        // Return full path of the entry assembly
+                        location = entryAssembly.Location;
+                    }
+                    else
+                    {
+                        location = baseDirectory;
+                    }
+                }
+            }
+
+            // 3. If the location is still empty, fallback to the base directory of the current application domain
+            if (string.IsNullOrEmpty(location))
+            {
+                location = AppDomain.CurrentDomain.BaseDirectory;
+            }
+
+            // Return null if we still can't get a valid path
+            return !string.IsNullOrEmpty(location) ? location : null;
+        }
+
 
         /// <summary>
         /// Removes quotes from the beginning and end of a string.

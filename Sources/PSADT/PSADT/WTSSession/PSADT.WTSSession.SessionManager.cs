@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using System.Linq;
 using PSADT.PInvoke;
-using PSADT.ConsoleEx;
 using PSADT.AccessToken;
 using PSADT.OperatingSystem;
 using System.ComponentModel;
@@ -10,6 +9,7 @@ using System.Security.Principal;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
+using PSADT.Logging;
 
 namespace PSADT.WTSSession
 {
@@ -33,7 +33,7 @@ namespace PSADT.WTSSession
                 if (string.IsNullOrWhiteSpace(hServerName))
                 {
                     handle = IntPtr.Zero;
-                    ConsoleHelper.DebugWrite("Using local server for WTS operations.", MessageType.Debug);
+                    UnifiedLogger.Create().Message("Using local server for WTS operations.").Severity(LogLevel.Debug);
                 }
                 else
                 {
@@ -42,14 +42,14 @@ namespace PSADT.WTSSession
                     {
                         throw new Win32Exception(Marshal.GetLastWin32Error(), $"'WTSOpenServer' failed to open a handle to hServerName [{hServerName}].");
                     }
-                    ConsoleHelper.DebugWrite($"Opened WTS server handle for [{hServerName}].", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Opened WTS server handle for [{hServerName}].").Severity(LogLevel.Debug);
                 }
 
                 return new SafeWTSServer(handle);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get server for WTS operations.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get server for WTS operations.").Error(ex);
                 throw;
             }
         }
@@ -93,12 +93,12 @@ namespace PSADT.WTSSession
                     ppSessionInfo = sessionInfo.ToArray<WTS_SESSION_INFO>((int)sessionCount);
                 }
 
-                ConsoleHelper.DebugWrite($"Enumerated [{sessionCount}] WTS sessions.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Enumerated [{sessionCount}] WTS sessions.").Severity(LogLevel.Debug);
                 return ppSessionInfo.Length > 0;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to enumerate WTS sessions.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to enumerate WTS sessions.").Error(ex);
                 return false;
             }
         }
@@ -164,12 +164,12 @@ namespace PSADT.WTSSession
                     throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to query 'WinStationQueryInformation'.");
                 }
 
-                ConsoleHelper.DebugWrite($"WinStation information queried for session id [{sessionId}].", MessageType.Debug);
+                UnifiedLogger.Create().Message($"WinStation information queried for session id [{sessionId}].").Severity(LogLevel.Debug);
                 return wsInfo;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to query WinStation information for session id [{sessionId}].", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to query WinStation information for session id [{sessionId}].").Error(ex);
                 throw;
             }
         }
@@ -320,7 +320,7 @@ namespace PSADT.WTSSession
                     }
                     catch (Exception ex)
                     {
-                        ConsoleHelper.DebugWrite($"Failed to determine if the token belongs to a local admin.", MessageType.Error, ex);
+                        UnifiedLogger.Create().Message($"Failed to determine if the token belongs to a local admin.").Error(ex);
                         throw new Win32Exception($"Failed to determine if the token belongs to a local admin.", ex);
                     }
 
@@ -498,12 +498,12 @@ namespace PSADT.WTSSession
                     sessionInfo.IsRemoteSession = GetWTSInfoClassProperty<bool>(hServer, sessionId, WTS_INFO_CLASS.WTSIsRemoteSession);
                 }
 
-                ConsoleHelper.DebugWrite($"Retrieved extended session information for session id [{sessionId}].", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Retrieved extended session information for session id [{sessionId}].").Severity(LogLevel.Debug);
                 return sessionInfo;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error in GetExtendedSessionInfo: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Error in GetExtendedSessionInfo: {ex.Message}").Error(ex);
                 throw;
             }
         }
@@ -519,7 +519,7 @@ namespace PSADT.WTSSession
                 userName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName);
             }
 
-            ConsoleHelper.DebugWrite($"Domain: {domainName}, Username: {userName}.", MessageType.Debug);
+            UnifiedLogger.Create().Message($"Domain: {domainName}, Username: {userName}.").Severity(LogLevel.Debug);
 
             if (string.IsNullOrEmpty(domainName) || string.IsNullOrEmpty(userName))
             {
@@ -579,18 +579,18 @@ namespace PSADT.WTSSession
 
                 if (allActiveUserSessions != null && allActiveUserSessions.Any())
                 {
-                    ConsoleHelper.DebugWrite($"Discovered [{allActiveUserSessions.Count}] active user sessions.", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Discovered [{allActiveUserSessions.Count}] active user sessions.").Severity(LogLevel.Debug);
                 }
                 else
                 {
-                    ConsoleHelper.DebugWrite("No active user sessions found.", MessageType.Warning);
+                    UnifiedLogger.Create().Message("No active user sessions found.").Severity(LogLevel.Warning);
                 }
 
                 return allActiveUserSessions;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get all active user sessions.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get all active user sessions.").Error(ex);
                 throw;
             }
         }
@@ -605,18 +605,18 @@ namespace PSADT.WTSSession
 
                 if (session != null)
                 {
-                    ConsoleHelper.DebugWrite($"Discoverd session for session id [{sessionId}].", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Discoverd session for session id [{sessionId}].").Severity(LogLevel.Debug);
                 }
                 else
                 {
-                    ConsoleHelper.DebugWrite($"No session found for session id [{sessionId}].", MessageType.Warning);
+                    UnifiedLogger.Create().Message($"No session found for session id [{sessionId}].").Severity(LogLevel.Warning);
                 }
 
                 return session;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get session for session id [{sessionId}].", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get session for session id [{sessionId}].").Error(ex);
                 throw;
             }
         }
@@ -635,18 +635,18 @@ namespace PSADT.WTSSession
 
                 if (primaryActiveUserSession != null)
                 {
-                    ConsoleHelper.DebugWrite($"Discovered primary active user session with id [{primaryActiveUserSession.SessionId}].", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Primary active user session found with session id [{primaryActiveUserSession.SessionId}].").Severity(LogLevel.Debug);
                 }
                 else
                 {
-                    ConsoleHelper.DebugWrite("No primary active user session found.", MessageType.Warning);
+                    UnifiedLogger.Create().Message("No primary active user session found.").Severity(LogLevel.Warning);
                 }
 
                 return primaryActiveUserSession;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get primary active user session.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get primary active user session.").Error(ex);
                 throw;
             }
         }
@@ -662,15 +662,15 @@ namespace PSADT.WTSSession
                 var session = GetPrimaryActiveUserSession(hServerName);
                 if (session != null)
                 {
-                    ConsoleHelper.DebugWrite($"Primary active user session id [{session.SessionId}].", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Primary active user session id [{session.SessionId}].").Severity(LogLevel.Debug);
                     return session.SessionId;
                 }
-                ConsoleHelper.DebugWrite("No primary active user session found.", MessageType.Warning);
+                UnifiedLogger.Create().Message("No primary active user session found.").Severity(LogLevel.Warning);
                 return null;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get primary active user session id.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get primary active user session id.").Error(ex);
                 throw;
             }
         }
@@ -687,7 +687,7 @@ namespace PSADT.WTSSession
 
                 if (sessions == null || !sessions.Any())
                 {
-                    ConsoleHelper.DebugWrite("No sessions found.", MessageType.Warning);
+                    UnifiedLogger.Create().Message("No sessions found.").Severity(LogLevel.Warning);
                     return null;
                 }
 
@@ -697,18 +697,18 @@ namespace PSADT.WTSSession
 
                 if (primaryActiveLocalAdminUserSession != null)
                 {
-                    ConsoleHelper.DebugWrite($"Primary active local admin user session found with session id [{primaryActiveLocalAdminUserSession.SessionId}].", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Primary active local admin user session found with session id [{primaryActiveLocalAdminUserSession.SessionId}].").Severity(LogLevel.Debug);
                 }
                 else
                 {
-                    ConsoleHelper.DebugWrite("No primary active local admin user session found.", MessageType.Warning);
+                    UnifiedLogger.Create().Message("No primary active local admin user session found.").Severity(LogLevel.Warning);
                 }
 
                 return primaryActiveLocalAdminUserSession;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to find a primary active loacl admin user session.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to find a primary active loacl admin user session.").Error(ex);
                 throw;
             }
         }
@@ -724,16 +724,16 @@ namespace PSADT.WTSSession
                 var session = GetPrimaryActiveLocalAdminUserSession(hServerName);
                 if (session != null)
                 {
-                    ConsoleHelper.DebugWrite($"Discovered primary active local admin user session id [{session.SessionId}].", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Discovered primary active local admin user session id [{session.SessionId}].").Severity(LogLevel.Debug);
                     return session.SessionId;
                 }
 
-                ConsoleHelper.DebugWrite("No primary active local admin user session found.", MessageType.Warning);
+                UnifiedLogger.Create().Message("No primary active local admin user session found.").Severity(LogLevel.Warning);
                 return null;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get primary active local admin user session id.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get primary active local admin user session id.").Error(ex);
                 throw;
             }
         }

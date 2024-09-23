@@ -1,10 +1,10 @@
 ﻿using System;
 using PSADT.PInvoke;
-using PSADT.ConsoleEx;
 using System.ComponentModel;
 using System.Security.Principal;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using PSADT.Logging;
 
 namespace PSADT.AccessToken
 {
@@ -90,7 +90,7 @@ namespace PSADT.AccessToken
         public static void AdjustTokenPrivilegeInternal(IntPtr tokenHandle, TokenPrivilege privilege, bool enable)
         {
             // Attempt to lookup the privilege value
-            if (!NativeMethods.LookupPrivilegeValue(null, privilege.ToString(), out var luid))
+            if (!NativeMethods.LookupPrivilegeValue(".", privilege.ToString(), out var luid))
             {
                 int error = Marshal.GetLastWin32Error();
                 throw new Win32Exception(error, $"Failed to lookup privilege value for [{privilege}]. Error code: {error}");
@@ -176,11 +176,11 @@ namespace PSADT.AccessToken
                 }
                 catch (KeyNotFoundException ex)
                 {
-                    ConsoleHelper.DebugWrite($"Privilege [{privilegeName}] not found: {ex.Message}", MessageType.Error);
+                    UnifiedLogger.Create().Message($"Privilege [{privilegeName}] not found: {ex.Message}").Severity(LogLevel.Error);
                 }
                 catch (Exception ex)
                 {
-                    ConsoleHelper.DebugWrite($"Failed to adjust privilege [{privilegeName}]: {ex.Message}", MessageType.Error);
+                    UnifiedLogger.Create().Message($"Failed to adjust privilege [{privilegeName}]: {ex.Message}").Severity(LogLevel.Error);
                 }
             }
         }

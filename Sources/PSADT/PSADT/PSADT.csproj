@@ -1,14 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 <!--https://devblogs.microsoft.com/powershell/depending-on-the-right-powershell-nuget-package-in-your-net-project/-->
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<RootNamespace>PSADT</RootNamespace>
 		<AssemblyName>PSAppDeployToolkit</AssemblyName>
-		<NoWarn>$(NoWarn);CA1416</NoWarn>
+		<NoWarn>$(NoWarn);CA1416;CS4014</NoWarn>
 
 		<AssemblyVersion>3.91.0.0</AssemblyVersion>
 		<FileVersion>3.91.0</FileVersion>
-		<InformationalVersion>1.0.0-beta0</InformationalVersion>
+		<InformationalVersion>3.91.0-beta0</InformationalVersion>
 		<Authors>PSADT</Authors>
 		<Company>PSADT</Company>
 		<Description>A utility for launching and managing processes across multiple user sessions in Windows environments.</Description>
@@ -18,7 +18,7 @@
 		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
 		
 		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-		<TargetFrameworks>net461;net6.0</TargetFrameworks>
+		<TargetFrameworks>net461;net6.0-windows</TargetFrameworks>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 		<LangVersion>latest</LangVersion>
 		<Deterministic>true</Deterministic>
@@ -28,13 +28,10 @@
 		
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
-		
-		<SelfContained>false</SelfContained>
-		<PublishSingleFile>false</PublishSingleFile>
-		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 		<PublishTrimmed>false</PublishTrimmed>
 		<Platforms>AnyCPU</Platforms>
+
+		<UseWPF>true</UseWPF>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -45,7 +42,7 @@
 	  <DebugType>none</DebugType>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-windows'">
 		<DefineConstants>$(DefineConstants);CoreCLR</DefineConstants>
 	</PropertyGroup>
 
@@ -58,18 +55,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.Management.Automation" Version="7.2.*" Condition="'$(TargetFramework)' == 'net6.0'" PrivateAssets="all" />
+		<PackageReference Include="System.Management.Automation" Version="7.2.*" Condition="'$(TargetFramework)' == 'net6.0-windows'" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="System.DirectoryServices" Condition="'$(TargetFramework)' == 'net461'">
-			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.DirectoryServices\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.DirectoryServices.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="System.Management.Automation" Condition="'$(TargetFramework)' == 'net461'">
-			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
+	  <Reference Include="System.Management.Automation" Condition="'$(TargetFramework)' == 'net461'">
+	    <HintPath>..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

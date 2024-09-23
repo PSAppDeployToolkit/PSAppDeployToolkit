@@ -1,90 +1,10 @@
 ﻿using System;
-using System.Collections;
-///using System.DirectoryServices;
 using System.Security.Principal;
-using System.Text.RegularExpressions;
 
-namespace PSADT.Account
+namespace PSADT.Accounts
 {
     public static class AccountHelper
     {
-        /// <summary>
-        /// Retrieves the Security Identifier (SID) of the built-in administrator account on the local machine.
-        /// </summary>
-        /// <returns>The <see cref="SecurityIdentifier"/> representing the built-in administrator account.</returns>
-        /*public static SecurityIdentifier? GetBuiltInAdministratorAccountSid()
-        {
-            SecurityIdentifier? builtInAdministratorAccountSid = null;
-
-            string machineName = Environment.MachineName;
-            string localAdministratorsGroupName = new SecurityIdentifier("S-1-5-32-544")
-                .Translate(typeof(NTAccount))
-                .Value
-                .Split('\\')[1];
-
-            using var localMachine = new DirectoryEntry($"WinNT://{machineName},Computer");
-            using var localAdministratorsGroup = localMachine.Children.Find(localAdministratorsGroupName, "group");
-
-            string regexSidPattern = @"^S-\d-\d+-(\d+-){1,14}\d+$";
-            DirectoryEntry? localAdministratorAccount = null;
-            object? groupMembers = localAdministratorsGroup?.Invoke("members", null);
-
-            if (groupMembers is IEnumerable groupMembersEnumerable)
-            {
-                foreach (object groupMember in groupMembersEnumerable)
-                {
-                    using var groupMemberDirectoryEntry = new DirectoryEntry(groupMember);
-                    if (!string.IsNullOrEmpty(groupMemberDirectoryEntry.Name))
-                    {
-                        string groupMemberSid;
-                        if (Regex.IsMatch(groupMemberDirectoryEntry.Name, regexSidPattern))
-                        {
-                            groupMemberSid = groupMemberDirectoryEntry.Name;
-                        }
-                        else
-                        {
-                            groupMemberSid = new NTAccount(groupMemberDirectoryEntry.Name)
-                                .Translate(typeof(SecurityIdentifier))
-                                .Value;
-                        }
-
-                        if (groupMemberSid.EndsWith("-500"))
-                        {
-                            localAdministratorAccount = groupMemberDirectoryEntry;
-                        }
-                    }
-                }
-            }
-
-            if (localAdministratorAccount != null)
-            {
-                byte[] localAdministratorsGroupObjectSid = (byte[])localAdministratorAccount.InvokeGet("objectSID")!;
-                builtInAdministratorAccountSid = new SecurityIdentifier(localAdministratorsGroupObjectSid, 0);
-            }
-
-            return builtInAdministratorAccountSid;
-        }
-
-        /// <summary>
-        /// Retrieves the <see cref="NTAccount"/> object corresponding to the built-in administrator account.
-        /// </summary>
-        /// <returns>An <see cref="NTAccount"/> object representing the built-in administrator account.</returns>
-        public static NTAccount? GetBuiltInAdministratorAccountNTAccount()
-        {
-            var sid = GetBuiltInAdministratorAccountSid();
-            return sid != null ? GetNTAccountFromSid(sid) : null;
-        }
-
-        /// <summary>
-        /// Retrieves the domain SID of the built-in administrator account.
-        /// </summary>
-        /// <returns>The <see cref="SecurityIdentifier"/> representing the domain SID.</returns>
-        public static SecurityIdentifier? GetDomainSid()
-        {
-            var sid = GetBuiltInAdministratorAccountSid();
-            return sid?.AccountDomainSid;
-        }*/
-
         /// <summary>
         /// Parses the base SID from a given SID.
         /// </summary>
@@ -170,5 +90,113 @@ namespace PSADT.Account
             var ntAccount = new NTAccount(userName);
             return (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
         }
+
+        /// <summary>
+        /// Determines whether the specified string represents a valid Windows Security Identifier (SID).
+        /// </summary>
+        /// <param name="sidString">The string to validate as a SID.</param>
+        /// <returns>
+        /// <c>true</c> if the specified string is a valid SID; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// This method attempts to create a <see cref="SecurityIdentifier"/> object from the provided string. 
+        /// If the string is not in a valid SID format or another related exception occurs, the method will return <c>false</c>.
+        /// It catches <see cref="ArgumentException"/> for invalid SIDs and <see cref="UnauthorizedAccessException"/> for access-related issues.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// bool isValid = IsValidSid("S-1-5-21-3623811015-3361044348-30300820-1013");
+        /// </code>
+        /// </example>
+        public static bool IsValidSid(string sidString)
+        {
+            if (string.IsNullOrWhiteSpace(sidString))
+            {
+                return false;
+            }
+
+            try
+            {
+                // Attempt to create a SecurityIdentifier object from the string
+                SecurityIdentifier securityIdentifier = new SecurityIdentifier(sidString);
+                return true; // If no exception, the SID is valid
+            }
+            catch (ArgumentException)
+            {
+                // Thrown if the SID string is not in a valid format
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Thrown when access to the SID is restricted due to permission issues
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified string represents a valid Windows NTAccount.
+        /// </summary>
+        /// <param name="accountName">The string to validate as an NTAccount.</param>
+        /// <returns>
+        /// <c>true</c> if the specified string is a valid NTAccount; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// This method attempts to create an <see cref="NTAccount"/> object from the provided account name 
+        /// and translates it into a <see cref="SecurityIdentifier"/>. If the account cannot be translated 
+        /// to a valid Security Identifier (SID), it is considered invalid and the method returns <c>false</c>.
+        /// 
+        /// The method can validate both local and domain accounts (e.g., "DOMAIN\\Username" or "Username").
+        /// </remarks>
+        /// <exception cref="IdentityNotMappedException">
+        /// Thrown when the specified account name cannot be mapped to a valid <see cref="SecurityIdentifier"/>. 
+        /// This typically occurs if the account name does not exist or is invalid.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the <paramref name="accountName"/> is in an invalid format, such as containing illegal characters.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if access to the account information is denied due to insufficient permissions or privileges.
+        /// </exception>
+        /// <example>
+        /// The following example demonstrates how to check if an NTAccount is valid:
+        /// <code>
+        /// bool isValid = IsValidNTAccount("DOMAIN\\Username");
+        /// </code>
+        /// </example>
+        public static bool IsValidNTAccount(string accountName)
+        {
+            if (string.IsNullOrWhiteSpace(accountName))
+            {
+                return false;
+            }
+
+            try
+            {
+                // Create an NTAccount object from the provided account name
+                NTAccount ntAccount = new NTAccount(accountName);
+
+                // Try to translate the NTAccount to a SecurityIdentifier (SID)
+                SecurityIdentifier sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
+
+                // If the translation succeeds, the account is valid
+                return true;
+            }
+            catch (IdentityNotMappedException)
+            {
+                // Thrown when the account cannot be mapped to a valid SID (invalid account)
+                return false;
+            }
+            catch (ArgumentException)
+            {
+                // Thrown if the account name format is invalid
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Thrown when access to the account information is denied due to lack of privileges
+                return false;
+            }
+        }
+
     }
 }

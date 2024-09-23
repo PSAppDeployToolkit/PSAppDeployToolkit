@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 using System.Collections.Generic;
 
-/// Native Method Declarations from:
+/// Some Native Method Declarations from:
 /// https://github.com/dahall/Vanara
 
 namespace PSADT.PInvoke
@@ -17,70 +17,312 @@ namespace PSADT.PInvoke
     /// </summary>
     internal static partial class NativeMethods
     {
-        #region Fields: advapi32.dll
-
-        /// <summary>
-        /// Error code indicating that the specified logon session does not exist.
-        /// </summary>
-        public const int ERROR_NO_SUCH_LOGON_SESSION = 1312;
-
-        /// <summary>
-        /// Error code indicating that the specified item was not found.
-        /// </summary>
-        public const int ERROR_NOT_FOUND = 1168;
-
-        public const int ERROR_NOT_ALL_ASSIGNED = 1300;
-
-        public const uint SE_PRIVILEGE_ENABLED = 0x00000002;
-
-        public const uint TOKEN_DUPLICATE = 0x0002;
-
-        public const uint TOKEN_QUERY = 0x0008;
-
-        public const uint TOKEN_ADJUST_PRIVILEGES = 0x0020;
-
-        public const uint SANDBOX_INERT = 0x2;
-
-        #endregion
-
-        #region Fields: shlwapi.dll
-
-        public const int MAX_PATH = 260;
-
-        #endregion
-
-        #region Fields: kernel32.dll
-
-        public const uint ATTACH_PARENT_PROCESS = 0xFFFFFFFF;
-
-        public const uint GENERIC_READ = 0x80000000;
-
-        public const uint OPEN_EXISTING = 3;
-
-        public const uint PIPE_ACCESS_DUPLEX = 0x00000003;
-
-        public const uint PIPE_TYPE_MESSAGE = 0x00000004;
-
-        public const uint PIPE_READMODE_MESSAGE = 0x00000002;
-
-        public const uint PIPE_WAIT = 0x00000000;
-
-        public const uint PIPE_UNLIMITED_INSTANCES = 255;
-
-        #endregion
-
-        #region Fields: wintrust.dll
-
-        public static readonly Guid WINTRUST_ACTION_GENERIC_VERIFY_V2 = new Guid("00AAC56B-CD44-11d0-8CC2-00C04FC295EE");
-
-        public const uint DRIVER_ACTION_VERIFY = 0x00000001;
-
-        #endregion
-
         #region PInvoke: user32.dll
 
+        /// <summary>
+        /// Retrieves the specified system metric or system configuration setting for the current operating system.
+        /// System metrics can be used to retrieve dimensions of various display elements, the status of certain system features, and other system settings.
+        /// </summary>
+        /// <param name="nIndex">
+        /// The system metric or configuration setting to be retrieved. This value must be one of the constants defined in the <see cref="SystemMetric"/> enumeration.
+        /// </param>
+        /// <returns>
+        /// If the function succeeds, the return value is the requested system metric or configuration setting.
+        /// If the function fails, the return value is 0. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </returns>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
         public static extern int GetSystemMetrics(SystemMetric nIndex);
+
+
+        /// <summary>
+        /// Enumerates all top-level windows on the screen.
+        /// </summary>
+        /// <param name="lpEnumFunc">The callback function to invoke for each window.</param>
+        /// <param name="lParam">A pointer to application-defined data.</param>
+        /// <returns>True if successful; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumWindows(EnumWindowsProcD lpEnumFunc, ref IntPtr lParam);
+
+        /// <summary>
+        /// Retrieves the length of the text in the specified window.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <returns>The length of the window text in characters.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int GetWindowTextLength(IntPtr hWnd);
+
+        /// <summary>
+        /// Retrieves the text of the specified window.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <param name="lpString">The buffer that receives the text.</param>
+        /// <param name="nMaxCount">The maximum number of characters to copy to the buffer.</param>
+        /// <returns>The length of the copied text.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int GetWindowText(IntPtr hWnd, [Out] char[] lpString, int nMaxCount);
+
+        /// <summary>
+        /// Checks whether the specified window is enabled.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <returns>True if the window is enabled; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowEnabled(IntPtr hWnd);
+
+        /// <summary>
+        /// Determines whether the specified window is visible.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <returns>True if the window is visible; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
+        /// <summary>
+        /// Checks whether the specified window is minimized (iconic).
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <returns>True if the window is minimized; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsIconic(IntPtr hWnd);
+
+        /// <summary>
+        /// Shows or hides a window based on the specified flag.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <param name="flags">Specifies how the window is to be shown.</param>
+        /// <returns>True if the window was previously visible; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool ShowWindow(IntPtr hWnd, ShowWindowEnum flags);
+
+        /// <summary>
+        /// Sets the specified window as the active window.
+        /// </summary>
+        /// <param name="hwnd">Handle to the window.</param>
+        /// <returns>A handle to the previously active window, or IntPtr.Zero if none.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern IntPtr SetActiveWindow(IntPtr hwnd);
+
+        /// <summary>
+        /// Brings the specified window to the top of the Z-order.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <returns>True if successful; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool BringWindowToTop(IntPtr hWnd);
+
+        /// <summary>
+        /// Retrieves a handle to the foreground window (the window with which the user is currently working).
+        /// </summary>
+        /// <returns>A handle to the foreground window. The foreground window can be NULL in certain circumstances.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern IntPtr GetForegroundWindow();
+
+        /// <summary>
+        /// Brings the specified window to the foreground and activates it.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window to be brought to the foreground.</param>
+        /// <returns>True if successful; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        /// <summary>
+        /// Sets the keyboard focus to the specified window.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window that will receive the keyboard focus.</param>
+        /// <returns>If the function succeeds, the return value is the handle to the window that previously had the keyboard focus. If the hWnd parameter is invalid or the window is not attached to the calling thread's message queue, the return value is NULL.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern IntPtr SetFocus(IntPtr hWnd);
+
+        /// <summary>
+        /// Retrieves the identifier of the thread that created the specified window and optionally returns the process ID.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <param name="lpdwProcessId">An output parameter that receives the process ID.</param>
+        /// <returns>The thread identifier that created the window.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
+        /// <summary>
+        /// Attaches or detaches the input processing mechanism of one thread to another thread.
+        /// </summary>
+        /// <param name="idAttach">The identifier of the thread to attach.</param>
+        /// <param name="idAttachTo">The identifier of the thread to which to attach.</param>
+        /// <param name="fAttach">True to attach, false to detach.</param>
+        /// <returns>True if successful; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool AttachThreadInput(int idAttach, int idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
+
+        /// <summary>
+        /// Retrieves information about the specified window.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <param name="nIndex">Specifies the zero-based offset to the value to be retrieved.</param>
+        /// <returns>The value at the specified offset.</returns>
+        [DllImport("user32.dll", SetLastError = false, EntryPoint = "GetWindowLong", CharSet = CharSet.Unicode)]
+        public static extern IntPtr GetWindowLong32(IntPtr hWnd, int nIndex);
+
+        /// <summary>
+        /// Retrieves information about the specified window in a 64-bit process.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <param name="nIndex">Specifies the zero-based offset to the value to be retrieved.</param>
+        /// <returns>The value at the specified offset.</returns>
+        [DllImport("user32.dll", SetLastError = false, EntryPoint = "GetWindowLongPtr", CharSet = CharSet.Unicode)]
+        public static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
+
+        /// <summary>
+        /// Retrieves the handle to the system menu for the specified window.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <param name="bRevert">True to restore the default menu, false to retrieve the current menu.</param>
+        /// <returns>A handle to the system menu.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern IntPtr GetSystemMenu(IntPtr hWnd, [MarshalAs(UnmanagedType.Bool)] bool bRevert);
+
+        /// <summary>
+        /// Enables, disables, or grays out a menu item in a system menu.
+        /// </summary>
+        /// <param name="hMenu">Handle to the menu.</param>
+        /// <param name="uIDEnableItem">Specifies the menu item to enable or disable.</param>
+        /// <param name="uEnable">Specifies whether to enable or disable the menu item.</param>
+        /// <returns>True if successful; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+
+        /// <summary>
+        /// Destroys the specified menu and frees any memory that the menu occupies.
+        /// </summary>
+        /// <param name="hWnd">Handle to the menu to be destroyed.</param>
+        /// <returns>True if successful; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DestroyMenu(IntPtr hWnd);
+
+        /// <summary>
+        /// Enumerates the child windows of a parent window.
+        /// </summary>
+        /// <param name="hWndParent">Handle to the parent window.</param>
+        /// <param name="lpEnumFunc">The callback function to be called for each child window.</param>
+        /// <param name="lParam">Pointer to application-defined data.</param>
+        /// <returns>True if successful; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumChildWindows(IntPtr hWndParent, EnumChildProc lpEnumFunc, IntPtr lParam);
+
+        /// <summary>
+        /// Sends the specified message to a window or windows.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <param name="Msg">The message to be sent.</param>
+        /// <param name="wParam">Additional message-specific information.</param>
+        /// <param name="lParam">Additional message-specific information.</param>
+        /// <returns>The result of the message processing; it depends on the message sent.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        /// <summary>
+        /// Enables the current process to be DPI-aware.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetProcessDPIAware();
+
+        /// <summary>
+        /// Retrieves a handle to the device context (DC) for the specified window or for the entire screen.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window or screen.</param>
+        /// <returns>A handle to the DC.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern IntPtr GetDC(IntPtr hWnd);
+
+        /// <summary>
+        /// Releases a device context (DC), freeing the DC for use by other applications.
+        /// </summary>
+        /// <param name="hWnd">Handle to the window.</param>
+        /// <param name="hDC">Handle to the DC to be released.</param>
+        /// <returns>1 if successful; otherwise, 0.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        /// <summary>
+        /// Retrieves a handle to the display monitor that is nearest to the specified window.
+        /// </summary>
+        /// <param name="hwnd">Handle to the window.</param>
+        /// <param name="dwFlags">Determines the function's return value if the window does not intersect any display monitor.</param>
+        /// <returns>A handle to the display monitor.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        /// <summary>
+        /// Retrieves the DPI of the display for the given window.
+        /// </summary>
+        /// <param name="hwnd">Handle to the window.</param>
+        /// <returns>The DPI for the display where the window is located.</returns>
+        [DllImport("user32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern uint GetDpiForWindow(IntPtr hwnd);
+
+        /// <summary>
+        /// Sends a message to the specified window, allowing the message to return immediately without waiting for the recipient to process the message.
+        /// </summary>
+        /// <param name="hWnd">A handle to the window whose window procedure will receive the message. If this parameter is <see cref="IntPtr.Zero"/>, the message is sent to all top-level windows in the system.</param>
+        /// <param name="Msg">The message to be sent.</param>
+        /// <param name="wParam">Additional message-specific information.</param>
+        /// <param name="lParam">Additional message-specific information.</param>
+        /// <returns>
+        /// If the function succeeds, the return value is <c>true</c>. If the function fails, the return value is <c>false</c>. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SendNotifyMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+        /// <summary>
+        /// Sends the specified message to a window or windows. If the window was created by the calling thread, SendMessageTimeout calls the window procedure for the window and does not return until the window procedure has processed the message.
+        /// </summary>
+        /// <param name="hWnd">A handle to the window whose window procedure will receive the message. If this parameter is <see cref="IntPtr.Zero"/>, the message is sent to all top-level windows in the system.</param>
+        /// <param name="Msg">The message to be sent.</param>
+        /// <param name="wParam">Additional message-specific information.</param>
+        /// <param name="lParam">The message string to send, or <c>null</c> for no string.</param>
+        /// <param name="fuFlags">The behavior of this function. This parameter can be one or more of the following values: <see cref="SMTO_NORMAL"/>, <see cref="SMTO_BLOCK"/>, <see cref="SMTO_ABORTIFHUNG"/>, or <see cref="SMTO_NOTIMEOUTIFNOTHUNG"/>.</param>
+        /// <param name="uTimeout">The duration, in milliseconds, of the time-out period.</param>
+        /// <param name="lpdwResult">Receives the result of the message processing.</param>
+        /// <returns>The return value is the result of the message processing, which depends on the message sent.</returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, string? lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult);
+
+        /// <summary>
+        /// Notifies the system of an event that an application has performed.
+        /// </summary>
+        /// <param name="eventId">Describes the event that has occurred. This parameter can be one of the values from the <see cref="SHCNE"/> enumeration.</param>
+        /// <param name="flags">Flags that indicate the meaning of the <paramref name="item1"/> and <paramref name="item2"/> parameters. This parameter can be one or more of the values from the <see cref="SHCNF"/> enumeration.</param>
+        /// <param name="item1">A handle to the first item involved in the event.</param>
+        /// <param name="item2">A handle to the second item involved in the event. This parameter is optional and may be <see cref="IntPtr.Zero"/>.</param>
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);
+
+        /// <summary>
+        /// Loads a string resource from the specified module's executable file and copies the string into a <see cref="StringBuilder"/>.
+        /// </summary>
+        /// <param name="hInstance">A handle to an instance of the module whose executable file contains the string resource.</param>
+        /// <param name="uID">The identifier of the string to be loaded.</param>
+        /// <param name="lpBuffer">The <see cref="StringBuilder"/> that receives the string.</param>
+        /// <param name="nBufferMax">The maximum number of characters to be copied into the buffer.</param>
+        /// <returns>
+        /// If the function succeeds, the return value is the number of characters copied into the buffer, not including the terminating null character.
+        /// If the function fails, the return value is 0. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </returns>
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [System.Security.SecurityCritical]
+        public static extern int LoadString(SafeLibraryHandle hInstance, int uID, StringBuilder lpBuffer, int nBufferMax);
 
         #endregion
 
@@ -94,7 +336,7 @@ namespace PSADT.PInvoke
         /// <returns>If the function finds the file, the return value is a nonzero value. If the function does not find the file, the return value is zero.</returns>
         [DllImport("shlwapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool PathFindOnPath([In, Out] StringBuilder pszFile, [In, Optional] string[]? ppszOtherDirs);
+        public static extern bool PathFindOnPath([In, Out] StringBuilder pszFile, [In, Optional] string[] ppszOtherDirs);
 
         #endregion
 
@@ -195,6 +437,13 @@ namespace PSADT.PInvoke
         [DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Unicode, ExactSpelling = true)]
         public static extern uint GetCurrentProcessId();
 
+        /// <summary>
+        /// Retrieves the identifier of the calling thread.
+        /// </summary>
+        /// <returns>The thread identifier of the calling thread.</returns>
+        [DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int GetCurrentThreadId();
+
         /// <summary>Converts a file time to system time format. System time is based on Coordinated Universal Time (UTC).</summary>
     	/// <param name="lpFileTime">
     	/// A pointer to a FILETIME structure containing the file time to be converted to system (UTC) date and time format. This value must
@@ -257,7 +506,7 @@ namespace PSADT.PInvoke
         /// <param name="hNamedPipe">A handle to the server end of a named pipe instance.</param>
         /// <param name="lpOverlapped">A pointer to an OVERLAPPED structure.</param>
         /// <returns>If the function succeeds, the return value is nonzero.</returns>
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool ConnectNamedPipe(SafePipeHandle hNamedPipe, IntPtr lpOverlapped);
 
@@ -283,6 +532,34 @@ namespace PSADT.PInvoke
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetNamedPipeClientProcessId(IntPtr Pipe, out uint ClientProcessId);
+
+        /// <summary>
+        /// Loads the specified module into the address space of the calling process. The module can be a dynamic-link library (DLL) or an executable file.
+        /// </summary>
+        /// <param name="lpLibFileName">The name of the module to be loaded. This can be either a full path or a filename without a path.</param>
+        /// <param name="hFile">Reserved; must be <see cref="SafeFileHandle.InvalidHandle"/> or <see cref="IntPtr.Zero"/>.</param>
+        /// <param name="dwFlags">The action to be taken when loading the module. This parameter can include one or more of the <see cref="LoadLibraryExFlags"/>.</param>
+        /// <returns>
+        /// If the function succeeds, the return value is a handle to the loaded module. If the function fails, the return value is <see cref="SafeLibraryHandle.InvalidHandle"/>.
+        /// To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </returns>
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern SafeLibraryHandle LoadLibraryEx(
+            [MarshalAs(UnmanagedType.LPTStr)] string lpLibFileName,
+            SafeFileHandle hFile,
+            LoadLibraryExFlags dwFlags);
+
+        /// <summary>
+        /// Frees the loaded dynamic-link library (DLL) module and, if necessary, decrements its reference count.
+        /// When the reference count reaches zero, the module is unloaded from the address space of the calling process.
+        /// </summary>
+        /// <param name="hModule">A handle to the loaded DLL module. The <see cref="LoadLibraryEx"/> function returns this handle.</param>
+        /// <returns>
+        /// If the function succeeds, the return value is <c>true</c>. If the function fails, the return value is <c>false</c>. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </returns>
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool FreeLibrary(IntPtr hModule);
 
         #endregion
 
@@ -525,7 +802,7 @@ namespace PSADT.PInvoke
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool LookupPrivilegeValue(
-            string? lpSystemName,
+            string lpSystemName,
             string lpName,
             out LUID lpLuid);
 
@@ -591,7 +868,7 @@ namespace PSADT.PInvoke
         public static extern bool CreateEnvironmentBlock(out SafeEnvironmentBlock lpEnvironment, SafeHandle hToken, bool bInherit);
 
         /// <summary>
-        /// Destroys an environment block created by the CreateTokenEnvironmentBlock function.
+        /// Destroys an environment block created by the CreateEnvironmentBlock function.
         /// </summary>
         /// <param name="lpEnvironment">A pointer to the environment block to be destroyed.</param>
         /// <returns>If the function succeeds, the return value is true.</returns>
@@ -642,8 +919,16 @@ namespace PSADT.PInvoke
         /// following values.
         /// </para>
         /// </returns>
-        [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern IntPtr SHGetFileInfo(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, int cbFileInfo, SHGFI uFlags);
+
+        /// <summary>
+        /// Retrieves the current notification state of the user.
+        /// </summary>
+        /// <param name="pquns">An output parameter that receives the user notification state.</param>
+        /// <returns>An integer representing the status of the query.</returns>
+        [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern int SHQueryUserNotificationState(out UserNotificationState pquns);
 
         #endregion
 
@@ -659,13 +944,73 @@ namespace PSADT.PInvoke
         public static extern bool CryptCATAdminReleaseContext(IntPtr hCatAdmin, uint dwFlags);
 
         [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool CryptCATAdminCalcHashFromFileHandle(SafeFileHandle hFile, ref uint pcbHash, [Out] byte[]? pbHash, uint dwFlags);
+        public static extern bool CryptCATAdminCalcHashFromFileHandle(SafeFileHandle hFile, ref uint pcbHash, [Out] byte[] pbHash, uint dwFlags);
 
         [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern IntPtr CryptCATAdminEnumCatalogFromHash(SafeCatAdminHandle hCatAdmin, [MarshalAs(UnmanagedType.LPArray)] byte[] pbHash, uint cbHash, uint dwFlags, IntPtr phPrevCatInfo);
 
         [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CryptCATCatalogInfoFromContext(IntPtr hCatInfo, IntPtr psCatInfo, uint dwFlags);
+
+        #endregion
+
+        #region PInvoke: shcore.dll
+
+        /// <summary>
+        /// Retrieves the DPI for a given monitor.
+        /// </summary>
+        /// <param name="hMonitor">Handle to the monitor.</param>
+        /// <param name="dpiType">The DPI type to retrieve.</param>
+        /// <param name="dpiX">The horizontal DPI.</param>
+        /// <param name="dpiY">The vertical DPI.</param>
+        /// <returns>The status of the operation.</returns>
+        [DllImport("shcore.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int GetDpiForMonitor(IntPtr hMonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+
+        #endregion
+
+        #region PInvoke: gdi32.dll
+
+        /// <summary>
+        /// Retrieves device-specific information for the specified device context.
+        /// </summary>
+        /// <param name="hDC">A handle to the device context.</param>
+        /// <param name="nIndex">The index of the capability to retrieve. This can be one of the values from the <see cref="DeviceCap"/> enumeration.</param>
+        /// <returns>The value of the requested device capability.</returns>
+        [DllImport("gdi32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int GetDeviceCaps(IntPtr hDC, int nIndex);
+
+        #endregion
+
+        #region PInvoke: oleaut32.dll
+
+        /// <summary>
+        /// Retrieves the current thread's error information and returns it as a pointer to an IErrorInfo interface.
+        /// </summary>
+        /// <param name="dwReserved">
+        /// Reserved. This parameter must be zero.
+        /// </param>
+        /// <param name="errorInfoHandle">
+        /// When this method returns, contains a handle to the error information object associated with the current thread.
+        /// </param>
+        /// <returns>
+        /// Returns S_OK if successful; otherwise, an HRESULT error code.
+        /// </returns>
+        /// <remarks>
+        /// This method is a platform invocation of the 'GetErrorInfo' function from the 'oleaut32.dll'.
+        /// It retrieves the IErrorInfo interface for the current thread.
+        /// </remarks>
+        /// <seealso href="https://learn.microsoft.com/en-us/windows/win32/api/oleauto/nf-oleauto-geterrorinfo">
+        /// MSDN documentation for GetErrorInfo.
+        /// </seealso>
+        [DllImport("oleaut32.dll", SetLastError = false, ExactSpelling = true)]
+        public static extern int GetErrorInfo([Optional] uint dwReserved, out SafeErrorInfoHandle errorInfoHandle);
+
+        #endregion
+
+        #region PInvoke: name.dll
+
+
 
         #endregion
     }

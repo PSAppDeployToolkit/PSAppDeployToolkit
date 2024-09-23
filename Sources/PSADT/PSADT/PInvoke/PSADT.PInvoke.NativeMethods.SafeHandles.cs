@@ -346,9 +346,6 @@ namespace PSADT.PInvoke
     /// </summary>
     public sealed class SafeCatAdminHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
-        [DllImport("wintrust.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern bool CryptCATAdminReleaseContext(IntPtr hCatAdmin, uint dwFlags);
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SafeCatAdminHandle"/> class.
         /// </summary>
@@ -360,7 +357,7 @@ namespace PSADT.PInvoke
         /// <returns>True if the handle was released successfully; otherwise, false.</returns>
         protected override bool ReleaseHandle()
         {
-            return CryptCATAdminReleaseContext(handle, 0);
+            return NativeMethods.CryptCATAdminReleaseContext(handle, 0);
         }
     }
 
@@ -380,6 +377,30 @@ namespace PSADT.PInvoke
         {
             Marshal.FreeHGlobal(handle);
             return true;
+        }
+    }
+
+    public sealed class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    {
+        public SafeLibraryHandle() : base(true) { }
+
+        protected override bool ReleaseHandle() => NativeMethods.FreeLibrary(handle);
+    }
+
+    public class SafeErrorInfoHandle : SafeHandle
+    {
+        public SafeErrorInfoHandle() : base(IntPtr.Zero, true) { }
+
+        public override bool IsInvalid => handle == IntPtr.Zero;
+
+        protected override bool ReleaseHandle()
+        {
+            if (!IsInvalid)
+            {
+                Marshal.Release(handle);
+                return true;
+            }
+            return false;
         }
     }
 }

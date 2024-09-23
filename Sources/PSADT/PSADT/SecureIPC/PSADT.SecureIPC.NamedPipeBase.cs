@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.IO.Pipes;
 using System.Threading;
@@ -6,14 +7,13 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
+using System.Management.Automation;
 using System.Runtime.InteropServices;
 using PSADT.Trust;
 using PSADT.PathEx;
 using PSADT.PInvoke;
-using PSADT.ConsoleEx;
-using System.IO;
-using System.Management.Automation;
 using PSADT.Shared;
+using PSADT.Logging;
 
 namespace PSADT.SecureIPC
 {
@@ -362,7 +362,7 @@ namespace PSADT.SecureIPC
                     string processName = process.ProcessName.ToLowerInvariant();
                     if (processName != "powershell" && processName != "pwsh")
                     {
-                        ConsoleHelper.DebugWrite($"The pipe connected process is not [powershell] or [pwsh].", MessageType.Debug);
+                        UnifiedLogger.Create().Message($"The pipe connected process is not [powershell] or [pwsh].").Severity(LogLevel.Debug);
                         return false;
                     }
                 }
@@ -373,13 +373,13 @@ namespace PSADT.SecureIPC
 
                 if (string.IsNullOrEmpty(filePath))
                 {
-                    ConsoleHelper.DebugWrite($"Failed to resolve executable path so that we could validate the client process is a PowerShell host.", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Failed to resolve executable path so that we could validate the client process is a PowerShell host.").Severity(LogLevel.Debug);
                     return false;
                 }
 
                 SignatureVerification result = verifier.Verify(filePath!);
-                ConsoleHelper.DebugWrite($"Client process with path [{filePath}] is {(result.IsAuthenticodeSigned ? "" : "not")} [AuthenticodeSigned].", MessageType.Debug);
-                ConsoleHelper.DebugWrite($"Client process with path [{filePath}] is {(result.IsCatalogSigned ? "" : "not")} [CatalogSigned].", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Client process with path [{filePath}] is {(result.IsAuthenticodeSigned ? "" : "not")} [AuthenticodeSigned].").Severity(LogLevel.Debug);
+                UnifiedLogger.Create().Message($"Client process with path [{filePath}] is {(result.IsCatalogSigned ? "" : "not")} [CatalogSigned].").Severity(LogLevel.Debug);
 
                 if (!result.IsAuthenticodeSigned && !result.IsCatalogSigned)
                 {
@@ -388,7 +388,7 @@ namespace PSADT.SecureIPC
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to verify the connected process.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to verify the connected process.").Error(ex);
                 return false;
             }
 

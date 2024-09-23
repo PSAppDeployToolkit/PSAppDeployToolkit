@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using PSADT.ConsoleEx;
 using System.Threading;
 using System.Threading.Tasks;
+using PSADT.Logging;
 
 namespace PSADT.ProcessEx
 {
@@ -98,7 +98,7 @@ namespace PSADT.ProcessEx
             {
                 if (!this.RedirectStandardOutput && !this.RedirectStandardError)
                 {
-                    ConsoleHelper.DebugWrite("Process does not support output redirection. This is likely a GUI application.", MessageType.Info);
+                    UnifiedLogger.Create().Message($"Process [{this.ProcessId}] does not support output redirection. This is likely a GUI application.").Severity(LogLevel.Information);
                     return;
                 }
 
@@ -119,7 +119,7 @@ namespace PSADT.ProcessEx
                         this.StandardErrorRedirectionTask = RedirectToFileAsync(this.Process.StandardError, stderrFile, _redirectionCancellationSource.Token);
                     }
 
-                    ConsoleHelper.DebugWrite($"Configured output redirection to files: stdout={stdoutFile}, stderr={stderrFile}", MessageType.Debug);
+                    UnifiedLogger.Create().Message($"Configured output redirection to files: stdout={stdoutFile}, stderr={stderrFile}").Severity(LogLevel.Debug);
                 }
                 else
                 {
@@ -132,12 +132,12 @@ namespace PSADT.ProcessEx
                         this.StandardErrorRedirectionTask = RedirectToConsoleAsync(this.Process.StandardError, Console.Error, _redirectionCancellationSource.Token);
                     }
 
-                    ConsoleHelper.DebugWrite("Configured output redirection to console", MessageType.Debug);
+                    UnifiedLogger.Create().Message("Configured output redirection to console").Severity(LogLevel.Debug);
                 }
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error configuring output redirection: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"An error occurred while waiting for redirection monitors to complete:{Environment.NewLine}{ex.Message}").Error(ex);
             }
         }
 
@@ -148,11 +148,11 @@ namespace PSADT.ProcessEx
                 using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read);
                 using var writer = new StreamWriter(fileStream);
                 await RedirectStreamAsync(reader, writer, cancellationToken);
-                ConsoleHelper.DebugWrite($"Completed redirection to file [{filePath}].", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Completed redirection to file [{filePath}].").Severity(LogLevel.Debug);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error redirecting to file [{filePath}]: {ex.Message}.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Error redirecting to file [{filePath}]:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }
@@ -165,7 +165,7 @@ namespace PSADT.ProcessEx
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error redirecting to console: {ex.Message}.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Error redirecting to console:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }
@@ -190,8 +190,7 @@ namespace PSADT.ProcessEx
             }
             catch (Exception ex)
             {
-
-                ConsoleHelper.DebugWrite($"Failed to redirect stream: {ex.Message}.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Error redirecting to console:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }
