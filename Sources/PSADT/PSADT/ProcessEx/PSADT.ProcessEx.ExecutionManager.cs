@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using PSADT.ConsoleEx;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using PSADT.Logging;
 
 namespace PSADT.ProcessEx
 {
@@ -47,7 +47,7 @@ namespace PSADT.ProcessEx
                 if (runningProcesses.Count == 0)
                     return new ExecutionResult();
 
-                ConsoleHelper.DebugWrite($"Waiting for [{runningProcesses.Count}] processes to exit.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Waiting for [{runningProcesses.Count}] processes to exit.").Severity(LogLevel.Debug);
 
                 var tasks = runningProcesses.Select(p => WaitForExitAsync(p, cancellationToken)).ToArray();
                 var timeoutTask = Task.Delay(timeout, cancellationToken);
@@ -72,13 +72,13 @@ namespace PSADT.ProcessEx
                         p.SessionInfo.Username))
                     .ToList();
 
-                ConsoleHelper.DebugWrite($"[{exitedProcesses.Count}] processes have exited.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"[{exitedProcesses.Count}] processes have exited.").Severity(LogLevel.Debug);
 
                 return new ExecutionResult(completedTask == timeoutTask, exitedProcesses);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error in WaitForAllProcessExitsAsync: {ex.Message}.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"An error occurred while waiting for processes to exit:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }
@@ -109,7 +109,7 @@ namespace PSADT.ProcessEx
 
             cancellationToken.Register(() => tcs.TrySetCanceled());
 
-            ConsoleHelper.DebugWrite($"Waiting for process id [{process.Id}] to exit.", MessageType.Debug);
+            UnifiedLogger.Create().Message($"Waiting for process id [{process.Id}] to exit.").Severity(LogLevel.Debug);
 
             return process.HasExited ? Task.CompletedTask : tcs.Task;
         }
@@ -133,21 +133,21 @@ namespace PSADT.ProcessEx
                         try
                         {
                             process.Process?.Kill();
-                            ConsoleHelper.DebugWrite($"Terminated process id [{process.ProcessId}]", MessageType.Info);
+                            UnifiedLogger.Create().Message($"Terminated process id [{process.ProcessId}").Severity(LogLevel.Information);
                         }
                         catch (Exception ex)
                         {
-                            ConsoleHelper.DebugWrite($"Failed to terminate process id [{process.ProcessId}]", MessageType.Error, ex);
+                            UnifiedLogger.Create().Message($"Failed to terminate process id [{process.ProcessId}").Error(ex);
                         }
                     }
                 }).ToList();
 
                 await Task.WhenAll(tasks);
-                ConsoleHelper.DebugWrite("All redirection monitors stopped.", MessageType.Debug);
+                UnifiedLogger.Create().Message("All redirection monitors stopped.").Severity(LogLevel.Debug);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error in StopAllRedirectionMonitorsAsync: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"An error occurred while stopping redirection monitors:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }
@@ -166,14 +166,14 @@ namespace PSADT.ProcessEx
                     .Select(t => t!)
                     .ToArray();
 
-                ConsoleHelper.DebugWrite($"Waiting for [{tasks.Length}] redirection monitors to complete.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Waiting for [{tasks.Length}] redirection monitors to complete.").Severity(LogLevel.Debug);
 
                 await Task.WhenAll(tasks);
-                ConsoleHelper.DebugWrite("All redirection monitors completed.", MessageType.Debug);
+                UnifiedLogger.Create().Message("All redirection monitors completed.").Severity(LogLevel.Debug);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error in WaitForAllRedirectionMonitorsAsync: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"An error occurred while waiting for redirection monitors to complete:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using PSADT.Account;
+using PSADT.Accounts;
 using System.Security;
-using Microsoft.Win32;
 using System.Collections.Generic;
 
 namespace PSADT.UserProfile
@@ -37,7 +36,7 @@ namespace PSADT.UserProfile
 
             try
             {
-                using var profileListKey = Registry.LocalMachine.OpenSubKey(ProfileListSubKey)
+                using var profileListKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(ProfileListSubKey)
                     ?? throw new InvalidOperationException($"Unable to get user profile information from the registry because {ProfileListSubKey} does not exist.");
                 profileSidList.AddRange(profileListKey.GetSubKeyNames());
 

@@ -110,7 +110,7 @@ namespace PSADT.ConsoleEx
             // Append the message to the log file
             try
             {
-                using StreamWriter writer = new StreamWriter(@$"{PathHelper.GetExecutingAssemblyDirectoryPath()}\{logFilePath}", append: true);
+                using StreamWriter writer = new StreamWriter(@$"{PathHelper.GetExecutingAssemblyDirectory()}\{logFilePath}", append: true);
                 writer.WriteLine(fullMessage);
                 if (messageType == MessageType.Error && exception != null)
                 {

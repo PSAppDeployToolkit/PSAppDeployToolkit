@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
-using PSADT.PInvoke;
-using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using PSADT.PInvoke;
 
 namespace PSADT.OperatingSystem
 {
@@ -11,7 +10,7 @@ namespace PSADT.OperatingSystem
     {
         private static string? GetValue(string keyName, string valueName)
         {
-            using (var key = Registry.LocalMachine.OpenSubKey(keyName))
+            using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(keyName))
             {
                 return key?.GetValue(valueName)?.ToString();
             }
@@ -19,7 +18,7 @@ namespace PSADT.OperatingSystem
 
         private static bool TestValue(string keyName, string valueName)
         {
-            using (var key = Registry.LocalMachine.OpenSubKey(keyName))
+            using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(keyName))
             {
                 return key?.GetValue(valueName) != null;
             }

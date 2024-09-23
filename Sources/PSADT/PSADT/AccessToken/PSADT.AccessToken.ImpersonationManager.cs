@@ -128,11 +128,6 @@ namespace PSADT.AccessToken
             {
                 throw new InvalidOperationException("Impersonation of SYSTEM account is not allowed.");
             }
-
-            if (isAdmin && !currentIsAdmin && !_options.AllowNonAdminToAdminImpersonation)
-            {
-                throw new InvalidOperationException("Non-admin to admin impersonation is not allowed.");
-            }
         }
 
         /// <summary>
@@ -154,11 +149,6 @@ namespace PSADT.AccessToken
             using (tokenHandle)
             {
                 SafeAccessToken adjustedTokenHandle = tokenHandle;
-
-                if (_options.DoNotCheckAppLockerRulesOrApplySRP)
-                {
-                    TokenManager.CreateSandboxInertToken(tokenHandle, out adjustedTokenHandle);
-                }
 
                 try
                 {

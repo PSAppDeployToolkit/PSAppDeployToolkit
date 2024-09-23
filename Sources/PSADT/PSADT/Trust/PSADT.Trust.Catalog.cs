@@ -66,7 +66,8 @@ namespace PSADT.Trust
                 }
 
                 uint hashSize = 0;
-                NativeMethods.CryptCATAdminCalcHashFromFileHandle(hFile, ref hashSize, null, 0);
+                byte[] emptyHash = Array.Empty<byte>();
+                NativeMethods.CryptCATAdminCalcHashFromFileHandle(hFile, ref hashSize, emptyHash, 0);
                 byte[] hash = new byte[hashSize];
                 if (!NativeMethods.CryptCATAdminCalcHashFromFileHandle(hFile, ref hashSize, hash, 0))
                 {

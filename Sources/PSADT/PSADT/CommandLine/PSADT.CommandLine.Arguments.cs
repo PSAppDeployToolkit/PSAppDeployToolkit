@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using PSADT.PInvoke;
-using PSADT.ConsoleEx;
 using PSADT.ProcessEx;
 using System.Reflection;
 using System.Collections.Generic;
+using PSADT.Logging;
 
 namespace PSADT.CommandLine
 {
@@ -122,8 +122,8 @@ namespace PSADT.CommandLine
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error parsing command-line arguments: {ex.Message}", MessageType.Error, ex);
-                ConsoleHelper.DebugWrite("Use [--Help] to see usage information.");
+                UnifiedLogger.Create().Message($"Error parsing command-line arguments:{Environment.NewLine}{ex.Message}").Error(ex);
+                UnifiedLogger.Create().Message("Use [--Help] to see usage information.").Severity(LogLevel.Warning);
                 Environment.Exit(1);
             }
 
@@ -358,7 +358,7 @@ namespace PSADT.CommandLine
             var filePathProperty = typeof(T).GetProperty("FilePath");
             if (filePathProperty != null && string.IsNullOrWhiteSpace((string)filePathProperty!.GetValue(result)!))
             {
-                ConsoleHelper.DebugWrite("Command-line property [--FilePath] is either not set or is empty after parsing of arguments.", MessageType.Warning);
+                UnifiedLogger.Create().Message("Command-line property [--FilePath] is either not set or is empty after parsing of arguments.").Severity(LogLevel.Warning);
             }
         }
     }

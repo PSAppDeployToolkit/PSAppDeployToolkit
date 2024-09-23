@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq;
 using PSADT.PInvoke;
-using Microsoft.Win32;
 using System.Security;
-using PSADT.ConsoleEx;
 using System.ComponentModel;
 using System.Security.Principal;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using PSADT.Logging;
 
 namespace PSADT.AccessToken
 {
@@ -30,12 +29,12 @@ namespace PSADT.AccessToken
                     throw new Win32Exception(Marshal.GetLastWin32Error(), $"'WTSQueryUserToken' failed to obtain the access token of the logged-on user specified by the session id [{sessionId}].");
                 }
 
-                ConsoleHelper.DebugWrite($"User token queried successfully for session id [{sessionId}].", MessageType.Debug);
+                UnifiedLogger.Create().Message($"User token queried successfully for session id [{sessionId}].").Severity(LogLevel.Debug);
                 return true;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to query user token for session id [{sessionId}].", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to query user token for session id [{sessionId}].").Error(ex);
                 securityIdentificationToken = SafeAccessToken.Invalid;
                 return false;
             }
@@ -64,7 +63,7 @@ namespace PSADT.AccessToken
                     throw new Win32Exception(Marshal.GetLastWin32Error(), $"'DuplicateTokenEx' failed to create a primary access token from the existing token.");
                 }
 
-                ConsoleHelper.DebugWrite("Successfully duplicated token as a primary token.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
 
                 // This assumes that the caller had no further use for the token.
                 if (!token.IsInvalid)
@@ -76,7 +75,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to duplicate token as primary token.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to duplicate token as primary token.").Error(ex);
                 primaryToken = SafeAccessToken.Invalid;
                 return false;
             }
@@ -106,7 +105,7 @@ namespace PSADT.AccessToken
                     throw new Win32Exception(Marshal.GetLastWin32Error(), $"'DuplicateTokenEx' failed to create an impersonation token from the existing token.");
                 }
 
-                ConsoleHelper.DebugWrite("Successfully duplicated token as an impersonation token.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
 
                 // This assumes that the caller had no further use for the token.
                 if (!token.IsInvalid)
@@ -118,7 +117,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to duplicate token as an impersonation token.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to duplicate token as an impersonation token.").Error(ex);
                 impersonationToken = SafeAccessToken.Invalid;
                 return false;
             }
@@ -132,16 +131,16 @@ namespace PSADT.AccessToken
             try
             {
                 windowsIdentity = new WindowsIdentity(token.DangerousGetHandle());
-                ConsoleHelper.DebugWrite("WindowsIdentity created successfully from token.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
 
                 windowsPrincipal = new WindowsPrincipal(windowsIdentity);
-                ConsoleHelper.DebugWrite("WindowsPrincipal created successfully from WindowsIdentity.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
 
                 return true;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite("Failed to get WindowsIdentity or WindowsPrincipal from token.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get WindowsIdentity or WindowsPrincipal from token.").Error(ex);
                 return false;
             }
         }
@@ -155,7 +154,7 @@ namespace PSADT.AccessToken
 
             try
             {
-                using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", false))
+                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", false))
                 {
                     if (key != null)
                     {
@@ -166,7 +165,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to check UAC status: {ex.Message}", MessageType.Warning);
+                UnifiedLogger.Create().Message($"Failed to check UAC status.").Error(ex).Severity(LogLevel.Warning);
             }
 
             return false; // Default to false if we can't determine the UAC status
@@ -221,7 +220,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get token elevation type.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get token elevation type.").Error(ex);
                 throw;
             }
         }
@@ -235,7 +234,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to determine if the token is elevated.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to determine if the token is elevated.").Error(ex);
                 throw;
             }
         }
@@ -275,7 +274,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get linked elevated token: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get linked elevated token: {ex.Message}").Error(ex);
                 return false;
             }
         }
@@ -314,7 +313,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get linked standard token: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get linked standard token: {ex.Message}").Error(ex);
                 return false;
             }
         }
@@ -350,7 +349,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to determine if token is local admin: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to determine if token is local admin: {ex.Message}").Error(ex);
                 return false;
             }
         }
@@ -376,17 +375,17 @@ namespace PSADT.AccessToken
                                             ex.NativeErrorCode == NativeMethods.ERROR_NOT_FOUND)
             {
                 // These error codes indicate that there's no linked token, which is not necessarily an error
-                ConsoleHelper.DebugWrite($"No linked token found. Error code [{ex.NativeErrorCode}].", MessageType.Info);
+                UnifiedLogger.Create().Message($"No linked token found. Error code [{ex.NativeErrorCode}].").Severity(LogLevel.Debug);
                 return false;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to get linked token: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to get linked token: {ex.Message}").Error(ex);
                 return false;
             }
         }
 
-        /// <summary>
+        /*/// <summary>
         /// Creates a restricted token with the SANDBOX_INERT flag. If set, the system does not check
         /// AppLocker rules or apply Software Restriction Policies.
         /// </summary>
@@ -403,7 +402,7 @@ namespace PSADT.AccessToken
             {
                 throw new InvalidOperationException("Failed to create restricted token.", new Win32Exception(Marshal.GetLastWin32Error()));
             }
-        }
+        }*/
 
         /// <summary>
         /// Creates an environment block for the specified user token, optionally inheriting the parent environment and adding additional variables.
@@ -435,12 +434,12 @@ namespace PSADT.AccessToken
                     envBlock = CreateEnvironmentBlockFromDictionary(environmentVars);
                 }
 
-                ConsoleHelper.DebugWrite("Environment block created successfully.", MessageType.Debug);
+                UnifiedLogger.Create().Message("Environment block created successfully.").Severity(LogLevel.Debug);
                 return envBlock;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to create environment block.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to create environment block.").Error(ex);
                 throw;
             }
         }
@@ -473,12 +472,12 @@ namespace PSADT.AccessToken
                     offset += (entry.Length + 1) * 2;
                 }
 
-                ConsoleHelper.DebugWrite($"Converted environment block to dictionary with [{result.Count}] entries.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Converted environment block to dictionary with [{result.Count}] entries.").Severity(LogLevel.Debug);
                 return result;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to convert environment block to dictionary.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to convert environment block to dictionary.").Error(ex);
                 throw;
             }
         }
@@ -497,12 +496,12 @@ namespace PSADT.AccessToken
                 var envBlockPtr = Marshal.AllocHGlobal(environmentBytes.Length);
                 Marshal.Copy(environmentBytes, 0, envBlockPtr, environmentBytes.Length);
 
-                ConsoleHelper.DebugWrite($"Created environment block from dictionary with [{environmentVars.Count}] entries.", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Created environment block from dictionary with [{environmentVars.Count}] entries.").Severity(LogLevel.Debug);
                 return new SafeEnvironmentBlock(envBlockPtr);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to create environment block from dictionary.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to create environment block from dictionary.").Error(ex);
                 throw;
             }
         }

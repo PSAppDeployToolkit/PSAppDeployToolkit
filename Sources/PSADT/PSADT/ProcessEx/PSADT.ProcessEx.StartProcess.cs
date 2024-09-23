@@ -1,12 +1,7 @@
 using System;
-using PSADT.PE;
 using System.IO;
 using System.Linq;
 using System.Text;
-using PSADT.PathEx;
-using PSADT.PInvoke;
-using PSADT.ConsoleEx;
-using PSADT.WTSSession;
 using System.Threading;
 using System.Diagnostics;
 using System.Collections;
@@ -16,7 +11,13 @@ using System.Collections.Generic;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 using System.Collections.Specialized;
+using PSADT.PE;
+using PSADT.PathEx;
+using PSADT.PInvoke;
+using PSADT.Logging;
+using PSADT.WTSSession;
 using PSADT.AccessToken;
+using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.ProcessEx
 {
@@ -47,28 +48,28 @@ namespace PSADT.ProcessEx
             {
                 options.FilePath = PathHelper.ResolveExecutableFullPath(options.FilePath) ?? throw new InvalidOperationException("Resolved file path is null or empty.");
 
-                ConsoleHelper.DebugWrite($"Executing process [{options.FilePath}].", MessageType.Info);
+                UnifiedLogger.Create().Message($"Executing process [{options.FilePath}].").Severity(LogLevel.Information);
 
                 if (options.AllActiveUserSessions)
                 {
-                    ConsoleHelper.DebugWrite("Executing process in all active user sessions.", MessageType.Info);
+                    UnifiedLogger.Create().Message("Executing process in all active user sessions.").Severity(LogLevel.Information);
                     await ExecuteInAllActiveSessionsAsync(options);
                 }
                 else if (options.PrimaryActiveUserSession)
                 {
-                    ConsoleHelper.DebugWrite("Executing process in primary active user session.", MessageType.Info);
+                    UnifiedLogger.Create().Message("Executing process in primary active user session.").Severity(LogLevel.Information);
                     await ExecuteInPrimaryActiveSessionAsync(options);
                 }
                 else if (options.SessionId.HasValue)
                 {
-                    ConsoleHelper.DebugWrite($"Executing process in specified session with id [{options.SessionId.Value}].", MessageType.Info);
+                    UnifiedLogger.Create().Message($"Executing process in specified sessionwith id [{options.SessionId.Value}].").Severity(LogLevel.Information);
                     await ExecuteProcessInSessionAsync(options);
                 }
                 else
                 {
                     options.SessionId = SessionManager.GetCurrentProcessSessionId();
                     options.UpdateUsername(@$"{Environment.UserDomainName}\{Environment.UserName}");
-                    ConsoleHelper.DebugWrite($"Executing process in current session with id [{options.SessionId.Value}].", MessageType.Info);
+                    UnifiedLogger.Create().Message($"Executing process in current session with id [{options.SessionId.Value}].").Severity(LogLevel.Information);
                     await ExecuteProcessInCurrentSessionAsync(options);
                 }
 
@@ -81,7 +82,7 @@ namespace PSADT.ProcessEx
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Process execution failed: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Process execution failed: {ex.Message}").Error(ex);
                 return 60103; // ProcessEx execution failed
             }
             finally
@@ -103,7 +104,7 @@ namespace PSADT.ProcessEx
 
                 if (exitInfo.HasTimedOut)
                 {
-                    ConsoleHelper.DebugWrite("Timeout reached. Stopping redirection monitors and terminating processes.", MessageType.Debug);
+                    UnifiedLogger.Create().Message("Timeout reached. Stopping redirection monitors and terminating processes.").Severity(LogLevel.Information);
                     await _executionManager.StopAllRedirectionMonitorsAsync(options.TerminateOnTimeout);
                 }
 
@@ -113,7 +114,7 @@ namespace PSADT.ProcessEx
                 {
                     foreach (ExecutionDetails process in exitInfo.ExitedProcessInfo)
                     {
-                        ConsoleHelper.DebugWrite($"Process [{process.ProcessName}] with process id [{process.ProcessId}] started in session id [{process.SessionId}] as user [{process.Username}] returned with exit code [{process.ExitCode}].", MessageType.Debug);
+                        UnifiedLogger.Create().Message($"Process [{process.ProcessName}] with process id [{process.ProcessId}] started in session id [{process.SessionId}] as user [{process.Username}] returned with exit code [{process.ExitCode}].").Severity(LogLevel.Debug);
                     }
                 }
 
@@ -126,7 +127,7 @@ namespace PSADT.ProcessEx
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error while waiting for processes: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Error while waiting for processes:{Environment.NewLine}{ex.Message}").Error(ex);
                 return 60104; // Error during process wait
             }
         }
@@ -150,7 +151,7 @@ namespace PSADT.ProcessEx
                     }
                     catch (Exception ex)
                     {
-                        ConsoleHelper.DebugWrite($"Failed to execute process in session {session.SessionId}: {ex.Message}", MessageType.Error, ex);
+                        UnifiedLogger.Create().Message($"Failed to execute process in session {session.SessionId}:{Environment.NewLine}{ex.Message}").Error(ex);
                         // Decide whether to continue with other sessions or throw
                         // For now, we'll log the error and continue with other sessions
                     }
@@ -158,7 +159,7 @@ namespace PSADT.ProcessEx
             }
             else
             {
-                ConsoleHelper.DebugWrite("No active user sessions found.", MessageType.Warning);
+                UnifiedLogger.Create().Message("No active user sessions found.").Severity(LogLevel.Warning);
                 throw new InvalidOperationException("No active user sessions found.");
             }
         }
@@ -180,13 +181,13 @@ namespace PSADT.ProcessEx
                 }
                 catch (Exception ex)
                 {
-                    ConsoleHelper.DebugWrite($"Failed to execute process in primary active session: {ex.Message}.", MessageType.Error, ex);
+                    UnifiedLogger.Create().Message($"Failed to execute process in primary active session:{Environment.NewLine}{ex.Message}").Error(ex);
                     throw;
                 }
             }
             else
             {
-                ConsoleHelper.DebugWrite("No primary active user session found.", MessageType.Warning);
+                UnifiedLogger.Create().Message("No primary active user session found.").Severity(LogLevel.Warning);
                 throw new InvalidOperationException("No primary active user session found.");
             }
         }
@@ -229,13 +230,13 @@ namespace PSADT.ProcessEx
                     throw new InvalidOperationException($"Failed to start process in session [{options.SessionId.Value}].");
                 }
 
-                ConsoleHelper.DebugWrite($"Started process [{managedProcess.Process.ProcessName}] with process id [{managedProcess.Process.Id}] in session id [{options.SessionId.Value}] as user [{options.Username}].", MessageType.Info);
+                UnifiedLogger.Create().Message($"Started process [{managedProcess.Process.ProcessName}] with process id [{managedProcess.Process.Id}] in session id [{options.SessionId.Value}] as user [{options.Username}].").Severity(LogLevel.Information);
 
                 //managedProcess.ConfigureOutputRedirection(options);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error executing process in session [{options.SessionId.Value}]: {ex.Message}.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Error executing process in session [{options.SessionId.Value}]:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }
@@ -258,7 +259,7 @@ namespace PSADT.ProcessEx
                     options.UpdateUsername($@"{Environment.UserDomainName}\{Environment.UserName}");
                 }
 
-                ConsoleHelper.DebugWrite($"Executing process in current session with id [{options.SessionId.Value}].", MessageType.Info);
+                UnifiedLogger.Create().Message($"Executing process in current session with id [{options.SessionId.Value}].").Severity(LogLevel.Information);
 
                 ManagedProcess managedProcess = _executionManager.InitializeManagedProcess(new SessionDetails(options.SessionId.Value, options.Username));
                 managedProcess.IsGuiApplication = ExecutableType.IsGuiApplication(options.FilePath);
@@ -277,13 +278,13 @@ namespace PSADT.ProcessEx
                     throw new InvalidOperationException($"Failed to start process in current session with id [{options.SessionId.Value}].");
                 }
 
-                ConsoleHelper.DebugWrite($"Started process [{managedProcess.Process.ProcessName}] with process id [{managedProcess.Process.Id}] in session id [{options.SessionId.Value}] as user [{options.Username}].", MessageType.Info);
+                UnifiedLogger.Create().Message($"Started process [{managedProcess.Process.ProcessName}] with process id [{managedProcess.Process.Id}] in session id [{options.SessionId.Value}] as user [{options.Username}].").Severity(LogLevel.Information);
 
                 //managedProcess.ConfigureOutputRedirection(options);
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error executing process in current session: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Error executing process in current session:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }
@@ -328,13 +329,13 @@ namespace PSADT.ProcessEx
                     startInfo.Arguments = string.Join(" ", psArgs);
                 }
 
-                ConsoleHelper.DebugWrite($"Created ProcessStartInfo: FileName={startInfo.FileName}, Arguments={startInfo.Arguments}", MessageType.Debug);
+                UnifiedLogger.Create().Message($"Created ProcessStartInfo: FileName={startInfo.FileName}, Arguments={startInfo.Arguments}").Severity(LogLevel.Information);
 
                 return startInfo;
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Error creating ProcessStartInfo: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Error creating ProcessStartInfo:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
         }
@@ -449,7 +450,7 @@ namespace PSADT.ProcessEx
 
                     using (var environmentBlock = TokenManager.CreateTokenEnvironmentBlock(tokenToUse, envVars, inheritEnvironment))
                     {
-                        ConsoleHelper.DebugWrite($"Attempting to start process with CreateProcessAsUser with: FileName [{startInfo.FileName}], Arguments [{string.Join(", ", startInfo.Arguments)}], WorkingDirectory [{startInfo.WorkingDirectory}].", MessageType.Debug);
+                        UnifiedLogger.Create().Message($"Attempting to start process with CreateProcessAsUser with: FileName [{startInfo.FileName}], Arguments [{string.Join(", ", startInfo.Arguments)}], WorkingDirectory [{startInfo.WorkingDirectory}].").Severity(LogLevel.Information);
 
                         if (!NativeMethods.CreateProcessAsUser(
                             tokenToUse,
@@ -464,9 +465,7 @@ namespace PSADT.ProcessEx
                             in startupInfo,
                             out processInfo))
                         {
-                            int error = Marshal.GetLastWin32Error();
-                            ConsoleHelper.DebugWrite($"'CreateProcessAsUser' failed with error code [{error}].", MessageType.Error);
-                            throw new Win32Exception(error, $"'CreateProcessAsUser' failed to start the process [{startInfo.FileName}].");
+                            ErrorHandler.ThrowSystemError($"'CreateProcessAsUser' failed to start the process [{startInfo.FileName}].", SystemErrorType.Win32);
                         }
                     }
 
@@ -487,7 +486,7 @@ namespace PSADT.ProcessEx
                                 catch (InvalidOperationException)
                                 {
                                     // The process has exited or is a console application
-                                    ConsoleHelper.DebugWrite("Process exited before becoming idle or is a console application.", MessageType.Warning);
+                                    UnifiedLogger.Create().Message("Process exited before becoming idle or is a console application.").Severity(LogLevel.Warning);
                                 }
                             });
                         }
@@ -503,7 +502,7 @@ namespace PSADT.ProcessEx
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to start process in session id [{sessionId}]: {ex.Message}.", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to start process in session id [{sessionId}]:{Environment.NewLine}{ex.Message}").Error(ex);
                 throw;
             }
             finally
@@ -539,7 +538,7 @@ namespace PSADT.ProcessEx
         /// <code>
         /// var startInfo = new ProcessStartInfo
         /// {
-        ///     FileName = "example.exe",
+        ///     CallerFileName = "example.exe",
         ///     Arguments = "-someArgument",
         ///     RedirectStandardOutput = true,
         ///     RedirectStandardError = true,
@@ -561,7 +560,7 @@ namespace PSADT.ProcessEx
 
             try
             {
-                ConsoleHelper.DebugWrite($"Attempting to start process: FileName [{startInfo.FileName}], Arguments [{string.Join(", ", startInfo.Arguments)}].", MessageType.Info);
+                UnifiedLogger.Create().Message($"Attempting to start process: FileName [{startInfo.FileName}], Arguments [{string.Join(", ", startInfo.Arguments)}].").Severity(LogLevel.Information);
 
                 if (!process.Start())
                 {
@@ -580,7 +579,7 @@ namespace PSADT.ProcessEx
                         catch (InvalidOperationException)
                         {
                             // The process has exited or is a console application
-                            ConsoleHelper.DebugWrite("Process exited before becoming idle or is a console application.", MessageType.Warning);
+                            UnifiedLogger.Create().Message("Process exited before becoming idle or is a console application.").Severity(LogLevel.Warning);
                         }
                     });
                 }
@@ -589,7 +588,7 @@ namespace PSADT.ProcessEx
             }
             catch (Exception ex)
             {
-                ConsoleHelper.DebugWrite($"Failed to start process: {ex.Message}", MessageType.Error, ex);
+                UnifiedLogger.Create().Message($"Failed to start process: {ex.Message}").Error(ex);
                 throw;
             }
         }
