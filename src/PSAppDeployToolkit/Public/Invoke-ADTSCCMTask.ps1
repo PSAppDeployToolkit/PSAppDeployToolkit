@@ -64,7 +64,7 @@ function Invoke-ADTSCCMTask
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Create a hashtable of Schedule IDs compatible with SCCM Client 2007.
-        [Hashtable]$ScheduleIds = @{
+        $ScheduleIds = @{
             HardwareInventory                        = '{00000000-0000-0000-0000-000000000001}'; # Hardware Inventory Collection Task
             SoftwareInventory                        = '{00000000-0000-0000-0000-000000000002}'; # Software Inventory Collection Task
             HeartbeatDiscovery                       = '{00000000-0000-0000-0000-000000000003}'; # Heartbeat Discovery Cycle
