@@ -130,22 +130,22 @@ function Get-ADTBoundParametersAndDefaultValues
                 $parameters = if ($Invocation.MyCommand.ScriptBlock.Ast -is [System.Management.Automation.Language.FunctionDefinitionAst])
                 {
                     # Test whether this is a simple or advanced function.
-                    if ($Invocation.MyCommand.ScriptBlock.Ast.Parameters)
+                    if ($Invocation.MyCommand.ScriptBlock.Ast.Parameters -and $Invocation.MyCommand.ScriptBlock.Ast.Parameters.Count)
                     {
                         $Invocation.MyCommand.ScriptBlock.Ast.Parameters
                     }
-                    elseif ($Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock)
+                    elseif ($Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock -and $Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock.Count)
                     {
                         $Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock.Parameters
                     }
                 }
-                elseif ($Invocation.MyCommand.ScriptBlock.Ast.ParamBlock)
+                elseif ($Invocation.MyCommand.ScriptBlock.Ast.ParamBlock -and $Invocation.MyCommand.ScriptBlock.Ast.ParamBlock.Count)
                 {
                     $Invocation.MyCommand.ScriptBlock.Ast.ParamBlock.Parameters
                 }
 
                 # Throw if we don't have any parameters at all.
-                if (!$parameters)
+                if (!$parameters -or !$parameters.Count)
                 {
                     $naerParams = @{
                         Exception = [System.InvalidOperationException]::new("Unable to find parameters within the provided invocation's scriptblock AST.")
