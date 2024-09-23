@@ -174,6 +174,7 @@
         'Test-ADTModuleInitialized'
         'Test-ADTMSUpdates'
         'Test-ADTNetworkConnection'
+        'Test-ADTOobeCompleted'
         'Test-ADTPowerPoint'
         'Test-ADTRegistryValue'
         'Test-ADTServiceExists'
