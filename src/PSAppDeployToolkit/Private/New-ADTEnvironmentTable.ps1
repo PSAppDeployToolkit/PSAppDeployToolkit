@@ -78,7 +78,7 @@ function New-ADTEnvironmentTable
     $variables.Add('envUserDomain', [string]$(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpper() }))
     $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpper())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
-    if ($variables.IsMachinePartOfDomain.Equals($true))
+    if ($variables.IsMachinePartOfDomain)
     {
         $variables.envMachineADDomain = $w32csd.ToLower()
         $variables.envComputerNameFQDN = try
