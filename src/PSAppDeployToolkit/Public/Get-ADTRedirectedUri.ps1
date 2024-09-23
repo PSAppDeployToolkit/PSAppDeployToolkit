@@ -16,6 +16,9 @@ function Get-ADTRedirectedUri
     .PARAMETER Uri
         The URL that requires redirection resolution.
 
+    .PARAMETER Headers
+        Any headers that need to be provided for URI redirection resolution.
+
     .INPUTS
         None
 
@@ -55,7 +58,11 @@ function Get-ADTRedirectedUri
                 }
                 return !!$_
             })]
-        [System.Uri]$Uri
+        [System.Uri]$Uri,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.IDictionary]$Headers = @{ Accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' }
     )
 
     begin
@@ -74,7 +81,7 @@ function Get-ADTRedirectedUri
                 & $Script:CommandTable.'Write-ADTLogEntry' -Message "Retrieving the redirected URI for [$Uri]."
                 $webReq = [System.Net.WebRequest]::Create($Uri)
                 $webReq.AllowAutoRedirect = $false
-                $webReq.Accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
+                $Headers.GetEnumerator() | & { process { $webReq.($_.Key) = $_.Value } }
 
                 # Get a response and close it out.
                 $reqRes = $webReq.GetResponse()
