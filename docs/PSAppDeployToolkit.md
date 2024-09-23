@@ -302,6 +302,9 @@ Test whether a Microsoft Windows update is installed.
 ### [Test-ADTNetworkConnection](Test-ADTNetworkConnection.md)
 Tests for an active local network connection, excluding wireless and virtual network adapters.
 
+### [Test-ADTOobeCompleted](Test-ADTOobeCompleted.md)
+Checks if the device's Out-of-Box Experience (OOBE) has completed or not.
+
 ### [Test-ADTPowerPoint](Test-ADTPowerPoint.md)
 Tests whether PowerPoint is running in either fullscreen slideshow mode or presentation mode.
 
