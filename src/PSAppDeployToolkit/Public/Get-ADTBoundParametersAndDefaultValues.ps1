@@ -82,21 +82,21 @@ function Get-ADTBoundParametersAndDefaultValues
         # Initialize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        # Internal filter for testing parameter attributes.
-        filter Test-NamedAttributeArgumentAst
+        # Internal function for testing parameter attributes.
+        function Test-NamedAttributeArgumentAst
         {
-            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Argument', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
             [CmdletBinding()]
             [OutputType([System.Boolean])]
             param
             (
-                [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+                [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
-                [System.Management.Automation.Language.ParameterAst]$InputObject,
+                [System.Management.Automation.Language.ParameterAst]$Parameter,
 
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
-                [System.String]$Name,
+                [System.String]$Argument,
 
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
@@ -104,13 +104,13 @@ function Get-ADTBoundParametersAndDefaultValues
             )
 
             # Test whether we have AttributeAst objects.
-            if (!($attributes = $InputObject.Attributes | & { process { if ($_ -is [System.Management.Automation.Language.AttributeAst]) { return $_ } } }))
+            if (!($attributes = $Parameter.Attributes | & { process { if ($_ -is [System.Management.Automation.Language.AttributeAst]) { return $_ } } }))
             {
                 return $false
             }
 
             # Test whether we have NamedAttributeArgumentAst objects.
-            if (!($namedArguments = $attributes.NamedArguments | & { process { if ($_.ArgumentName.Equals($Name)) { return $_ } } }))
+            if (!($namedArguments = $attributes.NamedArguments | & { process { if ($_.ArgumentName.Equals($Argument)) { return $_ } } }))
             {
                 return $false
             }
@@ -171,13 +171,13 @@ function Get-ADTBoundParametersAndDefaultValues
                         }
 
                         # Filter out values based on the specified parameter set.
-                        if ($ParameterSetName -and !($_ | Test-NamedAttributeArgumentAst -Name ParameterSetName -Value $ParameterSetName))
+                        if ($ParameterSetName -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument ParameterSetName -Value $ParameterSetName))
                         {
                             return
                         }
 
                         # Filter out values based on the specified help message.
-                        if ($HelpMessage -and !($_ | Test-NamedAttributeArgumentAst -Name HelpMessage -Value $HelpMessage))
+                        if ($HelpMessage -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument HelpMessage -Value $HelpMessage))
                         {
                             return
                         }
