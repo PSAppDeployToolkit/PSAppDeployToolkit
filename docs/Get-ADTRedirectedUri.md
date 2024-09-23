@@ -13,7 +13,7 @@ Returns the resolved URI from the provided permalink.
 ## SYNTAX
 
 ```
-Get-ADTRedirectedUri [-Uri] <Uri> [<CommonParameters>]
+Get-ADTRedirectedUri [-Uri] <Uri> [[-Headers] <IDictionary>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -42,6 +42,21 @@ Aliases:
 Required: True
 Position: 1
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Headers
+Any headers that need to be provided for URI redirection resolution.
+
+```yaml
+Type: IDictionary
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: @{ Accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' }
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
