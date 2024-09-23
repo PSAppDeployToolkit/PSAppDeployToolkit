@@ -205,6 +205,7 @@ function Set-ADTActiveSetup
                 [System.String]$SID
             )
 
+            # Set up initial variables.
             $HKCUProps = if ($SID)
             {
                 & $Script:CommandTable.'Get-ADTRegistryKey' -Key $HKCUKey -SID $SID
@@ -214,9 +215,9 @@ function Set-ADTActiveSetup
                 & $Script:CommandTable.'Get-ADTRegistryKey' -Key $HKCUKey
             }
             $HKLMProps = & $Script:CommandTable.'Get-ADTRegistryKey' -Key $HKLMKey
-            [String]$HKCUVer = $HKCUProps.Version
-            [String]$HKLMVer = $HKLMProps.Version
-            [Int32]$HKLMInst = $HKLMProps.IsInstalled
+            $HKCUVer = $HKCUProps.Version
+            $HKLMVer = $HKLMProps.Version
+            $HKLMInst = $HKLMProps.IsInstalled
 
             # HKLM entry not present. Nothing to run.
             if (!$HKLMProps)

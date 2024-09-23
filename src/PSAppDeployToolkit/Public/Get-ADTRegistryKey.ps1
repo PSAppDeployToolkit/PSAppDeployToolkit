@@ -119,7 +119,7 @@ function Get-ADTRegistryKey
             try
             {
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-                [String]$Key = if ($PSBoundParameters.ContainsKey('SID'))
+                $Key = if ($PSBoundParameters.ContainsKey('SID'))
                 {
                     & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
                 }
