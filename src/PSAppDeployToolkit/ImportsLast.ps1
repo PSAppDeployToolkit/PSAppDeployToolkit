@@ -88,7 +88,7 @@
                 CMTrace = "<![LOG[[{1}] :: {0}]LOG]!><time=`"{2}`" date=`"{3}`" component=`"{4}`" context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" type=`"{5}`" thread=`"$PID`" file=`"{6}`">"
                 Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
             }).AsReadOnly()
-        Severities = [System.Array]::AsReadOnly([System.Collections.Specialized.OrderedDictionary[]]$(
+        Severities = [System.Collections.ObjectModel.ReadOnlyCollection[System.Collections.Specialized.OrderedDictionary]]$(
                 ([ordered]@{
                     Name = 'Success'
                     Colours = ([ordered]@{
@@ -114,7 +114,7 @@
                             BackgroundColor = [System.ConsoleColor]::Black
                         }).AsReadOnly()
                 }).AsReadOnly()
-            ))
+            )
     }).AsReadOnly()
 
 # DialogBox constants used within Show-ADTDialogBox.
@@ -144,11 +144,11 @@
 
 # Registry path transformation constants used within Convert-ADTRegistryPath.
 & $CommandTable.'New-Variable' -Name Registry -Option Constant -Value ([ordered]@{
-        PathMatches = [System.Array]::AsReadOnly([System.String[]]$(
+        PathMatches = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(
                 ':\\'
                 ':'
                 '\\'
-            ))
+            )
         PathReplacements = ([ordered]@{
                 '^HKLM' = 'HKEY_LOCAL_MACHINE\'
                 '^HKCR' = 'HKEY_CLASSES_ROOT\'
