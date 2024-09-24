@@ -929,10 +929,20 @@ class ADTSession
                 $Message | & {
                     process
                     {
-                        # If this message is multi-line and doesn't end with a line feed, add one.
-                        if ($_.Contains("`n") -and !$_.EndsWith("`n"))
+                        # Processing for if the message contains line feeds.
+                        if ($_.Contains("`n"))
                         {
-                            $_ += "`n"
+                            # Replace all repeated line feeds with a space between them so OneTrace doesn't trim them.
+                            $_ = [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Split("`n").Trim() -replace '^$', ' '))
+
+                            # If this message is multi-line and doesn't end with a line feed, add one.
+                            if (!$_.EndsWith("`n"))
+                            {
+                                $_ += "`n"
+                            }
+
+                            # Reinsert carriage return so the file remains CRLF.
+                            $_ = $_.Replace("`n", "`r`n")
                         }
 
                         # Return this string formatted, and with all spaces replaced with non-breaking ones so OneTrace renders correctly.
