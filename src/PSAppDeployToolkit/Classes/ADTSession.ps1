@@ -859,6 +859,16 @@ class ADTSession
         $dateNow = [System.DateTime]::Now
         $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
         $invoker = & $Script:CommandTable.'Get-ADTLogEntryCaller'
+        $logFile = if (![System.String]::IsNullOrWhiteSpace($invoker.ScriptName))
+        {
+            # A proper script or function.
+            $invoker.ScriptName
+        }
+        else
+        {
+            # A call to Write-ADTLogEntry directly from the console.
+            $invoker.Location
+        }
 
         # Set up default values if not specified.
         if ($null -eq $Severity)
@@ -896,7 +906,7 @@ class ADTSession
         # Store log string to format with message.
         $logFormats = @{
             Legacy = [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern), $logTime, $ScriptSection, $Source, $sevData.Name)
-            CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $invoker.ScriptName)
+            CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, $logTime + $this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes, $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $logFile)
         }
 
         # Add this log message to the session's buffer.
