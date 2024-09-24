@@ -1,7 +1,8 @@
 ﻿using System;
+using PSADT.Logging.Models;
 using System.Threading.Tasks;
 using PSADT.Logging.Interfaces;
-using PSADT.Logging.Models;
+using System.Threading;
 
 namespace PSADT.Logging.Destinations
 {
@@ -9,18 +10,21 @@ namespace PSADT.Logging.Destinations
     {
         private static readonly object _consoleLock = new object();
 
-        public async Task WriteLogEntryAsync(LogEntry logEntry)
+        public Task WriteLogEntryAsync(LogEntry logEntry)
         {
             var formattedMessage = logEntry.FormatMessage(TextLogFormat.Standard, " | ");
+            return WriteLineAsync(formattedMessage);
+        }
 
-            // Ensure single-threaded writes to avoid interleaved console output
-            await Task.Run(() =>
+        private static Task WriteLineAsync(string message)
+        {
+            return Task.Factory.StartNew(() =>
             {
                 lock (_consoleLock)
                 {
-                    Console.WriteLine(formattedMessage);
+                    Console.WriteLine(message);
                 }
-            });
+            }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
         }
     }
 }

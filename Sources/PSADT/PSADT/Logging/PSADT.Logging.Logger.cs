@@ -26,7 +26,8 @@ namespace PSADT.Logging
         private readonly BlockingCollection<LogEntry> _logEntryQueue;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly StackParserConfig _errorParser;
-        private readonly ConcurrentDictionary<ILogDestination, ILogDestination> _destinations = new ConcurrentDictionary<ILogDestination, ILogDestination>();
+        private readonly ConcurrentDictionary<ILogDestination, ILogDestination> _fileDestinations = new ConcurrentDictionary<ILogDestination, ILogDestination>();
+        private readonly ConcurrentDictionary<ILogDestination, ILogDestination> _otherDestinations = new ConcurrentDictionary<ILogDestination, ILogDestination>();
         private Task? _backgroundTask;
         private int _droppedMessages = 0;
         private bool _manualLoggingStarted = false;
@@ -43,6 +44,11 @@ namespace PSADT.Logging
         private bool _eventsSubscribed = false;
         private int _isDisposed = 0;
 
+        private readonly SemaphoreSlim _flushSemaphore = new SemaphoreSlim(1, 1);
+        private readonly int _batchSize;
+        private readonly TimeSpan _batchTimeout;
+        private readonly ExponentialBackoff _backoff;
+
         internal LogOptions LogOptions => _logOptions;
         internal CancellationTokenSource CancellationTokenSource => _cancellationTokenSource;
 
@@ -58,17 +64,13 @@ namespace PSADT.Logging
             _logOptions = logOptions ?? throw new ArgumentNullException(nameof(logOptions));
             _logEntryQueue = new BlockingCollection<LogEntry>((int)_logOptions.MaxQueueSize);
 
-            if (errorParser == null)
-            {
-                _errorParser = StackParserConfig.Create()
-                                //.SetMethodNamesToSkip(new List<string> { "SomeMethodName" })
-                                .SetDeclaringTypesToSkip(new List<Type> { typeof(UnifiedLogger), typeof(Logger) })
-                                .Build();
-            }
-            else
-            {
-                _errorParser = errorParser;
-            }
+            _errorParser = errorParser ?? StackParserConfig.Create()
+                .SetDeclaringTypesToSkip(new List<Type> { typeof(UnifiedLogger), typeof(Logger) })
+                .Build();
+
+            _batchSize = 100; // Configurable
+            _batchTimeout = TimeSpan.FromSeconds(5); // Configurable
+            _backoff = new ExponentialBackoff(TimeSpan.FromMilliseconds(10), TimeSpan.FromSeconds(1), 2.0);
 
             EnsureDefaultLogDestination();
 
@@ -83,7 +85,15 @@ namespace PSADT.Logging
         public void AddLogDestination(ILogDestination destination)
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
-            _destinations.TryAdd(destination, destination);
+
+            if (destination is FileLogDestination)
+            {
+                _fileDestinations.TryAdd(destination, destination);
+            }
+            else
+            {
+                _otherDestinations.TryAdd(destination, destination);
+            }
         }
 
         /// <summary>
@@ -94,7 +104,15 @@ namespace PSADT.Logging
         public void RemoveLogDestination(ILogDestination destination)
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
-            _destinations.TryRemove(destination, out _);
+
+            if (destination is FileLogDestination)
+            {
+                _fileDestinations.TryRemove(destination, out _);
+            }
+            else
+            {
+                _otherDestinations.TryRemove(destination, out _);
+            }
         }
 
         #region Async Instance Logging Methods
@@ -211,7 +229,7 @@ namespace PSADT.Logging
                 var sanitizedMessage = SharedLoggerUtilities.SanitizeMessage(message);
                 var logEntry = new LogEntry(sanitizedMessage, messageType, callerContext, Environment.CurrentManagedThreadId, logCategory);
 
-                await Enqueue(logEntry);
+                await EnqueueWithBackpressureAsync(logEntry);
             }
             catch (Exception ex)
             {
@@ -267,7 +285,7 @@ namespace PSADT.Logging
                 var sanitizedMessage = SharedLoggerUtilities.SanitizeMessage(fullMessage);
                 var logEntry = new LogEntry(sanitizedMessage, LogLevel.Error, callerContext, Environment.CurrentManagedThreadId, LogType.Exception);
 
-                await Enqueue(logEntry);
+                await EnqueueWithBackpressureAsync(logEntry);
             }
             catch (Exception ex)
             {
@@ -332,6 +350,64 @@ namespace PSADT.Logging
                     // Suppress any exceptions thrown while logging to the event log
                 }
             });
+        }
+
+        /// <summary>
+        /// Enqueues a log entry with backpressure mechanism.
+        /// </summary>
+        /// <param name="logEntry">The log entry to enqueue.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task EnqueueWithBackpressureAsync(LogEntry logEntry)
+        {
+            TimeSpan delay = TimeSpan.Zero;
+            while (true)
+            {
+                try
+                {
+                    if (_logEntryQueue.TryAdd(logEntry))
+                    {
+                        if (_droppedMessages > 0)
+                        {
+                            Interlocked.Exchange(ref _droppedMessages, 0);
+                        }
+
+                        if (_isLoggingQueueWarning && _logEntryQueue.Count < _logOptions.MaxQueueSize)
+                        {
+                            _isLoggingQueueWarning = false;
+                        }
+
+                        if (_logOptions.StartManually && !_manualLoggingStarted)
+                        {
+                            return;
+                        }
+
+                        StartLogging();
+                        return;
+                    }
+
+                    if (!_isLoggingQueueWarning)
+                    {
+                        _isLoggingQueueWarning = true;
+                        await LogSelfAsync("Queue exceeded maximum size, applying backpressure.", LogLevel.Warning);
+                    }
+
+                    delay = _backoff.NextDelay();
+                    await Task.Delay(delay);
+
+                    if (logEntry.MessageType >= LogLevel.Error)
+                    {
+                        continue;
+                    }
+
+                    Interlocked.Increment(ref _droppedMessages);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    await LogToEventLogAsync($"Failed to enqueue a log entry: {logEntry.Message}", ex);
+                    return;
+                }
+            }
         }
 
         private async Task LogSelfAsync(string message, LogLevel messageType, LogType logCategory = LogType.LoggingSystem)
@@ -446,10 +522,21 @@ namespace PSADT.Logging
             return TimeSpan.FromMilliseconds(Math.Min(baseDelay.TotalMilliseconds * Math.Pow(2, attempt), maxBackoffDelay) + jitter);
         }
 
+        /// <summary>
+        /// Starts the background logging process.
+        /// </summary>
         private void StartLogging()
         {
-            var task = Task.Run(() => ProcessLogEntriesAsync(), _cancellationTokenSource.Token);
-            Interlocked.CompareExchange(ref _backgroundTask, task, null);
+            if (_backgroundTask == null || _backgroundTask.IsCompleted)
+            {
+                lock (_cancellationTokenSource)
+                {
+                    if (_backgroundTask == null || _backgroundTask.IsCompleted)
+                    {
+                        _backgroundTask = Task.Run(() => ProcessLogEntriesAsync(), _cancellationTokenSource.Token);
+                    }
+                }
+            }
         }
 
         public void StartLoggingManually()
@@ -463,36 +550,85 @@ namespace PSADT.Logging
         }
 
         /// <summary>
-        /// Asynchronously processes log entries from the queue.
+        /// Processes log entries asynchronously, handling file and non-file destinations separately.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ProcessLogEntriesAsync()
         {
-            LogEntry? logEntry = null;
-            try
+            List<LogEntry> fileBatch = new List<LogEntry>(_batchSize);
+            while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
-                while (!_cancellationTokenSource.Token.IsCancellationRequested)
+                try
                 {
-                    if (_logEntryQueue.TryTake(out logEntry, Timeout.Infinite, _cancellationTokenSource.Token))
+                    fileBatch.Clear();
+                    int dequeueTimeout = (int)TimeSpan.FromMilliseconds(-1).TotalMilliseconds;
+                    DateTime batchStartTime = DateTime.UtcNow;
+
+                    while (fileBatch.Count < _batchSize && DateTime.UtcNow - batchStartTime < _batchTimeout)
                     {
-                        await WriteLogEntryToAllDestinationsAsync(logEntry);
+                        if (_logEntryQueue.TryTake(out var logEntry, dequeueTimeout, _cancellationTokenSource.Token))
+                        {
+                            // Immediately write to non-file destinations
+                            await WriteLogEntryToNonFileDestinationsAsync(logEntry);
+
+                            // Add to batch for file destinations
+                            fileBatch.Add(logEntry);
+                            dequeueTimeout = 0;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (fileBatch.Count > 0)
+                    {
+                        await WriteLogEntriesToFileDestinationsAsync(fileBatch);
                     }
                 }
-            }
-            catch (Exception ex) when (ex is not TaskCanceledException)
-            {
-                await LogToEventLogAsync($"Failed to process log entry from the queue: {logEntry?.Message}", ex);
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    await LogToEventLogAsync("Failed to process log entries from the queue.", ex);
+                    await Task.Delay(1000, _cancellationTokenSource.Token); // Delay to prevent tight loop on persistent errors
+                }
             }
         }
 
         /// <summary>
-        /// Writes a log entry to all configured destinations.
+        /// Writes a batch of log entries to all file destinations asynchronously.
+        /// </summary>
+        /// <param name="logEntries">The batch of log entries to write.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task WriteLogEntriesToFileDestinationsAsync(IEnumerable<LogEntry> logEntries)
+        {
+            foreach (var destination in _fileDestinations.Values)
+            {
+                try
+                {
+                    foreach (var logEntry in logEntries)
+                    {
+                        await destination.WriteLogEntryAsync(logEntry);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await LogToEventLogAsync($"Failed to write log entries to file destination: {destination.GetType().Name}", ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes a single log entry to all non-file destinations asynchronously.
         /// </summary>
         /// <param name="logEntry">The log entry to write.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task WriteLogEntryToAllDestinationsAsync(LogEntry logEntry)
+        private async Task WriteLogEntryToNonFileDestinationsAsync(LogEntry logEntry)
         {
-            await Task.WhenAll(_destinations.Keys.Select(async destination =>
+            await Task.WhenAll(_otherDestinations.Keys.Select(async destination =>
             {
                 try
                 {
@@ -500,7 +636,7 @@ namespace PSADT.Logging
                 }
                 catch (Exception ex)
                 {
-                    await LogToEventLogAsync($"Failed to enqueue a log entry: {logEntry.Message}", ex);
+                    await LogToEventLogAsync($"Failed to enqueue a log entry [{logEntry.Message}] to destination [{destination.GetType().Name}]", ex);
                 }
             }));
         }
@@ -510,10 +646,10 @@ namespace PSADT.Logging
         /// </summary>
         private void EnsureDefaultLogDestination()
         {
-            if (_destinations.IsEmpty)
+            if (_fileDestinations.IsEmpty && _otherDestinations.IsEmpty)
             {
                 var defaultFileDestination = new FileLogDestination(_logOptions);
-                _destinations.TryAdd(defaultFileDestination, defaultFileDestination);
+                _fileDestinations.TryAdd(defaultFileDestination, defaultFileDestination);
             }
         }
 
@@ -528,9 +664,9 @@ namespace PSADT.Logging
 
         /// <summary>
         /// Updates the logger's configuration dynamically.
-        /// Thread-safe.
         /// </summary>
         /// <param name="newOptions">The new LogOptions to apply.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task UpdateConfiguration(LogOptions newOptions)
         {
             if (newOptions == null) throw new ArgumentNullException(nameof(newOptions));
@@ -542,7 +678,8 @@ namespace PSADT.Logging
 
                 _logOptions = newOptions;
 
-                _destinations.Clear();
+                _fileDestinations.Clear();
+                _otherDestinations.Clear();
                 EnsureDefaultLogDestination();
 
                 SubscribeToEventHandlers();
@@ -557,7 +694,6 @@ namespace PSADT.Logging
                 _configLock.ExitWriteLock();
             }
         }
-
 
         /// <summary>
         /// Stops the logging process asynchronously.
@@ -601,25 +737,32 @@ namespace PSADT.Logging
 
         /// <summary>
         /// Drains the remaining log entries from the queue after the logger is stopped.
-        /// Ensures that all log entries are processed before the logger shuts down.
         /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task DrainLogQueueAsync()
         {
             try
             {
-                // Continue processing remaining log entries in the queue
+                List<LogEntry> remainingEntries = new List<LogEntry>();
                 while (_logEntryQueue.TryTake(out var logEntry))
                 {
-                    await WriteLogEntryToAllDestinationsAsync(logEntry);
+                    remainingEntries.Add(logEntry);
                 }
+
+                // Write to non-file destinations
+                foreach (var entry in remainingEntries)
+                {
+                    await WriteLogEntryToNonFileDestinationsAsync(entry);
+                }
+
+                // Write to file destinations
+                await WriteLogEntriesToFileDestinationsAsync(remainingEntries);
             }
             catch (Exception ex)
             {
                 await LogToEventLogAsync($"There was an error while draining the log queue.", ex);
             }
         }
-
-
 
         /// <summary>
         /// Unsubscribes from global exception events to prevent further logging during shutdown.
@@ -644,22 +787,6 @@ namespace PSADT.Logging
             if (_logOptions.SubscribeToOnProcessExitAndCallDispose)
             {
                 AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
-            }
-
-            /// <summary>
-            /// Subscribes DisposeAsync to the ProcessExit event.
-            /// </summary>
-            if (_logOptions.SubscribeToOnProcessExitAndCallDispose)
-            {
-                AppDomain.CurrentDomain.ProcessExit += async (sender, e) => await DisposeAsync();
-            }
-
-            /// <summary>
-            /// Unsubscribes DisposeAsync from the ProcessExit event.
-            /// </summary>
-            if (_logOptions.SubscribeToOnProcessExitAndCallDispose)
-            {
-                AppDomain.CurrentDomain.ProcessExit -= async (sender, e) => await DisposeAsync();
             }
 
             _eventsSubscribed = false;
@@ -688,6 +815,27 @@ namespace PSADT.Logging
             }
 
             _eventsSubscribed = true;
+        }
+
+        /// <summary>
+        /// Flushes all pending log entries.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task FlushAsync()
+        {
+            await _flushSemaphore.WaitAsync();
+            try
+            {
+                while (!_logEntryQueue.IsCompleted && _logEntryQueue.Count > 0)
+                {
+                    await Task.Delay(100); // Wait for the queue to be processed
+                }
+                await DrainLogQueueAsync();
+            }
+            finally
+            {
+                _flushSemaphore.Release();
+            }
         }
 
 
@@ -719,16 +867,27 @@ namespace PSADT.Logging
             _cancellationTokenSource?.Dispose();
             _logEntryQueue?.Dispose();
             _configLock?.Dispose();
+            _flushSemaphore?.Dispose();
 
-            foreach (var destination in _destinations.Keys)
+            // Dispose file destinations
+            foreach (var destination in _fileDestinations.Keys)
             {
                 if (destination is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }
             }
+            _fileDestinations.Clear();
 
-            _destinations.Clear();
+            // Dispose other destinations
+            foreach (var destination in _otherDestinations.Keys)
+            {
+                if (destination is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            _otherDestinations.Clear();
         }
 
         /// <summary>

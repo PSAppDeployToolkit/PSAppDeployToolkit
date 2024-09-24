@@ -6,13 +6,10 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using PSADT.Registry;
 using PSADT.Logging;
 using PSADT.Diagnostics.Validation;
 
-
-
-namespace PSADT
+namespace PSADT.Registry
 {
     /// <summary>
     /// Manages the loading and unloading of registry hives, providing access to registry keys across different views and contexts.
@@ -31,6 +28,27 @@ namespace PSADT
         /// </summary>
         public RegistryHiveManager()
         {
+        }
+
+        /// <summary>
+        /// Synchronous wrapper for the asynchronous method <see cref="GetRegistryKeyWrapperAsync"/>.
+        /// </summary>
+        /// <param name="keyPath">The registry key path.</param>
+        /// <param name="views">An array of registry views to use.</param>
+        /// <param name="machineName">The name of the remote machine, if any.</param>
+        /// <param name="hiveFilePath">The path of the registry hive file to load, if applicable.</param>
+        /// <param name="userSidMountKey">The Security Identifier (SID) of a user, if applicable.</param>
+        /// <param name="localMachineMountKey">The mount point for the hive under HKEY_LOCAL_MACHINE, if applicable.</param>
+        /// <returns>A <see cref="CompositeRegistryKeyWrapper"/>.</returns>
+        public CompositeRegistryKeyWrapper? GetRegistryKeyWrapper(
+            string keyPath,
+            RegistryView[]? views = null,
+            string? machineName = null,
+            string hiveFilePath = "",
+            string userSidMountKey = "",
+            string localMachineMountKey = "")
+        {
+            return GetRegistryKeyWrapperAsync(keyPath, views, machineName, hiveFilePath, userSidMountKey, localMachineMountKey).GetAwaiter().GetResult();
         }
 
         /// <summary>

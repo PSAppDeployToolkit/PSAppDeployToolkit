@@ -51,6 +51,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="LINQ\**" />
+	  <EmbeddedResource Remove="LINQ\**" />
+	  <None Remove="LINQ\**" />
+	  <Page Remove="LINQ\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Include="PsadtExec.ico" />
 	</ItemGroup>
 

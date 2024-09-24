@@ -67,7 +67,26 @@ namespace PSADT.Registry
         /// <returns>The value from the registry, or default(T) if the value is not found.</returns>
         /// <exception cref="SecurityException">Thrown when the caller does not have the required permissions.</exception>
         /// <exception cref="AggregateException">Thrown when the operation fails and multiple exceptions have occurred.</exception>
-        public T? GetValue<T>(string? valueName,
+        public object GetValue(string? valueName,
+                       RegistryValueOptions valueOptions = RegistryValueOptions.DoNotExpandEnvironmentNames,
+                       RegistryBinaryValueOptions binaryValueOptions = RegistryBinaryValueOptions.None,
+                       RegistryBinaryValueEncoding binaryValueEncoding = RegistryBinaryValueEncoding.UTF16)
+        {
+            return GetValue<object>(valueName, valueOptions, binaryValueOptions, binaryValueEncoding);
+        }
+
+        /// <summary>
+        /// Retrieves a value from the registry.
+        /// </summary>
+        /// <typeparam name="T">The type of the value to retrieve.</typeparam>
+        /// <param name="valueName">The name of the value to retrieve. If null, retrieves the default value of the subkey.</param>
+        /// <param name="valueOptions">Options for getting the value.</param>
+        /// <param name="binaryValueOptions">Options for handling binary values.</param>
+        /// <param name="binaryValueEncoding">The encoding for binary values.</param>
+        /// <returns>The value from the registry, or default(T) if the value is not found.</returns>
+        /// <exception cref="SecurityException">Thrown when the caller does not have the required permissions.</exception>
+        /// <exception cref="AggregateException">Thrown when the operation fails and multiple exceptions have occurred.</exception>
+        public T GetValue<T>(string? valueName,
                               [Optional, DefaultParameterValue(RegistryValueOptions.DoNotExpandEnvironmentNames)] RegistryValueOptions valueOptions,
                               [Optional, DefaultParameterValue(RegistryBinaryValueOptions.None)] RegistryBinaryValueOptions binaryValueOptions,
                               [Optional, DefaultParameterValue(RegistryBinaryValueEncoding.UTF16)] RegistryBinaryValueEncoding binaryValueEncoding)
