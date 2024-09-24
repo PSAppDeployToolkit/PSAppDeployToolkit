@@ -936,7 +936,7 @@ class ADTSession
                         }
 
                         # Return this string formatted, and with all spaces replaced with non-breaking ones so OneTrace renders correctly.
-                        return [System.String]::Format($logLine, $_.Replace(' ', [System.Char]0xA0))
+                        return [System.String]::Format($logLine, $_.Replace(' ', [System.Char]0x2008))
                     }
                 } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
