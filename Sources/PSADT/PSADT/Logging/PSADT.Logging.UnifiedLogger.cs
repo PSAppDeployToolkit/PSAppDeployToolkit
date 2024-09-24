@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using PSADT.Logging.Models;
 using PSADT.Logging.Interfaces;
 using PSADT.Logging.Destinations;
 using PSADT.Diagnostics.StackTraces;
-using System.Runtime.CompilerServices;
 
 namespace PSADT.Logging
 {
@@ -41,7 +41,7 @@ namespace PSADT.Logging
             {
                 var defaultLogOptions = LogOptions.CreateBuilder()
                     .SetLogFilePathComponents()
-                    .SetMinimumLogLevel(LogLevel.Information)
+                    .SetMinimumLogLevel(LogLevel.Debug)
                     .SetTextSeparator(" | ")
                     .SetLogFormat(TextLogFormat.Standard)
                     .SubscribeToUnhandledException(true)

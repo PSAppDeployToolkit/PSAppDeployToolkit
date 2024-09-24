@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Management.Automation;
 using Microsoft.Win32.SafeHandles;
-using System.Runtime.InteropServices;
 using PSADT.Logging;
-using PSADT.Diagnostics;
 using PSADT.Diagnostics.Exceptions;
 using PSADT.Timer;
-using System.Timers;
 
 namespace PSADT.Registry
 {

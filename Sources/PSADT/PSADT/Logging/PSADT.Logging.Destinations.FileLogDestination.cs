@@ -51,8 +51,7 @@ namespace PSADT.Logging.Destinations
                 {
                     Directory.CreateDirectory(logDirectory);
                 }
-
-                _streamWriter = new StreamWriter(new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read), new System.Text.UTF8Encoding(false))
+                _streamWriter = new StreamWriter(new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite), new System.Text.UTF8Encoding(false))
                 {
                     AutoFlush = true
                 };
@@ -86,8 +85,6 @@ namespace PSADT.Logging.Destinations
             {
                 await Task.Run(() => SharedLoggerUtilities.LogToEventLogAsync($@"Failed to write log entry to file:{Environment.NewLine}{logEntry.Message}", ex));
             }
-
-            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -98,32 +95,25 @@ namespace PSADT.Logging.Destinations
         {
             try
             {
-                lock (_fileLock)
+                var fileInfo = new FileInfo(_logFilePath);
+                if (fileInfo.Exists && fileInfo.Length >= (long)_maxLogFileSizeInBytes)
                 {
-                    if (File.Exists(_logFilePath))
-                    {
-                        var fileInfo = new FileInfo(_logFilePath);
-                        if (fileInfo.Length >= (long)_maxLogFileSizeInBytes)
-                        {
-                            _streamWriter?.Dispose();
-                            string archiveFileName = $"{Path.GetFileNameWithoutExtension(_logFilePath)}_{DateTime.UtcNow:yyyyMMddHHmmss}.log";
-                            string archiveFilePath = Path.Combine(Path.GetDirectoryName(_logFilePath)!, archiveFileName);
-                            File.Move(_logFilePath, archiveFilePath);
+                    _streamWriter?.Dispose();
 
-                            // Optionally, implement archiving logic (e.g., compressing old logs)
+                    string archiveFileName = $"{Path.GetFileNameWithoutExtension(_logFilePath)}_{DateTime.UtcNow:yyyyMMddHHmmss}.log";
+                    string archiveFilePath = Path.Combine(Path.GetDirectoryName(_logFilePath)!, archiveFileName);
+                    File.Move(_logFilePath, archiveFilePath);
 
-                            // Re-initialize the writer for the new log file
-                            InitializeWriter();
-                        }
-                    }
+                    // Optionally, implement archiving logic (e.g., compressing old logs)
+
+                    // Re-initialize the writer for the new log file
+                    InitializeWriter();
                 }
             }
             catch (Exception ex)
             {
-                await Task.Run(() => SharedLoggerUtilities.LogToEventLogAsync($@"Failed to rotate the log file:{Environment.NewLine}{ex.Message}", ex));
+                await SharedLoggerUtilities.LogToEventLogAsync($@"Failed to rotate the log file: {ex.Message}", ex);
             }
-
-            await Task.CompletedTask;
         }
 
         public void Dispose()
