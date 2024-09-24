@@ -906,7 +906,7 @@ class ADTSession
         # Store log string to format with message.
         $logFormats = @{
             Legacy = [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern), $logTime, $ScriptSection, $Source, $sevData.Name)
-            CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, "$($logTime)+$($this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes)", $dateNow.ToString([System.Globalization.DateTimeFormatInfo]::InvariantInfo.ShortDatePattern), $Source, $Severity, $logFile)
+            CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, "$($logTime)+$($this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes)", $dateNow.ToString('M-dd-yyyy'), $Source, $Severity, $logFile)
         }
 
         # Add this log message to the session's buffer.
