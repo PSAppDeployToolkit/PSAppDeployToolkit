@@ -910,23 +910,40 @@ class ADTSession
         }
 
         # Add this log message to the session's buffer.
-        $logObject = @{
-            Timestamp = $dateNow
-            Invoker = $invoker
-            Severity = $Severity
-            Source = $Source
-            ScriptSection = $ScriptSection
+        $Message | & {
+            begin
+            {
+                $logObject = @{
+                    Timestamp = $dateNow
+                    Invoker = $invoker
+                    Severity = $Severity
+                    Source = $Source
+                    ScriptSection = $ScriptSection
+                }
+            }
+
+            process
+            {
+                $logObject.Message = $_
+                $this.LogBuffer.Add($logObject)
+            }
         }
-        $Message | & { process { $logObject.Message = $_; $this.LogBuffer.Add($logObject) } }
 
         # Write out all non-null messages to disk or host if configured/permitted to do so.
         if (![System.String]::IsNullOrWhiteSpace(($outFile = [System.IO.Path]::Combine($LogFileDirectory, $LogFileName))) -and !$this.GetPropertyValue('DisableLogging'))
         {
             # For CMTrace logging, sanitize the message for OneTrace's benefit before writing to disk.
-            $logLine = $logFormats.$LogType
             if ($LogType -eq 'CMTrace')
             {
                 $Message | & {
+                    begin
+                    {
+                        # Constants to prevent repeated lookups.
+                        $brailleBlankChar = [System.Char]0x2800
+                        $punctuationSpace = [System.Char]0x2008
+                        $logLine = $logFormats.$LogType
+                    }
+
                     process
                     {
                         # Processing for if the message contains line feeds.
@@ -937,18 +954,8 @@ class ADTSession
                             # genuine spaces. As such, replace all spaces with a non-whitespace char
                             # so they're preserved, then replace all with a punctuation space. C#
                             # identifies this character as whitespace but OneTrace does not so it works.
-                            $brailleBlankChar = [System.Char]0x2800
-                            $punctuationSpace = [System.Char]0x2008
-                            $_ = [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Replace(' ', $brailleBlankChar).Split("`n").Trim() -replace '^$', $brailleBlankChar)).Replace($brailleBlankChar, $punctuationSpace)
-
-                            # If this message is multi-line and doesn't end with a line feed, add one.
-                            if (!$_.EndsWith("`n"))
-                            {
-                                $_ += "`n"
-                            }
-
-                            # Reinsert carriage return so the file remains CRLF.
-                            $_ = $_.Replace("`n", "`r`n")
+                            # The empty line feed at the end is required by OneTrace to format correctly.
+                            $_ = [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Replace(' ', $brailleBlankChar).Split("`n").Trim() -replace '^$', $brailleBlankChar)).Replace($brailleBlankChar, $punctuationSpace).Replace("`n", "`r`n") + "`r`n"
                         }
 
                         # Format this string before returning.
@@ -959,9 +966,14 @@ class ADTSession
             else
             {
                 $Message | & {
+                    begin
+                    {
+                        $logLine = $logFormats.$LogType
+                    }
+
                     process
                     {
-                        [System.String]::Format($logLine, $_)
+                        return [System.String]::Format($logLine, $_)
                     }
                 } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
