@@ -89,32 +89,32 @@
                 Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
             }).AsReadOnly()
         Severities = [System.Collections.ObjectModel.ReadOnlyCollection[System.Collections.Specialized.OrderedDictionary]]$(
-                ([ordered]@{
-                    Name = 'Success'
-                    Colours = ([ordered]@{
-                            ForegroundColor = [System.ConsoleColor]::Green
-                            BackgroundColor = [System.ConsoleColor]::Black
-                        }).AsReadOnly()
-                }).AsReadOnly()
-                ([ordered]@{
-                    Name = 'Info'
-                    Colours = ([ordered]@{}).AsReadOnly()
-                }).AsReadOnly()
-                ([ordered]@{
-                    Name = 'Warning'
-                    Colours = ([ordered]@{
-                            ForegroundColor = [System.ConsoleColor]::Yellow
-                            BackgroundColor = [System.ConsoleColor]::Black
-                        }).AsReadOnly()
-                }).AsReadOnly()
-                ([ordered]@{
-                    Name = 'Error'
-                    Colours = ([ordered]@{
-                            ForegroundColor = [System.ConsoleColor]::Red
-                            BackgroundColor = [System.ConsoleColor]::Black
-                        }).AsReadOnly()
-                }).AsReadOnly()
-            )
+            ([ordered]@{
+                Name = 'Success'
+                Colours = ([ordered]@{
+                        ForegroundColor = [System.ConsoleColor]::Green
+                        BackgroundColor = [System.ConsoleColor]::Black
+                    }).AsReadOnly()
+            }).AsReadOnly()
+            ([ordered]@{
+                Name = 'Info'
+                Colours = ([ordered]@{}).AsReadOnly()
+            }).AsReadOnly()
+            ([ordered]@{
+                Name = 'Warning'
+                Colours = ([ordered]@{
+                        ForegroundColor = [System.ConsoleColor]::Yellow
+                        BackgroundColor = [System.ConsoleColor]::Black
+                    }).AsReadOnly()
+            }).AsReadOnly()
+            ([ordered]@{
+                Name = 'Error'
+                Colours = ([ordered]@{
+                        ForegroundColor = [System.ConsoleColor]::Red
+                        BackgroundColor = [System.ConsoleColor]::Black
+                    }).AsReadOnly()
+            }).AsReadOnly()
+        )
     }).AsReadOnly()
 
 # DialogBox constants used within Show-ADTDialogBox.
@@ -145,10 +145,10 @@
 # Registry path transformation constants used within Convert-ADTRegistryPath.
 & $CommandTable.'New-Variable' -Name Registry -Option Constant -Value ([ordered]@{
         PathMatches = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(
-                ':\\'
-                ':'
-                '\\'
-            )
+            ':\\'
+            ':'
+            '\\'
+        )
         PathReplacements = ([ordered]@{
                 '^HKLM' = 'HKEY_LOCAL_MACHINE\'
                 '^HKCR' = 'HKEY_CLASSES_ROOT\'
