@@ -922,8 +922,33 @@ class ADTSession
         # Write out all non-null messages to disk or host if configured/permitted to do so.
         if (![System.String]::IsNullOrWhiteSpace(($outFile = [System.IO.Path]::Combine($LogFileDirectory, $LogFileName))) -and !$this.GetPropertyValue('DisableLogging'))
         {
+            # For CMTrace logging, sanitize the message for OneTrace's benefit before writing to disk.
             $logLine = $logFormats.$LogType
-            $Message | & { process { [System.String]::Format($logLine, $_) } } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+            if ($LogType -eq 'CMTrace')
+            {
+                $Message | & {
+                    process
+                    {
+                        # If this message is multi-line and doesn't end with a line feed, add one.
+                        if ($_.Contains("`n") -and !$_.EndsWith("`n"))
+                        {
+                            $_ += "`n"
+                        }
+
+                        # Return this string formatted, and with all spaces replaced with non-breaking ones so OneTrace renders correctly.
+                        return [System.String]::Format($logLine, $_.Replace(' ', [System.Char]0xA0))
+                    }
+                } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+            }
+            else
+            {
+                $Message | & {
+                    process
+                    {
+                        [System.String]::Format($logLine, $_)
+                    }
+                } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+            }
         }
         if ($WriteHost)
         {
