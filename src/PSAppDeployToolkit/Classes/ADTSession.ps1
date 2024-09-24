@@ -932,8 +932,14 @@ class ADTSession
                         # Processing for if the message contains line feeds.
                         if ($_.Contains("`n"))
                         {
-                            # Replace all repeated line feeds with a space between them so OneTrace doesn't trim them.
-                            $_ = [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Split("`n").Trim() -replace '^$', ' '))
+                            # Replace all empty lines with a space so OneTrace doesn't trim them.
+                            # When splitting the message, we want to trim all lines but not replace
+                            # genuine spaces. As such, replace all spaces with a non-whitespace char
+                            # so they're preserved, then replace all with a punctuation space. C#
+                            # identifies this character as whitespace but OneTrace does not so it works.
+                            $brailleBlankChar = [System.Char]0x2800
+                            $punctuationSpace = [System.Char]0x2008
+                            $_ = [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Replace(' ', $brailleBlankChar).Split("`n").Trim() -replace '^$', $brailleBlankChar)).Replace($brailleBlankChar, $punctuationSpace)
 
                             # If this message is multi-line and doesn't end with a line feed, add one.
                             if (!$_.EndsWith("`n"))
@@ -945,8 +951,8 @@ class ADTSession
                             $_ = $_.Replace("`n", "`r`n")
                         }
 
-                        # Return this string formatted, and with all spaces replaced with non-breaking ones so OneTrace renders correctly.
-                        return [System.String]::Format($logLine, $_.Replace(' ', [System.Char]0x2008))
+                        # Format this string before returning.
+                        return [System.String]::Format($logLine, $_)
                     }
                 } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
