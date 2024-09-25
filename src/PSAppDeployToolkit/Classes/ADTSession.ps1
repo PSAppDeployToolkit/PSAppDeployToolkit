@@ -955,11 +955,13 @@ class ADTSession
                             # so they're preserved, then replace all with a punctuation space. C#
                             # identifies this character as whitespace but OneTrace does not so it works.
                             # The empty line feed at the end is required by OneTrace to format correctly.
-                            $_ = [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Replace(' ', $brailleBlankChar).Split("`n").Trim() -replace '^$', $brailleBlankChar)).Replace($brailleBlankChar, $punctuationSpace).Replace("`n", "`r`n") + "`r`n"
+                            return [System.String]::Format($logLine, [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Replace(' ', $brailleBlankChar).Split("`n").Trim() -replace '^$', $brailleBlankChar)).Replace($brailleBlankChar, $punctuationSpace).Replace("`n", "`r`n") + "`r`n")
                         }
-
-                        # Format this string before returning.
-                        return [System.String]::Format($logLine, $_)
+                        else
+                        {
+                            # Otherwise, just return a formatted string.
+                            return [System.String]::Format($logLine, $_)
+                        }
                     }
                 } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
