@@ -87,7 +87,7 @@ function Test-ADTPowerPoint
 
                 # If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher).
                 # Note: The below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Detected user notification state [$(($UserNotificationState = [PSADT.UiAutomation]::GetUserNotificationState()))]."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Detected user notification state [$(($UserNotificationState = [PSADT.GUI.UiAutomation]::GetUserNotificationState()))]."
                 switch ($UserNotificationState)
                 {
                     PresentationMode
@@ -97,7 +97,7 @@ function Test-ADTPowerPoint
                     }
                     FullScreenOrPresentationModeOrLoginScreen
                     {
-                        if ($PowerPointProcessIDs -contains [PSADT.UiAutomation]::GetWindowThreadProcessId([PSADT.UiAutomation]::GetForegroundWindow()))
+                        if ($PowerPointProcessIDs -contains [PSADT.GUI.UiAutomation]::GetWindowThreadProcessId([PSADT.GUI.UiAutomation]::GetForegroundWindow()))
                         {
                             & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Detected a fullscreen foreground window matches a PowerPoint process ID.'
                             return ($presenting = $true)
