@@ -24,7 +24,7 @@ namespace PSADT.Diagnostics.StackTraces
         /// <returns>Returns a <see cref="StackTraceContext"/> containing the first relevant stack frame and its details.
         /// If no relevant stack frames are found, an empty <see cref="StackTraceContext"/> is returned.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StackFrame? GetFirstRelevantStackFrame(
+        public static StackFrame GetFirstRelevantStackFrame(
             [Optional, DefaultParameterValue(null)] Exception? caughtException,
             int? framesToSkip = 0,
             int? maxRecursionDepth = 0,
@@ -92,6 +92,72 @@ namespace PSADT.Diagnostics.StackTraces
 
             // Throw a RuntimeException with the ErrorRecord
             throw new RuntimeException(combinedMessageAndFilteredStackTrace, originalException, errorRecord);
+        }
+
+        /// <summary>
+        /// Rethrows the specified exception after modifying its stack trace to a custom stack trace string.
+        /// </summary>
+        /// <param name="exception">The exception to rethrow with a modified stack trace.</param>
+        /// <param name="customStackTrace">The custom stack trace string to set on the exception.</param>
+        /// <param name="internalStackTraceStringFieldName">The name of the exception's internal field used to store the stack trace string.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="exception"/> is null.</exception>
+        /// <remarks>
+        /// This method uses reflection to get the internal <c>_stackTraceString</c> field of the exception.
+        /// </remarks>
+        public static string? GetStackTraceString(Exception exception, string customStackTrace, string internalStackTraceStringFieldName = "_stackTraceString")
+        {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
+            string? stackTraceString = null;
+            try
+            {
+                // Use reflection to get the StackTrace property
+                stackTraceString = typeof(Exception)
+                                    .GetField(internalStackTraceStringFieldName, BindingFlags.Instance | BindingFlags.NonPublic)
+                                    ?.GetValue(exception)
+                                    ?.ToString();
+            }
+            catch
+            {
+                // Suppress any error
+            }
+
+            return stackTraceString;
+        }
+
+        /// <summary>
+        /// Rethrows the specified exception after modifying its stack trace to a custom stack trace string.
+        /// </summary>
+        /// <param name="exception">The exception to rethrow with a modified stack trace.</param>
+        /// <param name="customStackTrace">The custom stack trace string to set on the exception.</param>
+        /// <param name="internalStackTraceStringFieldName">The name of the exception's internal field used to store the stack trace string.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="exception"/> is null.</exception>
+        /// <remarks>
+        /// This method uses reflection to modify the internal <c>_stackTraceString</c> field of the exception.
+        /// </remarks>
+        public static void RethrowWithModifiedStackTrace(Exception exception, string customStackTrace, string internalStackTraceStringFieldName = "_stackTraceString")
+        {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
+            try
+            {
+                // Use reflection to set the StackTrace property
+                typeof(Exception)
+                 .GetField(internalStackTraceStringFieldName, BindingFlags.Instance | BindingFlags.NonPublic)
+                 ?.SetValue(exception, customStackTrace);
+            }
+            catch
+            {
+                // Suppress any error
+            }
+
+            throw exception;
         }
 
         /// <summary>

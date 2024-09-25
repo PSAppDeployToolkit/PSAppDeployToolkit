@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using PSADT.PInvoke;
 using PSADT.Logging;
 using PSADT.Diagnostics.Validation;
 

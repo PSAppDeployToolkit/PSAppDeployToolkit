@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 using PSADT.PInvoke;
+using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.GUI
 {
@@ -54,26 +55,20 @@ namespace PSADT.GUI
         {
             const string libraryName = "shell32.dll";
 
-            // Create a SafeFileHandle with IntPtr.Zero since no specific file handle is needed.
-            using SafeFileHandle hFile = new(IntPtr.Zero, false);
-
             // Load the shell32 library with the appropriate flags
-            using SafeLibraryHandle hShell32 = NativeMethods.LoadLibraryEx(libraryName, hFile, LoadLibraryExFlags.LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE);
-            if (hShell32.IsInvalid || hShell32.IsClosed)
+            using SafeLibraryHandle hShell32Dll = NativeMethods.LoadLibraryEx(libraryName, SafeLibraryHandle.Null, LoadLibraryExFlags.LOAD_LIBRARY_AS_DATAFILE);
+            if (hShell32Dll.IsInvalid || hShell32Dll.IsClosed)
             {
-                throw new InvalidOperationException($"Failed to load library [{libraryName}]. Error code [{Marshal.GetLastWin32Error()}].");
+                ErrorHandler.ThrowSystemError($"Failed to load library [{libraryName}].", SystemErrorType.Win32);
             }
 
-            // Load the string resource into a StringBuilder
-            StringBuilder buffer = new StringBuilder(256);
-            int length = NativeMethods.LoadString(hShell32, verbId, buffer, buffer.Capacity);
-
-            if (length == 0)
+            // Load the string resource
+            if(!NativeMethods.LoadString(hShell32Dll, verbId, out string? stringResource))
             {
-                throw new InvalidOperationException($"Failed to load string resource with ID [{verbId}]. Error code [{Marshal.GetLastWin32Error()}].");
+                ErrorHandler.ThrowSystemError($"Failed to load string resource with verb id [{verbId}] from library [{libraryName}].", SystemErrorType.Win32);
             }
 
-            return buffer.ToString();
+            return stringResource!;
         }
 
     }

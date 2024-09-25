@@ -61,10 +61,12 @@ namespace PSADT.Logging
             });
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static LogEntryBuilder Create()
+        public static LogEntryBuilder Create(
+            [System.Runtime.CompilerServices.CallerMemberName] string? callerMethodName = null,
+            [System.Runtime.CompilerServices.CallerFilePath] string? callerFileName = null,
+            [System.Runtime.CompilerServices.CallerLineNumber] int? callerLineNumber = null)
         {
-            return new LogEntryBuilder(SingletonLogger, new CallerContext());
+            return new LogEntryBuilder(SingletonLogger, new CallerContext(callerMethodName, callerFileName, callerLineNumber));
         }
 
         private static Logger SingletonLogger => _singletonLogger.Value;

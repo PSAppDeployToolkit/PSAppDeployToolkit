@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Security.AccessControl;
 using System.Runtime.InteropServices;
+using PSADT.PInvoke;
 using PSADT.Logging;
 using PSADT.Diagnostics.Validation;
 using PSADT.Diagnostics.Exceptions;

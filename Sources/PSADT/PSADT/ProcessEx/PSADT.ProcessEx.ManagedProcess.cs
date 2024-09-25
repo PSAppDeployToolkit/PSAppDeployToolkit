@@ -145,8 +145,10 @@ namespace PSADT.ProcessEx
         {
             try
             {
-                using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read);
-                using var writer = new StreamWriter(fileStream);
+                using var writer = new StreamWriter(new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite), new System.Text.UTF8Encoding(false))
+                {
+                    AutoFlush = true
+                };
                 await RedirectStreamAsync(reader, writer, cancellationToken);
                 UnifiedLogger.Create().Message($"Completed redirection to file [{filePath}].").Severity(LogLevel.Debug);
             }

@@ -380,19 +380,93 @@ namespace PSADT.PInvoke
         }
     }
 
-    public sealed class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    public sealed class SafeLibraryHandle : SafeHandle
     {
-        public SafeLibraryHandle() : base(true) { }
+        /// <summary> Constant for invalid handle value </summary>
+        public static readonly IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
-        protected override bool ReleaseHandle() => NativeMethods.FreeLibrary(handle);
+        /// <summary>
+        /// An invalid handle that may be used in place of <see cref="INVALID_HANDLE_VALUE"/>.
+        /// </summary>
+        public static readonly SafeLibraryHandle Invalid = new SafeLibraryHandle();
+
+        /// <summary>
+        /// A handle that may be used in place of <see cref="IntPtr.Zero"/>.
+        /// </summary>
+        public static readonly SafeLibraryHandle Null = new SafeLibraryHandle(IntPtr.Zero, false);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SafeLibraryHandle"/> class.
+        /// </summary>
+        public SafeLibraryHandle()
+            : base(INVALID_HANDLE_VALUE, true)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SafeLibraryHandle"/> class with an existing handle.
+        /// </summary>
+        /// <param name="preexistingHandle">The environment block handle.</param>
+        /// <param name="ownsHandle">
+        ///     <see langword="true" /> to have the native handle released when this safe handle is disposed or finalized;
+        ///     <see langword="false" /> otherwise.
+        /// </param>
+        public SafeLibraryHandle(IntPtr preexistingHandle, bool ownsHandle = true)
+            : base(INVALID_HANDLE_VALUE, ownsHandle)
+        {
+            SetHandle(preexistingHandle);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the handle value is invalid.
+        /// </summary>
+        public override bool IsInvalid => handle == INVALID_HANDLE_VALUE || handle == IntPtr.Zero;
+
+        /// <summary>
+        /// Frees the library handle when the object is disposed or finalized.
+        /// </summary>
+        /// <returns>
+        /// Returns <see langword="true"/> if the handle was released successfully; otherwise, <see langword="false"/>.
+        /// </returns>
+        /// <remarks>
+        /// This method calls <see cref="NativeMethods.FreeLibrary"/> to release the library handle.
+        /// </remarks>
+        protected override bool ReleaseHandle()
+        {
+            return NativeMethods.FreeLibrary(handle);
+        }
     }
 
-    public class SafeErrorInfoHandle : SafeHandle
+    /// <summary>
+    /// Represents a safe handle for COM error information (IErrorInfo interface).
+    /// </summary>
+    /// <remarks>
+    /// This class ensures that the COM error information handle is released correctly using <see cref="Marshal.Release"/> when the handle is no longer needed.
+    /// </remarks>
+    public sealed class SafeErrorInfoHandle : SafeHandle
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SafeErrorInfoHandle"/> class with a handle set to <see cref="IntPtr.Zero"/> and specifies ownership for handle release.
+        /// </summary>
         public SafeErrorInfoHandle() : base(IntPtr.Zero, true) { }
 
+        /// <summary>
+        /// Gets a value indicating whether the handle is invalid.
+        /// </summary>
+        /// <value>
+        /// Returns <see langword="true"/> if the handle is <see cref="IntPtr.Zero"/>; otherwise, <see langword="false"/>.
+        /// </value>
         public override bool IsInvalid => handle == IntPtr.Zero;
 
+        /// <summary>
+        /// Releases the COM error information handle when the object is disposed or finalized.
+        /// </summary>
+        /// <returns>
+        /// Returns <see langword="true"/> if the handle was released successfully; otherwise, <see langword="false"/>.
+        /// </returns>
+        /// <remarks>
+        /// This method calls <see cref="Marshal.Release"/> to release the COM error information handle if it is valid.
+        /// </remarks>
         protected override bool ReleaseHandle()
         {
             if (!IsInvalid)

@@ -33,7 +33,6 @@ namespace PSADT.PInvoke
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
         public static extern int GetSystemMetrics(SystemMetric nIndex);
 
-
         /// <summary>
         /// Enumerates all top-level windows on the screen.
         /// </summary>
@@ -230,14 +229,6 @@ namespace PSADT.PInvoke
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         /// <summary>
-        /// Enables the current process to be DPI-aware.
-        /// </summary>
-        /// <returns>True if the operation was successful; otherwise, false.</returns>
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetProcessDPIAware();
-
-        /// <summary>
         /// Retrieves a handle to the device context (DC) for the specified window or for the entire screen.
         /// </summary>
         /// <param name="hWnd">Handle to the window or screen.</param>
@@ -306,7 +297,7 @@ namespace PSADT.PInvoke
         /// <param name="flags">Flags that indicate the meaning of the <paramref name="item1"/> and <paramref name="item2"/> parameters. This parameter can be one or more of the values from the <see cref="SHCNF"/> enumeration.</param>
         /// <param name="item1">A handle to the first item involved in the event.</param>
         /// <param name="item2">A handle to the second item involved in the event. This parameter is optional and may be <see cref="IntPtr.Zero"/>.</param>
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);
 
         /// <summary>
@@ -322,7 +313,110 @@ namespace PSADT.PInvoke
         /// </returns>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [System.Security.SecurityCritical]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern int LoadString(SafeLibraryHandle hInstance, int uID, StringBuilder lpBuffer, int nBufferMax);
+
+        /// <summary>
+        /// Loads a string resource from the executable file associated with a specified module.
+        /// </summary>
+        /// <param name="hInstance">
+        /// A handle to an instance of the module whose executable file contains the string resource. To get the handle to the application
+        /// itself, call the GetModuleHandle function with NULL.
+        /// </param>
+        /// <param name="uID">The identifier of the string to be loaded.</param>
+        /// <param name="loadedString">
+        /// When this method returns, contains the string resource loaded from the module, if the operation is successful.
+        /// If the operation fails, this will be set to <see langword="null"/>.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the string resource is successfully loaded; otherwise, <see langword="false"/>.
+        /// To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </returns>
+        public static bool LoadString(SafeLibraryHandle hInstance, int uID, out string? loadedString)
+        {
+            const int bufferSize = 255;
+            StringBuilder buffer = new StringBuilder(bufferSize);
+
+            int result = LoadString(hInstance, uID, buffer, buffer.Capacity);
+            if (result == 0)
+            {
+                loadedString = null;
+                return false;
+            }
+
+            loadedString = buffer.ToString(0, result);
+            return true;
+        }
+
+        /// <summary>
+        /// <para>This function has no parameters.</para>
+        /// </summary>
+        /// <returns>
+        /// <para>Type: <c>Type: <c>BOOL</c></c></para>
+        /// <para>If the function succeeds, the return value is nonzero. Otherwise, the return value is zero.</para>
+        /// </returns>
+        /// <remarks>
+        /// <para>For more information, see Setting the default DPI awareness for a process.</para>
+        /// </remarks>
+        [DllImport("user32.dll", SetLastError = false, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetProcessDPIAware();
+
+        /// <summary>
+        /// <para>
+        /// It is recommended that you set the process-default DPI awareness via application manifest. See Setting the default DPI awareness
+        /// for a process for more information. Setting the process-default DPI awareness via API call can lead to unexpected application behavior.
+        /// </para>
+        /// <para>
+        /// Sets the current process to a specified dots per inch (dpi) awareness context. The DPI awareness contexts are from the
+        /// DPI_AWARENESS_CONTEXT value.
+        /// </para>
+        /// </summary>
+        /// <param name="value">A DPI_AWARENESS_CONTEXT handle to set.</param>
+        /// <returns>
+        /// <para>
+        /// This function returns TRUE if the operation was successful, and FALSE otherwise. To get extended error information, call GetLastError.
+        /// </para>
+        /// <para>
+        /// Possible errors are <c>ERROR_INVALID_PARAMETER</c> for an invalid input, and <c>ERROR_ACCESS_DENIED</c> if the default API
+        /// awareness mode for the process has already been set (via a previous API call or within the application manifest).
+        /// </para>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// This API is a more advanced version of the previously existing SetProcessDpiAwareness API, allowing for the process default to be
+        /// set to the finer-grained DPI_AWARENESS_CONTEXT values. Most importantly, this allows you to programmatically set <c>Per Monitor
+        /// v2</c> as the process default value, which is not possible with the previous API.
+        /// </para>
+        /// <para>
+        /// This method sets the default DPI_AWARENESS_CONTEXT for all threads within an application. Individual threads can have their DPI
+        /// awareness changed from the default with the SetThreadDpiAwarenessContext method.
+        /// </para>
+        /// <para>
+        /// <c>Important</c> In general, it is recommended to not use <c>SetProcessDpiAwarenessContext</c> to set the DPI awareness for your
+        /// application. If possible, you should declare the DPI awareness for your application in the application manifest. For more
+        /// information, see Setting the default DPI awareness for a process.
+        /// </para>
+        /// <para>
+        /// You must call this API before you call any APIs that depend on the DPI awareness (including before creating any UI in your
+        /// process). Once API awareness is set for an app, any future calls to this API will fail. This is true regardless of whether you
+        /// set the DPI awareness in the manifest or by using this API.
+        /// </para>
+        /// <para>If the DPI awareness level is not set, the default value is <c>DPI_AWARENESS_CONTEXT_UNAWARE</c>.</para>
+        /// </remarks>
+        [DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT value);
+
+        /// <summary>Set the DPI awareness for the current thread to the provided value.</summary>
+        /// <param name="dpiContext">The new DPI_AWARENESS_CONTEXT for the current thread. This context includes the DPI_AWARENESS value.</param>
+        /// <returns>
+        /// The old DPI_AWARENESS_CONTEXT for the thread. If the dpiContext is invalid, the thread will not be updated and the return value
+        /// will be <c>NULL</c>. You can use this value to restore the old <c>DPI_AWARENESS_CONTEXT</c> after overriding it with a predefined value.
+        /// </returns>
+        /// <remarks>Use this API to change the DPI_AWARENESS_CONTEXT for the thread from the default value for the app.</remarks>
+        [DllImport("user32.dll", SetLastError = false, ExactSpelling = true)]
+        public static extern DPI_AWARENESS_CONTEXT SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT dpiContext);
 
         #endregion
 
@@ -490,7 +584,7 @@ namespace PSADT.PInvoke
         /// <param name="lpSecurityAttributes">A pointer to a SECURITY_ATTRIBUTES structure.</param>
         /// <returns>If the function succeeds, the return value is a handle to the server end of a named pipe instance.</returns>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern SafePipeHandle CreateNamedPipe(
+        public static extern SafePipeHandle CreateNamedPipe(
             string lpName,
             uint dwOpenMode,
             uint dwPipeMode,
@@ -508,7 +602,7 @@ namespace PSADT.PInvoke
         /// <returns>If the function succeeds, the return value is nonzero.</returns>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool ConnectNamedPipe(SafePipeHandle hNamedPipe, IntPtr lpOverlapped);
+        public static extern bool ConnectNamedPipe(SafePipeHandle hNamedPipe, IntPtr lpOverlapped);
 
         /// <summary>
         /// <para>Retrieves the client process identifier for the specified named pipe.</para>
@@ -537,7 +631,7 @@ namespace PSADT.PInvoke
         /// Loads the specified module into the address space of the calling process. The module can be a dynamic-link library (DLL) or an executable file.
         /// </summary>
         /// <param name="lpLibFileName">The name of the module to be loaded. This can be either a full path or a filename without a path.</param>
-        /// <param name="hFile">Reserved; must be <see cref="SafeFileHandle.InvalidHandle"/> or <see cref="IntPtr.Zero"/>.</param>
+        /// <param name="hFile">Reserved; must be <see cref="SafeLibraryHandle.Null"/> or <see cref="IntPtr.Zero"/>.</param>
         /// <param name="dwFlags">The action to be taken when loading the module. This parameter can include one or more of the <see cref="LoadLibraryExFlags"/>.</param>
         /// <returns>
         /// If the function succeeds, the return value is a handle to the loaded module. If the function fails, the return value is <see cref="SafeLibraryHandle.InvalidHandle"/>.
@@ -545,9 +639,9 @@ namespace PSADT.PInvoke
         /// </returns>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern SafeLibraryHandle LoadLibraryEx(
-            [MarshalAs(UnmanagedType.LPTStr)] string lpLibFileName,
-            SafeFileHandle hFile,
-            LoadLibraryExFlags dwFlags);
+            [MarshalAs(UnmanagedType.LPWStr)] string lpLibFileName,
+            SafeLibraryHandle hFile,
+            [Optional] LoadLibraryExFlags dwFlags);
 
         /// <summary>
         /// Frees the loaded dynamic-link library (DLL) module and, if necessary, decrements its reference count.
@@ -557,9 +651,150 @@ namespace PSADT.PInvoke
         /// <returns>
         /// If the function succeeds, the return value is <c>true</c>. If the function fails, the return value is <c>false</c>. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
         /// </returns>
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = false)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool FreeLibrary(IntPtr hModule);
+
+        /// <summary>
+        /// Checks whether the system has completed the OOBE (Out of Box Experience) process.
+        /// </summary>
+        /// <param name="isOobeComplete">A reference to an integer where the result will be stored. The value will be set to 1 if OOBE is complete, 0 otherwise.</param>
+        /// <returns><c>true</c> if the function call succeeds; otherwise, <c>false</c>.</returns>
+        /// <remarks>
+        /// If the function fails, use <see cref="Marshal.GetLastWin32Error"/> to retrieve extended error information. Ensure the application is running with the necessary permissions.
+        /// </remarks>
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool OOBEComplete(out int isOobeComplete);
+
+        /// <summary>
+        /// Retrieves a string from the specified section in an initialization file.
+        /// </summary>
+        /// <param name="lpAppName">The name of the section containing the key name. If this parameter is null, all section names are returned.</param>
+        /// <param name="lpKeyName">The name of the key whose associated string is to be retrieved. If this parameter is null, all key names in the section are returned.</param>
+        /// <param name="lpDefault">A default string. If the key name cannot be found in the initialization file, the default value is returned.</param>
+        /// <param name="lpReturnedString">A buffer that receives the retrieved string.</param>
+        /// <param name="nSize">The size of the buffer pointed to by lpReturnedString, in characters.</param>
+        /// <param name="lpFileName">The name of the initialization file.</param>
+        /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
+        /// <remarks>
+        /// If the function succeeds, the return value is <c>true</c>. If the function fails, the return value is <c>false</c>. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </remarks>
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetPrivateProfileString(
+            [Optional] string lpAppName,
+            [Optional] string lpKeyName,
+            [Optional] string lpDefault,
+            StringBuilder lpReturnedString,
+            uint nSize,
+            string lpFileName);
+
+        /// <summary>
+        /// Retrieves a string from the specified section in an initialization file (INI file).
+        /// </summary>
+        /// <param name="lpAppName">
+        /// The name of the section containing the key. If this parameter is <c>null</c>, all section names are retrieved.
+        /// </param>
+        /// <param name="lpKeyName">
+        /// The name of the key whose associated string is to be retrieved. If this parameter is <c>null</c>, all keys in the section are retrieved.
+        /// </param>
+        /// <param name="lpDefault">
+        /// A default string. If the key name cannot be found in the initialization file, <paramref name="lpDefault"/> is returned. If this parameter is <c>null</c>, an empty string is returned.
+        /// </param>
+        /// <param name="lpFileName">
+        /// The name of the initialization file (INI file).
+        /// </param>
+        /// <param name="result">
+        /// When this method returns, contains the string associated with the specified key, or the default string if the key is not found.
+        /// </param>
+        /// <param name="charLenHint">
+        /// The hint for the buffer size. If not specified or if the value is less than 1, a default buffer size of 255 characters is used.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the string was successfully retrieved; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown when both <paramref name="lpAppName"/> and <paramref name="lpKeyName"/> are non-<c>null</c>. Either one of these parameters must be <c>null</c>.
+        /// </exception>
+        /// <remarks>
+        /// This method uses the native Windows function <c>GetPrivateProfileString</c> to retrieve a string from an INI file.
+        /// If the retrieval is successful, the string is returned via the <paramref name="result"/> out parameter.
+        /// </remarks>
+        public static bool GetIniPrivateProfileString(
+            [Optional] string? lpAppName,
+            [Optional] string? lpKeyName,
+            [Optional] string? lpDefault,
+            string lpFileName,
+            out string result,
+            int charLenHint = -1)
+        {
+            if (lpAppName != null && lpKeyName != null)
+            {
+                throw new ArgumentException("Either lpAppName or lpKeyName must be <null>.");
+            }
+
+            int bufferSize = charLenHint > 0 ? charLenHint : 255;
+            StringBuilder buffer = new StringBuilder(bufferSize);
+
+            bool success = GetPrivateProfileString(lpAppName!, lpKeyName!, lpDefault!, buffer, (uint)buffer.Capacity, lpFileName);
+
+            if (success && buffer.Length > 0)
+            {
+                result = buffer.ToString();
+                return true;
+            }
+
+            result = string.Empty;
+            return false;
+        }
+
+        /// <summary>
+        /// Writes a string to the specified section of an initialization file.
+        /// If the file does not exist, the function creates the file. 
+        /// If <paramref name="lpKeyName"/> is <c>null</c>, the entire section, including all entries within the section, is deleted.
+        /// If <paramref name="lpString"/> is <c>null</c>, the key specified by <paramref name="lpKeyName"/> is deleted.
+        /// </summary>
+        /// <param name="lpAppName">The name of the section to which the string will be written. This section name is typically enclosed in square brackets ('[]').</param>
+        /// <param name="lpKeyName">The name of the key to be associated with a string. If this parameter is <c>null</c>, the entire section, including all entries within the section, is deleted.</param>
+        /// <param name="lpString">The string to be written to the file. If this parameter is <c>null</c>, the key specified by <paramref name="lpKeyName"/> is deleted.</param>
+        /// <param name="lpFileName">The name of the initialization file. If the file does not exist, the function creates the file.</param>
+        /// <returns><c>true</c> if the function succeeds; otherwise, <c>false</c>. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.</returns>
+        /// <remarks>
+        /// This function is typically used to modify `.ini` files. It creates or modifies the file if necessary. 
+        /// Ensure that proper access permissions are granted to the file to avoid failure.
+        /// This function is case-insensitive and ignores leading and trailing white spaces in the section and key names.
+        /// </remarks>
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool WritePrivateProfileString(
+            string lpAppName,
+            [Optional] string lpKeyName,
+            [Optional] string lpString,
+            string lpFileName);
+
+        /// <summary>
+        /// Writes a string to the specified section of an initialization (.ini) file.
+        /// If the file does not exist, the function creates the file.
+        /// If <paramref name="lpKeyName"/> is <c>null</c>, the entire section, including all entries within the section, is deleted.
+        /// If <paramref name="lpString"/> is <c>null</c>, the key specified by <paramref name="lpKeyName"/> is deleted.
+        /// </summary>
+        /// <param name="lpAppName">The name of the section to which the string will be written. This section name is typically enclosed in square brackets ('[]').</param>
+        /// <param name="lpKeyName">The name of the key to be associated with a string. If this parameter is <c>null</c>, the entire section is deleted.</param>
+        /// <param name="lpString">The string to be written to the file. If this parameter is <c>null</c>, the key specified by <paramref name="lpKeyName"/> is deleted.</param>
+        /// <param name="lpFileName">The name of the initialization (.ini) file. If the file does not exist, the function creates the file.</param>
+        /// <returns>
+        /// <c>true</c> if the string was successfully written to the file; otherwise, <c>false</c>. 
+        /// To get extended error information when the method fails, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </returns>
+        /// <remarks>
+        /// This method internally calls the Windows API <see cref="WritePrivateProfileString"/> to modify `.ini` files. 
+        /// Make sure the file is not locked or in use by another process to avoid errors.
+        /// </remarks>
+        public static bool WriteIniPrivateProfileString(string lpAppName, [Optional] string? lpKeyName, [Optional] string? lpString, string lpFileName)
+        {
+            return WritePrivateProfileString(lpAppName, lpKeyName!, lpString!, lpFileName);
+        }
 
         #endregion
 
@@ -852,6 +1087,211 @@ namespace PSADT.PInvoke
             IntPtr SidsToRestrict,
             out SafeAccessToken NewTokenHandle);
 
+        /// <summary>
+        /// <para>Unloads the specified registry key and its subkeys from the registry.</para>
+        /// <para>
+        /// Applications that back up or restore system state including system files and registry hives should use the Volume Shadow Copy
+        /// Service instead of the registry functions.
+        /// </para>
+        /// </summary>
+        /// <param name="hKey">
+        /// <para>
+        /// A handle to the registry key to be unloaded. This parameter can be a handle returned by a call to RegConnectRegistry function or
+        /// one of the following predefined handles:
+        /// </para>
+        /// <para><c>HKEY_LOCAL_MACHINE</c><c>HKEY_USERS</c></para>
+        /// </param>
+        /// <param name="lpSubKey">
+        /// <para>
+        /// The name of the subkey to be unloaded. The key referred to by the lpSubKey parameter must have been created by using the
+        /// RegLoadKey function.
+        /// </para>
+        /// <para>Key names are not case sensitive.</para>
+        /// <para>For more information, see Registry Element Size Limits.</para>
+        /// </param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is true.</para>
+        /// <para>
+        /// If the function fails, the return value is a nonzero error code defined in Winerror.h. You can use the FormatMessage function
+        /// with the FORMAT_MESSAGE_FROM_SYSTEM flag to get a generic description of the error.
+        /// </para>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// This function removes a hive from the registry but does not modify the file containing the registry information. A hive is a
+        /// discrete body of keys, subkeys, and values that is rooted at the top of the registry hierarchy.
+        /// </para>
+        /// <para>
+        /// The calling process must have the SE_RESTORE_NAME and SE_BACKUP_NAME privileges on the computer in which the registry resides.
+        /// For more information, see Running with Special Privileges.
+        /// </para>
+        /// </remarks>
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool RegUnLoadKey(HKEY hKey, [MarshalAs(UnmanagedType.LPWStr)] string lpSubKey);
+
+        /// <summary>
+        /// <para>
+        /// Creates a subkey under <c>HKEY_USERS</c> or <c>HKEY_LOCAL_MACHINE</c> and loads the data from the specified registry hive into
+        /// that subkey.
+        /// </para>
+        /// <para>
+        /// Applications that back up or restore system state including system files and registry hives should use the Volume Shadow Copy
+        /// Service instead of the registry functions.
+        /// </para>
+        /// </summary>
+        /// <param name="hKey">
+        /// <para>
+        /// A handle to the key where the subkey will be created. This can be a handle returned by a call to RegConnectRegistry, or one of
+        /// the following predefined handles:
+        /// </para>
+        /// <para>
+        /// <c>HKEY_LOCAL_MACHINE</c><c>HKEY_USERS</c> This function always loads information at the top of the registry hierarchy. The
+        /// <c>HKEY_CLASSES_ROOT</c> and <c>HKEY_CURRENT_USER</c> handle values cannot be specified for this parameter, because they
+        /// represent subsets of the <c>HKEY_LOCAL_MACHINE</c> and <c>HKEY_USERS</c> handle values, respectively.
+        /// </para>
+        /// </param>
+        /// <param name="lpSubKey">
+        /// <para>
+        /// The name of the key to be created under hKey. This subkey is where the registration information from the file will be loaded.
+        /// </para>
+        /// <para>Key names are not case sensitive.</para>
+        /// <para>For more information, see Registry Element Size Limits.</para>
+        /// </param>
+        /// <param name="lpFile">
+        /// <para>
+        /// The name of the file containing the registry data. This file must be a local file that was created with the RegSaveKey function.
+        /// If this file does not exist, a file is created with the specified name.
+        /// </para>
+        /// </param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is true.</para>
+        /// <para>
+        /// If the function fails, the return value is a nonzero error code defined in Winerror.h. You can use the FormatMessage function
+        /// with the FORMAT_MESSAGE_FROM_SYSTEM flag to get a generic description of the error.
+        /// </para>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// There are two registry hive file formats. Registry hives created on current operating systems typically cannot be loaded by
+        /// earlier ones.
+        /// </para>
+        /// <para>If hKey is a handle returned by RegConnectRegistry, then the path specified in lpFile is relative to the remote computer.</para>
+        /// <para>
+        /// The calling process must have the SE_RESTORE_NAME and SE_BACKUP_NAME privileges on the computer in which the registry resides.
+        /// For more information, see Running with Special Privileges. To load a hive without requiring these special privileges, use the
+        /// RegLoadAppKey function.
+        /// </para>
+        /// </remarks>
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool RegLoadKey(HKEY hKey, [MarshalAs(UnmanagedType.LPWStr)] string lpSubKey, [MarshalAs(UnmanagedType.LPWStr)] string lpFile);
+
+        /// <summary>
+        /// <para>Establishes a connection to a predefined registry key on another computer.</para>
+        /// </summary>
+        /// <param name="lpMachineName">
+        /// <para>The name of the remote computer. The string has the following form:</para>
+        /// <para>\computername</para>
+        /// <para>The caller must have access to the remote computer or the function fails.</para>
+        /// <para>If this parameter is <c>NULL</c>, the local computer name is used.</para>
+        /// </param>
+        /// <param name="hKey">
+        /// <para>A predefined registry handle. This parameter can be one of the following predefined keys on the remote computer.</para>
+        /// <para><c>HKEY_LOCAL_MACHINE</c><c>HKEY_PERFORMANCE_DATA</c><c>HKEY_USERS</c></para>
+        /// </param>
+        /// <param name="phkResult">
+        /// <para>A pointer to a variable that receives a key handle identifying the predefined handle on the remote computer.</para>
+        /// </param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is true.</para>
+        /// <para>
+        /// If the function fails, the return value is a nonzero error code defined in Winerror.h. You can use the FormatMessage function
+        /// with the FORMAT_MESSAGE_FROM_SYSTEM flag to get a generic description of the error.
+        /// </para>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// <c>RegConnectRegistry</c> requires the Remote Registry service to be running on the remote computer. By default, this service is
+        /// configured to be started manually. To configure the Remote Registry service to start automatically, run Services.msc and change
+        /// the Startup Type of the service to Automatic.
+        /// </para>
+        /// <para><c>Windows Server 2003 and Windows XP/2000:</c> The Remote Registry service is configured to start automatically by default.</para>
+        /// <para>When a handle returned by <c>RegConnectRegistry</c> is no longer needed, it should be closed by calling RegCloseKey.</para>
+        /// <para>
+        /// If the computer is joined to a workgroup and the "Force network logons using local accounts to authenticate as Guest" policy is
+        /// enabled, the function fails. Note that this policy is enabled by default if the computer is joined to a workgroup.
+        /// </para>
+        /// <para>
+        /// If the current user does not have proper access to the remote computer, the call to <c>RegConnectRegistry</c> fails. To connect
+        /// to a remote registry, call LogonUser with LOGON32_LOGON_NEW_CREDENTIALS and ImpersonateLoggedOnUser before calling <c>RegConnectRegistry</c>.
+        /// </para>
+        /// <para>
+        /// <c>Windows 2000:</c> One possible workaround is to establish a session to an administrative share such as IPC$ using a different
+        /// set of credentials. To specify credentials other than those of the current user, use the WNetAddConnection2 function to connect
+        /// to the share. When you have finished accessing the registry, cancel the connection.
+        /// </para>
+        /// <para>
+        /// <c>Windows XP Home Edition:</c> You cannot use this function to connect to a remote computer running Windows XP Home Edition.
+        /// This function does work with the name of the local computer even if it is running Windows XP Home Edition because this bypasses
+        /// the authentication layer.
+        /// </para>
+        /// </remarks>
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool RegConnectRegistry([Optional, MarshalAs(UnmanagedType.LPWStr)] string lpMachineName, HKEY hKey, out SafeRegistryHandle phkResult);
+
+        /// <summary>
+        /// <para>Copies the specified registry key, along with its values and subkeys, to the specified destination key.</para>
+        /// </summary>
+        /// <param name="hKeySrc">
+        /// <para>
+        /// A handle to an open registry key. The key must have been opened with the KEY_READ access right. For more information, see
+        /// Registry Key Security and Access Rights.
+        /// </para>
+        /// <para>This handle is returned by the RegCreateKeyEx or RegOpenKeyEx function, or it can be one of the predefined keys.</para>
+        /// </param>
+        /// <param name="lpSubKey">
+        /// <para>
+        /// The name of the key. This key must be a subkey of the key identified by the hKeySrc parameter. This parameter can also be <c>NULL</c>.
+        /// </para>
+        /// </param>
+        /// <param name="hKeyDest">
+        /// <para>A handle to the destination key. The calling process must have KEY_CREATE_SUB_KEY access to the key.</para>
+        /// <para>This handle is returned by the RegCreateKeyEx or RegOpenKeyEx function, or it can be one of the predefined keys.</para>
+        /// </param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is true.</para>
+        /// <para>
+        /// If the function fails, the return value is a nonzero error code defined in Winerror.h.
+        /// </para>
+        /// </returns>
+        /// <remarks>
+        /// <para>This function also copies the security descriptor for the key.</para>
+        /// <para>
+        /// To compile an application that uses this function, define _WIN32_WINNT as 0x0600 or later. For more information, see Using the
+        /// Windows Headers.
+        /// </para>
+        /// </remarks>
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool RegCopyTree(HKEY hKeySrc, [Optional, MarshalAs(UnmanagedType.LPWStr)] string lpSubKey, HKEY hKeyDest);
+
+        /// <summary>Closes a handle to the specified registry key.</summary>
+        /// <param name="hKey">
+        /// A handle to the open key to be closed. The handle must have been opened by the RegCreateKeyEx, RegCreateKeyTransacted,
+        /// RegOpenKeyEx, RegOpenKeyTransacted, or RegConnectRegistry function.
+        /// </param>
+        /// <returns>
+        /// If the function succeeds, the return value is ERROR_SUCCESS.
+        /// <para>
+        /// If the function fails, the return value is a nonzero error code defined in Winerror.h.
+        /// </para>
+        /// </returns>
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool RegCloseKey(HKEY hKey);
+
         #endregion
 
         #region PInvoke: userenv.dll
@@ -957,15 +1397,66 @@ namespace PSADT.PInvoke
         #region PInvoke: shcore.dll
 
         /// <summary>
-        /// Retrieves the DPI for a given monitor.
+        /// <para>
+        /// It is recommended that you set the process-default DPI awareness via application manifest. See Setting the default DPI awareness
+        /// for a process for more information. Setting the process-default DPI awareness via API call can lead to unexpected application behavior.
+        /// </para>
+        /// <para>
+        /// Sets the process-default DPI awareness level. This is equivalent to calling SetProcessDpiAwarenessContext with the corresponding
+        /// DPI_AWARENESS_CONTEXT value.
+        /// </para>
         /// </summary>
-        /// <param name="hMonitor">Handle to the monitor.</param>
-        /// <param name="dpiType">The DPI type to retrieve.</param>
-        /// <param name="dpiX">The horizontal DPI.</param>
-        /// <param name="dpiY">The vertical DPI.</param>
-        /// <returns>The status of the operation.</returns>
-        [DllImport("shcore.dll", SetLastError = false, CharSet = CharSet.Unicode)]
-        public static extern int GetDpiForMonitor(IntPtr hMonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+        /// <param name="value">The DPI awareness value to set. Possible values are from the PROCESS_DPI_AWARENESSenumeration.</param>
+        /// <returns>
+        /// <para>This function returns one of the following values.</para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Return code</term>
+        /// <term>Description</term>
+        /// </listheader>
+        /// <item>
+        /// <term>S_OK</term>
+        /// <term>The DPI awareness for the app was set successfully.</term>
+        /// </item>
+        /// <item>
+        /// <term>E_INVALIDARG</term>
+        /// <term>The value passed in is not valid.</term>
+        /// </item>
+        /// <item>
+        /// <term>E_ACCESSDENIED</term>
+        /// <term>The DPI awareness is already set, either by calling this API previously or through the application (.exe) manifest.</term>
+        /// </item>
+        /// </list>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// It is recommended that you set the process-default DPI awareness via application manifest. See Setting the default DPI awareness
+        /// for a process for more information. Setting the process-default DPI awareness via API call can lead to unexpected application behavior.
+        /// </para>
+        /// <para>
+        /// Previous versions of Windows only had one DPI awareness value for the entire application. For those applications, the
+        /// recommendation was to set the DPI awareness value in the manifest as described in PROCESS_DPI_AWARENESS. Under that
+        /// recommendation, you were not supposed to use <c>SetProcessDpiAwareness</c> to update the DPI awareness. In fact, future calls to
+        /// this API would fail after the DPI awareness was set once. Now that DPI awareness is tied to a thread rather than an application,
+        /// you can use this method to update the DPI awareness. However, consider using SetThreadDpiAwarenessContext instead.
+        /// </para>
+        /// <para><c>Important</c>
+        /// <para></para>
+        /// For older applications, it is strongly recommended to not use <c>SetProcessDpiAwareness</c> to set the DPI awareness for your
+        /// application. Instead, you should declare the DPI awareness for your application in the application manifest. See
+        /// PROCESS_DPI_AWARENESS for more information about the DPI awareness values and how to set them in the manifest.
+        /// </para>
+        /// <para>
+        /// You must call this API before you call any APIs that depend on the dpi awareness. This is part of the reason why it is
+        /// recommended to use the application manifest rather than the <c>SetProcessDpiAwareness</c> API. Once API awareness is set for an
+        /// app, any future calls to this API will fail. This is true regardless of whether you set the DPI awareness in the manifest or by
+        /// using this API.
+        /// </para>
+        /// <para>If the DPI awareness level is not set, the default value is <c>PROCESS_DPI_UNAWARE</c>.</para>
+        /// </remarks>
+        [DllImport("shcore.dll", SetLastError = false, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
 
         #endregion
 
@@ -1008,10 +1499,5 @@ namespace PSADT.PInvoke
 
         #endregion
 
-        #region PInvoke: name.dll
-
-
-
-        #endregion
     }
 }
