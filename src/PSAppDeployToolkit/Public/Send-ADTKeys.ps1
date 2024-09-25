@@ -128,7 +128,7 @@ function Send-ADTKeys
                 try
                 {
                     # Bring the window to the foreground and make sure it's enabled.
-                    if (![PSADT.UiAutomation]::BringWindowToFront($WindowHandle))
+                    if (![PSADT.GUI.UiAutomation]::BringWindowToFront($WindowHandle))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new('Failed to bring window to foreground.')
@@ -139,7 +139,7 @@ function Send-ADTKeys
                         }
                         throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                     }
-                    if (![PSADT.UiAutomation]::IsWindowEnabled($WindowHandle))
+                    if (![PSADT.GUI.UiAutomation]::IsWindowEnabled($WindowHandle))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new('Unable to send keys to window because it may be disabled due to a modal dialog being shown.')

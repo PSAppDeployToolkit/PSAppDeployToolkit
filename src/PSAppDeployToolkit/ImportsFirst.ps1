@@ -36,29 +36,7 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 if ($Host.Name.Equals('ConsoleHost'))
 {
     # Use the most recent API supported by the operating system.
-    $null = switch ([System.Environment]::OSVersion.Version)
-    {
-        { $_ -ge '10.0.15063.0' }
-        {
-            [PSADT.UiAutomation]::SetProcessDpiAwarenessContext([PSADT.UiAutomation+DPI_AWARENESS_CONTEXT]::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)
-            break
-        }
-        { $_ -ge '10.0.14393.0' }
-        {
-            [PSADT.UiAutomation]::SetProcessDpiAwarenessContext([PSADT.UiAutomation+DPI_AWARENESS_CONTEXT]::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE)
-            break
-        }
-        { $_ -ge '6.3.9600.0' }
-        {
-            [PSADT.UiAutomation]::SetProcessDpiAwareness([PSADT.UiAutomation+PROCESS_DPI_AWARENESS]::PROCESS_PER_MONITOR_DPI_AWARE)
-            break
-        }
-        { $_ -ge '6.0.6000.0' }
-        {
-            [PSADT.UiAutomation]::SetProcessDPIAware()
-            break
-        }
-    }
+    [PSADT.GUI.UiAutomation]::SetProcessDpiAwarenessForOSVersion()
 }
 
 # All WinForms-specific initialistion code.

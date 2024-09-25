@@ -477,7 +477,7 @@ function Show-ADTInstallationWelcome
                                         try
                                         {
                                             & $Script:CommandTable.'Write-ADTLogEntry' -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
-                                            $null = [PSADT.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
+                                            $null = [PSADT.GUI.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
                                             if (!$runningProcess.CloseMainWindow())
                                             {
                                                 & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3

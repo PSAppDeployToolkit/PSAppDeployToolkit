@@ -20,9 +20,9 @@ function Disable-ADTWindowCloseButton
         [System.IntPtr]$WindowHandle
     )
 
-    $null = if (($menuHandle = [PSADT.UiAutomation]::GetSystemMenu($WindowHandle, $false)) -and ($menuHandle -ne [System.IntPtr]::Zero))
+    $null = if (($menuHandle = [PSADT.GUI.UiAutomation]::GetSystemMenu($WindowHandle, $false)) -and ($menuHandle -ne [System.IntPtr]::Zero))
     {
-        [PSADT.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
-        [PSADT.UiAutomation]::DestroyMenu($menuHandle)
+        [PSADT.GUI.UiAutomation]::EnableMenuItem($menuHandle, 0xF060, 0x00000001)
+        [PSADT.GUI.UiAutomation]::DestroyMenu($menuHandle)
     }
 }
