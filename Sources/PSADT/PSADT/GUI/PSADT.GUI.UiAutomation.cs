@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Threading;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls.Primitives;
 using PSADT.PInvoke;
+using PSADT.OperatingSystem;
+using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.GUI
 {
@@ -443,81 +446,128 @@ namespace PSADT.GUI
         }
 
         /// <summary>
-        /// Sets the current process as DPI aware.
+        /// Attempts to set the current process as DPI aware.
         /// </summary>
-        /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public static bool SetCurrentProcessDPIAware()
-        {
-            return NativeMethods.SetProcessDPIAware();
-        }
-
-        /// <summary>
-        /// Gets the DPI settings of the primary display.
-        /// </summary>
-        /// <returns>A <see cref="DpiSettings"/> object containing the horizontal and vertical DPI.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if any operation fails.</exception>
-        public static DpiSettings GetPrimaryMonitorDpiSettings()
+        /// <returns>
+        /// <c>true</c> if the process was successfully set as DPI aware; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the operation fails to set the process as DPI aware.
+        /// </exception>
+        /// <remarks>
+        /// Setting a process as DPI aware improves its rendering and scaling behavior on high-DPI displays.
+        /// This method wraps the native <see cref="SetProcessDPIAware"/> function, which does not set last error codes for failure.
+        /// </remarks>
+        public static bool TrySetProcessDPIAware()
         {
             if (!NativeMethods.SetProcessDPIAware())
             {
-                int errorCode = Marshal.GetLastWin32Error();
-                throw new InvalidOperationException($"Failed to set process DPI aware. Error code: {errorCode}");
+                return false;
             }
 
-            IntPtr hDC = NativeMethods.GetDC(IntPtr.Zero);
-            if (hDC == IntPtr.Zero)
-            {
-                int errorCode = Marshal.GetLastWin32Error();
-                throw new InvalidOperationException($"Failed to get device context. Error code: {errorCode}");
-            }
-
-            try
-            {
-                int dpiX = NativeMethods.GetDeviceCaps(hDC, NativeMethods.LOGPIXELSX);
-                int dpiY = NativeMethods.GetDeviceCaps(hDC, NativeMethods.LOGPIXELSY);
-
-                return new DpiSettings(dpiX, dpiY);
-            }
-            finally
-            {
-                if (NativeMethods.ReleaseDC(IntPtr.Zero, hDC) == 0)
-                {
-                    int errorCode = Marshal.GetLastWin32Error();
-                    throw new InvalidOperationException($"Failed to release device context. Error code: {errorCode}");
-                }
-            }
+            return true;
         }
-
 
         /// <summary>
-        /// Gets the DPI settings for the monitor where the foreground window is running.
+        /// Attempts to set the DPI awareness level for the current process.
         /// </summary>
-        /// <returns>A <see cref="DpiSettings"/> object containing the horizontal and vertical DPI.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if any operation fails.</exception>
-        public static DpiSettings GetMonitorDpiForForegroundWindow()
+        /// <param name="dpiAwareness">
+        /// The DPI awareness level to set for the process. Use one of the predefined <see cref="PROCESS_DPI_AWARENESS"/> values.
+        /// </param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the provided <paramref name="dpiAwareness"/> value is invalid.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the operation fails to set the DPI awareness level for the process.
+        /// </exception>
+        /// <remarks>
+        /// Setting the DPI awareness level affects how the current process interacts with the system's DPI settings. 
+        /// It can improve the rendering quality of the application's UI on high-DPI monitors or modify the scaling behavior of various UI elements.
+        /// <para>
+        /// This method will throw an <see cref="InvalidOperationException"/> if the system is unable to change the DPI awareness level.
+        /// </para>
+        /// </remarks>
+        public static void SetProcessDpiAwareness(PROCESS_DPI_AWARENESS dpiAwareness)
         {
-            IntPtr hWnd = NativeMethods.GetForegroundWindow();
-            if (hWnd == IntPtr.Zero)
+            if (!Enum.IsDefined(typeof(PROCESS_DPI_AWARENESS), dpiAwareness))
             {
-                throw new InvalidOperationException("Failed to get the handle of the foreground window.");
+                throw new ArgumentException("Invalid DPI awareness level provided.", nameof(dpiAwareness));
             }
 
-            IntPtr hMonitor = NativeMethods.MonitorFromWindow(hWnd, NativeMethods.MONITOR_DEFAULTTOPRIMARY);
-            if (hMonitor == IntPtr.Zero)
+            if (!NativeMethods.SetProcessDpiAwareness(dpiAwareness))
             {
-                int errorCode = Marshal.GetLastWin32Error();
-                throw new InvalidOperationException($"Failed to get monitor from window. Error code: {errorCode}");
+                ErrorHandler.ThrowSystemError("Failed to set DPI awareness level for the process.", SystemErrorType.Win32);
             }
-
-            uint dpiX, dpiY;
-            int result = NativeMethods.GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out dpiX, out dpiY);
-            if (result != 0)
-            {
-                throw new InvalidOperationException($"Failed to get DPI for monitor. Error code: {result}");
-            }
-
-            return new DpiSettings((int)dpiX, (int)dpiY);
         }
 
+        /// <summary>
+        /// Attempts to set the DPI awareness context for the current process.
+        /// </summary>
+        /// <param name="dpiContext">
+        /// The DPI awareness context to set for the process. Use one of the predefined <see cref="DPI_AWARENESS_CONTEXT"/> values.
+        /// </param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the provided <paramref name="dpiContext"/> is invalid (i.e., <see cref="IntPtr.Zero"/> is <c>true</c>).
+        /// </exception>
+        /// <exception cref="Win32Exception">
+        /// Thrown if the operation fails to set the DPI awareness context, with additional information from the system error code.
+        /// </exception>
+        /// <remarks>
+        /// Setting the DPI awareness context affects how the current process interacts with the system's DPI settings. This can improve
+        /// the rendering quality of the application's UI on high-DPI monitors or change the scaling behavior for elements such as menus,
+        /// windows, and controls.
+        /// The function will throw a <see cref="Win32Exception"/> if the underlying native method call fails.
+        /// </remarks>
+
+        public static void SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT dpiContext)
+        {
+            if (dpiContext.IsNull)
+            {
+                throw new ArgumentException("Invalid DPI awareness context provided.", nameof(dpiContext));
+            }
+
+            if (!NativeMethods.SetProcessDpiAwarenessContext(dpiContext))
+            {
+                ErrorHandler.ThrowSystemError("Failed to set DPI awareness context.", SystemErrorType.Win32);
+            }
+        }
+
+        /// <summary>
+        /// Sets the appropriate DPI awareness for the current process based on the operating system version.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the appropriate DPI awareness setting could not be applied.</exception>
+        /// <remarks>
+        /// This method will check the operating system version and apply the most advanced DPI awareness setting supported by the system.
+        /// It will attempt to use Per Monitor DPI Awareness v2 for Windows 10 (version 15063 and later), fallback to earlier versions for
+        /// Windows 8.1 and above, and finally to older APIs for Windows 7 and Vista.
+        /// </remarks>
+        public static void SetProcessDpiAwarenessForOSVersion()
+        {
+            OSVersionInfo osVersionInfo = OSHelper.GetOsVersionInfo();
+
+            if (osVersionInfo.Version >= new Version(10, 0, 15063)) // Windows 10, Creators Update (Version 1703) and later
+            {
+                SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            }
+            else if (osVersionInfo.Version >= new Version(10, 0, 14393)) // Windows 10, Anniversary Update (Version 1607)
+            {
+                SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+            }
+            else if (osVersionInfo.Version >= new Version(6, 3, 9600)) // Windows 8.1
+            {
+                SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+            }
+            else if (osVersionInfo.Version >= new Version(6, 0, 6000)) // Windows Vista or Windows 7
+            {
+                if (!TrySetProcessDPIAware())
+                {
+                    throw new InvalidOperationException("Failed to set DPI awareness to Process DPI Aware.");
+                }
+            }
+            else
+            {
+                throw new NotSupportedException("The current operating system version does not support any known DPI awareness APIs.");
+            }
+        }
     }
 }

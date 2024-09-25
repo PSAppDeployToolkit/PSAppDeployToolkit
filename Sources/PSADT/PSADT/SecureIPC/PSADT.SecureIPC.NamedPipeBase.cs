@@ -199,12 +199,12 @@ namespace PSADT.SecureIPC
                 messageAsString = System.Text.Encoding.UTF8.GetString(utf8Bytes);
             }
 
-            // Append the message to the file using StreamWriter with UTF-8 encoding without BOM
-            using (var streamWriter = new StreamWriter(filePath, true, new System.Text.UTF8Encoding(false)))
+            using var streamWriter = new StreamWriter(new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite), new System.Text.UTF8Encoding(false))
             {
-                // Write the UTF-8 converted message to the file
-                streamWriter.Write(messageAsString);
-            }
+                AutoFlush = true
+            };
+
+            streamWriter.Write(messageAsString);
         }
 
         /// <summary>

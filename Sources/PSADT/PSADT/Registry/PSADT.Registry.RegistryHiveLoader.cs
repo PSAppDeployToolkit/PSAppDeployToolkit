@@ -2,9 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Timer;
 using PSADT.Logging;
 using PSADT.Diagnostics.Exceptions;
-using PSADT.Timer;
 
 namespace PSADT.Registry
 {

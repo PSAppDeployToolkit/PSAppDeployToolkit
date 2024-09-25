@@ -58,7 +58,7 @@ namespace PSADT.Logging
         /// </summary>
         /// <param name="logOptions">Custom LogOptions.</param>
         /// <param name="errorParser">Custom error parser. If null, a default ExceptionUtility is used.</param>
-        public Logger(LogOptions logOptions, StackParserConfig? errorParser = null)
+        public Logger(LogOptions? logOptions = null, StackParserConfig? errorParser = null)
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _logOptions = logOptions ?? throw new ArgumentNullException(nameof(logOptions));
@@ -75,6 +75,14 @@ namespace PSADT.Logging
             EnsureDefaultLogDestination();
 
             SubscribeToEventHandlers();
+        }
+
+        public LogEntryBuilder Create(
+            [System.Runtime.CompilerServices.CallerMemberName] string? callerMethodName = null,
+            [System.Runtime.CompilerServices.CallerFilePath] string? callerFileName = null,
+            [System.Runtime.CompilerServices.CallerLineNumber] int? callerLineNumber = null)
+        {
+            return new LogEntryBuilder(this, new CallerContext(callerMethodName, callerFileName, callerLineNumber));
         }
 
         /// <summary>
@@ -412,8 +420,7 @@ namespace PSADT.Logging
 
         private async Task LogSelfAsync(string message, LogLevel messageType, LogType logCategory = LogType.LoggingSystem)
         {
-            var callerContext = new CallerContext();
-            var logEntry = new LogEntry(message, messageType, callerContext, Environment.CurrentManagedThreadId, logCategory);
+            var logEntry = new LogEntry(message, messageType, new CallerContext(), Environment.CurrentManagedThreadId, logCategory);
             await Enqueue(logEntry);
         }
 
