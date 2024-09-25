@@ -59,7 +59,7 @@
         'PresentationCore'
         'PresentationFramework'
         'WindowsBase'
-        'PSAppDeployToolkit.dll'
+        'lib\net461\PSADT.dll'
         'lib\ProgressWindow\PSADT.UserInterface.dll'
     )
 
