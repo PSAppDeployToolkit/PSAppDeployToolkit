@@ -606,7 +606,7 @@ function Remove-MSIApplications
     # Invoke execution.
     try
     {
-        Remove-ADTInstalledApplication @raaParams
+        Remove-ADTInstalledApplication -ApplicationType MSI @raaParams
     }
     catch
     {
