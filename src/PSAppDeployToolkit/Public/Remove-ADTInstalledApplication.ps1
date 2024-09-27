@@ -97,25 +97,26 @@ function Remove-ADTInstalledApplication
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Parameters,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AddParameters,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
         [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
