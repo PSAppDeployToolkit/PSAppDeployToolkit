@@ -10,7 +10,7 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$CompatibilityMode
     hidden [ValidateNotNullOrEmpty()][System.Management.Automation.PSVariableIntrinsics]$CallerVariables
     hidden [AllowEmptyCollection()][System.Collections.Generic.List[System.IO.FileInfo]]$MountedWimFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
-    hidden [AllowEmptyCollection()][System.Collections.Generic.List[PSADT.Types.LogObject]]$LogBuffer = [System.Collections.Generic.List[PSADT.Types.LogObject]]::new()
+    hidden [AllowEmptyCollection()][System.Collections.Generic.List[PSADT.Types.LogEntry]]$LogBuffer = [System.Collections.Generic.List[PSADT.Types.LogEntry]]::new()
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$ZeroConfigInitiated
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
@@ -911,21 +911,9 @@ class ADTSession
 
         # Add this log message to the session's buffer.
         $Message | & {
-            begin
-            {
-                $logObject = @{
-                    Timestamp = $dateNow
-                    Invoker = $invoker
-                    Severity = $Severity
-                    Source = $Source
-                    ScriptSection = $ScriptSection
-                }
-            }
-
             process
             {
-                $logObject.Message = $_
-                $this.LogBuffer.Add($logObject)
+                $this.LogBuffer.Add([PSADT.Types.LogEntry]::new($dateNow, $invoker, $_, $Severity, $Source, $ScriptSection))
             }
         }
 
