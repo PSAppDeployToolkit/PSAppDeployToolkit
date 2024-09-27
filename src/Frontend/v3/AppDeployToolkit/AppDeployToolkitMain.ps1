@@ -2362,7 +2362,7 @@ function Execute-MSI
         [System.String]$Action,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
-        [ValidateScript({ ($_ -match (Get-ADTEnvironment).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_)) })]
+        [ValidateScript({ ($_ -match (Get-ADTMsiProductCodeRegexPattern)) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_)) })]
         [Alias('FilePath')]
         [System.String]$Path,
 
