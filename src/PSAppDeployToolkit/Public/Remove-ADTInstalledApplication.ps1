@@ -86,7 +86,10 @@ function Remove-ADTInstalledApplication
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FilterScript', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
-    param (
+    [OutputType([PSADT.Types.ProcessResult])]
+    [OutputType([PSADT.Types.ProcessInfo])]
+    param
+    (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
@@ -145,6 +148,7 @@ function Remove-ADTInstalledApplication
             Path                   = $null
         }
     }
+
     process
     {
         try
@@ -264,13 +268,15 @@ function Remove-ADTInstalledApplication
         {
             & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
-    }
-    end
-    {
+
         if ($PassThru -and $ExecuteResults)
         {
-            & $Script:CommandTable.'Write-Output' -InputObject ($ExecuteResults)
+            return $ExecuteResults
         }
+    }
+
+    end
+    {
         & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }
