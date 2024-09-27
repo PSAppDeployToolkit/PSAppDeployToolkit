@@ -244,7 +244,7 @@ https://psappdeploytoolkit.com
                             $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
                             $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
                         }
-                        elseif ($uninstallString -match '^(.+?\.exe)$')
+                        elseif ($uninstallString -match '^"?(.+?\.exe)"?$')
                         {
                             $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
                             $uninstallStringParams = $null
