@@ -74,6 +74,10 @@ function Show-ADTInstallationProgress
         [System.String]$WindowLocation = 'Default',
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Windows.TextAlignment]$MessageAlignment,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]

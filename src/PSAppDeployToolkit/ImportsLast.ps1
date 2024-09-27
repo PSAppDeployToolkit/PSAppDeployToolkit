@@ -190,7 +190,7 @@ $Dialogs.Classic.ProgressWindow.XamlCode = [System.IO.StringReader]::new(@'
             <ColumnDefinition MinWidth="350" MaxWidth="350" Width="350" />
         </Grid.ColumnDefinitions>
         <Image x:Name="ProgressBanner" Grid.ColumnSpan="2" Margin="0,0,0,0" Grid.Row="0" />
-        <TextBlock x:Name="ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,30,64,30" Text="" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Padding="10,0,10,0" TextWrapping="Wrap" />
+        <TextBlock x:Name="ProgressText" Grid.Row="1" Grid.Column="1" Margin="0,30,64,30" Text="" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="" Padding="10,0,10,0" TextWrapping="Wrap" />
         <Ellipse x:Name="ellipse" Grid.Row="1" Grid.Column="0" Margin="0,0,0,0" StrokeThickness="5" RenderTransformOrigin="0.5,0.5" Height="32" Width="32" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Ellipse.RenderTransform>
                 <TransformGroup>
