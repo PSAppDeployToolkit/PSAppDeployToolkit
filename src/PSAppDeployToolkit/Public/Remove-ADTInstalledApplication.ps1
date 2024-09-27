@@ -153,21 +153,23 @@ function Remove-ADTInstalledApplication
     {
         try
         {
-            [PSADT.Types.InstalledApplication[]]$removeApplications = & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
-
             # Filter the results to restrict to specified applciation type
-            if ($ApplicationType -eq 'MSI')
+            $removeApplications = if ($ApplicationType -eq 'MSI')
             {
-                $removeApplications = $removeApplications.Where({ $_.WindowsInstaller -and $_.ProductCode })
+                & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams | & { process { if ($_.WindowsInstaller -and $_.ProductCode) { return $_ } } }
             }
             elseif ($ApplicationType -eq 'EXE')
             {
-                $removeApplications = $removeApplications.Where({ -not $_.WindowsInstaller })
+                & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams | & { process { if (!$_.WindowsInstaller) { return $_ } } }
+            }
+            else
+            {
+                & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
             }
 
             $ExecuteResults = if ($null -ne $removeApplications)
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found [$($removeApplications.Count)] application(s) of type [$ApplicationType] that matched the specified criteria [$FilterScript]."
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found [$(($removeApplications | & $Script:CommandTable.'Measure-Object').Count)] application(s) of type [$ApplicationType] that matched the specified criteria [$FilterScript]."
 
                 foreach ($removeApplication in $removeApplications)
                 {
