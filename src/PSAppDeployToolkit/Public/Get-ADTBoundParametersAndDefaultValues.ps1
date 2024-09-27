@@ -134,12 +134,12 @@ function Get-ADTBoundParametersAndDefaultValues
                     {
                         $Invocation.MyCommand.ScriptBlock.Ast.Parameters
                     }
-                    elseif ($Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock -and $Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock.Count)
+                    elseif ($Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock -and $Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock.Parameters.Count)
                     {
                         $Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock.Parameters
                     }
                 }
-                elseif ($Invocation.MyCommand.ScriptBlock.Ast.ParamBlock -and $Invocation.MyCommand.ScriptBlock.Ast.ParamBlock.Count)
+                elseif ($Invocation.MyCommand.ScriptBlock.Ast.ParamBlock -and $Invocation.MyCommand.ScriptBlock.Ast.ParamBlock.Parameters.Count)
                 {
                     $Invocation.MyCommand.ScriptBlock.Ast.ParamBlock.Parameters
                 }
