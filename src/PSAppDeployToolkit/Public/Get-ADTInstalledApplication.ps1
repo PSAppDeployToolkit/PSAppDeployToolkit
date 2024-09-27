@@ -78,6 +78,11 @@ function Get-ADTInstalledApplication
         # Announce start.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $updatesSkippedCounter = 0
+        $uninstallKeyPaths = @('Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*')
+        if ([System.Environment]::Is64BitProcess)
+        {
+            $uninstallKeyPaths += 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+        }
     }
 
     process
@@ -88,7 +93,7 @@ function Get-ADTInstalledApplication
             try
             {
                 # Create a custom object with the desired properties for the installed applications and sanitize property details.
-                $installedApplication = & $Script:CommandTable.'Get-ItemProperty' -Path 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction Ignore | & {
+                $installedApplication = & $Script:CommandTable.'Get-ItemProperty' -Path $uninstallKeyPaths -ErrorAction Ignore | & {
                     process
                     {
                         # Exclude anything without a DisplayName field.
@@ -118,7 +123,7 @@ function Get-ADTInstalledApplication
                             Publisher            = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore
                             SystemComponent      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore
                             WindowsInstaller     = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore
-                            Is64BitApplication   = [System.Environment]::Is64BitOperatingSystem -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
+                            Is64BitApplication   = [System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
                         }
 
                         # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
