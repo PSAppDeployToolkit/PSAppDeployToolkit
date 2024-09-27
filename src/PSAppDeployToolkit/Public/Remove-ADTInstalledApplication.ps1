@@ -93,7 +93,7 @@ function Remove-ADTInstalledApplication
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Any', 'MSI', 'EXE')]
-        [System.String]$ApplicationType = 'MSI',
+        [System.String]$ApplicationType = 'Any',
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
