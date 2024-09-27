@@ -203,6 +203,9 @@ Removes one or more items from each user profile on the system.
 ### [Remove-ADTFolder](Remove-ADTFolder.md)
 Remove folder and files if they exist.
 
+### [Remove-ADTInstalledApplication](Remove-ADTInstalledApplication.md)
+Removes all MSI applications matching the specified application name.
+
 ### [Remove-ADTInvalidFileNameChars](Remove-ADTInvalidFileNameChars.md)
 Remove invalid characters from the supplied string.
 
@@ -220,9 +223,6 @@ Removes a callback function from the ADT session opening event.
 
 ### [Remove-ADTSessionStartingCallback](Remove-ADTSessionStartingCallback.md)
 Removes a callback function from the ADT session starting event.
-
-### [Remove-MSIApplications](Remove-MSIApplications.md)
-Removes all MSI applications matching the specified application name.
 
 ### [Resolve-ADTErrorRecord](Resolve-ADTErrorRecord.md)
 Enumerates error record details.
