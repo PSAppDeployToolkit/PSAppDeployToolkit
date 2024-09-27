@@ -7,93 +7,83 @@
 function Remove-ADTInstalledApplication
 {
     <#
-.SYNOPSIS
+    .SYNOPSIS
+        Removes all MSI applications matching the specified application name.
 
-Removes all MSI applications matching the specified application name.
+    .DESCRIPTION
+        Removes all MSI applications matching the specified application name.
 
-.DESCRIPTION
+        Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
 
-Removes all MSI applications matching the specified application name.
-Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
+    .PARAMETER FilterScript
+        Specifies a script block to filter the applications to be removed. The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
 
-.PARAMETER FilterScript
+    .PARAMETER ApplicationType
+        Specifies the type of application to remove. Valid values are 'Any', 'MSI', and 'EXE'. The default value is 'MSI'.
 
-Specifies a script block to filter the applications to be removed. The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
+    .PARAMETER Parameters
+        Overrides the default MSI parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
-.PARAMETER ApplicationType
+    .PARAMETER AddParameters
+        Adds to the default parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
-Specifies the type of application to remove. Valid values are 'Any', 'MSI', and 'EXE'. The default value is 'MSI'.
+    .PARAMETER IncludeUpdatesAndHotfixes
+        Include matches against updates and hotfixes in results.
 
-.PARAMETER Parameters
+    .PARAMETER LoggingOptions
+        Overrides the default logging options specified in the configuration file. Default options are: "/L*v".
 
-Overrides the default MSI parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
+    .PARAMETER LogFileName
+        Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
 
-.PARAMETER AddParameters
+        For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
-Adds to the default parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
+    .PARAMETER PassThru
+        Returns ExitCode, STDOut, and STDErr output from the process.
 
-.PARAMETER IncludeUpdatesAndHotfixes
+    .INPUTS
+        None
 
-Include matches against updates and hotfixes in results.
+        You cannot pipe objects to this function.
 
-.PARAMETER LoggingOptions
+    .OUTPUTS
+        PSADT.Types.ProcessResult
 
-Overrides the default logging options specified in the configuration file. Default options are: "/L*v".
+        Returns an object with the results of the installation if -PassThru is specified.
+        - ExitCode
+        - StdOut
+        - StdErr
 
-.PARAMETER LogFileName
+    .EXAMPLE
+        Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java'}
 
-Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
-For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
+        Removes all MSI applications that contain the name 'Java' in the DisplayName.
 
-.PARAMETER PassThru
+    .EXAMPLE
+        Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
 
-Returns ExitCode, STDOut, and STDErr output from the process.
+        Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', 64-bit, and not version 8.x.
 
-.INPUTS
+    .EXAMPLE
+        Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
 
-None
+        Remove all EXE applications starting with the name 'Vim' followed by a space, using the '/S' parameter.
 
-You cannot pipe objects to this function.
+    .NOTES
+        More reading on how to create filterscripts https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object?view=powershell-5.1#description
 
-.OUTPUTS
+    .NOTES
+        An active ADT session is NOT required to use this function.
 
-PSObject
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
-Returns an object with the following properties:
-- ExitCode
-- StdOut
-- StdErr
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
 
-.EXAMPLE
-
-Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java'}
-
-Removes all MSI applications that contain the name 'Java' in the DisplayName.
-
-.EXAMPLE
-
-Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
-
-Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', 64-bit, and not version 8.x.
-
-.EXAMPLE
-
-Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
-
-Remove all EXE applications starting with the name 'Vim' followed by a space, using the '/S' parameter.
-
-.NOTES
-
-More reading on how to create filterscripts https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object?view=powershell-5.1#description
-
-.NOTES
-
-This function can be called without an active ADT session..
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FilterScript', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param (

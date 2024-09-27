@@ -85,7 +85,7 @@ function Start-ADTMsiProcess
     .OUTPUTS
         PSADT.Types.ProcessResult
 
-        Returns a PSObject with the results of the installation if -PassThru is specified.
+        Returns an object with the results of the installation if -PassThru is specified.
         - ExitCode
         - StdOut
         - StdErr
