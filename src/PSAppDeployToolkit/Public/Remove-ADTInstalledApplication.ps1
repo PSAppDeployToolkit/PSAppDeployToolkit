@@ -40,9 +40,9 @@ Include matches against updates and hotfixes in results.
 
 Overrides the default logging options specified in the configuration file. Default options are: "/L*v".
 
-.PARAMETER LogName
+.PARAMETER LogFileName
 
-Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
+Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
 For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
 .PARAMETER PassThru
@@ -122,7 +122,7 @@ https://psappdeploytoolkit.com
         [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
-        [System.String]$LogName,
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
