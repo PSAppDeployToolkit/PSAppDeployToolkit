@@ -462,6 +462,163 @@ function Get-InstalledApplication
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around Remove-ADTInstalledApplication
+#
+#---------------------------------------------------------------------------
+
+function Remove-MSIApplications
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Exact', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WildCard', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Exact,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$WildCard,
+
+        [Parameter(Mandatory = $false)]
+        [Alias('Arguments')]
+        [ValidateNotNullorEmpty()]
+        [System.String]$Parameters,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.String]$AddParameters,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Array]$FilterApplication,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Array]$ExcludeFromUninstall,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.String]$LoggingOptions,
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$LogName,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInstalledApplication]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Build out filterscript based on provided input.
+    $filterInclude = $(
+        $Name.Replace("'","''") | & {
+            process
+            {
+                if ($Exact)
+                {
+                    "`$_.DisplayName -eq '$_'"
+                }
+                elseif ($WildCard)
+                {
+                    "`$_.DisplayName -like '$_'"
+                }
+                else
+                {
+                    "`$_.DisplayName -match '$([System.Text.RegularExpressions.Regex]::Escape($_))'"
+                }
+            }
+        }
+
+        $FilterApplication | & {
+            process
+            {
+                if ($_[2] -eq 'RegEx')
+                {
+                    "`$_.'$($_[0].Replace("'","''"))' -match '$($_[1].Replace("'","''"))'"
+                }
+                elseif ($_[2] -eq 'Contains')
+                {
+                    "`$_.'$($_[0].Replace("'","''"))' -match '$([RegEx]::Escape($_[1].Replace("'","''")))'"
+                }
+                elseif ($_[2] -eq 'WildCard')
+                {
+                    "`$_.'$($_[0].Replace("'","''"))' -like '$($_[1].Replace("'","''"))'"
+                }
+                elseif ($_[2] -eq 'Exact')
+                {
+                    "`$_.'$($_[0].Replace("'","''"))' -eq '$($_[1].Replace("'","''"))'"
+                }
+            }
+        }
+    )
+
+    $filterExclude = $(
+        $ExcludeFromUninstall | & {
+            process
+            {
+                if ($_[2] -eq 'RegEx')
+                {
+                    "`$_.'$($_[0].Replace("'","''"))' -match '$($_[1].Replace("'","''"))'"
+                }
+                elseif ($_[2] -eq 'Contains')
+                {
+                    "`$_.'$($_[0].Replace("'","''"))' -match '$([RegEx]::Escape($_[1].Replace("'","''")))'"
+                }
+                elseif ($_[2] -eq 'WildCard')
+                {
+                    "`$_.'$($_[0].Replace("'","''"))' -like '$($_[1].Replace("'","''"))'"
+                }
+                elseif ($_[2] -eq 'Exact')
+                {
+                    "`$_.'$($_[0].Replace("'","''"))' -eq '$($_[1].Replace("'","''"))'"
+                }
+            }
+        }
+    )
+
+    $filterScript = $filterInclude -join ' -and '
+    if ($filterExclude)
+    {
+        $filterScript += ' -and -not (' + ($filterExclude -join ' -or ') + ')'
+    }
+
+    # Build out hashtable for splatting.
+    $raaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Name, Exact, WildCard, FilterApplication, ExcludeFromUninstall, ContinueOnError
+    $raaParams.FilterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
+    if (!$ContinueOnError)
+    {
+        $raaParams.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+
+    # Invoke execution.
+    try
+    {
+        Remove-ADTInstalledApplication @raaParams
+    }
+    catch
+    {
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+    }
+}
+
+#---------------------------------------------------------------------------
+#
 # MARK: Wrapper around Get-ADTFileVersion
 #
 #---------------------------------------------------------------------------

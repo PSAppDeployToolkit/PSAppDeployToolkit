@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Remove-MSIApplications
+# MARK: Remove-ADTInstalledApplication
 #
 #-----------------------------------------------------------------------------
 
-function Remove-MSIApplications
+function Remove-ADTInstalledApplication
 {
     <#
 .SYNOPSIS
@@ -14,37 +14,23 @@ Removes all MSI applications matching the specified application name.
 .DESCRIPTION
 
 Removes all MSI applications matching the specified application name.
-Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code, provided the uninstall string matches "msiexec".
+Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
 
-.PARAMETER Name
+.PARAMETER FilterScript
 
-The name of the application to uninstall. Performs a contains match on the application display name by default.
+Specifies a script block to filter the applications to be removed. The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
 
-.PARAMETER Exact
+.PARAMETER ApplicationType
 
-Specifies that the named application must be matched using the exact name.
-
-.PARAMETER WildCard
-
-Specifies that the named application must be matched using a wildcard search.
+Specifies the type of application to remove. Valid values are 'Any', 'MSI', and 'EXE'. The default value is 'MSI'.
 
 .PARAMETER Parameters
 
-Overrides the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
+Overrides the default MSI parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
 .PARAMETER AddParameters
 
-Adds to the default parameters specified in the XML configuration file. Uninstall default is: "REBOOT=ReallySuppress /QN".
-
-.PARAMETER FilterApplication
-
-Two-dimensional array that contains one or more (property, value, match-type) sets that should be used to filter the list of results returned by Get-ADTInstalledApplication to only those that should be uninstalled.
-Properties that can be filtered upon: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
-
-.PARAMETER ExcludeFromUninstall
-
-Two-dimensional array that contains one or more (property, value, match-type) sets that should be excluded from uninstall if found.
-Properties that can be excluded: ProductCode, DisplayName, DisplayVersion, UninstallString, InstallSource, InstallLocation, InstallDate, Publisher, Is64BitApplication
+Adds to the default parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
 .PARAMETER IncludeUpdatesAndHotfixes
 
@@ -52,20 +38,16 @@ Include matches against updates and hotfixes in results.
 
 .PARAMETER LoggingOptions
 
-Overrides the default logging options specified in the XML configuration file. Default options are: "/L*v".
+Overrides the default logging options specified in the configuration file. Default options are: "/L*v".
 
 .PARAMETER LogName
 
-Overrides the default log file name. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
+Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If LogName does not end in .log, it will be automatically appended.
 For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
 .PARAMETER PassThru
 
 Returns ExitCode, STDOut, and STDErr output from the process.
-
-.PARAMETER ContinueOnError
-
-Continue if an error occured while trying to start the processes. Default: $true.
 
 .INPUTS
 
@@ -84,53 +66,25 @@ Returns an object with the following properties:
 
 .EXAMPLE
 
-Remove-MSIApplications -Name 'Adobe Flash'
+Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java'}
 
-Removes all versions of software that match the name "Adobe Flash"
-
-.EXAMPLE
-
-Remove-MSIApplications -Name 'Adobe'
-
-Removes all versions of software that match the name "Adobe"
+Removes all MSI applications that contain the name 'Java' in the DisplayName.
 
 .EXAMPLE
 
-Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication @(
-        @('Is64BitApplication', $false, 'Exact'),
-        @('Publisher', 'Oracle Corporation', 'Exact')
-    )
+Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
 
-Removes all versions of software that match the name "Java 8 Update" where the software is 32-bits and the publisher is "Oracle Corporation".
+Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', 64-bit, and not version 8.x.
 
 .EXAMPLE
 
-Remove-MSIApplications -Name 'Java 8 Update' -FilterApplication @(, @('Publisher', 'Oracle Corporation', 'Exact')) -ExcludeFromUninstall @(, @('DisplayName', 'Java 8 Update 45', 'Contains'))
+Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
 
-Removes all versions of software that match the name "Java 8 Update" and also have "Oracle Corporation" as the Publisher; however, it does not uninstall "Java 8 Update 45" of the software.
-NOTE: If only specifying a single row in the two-dimensional arrays, the array must have the extra parentheses and leading comma as in this example.
-
-.EXAMPLE
-
-Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @(, @('DisplayName', 'Java 8 Update 45', 'Contains'))
-
-Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall "Java 8 Update 45" of the software.
-NOTE: If only specifying a single row in the two-dimensional array, the array must have the extra parentheses and leading comma as in this example.
-
-.EXAMPLE
-
-Remove-MSIApplications -Name 'Java 8 Update' -ExcludeFromUninstall @(
-    @('Is64BitApplication', $true, 'Exact'),
-    @('DisplayName', 'Java 8 Update 45', 'Exact'),
-    @('DisplayName', 'Java 8 Update 4*', 'WildCard'),
-    @('DisplayName', 'Java \d Update \d{3}', 'RegEx'),
-    @('DisplayName', 'Java 8 Update', 'Contains'))
-
-Removes all versions of software that match the name "Java 8 Update"; however, it does not uninstall 64-bit versions of the software, Update 45 of the software, or any Update that starts with 4.
+Remove all EXE applications starting with the name 'Vim' followed by a space, using the '/S' parameter.
 
 .NOTES
 
-More reading on how to create arrays if having trouble with -FilterApplication or -ExcludeFromUninstall parameter: http://blogs.msdn.com/b/powershell/archive/2007/01/23/array-literals-in-powershell.aspx
+More reading on how to create filterscripts https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object?view=powershell-5.1#description
 
 .NOTES
 
@@ -140,243 +94,213 @@ This function can be called without an active ADT session..
 
 https://psappdeploytoolkit.com
 #>
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "Silenced to make the build system work. This function is yet to be refactored.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FilterScript', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Name,
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.ScriptBlock]$FilterScript,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Exact = $false,
-        [Parameter(Mandatory = $false)]
-        [Switch]$WildCard = $false,
+        [ValidateSet('Any', 'MSI', 'EXE')]
+        [System.String]$ApplicationType = 'MSI',
+
         [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
         [ValidateNotNullorEmpty()]
-        [String]$Parameters,
+        [System.String]$Parameters,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$AddParameters,
+        [System.String]$AddParameters,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Array]$FilterApplication = @(@()),
+        [System.String]$LoggingOptions,
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$LogName,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Array]$ExcludeFromUninstall = @(@()),
-        [Parameter(Mandatory = $false)]
-        [Switch]$IncludeUpdatesAndHotfixes = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$LoggingOptions,
-        [Parameter(Mandatory = $false)]
-        [String]$LogName,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Switch]$PassThru = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    Begin
+    begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    }
-    Process
-    {
-        ## Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
-        [Hashtable]$GetInstalledApplicationSplat = @{ Name = $name }
-        If ($Exact)
-        {
-            $GetInstalledApplicationSplat.Add( 'Exact', $Exact)
-        }
-        ElseIf ($WildCard)
-        {
-            $GetInstalledApplicationSplat.Add( 'WildCard', $WildCard)
-        }
-        If ($IncludeUpdatesAndHotfixes)
-        {
-            $GetInstalledApplicationSplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes)
+        # Make this function continue on error.
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+
+        # Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
+        $gaiaParams = @{
+            FilterScript              = $FilterScript
+            IncludeUpdatesAndHotfixes = $IncludeUpdatesAndHotfixes
         }
 
-        [PSADT.Types.InstalledApplication[]]$installedApplications = & $Script:CommandTable.'Get-ADTInstalledApplication' @GetInstalledApplicationSplat
+        # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
 
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found [$($installedApplications.Count)] application(s) that matched the specified criteria [$Name]."
+        #Get-ADTBoundParametersAndDefaultValues code below is much simpler but currently failing:
+        # $sampParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude FilterScript
+        # $sampParams.Action = 'Uninstall'
 
-        ## Filter the results from Get-ADTInstalledApplication
-        [Collections.ArrayList]$removeMSIApplications = & $Script:CommandTable.'New-Object' -TypeName 'System.Collections.ArrayList'
-        If (($null -ne $installedApplications) -and ($installedApplications.Count))
+        $sampParams = @{
+            Action                    = 'Uninstall'
+            IncludeUpdatesAndHotfixes = $IncludeUpdatesAndHotfixes
+            PassThru                  = $PassThru
+            Path                      = $null
+        }
+        if ($PSBoundParameters.ContainsKey('Parameters'))
         {
-            ForEach ($installedApplication in $installedApplications)
-            {
-                If ([String]::IsNullOrEmpty($installedApplication.ProductCode))
-                {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($installedApplication.DisplayName)] because unable to discover MSI ProductCode from application's registry Uninstall subkey [$($installedApplication.UninstallSubkey)]." -Severity 2
-                    Continue
-                }
-
-                #  Filter the results from Get-ADTInstalledApplication to only those that should be uninstalled
-                [Boolean]$addAppToRemoveList = $true
-                If (($null -ne $FilterApplication) -and ($FilterApplication.Count))
-                {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Filter the results to only those that should be uninstalled as specified in parameter [-FilterApplication].'
-                    ForEach ($Filter in $FilterApplication)
-                    {
-                        If ($Filter[2] -eq 'RegEx')
-                        {
-                            If ($installedApplication.($Filter[0]) -match $Filter[1])
-                            {
-                                [Boolean]$addAppToRemoveList = $true
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-FilterApplication] criteria."
-                            }
-                            Else
-                            {
-                                [Boolean]$addAppToRemoveList = $false
-                                Break
-                            }
-                        }
-                        ElseIf ($Filter[2] -eq 'Contains')
-                        {
-                            If ($installedApplication.($Filter[0]) -match [RegEx]::Escape($Filter[1]))
-                            {
-                                [Boolean]$addAppToRemoveList = $true
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-FilterApplication] criteria."
-                            }
-                            Else
-                            {
-                                [Boolean]$addAppToRemoveList = $false
-                                Break
-                            }
-                        }
-                        ElseIf ($Filter[2] -eq 'WildCard')
-                        {
-                            If ($installedApplication.($Filter[0]) -like $Filter[1])
-                            {
-                                [Boolean]$addAppToRemoveList = $true
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-FilterApplication] criteria."
-                            }
-                            Else
-                            {
-                                [Boolean]$addAppToRemoveList = $false
-                                Break
-                            }
-                        }
-                        ElseIf ($Filter[2] -eq 'Exact')
-                        {
-                            If ($installedApplication.($Filter[0]) -eq $Filter[1])
-                            {
-                                [Boolean]$addAppToRemoveList = $true
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Preserve removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-FilterApplication] criteria."
-                            }
-                            Else
-                            {
-                                [Boolean]$addAppToRemoveList = $false
-                                Break
-                            }
-                        }
-                    }
-                }
-
-                #  Filter the results from Get-ADTInstalledApplication to remove those that should never be uninstalled
-                If (($null -ne $ExcludeFromUninstall) -and ($ExcludeFromUninstall.Count))
-                {
-                    ForEach ($Exclude in $ExcludeFromUninstall)
-                    {
-                        If ($Exclude[2] -eq 'RegEx')
-                        {
-                            If ($installedApplication.($Exclude[0]) -match $Exclude[1])
-                            {
-                                [Boolean]$addAppToRemoveList = $false
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of regex match against [-ExcludeFromUninstall] criteria."
-                                Break
-                            }
-                        }
-                        ElseIf ($Exclude[2] -eq 'Contains')
-                        {
-                            If ($installedApplication.($Exclude[0]) -match [RegEx]::Escape($Exclude[1]))
-                            {
-                                [Boolean]$addAppToRemoveList = $false
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of contains match against [-ExcludeFromUninstall] criteria."
-                                Break
-                            }
-                        }
-                        ElseIf ($Exclude[2] -eq 'WildCard')
-                        {
-                            If ($installedApplication.($Exclude[0]) -like $Exclude[1])
-                            {
-                                [Boolean]$addAppToRemoveList = $false
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of wildcard match against [-ExcludeFromUninstall] criteria."
-                                Break
-                            }
-                        }
-                        ElseIf ($Exclude[2] -eq 'Exact')
-                        {
-                            If ($installedApplication.($Exclude[0]) -eq $Exclude[1])
-                            {
-                                [Boolean]$addAppToRemoveList = $false
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($installedApplication.DisplayName) $($installedApplication.Version)] because of exact match against [-ExcludeFromUninstall] criteria."
-                                Break
-                            }
-                        }
-                    }
-                }
-
-                If ($addAppToRemoveList)
-                {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Adding application to list for removal: [$($installedApplication.DisplayName) $($installedApplication.Version)]."
-                    $removeMSIApplications.Add($installedApplication)
-                }
-            }
+            $sampParams.Parameters = $Parameters
+        }
+        if ($PSBoundParameters.ContainsKey('AddParameters'))
+        {
+            $sampParams.AddParameters = $AddParameters
+        }
+        if ($PSBoundParameters.ContainsKey('LoggingOptions'))
+        {
+            $sampParams.LoggingOptions = $LoggingOptions
+        }
+        if ($PSBoundParameters.ContainsKey('LogName'))
+        {
+            $sampParams.LogName = $LogName
         }
 
-        ## Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
-        [Hashtable]$ExecuteMSISplat = @{
-            Action          = 'Uninstall'
-            Path            = ''
-            ContinueOnError = $ContinueOnError
-        }
-        If ($Parameters)
-        {
-            $ExecuteMSISplat.Add( 'Parameters', $Parameters)
-        }
-        ElseIf ($AddParameters)
-        {
-            $ExecuteMSISplat.Add( 'AddParameters', $AddParameters)
-        }
-        If ($LoggingOptions)
-        {
-            $ExecuteMSISplat.Add( 'LoggingOptions', $LoggingOptions)
-        }
-        If ($LogName)
-        {
-            $ExecuteMSISplat.Add( 'LogName', $LogName)
-        }
-        If ($PassThru)
-        {
-            $ExecuteMSISplat.Add( 'PassThru', $PassThru)
-        }
-        If ($IncludeUpdatesAndHotfixes)
-        {
-            $ExecuteMSISplat.Add( 'IncludeUpdatesAndHotfixes', $IncludeUpdatesAndHotfixes)
-        }
-
-        $ExecuteResults = If (($null -ne $removeMSIApplications) -and ($removeMSIApplications.Count))
-        {
-            ForEach ($removeMSIApplication in $removeMSIApplications)
-            {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing application [$($removeMSIApplication.DisplayName) $($removeMSIApplication.Version)]."
-                $ExecuteMSISplat.Path = $removeMSIApplication.ProductCode
-                & $Script:CommandTable.'Start-ADTMsiProcess' @ExecuteMSISplat
-            }
-        }
-        Else
-        {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'No applications found for removal. Continue...'
+        $sapParams = @{
+            WaitForMsiExec         = $true
+            NoExitOnProcessFailure = $true
+            WindowStyle            = 'Hidden'
+            CreateNoWindow         = $true
+            PassThru               = $PassThru
+            Path                   = $null
         }
     }
-    End
+    process
     {
-        If ($PassThru -and $ExecuteResults)
+        try
+        {
+            [PSADT.Types.InstalledApplication[]]$removeApplications = & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
+
+            # Filter the results to restrict to specified applciation type
+            if ($ApplicationType -eq 'MSI')
+            {
+                $removeApplications = $removeApplications.Where({ $_.WindowsInstaller -and $_.ProductCode })
+            }
+            elseif ($ApplicationType -eq 'EXE')
+            {
+                $removeApplications = $removeApplications.Where({ -not $_.WindowsInstaller })
+            }
+
+            $ExecuteResults = if ($null -ne $removeApplications)
+            {
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found [$($removeApplications.Count)] application(s) of type [$ApplicationType] that matched the specified criteria [$FilterScript]."
+
+                foreach ($removeApplication in $removeApplications)
+                {
+                    if ($removeApplication.WindowsInstaller)
+                    {
+                        if ($null -eq $removeApplication.ProductCode)
+                        {
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                            continue
+                        }
+                        $sampParams.Path = $removeApplication.ProductCode
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
+                        try
+                        {
+                            & $Script:CommandTable.'Start-ADTMsiProcess' @sampParams
+                        }
+                        catch
+                        {
+                            & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                        }
+                    }
+                    else
+                    {
+                        $uninstallString = if (![string]::IsNullOrWhiteSpace($removeApplication.QuietUninstallString))
+                        {
+                            $removeApplication.QuietUninstallString
+                        }
+                        elseif (![string]::IsNullOrWhiteSpace($removeApplication.UninstallString))
+                        {
+                            $removeApplication.UninstallString
+                        }
+                        else
+                        {
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                            continue
+                        }
+
+                        if ($uninstallString -match '^"(.+?\.exe)"(?:\s(.*))?$')
+                        {
+                            $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
+                            $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
+                        }
+                        elseif ($uninstallString -match '^(\S+?\.exe)(?:\s(.*))?$')
+                        {
+                            $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
+                            $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
+                        }
+                        elseif ($uninstallString -match '^(.+?\.exe)$')
+                        {
+                            $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
+                            $uninstallStringParams = $null
+                        }
+                        else
+                        {
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invalid UninstallString [$uninstallString] found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                            continue
+                        }
+
+                        if (![string]::IsNullOrWhiteSpace($Parameters))
+                        {
+                            $sapParams.Parameters = $Parameters
+                        }
+                        elseif (![string]::IsNullOrWhiteSpace($uninstallStringParams))
+                        {
+                            $sapParams.Parameters = $uninstallStringParams
+                        }
+                        if ($AddParameters)
+                        {
+                            if ($sapParams.ContainsKey('Parameters'))
+                            {
+                                $sapParams.Parameters += " $AddParameters"
+                            }
+                            else
+                            {
+                                $sapParams.Parameters = $AddParameters
+                            }
+                        }
+
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]."
+                        try
+                        {
+                            & $Script:CommandTable.'Start-ADTProcess' @sapParams
+                        }
+                        catch
+                        {
+                            & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                        }
+                    }
+
+                }
+            }
+            else
+            {
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'No applications found for removal. Continue...'
+            }
+        }
+        catch
+        {
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
+    }
+    end
+    {
+        if ($PassThru -and $ExecuteResults)
         {
             & $Script:CommandTable.'Write-Output' -InputObject ($ExecuteResults)
         }
