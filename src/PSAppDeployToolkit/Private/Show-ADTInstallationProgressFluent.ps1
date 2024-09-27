@@ -33,7 +33,11 @@ function Show-ADTInstallationProgressFluent
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoRelocation
+        [System.Management.Automation.SwitchParameter]$NoRelocation,
+
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
     # Internal worker functions.

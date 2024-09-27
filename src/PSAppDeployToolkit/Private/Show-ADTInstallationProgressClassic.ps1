@@ -27,6 +27,10 @@ function Show-ADTInstallationProgressClassic
         [System.String]$WindowLocation = 'Default',
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Windows.TextAlignment]$MessageAlignment = [System.Windows.TextAlignment]::Center,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
@@ -123,6 +127,7 @@ function Show-ADTInstallationProgressClassic
         $xaml.Window.Title = $xaml.Window.ToolTip = $WindowTitle
         $xaml.Window.TopMost = (!$NotTopMost).ToString()
         $xaml.Window.Grid.TextBlock.Text = $StatusMessage
+        $xaml.Window.Grid.TextBlock.TextAlignment = $MessageAlignment.ToString()
 
         # Set up the PowerShell instance and add the initial scriptblock.
         $Script:Dialogs.Classic.ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
@@ -220,6 +225,7 @@ function Show-ADTInstallationProgressClassic
             {
                 $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Title = $WindowTitle
                 $Script:Dialogs.Classic.ProgressWindow.SyncHash.Message.Text = $StatusMessage
+                $Script:Dialogs.Classic.ProgressWindow.SyncHash.Message.TextAlignment = $MessageAlignment
                 if (!$NoRelocation)
                 {
                     Update-WindowLocation -Window $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window -Location $WindowLocation
