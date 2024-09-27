@@ -18,6 +18,9 @@ function Show-ADTInstallationProgress
     .PARAMETER WindowLocation
         The location of the progress window. Default: center of the screen.
 
+    .PARAMETER MessageAlignment
+        The text alignment to use for the status message. Default: center.
+
     .PARAMETER NotTopMost
         Specifies whether the progress window shouldn't be topmost. Default: $false.
 
