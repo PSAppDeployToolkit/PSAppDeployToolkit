@@ -141,34 +141,10 @@ https://psappdeploytoolkit.com
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
+        $sampParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude FilterScript
+        $sampParams.Action = 'Uninstall'
 
-        #Get-ADTBoundParametersAndDefaultValues code below is much simpler but currently failing:
-        # $sampParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude FilterScript
-        # $sampParams.Action = 'Uninstall'
-
-        $sampParams = @{
-            Action                    = 'Uninstall'
-            IncludeUpdatesAndHotfixes = $IncludeUpdatesAndHotfixes
-            PassThru                  = $PassThru
-            Path                      = $null
-        }
-        if ($PSBoundParameters.ContainsKey('Parameters'))
-        {
-            $sampParams.Parameters = $Parameters
-        }
-        if ($PSBoundParameters.ContainsKey('AddParameters'))
-        {
-            $sampParams.AddParameters = $AddParameters
-        }
-        if ($PSBoundParameters.ContainsKey('LoggingOptions'))
-        {
-            $sampParams.LoggingOptions = $LoggingOptions
-        }
-        if ($PSBoundParameters.ContainsKey('LogName'))
-        {
-            $sampParams.LogName = $LogName
-        }
-
+        # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
         $sapParams = @{
             WaitForMsiExec         = $true
             NoExitOnProcessFailure = $true
