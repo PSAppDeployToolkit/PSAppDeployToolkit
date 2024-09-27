@@ -137,7 +137,7 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
         [ValidateScript({
-                if (($_ -notmatch (& $Script:CommandTable.'Get-ADTEnvironment').MSIProductCodeRegExPattern) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
+                if (($_ -notmatch (& $Script:CommandTable.'Get-ADTMsiProductCodeRegexPattern')) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
                 {
                     $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
                 }

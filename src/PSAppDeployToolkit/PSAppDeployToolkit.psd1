@@ -103,6 +103,7 @@
         'Get-ADTIniValue'
         'Get-ADTInstalledApplication'
         'Get-ADTLoggedOnUser'
+        'Get-ADTMsiProductCodeRegexPattern'
         'Get-ADTPendingReboot'
         'Get-ADTPowerShellProcessPath'
         'Get-ADTRedirectedUri'
