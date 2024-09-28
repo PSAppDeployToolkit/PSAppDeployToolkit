@@ -344,11 +344,22 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 
 ## INPUTS
 
-### None. You cannot pipe objects to this function.
+### None
+### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### None. This function does not generate any output.
+### PSADT.Types.ProcessResult
+### Returns an object with the results of the installation if -PassThru is specified.
+### - ExitCode
+### - StdOut
+### - StdErr
 ## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 

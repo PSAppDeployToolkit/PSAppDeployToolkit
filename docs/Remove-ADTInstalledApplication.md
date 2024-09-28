@@ -14,12 +14,13 @@ Removes all MSI applications matching the specified application name.
 
 ```
 Remove-ADTInstalledApplication [-FilterScript] <ScriptBlock> [-ApplicationType <String>] [-Parameters <String>]
- [-AddParameters <String>] [-IncludeUpdatesAndHotfixes] [-LoggingOptions <String>] [-LogName <String>]
+ [-AddParameters <String>] [-IncludeUpdatesAndHotfixes] [-LoggingOptions <String>] [-LogFileName <String>]
  [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 Removes all MSI applications matching the specified application name.
+
 Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
 
 ## EXAMPLES
@@ -75,7 +76,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: MSI
+Default value: Any
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -141,10 +142,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -LogName
+### -LogFileName
 Overrides the default log file name for MSI applications.
 The default log file name is generated from the MSI file name.
-If LogName does not end in .log, it will be automatically appended.
+If LogFileName does not end in .log, it will be automatically appended.
+
 For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
 ```yaml
@@ -184,13 +186,18 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### PSObject
-### Returns an object with the following properties:
+### PSADT.Types.ProcessResult
+### Returns an object with the results of the installation if -PassThru is specified.
 ### - ExitCode
 ### - StdOut
 ### - StdErr
 ## NOTES
-This function can be called without an active ADT session..
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
