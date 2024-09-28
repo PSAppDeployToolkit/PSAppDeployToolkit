@@ -89,6 +89,9 @@ Retrieves information about installed applications.
 ### [Get-ADTLoggedOnUser](Get-ADTLoggedOnUser.md)
 Retrieves session details for all local and RDP logged on users.
 
+### [Get-ADTMsiProductCodeRegexPattern](Get-ADTMsiProductCodeRegexPattern.md)
+Returns a regex pattern to use for MSI ProductCode matching, or matching any UUID.
+
 ### [Get-ADTPendingReboot](Get-ADTPendingReboot.md)
 Get the pending reboot status on a local computer.
 

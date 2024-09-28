@@ -13,8 +13,9 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 ## SYNTAX
 
 ```
-Show-ADTInstallationProgress [[-WindowLocation] <String>] [-NotTopMost] [-NoRelocation] -WindowTitle <String>
- [-WindowSubtitle <String>] -StatusMessage <String> -StatusMessageDetail <String> [<CommonParameters>]
+Show-ADTInstallationProgress [[-WindowLocation] <String>] [[-MessageAlignment] <TextAlignment>] [-NotTopMost]
+ [-NoRelocation] -WindowTitle <String> [-WindowSubtitle <String>] -StatusMessage <String>
+ -StatusMessageDetail <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -67,6 +68,23 @@ Aliases:
 Required: False
 Position: 1
 Default value: Default
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MessageAlignment
+The text alignment to use for the status message.
+Default: center.
+
+```yaml
+Type: TextAlignment
+Parameter Sets: (All)
+Aliases:
+Accepted values: Left, Right, Center, Justify
+
+Required: False
+Position: 2
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
