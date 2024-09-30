@@ -19,7 +19,7 @@ function Remove-ADTInstalledApplication
         Specifies a script block to filter the applications to be removed. The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
 
     .PARAMETER ApplicationType
-        Specifies the type of application to remove. Valid values are 'Any', 'MSI', and 'EXE'. The default value is 'MSI'.
+        Specifies the type of application to remove. Valid values are 'All', 'MSI', and 'EXE'. The default value is 'All'.
 
     .PARAMETER Parameters
         Overrides the default MSI parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
@@ -31,7 +31,7 @@ function Remove-ADTInstalledApplication
         Include matches against updates and hotfixes in results.
 
     .PARAMETER LoggingOptions
-        Overrides the default logging options specified in the configuration file. Default options are: "/L*v".
+        Overrides the default MSI logging options specified in the configuration file. Default options are: "/L*v".
 
     .PARAMETER LogFileName
         Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
@@ -92,12 +92,14 @@ function Remove-ADTInstalledApplication
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Any', 'MSI', 'EXE')]
-        [System.String]$ApplicationType = 'Any',
+        [ValidateSet('All', 'MSI', 'EXE')]
+        [System.String]$ApplicationType = 'All',
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
@@ -107,9 +109,6 @@ function Remove-ADTInstalledApplication
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$AddParameters,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -132,6 +131,7 @@ function Remove-ADTInstalledApplication
         # Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
         $gaiaParams = @{
             FilterScript              = $FilterScript
+            ApplicationType           = $ApplicationType
             IncludeUpdatesAndHotfixes = $IncludeUpdatesAndHotfixes
         }
 
@@ -154,19 +154,7 @@ function Remove-ADTInstalledApplication
     {
         try
         {
-            # Filter the results to restrict to specified applciation type
-            $removeApplications = if ($ApplicationType -eq 'MSI')
-            {
-                & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams | & { process { if ($_.WindowsInstaller -and $_.ProductCode) { return $_ } } }
-            }
-            elseif ($ApplicationType -eq 'EXE')
-            {
-                & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams | & { process { if (!$_.WindowsInstaller) { return $_ } } }
-            }
-            else
-            {
-                & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
-            }
+            $removeApplications = & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
 
             $ExecuteResults = if ($null -ne $removeApplications)
             {
