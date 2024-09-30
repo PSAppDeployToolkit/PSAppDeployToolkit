@@ -21,6 +21,8 @@ namespace PSADT
     {
         public struct InstalledApplication
         {
+            public string UninstallKey;
+            public string UninstallParentKey;
             public string UninstallSubkey;
             public string ProductCode;
             public string DisplayName;
