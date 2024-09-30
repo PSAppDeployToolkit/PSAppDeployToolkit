@@ -127,6 +127,8 @@ function Get-ADTInstalledApplication
 
                         # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                         $app = [PSADT.Types.InstalledApplication]@{
+                            UninstallKey         = $_.PSPath
+                            UninstallParentKey   = $_.PSParentPath
                             UninstallSubkey      = $_.PSChildName
                             ProductCode          = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
                             DisplayName          = $_.DisplayName
