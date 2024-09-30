@@ -11,18 +11,29 @@ function Uninstall-ADTApplication
         Removes all MSI applications matching the specified application name.
 
     .DESCRIPTION
-        Removes all MSI applications matching the specified application name.
-
+        Removes all MSI applications matching the specified application name and filter.
         Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
 
     .PARAMETER InstalledApplication
-        Specifies the installed application to remove. This parameter is used to pass the output of Get-ADTInstalledApplication to Uninstall-ADTApplication via the pipeline.
+        Specifies the [PSADT.Types.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTInstalledApplication to this function.
 
-    .PARAMETER FilterScript
-        Specifies a script block to filter the applications to be removed. The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
+    .PARAMETER Name
+        The name of the application to retrieve information for. Performs a contains match on the application display name by default.
+
+    .PARAMETER NameMatch
+        Specifies the type of match to perform on the application name. Valid values are 'Contains', 'Exact', 'Wildcard', and 'Regex'. The default value is 'Contains'.
+
+    .PARAMETER ProductCode
+        The product code of the application to retrieve information for.
 
     .PARAMETER ApplicationType
         Specifies the type of application to remove. Valid values are 'All', 'MSI', and 'EXE'. The default value is 'All'.
+
+    .PARAMETER IncludeUpdatesAndHotfixes
+        Include matches against updates and hotfixes in results.
+
+    .PARAMETER FilterScript
+        A script used to filter the results as they're processed.
 
     .PARAMETER Parameters
         Overrides the default MSI parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
@@ -58,14 +69,14 @@ function Uninstall-ADTApplication
         - StdErr
 
     .EXAMPLE
-        Uninstall-ADTApplication -FilterScript {$_.DisplayName -match 'Java'}
+        Uninstall-ADTApplication -Name 'Acrobat' -ApplicationType 'MSI' -FilterScript { $_.Publisher -match 'Adobe' }
 
-        Removes all MSI applications that contain the name 'Java' in the DisplayName.
+        Removes all MSI applications that contain the name 'Acrobat' in the DisplayName and 'Adobe' in the Publisher name.
 
     .EXAMPLE
-        Uninstall-ADTApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
+        Uninstall-ADTApplication -Name 'Java' -FilterScript {$_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
 
-        Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', 64-bit, and not version 8.x.
+        Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', are 64-bit, and not version 8.x.
 
     .EXAMPLE
         Uninstall-ADTApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
@@ -87,6 +98,12 @@ function Uninstall-ADTApplication
         https://psappdeploytoolkit.com
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'NameMatch', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProductCode', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ApplicationType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'IncludeUpdatesAndHotfixes', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FilterScript', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LoggingOptions', Justification = "This parameter is used/retrieved via Get-ADTBoundParametersAndDefaultValues, which is too advanced for PSScriptAnalyzer to comprehend.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LogFileName', Justification = "This parameter is used/retrieved via Get-ADTBoundParametersAndDefaultValues, which is too advanced for PSScriptAnalyzer to comprehend.")]
     [CmdletBinding()]
@@ -94,19 +111,31 @@ function Uninstall-ADTApplication
     [OutputType([PSADT.Types.ProcessInfo])]
     param
     (
-        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'ByInstalledApplication', ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true)]
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
-        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'ByFilterScript')]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ScriptBlock]$FilterScript,
+        [Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'Search')]
+        [ValidateNotNullorEmpty()]
+        [System.String[]]$Name,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [ValidateSet('Contains', 'Exact', 'Wildcard', 'Regex')]
+        [System.String]$NameMatch = 'Contains',
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [ValidateNotNullorEmpty()]
+        [System.String]$ProductCode,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateSet('All', 'MSI', 'EXE')]
         [System.String]$ApplicationType = 'All',
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.ScriptBlock]$FilterScript,
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
@@ -135,20 +164,15 @@ function Uninstall-ADTApplication
         # Make this function continue on error.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
-        if ($PSCmdlet.ParameterSetName -eq 'ByFilterScript')
+        if ($PSCmdlet.ParameterSetName -eq 'Search')
         {
             # Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
-            $gaiaParams = @{
-                FilterScript              = $FilterScript
-                ApplicationType           = $ApplicationType
-                IncludeUpdatesAndHotfixes = $IncludeUpdatesAndHotfixes
-            }
-
+            $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
             $InstalledApplication = & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
-        $sampParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude FilterScript, ApplicationType
+        $sampParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType
         $sampParams.Action = 'Uninstall'
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
@@ -177,11 +201,6 @@ function Uninstall-ADTApplication
                             & $Script:CommandTable.'Write-ADTLogEntry' -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                             continue
                         }
-                        if ($ApplicationType -eq 'EXE')
-                        {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] as it is not an MSI."
-                            continue
-                        }
                         $sampParams.Path = $removeApplication.ProductCode
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
                         try
@@ -195,11 +214,6 @@ function Uninstall-ADTApplication
                     }
                     else
                     {
-                        if ($ApplicationType -eq 'MSI')
-                        {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] as it is not an MSI."
-                            continue
-                        }
                         $uninstallString = if (![string]::IsNullOrWhiteSpace($removeApplication.QuietUninstallString))
                         {
                             $removeApplication.QuietUninstallString

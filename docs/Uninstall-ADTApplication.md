@@ -12,40 +12,38 @@ Removes all MSI applications matching the specified application name.
 
 ## SYNTAX
 
-### ByInstalledApplication
+### InstalledApplication
 ```
-Uninstall-ADTApplication [-InstalledApplication] <InstalledApplication> [-ApplicationType <String>]
- [-IncludeUpdatesAndHotfixes] [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>]
- [-LogFileName <String>] [-PassThru] [<CommonParameters>]
+Uninstall-ADTApplication [-InstalledApplication] <InstalledApplication> [-Parameters <String>]
+ [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
-### ByFilterScript
+### Search
 ```
-Uninstall-ADTApplication [-FilterScript] <ScriptBlock> [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes]
- [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>]
- [-PassThru] [<CommonParameters>]
+Uninstall-ADTApplication [[-Name] <String[]>] [-NameMatch <String>] [-ProductCode <String>]
+ [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [-FilterScript <ScriptBlock>] [-Parameters <String>]
+ [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Removes all MSI applications matching the specified application name.
-
+Removes all MSI applications matching the specified application name and filter.
 Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-Uninstall-ADTApplication -FilterScript {$_.DisplayName -match 'Java'}
+Uninstall-ADTApplication -Name 'Acrobat' -ApplicationType 'MSI' -FilterScript { $_.Publisher -match 'Adobe' }
 ```
 
-Removes all MSI applications that contain the name 'Java' in the DisplayName.
+Removes all MSI applications that contain the name 'Acrobat' in the DisplayName and 'Adobe' in the Publisher name.
 
 ### EXAMPLE 2
 ```
-Uninstall-ADTApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
+Uninstall-ADTApplication -Name 'Java' -FilterScript {$_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
 ```
 
-Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', 64-bit, and not version 8.x.
+Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', are 64-bit, and not version 8.x.
 
 ### EXAMPLE 3
 ```
@@ -57,12 +55,12 @@ Remove all EXE applications starting with the name 'Vim' followed by a space, us
 ## PARAMETERS
 
 ### -InstalledApplication
-Specifies the installed application to remove.
-This parameter is used to pass the output of Get-ADTInstalledApplication to Uninstall-ADTApplication via the pipeline.
+Specifies the \[PSADT.Types.InstalledApplication\] object to remove.
+This parameter is typically used when piping Get-ADTInstalledApplication to this function.
 
 ```yaml
 Type: InstalledApplication
-Parameter Sets: ByInstalledApplication
+Parameter Sets: InstalledApplication
 Aliases:
 
 Required: True
@@ -72,17 +70,49 @@ Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -FilterScript
-Specifies a script block to filter the applications to be removed.
-The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
+### -Name
+The name of the application to retrieve information for.
+Performs a contains match on the application display name by default.
 
 ```yaml
-Type: ScriptBlock
-Parameter Sets: ByFilterScript
+Type: String[]
+Parameter Sets: Search
 Aliases:
 
-Required: True
+Required: False
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NameMatch
+Specifies the type of match to perform on the application name.
+Valid values are 'Contains', 'Exact', 'Wildcard', and 'Regex'.
+The default value is 'Contains'.
+
+```yaml
+Type: String
+Parameter Sets: Search
+Aliases:
+
+Required: False
+Position: Named
+Default value: Contains
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProductCode
+The product code of the application to retrieve information for.
+
+```yaml
+Type: String
+Parameter Sets: Search
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -95,7 +125,7 @@ The default value is 'All'.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: Search
 Aliases:
 
 Required: False
@@ -110,12 +140,27 @@ Include matches against updates and hotfixes in results.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Search
 Aliases:
 
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FilterScript
+A script used to filter the results as they're processed.
+
+```yaml
+Type: ScriptBlock
+Parameter Sets: Search
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

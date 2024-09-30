@@ -13,8 +13,8 @@ Retrieves information about installed applications.
 ## SYNTAX
 
 ```
-Get-ADTInstalledApplication [[-FilterScript] <ScriptBlock>] [-ApplicationType <String>]
- [-IncludeUpdatesAndHotfixes] [<CommonParameters>]
+Get-ADTInstalledApplication [[-Name] <String[]>] [-NameMatch <String>] [-ProductCode <String>]
+ [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [-FilterScript <ScriptBlock>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -33,23 +33,77 @@ This example retrieves information about all installed applications.
 
 ### EXAMPLE 2
 ```
-Get-ADTInstalledApplication -FilterScript { $_.DisplayName -eq 'Adobe Flash' }
+Get-ADTInstalledApplication -Name 'Acrobat'
 ```
 
-This example retrieves information about installed applications with the name 'Adobe Flash'.
+Returns all applications that contain the name 'Acrobat' in the DisplayName.
+
+### EXAMPLE 3
+```
+Get-ADTInstalledApplication -Name 'Adobe Acrobat Reader' -NameMatch 'Exact'
+```
+
+Returns all applications that match the name 'Adobe Acrobat Reader' exactly.
+
+### EXAMPLE 4
+```
+Get-ADTInstalledApplication -ProductCode '{AC76BA86-7AD7-1033-7B44-AC0F074E4100}'
+```
+
+Returns the application with the specified ProductCode.
+
+### EXAMPLE 5
+```
+Get-ADTInstalledApplication -Name 'Acrobat' -ApplicationType 'MSI' -FilterScript { $_.Publisher -match 'Adobe' }
+```
+
+Returns all MSI applications that contain the name 'Acrobat' in the DisplayName and 'Adobe' in the Publisher name.
 
 ## PARAMETERS
 
-### -FilterScript
-A script used to filter the results as they're processed.
+### -Name
+The name of the application to retrieve information for.
+Performs a contains match on the application display name by default.
 
 ```yaml
-Type: ScriptBlock
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NameMatch
+Specifies the type of match to perform on the application name.
+Valid values are 'Contains', 'Exact', 'Wildcard', and 'Regex'.
+The default value is 'Contains'.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: Contains
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProductCode
+The product code of the application to retrieve information for.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -83,6 +137,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FilterScript
+A script used to filter the results as they're processed.
+
+```yaml
+Type: ScriptBlock
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
