@@ -66,7 +66,7 @@ function Register-ADTDll
     {
         try
         {
-            & $Script:CommandTable.'Invoke-ADTRegSvr32' @PSBoundParameters -DLLAction Register
+            & $Script:CommandTable.'Invoke-ADTRegSvr32' @PSBoundParameters -Action Register
         }
         catch
         {

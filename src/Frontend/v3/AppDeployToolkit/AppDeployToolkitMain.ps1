@@ -3271,6 +3271,8 @@ function Invoke-RegisterOrUnregisterDLL
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
+    $PSBoundParameters.Add('Action', $DLLAction)
+    $null = $PSBoundParameters.Remove('DLLAction')
     try
     {
         Invoke-ADTRegSvr32 @PSBoundParameters
