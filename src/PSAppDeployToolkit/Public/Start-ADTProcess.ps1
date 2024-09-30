@@ -273,8 +273,8 @@ function Start-ADTProcess
                     $WorkingDirectory = [System.IO.Path]::GetDirectoryName($Path)
                 }
 
-                # If the WindowStyle parameter is set to 'Hidden', set the UseShellExecute parameter to '$true'.
-                if ($WindowStyle -eq 'Hidden')
+                # If the WindowStyle parameter is set to 'Hidden', set the UseShellExecute parameter to '$true' unless specifically specified.
+                if ($WindowStyle.Equals([System.Diagnostics.ProcessWindowStyle]::Hidden) -and !$PSBoundParameters.ContainsKey('UseShellExecute'))
                 {
                     $UseShellExecute = $true
                 }
