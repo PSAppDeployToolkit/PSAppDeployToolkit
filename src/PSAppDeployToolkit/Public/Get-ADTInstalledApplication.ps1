@@ -13,14 +13,23 @@ function Get-ADTInstalledApplication
     .DESCRIPTION
         Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both. Returns information about application publisher, name & version, product code, uninstall string, install source, location, date, and application architecture.
 
-    .PARAMETER FilterScript
-        A script used to filter the results as they're processed.
+    .PARAMETER Name
+        The name of the application to retrieve information for. Performs a contains match on the application display name by default.
+
+    .PARAMETER NameMatch
+        Specifies the type of match to perform on the application name. Valid values are 'Contains', 'Exact', 'Wildcard', and 'Regex'. The default value is 'Contains'.
+
+    .PARAMETER ProductCode
+        The product code of the application to retrieve information for.
 
     .PARAMETER ApplicationType
         Specifies the type of application to remove. Valid values are 'All', 'MSI', and 'EXE'. The default value is 'All'.
 
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
+
+    .PARAMETER FilterScript
+        A script used to filter the results as they're processed.
 
     .INPUTS
         None
@@ -47,9 +56,24 @@ function Get-ADTInstalledApplication
         This example retrieves information about all installed applications.
 
     .EXAMPLE
-        Get-ADTInstalledApplication -FilterScript { $_.DisplayName -eq 'Adobe Flash' }
+        Get-ADTInstalledApplication -Name 'Acrobat'
 
-        This example retrieves information about installed applications with the name 'Adobe Flash'.
+        Returns all applications that contain the name 'Acrobat' in the DisplayName.
+
+    .EXAMPLE
+        Get-ADTInstalledApplication -Name 'Adobe Acrobat Reader' -NameMatch 'Exact'
+
+        Returns all applications that match the name 'Adobe Acrobat Reader' exactly.
+
+    .EXAMPLE
+        Get-ADTInstalledApplication -ProductCode '{AC76BA86-7AD7-1033-7B44-AC0F074E4100}'
+
+        Returns the application with the specified ProductCode.
+
+    .EXAMPLE
+        Get-ADTInstalledApplication -Name 'Acrobat' -ApplicationType 'MSI' -FilterScript { $_.Publisher -match 'Adobe' }
+
+        Returns all MSI applications that contain the name 'Acrobat' in the DisplayName and 'Adobe' in the Publisher name.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -63,21 +87,35 @@ function Get-ADTInstalledApplication
         https://psappdeploytoolkit.com
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'NameMatch', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProductCode', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ApplicationType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     [OutputType([PSADT.Types.InstalledApplication])]
     param
     (
         [Parameter(Mandatory = $false, Position = 0)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ScriptBlock]$FilterScript,
+        [ValidateNotNullorEmpty()]
+        [System.String[]]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Contains', 'Exact', 'Wildcard', 'Regex')]
+        [System.String]$NameMatch = 'Contains',
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.String]$ProductCode,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('All', 'MSI', 'EXE')]
         [System.String]$ApplicationType = 'All',
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
+        [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.ScriptBlock]$FilterScript
     )
 
     begin
@@ -93,6 +131,32 @@ function Get-ADTInstalledApplication
                 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
             }
         )
+
+        if ($Name)
+        {
+            $nameFilter = $Name | & {
+                process
+                {
+                    if ($NameMatch -eq 'Contains')
+                    {
+                        "`$_ -like '*$($_.Replace("'","''"))*'"
+                    }
+                    elseif ($NameMatch -eq 'Exact')
+                    {
+                        "`$_ -eq '$($_.Replace("'","''"))'"
+                    }
+                    elseif ($NameMatch -eq 'Wildcard')
+                    {
+                        "`$_ -like '$($_.Replace("'","''"))'"
+                    }
+                    elseif ($NameMatch -eq 'Regex')
+                    {
+                        "`$_ -match '$($_.Replace("'","''"))'"
+                    }
+                }
+            }
+            $nameFilterScript = [System.Management.Automation.ScriptBlock]::Create($nameFilter -join ' -or ')
+        }
     }
 
     process
@@ -112,8 +176,8 @@ function Get-ADTInstalledApplication
                             return
                         }
 
-                        # Apply application type filter if specified.
-                        if ($ApplicationType -ne 'All' -and ($ApplicationType -eq 'MSI') -eq (!($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore)))
+                        # Apply name filter if specified.
+                        if ($nameFilterScript -and !(& $Script:CommandTable.'ForEach-Object' -InputObject $_.DisplayName -Process $nameFilterScript -ErrorAction Ignore))
                         {
                             return
                         }
@@ -142,6 +206,18 @@ function Get-ADTInstalledApplication
                             SystemComponent      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore
                             WindowsInstaller     = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore
                             Is64BitApplication   = [System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
+                        }
+
+                        # Apply ProductCode filter if specified
+                        if ($ProductCode -and $ProductCode -ne $app.ProductCode)
+                        {
+                            return
+                        }
+
+                        # Apply application type filter if specified.
+                        if ($ApplicationType -ne 'All' -and ($ApplicationType -eq 'MSI') -eq !$app.WindowsInstaller)
+                        {
+                            return
                         }
 
                         # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.

@@ -404,54 +404,25 @@ function Get-InstalledApplication
     # Announce overall deprecation.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTInstalledApplication]. Please migrate your scripts to use the new function." -Severity 2
 
-    # Build out filterscript based on provided input.
-    $filterScript = $(
-            if ($ProductCode)
-            {
-                # The usage of regex here is to 1:1 match the 3.x API as this is what it did internally.
-                "(`$_.PSChildName -match '$([System.Text.RegularExpressions.Regex]::Escape($ProductCode))')"
-            }
+    $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Exact, WildCard, RegEx
 
-            if ($Name)
-            {
-                $Name | & {
-                    process
-                    {
-                        if ($Exact)
-                        {
-                            "(`$_.DisplayName -eq '$_')"
-                        }
-                        elseif ($WildCard)
-                        {
-                            "(`$_.DisplayName -like '$_')"
-                        }
-                        elseif ($RegEx)
-                        {
-                            "(`$_.DisplayName -match '$_')"
-                        }
-                        else
-                        {
-                            "(`$_.DisplayName -match '$([System.Text.RegularExpressions.Regex]::Escape($_))')"
-                        }
-                    }
-                }
-            }
-        )
-
-    # Build out hashtable for splatting.
-    $gaiaParams = if ($filterScript)
+    if ($Exact)
     {
-        @{ FilterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript -join ' -or ') }
+        $gaiaParams.NameMatch = 'Exact'
     }
-    else
+    elseif ($WildCard)
     {
-        @{}
+        $gaiaParams.NameMatch = 'WildCard'
+    }
+    elseif ($RegEx)
+    {
+        $gaiaParams.NameMatch = 'RegEx'
     }
 
     # Invoke execution.
     try
     {
-        Get-ADTInstalledApplication @gaiaParams -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes
+        Get-ADTInstalledApplication @gaiaParams
     }
     catch
     {
@@ -522,26 +493,20 @@ function Remove-MSIApplications
     # Announce overall deprecation.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Uninstall-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2
 
+    # Build out hashtable for splatting.
+    $uaaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Exact, WildCard, FilterApplication, ExcludeFromUninstall, LogName, ContinueOnError
+    $uaaParams.ApplicationType = 'MSI'
+    if ($LogName)
+    {
+        $uaaParams.LogFileName = $LogName
+    }
+    if (!$ContinueOnError)
+    {
+        $uaaParams.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+
     # Build out filterscript based on provided input.
     $filterInclude = $(
-        $Name.Replace("'","''") | & {
-            process
-            {
-                if ($Exact)
-                {
-                    "`$_.DisplayName -eq '$_'"
-                }
-                elseif ($WildCard)
-                {
-                    "`$_.DisplayName -like '$_'"
-                }
-                else
-                {
-                    "`$_.DisplayName -match '$([System.Text.RegularExpressions.Regex]::Escape($_))'"
-                }
-            }
-        }
-
         $FilterApplication | & {
             process
             {
@@ -589,25 +554,30 @@ function Remove-MSIApplications
         }
     )
 
-    $filterScript = $filterInclude -join ' -and '
-    if ($filterExclude)
+    if ($filterInclude -and $filterExclude)
     {
-        $filterScript += ' -and -not (' + ($filterExclude -join ' -or ') + ')'
+        $filterScript = ($filterInclude -join ' -and ') + ' -and -not (' + ($filterExclude -join ' -or ') + ')'
+    }
+    elseif ($filterInclude) {
+        $filterScript = $filterInclude -join ' -and '
+    }
+    elseif ($filterExclude)
+    {
+        $filterScript = '-not (' + ($filterExclude -join ' -or ') + ')'
+    }
+    else {
+        $filterScript = $null
     }
 
-    # Build out hashtable for splatting.
-    $uaiParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Name, Exact, WildCard, FilterApplication, ExcludeFromUninstall, ContinueOnError
-    $uaiParams.FilterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
-    $uaiParams.ApplicationType = 'MSI'
-    if (!$ContinueOnError)
+    if ($filterScript)
     {
-        $uaiParams.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+        $uaaParams.filterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
     }
 
     # Invoke execution.
     try
     {
-        Uninstall-ADTApplication @uaiParams
+        Uninstall-ADTApplication @uaaParams
     }
     catch
     {
