@@ -598,6 +598,7 @@ function Remove-MSIApplications
     # Build out hashtable for splatting.
     $raaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Name, Exact, WildCard, FilterApplication, ExcludeFromUninstall, ContinueOnError
     $raaParams.FilterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
+    $raaParams.ApplicationType = 'MSI'
     if (!$ContinueOnError)
     {
         $raaParams.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
@@ -606,7 +607,7 @@ function Remove-MSIApplications
     # Invoke execution.
     try
     {
-        Remove-ADTInstalledApplication -ApplicationType MSI @raaParams
+        Remove-ADTInstalledApplication @raaParams
     }
     catch
     {
