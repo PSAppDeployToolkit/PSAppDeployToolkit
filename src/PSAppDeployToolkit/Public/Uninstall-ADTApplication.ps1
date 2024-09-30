@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Remove-ADTInstalledApplication
+# MARK: Uninstall-ADTApplication
 #
 #-----------------------------------------------------------------------------
 
-function Remove-ADTInstalledApplication
+function Uninstall-ADTApplication
 {
     <#
     .SYNOPSIS
@@ -16,7 +16,7 @@ function Remove-ADTInstalledApplication
         Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
 
     .PARAMETER InstalledApplication
-        Specifies the installed application to remove. This parameter is used to pass the output of Get-ADTInstalledApplication to Remove-ADTInstalledApplication via the pipeline.
+        Specifies the installed application to remove. This parameter is used to pass the output of Get-ADTInstalledApplication to Uninstall-ADTApplication via the pipeline.
 
     .PARAMETER FilterScript
         Specifies a script block to filter the applications to be removed. The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
@@ -58,17 +58,17 @@ function Remove-ADTInstalledApplication
         - StdErr
 
     .EXAMPLE
-        Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java'}
+        Uninstall-ADTApplication -FilterScript {$_.DisplayName -match 'Java'}
 
         Removes all MSI applications that contain the name 'Java' in the DisplayName.
 
     .EXAMPLE
-        Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
+        Uninstall-ADTApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
 
         Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', 64-bit, and not version 8.x.
 
     .EXAMPLE
-        Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
+        Uninstall-ADTApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
 
         Remove all EXE applications starting with the name 'Vim' followed by a space, using the '/S' parameter.
 

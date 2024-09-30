@@ -462,7 +462,7 @@ function Get-InstalledApplication
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Remove-ADTInstalledApplication
+# MARK: Wrapper around Uninstall-ADTApplication
 #
 #---------------------------------------------------------------------------
 
@@ -520,7 +520,7 @@ function Remove-MSIApplications
     )
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInstalledApplication]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Uninstall-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2
 
     # Build out filterscript based on provided input.
     $filterInclude = $(
@@ -596,18 +596,18 @@ function Remove-MSIApplications
     }
 
     # Build out hashtable for splatting.
-    $raaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Name, Exact, WildCard, FilterApplication, ExcludeFromUninstall, ContinueOnError
-    $raaParams.FilterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
-    $raaParams.ApplicationType = 'MSI'
+    $uaiParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Name, Exact, WildCard, FilterApplication, ExcludeFromUninstall, ContinueOnError
+    $uaiParams.FilterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
+    $uaiParams.ApplicationType = 'MSI'
     if (!$ContinueOnError)
     {
-        $raaParams.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+        $uaiParams.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
 
     # Invoke execution.
     try
     {
-        Remove-ADTInstalledApplication @raaParams
+        Uninstall-ADTApplication @uaiParams
     }
     catch
     {
