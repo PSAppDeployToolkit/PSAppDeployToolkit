@@ -91,7 +91,11 @@ function Remove-ADTInstalledApplication
     [OutputType([PSADT.Types.ProcessInfo])]
     param
     (
-        [Parameter(Mandatory = $true, Position = 0)]
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'ByInstalledApplication', ValueFromPipeline = $true)]
+        [PSADT.Types.InstalledApplication]$InstalledApplication,
+
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'ByFilterScript')]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
         [Parameter(Mandatory = $false)]
@@ -128,11 +132,16 @@ function Remove-ADTInstalledApplication
         # Make this function continue on error.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
-        # Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
-        $gaiaParams = @{
-            FilterScript              = $FilterScript
-            ApplicationType           = $ApplicationType
-            IncludeUpdatesAndHotfixes = $IncludeUpdatesAndHotfixes
+        if ($PSCmdlet.ParameterSetName -eq 'ByFilterScript')
+        {
+            # Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
+            $gaiaParams = @{
+                FilterScript              = $FilterScript
+                ApplicationType           = $ApplicationType
+                IncludeUpdatesAndHotfixes = $IncludeUpdatesAndHotfixes
+            }
+
+            $InstalledApplication = & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
@@ -154,19 +163,20 @@ function Remove-ADTInstalledApplication
     {
         try
         {
-            $removeApplications = & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
-
-            $ExecuteResults = if ($null -ne $removeApplications)
+            $ExecuteResults = if ($null -ne $InstalledApplication)
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found [$(($removeApplications | & $Script:CommandTable.'Measure-Object').Count)] application(s) of type [$ApplicationType] that matched the specified criteria [$FilterScript]."
-
-                foreach ($removeApplication in $removeApplications)
+                foreach ($removeApplication in $InstalledApplication)
                 {
                     if ($removeApplication.WindowsInstaller)
                     {
                         if ($null -eq $removeApplication.ProductCode)
                         {
                             & $Script:CommandTable.'Write-ADTLogEntry' -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                            continue
+                        }
+                        if ($ApplicationType -eq 'EXE')
+                        {
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] as it is not an MSI."
                             continue
                         }
                         $sampParams.Path = $removeApplication.ProductCode
@@ -182,6 +192,11 @@ function Remove-ADTInstalledApplication
                     }
                     else
                     {
+                        if ($ApplicationType -eq 'MSI')
+                        {
+                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping removal of application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] as it is not an MSI."
+                            continue
+                        }
                         $uninstallString = if (![string]::IsNullOrWhiteSpace($removeApplication.QuietUninstallString))
                         {
                             $removeApplication.QuietUninstallString
@@ -224,6 +239,10 @@ function Remove-ADTInstalledApplication
                         elseif (![string]::IsNullOrWhiteSpace($uninstallStringParams))
                         {
                             $sapParams.Parameters = $uninstallStringParams
+                        }
+                        else
+                        {
+                            $sapParams.Remove('Parameters')
                         }
                         if ($AddParameters)
                         {
