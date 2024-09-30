@@ -23,7 +23,7 @@ namespace PSADT
         {
             public string UninstallKey;
             public string UninstallParentKey;
-            public string UninstallSubkey;
+            public string UninstallSubKey;
             public string ProductCode;
             public string DisplayName;
             public string DisplayVersion;
