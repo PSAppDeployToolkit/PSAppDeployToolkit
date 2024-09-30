@@ -206,9 +206,6 @@ Removes one or more items from each user profile on the system.
 ### [Remove-ADTFolder](Remove-ADTFolder.md)
 Remove folder and files if they exist.
 
-### [Remove-ADTInstalledApplication](Remove-ADTInstalledApplication.md)
-Removes all MSI applications matching the specified application name.
-
 ### [Remove-ADTInvalidFileNameChars](Remove-ADTInvalidFileNameChars.md)
 Remove invalid characters from the supplied string.
 
@@ -322,6 +319,9 @@ Checks if there is an active ADT session.
 
 ### [Unblock-ADTAppExecution](Unblock-ADTAppExecution.md)
 Unblocks the execution of applications performed by the Block-ADTAppExecution function.
+
+### [Uninstall-ADTApplication](Uninstall-ADTApplication.md)
+Removes all MSI applications matching the specified application name.
 
 ### [Unregister-ADTDllFile](Unregister-ADTDllFile.md)
 Unregister a DLL file.

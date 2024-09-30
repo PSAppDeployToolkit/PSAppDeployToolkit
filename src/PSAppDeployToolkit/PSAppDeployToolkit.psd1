@@ -142,7 +142,7 @@
         'Remove-ADTFile'
         'Remove-ADTFileFromUserProfiles'
         'Remove-ADTFolder'
-        'Remove-ADTInstalledApplication'
+        'Uninstall-ADTApplication'
         'Remove-ADTInvalidFileNameChars'
         'Remove-ADTRegistryKey'
         'Remove-ADTSessionClosingCallback'

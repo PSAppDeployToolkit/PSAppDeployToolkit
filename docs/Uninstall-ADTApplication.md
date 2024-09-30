@@ -5,7 +5,7 @@ online version: https://psappdeploytoolkit.com
 schema: 2.0.0
 ---
 
-# Remove-ADTInstalledApplication
+# Uninstall-ADTApplication
 
 ## SYNOPSIS
 Removes all MSI applications matching the specified application name.
@@ -14,16 +14,16 @@ Removes all MSI applications matching the specified application name.
 
 ### ByInstalledApplication
 ```
-Remove-ADTInstalledApplication [-InstalledApplication] <InstalledApplication> [-ApplicationType <String>]
+Uninstall-ADTApplication [-InstalledApplication] <InstalledApplication> [-ApplicationType <String>]
  [-IncludeUpdatesAndHotfixes] [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>]
  [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
 ### ByFilterScript
 ```
-Remove-ADTInstalledApplication [-FilterScript] <ScriptBlock> [-ApplicationType <String>]
- [-IncludeUpdatesAndHotfixes] [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>]
- [-LogFileName <String>] [-PassThru] [<CommonParameters>]
+Uninstall-ADTApplication [-FilterScript] <ScriptBlock> [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes]
+ [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,21 +35,21 @@ Enumerates the registry for installed applications matching the specified applic
 
 ### EXAMPLE 1
 ```
-Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java'}
+Uninstall-ADTApplication -FilterScript {$_.DisplayName -match 'Java'}
 ```
 
 Removes all MSI applications that contain the name 'Java' in the DisplayName.
 
 ### EXAMPLE 2
 ```
-Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
+Uninstall-ADTApplication -FilterScript {$_.DisplayName -match 'Java' -and $_.Publisher -eq 'Oracle Corporation' -and $_.Is64BitApplication -eq $true -and $_.DisplayVersion -notlike '8.*'}
 ```
 
 Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', 64-bit, and not version 8.x.
 
 ### EXAMPLE 3
 ```
-Remove-ADTInstalledApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
+Uninstall-ADTApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
 ```
 
 Remove all EXE applications starting with the name 'Vim' followed by a space, using the '/S' parameter.
@@ -58,7 +58,7 @@ Remove all EXE applications starting with the name 'Vim' followed by a space, us
 
 ### -InstalledApplication
 Specifies the installed application to remove.
-This parameter is used to pass the output of Get-ADTInstalledApplication to Remove-ADTInstalledApplication via the pipeline.
+This parameter is used to pass the output of Get-ADTInstalledApplication to Uninstall-ADTApplication via the pipeline.
 
 ```yaml
 Type: InstalledApplication
