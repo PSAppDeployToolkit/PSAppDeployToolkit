@@ -12,10 +12,18 @@ Removes all MSI applications matching the specified application name.
 
 ## SYNTAX
 
+### ByInstalledApplication
 ```
-Remove-ADTInstalledApplication [-FilterScript] <ScriptBlock> [-ApplicationType <String>] [-Parameters <String>]
- [-AddParameters <String>] [-IncludeUpdatesAndHotfixes] [-LoggingOptions <String>] [-LogFileName <String>]
- [-PassThru] [<CommonParameters>]
+Remove-ADTInstalledApplication [-InstalledApplication] <InstalledApplication> [-ApplicationType <String>]
+ [-IncludeUpdatesAndHotfixes] [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>]
+ [-LogFileName <String>] [-PassThru] [<CommonParameters>]
+```
+
+### ByFilterScript
+```
+Remove-ADTInstalledApplication [-FilterScript] <ScriptBlock> [-ApplicationType <String>]
+ [-IncludeUpdatesAndHotfixes] [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>]
+ [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -48,13 +56,29 @@ Remove all EXE applications starting with the name 'Vim' followed by a space, us
 
 ## PARAMETERS
 
+### -InstalledApplication
+Specifies the installed application to remove.
+This parameter is used to pass the output of Get-ADTInstalledApplication to Remove-ADTInstalledApplication via the pipeline.
+
+```yaml
+Type: InstalledApplication
+Parameter Sets: ByInstalledApplication
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
 ### -FilterScript
 Specifies a script block to filter the applications to be removed.
 The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
 
 ```yaml
 Type: ScriptBlock
-Parameter Sets: (All)
+Parameter Sets: ByFilterScript
 Aliases:
 
 Required: True
@@ -66,8 +90,8 @@ Accept wildcard characters: False
 
 ### -ApplicationType
 Specifies the type of application to remove.
-Valid values are 'Any', 'MSI', and 'EXE'.
-The default value is 'MSI'.
+Valid values are 'All', 'MSI', and 'EXE'.
+The default value is 'All'.
 
 ```yaml
 Type: String
@@ -76,7 +100,22 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: Any
+Default value: All
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeUpdatesAndHotfixes
+Include matches against updates and hotfixes in results.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -111,23 +150,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IncludeUpdatesAndHotfixes
-Include matches against updates and hotfixes in results.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -LoggingOptions
-Overrides the default logging options specified in the configuration file.
+Overrides the default MSI logging options specified in the configuration file.
 Default options are: "/L*v".
 
 ```yaml

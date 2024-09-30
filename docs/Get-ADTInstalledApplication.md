@@ -13,7 +13,8 @@ Retrieves information about installed applications.
 ## SYNTAX
 
 ```
-Get-ADTInstalledApplication [[-FilterScript] <ScriptBlock>] [-IncludeUpdatesAndHotfixes] [<CommonParameters>]
+Get-ADTInstalledApplication [[-FilterScript] <ScriptBlock>] [-ApplicationType <String>]
+ [-IncludeUpdatesAndHotfixes] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,6 +51,23 @@ Aliases:
 Required: False
 Position: 1
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ApplicationType
+Specifies the type of application to remove.
+Valid values are 'All', 'MSI', and 'EXE'.
+The default value is 'All'.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: All
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
