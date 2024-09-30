@@ -16,6 +16,9 @@ function Get-ADTInstalledApplication
     .PARAMETER FilterScript
         A script used to filter the results as they're processed.
 
+    .PARAMETER ApplicationType
+        Specifies the type of application to remove. Valid values are 'All', 'MSI', and 'EXE'. The default value is 'All'.
+
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
 
@@ -70,6 +73,10 @@ function Get-ADTInstalledApplication
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
         [Parameter(Mandatory = $false)]
+        [ValidateSet('All', 'MSI', 'EXE')]
+        [System.String]$ApplicationType = 'All',
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
     )
 
@@ -100,6 +107,12 @@ function Get-ADTInstalledApplication
                     {
                         # Exclude anything without a DisplayName field.
                         if (!$_.PSObject.Properties.Name.Contains('DisplayName') -or [System.String]::IsNullOrWhiteSpace($_.DisplayName))
+                        {
+                            return
+                        }
+
+                        # Apply application type filter if specified.
+                        if ($ApplicationType -ne 'All' -and ($ApplicationType -eq 'MSI') -eq (!($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore)))
                         {
                             return
                         }
