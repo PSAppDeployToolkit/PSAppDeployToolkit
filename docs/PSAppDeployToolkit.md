@@ -152,11 +152,11 @@ Set current user registry settings for all current users and any new users in th
 ### [Invoke-ADTCommandWithRetries](Invoke-ADTCommandWithRetries.md)
 Drop-in replacement for any cmdlet/function where a retry is desirable due to transient issues.
 
-### [Invoke-ADTDllFileAction](Invoke-ADTDllFileAction.md)
-Register or unregister a DLL file.
-
 ### [Invoke-ADTFunctionErrorHandler](Invoke-ADTFunctionErrorHandler.md)
 Handles errors within ADT functions by logging and optionally passing through the error.
+
+### [Invoke-ADTRegSvr32](Invoke-ADTRegSvr32.md)
+Register or unregister a DLL file.
 
 ### [Invoke-ADTSCCMTask](Invoke-ADTSCCMTask.md)
 Triggers SCCM to invoke the requested schedule task ID.
@@ -188,7 +188,7 @@ Opens a new ADT session.
 ### [Out-ADTPowerShellEncodedCommand](Out-ADTPowerShellEncodedCommand.md)
 Encodes a PowerShell command into a Base64 string.
 
-### [Register-ADTDllFile](Register-ADTDllFile.md)
+### [Register-ADTDll](Register-ADTDll.md)
 Register a DLL file.
 
 ### [Remove-ADTContentFromCache](Remove-ADTContentFromCache.md)
@@ -323,7 +323,7 @@ Unblocks the execution of applications performed by the Block-ADTAppExecution fu
 ### [Uninstall-ADTApplication](Uninstall-ADTApplication.md)
 Removes all MSI applications matching the specified application name.
 
-### [Unregister-ADTDllFile](Unregister-ADTDllFile.md)
+### [Unregister-ADTDll](Unregister-ADTDll.md)
 Unregister a DLL file.
 
 ### [Update-ADTDesktop](Update-ADTDesktop.md)

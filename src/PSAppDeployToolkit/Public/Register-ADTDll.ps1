@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Register-ADTDllFile
+# MARK: Register-ADTDll
 #
 #-----------------------------------------------------------------------------
 
-function Register-ADTDllFile
+function Register-ADTDll
 {
     <#
     .SYNOPSIS
@@ -27,7 +27,7 @@ function Register-ADTDllFile
         This function does not return objects.
 
     .EXAMPLE
-        Register-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
+        Register-ADTDll -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 
         Registers the specified DLL file.
 
@@ -66,7 +66,7 @@ function Register-ADTDllFile
     {
         try
         {
-            & $Script:CommandTable.'Invoke-ADTDllFileAction' @PSBoundParameters -DLLAction Register
+            & $Script:CommandTable.'Invoke-ADTRegSvr32' @PSBoundParameters -DLLAction Register
         }
         catch
         {

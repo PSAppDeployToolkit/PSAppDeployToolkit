@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Unregister-ADTDllFile
+# MARK: Unregister-ADTDll
 #
 #-----------------------------------------------------------------------------
 
-function Unregister-ADTDllFile
+function Unregister-ADTDll
 {
     <#
     .SYNOPSIS
@@ -27,7 +27,7 @@ function Unregister-ADTDllFile
         This function does not return objects.
 
     .EXAMPLE
-        Unregister-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
+        Unregister-ADTDll -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 
         Unregisters the specified DLL file.
 
@@ -66,7 +66,7 @@ function Unregister-ADTDllFile
     {
         try
         {
-            & $Script:CommandTable.'Invoke-ADTDllFileAction' @PSBoundParameters -DLLAction Unregister
+            & $Script:CommandTable.'Invoke-ADTRegSvr32' @PSBoundParameters -DLLAction Unregister
         }
         catch
         {

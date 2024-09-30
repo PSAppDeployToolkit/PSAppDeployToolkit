@@ -3239,7 +3239,7 @@ function Get-PendingReboot
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Invoke-ADTDllFileAction
+# MARK: Wrapper around Invoke-ADTRegSvr32
 #
 #---------------------------------------------------------------------------
 
@@ -3262,7 +3262,7 @@ function Invoke-RegisterOrUnregisterDLL
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTDllFileAction]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTRegSvr32]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3273,7 +3273,7 @@ function Invoke-RegisterOrUnregisterDLL
     }
     try
     {
-        Invoke-ADTDllFileAction @PSBoundParameters
+        Invoke-ADTRegSvr32 @PSBoundParameters
     }
     catch
     {
@@ -3287,7 +3287,7 @@ function Invoke-RegisterOrUnregisterDLL
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Register-ADTDllFile
+# MARK: Wrapper around Register-ADTDll
 #
 #---------------------------------------------------------------------------
 
@@ -3306,7 +3306,7 @@ function Register-DLL
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Register-ADTDllFile]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Register-ADTDll]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3317,7 +3317,7 @@ function Register-DLL
     }
     try
     {
-        Register-ADTDllFile @PSBoundParameters
+        Register-ADTDll @PSBoundParameters
     }
     catch
     {
@@ -3331,7 +3331,7 @@ function Register-DLL
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Unregister-ADTDllFile
+# MARK: Wrapper around Unregister-ADTDll
 #
 #---------------------------------------------------------------------------
 
@@ -3350,7 +3350,7 @@ function Unregister-DLL
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unregister-ADTDllFile]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unregister-ADTDll]. Please migrate your scripts to use the new function." -Severity 2
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3361,7 +3361,7 @@ function Unregister-DLL
     }
     try
     {
-        Unregister-ADTDllFile @PSBoundParameters
+        Unregister-ADTDll @PSBoundParameters
     }
     catch
     {
