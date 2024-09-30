@@ -15,6 +15,9 @@ function Remove-ADTInstalledApplication
 
         Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
 
+    .PARAMETER InstalledApplication
+        Specifies the installed application to remove. This parameter is used to pass the output of Get-ADTInstalledApplication to Remove-ADTInstalledApplication via the pipeline.
+
     .PARAMETER FilterScript
         Specifies a script block to filter the applications to be removed. The script block is evaluated for each application, and if it returns $true, the application is selected for removal.
 
