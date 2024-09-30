@@ -5,7 +5,7 @@ online version: https://psappdeploytoolkit.com
 schema: 2.0.0
 ---
 
-# Register-ADTDllFile
+# Register-ADTDll
 
 ## SYNOPSIS
 Register a DLL file.
@@ -13,7 +13,7 @@ Register a DLL file.
 ## SYNTAX
 
 ```
-Register-ADTDllFile [-FilePath] <String> [<CommonParameters>]
+Register-ADTDll [-FilePath] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,7 +25,7 @@ If the file does not exist, it throws an error.
 
 ### EXAMPLE 1
 ```
-Register-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
+Register-ADTDll -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 ```
 
 Registers the specified DLL file.

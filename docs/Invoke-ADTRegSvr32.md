@@ -5,7 +5,7 @@ online version: https://psappdeploytoolkit.com
 schema: 2.0.0
 ---
 
-# Invoke-ADTDllFileAction
+# Invoke-ADTRegSvr32
 
 ## SYNOPSIS
 Register or unregister a DLL file.
@@ -13,7 +13,7 @@ Register or unregister a DLL file.
 ## SYNTAX
 
 ```
-Invoke-ADTDllFileAction [-FilePath] <String> [-DLLAction] <String> [<CommonParameters>]
+Invoke-ADTRegSvr32 [-FilePath] <String> [-DLLAction] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,14 +25,14 @@ It supports both 32-bit and 64-bit DLL files on corresponding operating systems.
 
 ### EXAMPLE 1
 ```
-Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
+Invoke-ADTRegSvr32 -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
 ```
 
 Registers the specified DLL file.
 
 ### EXAMPLE 2
 ```
-Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Unregister'
+Invoke-ADTRegSvr32 -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Unregister'
 ```
 
 Unregisters the specified DLL file.

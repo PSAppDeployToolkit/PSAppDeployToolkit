@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Invoke-ADTDllFileAction
+# MARK: Invoke-ADTRegSvr32
 #
 #-----------------------------------------------------------------------------
 
-function Invoke-ADTDllFileAction
+function Invoke-ADTRegSvr32
 {
     <#
     .SYNOPSIS
@@ -30,12 +30,12 @@ function Invoke-ADTDllFileAction
         This function does not return objects.
 
     .EXAMPLE
-        Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
+        Invoke-ADTRegSvr32 -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
 
         Registers the specified DLL file.
 
     .EXAMPLE
-        Invoke-ADTDllFileAction -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Unregister'
+        Invoke-ADTRegSvr32 -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Unregister'
 
         Unregisters the specified DLL file.
 

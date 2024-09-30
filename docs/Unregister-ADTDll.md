@@ -5,7 +5,7 @@ online version: https://psappdeploytoolkit.com
 schema: 2.0.0
 ---
 
-# Unregister-ADTDllFile
+# Unregister-ADTDll
 
 ## SYNOPSIS
 Unregister a DLL file.
@@ -13,7 +13,7 @@ Unregister a DLL file.
 ## SYNTAX
 
 ```
-Unregister-ADTDllFile [-FilePath] <String> [<CommonParameters>]
+Unregister-ADTDll [-FilePath] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,7 +24,7 @@ This function takes the path to the DLL file and attempts to unregister it using
 
 ### EXAMPLE 1
 ```
-Unregister-ADTDllFile -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
+Unregister-ADTDll -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 ```
 
 Unregisters the specified DLL file.
