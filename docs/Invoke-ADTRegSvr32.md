@@ -13,7 +13,7 @@ Register or unregister a DLL file.
 ## SYNTAX
 
 ```
-Invoke-ADTRegSvr32 [-FilePath] <String> [-DLLAction] <String> [<CommonParameters>]
+Invoke-ADTRegSvr32 [-FilePath] <String> [-Action] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,14 +25,14 @@ It supports both 32-bit and 64-bit DLL files on corresponding operating systems.
 
 ### EXAMPLE 1
 ```
-Invoke-ADTRegSvr32 -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Register'
+Invoke-ADTRegSvr32 -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -Action 'Register'
 ```
 
 Registers the specified DLL file.
 
 ### EXAMPLE 2
 ```
-Invoke-ADTRegSvr32 -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -DLLAction 'Unregister'
+Invoke-ADTRegSvr32 -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -Action 'Unregister'
 ```
 
 Unregisters the specified DLL file.
@@ -54,7 +54,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DLLAction
+### -Action
 Specify whether to register or unregister the DLL.
 
 ```yaml
