@@ -52,9 +52,9 @@ namespace PSADT.PathEx
         private static Dictionary<string, string> LoadAppPathsExecutables()
         {
             var appPathsExecutables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            const string appPathsSubkey = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
+            const string appPathsSubKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
 
-            using var appPathsKey = Registry.LocalMachine.OpenSubKey(appPathsSubkey);
+            using var appPathsKey = Registry.LocalMachine.OpenSubKey(appPathsSubKey);
             if (appPathsKey != null)
             {
                 foreach (var exeName in appPathsKey.GetSubKeyNames())

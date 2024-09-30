@@ -129,7 +129,7 @@ function Get-ADTInstalledApplication
                         $app = [PSADT.Types.InstalledApplication]@{
                             UninstallKey         = $_.PSPath
                             UninstallParentKey   = $_.PSParentPath
-                            UninstallSubkey      = $_.PSChildName
+                            UninstallSubKey      = $_.PSChildName
                             ProductCode          = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
                             DisplayName          = $_.DisplayName
                             DisplayVersion       = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore

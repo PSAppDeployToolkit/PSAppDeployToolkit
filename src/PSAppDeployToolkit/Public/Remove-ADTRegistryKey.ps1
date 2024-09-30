@@ -129,7 +129,7 @@ function Remove-ADTRegistryKey
                         $naerParams = @{
                             Exception = [System.InvalidOperationException]::new("Unable to delete child key(s) of [$Key] without [-Recurse] switch.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                            ErrorId = 'SubkeyRecursionError'
+                            ErrorId = 'SubKeyRecursionError'
                             TargetObject = $Key
                             RecommendedAction = "Please run this command again with [-Recurse]."
                         }
