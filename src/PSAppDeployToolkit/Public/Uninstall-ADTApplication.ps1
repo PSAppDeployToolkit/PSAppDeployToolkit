@@ -205,7 +205,7 @@ function Uninstall-ADTApplication
             return
         }
 
-        $ExecuteResults = foreach ($removeApplication in $InstalledApplication)
+        foreach ($removeApplication in $InstalledApplication)
         {
             try
             {
@@ -303,11 +303,6 @@ function Uninstall-ADTApplication
             {
                 & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
-        }
-
-        if ($PassThru -and $ExecuteResults)
-        {
-            return $ExecuteResults
         }
     }
 
