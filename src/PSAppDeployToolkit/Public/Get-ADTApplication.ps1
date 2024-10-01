@@ -189,7 +189,7 @@ function Get-ADTApplication
                         }
 
                         # Apply ProductCode filter if specified.
-                        $appMsiGuid = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
+                        $appMsiGuid = if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName }
                         if ($appMsiGuid -and $ProductCode -and ($ProductCode -notcontains $appMsiGuid))
                         {
                             return
