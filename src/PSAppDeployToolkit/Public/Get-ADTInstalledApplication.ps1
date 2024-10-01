@@ -132,30 +132,28 @@ function Get-ADTInstalledApplication
             }
         )
 
-        if ($Name)
+        # If we're filtering by name, set up the relevant FilterScript.
+        $nameFilterScript = if ($Name)
         {
-            $nameFilter = $Name | & {
-                process
+            switch ($NameMatch)
+            {
+                Contains
                 {
-                    if ($NameMatch -eq 'Contains')
-                    {
-                        "`$_ -like '*$($_.Replace("'","''"))*'"
-                    }
-                    elseif ($NameMatch -eq 'Exact')
-                    {
-                        "`$_ -eq '$($_.Replace("'","''"))'"
-                    }
-                    elseif ($NameMatch -eq 'Wildcard')
-                    {
-                        "`$_ -like '$($_.Replace("'","''"))'"
-                    }
-                    elseif ($NameMatch -eq 'Regex')
-                    {
-                        "`$_ -match '$($_.Replace("'","''"))'"
-                    }
+                    { $Name -like "*$($_)*" }
+                }
+                Exact
+                {
+                    { $Name -eq $_ }
+                }
+                Wildcard
+                {
+                    { $Name -like $_ }
+                }
+                Regex
+                {
+                    { $Name -match $_ }
                 }
             }
-            $nameFilterScript = [System.Management.Automation.ScriptBlock]::Create($nameFilter -join ' -or ')
         }
     }
 
@@ -177,7 +175,7 @@ function Get-ADTInstalledApplication
                         }
 
                         # Apply name filter if specified.
-                        if ($nameFilterScript -and !(& $Script:CommandTable.'ForEach-Object' -InputObject $_.DisplayName -Process $nameFilterScript -ErrorAction Ignore))
+                        if ($nameFilterScript -and !(& $Script:CommandTable.'ForEach-Object' -InputObject $_.DisplayName -Process $nameFilterScript))
                         {
                             return
                         }
