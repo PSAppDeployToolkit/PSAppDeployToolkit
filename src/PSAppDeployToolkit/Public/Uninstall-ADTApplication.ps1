@@ -178,7 +178,7 @@ function Uninstall-ADTApplication
         if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
-            $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
+            $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
             $InstalledApplication = & $Script:CommandTable.'Get-ADTApplication' @gaiaParams
         }
 
