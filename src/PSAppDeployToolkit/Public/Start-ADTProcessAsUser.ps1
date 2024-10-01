@@ -6,6 +6,107 @@
 
 function Start-ADTProcessAsUser
 {
+    <#
+    .SYNOPSIS
+        Invokes a process in another user's session.
+
+    .DESCRIPTION
+        Invokes a process from SYSTEM in another user's session.
+
+    .PARAMETER FilePath
+        Path to the executable to invoke.
+
+    .PARAMETER ArgumentList
+        Arguments for the invoked executable.
+
+    .PARAMETER WorkingDirectory
+        The 'start-in' directory for the invoked executable.
+
+    .PARAMETER HideWindow
+        Specifies whether the window should be hidden or not.
+
+    .PARAMETER ProcessCreationFlags
+        One or more flags to control the process's invocation.
+
+    .PARAMETER InheritEnvironmentVariables
+        Specifies whether the process should inherit the user's environment state.
+
+    .PARAMETER Wait
+        Specifies whether to wait for the invoked excecutable to finish.
+
+    .PARAMETER Username
+        The username of the user's session to invoke the executable in.
+
+    .PARAMETER SessionId
+        The session ID of the user to invoke the executable in.
+
+    .PARAMETER AllActiveUserSessions
+        Specifies that the executable should be invoked in all active sessions.
+
+    .PARAMETER PrimaryActiveUserSession
+        Specifies that the executable should be invoked in the primary (active) user session.
+
+    .PARAMETER UseLinkedAdminToken
+        Specifies that an admin token (if available) should be used for the invocation.
+
+    .PARAMETER SuccessExitCodes
+        Specifies one or more exit codes that the function uses to consider the invocation successful.
+
+    .PARAMETER ConsoleTimeoutInSeconds
+        Specifies the timeout in seconds to wait for a console application to finish its task.
+
+    .PARAMETER IsGuiApplication
+        Indicates that the executed application is a GUI-based app, not a console-based app.
+
+    .PARAMETER NoRedirectOutput
+        Specifies that stdout/stderr output should not be redirected to file.
+
+    .PARAMETER MergeStdErrAndStdOut
+        Specifies that the stdout/stderr streams should be merged into a single output.
+
+    .PARAMETER OutputDirectory
+        Specifies the output directory for the redirected stdout/stderr streams.
+
+    .PARAMETER NoTerminateOnTimeout
+        Specifies that the process shouldn't terminate on timeout.
+
+    .PARAMETER AdditionalEnvironmentVariables
+        Specifies additional environment variables to inject into the user's session.
+
+    .PARAMETER WaitOption
+        Specifies the wait type to use when waiting for an invoked executable to finish.
+
+    .PARAMETER SecureParameters
+        Hides all parameters passed to the executable from the Toolkit log file.
+
+    .PARAMETER PassThru
+        If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process. If NoWait is specified, returns an object with Id, Handle and ProcessName.
+
+    .EXAMPLE
+        Start-ADTProcessAsUser -FilePath "$($adtSession.DirFiles)\setup.exe" -Parameters '/S' -SuccessExitCodes 0, 500
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        System.Threading.Tasks.Task[System.Int32]
+
+        Returns a task object indicating the process's result.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [CmdletBinding()]
     [OutputType([System.Threading.Tasks.Task[System.Int32]])]
     param
@@ -108,27 +209,6 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
         [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
-        [ValidateNotNullOrEmpty()]
-        [Microsoft.PowerShell.ExecutionPolicy]$PsExecutionPolicy,
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
-        [System.Management.Automation.SwitchParameter]$BypassPsExecutionPolicy,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
@@ -245,7 +325,7 @@ function Start-ADTProcessAsUser
     begin
     {
         # Initialise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Strip out parameters not destined for the C# code.
         if ($PSBoundParameters.ContainsKey('SecureParameters'))
@@ -279,7 +359,7 @@ function Start-ADTProcessAsUser
         }
 
         # Translate switches that require negation for the LaunchOptions.
-        ('RedirectOutput', 'TerminateOnTimeout').Where({$PSBoundParameters.ContainsKey("No$_")}).ForEach({
+        ('RedirectOutput', 'TerminateOnTimeout').Where({ $PSBoundParameters.ContainsKey("No$_") }).ForEach({
                 $PSBoundParameters.$_ = !$PSBoundParameters."No$_"
                 $null = $PSBoundParameters.Remove("No$_")
             })
@@ -343,7 +423,7 @@ function Start-ADTProcessAsUser
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
         finally
         {
@@ -355,6 +435,6 @@ function Start-ADTProcessAsUser
     end
     {
         # Finalise function.
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
     }
 }
