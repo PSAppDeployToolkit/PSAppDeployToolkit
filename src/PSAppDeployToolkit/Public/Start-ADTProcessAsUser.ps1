@@ -219,13 +219,43 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.ProcessEx.WaitType]$WaitOption
+        [PSADT.ProcessEx.WaitType]$WaitOption,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
+        [System.Management.Automation.SwitchParameter]$SecureParameters,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     begin
     {
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Strip out parameters not destined for the C# code.
+        if ($PSBoundParameters.ContainsKey('SecureParameters'))
+        {
+            $null = $PSBoundParameters.Remove('SecureParameters')
+        }
+        if ($PSBoundParameters.ContainsKey('PassThru'))
+        {
+            $null = $PSBoundParameters.Remove('PassThru')
+        }
 
         # Translate a provided username into a session Id.
         if ($PSBoundParameters.ContainsKey('Username'))
@@ -269,12 +299,40 @@ function Start-ADTProcessAsUser
 
     process
     {
+        # Announce start.
+        switch ($PSCmdlet.ParameterSetName)
+        {
+            { $_.StartsWith('Username') }
+            {
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] as user [$Username]$(if ($Wait) { ", and waiting for invocation to finish" })."
+                break
+            }
+            { $_.StartsWith('SessionId') }
+            {
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for session [$SessionId]$(if ($Wait) { ", and waiting for invocation to finish" })."
+                break
+            }
+            { $_.StartsWith('AllActiveUserSessions') }
+            {
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for all active user sessions$(if ($Wait) { ", and waiting for all invocations to finish" })."
+                break
+            }
+            { $_.StartsWith('PrimaryActiveUserSession') }
+            {
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for the primary user session$(if ($Wait) { ", and waiting for invocation to finish" })."
+                break
+            }
+        }
+
+        # Create a new process object and invoke an execution.
         try
         {
             try
             {
-                # Create a new process object and invoke an execution.
-                return ($process = [PSADT.ProcessEx.StartProcess]::new()).ExecuteAndMonitorAsync($PSBoundParameters)
+                if (($result = ($process = [PSADT.ProcessEx.StartProcess]::new()).ExecuteAndMonitorAsync($PSBoundParameters)))
+                {
+                    return $result
+                }
             }
             catch
             {
