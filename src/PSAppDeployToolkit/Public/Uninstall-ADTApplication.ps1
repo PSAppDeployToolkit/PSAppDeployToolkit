@@ -41,9 +41,6 @@ function Uninstall-ADTApplication
     .PARAMETER AddParameters
         Adds to the default parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
-    .PARAMETER IncludeUpdatesAndHotfixes
-        Include matches against updates and hotfixes in results.
-
     .PARAMETER LoggingOptions
         Overrides the default MSI logging options specified in the configuration file. Default options are: "/L*v".
 
