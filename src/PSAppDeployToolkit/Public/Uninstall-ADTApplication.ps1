@@ -188,112 +188,110 @@ function Uninstall-ADTApplication
 
     process
     {
-        try
+        if (!$InstalledApplication)
         {
-            $ExecuteResults = if ($null -ne $InstalledApplication)
+            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'No applications found for removal.'
+            return
+        }
+
+        $ExecuteResults = foreach ($removeApplication in $InstalledApplication)
+        {
+            try
             {
-                foreach ($removeApplication in $InstalledApplication)
+                if ($removeApplication.WindowsInstaller)
                 {
-                    if ($removeApplication.WindowsInstaller)
+                    if ($null -eq $removeApplication.ProductCode)
                     {
-                        if ($null -eq $removeApplication.ProductCode)
-                        {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
-                            continue
-                        }
-                        $sampParams.Path = $removeApplication.ProductCode
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
-                        try
-                        {
-                            & $Script:CommandTable.'Start-ADTMsiProcess' @sampParams
-                        }
-                        catch
-                        {
-                            & $Script:CommandTable.'Write-Error' -ErrorRecord $_
-                        }
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                        continue
+                    }
+                    $sampParams.Path = $removeApplication.ProductCode
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
+                    try
+                    {
+                        & $Script:CommandTable.'Start-ADTMsiProcess' @sampParams
+                    }
+                    catch
+                    {
+                        & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    }
+                }
+                else
+                {
+                    $uninstallString = if (![System.String]::IsNullOrWhiteSpace($removeApplication.QuietUninstallString))
+                    {
+                        $removeApplication.QuietUninstallString
+                    }
+                    elseif (![System.String]::IsNullOrWhiteSpace($removeApplication.UninstallString))
+                    {
+                        $removeApplication.UninstallString
                     }
                     else
                     {
-                        $uninstallString = if (![string]::IsNullOrWhiteSpace($removeApplication.QuietUninstallString))
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                        continue
+                    }
+
+                    if ($uninstallString -match '^"(.+?\.exe)"(?:\s(.*))?$')
+                    {
+                        $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
+                        $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
+                    }
+                    elseif ($uninstallString -match '^(\S+?\.exe)(?:\s(.*))?$')
+                    {
+                        $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
+                        $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
+                    }
+                    elseif ($uninstallString -match '^"?(.+?\.exe)"?$')
+                    {
+                        $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
+                        $uninstallStringParams = $null
+                    }
+                    else
+                    {
+                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invalid UninstallString [$uninstallString] found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                        continue
+                    }
+
+                    if (![System.String]::IsNullOrWhiteSpace($Parameters))
+                    {
+                        $sapParams.Parameters = $Parameters
+                    }
+                    elseif (![System.String]::IsNullOrWhiteSpace($uninstallStringParams))
+                    {
+                        $sapParams.Parameters = $uninstallStringParams
+                    }
+                    else
+                    {
+                        $sapParams.Remove('Parameters')
+                    }
+                    if ($AddParameters)
+                    {
+                        if ($sapParams.ContainsKey('Parameters'))
                         {
-                            $removeApplication.QuietUninstallString
-                        }
-                        elseif (![string]::IsNullOrWhiteSpace($removeApplication.UninstallString))
-                        {
-                            $removeApplication.UninstallString
+                            $sapParams.Parameters += " $AddParameters"
                         }
                         else
                         {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
-                            continue
-                        }
-
-                        if ($uninstallString -match '^"(.+?\.exe)"(?:\s(.*))?$')
-                        {
-                            $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                            $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
-                        }
-                        elseif ($uninstallString -match '^(\S+?\.exe)(?:\s(.*))?$')
-                        {
-                            $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                            $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
-                        }
-                        elseif ($uninstallString -match '^"?(.+?\.exe)"?$')
-                        {
-                            $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                            $uninstallStringParams = $null
-                        }
-                        else
-                        {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invalid UninstallString [$uninstallString] found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
-                            continue
-                        }
-
-                        if (![string]::IsNullOrWhiteSpace($Parameters))
-                        {
-                            $sapParams.Parameters = $Parameters
-                        }
-                        elseif (![string]::IsNullOrWhiteSpace($uninstallStringParams))
-                        {
-                            $sapParams.Parameters = $uninstallStringParams
-                        }
-                        else
-                        {
-                            $sapParams.Remove('Parameters')
-                        }
-                        if ($AddParameters)
-                        {
-                            if ($sapParams.ContainsKey('Parameters'))
-                            {
-                                $sapParams.Parameters += " $AddParameters"
-                            }
-                            else
-                            {
-                                $sapParams.Parameters = $AddParameters
-                            }
-                        }
-
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]."
-                        try
-                        {
-                            & $Script:CommandTable.'Start-ADTProcess' @sapParams
-                        }
-                        catch
-                        {
-                            & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                            $sapParams.Parameters = $AddParameters
                         }
                     }
 
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]."
+                    try
+                    {
+                        & $Script:CommandTable.'Start-ADTProcess' @sapParams
+                    }
+                    catch
+                    {
+                        & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    }
                 }
             }
-            else
+            catch
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'No applications found for removal. Continue...'
+                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
-        }
-        catch
-        {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
 
         if ($PassThru -and $ExecuteResults)
