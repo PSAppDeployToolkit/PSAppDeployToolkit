@@ -15,7 +15,7 @@ function Uninstall-ADTApplication
         Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
 
     .PARAMETER InstalledApplication
-        Specifies the [PSADT.Types.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTInstalledApplication to this function.
+        Specifies the [PSADT.Types.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTApplication to this function.
 
     .PARAMETER Name
         The name of the application to retrieve information for. Performs a contains match on the application display name by default.
@@ -177,9 +177,9 @@ function Uninstall-ADTApplication
 
         if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
-            # Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
+            # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
             $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
-            $InstalledApplication = & $Script:CommandTable.'Get-ADTInstalledApplication' @gaiaParams
+            $InstalledApplication = & $Script:CommandTable.'Get-ADTApplication' @gaiaParams
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting

@@ -371,7 +371,7 @@ function Remove-InvalidFileNameChars
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Get-ADTInstalledApplication
+# MARK: Wrapper around Get-ADTApplication
 #
 #---------------------------------------------------------------------------
 
@@ -402,8 +402,7 @@ function Get-InstalledApplication
     )
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTInstalledApplication]. Please migrate your scripts to use the new function." -Severity 2
-
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2
     $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Exact, WildCard, RegEx
 
     if ($Exact)
@@ -422,7 +421,7 @@ function Get-InstalledApplication
     # Invoke execution.
     try
     {
-        Get-ADTInstalledApplication @gaiaParams
+        Get-ADTApplication @gaiaParams
     }
     catch
     {

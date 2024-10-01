@@ -83,7 +83,7 @@ Retrieves the free disk space in MB on a particular drive (defaults to system dr
 ### [Get-ADTIniValue](Get-ADTIniValue.md)
 Parses an INI file and returns the value of the specified section and key.
 
-### [Get-ADTInstalledApplication](Get-ADTInstalledApplication.md)
+### [Get-ADTApplication](Get-ADTApplication.md)
 Retrieves information about installed applications.
 
 ### [Get-ADTLoggedOnUser](Get-ADTLoggedOnUser.md)
