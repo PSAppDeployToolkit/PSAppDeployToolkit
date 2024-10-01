@@ -124,7 +124,7 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ProductCode,
+        [System.String[]]$ProductCode,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateSet('All', 'MSI', 'EXE')]
