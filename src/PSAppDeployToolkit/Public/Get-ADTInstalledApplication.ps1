@@ -95,7 +95,7 @@ function Get-ADTInstalledApplication
     param
     (
         [Parameter(Mandatory = $false, Position = 0)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
         [Parameter(Mandatory = $false)]
@@ -103,7 +103,7 @@ function Get-ADTInstalledApplication
         [System.String]$NameMatch = 'Contains',
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$ProductCode,
 
         [Parameter(Mandatory = $false)]

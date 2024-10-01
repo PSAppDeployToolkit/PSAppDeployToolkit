@@ -115,7 +115,7 @@ function Uninstall-ADTApplication
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'Search')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
@@ -123,7 +123,7 @@ function Uninstall-ADTApplication
         [System.String]$NameMatch = 'Contains',
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$ProductCode,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
