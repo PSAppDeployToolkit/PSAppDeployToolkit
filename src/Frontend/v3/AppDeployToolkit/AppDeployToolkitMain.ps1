@@ -478,7 +478,8 @@ function Remove-MSIApplications
         [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
-        [System.String]$LogName,
+        [Alias('LogName')]
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -493,12 +494,8 @@ function Remove-MSIApplications
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Uninstall-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2
 
     # Build out hashtable for splatting.
-    $uaaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Exact, WildCard, FilterApplication, ExcludeFromUninstall, LogName, ContinueOnError
+    $uaaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Exact, WildCard, FilterApplication, ExcludeFromUninstall, ContinueOnError
     $uaaParams.ApplicationType = 'MSI'
-    if ($LogName)
-    {
-        $uaaParams.LogFileName = $LogName
-    }
     if (!$ContinueOnError)
     {
         $uaaParams.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
