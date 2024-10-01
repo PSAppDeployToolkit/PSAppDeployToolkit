@@ -187,12 +187,26 @@ function Get-ADTInstalledApplication
                             return
                         }
 
+                        # Apply ProductCode filter if specified.
+                        $appMsiGuid = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
+                        if ($ProductCode -and ($ProductCode -ne $appMsiGuid))
+                        {
+                            return
+                        }
+
+                        # Apply application type filter if specified.
+                        $windowsInstaller = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore
+                        if ($ApplicationType -ne 'All' -and ($ApplicationType -eq 'MSI') -eq !$windowsInstaller)
+                        {
+                            return
+                        }
+
                         # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                         $app = [PSADT.Types.InstalledApplication]@{
                             UninstallKey         = $_.PSPath
                             UninstallParentKey   = $_.PSParentPath
                             UninstallSubKey      = $_.PSChildName
-                            ProductCode          = $(if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName })
+                            ProductCode          = $appMsiGuid
                             DisplayName          = $_.DisplayName
                             DisplayVersion       = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore
                             UninstallString      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty UninstallString -ErrorAction Ignore
@@ -202,20 +216,8 @@ function Get-ADTInstalledApplication
                             InstallDate          = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallDate -ErrorAction Ignore
                             Publisher            = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore
                             SystemComponent      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore
-                            WindowsInstaller     = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore
+                            WindowsInstaller     = $windowsInstaller
                             Is64BitApplication   = [System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
-                        }
-
-                        # Apply ProductCode filter if specified
-                        if ($ProductCode -and $ProductCode -ne $app.ProductCode)
-                        {
-                            return
-                        }
-
-                        # Apply application type filter if specified.
-                        if ($ApplicationType -ne 'All' -and ($ApplicationType -eq 'MSI') -eq !$app.WindowsInstaller)
-                        {
-                            return
                         }
 
                         # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
