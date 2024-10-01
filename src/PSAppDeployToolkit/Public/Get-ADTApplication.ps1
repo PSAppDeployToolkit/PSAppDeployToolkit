@@ -138,19 +138,23 @@ function Get-ADTApplication
             {
                 Contains
                 {
-                    { $Name -like "*$($_)*" }
+                    { $_ -like "*$Name*" }
+                    break
                 }
                 Exact
                 {
-                    { $Name -eq $_ }
+                    { $_ -eq $Name }
+                    break
                 }
                 Wildcard
                 {
-                    { $Name -like $_ }
+                    { $_ -like $Name }
+                    break
                 }
                 Regex
                 {
-                    { $Name -match $_ }
+                    { $_ -match $Name }
+                    break
                 }
             }
         }
