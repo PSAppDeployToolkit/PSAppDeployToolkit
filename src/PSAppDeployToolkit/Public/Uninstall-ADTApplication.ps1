@@ -111,10 +111,10 @@ function Uninstall-ADTApplication
     [OutputType([PSADT.Types.ProcessInfo])]
     param
     (
-        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true)]
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
-        [Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
@@ -133,7 +133,7 @@ function Uninstall-ADTApplication
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search', Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
