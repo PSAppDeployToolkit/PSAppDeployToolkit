@@ -163,7 +163,7 @@ function Uninstall-ADTApplication
             if ($null -eq $Name -and $null -eq $ProductCode -and $null -eq $FilterScript)
             {
                 $naerParams = @{
-                    Exception         = [System.ArgumentNullException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')#, 'FilterScript')
+                    Exception         = [System.ArgumentNullException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')
                     Category          = [System.Management.Automation.ErrorCategory]::InvalidArgument
                     ErrorId           = 'NullParameterValue'
                     RecommendedAction = "Review the supplied parameter values and try again."
