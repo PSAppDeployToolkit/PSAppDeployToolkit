@@ -98,16 +98,16 @@ https://psappdeploytoolkit.com
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [String]$UserName = (& $Script:CommandTable.'Get-ADTRunAsActiveUser').NTAccount,
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [String]$Path,
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [String]$TempPath,
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [String]$Parameters = '',
         [Parameter(Mandatory = $false)]
         [Switch]$SecureParameters = $false,

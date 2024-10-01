@@ -456,37 +456,37 @@ function Remove-MSIApplications
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Parameters,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AddParameters,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [Array]$FilterApplication,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [Array]$ExcludeFromUninstall,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
         [System.String]$LogName,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
 
@@ -763,11 +763,11 @@ function Copy-File
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
