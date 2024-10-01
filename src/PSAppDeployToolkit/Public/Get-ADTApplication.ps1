@@ -138,22 +138,22 @@ function Get-ADTApplication
             {
                 Contains
                 {
-                    { $_ -like "*$Name*" }
+                    { foreach ($eachName in $Name) { if ($_ -like "*$eachName*") { $true; break } } }
                     break
                 }
                 Exact
                 {
-                    { $_ -eq $Name }
+                    { foreach ($eachName in $Name) { if ($_ -eq $eachName) { $true; break } } }
                     break
                 }
                 Wildcard
                 {
-                    { $_ -like $Name }
+                    { foreach ($eachName in $Name) { if ($_ -like $eachName) { $true; break } } }
                     break
                 }
                 Regex
                 {
-                    { $_ -match $Name }
+                    { foreach ($eachName in $Name) { if ($_ -match $eachName) { $true; break } } }
                     break
                 }
             }
