@@ -89,32 +89,30 @@ function Get-ADTApplication
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProductCode', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ApplicationType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding(DefaultParameterSetName = 'None')]
+    [CmdletBinding()]
     [OutputType([PSADT.Types.InstalledApplication])]
     param
     (
-        [Parameter(Mandatory = $true, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false)]
         [ValidateSet('Contains', 'Exact', 'Wildcard', 'Regex')]
         [System.String]$NameMatch = 'Contains',
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ProductCode,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false)]
         [ValidateSet('All', 'MSI', 'EXE')]
         [System.String]$ApplicationType = 'All',
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'None')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'FilterScript')]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'FilterScript', Position = 0)]
+        [Parameter(Mandatory = $false, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript
     )

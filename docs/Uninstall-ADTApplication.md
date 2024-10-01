@@ -14,21 +14,16 @@ Removes all MSI applications matching the specified application name.
 
 ### InstalledApplication
 ```
-Uninstall-ADTApplication -InstalledApplication <InstalledApplication> [-Parameters <String>]
+Uninstall-ADTApplication -InstalledApplication <InstalledApplication[]> [-Parameters <String>]
  [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
-### SearchByName
+### Search
 ```
-Uninstall-ADTApplication -Name <String[]> [-NameMatch <String>] [-ProductCode <String[]>]
- [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [-Parameters <String>] [-AddParameters <String>]
- [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
-```
-
-### SearchByFilterScript
-```
-Uninstall-ADTApplication [-IncludeUpdatesAndHotfixes] [-FilterScript] <ScriptBlock> [-Parameters <String>]
- [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
+Uninstall-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <String[]>]
+ [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>]
+ [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -65,7 +60,7 @@ Specifies the \[PSADT.Types.InstalledApplication\] object to remove.
 This parameter is typically used when piping Get-ADTApplication to this function.
 
 ```yaml
-Type: InstalledApplication
+Type: InstalledApplication[]
 Parameter Sets: InstalledApplication
 Aliases:
 
@@ -82,10 +77,10 @@ Performs a contains match on the application display name by default.
 
 ```yaml
 Type: String[]
-Parameter Sets: SearchByName
+Parameter Sets: Search
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -99,7 +94,7 @@ The default value is 'Contains'.
 
 ```yaml
 Type: String
-Parameter Sets: SearchByName
+Parameter Sets: Search
 Aliases:
 
 Required: False
@@ -114,7 +109,7 @@ The product code of the application to retrieve information for.
 
 ```yaml
 Type: String[]
-Parameter Sets: SearchByName
+Parameter Sets: Search
 Aliases:
 
 Required: False
@@ -131,7 +126,7 @@ The default value is 'All'.
 
 ```yaml
 Type: String
-Parameter Sets: SearchByName
+Parameter Sets: Search
 Aliases:
 
 Required: False
@@ -146,7 +141,7 @@ Include matches against updates and hotfixes in results.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: SearchByName, SearchByFilterScript
+Parameter Sets: Search
 Aliases:
 
 Required: False
@@ -161,10 +156,10 @@ A script used to filter the results as they're processed.
 
 ```yaml
 Type: ScriptBlock
-Parameter Sets: SearchByFilterScript
+Parameter Sets: Search
 Aliases:
 
-Required: True
+Required: False
 Position: 1
 Default value: None
 Accept pipeline input: False
