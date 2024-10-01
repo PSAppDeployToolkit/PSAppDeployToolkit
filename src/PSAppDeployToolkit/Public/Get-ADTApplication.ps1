@@ -138,22 +138,22 @@ function Get-ADTApplication
             {
                 Contains
                 {
-                    { foreach ($eachName in $Name) { if ($_ -like "*$eachName*") { $true; break } } }
+                    { foreach ($eachName in $Name) { if ($_.DisplayName -like "*$eachName*") { $true; break } } }
                     break
                 }
                 Exact
                 {
-                    { foreach ($eachName in $Name) { if ($_ -eq $eachName) { $true; break } } }
+                    { foreach ($eachName in $Name) { if ($_.DisplayName -eq $eachName) { $true; break } } }
                     break
                 }
                 Wildcard
                 {
-                    { foreach ($eachName in $Name) { if ($_ -like $eachName) { $true; break } } }
+                    { foreach ($eachName in $Name) { if ($_.DisplayName -like $eachName) { $true; break } } }
                     break
                 }
                 Regex
                 {
-                    { foreach ($eachName in $Name) { if ($_ -match $eachName) { $true; break } } }
+                    { foreach ($eachName in $Name) { if ($_.DisplayName -match $eachName) { $true; break } } }
                     break
                 }
             }
@@ -178,7 +178,7 @@ function Get-ADTApplication
                         }
 
                         # Apply name filter if specified.
-                        if ($nameFilterScript -and !(& $Script:CommandTable.'ForEach-Object' -InputObject $_.DisplayName -Process $nameFilterScript))
+                        if ($nameFilterScript -and !(& $nameFilterScript))
                         {
                             return
                         }
