@@ -135,12 +135,12 @@ function Get-ADTShortcut
                         $shortcut.Description,
                         $shortcut.WorkingDirectory,
                         $(switch ($shortcut.WindowStyle)
-                        {
-                            1 { 'Normal'; break }
-                            3 { 'Maximized'; break }
-                            7 { 'Minimized'; break }
-                            default { 'Normal'; break }
-                        }),
+                            {
+                                1 { 'Normal'; break }
+                                3 { 'Maximized'; break }
+                                7 { 'Minimized'; break }
+                                default { 'Normal'; break }
+                            }),
                         $shortcut.Hotkey,
                         !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
                     )

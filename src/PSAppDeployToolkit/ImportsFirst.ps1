@@ -35,7 +35,14 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 # Set the process as HiDPI so long as we're in a real console.
 if ($Host.Name.Equals('ConsoleHost'))
 {
-    [PSADT.GUI.UiAutomation]::SetProcessDpiAwarenessForOSVersion()
+    try
+    {
+        [PSADT.GUI.UiAutomation]::SetProcessDpiAwarenessForOSVersion()
+    }
+    catch
+    {
+        $null = $null
+    }
 }
 
 # All WinForms-specific initialistion code.

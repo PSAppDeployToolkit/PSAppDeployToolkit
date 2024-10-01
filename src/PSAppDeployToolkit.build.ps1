@@ -128,19 +128,11 @@ Add-BuildTask ValidateRequirements {
 } #ValidateRequirements
 
 # Synopsis: Import the current module manifest file for processing
-Add-BuildTask TestModuleManifest -Before CompileModuleDll {
+Add-BuildTask TestModuleManifest -Before ImportModuleManifest {
     Write-Build White '      Running module manifest tests...'
     Assert-Build (Test-Path $script:ModuleManifestFile) 'Unable to locate the module manifest file.'
     Assert-Build (Test-ManifestBool -Path $script:ModuleManifestFile) 'Module Manifest test did not pass verification.'
     Write-Build Green '      ...Module Manifest Verification Complete!'
-} #f5b33218-bde4-4028-b2a1-9c206f089503
-
-# Synopsis: Import the current module manifest file for processing
-Add-BuildTask CompileModuleDll -Before ImportModuleManifest {
-    Write-Build White '      Compiling module DLL file...'
-    & "$([System.Environment]::SystemDirectory)\WindowsPowerShell\v1.0\powershell.exe" -ExecutionPolicy Bypass -NoProfile -EncodedCommand ([System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("Add-Type -LiteralPath `"$PSScriptRoot\$ModuleName.CSharp.cs`" -OutputAssembly `"$PSScriptRoot\$ModuleName\$ModuleName.dll`" -ReferencedAssemblies System.DirectoryServices -ErrorAction Stop")))
-    Assert-Build ($LASTEXITCODE.Equals(0)) 'Failed to compile module DLL file.'
-    Write-Build Green '      ...Module DLL Compilation Complete!'
 } #f5b33218-bde4-4028-b2a1-9c206f089503
 
 # Synopsis: Load the module project
