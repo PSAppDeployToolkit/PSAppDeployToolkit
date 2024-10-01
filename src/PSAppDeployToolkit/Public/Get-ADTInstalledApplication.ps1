@@ -94,7 +94,7 @@ function Get-ADTInstalledApplication
     [OutputType([PSADT.Types.InstalledApplication])]
     param
     (
-        [Parameter(Mandatory = $false, Position = 0)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
@@ -113,7 +113,7 @@ function Get-ADTInstalledApplication
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript
     )
