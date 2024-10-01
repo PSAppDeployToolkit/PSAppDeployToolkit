@@ -14,14 +14,20 @@ Removes all MSI applications matching the specified application name.
 
 ### InstalledApplication
 ```
-Uninstall-ADTApplication [-InstalledApplication] <InstalledApplication> [-Parameters <String>]
+Uninstall-ADTApplication -InstalledApplication <InstalledApplication> [-Parameters <String>]
  [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
-### Search
+### SearchByName
 ```
-Uninstall-ADTApplication [[-Name] <String[]>] [-NameMatch <String>] [-ProductCode <String>]
- [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [-FilterScript <ScriptBlock>] [-Parameters <String>]
+Uninstall-ADTApplication -Name <String[]> [-NameMatch <String>] [-ProductCode <String[]>]
+ [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [-Parameters <String>] [-AddParameters <String>]
+ [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
+```
+
+### SearchByFilterScript
+```
+Uninstall-ADTApplication [-IncludeUpdatesAndHotfixes] [-FilterScript] <ScriptBlock> [-Parameters <String>]
  [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
@@ -64,7 +70,7 @@ Parameter Sets: InstalledApplication
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
@@ -76,11 +82,11 @@ Performs a contains match on the application display name by default.
 
 ```yaml
 Type: String[]
-Parameter Sets: Search
+Parameter Sets: SearchByName
 Aliases:
 
-Required: False
-Position: 1
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -93,7 +99,7 @@ The default value is 'Contains'.
 
 ```yaml
 Type: String
-Parameter Sets: Search
+Parameter Sets: SearchByName
 Aliases:
 
 Required: False
@@ -107,8 +113,8 @@ Accept wildcard characters: False
 The product code of the application to retrieve information for.
 
 ```yaml
-Type: String
-Parameter Sets: Search
+Type: String[]
+Parameter Sets: SearchByName
 Aliases:
 
 Required: False
@@ -125,7 +131,7 @@ The default value is 'All'.
 
 ```yaml
 Type: String
-Parameter Sets: Search
+Parameter Sets: SearchByName
 Aliases:
 
 Required: False
@@ -140,7 +146,7 @@ Include matches against updates and hotfixes in results.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Search
+Parameter Sets: SearchByName, SearchByFilterScript
 Aliases:
 
 Required: False
@@ -155,11 +161,11 @@ A script used to filter the results as they're processed.
 
 ```yaml
 Type: ScriptBlock
-Parameter Sets: Search
+Parameter Sets: SearchByFilterScript
 Aliases:
 
-Required: False
-Position: Named
+Required: True
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

@@ -12,9 +12,20 @@ Retrieves information about installed applications.
 
 ## SYNTAX
 
+### None (Default)
 ```
-Get-ADTApplication [[-Name] <String[]>] [-NameMatch <String>] [-ProductCode <String>]
- [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [-FilterScript <ScriptBlock>] [<CommonParameters>]
+Get-ADTApplication [-IncludeUpdatesAndHotfixes] [<CommonParameters>]
+```
+
+### Search
+```
+Get-ADTApplication -Name <String[]> [-NameMatch <String>] [-ProductCode <String[]>] [-ApplicationType <String>]
+ [-IncludeUpdatesAndHotfixes] [<CommonParameters>]
+```
+
+### FilterScript
+```
+Get-ADTApplication [-IncludeUpdatesAndHotfixes] [-FilterScript] <ScriptBlock> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -67,11 +78,11 @@ Performs a contains match on the application display name by default.
 
 ```yaml
 Type: String[]
-Parameter Sets: (All)
+Parameter Sets: Search
 Aliases:
 
-Required: False
-Position: 1
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -84,7 +95,7 @@ The default value is 'Contains'.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: Search
 Aliases:
 
 Required: False
@@ -98,8 +109,8 @@ Accept wildcard characters: False
 The product code of the application to retrieve information for.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
+Type: String[]
+Parameter Sets: Search
 Aliases:
 
 Required: False
@@ -116,7 +127,7 @@ The default value is 'All'.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: Search
 Aliases:
 
 Required: False
@@ -146,11 +157,11 @@ A script used to filter the results as they're processed.
 
 ```yaml
 Type: ScriptBlock
-Parameter Sets: (All)
+Parameter Sets: FilterScript
 Aliases:
 
-Required: False
-Position: Named
+Required: True
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
