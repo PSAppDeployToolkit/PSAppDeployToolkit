@@ -90,30 +90,32 @@ function Get-ADTInstalledApplication
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'NameMatch', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProductCode', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ApplicationType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'None')]
     [OutputType([PSADT.Types.InstalledApplication])]
     param
     (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Search')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateSet('Contains', 'Exact', 'Wildcard', 'Regex')]
         [System.String]$NameMatch = 'Contains',
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ProductCode,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateSet('All', 'MSI', 'EXE')]
         [System.String]$ApplicationType = 'All',
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'None')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FilterScript')]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $false, Position = 0)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'FilterScript', Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript
     )

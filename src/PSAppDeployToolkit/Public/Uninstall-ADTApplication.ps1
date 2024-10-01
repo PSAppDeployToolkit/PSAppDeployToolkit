@@ -114,47 +114,58 @@ function Uninstall-ADTApplication
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true)]
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SearchByName')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
         [ValidateSet('Contains', 'Exact', 'Wildcard', 'Regex')]
         [System.String]$NameMatch = 'Contains',
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ProductCode,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
         [ValidateSet('All', 'MSI', 'EXE')]
         [System.String]$ApplicationType = 'All',
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'Search', Position = 0)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SearchByFilterScript', Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
         [Alias('Arguments')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Parameters,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
         [ValidateNotNullOrEmpty()]
         [System.String]$AddParameters,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
         [ValidateNotNullOrEmpty()]
         [System.String]$LoggingOptions,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
         [ValidateNotNullOrEmpty()]
         [System.String]$LogFileName,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
@@ -164,7 +175,7 @@ function Uninstall-ADTApplication
         # Make this function continue on error.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
-        if ($PSCmdlet.ParameterSetName -eq 'Search')
+        if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
             # Build the hashtable with the options that will be passed to Get-ADTInstalledApplication using splatting
             $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
