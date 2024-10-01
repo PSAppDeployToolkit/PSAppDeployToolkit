@@ -84,7 +84,7 @@ function Get-ADTIniValue
         {
             try
             {
-                $iniValue = [PSADT.IniFile]::GetIniValue($Section, $Key, $FilePath)
+                $iniValue = [PSADT.Configuration.IniFile]::GetSectionKeyValue($Section, $Key, $FilePath)
                 & $Script:CommandTable.'Write-ADTLogEntry' -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $iniValue]."
                 return $iniValue
             }

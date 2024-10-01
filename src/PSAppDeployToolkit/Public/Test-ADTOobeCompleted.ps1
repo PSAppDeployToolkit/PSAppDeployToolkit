@@ -59,7 +59,7 @@ function Test-ADTOobeCompleted
         {
             try
             {
-                return ([PSADT.Utilities]::OobeCompleted())
+                return ([PSADT.Shared.Utility]::IsOOBEComplete())
             }
             catch
             {

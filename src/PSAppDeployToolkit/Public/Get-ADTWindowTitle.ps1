@@ -119,13 +119,13 @@ function Get-ADTWindowTitle
                         }
 
                         # Return early if window isn't visible.
-                        if (![PSADT.GUI.UiAutomation]::IsWindowVisible($_))
+                        if (![PSADT.PInvoke.NativeMethods]::IsWindowVisible($_))
                         {
                             return
                         }
 
                         # Return early if the window doesn't have any text.
-                        if (!($VisibleWindowTitle = [PSADT.GUI.UiAutomation]::GetWindowText($_)))
+                        if (!($VisibleWindowTitle = [PSADT.PInvoke.NativeMethods]::GetWindowText($_)))
                         {
                             return
                         }
@@ -137,19 +137,19 @@ function Get-ADTWindowTitle
                         }
 
                         # Return early if the window doesn't have an associated process.
-                        if (!($process = $processes | & $Script:CommandTable.'Where-Object' -Property Id -EQ -Value ([PSADT.GUI.UiAutomation]::GetWindowThreadProcessId($_)) | & $Script:CommandTable.'Select-Object' -First 1))
+                        if (!($process = $processes | & $Script:CommandTable.'Where-Object' -Property Id -EQ -Value ([PSADT.PInvoke.NativeMethods]::GetWindowThreadProcessId($_)) | & $Script:CommandTable.'Select-Object' -First 1))
                         {
                             return
                         }
 
                         # Build custom object with details about the window and the process.
-                        return [PSADT.Types.WindowInfo]@{
-                            WindowTitle = $VisibleWindowTitle
-                            WindowHandle = $_
-                            ParentProcess = $Process.ProcessName
-                            ParentProcessMainWindowHandle = $Process.MainWindowHandle
-                            ParentProcessId = $Process.Id
-                        }
+                        return [PSADT.Types.WindowInfo]::new(
+                            $VisibleWindowTitle,
+                            $_,
+                            $Process.ProcessName,
+                            $Process.MainWindowHandle,
+                            $Process.Id
+                        )
                     }
                 }
             }

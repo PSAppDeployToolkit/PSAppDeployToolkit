@@ -391,11 +391,11 @@ function Start-ADTProcess
                             if (!$process.HasExited)
                             {
                                 & $Script:CommandTable.'Write-ADTLogEntry' -Message 'PassThru parameter specified, returning process details object.'
-                                $PSCmdlet.WriteObject([PSADT.Types.ProcessInfo]@{
-                                        Id = $process.Id
-                                        Handle = $process.Handle
-                                        ProcessName = $process.ProcessName
-                                    })
+                                $PSCmdlet.WriteObject([PSADT.Types.ProcessInfo]::new(
+                                        $process.Id,
+                                        $process.Handle,
+                                        $process.ProcessName
+                                    ))
                             }
                             else
                             {
@@ -489,11 +489,11 @@ function Start-ADTProcess
                     if ($PassThru)
                     {
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message 'PassThru parameter specified, returning execution results object.'
-                        $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
-                                ExitCode = $returnCode
-                                StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
-                                StdErr = $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
-                            })
+                        $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]::new(
+                                $returnCode,
+                                $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut }),
+                                $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
+                            ))
                     }
 
                     # Check to see whether we should ignore exit codes.
@@ -523,7 +523,7 @@ function Start-ADTProcess
                     }
                     else
                     {
-                        if (($MsiExitCodeMessage = if ($Path -match 'msiexec') { [PSADT.Msi]::GetMessageFromMsiExitCode($returnCode).Trim() }))
+                        if (($MsiExitCodeMessage = if ($Path -match 'msiexec') { [PSADT.Installer.Msi]::GetMessageFromMsiExitCode($returnCode).Trim() }))
                         {
                             & $Script:CommandTable.'Write-ADTLogEntry' -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
                         }
@@ -566,11 +566,11 @@ function Start-ADTProcess
 
             if ($PassThru)
             {
-                $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]@{
-                        ExitCode = $returnCode
-                        StdOut = $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut })
-                        StdErr = $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
-                    })
+                $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]::new(
+                        $returnCode,
+                        $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut }),
+                        $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
+                    ))
             }
 
             if ($adtSession -and !$NoExitOnProcessFailure)

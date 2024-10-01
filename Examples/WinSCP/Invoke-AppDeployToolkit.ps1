@@ -112,7 +112,7 @@ function Install-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    Show-ADTInstallationWelcome -ProcessObjects @{ Name = 'WinSCP'; Description = $adtSession.AppName } -AllowDeferCloseApps -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
+    Show-ADTInstallationWelcome -ProcessObjects ([PSADT.Types.ProcessObject]::new('WinSCP', $adtSession.AppName)) -AllowDeferCloseApps -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -174,7 +174,7 @@ function Uninstall-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -ProcessObjects @{ Name = 'WinSCP'; Description = $adtSession.AppName } -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects ([PSADT.Types.ProcessObject]::new('WinSCP', $adtSession.AppName)) -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -218,7 +218,7 @@ function Repair-ADTApplication
     $adtSession.InstallPhase = "Pre-$($DeploymentType)"
 
     ## Show Welcome Message, close WinSCP with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -ProcessObjects @{ Name = 'WinSCP'; Description = $adtSession.AppName } -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -ProcessObjects ([PSADT.Types.ProcessObject]::new('WinSCP', $adtSession.AppName)) -CloseAppsCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

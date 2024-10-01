@@ -369,7 +369,7 @@ https://psappdeploytoolkit.com
 
         Try
         {
-            [PSADT.Types.ProcessResult]$schTaskResult = & $Script:CommandTable.'Start-ADTProcess' -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
+            $schTaskResult = & $Script:CommandTable.'Start-ADTProcess' -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
             If ($schTaskResult.ExitCode -ne 0)
             {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
@@ -397,7 +397,7 @@ https://psappdeploytoolkit.com
             {
                 & $Script:CommandTable.'Write-ADTLogEntry' -Message "Triggering execution of scheduled task with command [$Path] as the logged-on user [$userName]..."
             }
-            [PSADT.Types.ProcessResult]$schTaskResult = & $Script:CommandTable.'Start-ADTProcess' -Path $adtEnv.exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
+            $schTaskResult = & $Script:CommandTable.'Start-ADTProcess' -Path $adtEnv.exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
             If ($schTaskResult.ExitCode -ne 0)
             {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode

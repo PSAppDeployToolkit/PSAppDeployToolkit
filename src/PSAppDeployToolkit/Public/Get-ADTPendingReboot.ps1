@@ -122,18 +122,18 @@ function Get-ADTPendingReboot
                 }
 
                 # Create a custom object containing pending reboot information for the system.
-                [PSADT.Types.RebootInfo]$PendingRebootInfo = [PSADT.Types.RebootInfo]@{
-                    ComputerName                 = $HostName
-                    LastBootUpTime               = $LastBootUpTime
-                    IsSystemRebootPending        = $IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsFileRenameRebootPending -or $IsSCCMClientRebootPending
-                    IsCBServicingRebootPending   = $IsCBServicingRebootPending
-                    IsWindowsUpdateRebootPending = $IsWindowsUpdateRebootPending
-                    IsSCCMClientRebootPending    = $IsSCCMClientRebootPending
-                    IsAppVRebootPending          = $IsAppVRebootPending
-                    IsFileRenameRebootPending    = $IsFileRenameRebootPending
-                    PendingFileRenameOperations  = $PendingFileRenameOperations
-                    ErrorMsg                     = $PendRebootErrorMsg
-                }
+                $PendingRebootInfo = [PSADT.Types.RebootInfo]::new(
+                    $HostName,
+                    $LastBootUpTime,
+                    $IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsFileRenameRebootPending -or $IsSCCMClientRebootPending,
+                    $IsCBServicingRebootPending,
+                    $IsWindowsUpdateRebootPending,
+                    $IsSCCMClientRebootPending,
+                    $IsAppVRebootPending,
+                    $IsFileRenameRebootPending,
+                    $PendingFileRenameOperations,
+                    $PendRebootErrorMsg
+                )
                 & $Script:CommandTable.'Write-ADTLogEntry' -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')"
                 return $PendingRebootInfo
             }

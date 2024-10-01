@@ -9,11 +9,21 @@
         /// Initializes a new instance of the <see cref="ProcessObject"/> struct.
         /// </summary>
         /// <param name="name">The name of the process.</param>
+        public ProcessObject(string name)
+        {
+            Name = name;
+            Description = string.Empty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessObject"/> struct.
+        /// </summary>
+        /// <param name="name">The name of the process.</param>
         /// <param name="description">The description of the process.</param>
         public ProcessObject(string name, string description)
         {
-            Name = name ?? string.Empty;
-            Description = description ?? string.Empty;
+            Name = name;
+            Description = description;
         }
 
         /// <summary>

@@ -205,23 +205,23 @@ function Get-ADTApplication
                         }
 
                         # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
-                        $app = [PSADT.Types.InstalledApplication]@{
-                            UninstallKey         = $_.PSPath
-                            UninstallParentKey   = $_.PSParentPath
-                            UninstallSubKey      = $_.PSChildName
-                            ProductCode          = $appMsiGuid
-                            DisplayName          = $_.DisplayName
-                            DisplayVersion       = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore
-                            UninstallString      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty UninstallString -ErrorAction Ignore
-                            QuietUninstallString = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty QuietUninstallString -ErrorAction Ignore
-                            InstallSource        = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallSource -ErrorAction Ignore
-                            InstallLocation      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallLocation -ErrorAction Ignore
-                            InstallDate          = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallDate -ErrorAction Ignore
-                            Publisher            = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore
-                            SystemComponent      = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore
-                            WindowsInstaller     = $windowsInstaller
-                            Is64BitApplication   = [System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
-                        }
+                        $app = [PSADT.Types.InstalledApplication]::new(
+                            $_.PSPath,
+                            $_.PSParentPath,
+                            $_.PSChildName,
+                            $appMsiGuid,
+                            $_.DisplayName,
+                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore),
+                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty UninstallString -ErrorAction Ignore),
+                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty QuietUninstallString -ErrorAction Ignore),
+                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallSource -ErrorAction Ignore),
+                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallLocation -ErrorAction Ignore),
+                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallDate -ErrorAction Ignore),
+                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore),
+                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore),
+                            $windowsInstaller,
+                            [System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
+                        )
 
                         # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
                         if (!$FilterScript -or (& $Script:CommandTable.'ForEach-Object' -InputObject $app -Process $FilterScript -ErrorAction Ignore))

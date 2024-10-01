@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -14,36 +14,51 @@ namespace PSADT.Types
         /// Initializes a new instance of the <see cref="InstalledApplication"/> struct.
         /// Converts the provided install date string to <see cref="DateTime"/> based on the system's culture.
         /// </summary>
-        /// <param name="uninstallSubkey">The registry subkey for uninstalling the application.</param>
+        /// <param name="uninstallKey">The registry key that contains the uninstall entry.</param>
+        /// <param name="uninstallParentKey">The registry key for the subkey's parent.</param>
+        /// <param name="uninstallSubKey">The registry subkey for uninstalling the application.</param>
         /// <param name="productCode">The product code for the application.</param>
         /// <param name="displayName">The display name of the application.</param>
         /// <param name="displayVersion">The version of the application.</param>
         /// <param name="uninstallString">The uninstall string used to remove the application.</param>
+        /// <param name="quietUninstallString">The quiet uninstall string used to remove the application.</param>
         /// <param name="installSource">The source from which the application was installed.</param>
         /// <param name="installLocation">The location where the application is installed.</param>
         /// <param name="installDate">The date the application was installed (as a string).</param>
         /// <param name="publisher">The publisher of the application.</param>
+        /// <param name="systemComponent">A value indicating whether the application is a system component.</param>
+        /// <param name="windowsInstaller">A value indicating whether the application is an MSI.</param>
         /// <param name="is64BitApplication">A value indicating whether the application is a 64-bit application.</param>
         public InstalledApplication(
-            string uninstallSubkey,
+            string uninstallKey,
+            string uninstallParentKey,
+            string uninstallSubKey,
             string productCode,
             string displayName,
             string displayVersion,
             string uninstallString,
+            string quietUninstallString,
             string installSource,
             string installLocation,
             string installDate,
             string publisher,
+            bool systemComponent,
+            bool windowsInstaller,
             bool is64BitApplication)
         {
-            UninstallSubkey = uninstallSubkey ?? string.Empty;
+            UninstallKey = uninstallKey ?? string.Empty;
+            UninstallParentKey = uninstallParentKey ?? string.Empty;
+            UninstallSubKey = uninstallSubKey ?? string.Empty;
             ProductCode = productCode ?? string.Empty;
             DisplayName = displayName ?? string.Empty;
             DisplayVersion = displayVersion ?? string.Empty;
             UninstallString = uninstallString ?? string.Empty;
+            QuietUninstallString = quietUninstallString ?? string.Empty;
             InstallSource = installSource ?? string.Empty;
             InstallLocation = installLocation ?? string.Empty;
             Publisher = publisher ?? string.Empty;
+            SystemComponent = systemComponent;
+            WindowsInstaller = windowsInstaller;
             Is64BitApplication = is64BitApplication;
 
             // Parse the string date based on the current culture or provide a default value
@@ -57,9 +72,19 @@ namespace PSADT.Types
         }
 
         /// <summary>
+        /// Gets the registry key that contains the uninstall entry.
+        /// </summary>
+        public string UninstallKey { get; }
+
+        /// <summary>
+        /// Gets the registry key for the subkey's parent.
+        /// </summary>
+        public string UninstallParentKey { get; }
+
+        /// <summary>
         /// Gets the registry subkey for uninstalling the application.
         /// </summary>
-        public string UninstallSubkey { get; }
+        public string UninstallSubKey { get; }
 
         /// <summary>
         /// Gets the product code for the application.
@@ -82,6 +107,11 @@ namespace PSADT.Types
         public string UninstallString { get; }
 
         /// <summary>
+        /// Gets the quiet uninstall string used to remove the application.
+        /// </summary>
+        public string QuietUninstallString { get; }
+
+        /// <summary>
         /// Gets the source from which the application was installed.
         /// </summary>
         public string InstallSource { get; }
@@ -100,6 +130,16 @@ namespace PSADT.Types
         /// Gets the publisher of the application.
         /// </summary>
         public string Publisher { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the application is a system component.
+        /// </summary>
+        public bool SystemComponent { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the application is an MSI.
+        /// </summary>
+        public bool WindowsInstaller { get; }
 
         /// <summary>
         /// Gets a value indicating whether the application is a 64-bit application.

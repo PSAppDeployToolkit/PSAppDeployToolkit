@@ -35,7 +35,6 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 # Set the process as HiDPI so long as we're in a real console.
 if ($Host.Name.Equals('ConsoleHost'))
 {
-    # Use the most recent API supported by the operating system.
     [PSADT.GUI.UiAutomation]::SetProcessDpiAwarenessForOSVersion()
 }
 
