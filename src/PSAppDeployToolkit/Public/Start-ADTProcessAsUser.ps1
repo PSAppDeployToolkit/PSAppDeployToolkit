@@ -6,85 +6,218 @@
 
 function Start-ADTProcessAsUser
 {
-    [CmdletBinding(DefaultParameterSetName = 'SessionId')]
+    [CmdletBinding()]
     [OutputType([System.Threading.Tasks.Task[System.Int32]])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.String]$FilePath,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ArgumentList,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.String]$WorkingDirectory,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$HideWindow,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [PSADT.PInvoke.CREATE_PROCESS]$ProcessCreationFlags,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$Wait,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UsernameWithWait')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Username,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SessionIdWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$SessionId,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'AllActiveUserSessionsWithWait')]
         [System.Management.Automation.SwitchParameter]$AllActiveUserSessions,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$PrimaryActiveUserSession,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [Microsoft.PowerShell.ExecutionPolicy]$PsExecutionPolicy,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$BypassPsExecutionPolicy,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$SuccessExitCodes,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$ConsoleTimeoutInSeconds,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$IsGuiApplication,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$NoRedirectOutput,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$MergeStdErrAndStdOut,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.String]$OutputDirectory,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [System.Management.Automation.SwitchParameter]$NoTerminateOnTimeout,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [System.Collections.IDictionary]$AdditionalEnvironmentVariables,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UsernameWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SessionIdWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessionsWithWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSessionWithWait')]
         [ValidateNotNullOrEmpty()]
         [PSADT.ProcessEx.WaitType]$WaitOption
     )
@@ -93,6 +226,14 @@ function Start-ADTProcessAsUser
     {
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Translate a provided username into a session Id.
+        if ($PSBoundParameters.ContainsKey('Username'))
+        {
+            $SessionId = [PSADT.QueryUser]::GetUserSessionInfo() | & { process { if ($_.NTAccount -eq $Username) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1 -ExpandProperty SessionId
+            $PSBoundParameters.Add('SessionId', $SessionId)
+            $null = $PSBoundParameters.Remove('Username')
+        }
 
         # Translate the environment variables into a dictionary. Using this type on the parameter is too hard on the caller.
         if ($PSBoundParameters.ContainsKey('AdditionalEnvironmentVariables'))
