@@ -196,7 +196,7 @@ function Get-ADTInstalledApplication
 
                         # Apply application type filter if specified.
                         $windowsInstaller = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore
-                        if ($ApplicationType -ne 'All' -and ($ApplicationType -eq 'MSI') -eq !$windowsInstaller)
+                        if (($ApplicationType -ne 'All') -and (($ApplicationType -eq 'MSI') -eq !$windowsInstaller))
                         {
                             return
                         }
