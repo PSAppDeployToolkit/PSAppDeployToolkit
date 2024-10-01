@@ -101,7 +101,7 @@
         'Get-ADTFileVersion'
         'Get-ADTFreeDiskSpace'
         'Get-ADTIniValue'
-        'Get-ADTInstalledApplication'
+        'Get-ADTApplication'
         'Get-ADTLoggedOnUser'
         'Get-ADTMsiProductCodeRegexPattern'
         'Get-ADTPendingReboot'

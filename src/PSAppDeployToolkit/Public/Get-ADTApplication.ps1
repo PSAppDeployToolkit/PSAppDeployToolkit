@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Get-ADTInstalledApplication
+# MARK: Get-ADTApplication
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTInstalledApplication
+function Get-ADTApplication
 {
     <#
     .SYNOPSIS
@@ -51,27 +51,27 @@ function Get-ADTInstalledApplication
         - Architecture
 
     .EXAMPLE
-        Get-ADTInstalledApplication
+        Get-ADTApplication
 
         This example retrieves information about all installed applications.
 
     .EXAMPLE
-        Get-ADTInstalledApplication -Name 'Acrobat'
+        Get-ADTApplication -Name 'Acrobat'
 
         Returns all applications that contain the name 'Acrobat' in the DisplayName.
 
     .EXAMPLE
-        Get-ADTInstalledApplication -Name 'Adobe Acrobat Reader' -NameMatch 'Exact'
+        Get-ADTApplication -Name 'Adobe Acrobat Reader' -NameMatch 'Exact'
 
         Returns all applications that match the name 'Adobe Acrobat Reader' exactly.
 
     .EXAMPLE
-        Get-ADTInstalledApplication -ProductCode '{AC76BA86-7AD7-1033-7B44-AC0F074E4100}'
+        Get-ADTApplication -ProductCode '{AC76BA86-7AD7-1033-7B44-AC0F074E4100}'
 
         Returns the application with the specified ProductCode.
 
     .EXAMPLE
-        Get-ADTInstalledApplication -Name 'Acrobat' -ApplicationType 'MSI' -FilterScript { $_.Publisher -match 'Adobe' }
+        Get-ADTApplication -Name 'Acrobat' -ApplicationType 'MSI' -FilterScript { $_.Publisher -match 'Adobe' }
 
         Returns all MSI applications that contain the name 'Acrobat' in the DisplayName and 'Adobe' in the Publisher name.
 

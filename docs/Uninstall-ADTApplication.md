@@ -56,7 +56,7 @@ Remove all EXE applications starting with the name 'Vim' followed by a space, us
 
 ### -InstalledApplication
 Specifies the \[PSADT.Types.InstalledApplication\] object to remove.
-This parameter is typically used when piping Get-ADTInstalledApplication to this function.
+This parameter is typically used when piping Get-ADTApplication to this function.
 
 ```yaml
 Type: InstalledApplication
