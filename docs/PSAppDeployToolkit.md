@@ -65,6 +65,9 @@ Changes to user install mode for Remote Desktop Session Host/Citrix servers.
 ### [Execute-ProcessAsUser](Execute-ProcessAsUser.md)
 Execute a process with a logged in user account, by using a scheduled task, to provide interaction with user in the SYSTEM context.
 
+### [Get-ADTApplication](Get-ADTApplication.md)
+Retrieves information about installed applications.
+
 ### [Get-ADTBoundParametersAndDefaultValues](Get-ADTBoundParametersAndDefaultValues.md)
 Returns a hashtable with the output of $PSBoundParameters and default-valued parameters for the given InvocationInfo.
 
@@ -82,9 +85,6 @@ Retrieves the free disk space in MB on a particular drive (defaults to system dr
 
 ### [Get-ADTIniValue](Get-ADTIniValue.md)
 Parses an INI file and returns the value of the specified section and key.
-
-### [Get-ADTApplication](Get-ADTApplication.md)
-Retrieves information about installed applications.
 
 ### [Get-ADTLoggedOnUser](Get-ADTLoggedOnUser.md)
 Retrieves session details for all local and RDP logged on users.
