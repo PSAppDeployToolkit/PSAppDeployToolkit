@@ -144,11 +144,11 @@ function Get-ADTUserProfiles
                         }
 
                         # Write out the object to the pipeline.
-                        return [PSADT.Types.UserProfile]@{
-                            NTAccount = $ntAccount
-                            SID = $_.PSChildName
-                            ProfilePath = $_.ProfileImagePath
-                        }
+                        return [PSADT.Types.UserProfile]::new(
+                            $ntAccount,
+                            $_.PSChildName,
+                            $_.ProfileImagePath
+                        )
                     }
                 }
 
@@ -156,11 +156,11 @@ function Get-ADTUserProfiles
                 # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
                 if (!$ExcludeDefaultUser)
                 {
-                    return [PSADT.Types.UserProfile]@{
-                        NTAccount = 'Default User'
-                        SID = 'S-1-5-21-Default-User'
-                        ProfilePath = (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $userProfileListRegKey).Default
-                    }
+                    return [PSADT.Types.UserProfile]::new(
+                        'Default User',
+                        'S-1-5-21-Default-User',
+                        (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $userProfileListRegKey).Default
+                    )
                 }
             }
             catch

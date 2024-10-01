@@ -97,7 +97,7 @@ function Test-ADTPowerPoint
                     }
                     FullScreenOrPresentationModeOrLoginScreen
                     {
-                        if ($PowerPointProcessIDs -contains [PSADT.GUI.UiAutomation]::GetWindowThreadProcessId([PSADT.GUI.UiAutomation]::GetForegroundWindow()))
+                        if ($PowerPointProcessIDs -contains [PSADT.PInvoke.NativeMethods]::GetWindowThreadProcessId([PSADT.PInvoke.NativeMethods]::GetForegroundWindow()))
                         {
                             & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Detected a fullscreen foreground window matches a PowerPoint process ID.'
                             return ($presenting = $true)

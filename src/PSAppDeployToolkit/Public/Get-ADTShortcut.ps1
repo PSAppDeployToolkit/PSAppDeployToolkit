@@ -84,7 +84,7 @@ function Get-ADTShortcut
             try
             {
                 [System.IO.Directory]::SetCurrentDirectory((& $Script:CommandTable.'Get-Location' -PSProvider FileSystem).ProviderPath)
-                $Output = @{ Path = [System.IO.Path]::GetFullPath($Path) }
+                $Output = @{ Path = [System.IO.Path]::GetFullPath($Path); TargetPath = $null; IconIndex = $null; IconLocation = $null }
             }
             catch
             {
@@ -111,30 +111,39 @@ function Get-ADTShortcut
                             {
                                 { $_.StartsWith('URL=') } { $Output.TargetPath = $_.Replace('URL=', $null); break }
                                 { $_.StartsWith('IconIndex=') } { $Output.IconIndex = $_.Replace('IconIndex=', $null); break }
-                                { $_.StartsWith('IconFile=') } { $Output.IconLocation = $_.Replace('URIconFileL=', $null); break }
+                                { $_.StartsWith('IconFile=') } { $Output.IconLocation = $_.Replace('IconFile=', $null); break }
                             }
                         }
                     }
-                    return [PSADT.Types.ShortcutUrl]$Output
+                    return [PSADT.Types.ShortcutUrl]::new(
+                        $Output.Path,
+                        $Output.TargetPath,
+                        $Output.IconIndex,
+                        $Output.IconLocation
+                    )
                 }
                 else
                 {
                     $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($FullPath)
-                    $Output.TargetPath = $shortcut.TargetPath
-                    $Output.Arguments = $shortcut.Arguments
-                    $Output.Description = $shortcut.Description
-                    $Output.WorkingDirectory = $shortcut.WorkingDirectory
-                    $Output.Hotkey = $shortcut.Hotkey
                     $Output.IconLocation, $Output.IconIndex = $shortcut.IconLocation.Split(',')
-                    $Output.RunAsAdmin = !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
-                    $Output.WindowStyle = switch ($shortcut.WindowStyle)
-                    {
-                        1 { 'Normal'; break }
-                        3 { 'Maximized'; break }
-                        7 { 'Minimized'; break }
-                        default { 'Normal'; break }
-                    }
-                    return [PSADT.Types.ShortcutLnk]$Output
+                    return [PSADT.Types.ShortcutLnk]::new(
+                        $Output.Path,
+                        $shortcut.TargetPath,
+                        $Output.IconIndex,
+                        $Output.IconLocation,
+                        $shortcut.Arguments,
+                        $shortcut.Description,
+                        $shortcut.WorkingDirectory,
+                        $(switch ($shortcut.WindowStyle)
+                        {
+                            1 { 'Normal'; break }
+                            3 { 'Maximized'; break }
+                            7 { 'Minimized'; break }
+                            default { 'Normal'; break }
+                        }),
+                        $shortcut.Hotkey,
+                        !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
+                    )
                 }
             }
             catch

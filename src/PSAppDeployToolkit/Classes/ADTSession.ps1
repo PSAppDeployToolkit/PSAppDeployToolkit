@@ -271,7 +271,7 @@ class ADTSession
         $msiProps = & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File 6>$null
 
         # Generate list of MSI executables for testing later on.
-        if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { @{ Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_' } } } }))
+        if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { [PSADT.Types.ProcessObject]::new([System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_') } } }))
         {
             $this.WriteLogEntry("MSI Executable List [$(($this.DefaultMsiExecutablesList = $msiProcs).Name)].")
         }

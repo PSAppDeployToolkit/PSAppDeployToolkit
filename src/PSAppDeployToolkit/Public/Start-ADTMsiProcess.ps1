@@ -482,7 +482,7 @@ function Start-ADTMsiProcess
                 $ExecuteResults = if ($IsMsiInstalled -and ($Action -eq 'Install'))
                 {
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message "The MSI is already installed on this system. Skipping action [$Action]..."
-                    [PSADT.Types.ProcessResult]@{ ExitCode = 1638; StdOut = [System.String]::Empty; StdErr = [System.String]::Empty }
+                    [PSADT.Types.ProcessResult]::new(1638, $null, $null)
                 }
                 elseif ((!$IsMsiInstalled -and ($Action -eq 'Install')) -or $IsMsiInstalled)
                 {

@@ -90,7 +90,7 @@ function Set-ADTIniValue
         {
             try
             {
-                [PSADT.IniFile]::SetIniValue($Section, $Key, ([Text.StringBuilder]$Value), $FilePath)
+                [PSADT.Configuration.IniFile]::WriteSectionKeyValue($Section, $Key, $Value, $FilePath)
             }
             catch
             {

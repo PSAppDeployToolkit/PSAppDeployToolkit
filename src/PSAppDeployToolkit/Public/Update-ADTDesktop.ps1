@@ -56,7 +56,7 @@ function Update-ADTDesktop
         {
             try
             {
-                [PSADT.Explorer]::RefreshDesktopAndEnvironmentVariables()
+                [PSADT.GUI.Explorer]::RefreshDesktopAndEnvironmentVariables()
             }
             catch
             {
