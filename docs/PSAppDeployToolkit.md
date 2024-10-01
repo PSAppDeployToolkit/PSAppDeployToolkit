@@ -62,9 +62,6 @@ Dismounts a WIM file from the specified mount point.
 ### [Enable-ADTTerminalServerInstallMode](Enable-ADTTerminalServerInstallMode.md)
 Changes to user install mode for Remote Desktop Session Host/Citrix servers.
 
-### [Execute-ProcessAsUser](Execute-ProcessAsUser.md)
-Execute a process with a logged in user account, by using a scheduled task, to provide interaction with user in the SYSTEM context.
-
 ### [Get-ADTApplication](Get-ADTApplication.md)
 Retrieves information about installed applications.
 
@@ -280,6 +277,9 @@ Executes an MSP file using the same logic as Start-ADTMsiProcess.
 
 ### [Start-ADTProcess](Start-ADTProcess.md)
 Execute a process with optional arguments, working directory, window style.
+
+### [Start-ADTProcessAsUser](Start-ADTProcessAsUser.md)
+Invokes a process in another user's session.
 
 ### [Start-ADTServiceAndDependencies](Start-ADTServiceAndDependencies.md)
 Start a Windows service and its dependencies.
