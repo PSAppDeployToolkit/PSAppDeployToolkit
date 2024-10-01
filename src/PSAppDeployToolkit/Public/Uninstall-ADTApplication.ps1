@@ -95,12 +95,9 @@ function Uninstall-ADTApplication
         https://psappdeploytoolkit.com
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'NameMatch', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProductCode', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ApplicationType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'IncludeUpdatesAndHotfixes', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FilterScript', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LoggingOptions', Justification = "This parameter is used/retrieved via Get-ADTBoundParametersAndDefaultValues, which is too advanced for PSScriptAnalyzer to comprehend.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LogFileName', Justification = "This parameter is used/retrieved via Get-ADTBoundParametersAndDefaultValues, which is too advanced for PSScriptAnalyzer to comprehend.")]
     [CmdletBinding()]
@@ -111,58 +108,47 @@ function Uninstall-ADTApplication
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true)]
         [PSADT.Types.InstalledApplication[]]$InstalledApplication,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateSet('Contains', 'Exact', 'Wildcard', 'Regex')]
         [System.String]$NameMatch = 'Contains',
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ProductCode,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateSet('All', 'MSI', 'EXE')]
         [System.String]$ApplicationType = 'All',
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'SearchByFilterScript', Position = 0)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search', Position = 0)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
+        [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Parameters,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$AddParameters,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$LoggingOptions,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$LogFileName,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'SearchByFilterScript')]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
@@ -174,13 +160,23 @@ function Uninstall-ADTApplication
 
         if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
+            if ($null -eq $Name -and $null -eq $ProductCode -and $null -eq $FilterScript)
+            {
+                $naerParams = @{
+                    Exception         = [System.ArgumentNullException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')#, 'FilterScript')
+                    Category          = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    ErrorId           = 'NullParameterValue'
+                    RecommendedAction = "Review the supplied parameter values and try again."
+                }
+                $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+            }
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
             $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
             $InstalledApplication = & $Script:CommandTable.'Get-ADTApplication' @gaiaParams
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
-        $sampParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType
+        $sampParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType
         $sampParams.Action = 'Uninstall'
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
