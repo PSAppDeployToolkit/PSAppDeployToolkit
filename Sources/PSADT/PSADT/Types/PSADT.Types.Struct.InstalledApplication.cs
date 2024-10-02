@@ -62,7 +62,7 @@ namespace PSADT.Types
             Is64BitApplication = is64BitApplication;
 
             // Parse the string date based on the current culture or provide a default value
-            if (!DateTime.TryParse(installDate, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out var parsedDate))
+            if (!DateTime.TryParseExact(installDate, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var parsedDate))
             {
                 // Fallback to smallest possible value of System.DateTime if parsing fails
                 parsedDate = DateTime.MinValue;
