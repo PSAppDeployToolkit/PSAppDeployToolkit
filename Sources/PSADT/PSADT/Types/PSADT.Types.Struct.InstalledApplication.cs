@@ -42,9 +42,9 @@ namespace PSADT.Types
             string installLocation,
             string installDate,
             string publisher,
-            bool systemComponent,
-            bool windowsInstaller,
-            bool is64BitApplication)
+            bool? systemComponent,
+            bool? windowsInstaller,
+            bool? is64BitApplication)
         {
             UninstallKey = uninstallKey ?? string.Empty;
             UninstallParentKey = uninstallParentKey ?? string.Empty;
@@ -57,17 +57,21 @@ namespace PSADT.Types
             InstallSource = installSource ?? string.Empty;
             InstallLocation = installLocation ?? string.Empty;
             Publisher = publisher ?? string.Empty;
-            SystemComponent = systemComponent;
-            WindowsInstaller = windowsInstaller;
-            Is64BitApplication = is64BitApplication;
+            SystemComponent = systemComponent ?? false;
+            WindowsInstaller = windowsInstaller ?? false;
+            Is64BitApplication = is64BitApplication ?? false;
 
-            // Parse the string date based on the current culture or provide a default value
-            if (!DateTime.TryParseExact(installDate, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var parsedDate))
+            DateTime parsedDate;
+            // Attempt to parse the date based on yyyyMMdd format expected from Windows Installer
+            if (!DateTime.TryParseExact(installDate, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out parsedDate))
             {
-                // Fallback to smallest possible value of System.DateTime if parsing fails
-                parsedDate = DateTime.MinValue;
+                // Attempt to parse the string date based on the current culture
+                if (!DateTime.TryParse(installDate, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out parsedDate))
+                {
+                    // Fallback to smallest possible value of System.DateTime if parsing fails
+                    parsedDate = DateTime.MinValue;
+                }
             }
-
             InstallDate = parsedDate;
         }
 
