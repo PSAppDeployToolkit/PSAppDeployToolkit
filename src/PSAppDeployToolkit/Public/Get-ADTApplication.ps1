@@ -198,8 +198,8 @@ function Get-ADTApplication
                         }
 
                         # Apply application type filter if specified.
-                        $windowsInstaller = $_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore
-                        if (($ApplicationType -ne 'All') -and (($ApplicationType -eq 'MSI') -eq !$windowsInstaller))
+                        $windowsInstaller = !!($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore)
+                        if (($ApplicationType -ne 'All') -and (($ApplicationType -eq 'MSI') -ne $windowsInstaller))
                         {
                             return
                         }
@@ -218,9 +218,9 @@ function Get-ADTApplication
                             ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallLocation -ErrorAction Ignore),
                             ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallDate -ErrorAction Ignore),
                             ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore),
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore),
+                            !!($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore),
                             $windowsInstaller,
-                            [System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node')
+                            ([System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
                         )
 
                         # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
