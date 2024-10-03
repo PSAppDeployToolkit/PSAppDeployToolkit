@@ -12,26 +12,17 @@ Invokes a process in another user's session.
 
 ## SYNTAX
 
-### PrimaryActiveUserSessionWithWait
+### PrimaryActiveUserSession (Default)
 ```
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-PrimaryActiveUserSession]
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
+ [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-UseLinkedAdminToken]
+ [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication] [-NoRedirectOutput]
+ [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
  [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureParameters] [-PassThru]
  [<CommonParameters>]
 ```
 
-### PrimaryActiveUserSession
-```
-Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-PrimaryActiveUserSession]
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-SecureParameters] [-PassThru] [<CommonParameters>]
-```
-
-### AllActiveUserSessionsWithWait
+### AllActiveUserSessions
 ```
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
  [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-AllActiveUserSessions]
@@ -41,16 +32,7 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDi
  [<CommonParameters>]
 ```
 
-### AllActiveUserSessions
-```
-Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-AllActiveUserSessions]
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-SecureParameters] [-PassThru] [<CommonParameters>]
-```
-
-### SessionIdWithWait
+### SessionId
 ```
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
  [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -SessionId <UInt32>
@@ -60,16 +42,7 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDi
  [<CommonParameters>]
 ```
 
-### SessionId
-```
-Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] -SessionId <UInt32>
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-SecureParameters] [-PassThru] [<CommonParameters>]
-```
-
-### UsernameWithWait
+### Username
 ```
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
  [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -Username <String>
@@ -77,15 +50,6 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDi
  [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
  [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureParameters] [-PassThru]
  [<CommonParameters>]
-```
-
-### Username
-```
-Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] -Username <String>
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-SecureParameters] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -196,10 +160,10 @@ Specifies whether to wait for the invoked excecutable to finish.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: PrimaryActiveUserSessionWithWait, AllActiveUserSessionsWithWait, SessionIdWithWait, UsernameWithWait
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: False
 Accept pipeline input: False
@@ -211,7 +175,7 @@ The username of the user's session to invoke the executable in.
 
 ```yaml
 Type: String
-Parameter Sets: UsernameWithWait, Username
+Parameter Sets: Username
 Aliases:
 
 Required: True
@@ -226,7 +190,7 @@ The session ID of the user to invoke the executable in.
 
 ```yaml
 Type: UInt32
-Parameter Sets: SessionIdWithWait, SessionId
+Parameter Sets: SessionId
 Aliases:
 
 Required: True
@@ -241,22 +205,7 @@ Specifies that the executable should be invoked in all active sessions.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: AllActiveUserSessionsWithWait, AllActiveUserSessions
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PrimaryActiveUserSession
-Specifies that the executable should be invoked in the primary (active) user session.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: PrimaryActiveUserSessionWithWait, PrimaryActiveUserSession
+Parameter Sets: AllActiveUserSessions
 Aliases:
 
 Required: True
@@ -406,7 +355,7 @@ Specifies the wait type to use when waiting for an invoked executable to finish.
 
 ```yaml
 Type: WaitType
-Parameter Sets: PrimaryActiveUserSessionWithWait, AllActiveUserSessionsWithWait, SessionIdWithWait, UsernameWithWait
+Parameter Sets: (All)
 Aliases:
 Accepted values: WaitForAny, WaitForAll
 
