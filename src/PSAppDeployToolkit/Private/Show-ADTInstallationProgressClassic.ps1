@@ -208,7 +208,7 @@ function Show-ADTInstallationProgressClassic
                     Exception = [System.InvalidOperationException]::new("The separate thread completed without presenting the progress dialog.")
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                     ErrorId = 'InstallationProgressDialogFailure'
-                    TargetObject = $(if ($SyncHash.ContainsKey('Window')) { $SyncHash.Window })
+                    TargetObject = $(if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Window')) { $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window })
                     RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
                 $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
