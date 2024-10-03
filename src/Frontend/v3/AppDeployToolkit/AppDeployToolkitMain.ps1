@@ -113,31 +113,15 @@ function Write-Log
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity 2 -Source $MyInvocation.MyCommand.Name
 
         # Announce dead parameters.
-        if ($AppendToLogFile)
-        {
-            Write-ADTLogEntry -Message "The parameter '-AppendToLogFile' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            $null = $PSBoundParameters.Remove('AppendToLogFile')
-        }
-        if ($MaxLogHistory)
-        {
-            Write-ADTLogEntry -Message "The parameter '-MaxLogHistory' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            $null = $PSBoundParameters.Remove('MaxLogHistory')
-        }
-        if ($MaxLogFileSizeMB)
-        {
-            Write-ADTLogEntry -Message "The parameter '-MaxLogFileSizeMB' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            $null = $PSBoundParameters.Remove('MaxLogFileSizeMB')
-        }
-        if ($WriteHost)
-        {
-            Write-ADTLogEntry -Message "The parameter '-WriteHost' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            $null = $PSBoundParameters.Remove('WriteHost')
-        }
-        if ($LogDebugMessage)
-        {
-            Write-ADTLogEntry -Message "The parameter '-LogDebugMessage' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-            $null = $PSBoundParameters.Remove('LogDebugMessage')
-        }
+        ('AppendToLogFile', 'MaxLogHistory', 'MaxLogFileSizeMB', 'WriteHost', 'LogDebugMessage').ForEach({
+                if ($PSBoundParameters.ContainsKey($_))
+                {
+                    Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+                    $null = $PSBoundParameters.Remove($_)
+                }
+            })
+
+        # There should never be a time where we can't log.
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
         {
             $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2746,18 +2730,17 @@ function Start-ServiceAndDependencies
         [System.Boolean]$ContinueOnError = $true
     )
 
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    # Announce overall deprecation and dead parameters.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2
-    if ($ComputerName)
-    {
-        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        $null = $PSBoundParameters.Remove('ComputerName')
-    }
-    if ($SkipServiceExistsTest)
-    {
-        Write-ADTLogEntry -Message "The parameter '-SkipServiceExistsTest' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        $null = $PSBoundParameters.Remove('SkipServiceExistsTest')
-    }
+    ('ComputerName', 'SkipServiceExistsTest').ForEach({
+            if ($PSBoundParameters.ContainsKey($_))
+            {
+                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+                $null = $PSBoundParameters.Remove($_)
+            }
+        })
+
+    # Translate $ContinueOnError to an ActionPreference before executing.
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2822,18 +2805,17 @@ function Stop-ServiceAndDependencies
         [System.Boolean]$ContinueOnError = $true
     )
 
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    # Announce overall deprecation and dead parameters.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2
-    if ($ComputerName)
-    {
-        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        $null = $PSBoundParameters.Remove('ComputerName')
-    }
-    if ($SkipServiceExistsTest)
-    {
-        Write-ADTLogEntry -Message "The parameter '-SkipServiceExistsTest' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        $null = $PSBoundParameters.Remove('SkipServiceExistsTest')
-    }
+    ('ComputerName', 'SkipServiceExistsTest').ForEach({
+            if ($PSBoundParameters.ContainsKey($_))
+            {
+                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+                $null = $PSBoundParameters.Remove($_)
+            }
+        })
+
+    # Translate $ContinueOnError to an ActionPreference before executing.
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3022,7 +3004,8 @@ function Remove-FileFromUserProfiles
         [System.Boolean]$ContinueOnError = $true
     )
 
-    # Translate parameters.
+    # Announce overall deprecation and dead parameters.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
     $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
             if (!$PSBoundParameters."Exclude$_")
             {
@@ -3036,7 +3019,6 @@ function Remove-FileFromUserProfiles
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
     try
     {
         Remove-ADTFileFromUserProfiles @PSBoundParameters
@@ -4010,16 +3992,13 @@ function Execute-ProcessAsUser
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcessAsUser]. Please migrate your scripts to use the new function." -Severity 2
 
     # Announce dead parameters.
-    if ($TempPath)
-    {
-        Write-ADTLogEntry -Message "The parameter '-TempPath' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        $null = $PSBoundParameters.Remove('TempPath')
-    }
-    if ($RunLevel)
-    {
-        Write-ADTLogEntry -Message "The parameter '-RunLevel' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-        $null = $PSBoundParameters.Remove('RunLevel')
-    }
+    ('TempPath', 'RunLevel').ForEach({
+            if ($PSBoundParameters.ContainsKey($_))
+            {
+                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+                $null = $PSBoundParameters.Remove($_)
+            }
+        })
 
     # Translate the ContinueOnError state.
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
