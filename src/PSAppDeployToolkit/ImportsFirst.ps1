@@ -32,6 +32,17 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 # Ensure module operates under the strictest of conditions.
 & $CommandTable.'Set-StrictMode' -Version 3
 
+# Throw hard if there's already a PSADT assembly loaded from a different location.
+if (($assembly = [System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1) -and !$assembly.Location.StartsWith($Script:PSScriptRoot))
+{
+    & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+            [System.InvalidOperationException]::new("A duplicate PSAppDeployToolkit module is already loaded. Please restart PowerShell and try again."),
+            'ConflictingModuleLoaded',
+            [System.Management.Automation.ErrorCategory]::InvalidOperation,
+            $assembly
+        ))
+}
+
 # Set the process as HiDPI so long as we're in a real console.
 if ($Host.Name.Equals('ConsoleHost'))
 {
