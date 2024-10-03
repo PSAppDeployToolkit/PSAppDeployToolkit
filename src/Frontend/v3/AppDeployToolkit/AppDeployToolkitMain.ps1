@@ -4045,7 +4045,10 @@ function Execute-ProcessAsUser
     # Invoke underlying function.
     try
     {
-        Start-ADTProcessAsUser @PSBoundParameters
+        if (($res = Start-ADTProcessAsUser @PSBoundParameters) -and $PassThru)
+        {
+            return $res.Result
+        }
     }
     catch
     {
