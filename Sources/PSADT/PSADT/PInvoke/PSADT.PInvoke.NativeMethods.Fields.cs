@@ -10,7 +10,7 @@ namespace PSADT.PInvoke
     /// <summary>
     /// Contains native method declarations for Win32 API calls.
     /// </summary>
-    internal static partial class NativeMethods
+    public static partial class NativeMethods
     {
         #region Fields: advapi32.dll
 
