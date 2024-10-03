@@ -361,9 +361,9 @@ function Remove-InvalidFileNameChars
 
 function Get-InstalledApplication
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Exact', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WildCard', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'RegEx', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProductCode', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'IncludeUpdatesAndHotfixes', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
     [CmdletBinding()]
     param
     (
@@ -422,6 +422,15 @@ function Get-InstalledApplication
 
 function Remove-MSIApplications
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Parameters', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'AddParameters', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'IncludeUpdatesAndHotfixes', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LoggingOptions', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LogFileName', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PassThru', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Exact', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WildCard', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
@@ -496,7 +505,7 @@ function Remove-MSIApplications
                 }
                 elseif ($_[2] -eq 'Contains')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -match '$([RegEx]::Escape($_[1].Replace("'","''")))'"
+                    "`$_.'$($_[0].Replace("'","''"))' -match '$([System.Text.RegularExpressions.Regex]::Escape($_[1].Replace("'","''")))'"
                 }
                 elseif ($_[2] -eq 'WildCard')
                 {
@@ -520,7 +529,7 @@ function Remove-MSIApplications
                 }
                 elseif ($_[2] -eq 'Contains')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -match '$([RegEx]::Escape($_[1].Replace("'","''")))'"
+                    "`$_.'$($_[0].Replace("'","''"))' -match '$([System.Text.RegularExpressions.Regex]::Escape($_[1].Replace("'","''")))'"
                 }
                 elseif ($_[2] -eq 'WildCard')
                 {
@@ -534,21 +543,18 @@ function Remove-MSIApplications
         }
     )
 
-    if ($filterInclude -and $filterExclude)
+    $filterScript = if ($filterInclude -and $filterExclude)
     {
-        $filterScript = ($filterInclude -join ' -and ') + ' -and -not (' + ($filterExclude -join ' -or ') + ')'
+        ($filterInclude -join ' -and ') + ' -and !(' + ($filterExclude -join ' -or ') + ')'
     }
-    elseif ($filterInclude) {
-        $filterScript = $filterInclude -join ' -and '
+    elseif ($filterInclude)
+    {
+        $filterInclude -join ' -and '
     }
     elseif ($filterExclude)
     {
-        $filterScript = '-not (' + ($filterExclude -join ' -or ') + ')'
+        '!(' + ($filterExclude -join ' -or ') + ')'
     }
-    else {
-        $filterScript = $null
-    }
-
     if ($filterScript)
     {
         $uaaParams.filterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
