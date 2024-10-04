@@ -70,6 +70,7 @@ Enter-Build {
     $script:ModuleName = [regex]::Match((Get-Item $BuildFile).Name, '^(.*)\.build\.ps1$').Groups[1].Value
 
     # Identify other required paths
+    $script:dotnetSourcePath = Join-Path -Path (Split-Path -Path $BuildRoot -Parent) -ChildPath 'Sources'
     $script:ModuleSourcePath = Join-Path -Path $BuildRoot -ChildPath $script:ModuleName
     $script:ModuleFiles = Join-Path -Path $script:ModuleSourcePath -ChildPath '*'
 
@@ -87,7 +88,8 @@ Enter-Build {
     $script:ArtifactsPath = Join-Path -Path $BuildRoot -ChildPath 'Artifacts'
     $script:ArchivePath = Join-Path -Path $BuildRoot -ChildPath 'Archive'
 
-    $script:BuildModuleRootFile = Join-Path -Path $script:ArtifactsPath -ChildPath "$($script:ModuleName).psm1"
+    $script:BuildModuleRoot = Join-Path -Path $script:ArtifactsPath -ChildPath $script:ModuleName
+    $script:BuildModuleRootFile = Join-Path -Path $script:BuildModuleRoot -ChildPath "$($script:ModuleName).psm1"
 
     # Ensure our builds fail until if below a minimum defined code test coverage threshold
     $script:coverageThreshold = 0
@@ -126,6 +128,30 @@ Add-BuildTask ValidateRequirements {
     Assert-Build ($PSVersionTable.PSVersion -ge $script:requiredPSVersion) "At least Powershell $script:requiredPSVersion is required for this build to function properly"
     Write-Build Green '      ...Verification Complete!'
 } #ValidateRequirements
+
+#Synopsis: Run dotNet build
+Add-BuildTask DotNetBuild -Before TestModuleManifest {
+    if (!(Get-Command -Name 'dotnet' -ErrorAction Ignore))
+    {
+        throw 'dotnet command not found. Ensure it is installed and available in the PATH.'
+    }
+    try
+    {
+        Write-Build White '      Running dotNet build...'
+        foreach ($buildConfiguration in @('Debug', 'Release'))
+        {
+            & dotnet build "$script:dotnetSourcePath\PSADT\PSADT.sln" --configuration $buildConfiguration
+            #& dotnet build "$script:dotnetSourcePath\Deploy-Application\Deploy-Application.sln" --configuration $buildConfiguration
+        }
+        Write-Build Green '      ...dotNet build Complete!'
+
+        Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Debug\*" "$ModuleSourcePath\lib" -Recurse -Force
+    }
+    catch
+    {
+        throw "Failed to compile .NET code. Error: $($_.Exception.Message)"
+    }
+} #DotNetBuild
 
 # Synopsis: Import the current module manifest file for processing
 Add-BuildTask TestModuleManifest -Before ImportModuleManifest {
@@ -446,7 +472,9 @@ Add-BuildTask UpdateCBH -After AssetCopy $null; $null = {
 # Synopsis: Copies module assets to Artifacts folder
 Add-BuildTask AssetCopy -Before Build {
     Write-Build Gray '        Copying assets to Artifacts...'
-    Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:ArtifactsPath -Exclude "$($script:ModuleName).psd1", *.psm1 -Recurse -ErrorAction Stop
+    New-Item -Path $script:BuildModuleRoot -ItemType Directory -Force | Out-Null
+    Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:BuildModuleRoot -Exclude "$($script:ModuleName).psd1", *.psm1 -Recurse -ErrorAction Stop
+    Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Release\*" "$script:BuildModuleRoot\lib" -Recurse -Force
     Write-Build Gray '        ...Assets copy complete.'
 } #AssetCopy
 
@@ -455,7 +483,7 @@ Add-BuildTask Build {
     Write-Build White '      Performing Module Build'
 
     Write-Build Gray '        Copying manifest file to Artifacts...'
-    Copy-Item -Path $script:ModuleManifestFile -Destination $script:ArtifactsPath -Recurse -ErrorAction Stop
+    Copy-Item -Path $script:ModuleManifestFile -Destination $script:BuildModuleRoot -Recurse -ErrorAction Stop
     #Copy-Item -Path $script:ModuleSourcePath\bin -Destination $script:ArtifactsPath -Recurse -ErrorAction Stop
     Write-Build Gray '        ...manifest copy complete.'
 
@@ -464,9 +492,9 @@ Add-BuildTask Build {
     $scriptContent = [System.Text.StringBuilder]::new()
     #$powerShellScripts = Get-ChildItem -Path $script:ModuleSourcePath -Filter '*.ps1' -Recurse
     $powerShellScripts = $(
-        Get-ChildItem -Path $script:ArtifactsPath\ImportsFirst.ps1
-        Get-ChildItem -Path $script:ArtifactsPath\Classes\*.ps1, $script:ArtifactsPath\Private\*.ps1, $script:ArtifactsPath\Public\*.ps1 -Recurse
-        Get-ChildItem -Path $script:ArtifactsPath\ImportsLast.ps1
+        Get-ChildItem -Path $script:BuildModuleRoot\ImportsFirst.ps1
+        Get-ChildItem -Path $script:BuildModuleRoot\Classes\*.ps1, $script:BuildModuleRoot\Private\*.ps1, $script:BuildModuleRoot\Public\*.ps1 -Recurse
+        Get-ChildItem -Path $script:BuildModuleRoot\ImportsLast.ps1
     )
     $scriptContent = foreach ($script in $powerShellScripts) {
         [System.IO.File]::ReadAllText($script.FullName).Trim()
@@ -478,20 +506,20 @@ Add-BuildTask Build {
 
     Write-Build Gray '        Cleaning up leftover artifacts...'
     #cleanup artifacts that are no longer required
-    if (Test-Path "$script:ArtifactsPath\Public") {
-        Remove-Item "$script:ArtifactsPath\Public" -Recurse -Force -ErrorAction Stop
+    if (Test-Path "$script:BuildModuleRoot\Public") {
+        Remove-Item "$script:BuildModuleRoot\Public" -Recurse -Force -ErrorAction Stop
     }
-    if (Test-Path "$script:ArtifactsPath\Private") {
-        Remove-Item "$script:ArtifactsPath\Private" -Recurse -Force -ErrorAction Stop
+    if (Test-Path "$script:BuildModuleRoot\Private") {
+        Remove-Item "$script:BuildModuleRoot\Private" -Recurse -Force -ErrorAction Stop
     }
-    if (Test-Path "$script:ArtifactsPath\Classes") {
-        Remove-Item "$script:ArtifactsPath\Classes" -Recurse -Force -ErrorAction Stop
+    if (Test-Path "$script:BuildModuleRoot\Classes") {
+        Remove-Item "$script:BuildModuleRoot\Classes" -Recurse -Force -ErrorAction Stop
     }
-    if (Test-Path "$script:ArtifactsPath\ImportsFirst.ps1") {
-        Remove-Item "$script:ArtifactsPath\ImportsFirst.ps1" -Force -ErrorAction SilentlyContinue
+    if (Test-Path "$script:BuildModuleRoot\ImportsFirst.ps1") {
+        Remove-Item "$script:BuildModuleRoot\ImportsFirst.ps1" -Force -ErrorAction SilentlyContinue
     }
-    if (Test-Path "$script:ArtifactsPath\ImportsLast.ps1") {
-        Remove-Item "$script:ArtifactsPath\ImportsLast.ps1" -Force -ErrorAction SilentlyContinue
+    if (Test-Path "$script:BuildModuleRoot\ImportsLast.ps1") {
+        Remove-Item "$script:BuildModuleRoot\ImportsLast.ps1" -Force -ErrorAction SilentlyContinue
     }
 
     if (Test-Path "$script:ArtifactsPath\docs") {
@@ -558,7 +586,7 @@ Add-BuildTask Archive {
     if ($PSEdition -eq 'Desktop') {
         Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
     }
-    [System.IO.Compression.ZipFile]::CreateFromDirectory($script:ArtifactsPath, $zipFile)
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($script:BuildModuleRoot, $zipFile)
 
     Write-Build Green '        ...Archive Complete!'
 } #Archive
