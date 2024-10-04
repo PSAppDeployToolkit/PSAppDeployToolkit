@@ -204,7 +204,7 @@ function Uninstall-ADTApplication
             {
                 if ($removeApplication.WindowsInstaller)
                 {
-                    if ($null -eq $removeApplication.ProductCode)
+                    if ([string]::IsNullOrWhiteSpace($removeApplication.ProductCode))
                     {
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
