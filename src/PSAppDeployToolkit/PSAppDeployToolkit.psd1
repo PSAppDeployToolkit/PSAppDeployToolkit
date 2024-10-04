@@ -132,6 +132,7 @@
         'New-ADTFolder'
         'New-ADTMsiTransform'
         'New-ADTShortcut'
+        'New-ADTTemplate'
         'New-ADTValidateScriptErrorRecord'
         'Open-ADTSession'
         'Out-ADTPowerShellEncodedCommand'
