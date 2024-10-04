@@ -176,6 +176,9 @@ Create a transform file for an MSI database.
 ### [New-ADTShortcut](New-ADTShortcut.md)
 Creates a new .lnk or .url type shortcut.
 
+### [New-ADTTemplate](New-ADTTemplate.md)
+Creates a new folder containing a template front end and module folder, ready to customise.
+
 ### [New-ADTValidateScriptErrorRecord](New-ADTValidateScriptErrorRecord.md)
 Creates a new ErrorRecord for script validation errors.
 
