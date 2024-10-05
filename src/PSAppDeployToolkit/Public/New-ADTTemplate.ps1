@@ -13,11 +13,14 @@ function New-ADTTemplate
     .DESCRIPTION
         Specify a destination path where a new folder will be created. You also have the option of creating a template for v3 compatibility mode.
 
-    .PARAMETER Path
+    .PARAMETER Destination
         Path where the new folder should be created. Default is the current working directory.
 
     .PARAMETER Name
         Name of the newly created folder. Default is PSAppDeployToolkit.
+
+    .PARAMETER ModulePath
+        Override the default module path to include with the template.
 
     .PARAMETER Version
         Defaults to 4 for the standard v4 template. Use 3 for the v3 compatibility mode template.
@@ -68,11 +71,15 @@ function New-ADTTemplate
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = $PWD,
+        [System.String]$Destination = $PWD,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Name = $MyInvocation.MyCommand.Module.Name,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ModulePath = $MyInvocation.MyCommand.Module.ModuleBase,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('3', '4')]
@@ -93,8 +100,7 @@ function New-ADTTemplate
         # Make this function continue on error.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
-        $moduleBasePath = $MyInvocation.MyCommand.Module.ModuleBase
-        $templatePath = & $Script:CommandTable.'Join-Path' -Path $Path -ChildPath $Name
+        $templatePath = & $Script:CommandTable.'Join-Path' -Path $Destination -ChildPath $Name
         if ($Version -eq '3')
         {
             $templateModulePath = & $Script:CommandTable.'Join-Path' -Path $templatePath -ChildPath "AppDeployToolkit\$($MyInvocation.MyCommand.Module.Name)"
@@ -111,9 +117,9 @@ function New-ADTTemplate
         {
             try
             {
-                if (![System.IO.Directory]::Exists($Path))
+                if (![System.IO.Directory]::Exists($Destination))
                 {
-                    $null = & $Script:CommandTable.'New-Item' -Path $Path -ItemType Directory -Force
+                    $null = & $Script:CommandTable.'New-Item' -Path $Destination -ItemType Directory -Force
                 }
                 if ([System.IO.Directory]::Exists($templatePath))
                 {
@@ -139,8 +145,8 @@ function New-ADTTemplate
                 $null = & $Script:CommandTable.'New-Item' -Path "$templatePath\Files" -ItemType Directory -Force
                 $null = & $Script:CommandTable.'New-Item' -Path "$templatePath\SuppportFiles" -ItemType Directory -Force
                 $null = & $Script:CommandTable.'New-Item' -Path $templateModulePath -ItemType Directory -Force
-                & $Script:CommandTable.'Copy-Item' -Path "$moduleBasePath\*" -Destination $templateModulePath -Recurse -Force
-                & $Script:CommandTable.'Copy-Item' -Path "$moduleBasePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
+                & $Script:CommandTable.'Copy-Item' -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
+                & $Script:CommandTable.'Copy-Item' -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
                 if (!$PSCore)
                 {
                     $folderToRemove = "$templateModulePath\lib\net6.0"

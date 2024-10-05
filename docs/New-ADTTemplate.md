@@ -13,8 +13,8 @@ Creates a new folder containing a template front end and module folder, ready to
 ## SYNTAX
 
 ```
-New-ADTTemplate [[-Path] <String>] [[-Name] <String>] [[-Version] <String>] [-PSCore] [-Force] [-PassThru]
- [<CommonParameters>]
+New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-ModulePath] <String>] [[-Version] <String>]
+ [-PSCore] [-Force] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -39,7 +39,7 @@ Creates a new v3 compatibility mode template named PSAppDeployToolkitv3 under C:
 
 ## PARAMETERS
 
-### -Path
+### -Destination
 Path where the new folder should be created.
 Default is the current working directory.
 
@@ -71,6 +71,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ModulePath
+Override the default module path to include with the template.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: $MyInvocation.MyCommand.Module.ModuleBase
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Version
 Defaults to 4 for the standard v4 template.
 Use 3 for the v3 compatibility mode template.
@@ -81,7 +96,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: 4
 Default value: 4
 Accept pipeline input: False
 Accept wildcard characters: False
