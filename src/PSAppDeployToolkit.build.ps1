@@ -88,7 +88,7 @@ Enter-Build {
     $script:ArtifactsPath = Join-Path -Path $BuildRoot -ChildPath 'Artifacts'
     $script:ArchivePath = Join-Path -Path $BuildRoot -ChildPath 'Archive'
 
-    $script:BuildModuleRoot = Join-Path -Path $script:ArtifactsPath -ChildPath $script:ModuleName
+    $script:BuildModuleRoot = Join-Path -Path $script:ArtifactsPath -ChildPath "Module\$script:ModuleName"
     $script:BuildModuleRootFile = Join-Path -Path $script:BuildModuleRoot -ChildPath "$($script:ModuleName).psm1"
 
     # Ensure our builds fail until if below a minimum defined code test coverage threshold
@@ -184,14 +184,13 @@ Add-BuildTask Clean {
 Add-BuildTask Analyze {
 
     $scriptAnalyzerParams = @{
-        Path    = $script:ModuleSourcePath
         Setting = 'PSScriptAnalyzerSettings.psd1'
-        Recurse = $true
+        Recurse = $false
         Verbose = $false
     }
 
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    $scriptAnalyzerResults = Invoke-ScriptAnalyzer @scriptAnalyzerParams
+    $scriptAnalyzerResults = Get-ChildItem -Path $script:ModuleSourcePath -File -Filter '*.ps*1' -Exclude '*.psd1' -Recurse | Where-Object { $_.Name -ne 'Deploy-Application.ps1' } | Invoke-ScriptAnalyzer @scriptAnalyzerParams
 
     if ($scriptAnalyzerResults) {
         $scriptAnalyzerResults | Format-Table
@@ -235,12 +234,12 @@ Add-BuildTask FormattingCheck {
     $scriptAnalyzerParams = @{
         Setting     = 'CodeFormattingAllman'
         ExcludeRule = 'PSAlignAssignmentStatement'
-        Recurse     = $true
+        Recurse     = $false
         Verbose     = $false
     }
 
     Write-Build White '      Performing script formatting checks...'
-    $scriptAnalyzerResults = Get-ChildItem -Path $script:ModuleSourcePath -Exclude "*.psd1" | Invoke-ScriptAnalyzer @scriptAnalyzerParams
+    $scriptAnalyzerResults = Get-ChildItem -Path $script:ModuleSourcePath -File -Filter '*.ps*1' -Exclude '*.psd1' -Recurse | Where-Object {$_.Name -ne 'Deploy-Application.ps1'} | Invoke-ScriptAnalyzer @scriptAnalyzerParams
 
     if ($scriptAnalyzerResults) {
         $scriptAnalyzerResults | Format-Table
@@ -533,6 +532,11 @@ Add-BuildTask Build {
         Write-Build Gray '        ...Docs output completed.'
     }
 
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v3' -Version 3 -ModulePath $script:BuildModuleRoot
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v3_PSCore' -Version 3 -PSCore -ModulePath $script:BuildModuleRoot
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4' -Version 4 -ModulePath $script:BuildModuleRoot
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4_PSCore' -Version 4 -PSCore -ModulePath $script:BuildModuleRoot
+
     Write-Build Green '      ...Build Complete!'
 } #Build
 
@@ -580,13 +584,19 @@ Add-BuildTask Archive {
 
     $null = New-Item -Path $archivePath -ItemType Directory -Force
 
-    $zipFileName = '{0}_{1}_{2}.{3}.zip' -f $script:ModuleName, $script:ModuleVersion, ([DateTime]::UtcNow.ToString("yyyyMMdd")), ([DateTime]::UtcNow.ToString("hhmmss"))
-    $zipFile = Join-Path -Path $archivePath -ChildPath $zipFileName
-
-    if ($PSEdition -eq 'Desktop') {
+    if ($PSEdition -eq 'Desktop')
+    {
         Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
     }
-    [System.IO.Compression.ZipFile]::CreateFromDirectory($script:BuildModuleRoot, $zipFile)
+
+    $foldersToArchive = Get-ChildItem -Path $script:ArtifactsPath -Directory -Exclude 'ccReport', 'testOutput'
+
+    foreach ($folder in $foldersToArchive)
+    {
+        $zipFileName = '{0}_{1}_{2}.zip' -f $script:ModuleName, $script:ModuleVersion, $folder.Name
+        $zipFilePath = Join-Path -Path $archivePath -ChildPath $zipFileName
+        [System.IO.Compression.ZipFile]::CreateFromDirectory($folder.FullName, $zipFilePath)
+    }
 
     Write-Build Green '        ...Archive Complete!'
 } #Archive
