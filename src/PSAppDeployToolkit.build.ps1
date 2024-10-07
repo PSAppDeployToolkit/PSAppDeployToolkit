@@ -184,13 +184,14 @@ Add-BuildTask Clean {
 Add-BuildTask Analyze {
 
     $scriptAnalyzerParams = @{
+        Path    = $script:ModuleSourcePath
         Setting = 'PSScriptAnalyzerSettings.psd1'
-        Recurse = $false
+        Recurse = $true
         Verbose = $false
     }
 
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    $scriptAnalyzerResults = Get-ChildItem -Path $script:ModuleSourcePath -File -Filter '*.ps*1' -Exclude '*.psd1' -Recurse | Where-Object { $_.Name -ne 'Deploy-Application.ps1' } | Invoke-ScriptAnalyzer @scriptAnalyzerParams
+    $scriptAnalyzerResults = Invoke-ScriptAnalyzer @scriptAnalyzerParams
 
     if ($scriptAnalyzerResults) {
         $scriptAnalyzerResults | Format-Table
@@ -229,17 +230,15 @@ Add-BuildTask AnalyzeTests -After Analyze {
 #Synopsis: Analyze scripts to verify if they adhere to desired coding format (Stroustrup / OTBS / Allman)
 Add-BuildTask FormattingCheck {
 
-
-
     $scriptAnalyzerParams = @{
         Setting     = 'CodeFormattingAllman'
         ExcludeRule = 'PSAlignAssignmentStatement'
-        Recurse     = $false
+        Recurse     = $true
         Verbose     = $false
     }
 
     Write-Build White '      Performing script formatting checks...'
-    $scriptAnalyzerResults = Get-ChildItem -Path $script:ModuleSourcePath -File -Filter '*.ps*1' -Exclude '*.psd1' -Recurse | Where-Object {$_.Name -ne 'Deploy-Application.ps1'} | Invoke-ScriptAnalyzer @scriptAnalyzerParams
+    $scriptAnalyzerResults = Get-ChildItem -Path $script:ModuleSourcePath -Exclude "*.psd1" | Invoke-ScriptAnalyzer @scriptAnalyzerParams
 
     if ($scriptAnalyzerResults) {
         $scriptAnalyzerResults | Format-Table
@@ -533,7 +532,6 @@ Add-BuildTask Build {
     }
 
     New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v3' -Version 3 -ModulePath $script:BuildModuleRoot
-    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v3_PSCore' -Version 3 -PSCore -ModulePath $script:BuildModuleRoot
     New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4' -Version 4 -ModulePath $script:BuildModuleRoot
     New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4_PSCore' -Version 4 -PSCore -ModulePath $script:BuildModuleRoot
 
