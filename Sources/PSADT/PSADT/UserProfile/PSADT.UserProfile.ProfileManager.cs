@@ -75,9 +75,10 @@ namespace PSADT.UserProfile
                             profileInfo.NTDomain = ntDomain ?? string.Empty;
                             profileInfo.UserName = userName ?? string.Empty;
                             profileInfo.Sid = profileSid;
-                            profileInfo.DocumentsPath = Path.Combine(profilePath, "Documents");
-                            profileInfo.DesktopPath = Path.Combine(profilePath, "Desktop");
-                            profileInfo.PicturesPath = Path.Combine(profilePath, "Pictures");
+                            // Invalid to assume these paths, e.g. they may be underneath OneDrive or redirected to a network share
+                            // profileInfo.DocumentsPath = Path.Combine(profilePath, "Documents");
+                            // profileInfo.DesktopPath = Path.Combine(profilePath, "Desktop");
+                            // profileInfo.PicturesPath = Path.Combine(profilePath, "Pictures");
 
                             userProfileInfos.Add(profileInfo);
                         }
