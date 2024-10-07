@@ -143,11 +143,28 @@ function Get-ADTUserProfiles
                             return
                         }
 
+                        $appDataPath = (& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'AppData' -SID $_.PSChildName -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfileImagePath
+                        $localAppDataPath = (& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Local AppData' -SID $_.PSChildName -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfileImagePath
+                        $desktopPath = (& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Desktop' -SID $_.PSChildName -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfileImagePath
+                        $documentsPath = (& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Personal' -SID $_.PSChildName -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfileImagePath
+                        $oneDrivePath = (& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'HKCU\Environment' -Name 'OneDrive' -SID $_.PSChildName -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfileImagePath
+                        $oneDriveCommercialPath = (& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'HKCU\Environment' -Name 'OneDriveCommercial' -SID $_.PSChildName -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfileImagePath
+                        $startMenuPath = (& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Start Menu' -SID $_.PSChildName -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfileImagePath
+                        $tempPath = (& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'HKCU\Environment' -Name 'TEMP' -SID $_.PSChildName -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfileImagePath
+
                         # Write out the object to the pipeline.
                         return [PSADT.Types.UserProfile]::new(
                             $ntAccount,
                             $_.PSChildName,
-                            $_.ProfileImagePath
+                            $_.ProfileImagePath,
+                            $appDataPath,
+                            $localAppDataPath,
+                            $desktopPath,
+                            $documentsPath,
+                            $oneDrivePath,
+                            $oneDriveCommercialPath,
+                            $startMenuPath,
+                            $tempPath
                         )
                     }
                 }
@@ -156,10 +173,19 @@ function Get-ADTUserProfiles
                 # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
                 if (!$ExcludeDefaultUser)
                 {
+                    $defaultUserProfilePath = (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $userProfileListRegKey).Default
                     return [PSADT.Types.UserProfile]::new(
                         'Default User',
                         'S-1-5-21-Default-User',
-                        (& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $userProfileListRegKey).Default
+                        $defaultUserProfilePath,
+                        "$defaultUserProfilePath\AppData\Roaming",
+                        "$defaultUserProfilePath\AppData\Local",
+                        "$defaultUserProfilePath\Desktop",
+                        "$defaultUserProfilePath\Documents",
+                        "$defaultUserProfilePath\Microsoft\Windows\Start Menu",
+                        $null,
+                        $null,
+                        "$defaultUserProfilePath\AppData\Local\Temp"
                     )
                 }
             }
