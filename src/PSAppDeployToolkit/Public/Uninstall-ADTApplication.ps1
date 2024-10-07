@@ -183,7 +183,6 @@ function Uninstall-ADTApplication
         $sapParams = @{
             WaitForMsiExec         = $true
             NoExitOnProcessFailure = $true
-            WindowStyle            = 'Hidden'
             CreateNoWindow         = $true
             PassThru               = $PassThru
             Path                   = $null
@@ -236,20 +235,20 @@ function Uninstall-ADTApplication
                         continue
                     }
 
-                    if ($uninstallString -match '^"(.+?\.exe)"(?:\s(.*))?$')
+                    $invalidFileNameChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidFileNameChars()))
+                    $invalidPathChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidPathChars()))
+
+                    if ($uninstallString -match "^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$")
                     {
                         $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                        $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
-                    }
-                    elseif ($uninstallString -match '^(\S+?\.exe)(?:\s(.*))?$')
-                    {
-                        $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                        $uninstallStringParams = [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
-                    }
-                    elseif ($uninstallString -match '^"?(.+?\.exe)"?$')
-                    {
-                        $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                        $uninstallStringParams = $null
+                        if (!(Test-Path -LiteralPath $sapParams.Path -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.Path -ErrorAction Ignore))
+                        {
+                            $sapParams.Path = $commandPath.Source
+                        }
+                        $uninstallStringParams = if ($matches.Count -gt 2)
+                        {
+                            [System.Environment]::ExpandEnvironmentVariables($matches[2].Trim())
+                        }
                     }
                     else
                     {
