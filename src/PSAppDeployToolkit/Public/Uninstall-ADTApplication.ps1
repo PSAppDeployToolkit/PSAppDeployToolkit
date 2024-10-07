@@ -241,7 +241,7 @@ function Uninstall-ADTApplication
                     if ($uninstallString -match "^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$")
                     {
                         $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                        if (!(Test-Path -LiteralPath $sapParams.Path -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.Path -ErrorAction Ignore))
+                        if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $sapParams.Path -PathType Leaf) -and ($commandPath = & $Script:CommandTable.'Get-Command' -Name $sapParams.Path -ErrorAction Ignore))
                         {
                             $sapParams.Path = $commandPath.Source
                         }
