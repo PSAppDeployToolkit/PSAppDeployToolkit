@@ -19,6 +19,9 @@ function Copy-ADTFileToUserProfiles
     .PARAMETER Destination
         The path of the destination folder to append to the root of the user profile.
 
+    .PARAMETER BasePath
+        The base path to append the destination folder to. Default is: Profile. Options are: Profile, AppData, LocalAppData, Desktop, Documents, StartMenu, Temp, OneDrive, OneDriveCommercial.
+
     .PARAMETER Recurse
         Copy files in subdirectories.
 
@@ -70,9 +73,9 @@ function Copy-ADTFileToUserProfiles
         Copy two files to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
     .EXAMPLE
-        Copy-ADTFileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
+        Copy-ADTFileToUserProfiles -Path "$dirFiles\MyDocs" Destination "MyApp" -BasePath "Documents" -Recurse
 
-        Copy an entire folder to C:\Users\<UserName>\AppData\Local for each user.
+        Copy an entire folder recursively to a new MyApp folder under each user's Documents folder.
 
     .EXAMPLE
         Copy-ADTFileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
@@ -100,6 +103,10 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $false, Position = 2)]
         [System.String]$Destination,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Profile', 'AppData', 'LocalAppData', 'Desktop', 'Documents', 'StartMenu', 'Temp', 'OneDrive', 'OneDriveCommercial')]
+        [System.String]$BasePath = 'Profile',
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
@@ -176,6 +183,10 @@ function Copy-ADTFileToUserProfiles
         {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
+        if ($BasePath -ne 'ProfilePath')
+        {
+            $GetUserProfileSplat.LoadProfilePaths = $true
+        }
 
         # Collector for all provided paths.
         $sourcePaths = [System.Collections.Specialized.StringCollection]::new()
@@ -190,9 +201,14 @@ function Copy-ADTFileToUserProfiles
     end
     {
         # Copy all paths to the specified destination.
-        foreach ($UserProfilePath in (& $Script:CommandTable.'Get-ADTUserProfiles' @GetUserProfileSplat).ProfilePath)
+        foreach ($UserProfile in (& $Script:CommandTable.'Get-ADTUserProfiles' @GetUserProfileSplat))
         {
-            $dest = & $Script:CommandTable.'Join-Path' $UserProfilePath $Destination
+            if ([string]::IsNullOrWhiteSpace($UserProfile."$BasePath`Path"))
+            {
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping user profile [$($UserProfile.NTAccount)] as path [$BasePath`Path] is not available."
+                continue
+            }
+            $dest = & $Script:CommandTable.'Join-Path' $UserProfile."$BasePath`Path" $Destination
             & $Script:CommandTable.'Write-ADTLogEntry' -Message "Copying path [$Path] to $($dest):"
             & $Script:CommandTable.'Copy-ADTFile' -Path $sourcePaths -Destination $dest @CopyFileSplat
         }
