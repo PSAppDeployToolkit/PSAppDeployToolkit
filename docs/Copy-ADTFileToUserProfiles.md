@@ -13,8 +13,8 @@ Copy one or more items to each user profile on the system.
 ## SYNTAX
 
 ```
-Copy-ADTFileToUserProfiles [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten]
- [-FileCopyMode <String>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>]
+Copy-ADTFileToUserProfiles [-Path] <String[]> [[-Destination] <String>] [-BasePath <String>] [-Recurse]
+ [-Flatten] [-FileCopyMode <String>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>]
  [-ExcludeNTAccount <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles] [-ExcludeDefaultUser]
  [-ContinueFileCopyOnError] [<CommonParameters>]
 ```
@@ -41,10 +41,10 @@ Copy two files to C:\Users\\\<UserName\>\AppData\Roaming\MyApp for each user.
 
 ### EXAMPLE 3
 ```
-Copy-ADTFileToUserProfiles -Path "$dirFiles\MyApp" -Destination "AppData\Local" -Recurse
+Copy-ADTFileToUserProfiles -Path "$dirFiles\MyDocs" Destination "MyApp" -BasePath "Documents" -Recurse
 ```
 
-Copy an entire folder to C:\Users\\\<UserName\>\AppData\Local for each user.
+Copy an entire folder recursively to a new MyApp folder under each user's Documents folder.
 
 ### EXAMPLE 4
 ```
@@ -78,9 +78,26 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 3
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -BasePath
+The base path to append the destination folder to.
+Default is: Profile.
+Options are: Profile, AppData, LocalAppData, Desktop, Documents, StartMenu, Temp, OneDrive, OneDriveCommercial.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: Profile
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
