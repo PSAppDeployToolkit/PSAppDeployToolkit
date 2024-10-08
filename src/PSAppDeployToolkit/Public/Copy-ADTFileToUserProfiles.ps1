@@ -98,8 +98,7 @@ function Copy-ADTFileToUserProfiles
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Path,
 
-        [Parameter(Mandatory = $true, Position = 2)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter(Mandatory = $false, Position = 2)]
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
