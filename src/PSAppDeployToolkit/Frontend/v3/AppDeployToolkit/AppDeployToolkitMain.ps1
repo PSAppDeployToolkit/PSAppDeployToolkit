@@ -217,7 +217,8 @@ function Invoke-HKCURegistrySettingsForAllUsers
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryAction]. Please migrate your scripts to use the new function." -Severity 2
-    $PSBoundParameters.RegistrySettings = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.RegistrySettings
+    $PSBoundParameters.ScriptBlock = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.RegistrySettings
+    $null = $PSBoundParameters.Remove('RegistrySettings')
     try
     {
         Invoke-ADTAllUsersRegistryAction @PSBoundParameters
