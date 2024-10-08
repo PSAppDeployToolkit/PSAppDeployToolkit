@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Invoke-ADTAllUsersRegistryChange
+# MARK: Invoke-ADTAllUsersRegistryAction
 #
 #-----------------------------------------------------------------------------
 
-function Invoke-ADTAllUsersRegistryChange
+function Invoke-ADTAllUsersRegistryAction
 {
     <#
     .SYNOPSIS
@@ -38,7 +38,7 @@ function Invoke-ADTAllUsersRegistryChange
         This function does not generate any output.
 
     .EXAMPLE
-        Invoke-ADTAllUsersRegistryChange -RegistrySettings {
+        Invoke-ADTAllUsersRegistryAction -RegistrySettings {
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
         }

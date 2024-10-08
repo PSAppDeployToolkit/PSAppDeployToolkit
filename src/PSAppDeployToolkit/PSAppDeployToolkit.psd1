@@ -121,7 +121,7 @@
         'Initialize-ADTModule'
         'Install-ADTMSUpdates'
         'Install-ADTSCCMSoftwareUpdates'
-        'Invoke-ADTAllUsersRegistryChange'
+        'Invoke-ADTAllUsersRegistryAction'
         'Invoke-ADTCommandWithRetries'
         'Invoke-ADTRegSvr32'
         'Invoke-ADTFunctionErrorHandler'

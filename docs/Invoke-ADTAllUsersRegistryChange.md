@@ -5,7 +5,7 @@ online version: https://psappdeploytoolkit.com
 schema: 2.0.0
 ---
 
-# Invoke-ADTAllUsersRegistryChange
+# Invoke-ADTAllUsersRegistryAction
 
 ## SYNOPSIS
 Set current user registry settings for all current users and any new users in the future.
@@ -13,7 +13,7 @@ Set current user registry settings for all current users and any new users in th
 ## SYNTAX
 
 ```
-Invoke-ADTAllUsersRegistryChange [-RegistrySettings] <ScriptBlock[]> [[-UserProfiles] <UserProfile[]>]
+Invoke-ADTAllUsersRegistryAction [-RegistrySettings] <ScriptBlock[]> [[-UserProfiles] <UserProfile[]>]
  [<CommonParameters>]
 ```
 
@@ -32,7 +32,7 @@ The advantage of using this function over ActiveSetup is that a user does not ha
 
 ### EXAMPLE 1
 ```
-Invoke-ADTAllUsersRegistryChange -RegistrySettings {
+Invoke-ADTAllUsersRegistryAction -RegistrySettings {
 ```
 
 Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
