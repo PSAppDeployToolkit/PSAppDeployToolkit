@@ -12,17 +12,13 @@ function Invoke-ADTAllUsersRegistryAction
 
     .DESCRIPTION
         Set HKCU registry settings for all current and future users by loading their NTUSER.dat registry hive file, and making the modifications.
-
         This function will modify HKCU settings for all users even when executed under the SYSTEM account.
-
         To ensure new users in the future get the registry edits, the Default User registry hive used to provision the registry for new users is modified.
-
         This function can be used as an alternative to using ActiveSetup for registry settings.
-
         The advantage of using this function over ActiveSetup is that a user does not have to log off and log back on before the changes take effect.
 
-    .PARAMETER RegistrySettings
-        Script block which contains HKCU registry settings which should be modified for all users on the system.
+    .PARAMETER ScriptBlock
+        Script block which contains HKCU registry actions to be run for all users on the system.
 
     .PARAMETER UserProfiles
         Specify the user profiles to modify HKCU registry settings for. Default is all user profiles except for system profiles.
@@ -38,10 +34,26 @@ function Invoke-ADTAllUsersRegistryAction
         This function does not generate any output.
 
     .EXAMPLE
-        Invoke-ADTAllUsersRegistryAction -RegistrySettings {
+        Invoke-ADTAllUsersRegistryAction -ScriptBlock {
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
         }
+
+    .EXAMPLE
+        Invoke-ADTAllUsersRegistryAction {
+            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
+            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
+        }
+
+        As the previous example, but showing how to use ScriptBlock as a positional parameter with no name specified.
+
+    .EXAMPLE
+        Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser) -ScriptBlock {
+            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
+            Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
+        }
+
+        As the previous example, but sending specific user profiles through to exclude the Default profile.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -58,9 +70,9 @@ function Invoke-ADTAllUsersRegistryAction
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ScriptBlock[]]$RegistrySettings,
+        [System.Management.Automation.ScriptBlock[]]$ScriptBlock,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -122,7 +134,7 @@ function Invoke-ADTAllUsersRegistryAction
 
                     # Invoke changes against registry.
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
-                    & $Script:CommandTable.'ForEach-Object' -InputObject $UserProfile -Begin $null -End $null -Process $RegistrySettings
+                    & $Script:CommandTable.'ForEach-Object' -InputObject $UserProfile -Begin $null -End $null -Process $ScriptBlock
                 }
                 catch
                 {
