@@ -14,7 +14,7 @@ Get the User Profile Path, User Account SID, and the User Account Name for all u
 
 ```
 Get-ADTUserProfiles [[-ExcludeNTAccount] <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles]
- [-IncludeIISAppPoolProfiles] [-ExcludeDefaultUser] [<CommonParameters>]
+ [-IncludeIISAppPoolProfiles] [-ExcludeDefaultUser] [-LoadProfilePaths] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -110,6 +110,21 @@ Accept wildcard characters: False
 
 ### -ExcludeDefaultUser
 Exclude the Default User.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LoadProfilePaths
+Load additional profile paths for each user profile.
 
 ```yaml
 Type: SwitchParameter
