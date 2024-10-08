@@ -182,9 +182,9 @@ function Get-ADTUserProfiles
                         "$defaultUserProfilePath\AppData\Local",
                         "$defaultUserProfilePath\Desktop",
                         "$defaultUserProfilePath\Documents",
+                        $null,
+                        $null,
                         "$defaultUserProfilePath\Microsoft\Windows\Start Menu",
-                        $null,
-                        $null,
                         "$defaultUserProfilePath\AppData\Local\Temp"
                     )
                 }
