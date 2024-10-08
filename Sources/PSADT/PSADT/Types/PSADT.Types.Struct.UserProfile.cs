@@ -17,10 +17,10 @@ namespace PSADT.Types
         /// <param name="localAppDataPath">The path to the user's LocalAppData directory.</param>
         /// <param name="desktopPath">The path to the user's Desktop directory.</param>
         /// <param name="documentsPath">The path to the user's Documents directory.</param>
-        /// <param name="oneDrivePath">The path to the user's OneDrive directory.</param>
-        /// <param name="oneDriveCommercialPath">The path to the user's OneDrive for Business directory.</param>
         /// <param name="startMenuPath">The path to the user's Start Menu directory.</param>
         /// <param name="tempPath">The path to the user's Temp directory.</param>
+        /// <param name="oneDrivePath">The path to the user's OneDrive directory.</param>
+        /// <param name="oneDriveCommercialPath">The path to the user's OneDrive for Business directory.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null or empty.</exception>
         public UserProfile(
             string ntAccount,
@@ -30,10 +30,10 @@ namespace PSADT.Types
             string localAppDataPath,
             string desktopPath,
             string documentsPath,
-            string oneDrivePath,
-            string oneDriveCommercialPath,
             string startMenuPath,
-            string tempPath)
+            string tempPath,
+            string oneDrivePath,
+            string oneDriveCommercialPath)
         {
             NTAccount = !string.IsNullOrWhiteSpace(ntAccount) ? ntAccount : throw new ArgumentNullException(nameof(ntAccount), "NT account cannot be null or empty.");
             SID = !string.IsNullOrWhiteSpace(sid) ? sid : throw new ArgumentNullException(nameof(sid), "SID cannot be null or empty.");
@@ -42,10 +42,10 @@ namespace PSADT.Types
             LocalAppDataPath = localAppDataPath ?? string.Empty;
             DesktopPath = desktopPath ?? string.Empty;
             DocumentsPath = documentsPath ?? string.Empty;
-            OneDrivePath = oneDrivePath ?? string.Empty;
-            OneDriveCommercialPath = oneDriveCommercialPath ?? string.Empty;
             StartMenuPath = startMenuPath ?? string.Empty;
             TempPath = tempPath ?? string.Empty;
+            OneDrivePath = oneDrivePath ?? string.Empty;
+            OneDriveCommercialPath = oneDriveCommercialPath ?? string.Empty;
         }
 
         /// <summary>
@@ -84,16 +84,6 @@ namespace PSADT.Types
         public string DocumentsPath { get; }
 
         /// <summary>
-        /// Gets the path to the user's OneDrive directory.
-        /// </summary>
-        public string OneDrivePath { get; }
-
-        /// <summary>
-        /// Gets the path to the user's OneDrive for Business directory.
-        /// </summary>
-        public string OneDriveCommercialPath { get; }
-
-        /// <summary>
         /// Gets the path to the user's Start Menu directory.
         /// </summary>
         public string StartMenuPath { get; }
@@ -102,6 +92,16 @@ namespace PSADT.Types
         /// Gets the path to the user's Temp directory.
         /// </summary>
         public string TempPath { get; }
+
+        /// <summary>
+        /// Gets the path to the user's OneDrive directory.
+        /// </summary>
+        public string OneDrivePath { get; }
+
+        /// <summary>
+        /// Gets the path to the user's OneDrive for Business directory.
+        /// </summary>
+        public string OneDriveCommercialPath { get; }
 
         /// <summary>
         /// Returns a string that represents the current <see cref="UserProfile"/> object.
