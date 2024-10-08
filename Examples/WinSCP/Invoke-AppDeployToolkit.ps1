@@ -151,7 +151,7 @@ function Install-ADTApplication
 
     ## <Perform Post-Installation tasks here>
     Remove-ADTFile -Path "$envCommonDesktop\WinSCP.lnk"
-    Invoke-ADTAllUsersRegistryChange -RegistrySettings {
+    Invoke-ADTAllUsersRegistryAction -RegistrySettings {
         Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface' -Name 'CollectUsage' -Value 0 -Type DWord -SID $_.SID
         Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'Period' -Value 0 -Type DWord -SID $_.SID
         Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'BetaVersions' -Value 1 -Type DWord -SID $_.SID
@@ -253,7 +253,7 @@ function Repair-ADTApplication
 
     ## <Perform Post-Repair tasks here>
     Remove-ADTFile -Path "$envCommonDesktop\WinSCP.lnk"
-    Invoke-ADTAllUsersRegistryChange -RegistrySettings {
+    Invoke-ADTAllUsersRegistryAction -RegistrySettings {
         Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface' -Name 'CollectUsage' -Value 0 -Type DWord -SID $_.SID
         Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'Period' -Value 0 -Type DWord -SID $_.SID
         Set-ADTRegistryKey -Key 'HKCU\Software\Martin Prikryl\WinSCP 2\Configuration\Interface\Updates' -Name 'BetaVersions' -Value 1 -Type DWord -SID $_.SID

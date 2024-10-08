@@ -143,7 +143,7 @@ Install all Microsoft Updates in a given directory.
 ### [Install-ADTSCCMSoftwareUpdates](Install-ADTSCCMSoftwareUpdates.md)
 Scans for outstanding SCCM updates to be installed and installs the pending updates.
 
-### [Invoke-ADTAllUsersRegistryChange](Invoke-ADTAllUsersRegistryChange.md)
+### [Invoke-ADTAllUsersRegistryAction](Invoke-ADTAllUsersRegistryAction.md)
 Set current user registry settings for all current users and any new users in the future.
 
 ### [Invoke-ADTCommandWithRetries](Invoke-ADTCommandWithRetries.md)

@@ -26,7 +26,7 @@ function Get-ADTRegistryKey
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
-        Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+        Specify this parameter from the Invoke-ADTAllUsersRegistryAction function to read/edit HKCU registry settings for all users on the system.
 
     .PARAMETER ReturnEmptyKeyIfExists
         Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.

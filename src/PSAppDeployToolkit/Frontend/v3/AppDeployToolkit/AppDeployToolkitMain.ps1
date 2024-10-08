@@ -197,7 +197,7 @@ function Exit-Script
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Invoke-ADTAllUsersRegistryChange
+# MARK: Wrapper around Invoke-ADTAllUsersRegistryAction
 #
 #---------------------------------------------------------------------------
 
@@ -208,7 +208,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({ if ($_ -match '\$UserProfile\.SID') { Write-ADTLogEntry -Message "The base function [Invoke-ADTAllUsersRegistryChange] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead." -Severity 2 }; ![System.String]::IsNullOrWhiteSpace($_) })]
+        [ValidateScript({ if ($_ -match '\$UserProfile\.SID') { Write-ADTLogEntry -Message "The base function [Invoke-ADTAllUsersRegistryAction] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead." -Severity 2 }; ![System.String]::IsNullOrWhiteSpace($_) })]
         [System.Management.Automation.ScriptBlock]$RegistrySettings,
 
         [Parameter(Mandatory = $false)]
@@ -216,11 +216,11 @@ function Invoke-HKCURegistrySettingsForAllUsers
         [PSADT.Types.UserProfile[]]$UserProfiles
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryChange]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryAction]. Please migrate your scripts to use the new function." -Severity 2
     $PSBoundParameters.RegistrySettings = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.RegistrySettings
     try
     {
-        Invoke-ADTAllUsersRegistryChange @PSBoundParameters
+        Invoke-ADTAllUsersRegistryAction @PSBoundParameters
     }
     catch
     {
