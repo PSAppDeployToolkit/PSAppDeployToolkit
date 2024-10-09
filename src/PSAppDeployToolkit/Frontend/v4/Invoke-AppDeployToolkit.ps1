@@ -270,7 +270,7 @@ try
 }
 catch
 {
-    $Host.UI.WriteErrorLine((Out-String -InputObject $_))
+    $Host.UI.WriteErrorLine((Out-String -InputObject $_ -Width ([System.Int32]::MaxValue)))
     exit 60008
 }
 

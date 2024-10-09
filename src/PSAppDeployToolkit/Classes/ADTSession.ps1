@@ -500,7 +500,7 @@ class ADTSession
     hidden [System.Void] LogUserInfo([System.Management.Automation.PSObject]$ADTData, [System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Log details for all currently logged in users.
-        $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')", $false)
+        $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue))", $false)
 
         # Provide detailed info about current process state.
         if ($ADTEnv.usersLoggedOn)

@@ -92,7 +92,7 @@ function Initialize-ADTFunction
     & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Function Start' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
     if ($Cmdlet.MyInvocation.BoundParameters.Count)
     {
-        $CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | & $Script:CommandTable.'Format-Table' -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) { $_.Value.GetType().Name } }; Alignment = 'Left' } -AutoSize -Wrap | & $Script:CommandTable.'Out-String'
+        $CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | & $Script:CommandTable.'Format-Table' -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) { $_.Value.GetType().Name } }; Alignment = 'Left' } -AutoSize -Wrap | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)
         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Function invoked with bound parameter(s):`n$CmdletBoundParameters" -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
     }
     else
