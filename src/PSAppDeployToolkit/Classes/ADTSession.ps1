@@ -14,6 +14,7 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$ZeroConfigInitiated
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
+    hidden [ValidateNotNullOrEmpty()][System.Boolean]$ForceWimDetection
     hidden [ValidateNotNullOrEmpty()][System.String]$DirFilesSubstDrive
     hidden [ValidateNotNullOrEmpty()][System.String]$RegKeyDeferHistory
     hidden [ValidateNotNullOrEmpty()][System.String]$DeploymentTypeName
@@ -183,7 +184,7 @@ class ADTSession
     hidden [System.Void] DetectDefaultWimFile()
     {
         # If the default Deploy-Application.ps1 hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-        if (![System.String]::IsNullOrWhiteSpace($this.AppName))
+        if (![System.String]::IsNullOrWhiteSpace($this.AppName) -and !$this.ForceWimDetection)
         {
             return
         }

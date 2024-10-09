@@ -21,8 +21,8 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-D
  [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <String>]
  [[-DeployAppScriptParameters] <IDictionary>] [[-AppExitCodes] <Int32[]>] [[-AppRebootCodes] <Int32[]>]
  [[-ScriptDirectory] <String>] [[-DirFiles] <String>] [[-DirSupportFiles] <String>]
- [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>] [[-DefaultMspFiles] <String[]>] [-PassThru]
- [<CommonParameters>]
+ [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>] [[-DefaultMspFiles] <String[]>] [-ForceWimDetection]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -472,6 +472,21 @@ Aliases:
 Required: False
 Position: 26
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ForceWimDetection
+Specifies that WIM files should be detected and mounted during session initialization, irrespective of whether any App values are provided.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
