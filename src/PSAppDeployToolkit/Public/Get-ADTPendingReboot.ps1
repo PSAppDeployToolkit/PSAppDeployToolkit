@@ -134,7 +134,7 @@ function Get-ADTPendingReboot
                     $PendingFileRenameOperations,
                     $PendRebootErrorMsg
                 )
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String')"
+                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue))"
                 return $PendingRebootInfo
             }
             catch
