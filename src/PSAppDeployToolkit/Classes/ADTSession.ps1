@@ -14,6 +14,7 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][PSADT.Types.ProcessObject[]]$DefaultMsiExecutablesList
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$ZeroConfigInitiated
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$RunspaceOrigin
+    hidden [ValidateNotNullOrEmpty()][System.String]$DirFilesSubstDrive
     hidden [ValidateNotNullOrEmpty()][System.String]$RegKeyDeferHistory
     hidden [ValidateNotNullOrEmpty()][System.String]$DeploymentTypeName
     hidden [ValidateNotNullOrEmpty()][System.Boolean]$DeployModeNonInteractive
@@ -202,8 +203,20 @@ class ADTSession
         # Mount the WIM file and reset DirFiles to the mount point.
         $this.WriteZeroConfigDivider()
         $this.WriteLogEntry("Discovered Zero-Config WIM file [$wimFile].")
-        & $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $wimFile -Path ($this.DirFiles = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())) -Index 1 6>$null
-        $this.WriteLogEntry("Successfully mounted WIM file to [$($this.DirFiles)].")
+        $mountPath = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())
+        & $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $wimFile -Path $mountPath -Index 1 6>$null
+        $this.WriteLogEntry("Successfully mounted WIM file to [$(($this.DirFiles = $mountPath))].")
+
+        # Subst the new DirFiles path to eliminate any potential path length issues.
+        $usedLetters = (& $Script:CommandTable.'Get-PSDrive' -PSProvider FileSystem).Name
+        $availLetter = [System.String[]][System.Char[]](90..65) | & { process { if ($usedLetters -notcontains $_) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1
+        if ($availLetter)
+        {
+            $this.WriteLogEntry("Creating substitution drive [$(($substDrive = "${availLetter}:"))] for [$($this.DirFiles)].")
+            & $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $substDrive -Path $this.DirFiles 6>$null
+            $this.DirFiles = $this.DirFilesSubstDrive = $substDrive
+        }
+
         $this.WriteLogEntry("Using [$($this.DirFiles)] as the base DirFiles directory.")
     }
 
@@ -795,6 +808,12 @@ class ADTSession
         if ($this.ExitCode)
         {
             $adtData.LastExitCode = $this.ExitCode
+        }
+
+        # Remove any subst paths if created in the zero-config WIM code.
+        if ($this.DirFilesSubstDrive)
+        {
+            & $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $this.DirFilesSubstDrive -Delete
         }
 
         # Unmount any stored WIM file entries.
