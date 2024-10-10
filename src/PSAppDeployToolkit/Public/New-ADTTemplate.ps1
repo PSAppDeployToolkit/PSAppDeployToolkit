@@ -82,8 +82,8 @@ function New-ADTTemplate
         [System.String]$ModulePath = $MyInvocation.MyCommand.Module.ModuleBase,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('3', '4')]
-        [System.String]$Version = '4',
+        [ValidateSet(3, 4)]
+        [System.Int32]$Version = 4,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PSCore,
@@ -101,7 +101,7 @@ function New-ADTTemplate
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         $templatePath = & $Script:CommandTable.'Join-Path' -Path $Destination -ChildPath $Name
-        if ($Version -eq '3')
+        if ($Version.Equals(3))
         {
             $templateModulePath = & $Script:CommandTable.'Join-Path' -Path $templatePath -ChildPath "AppDeployToolkit\$($MyInvocation.MyCommand.Module.Name)"
         }
