@@ -38,14 +38,14 @@ namespace PSADT.Types
             NTAccount = !string.IsNullOrWhiteSpace(ntAccount) ? ntAccount : throw new ArgumentNullException(nameof(ntAccount), "NT account cannot be null or empty.");
             SID = !string.IsNullOrWhiteSpace(sid) ? sid : throw new ArgumentNullException(nameof(sid), "SID cannot be null or empty.");
             ProfilePath = !string.IsNullOrWhiteSpace(profilePath) ? profilePath : throw new ArgumentNullException(nameof(profilePath), "Profile path cannot be null or empty.");
-            AppDataPath = appDataPath ?? string.Empty;
-            LocalAppDataPath = localAppDataPath ?? string.Empty;
-            DesktopPath = desktopPath ?? string.Empty;
-            DocumentsPath = documentsPath ?? string.Empty;
-            StartMenuPath = startMenuPath ?? string.Empty;
-            TempPath = tempPath ?? string.Empty;
-            OneDrivePath = oneDrivePath ?? string.Empty;
-            OneDriveCommercialPath = oneDriveCommercialPath ?? string.Empty;
+            AppDataPath = appDataPath;
+            LocalAppDataPath = localAppDataPath;
+            DesktopPath = desktopPath;
+            DocumentsPath = documentsPath;
+            StartMenuPath = startMenuPath;
+            TempPath = tempPath;
+            OneDrivePath = oneDrivePath;
+            OneDriveCommercialPath = oneDriveCommercialPath;
         }
 
         /// <summary>
