@@ -101,13 +101,13 @@ function New-ADTTemplate
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         $templatePath = & $Script:CommandTable.'Join-Path' -Path $Destination -ChildPath $Name
-        if ($Version.Equals(3))
+        $templateModulePath = if ($Version.Equals(3))
         {
-            $templateModulePath = & $Script:CommandTable.'Join-Path' -Path $templatePath -ChildPath "AppDeployToolkit\$($MyInvocation.MyCommand.Module.Name)"
+            & $Script:CommandTable.'Join-Path' -Path $templatePath -ChildPath "AppDeployToolkit\$($MyInvocation.MyCommand.Module.Name)"
         }
         else
         {
-            $templateModulePath = & $Script:CommandTable.'Join-Path' -Path $templatePath -ChildPath $MyInvocation.MyCommand.Module.Name
+            & $Script:CommandTable.'Join-Path' -Path $templatePath -ChildPath $MyInvocation.MyCommand.Module.Name
         }
     }
 
