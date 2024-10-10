@@ -313,7 +313,6 @@ namespace PSADT.PInvoke
         /// </returns>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [System.Security.SecurityCritical]
-        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern int LoadString(SafeLibraryHandle hInstance, int uID, StringBuilder lpBuffer, int nBufferMax);
 
         /// <summary>
