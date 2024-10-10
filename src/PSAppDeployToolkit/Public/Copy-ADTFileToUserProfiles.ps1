@@ -102,6 +102,7 @@ function Copy-ADTFileToUserProfiles
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $false, Position = 2)]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
