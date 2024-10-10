@@ -44,7 +44,7 @@ namespace PSADT.Types
             string publisher,
             bool? systemComponent,
             bool? windowsInstaller,
-            bool? is64BitApplication)
+            bool is64BitApplication)
         {
             UninstallKey = uninstallKey ?? string.Empty;
             UninstallParentKey = uninstallParentKey ?? string.Empty;
@@ -59,7 +59,7 @@ namespace PSADT.Types
             Publisher = publisher ?? string.Empty;
             SystemComponent = systemComponent ?? false;
             WindowsInstaller = windowsInstaller ?? false;
-            Is64BitApplication = is64BitApplication ?? false;
+            Is64BitApplication = is64BitApplication;
 
             DateTime parsedDate;
             // Attempt to parse the date based on yyyyMMdd format expected from Windows Installer
