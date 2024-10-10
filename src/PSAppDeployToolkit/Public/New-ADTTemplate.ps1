@@ -125,11 +125,7 @@ function New-ADTTemplate
                 {
                     if ([System.IO.Directory]::GetFileSystemEntries($templatePath))
                     {
-                        if ($Force)
-                        {
-                            $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $templatePath -Recurse -Force
-                        }
-                        else
+                        if (!$Force)
                         {
                             $naerParams = @{
                                 Exception         = [System.IO.IOException]::new("Folders [$templatePath] already exists and is not empty.")
@@ -140,6 +136,7 @@ function New-ADTTemplate
                             }
                             throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
                         }
+                        $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $templatePath -Recurse -Force
                     }
                 }
                 $null = & $Script:CommandTable.'New-Item' -Path "$templatePath\Files" -ItemType Directory -Force
