@@ -160,7 +160,7 @@ function Uninstall-ADTApplication
 
         if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
-            if ($null -eq $Name -and $null -eq $ProductCode -and $null -eq $FilterScript)
+            if (!$PSBoundParameters.ContainsKey('Name') -and !$PSBoundParameters.ContainsKey('ProductCode') -and !$PSBoundParameters.ContainsKey('FilterScript'))
             {
                 $naerParams = @{
                     Exception         = [System.ArgumentNullException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')
@@ -170,6 +170,7 @@ function Uninstall-ADTApplication
                 }
                 $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
             }
+
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
             $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
             $InstalledApplication = & $Script:CommandTable.'Get-ADTApplication' @gaiaParams
