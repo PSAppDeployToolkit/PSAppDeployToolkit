@@ -67,6 +67,7 @@ function Get-ADTMsiTableProperty
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
+    [OutputType([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]])]
     [OutputType([PSADT.Types.MsiSummaryInfo])]
     param
     (
@@ -192,7 +193,7 @@ function Get-ADTMsiTableProperty
                 }
 
                 # Open the requested table view from the database.
-                $TableProperties = [ordered]@{}
+                $TableProperties = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
                 $View = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
                 $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Execute
 
@@ -204,9 +205,10 @@ function Get-ADTMsiTableProperty
                 }
 
                 # Return the accumulated results. We can't use a custom object for this as we have no idea what's going to be in the properties of a given MSI.
+                # We also can't use a pscustomobject accelerator here as the MSI may have the same keys with different casing, necessitating the use of a dictionary for storage.
                 if ($TableProperties.Count)
                 {
-                    return [pscustomobject]$TableProperties
+                    return [System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$TableProperties
                 }
             }
             catch
