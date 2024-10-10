@@ -97,9 +97,7 @@ function New-ADTTemplate
 
     begin
     {
-        # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-
+        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $templatePath = & $Script:CommandTable.'Join-Path' -Path $Destination -ChildPath $Name
         $templateModulePath = if ($Version.Equals(3))
         {
