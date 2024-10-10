@@ -165,7 +165,7 @@ function Get-ADTUserProfiles
 
                         if ($LoadProfilePaths)
                         {
-                            $userScript = {
+                            $userProfile = & $Script:CommandTable.'Invoke-ADTAllUsersRegistryAction' -UserProfiles $userProfile -ScriptBlock {
                                 [PSADT.Types.UserProfile]::new(
                                     $_.NTAccount,
                                     $_.SID,
@@ -180,7 +180,6 @@ function Get-ADTUserProfiles
                                     ((& $Script:CommandTable.'Get-ADTRegistryKey' -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDriveCommercial' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath)
                                 )
                             }
-                            $userProfile = & $Script:CommandTable.'Invoke-ADTAllUsersRegistryAction' -RegistrySettings $userScript -UserProfiles $userProfile
                         }
 
                         # Write out the object to the pipeline.
