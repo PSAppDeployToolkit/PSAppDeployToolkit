@@ -13,7 +13,7 @@ Creates a new folder containing a template front end and module folder, ready to
 ## SYNTAX
 
 ```
-New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-ModulePath] <String>] [[-Version] <String>]
+New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-ModulePath] <String>] [[-Version] <Int32>]
  [-PSCore] [-Force] [-PassThru] [<CommonParameters>]
 ```
 
@@ -91,7 +91,7 @@ Defaults to 4 for the standard v4 template.
 Use 3 for the v3 compatibility mode template.
 
 ```yaml
-Type: String
+Type: Int32
 Parameter Sets: (All)
 Aliases:
 
