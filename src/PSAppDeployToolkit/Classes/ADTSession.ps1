@@ -248,6 +248,11 @@ class ADTSession
                 return
             }
         }
+        elseif (![System.IO.Path]::IsPathRooted($this.DefaultMsiFile))
+        {
+            $this.WriteZeroConfigDivider()
+            $this.WriteLogEntry("Discovered Zero-Config MSI installation file [$(($this.DefaultMsiFile = [System.IO.Path]::Combine($this.DirFiles, $this.DefaultMsiFile)))].")
+        }
         else
         {
             $this.WriteZeroConfigDivider()
@@ -262,6 +267,10 @@ class ADTSession
                 $this.DefaultMstFile = $mstFile
             }
         }
+        elseif (![System.IO.Path]::IsPathRooted($this.DefaultMstFile))
+        {
+            $this.DefaultMstFile = [System.IO.Path]::Combine($this.DirFiles, $this.DefaultMstFile)
+        }
         if (![System.String]::IsNullOrWhiteSpace($this.DefaultMstFile))
         {
             $this.WriteLogEntry("Discovered Zero-Config MST installation file [$($this.DefaultMstFile)].")
@@ -274,6 +283,10 @@ class ADTSession
             {
                 $this.DefaultMspFiles = $mspFiles
             }
+        }
+        elseif ($this.DefaultMspFiles | & { process { if (![System.IO.Path]::IsPathRooted($_)) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1)
+        {
+            $this.DefaultMspFiles = $this.DefaultMspFiles | & { process { if (![System.IO.Path]::IsPathRooted($_)) { return [System.IO.Path]::Combine($this.DirFiles, $_) } else { return $_ } } }
         }
         if ($this.DefaultMspFiles)
         {
