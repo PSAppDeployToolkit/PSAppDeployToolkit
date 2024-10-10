@@ -4058,26 +4058,18 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 1
 
 # Import our local module.
-try
+Remove-Module -Name PSAppDeployToolkit* -Force
+if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
 {
-    Remove-Module -Name PSAppDeployToolkit* -Force
-    if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
-    {
-        Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force
-    }
-    elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
-    {
-        Import-Module -Name "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -Force
-    }
-    else
-    {
-        $errRecord = [System.Management.Automation.ErrorRecord]::new([System.IO.FileNotFoundException]::new("PSAppDeployToolkit module folder cannot be found."), 'ModuleNotFoundError', [System.Management.Automation.ErrorCategory]::InvalidOperation, $null)
-        Write-Error -ErrorRecord $errRecord
-    }
+    Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force
 }
-catch
+elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
 {
-    $PSCmdlet.ThrowTerminatingError($errRecord)
+    Import-Module -Name "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -Force
+}
+else
+{
+    Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new([System.IO.FileNotFoundException]::new("PSAppDeployToolkit module folder cannot be found."), 'ModuleNotFoundError', [System.Management.Automation.ErrorCategory]::InvalidOperation, $null))
 }
 
 # Open a new PSADT session, dynamically gathering the required parameters from the stack.
