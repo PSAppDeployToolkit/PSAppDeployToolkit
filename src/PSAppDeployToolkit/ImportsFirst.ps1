@@ -8,11 +8,6 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'ModuleImportStart', Justification = "This variable is used within ImportsLast.ps1 and therefore cannot be seen here.")]
 $ModuleImportStart = [System.DateTime]::Now
 
-# Set required variables to ensure module functionality.
-$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-$InformationPreference = [System.Management.Automation.ActionPreference]::Continue
-$ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-
 # Define modules needed to build out CommandTable.
 $RequiredModules = [System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.PowerShell.Commands.ModuleSpecification]]$(
     @{ ModuleName = 'CimCmdlets'; Guid = 'fb6cc51d-c096-4b38-b78d-0fed6277096a'; ModuleVersion = '1.0' }
@@ -27,7 +22,12 @@ $RequiredModules = [System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.
 
 # Build out lookup table for all cmdlets used within module, starting with the core cmdlets.
 $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & { process { if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) { $CommandTable.Add($_.Name, $_) } } }
-(& $CommandTable.'Import-Module' -FullyQualifiedName $RequiredModules -Global -PassThru).ExportedCommands.Values | & { process { $CommandTable.Add($_.Name, $_) } }
+(& $CommandTable.'Import-Module' -FullyQualifiedName $RequiredModules -Global -PassThru -ErrorAction Stop).ExportedCommands.Values | & { process { $CommandTable.Add($_.Name, $_) } }
+
+# Set required variables to ensure module functionality.
+& $CommandTable.'New-Variable' -Name ErrorActionPreference -Value ([System.Management.Automation.ActionPreference]::Stop) -Option Constant -Force
+& $CommandTable.'New-Variable' -Name InformationPreference -Value ([System.Management.Automation.ActionPreference]::Continue) -Option Constant -Force
+& $CommandTable.'New-Variable' -Name ProgressPreference -Value ([System.Management.Automation.ActionPreference]::SilentlyContinue) -Option Constant -Force
 
 # Ensure module operates under the strictest of conditions.
 & $CommandTable.'Set-StrictMode' -Version 3
