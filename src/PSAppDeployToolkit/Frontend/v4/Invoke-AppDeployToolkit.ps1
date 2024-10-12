@@ -102,6 +102,13 @@ $adtSession = @{
     DeployAppScriptVersion = [System.Version]'3.91.0'
     DeployAppScriptDate = '05/03/2024'
     DeployAppScriptParameters = $PSBoundParameters
+
+    # Script parameters.
+    DeploymentType = $DeploymentType
+    DeployMode = $DeployMode
+    AllowRebootPassThru = $AllowRebootPassThru
+    TerminalServerMode = $TerminalServerMode
+    DisableLogging = $DisableLogging
 }
 
 function Install-ADTApplication
@@ -109,7 +116,7 @@ function Install-ADTApplication
     ##================================================
     ## MARK: Pre-Install
     ##================================================
-    $adtSession.InstallPhase = "Pre-$($DeploymentType)"
+    $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
     Show-ADTInstallationWelcome -ProcessObjects iexplore -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
@@ -123,12 +130,12 @@ function Install-ADTApplication
     ##================================================
     ## MARK: Install
     ##================================================
-    $adtSession.InstallPhase = $DeploymentType
+    $adtSession.InstallPhase = $adtSession.DeploymentType
 
     ## Handle Zero-Config MSI installations.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -146,7 +153,7 @@ function Install-ADTApplication
     ##================================================
     ## MARK: Post-Install
     ##================================================
-    $adtSession.InstallPhase = "Post-$($DeploymentType)"
+    $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
 
     ## <Perform Post-Installation tasks here>
 
@@ -163,7 +170,7 @@ function Uninstall-ADTApplication
     ##================================================
     ## MARK: Pre-Uninstall
     ##================================================
-    $adtSession.InstallPhase = "Pre-$($DeploymentType)"
+    $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
     Show-ADTInstallationWelcome -ProcessObjects iexplore -CloseAppsCountdown 60
@@ -177,12 +184,12 @@ function Uninstall-ADTApplication
     ##================================================
     ## MARK: Uninstall
     ##================================================
-    $adtSession.InstallPhase = $DeploymentType
+    $adtSession.InstallPhase = $adtSession.DeploymentType
 
     ## Handle Zero-Config MSI uninstallations.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -196,7 +203,7 @@ function Uninstall-ADTApplication
     ##================================================
     ## MARK: Post-Uninstallation
     ##================================================
-    $adtSession.InstallPhase = "Post-$($DeploymentType)"
+    $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
 
     ## <Perform Post-Uninstallation tasks here>
 }
@@ -206,7 +213,7 @@ function Repair-ADTApplication
     ##================================================
     ## MARK: Pre-Repair
     ##================================================
-    $adtSession.InstallPhase = "Pre-$($DeploymentType)"
+    $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
     Show-ADTInstallationWelcome -ProcessObjects iexplore -CloseAppsCountdown 60
@@ -220,12 +227,12 @@ function Repair-ADTApplication
     ##================================================
     ## MARK: Repair
     ##================================================
-    $adtSession.InstallPhase = $DeploymentType
+    $adtSession.InstallPhase = $adtSession.DeploymentType
 
     ## Handle Zero-Config MSI repairs.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -239,7 +246,7 @@ function Repair-ADTApplication
     ##================================================
     ## MARK: Post-Repair
     ##================================================
-    $adtSession.InstallPhase = "Post-$($DeploymentType)"
+    $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
 
     ## <Perform Post-Repair tasks here>
 }
@@ -260,7 +267,7 @@ try
     Import-Module -Name $PSScriptRoot\..\..\PSAppDeployToolkit -Force
     try
     {
-        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @PSBoundParameters @adtSession -PassThru
+        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession -PassThru
     }
     catch
     {
@@ -281,7 +288,7 @@ catch
 
 try
 {
-    & "$($DeploymentType)-ADTApplication"
+    & "$($adtSession.DeploymentType)-ADTApplication"
     Close-ADTSession
 }
 catch
