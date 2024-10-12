@@ -959,9 +959,6 @@ class ADTSession
                 $Message | & {
                     begin
                     {
-                        # Constants to prevent repeated lookups.
-                        $brailleBlankChar = [System.Char]0x2800
-                        $punctuationSpace = [System.Char]0x2008
                         $logLine = $logFormats.$LogType
                     }
 
@@ -971,12 +968,11 @@ class ADTSession
                         if ($_.Contains("`n"))
                         {
                             # Replace all empty lines with a space so OneTrace doesn't trim them.
-                            # When splitting the message, we want to trim all lines but not replace
-                            # genuine spaces. As such, replace all spaces with a non-whitespace char
-                            # so they're preserved, then replace all with a punctuation space. C#
-                            # identifies this character as whitespace but OneTrace does not so it works.
+                            # When splitting the message, we want to trim all lines but not replace genuine
+                            # spaces. As such, replace all spaces and empty lines with a punctuation space.
+                            # C# identifies this character as whitespace but OneTrace does not so it works.
                             # The empty line feed at the end is required by OneTrace to format correctly.
-                            return [System.String]::Format($logLine, [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Replace(' ', $brailleBlankChar).Split("`n").Trim() -replace '^$', $brailleBlankChar)).Replace($brailleBlankChar, $punctuationSpace).Replace("`n", "`r`n") + "`r`n")
+                            return [System.String]::Format($logLine, [System.String]::Join("`n", ($_.Replace("`r", $null).Trim().Replace(' ', [System.Char]0x2008).Split("`n") -replace '^$', [System.Char]0x2008)).Replace("`n", "`r`n") + "`r`n")
                         }
                         else
                         {
