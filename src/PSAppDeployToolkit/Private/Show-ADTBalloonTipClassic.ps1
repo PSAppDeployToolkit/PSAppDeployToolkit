@@ -26,48 +26,7 @@ function Show-ADTBalloonTipClassic
         [System.UInt32]$BalloonTipTime = 10000
     )
 
-    # Define internal worker function.
-    function New-ADTBalloonTip
-    {
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
-        [CmdletBinding(SupportsShouldProcess = $false)]
-        param
-        (
-            [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
-            [System.String]$BalloonTipText,
-
-            [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
-            [System.String]$BalloonTipTitle,
-
-            [Parameter(Mandatory = $true)]
-            [ValidateSet('Error', 'Info', 'None', 'Warning')]
-            [System.String]$BalloonTipIcon,
-
-            [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
-            [System.UInt32]$BalloonTipTime,
-
-            [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
-            [System.String]$TrayIcon
-        )
-
-        # Ensure script runs in strict mode since this may be called in a new scope.
-        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-        $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        Set-StrictMode -Version 3
-
-        # Add in required types.
-        Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-
-        # Show the dialog and sleep until done.
-        ([System.Windows.Forms.NotifyIcon]@{ BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = [System.Drawing.Icon]$TrayIcon; Visible = $true }).ShowBalloonTip($BalloonTipTime)
-        [System.Threading.Thread]::Sleep($BalloonTipTime)
-    }
-
-    # Build out parameters for internal worker function.
+    # Build out parameters for Show-ADTBalloonTipClassicInternal.
     $nabtParams = [ordered]@{
         BalloonTipText = $BalloonTipText
         BalloonTipTitle = $BalloonTipTitle
@@ -78,5 +37,5 @@ function Show-ADTBalloonTipClassic
 
     # Create in an asynchronous process so that disposal is managed for us.
     & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-    & $Script:CommandTable.'Start-ADTProcess' -Path (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "& {${Function:New-ADTBalloonTip}} $(($nabtParams | & $Script:CommandTable.'Resolve-ADTBoundParameters').Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
+    & $Script:CommandTable.'Start-ADTProcess' -Path (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "& {$($Script:CommandTable.'Show-ADTBalloonTipClassicInternal'.ScriptBlock)} $(($nabtParams | & $Script:CommandTable.'Resolve-ADTBoundParameters').Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
 }
