@@ -6,10 +6,7 @@
 
 function Show-ADTInstallationProgressClassic
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'DisableWindowCloseButton', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UpdateWindowLocation', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WindowLocation', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'NoRelocation', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
@@ -129,65 +126,9 @@ function Show-ADTInstallationProgressClassic
         $xaml.Window.Grid.TextBlock.Text = $StatusMessage
         $xaml.Window.Grid.TextBlock.TextAlignment = $MessageAlignment.ToString()
 
-        # Set up the PowerShell instance and add the initial scriptblock.
-        $Script:Dialogs.Classic.ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript({
-                [CmdletBinding()]
-                param
-                (
-                    [Parameter(Mandatory = $true)]
-                    [ValidateNotNullOrEmpty()]
-                    [System.Xml.XmlDocument]$Xaml,
-
-                    [Parameter(Mandatory = $true)]
-                    [ValidateNotNullOrEmpty()]
-                    [System.IO.FileInfo]$Icon,
-
-                    [Parameter(Mandatory = $true)]
-                    [ValidateNotNullOrEmpty()]
-                    [System.IO.FileInfo]$Banner,
-
-                    [Parameter(Mandatory = $true)]
-                    [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-                    [System.String]$WindowLocation,
-
-                    [Parameter(Mandatory = $true)]
-                    [ValidateNotNullOrEmpty()]
-                    [System.Management.Automation.ScriptBlock]$UpdateWindowLocation,
-
-                    [Parameter(Mandatory = $true)]
-                    [ValidateNotNullOrEmpty()]
-                    [System.Management.Automation.ScriptBlock]$DisableWindowCloseButton
-                )
-
-                # Set required variables to ensure script functionality.
-                $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-                $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                Set-StrictMode -Version 3
-
-                # Create XAML window and bring it up.
-                try
-                {
-                    $SyncHash.Add('Window', [System.Windows.Markup.XamlReader]::Load([System.Xml.XmlNodeReader]::new($Xaml)))
-                    $SyncHash.Add('Message', $SyncHash.Window.FindName('ProgressText'))
-                    $SyncHash.Window.Icon = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Icon)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
-                    $SyncHash.Window.FindName('ProgressBanner').Source = [System.Windows.Media.Imaging.BitmapFrame]::Create([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($Banner)), [System.Windows.Media.Imaging.BitmapCreateOptions]::IgnoreImageCache, [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
-                    $SyncHash.Window.add_MouseLeftButtonDown({ $this.DragMove() })
-                    $SyncHash.Window.add_Loaded({
-                            # Relocate the window and disable the X button.
-                            & $UpdateWindowLocation -Window $this -Location $WindowLocation
-                            & $DisableWindowCloseButton -WindowHandle ([System.Windows.Interop.WindowInteropHelper]::new($this).Handle)
-                        })
-                    $null = $SyncHash.Window.ShowDialog()
-                }
-                catch
-                {
-                    $SyncHash.Add('Error', $_)
-                    $PSCmdlet.ThrowTerminatingError($_)
-                }
-            }).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}.Ast.Body.GetScriptBlock()).AddArgument($Script:CommandTable.'Disable-ADTWindowCloseButton'.ScriptBlock.Ast.Body.GetScriptBlock())
-
-        # Commence invocation.
+        # Set up the PowerShell instance and commence invocation.
         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
+        $Script:Dialogs.Classic.ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript($Script:CommandTable.'Show-ADTInstallationProgressClassicInternal'.ScriptBlock.Ast.Body.GetScriptBlock()).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}.Ast.Body.GetScriptBlock()).AddArgument($Script:CommandTable.'Disable-ADTWindowCloseButton'.ScriptBlock.Ast.Body.GetScriptBlock())
         $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
         $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.ApartmentState = [System.Threading.ApartmentState]::STA
         $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.ThreadOptions = [System.Management.Automation.Runspaces.PSThreadOptions]::ReuseThread
