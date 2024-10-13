@@ -293,7 +293,7 @@ function New-ADTEnvironmentTable
     $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
     $variables.Add('userProfileName', $variables.RunAsActiveUser.UserName)
     $variables.Add('runasUserProfile', (& $Script:CommandTable.'Join-Path' -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
-    $variables.Add('loggedOnUserTempPath', $null)  # This will be set in & $Script:CommandTable.'Import-ADTConfig'.
+    $variables.Add('loggedOnUserTempPath', $null)  # This will be set in Import-ADTConfig.
 
     ## Variables: Executables
     $variables.Add('exeSchTasks', "$($variables.envSystem32Directory)\schtasks.exe")

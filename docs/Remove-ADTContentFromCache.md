@@ -42,7 +42,7 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: "$((& $Script:CommandTable.'Get-ADTConfig').Toolkit.CachePath)\$((& $Script:CommandTable.'Get-ADTSession').GetPropertyValue('installName'))"
+Default value: "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).GetPropertyValue('installName'))"
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

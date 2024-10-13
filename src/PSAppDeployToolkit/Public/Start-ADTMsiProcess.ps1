@@ -486,7 +486,7 @@ function Start-ADTMsiProcess
                 }
                 elseif ((!$IsMsiInstalled -and ($Action -eq 'Install')) -or $IsMsiInstalled)
                 {
-                    # Build the hashtable with the options that will be passed to & $Script:CommandTable.'Start-ADTProcess' using splatting.
+                    # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message "Executing MSI action [$Action]..."
                     $ExecuteProcessSplat = @{
                         Path = "$([System.Environment]::SystemDirectory)\msiexec.exe"
@@ -519,7 +519,7 @@ function Start-ADTMsiProcess
                         $ExecuteProcessSplat.Add('NoWait', $NoWait)
                     }
 
-                    # Call the & $Script:CommandTable.'Start-ADTProcess' function.
+                    # Call the Start-ADTProcess function.
                     & $Script:CommandTable.'Start-ADTProcess' @ExecuteProcessSplat
 
                     # Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs.

@@ -388,7 +388,7 @@ function Get-InstalledApplication
 
     # Announce overall deprecation.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2
-    $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Exact, WildCard, RegEx
+    $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Exact, WildCard, RegEx
 
     if ($Exact)
     {
@@ -3958,7 +3958,7 @@ function Execute-ProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$UserName = (& $Script:CommandTable.'Get-ADTRunAsActiveUser').NTAccount,
+        [System.String]$UserName = (Get-ADTRunAsActiveUser).NTAccount,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

@@ -69,7 +69,7 @@ function Test-ADTMSUpdates
                 # Attempt to get the update via Get-HotFix first as it's cheap.
                 if (!($kbFound = !!(& $Script:CommandTable.'Get-HotFix' -Id $KbNumber -ErrorAction Ignore)))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Unable to detect Windows update history via & $Script:CommandTable.'Get-Hotfix' cmdlet. Trying via COM object.'
+                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.'
                     $updateSearcher = (& $Script:CommandTable.'New-Object' -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
                     $updateSearcher.IncludePotentiallySupersededUpdates = $false
                     $updateSearcher.Online = $false

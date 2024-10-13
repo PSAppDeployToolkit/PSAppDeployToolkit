@@ -151,7 +151,7 @@ function Invoke-ADTRegSvr32
                     if ($ExecuteResult.ExitCode -eq 60002)
                     {
                         $naerParams = @{
-                            Exception = [System.InvalidOperationException]::new("& $Script:CommandTable.'Start-ADTProcess' function failed with exit code [$($ExecuteResult.ExitCode)].")
+                            Exception = [System.InvalidOperationException]::new("Start-ADTProcess function failed with exit code [$($ExecuteResult.ExitCode)].")
                             Category = [System.Management.Automation.ErrorCategory]::OperationStopped
                             ErrorId = 'ProcessInvocationError'
                             TargetObject = "$FilePath $ActionParameters"

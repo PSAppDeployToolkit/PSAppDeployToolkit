@@ -126,7 +126,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: ((& $Script:CommandTable.'Get-Date' -Format 'yyMM,ddHH,mmss').ToString())
+Default value: ((Get-Date -Format 'yyMM,ddHH,mmss').ToString())
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
