@@ -54,14 +54,14 @@ function New-ADTFolder
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
         if ([System.IO.Directory]::Exists($Path))
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Folder [$Path] already exists."
+            Write-ADTLogEntry -Message "Folder [$Path] already exists."
             return
         }
 
@@ -69,22 +69,22 @@ function New-ADTFolder
         {
             try
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating folder [$Path]."
-                $null = & $Script:CommandTable.'New-Item' -Path $Path -ItemType Directory -Force
+                Write-ADTLogEntry -Message "Creating folder [$Path]."
+                $null = New-Item -Path $Path -ItemType Directory -Force
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create folder [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create folder [$Path]."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

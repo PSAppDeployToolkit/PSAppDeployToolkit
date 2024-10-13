@@ -66,18 +66,18 @@ function Close-ADTSession
     {
         # Make this function continue on error and ensure the caller doesn't override ErrorAction.
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         # Return early if there's no active session to close.
-        if (!(& $Script:CommandTable.'Test-ADTSessionActive'))
+        if (!(Test-ADTSessionActive))
         {
             return
         }
-        $adtSession = & $Script:CommandTable.'Get-ADTSession'
-        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
+        $adtSession = Get-ADTSession
+        $adtData = Get-ADTModuleData
 
         # Update the session's exit code with the provided value.
         if ($PSBoundParameters.ContainsKey('ExitCode'))
@@ -96,12 +96,12 @@ function Close-ADTSession
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                $_; & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking callback [$($callback.Name)]."
+                $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking callback [$($callback.Name)]."
             }
         }
 
@@ -114,12 +114,12 @@ function Close-ADTSession
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
         }
         finally
         {
@@ -133,11 +133,11 @@ function Close-ADTSession
         }
 
         # Attempt to close down any progress dialog here as an additional safety item.
-        $progressOpen = if (& $Script:CommandTable.'Test-ADTInstallationProgressRunning')
+        $progressOpen = if (Test-ADTInstallationProgressRunning)
         {
             try
             {
-                & $Script:CommandTable.'Close-ADTInstallationProgress'
+                Close-ADTInstallationProgress
             }
             catch
             {
@@ -166,6 +166,6 @@ function Close-ADTSession
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

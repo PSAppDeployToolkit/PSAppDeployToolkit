@@ -76,12 +76,12 @@ function Invoke-ADTAllUsersRegistryAction
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.UserProfile[]]$UserProfiles = (& $Script:CommandTable.'Get-ADTUserProfiles')
+        [PSADT.Types.UserProfile[]]$UserProfiles = (Get-ADTUserProfiles)
     )
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -94,10 +94,10 @@ function Invoke-ADTAllUsersRegistryAction
                 try
                 {
                     # Set the path to the user's registry hive file.
-                    $UserRegistryHiveFile = & $Script:CommandTable.'Join-Path' -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
+                    $UserRegistryHiveFile = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
 
                     # Load the User profile registry hive if it is not already loaded because the User is logged in.
-                    if (!(& $Script:CommandTable.'Test-Path' -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$($UserProfile.SID)"))
+                    if (!(Test-Path -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$($UserProfile.SID)"))
                     {
                         # Load the User registry hive if the registry hive file exists.
                         if (![System.IO.File]::Exists($UserRegistryHiveFile))
@@ -109,10 +109,10 @@ function Invoke-ADTAllUsersRegistryAction
                                 TargetObject = $UserRegistryHiveFile
                                 RecommendedAction = "Please confirm the state of this user profile and try again."
                             }
-                            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                            throw (New-ADTErrorRecord @naerParams)
                         }
 
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
+                        Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                         $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
                         if ($Global:LastExitCode -ne 0)
                         {
@@ -123,27 +123,27 @@ function Invoke-ADTAllUsersRegistryAction
                                 TargetObject = $UserRegistryHiveFile
                                 RecommendedAction = "Please confirm the state of this user profile and try again."
                             }
-                            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                            throw (New-ADTErrorRecord @naerParams)
                         }
                         $ManuallyLoadedRegHive = $true
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The user [$($UserProfile.NTAccount)] registry hive is already loaded in path [HKEY_USERS\$($UserProfile.SID)]."
+                        Write-ADTLogEntry -Message "The user [$($UserProfile.NTAccount)] registry hive is already loaded in path [HKEY_USERS\$($UserProfile.SID)]."
                     }
 
                     # Invoke changes against registry.
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
-                    & $Script:CommandTable.'ForEach-Object' -InputObject $UserProfile -Begin $null -End $null -Process $ScriptBlock
+                    Write-ADTLogEntry -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
+                    ForEach-Object -InputObject $UserProfile -Begin $null -End $null -Process $ScriptBlock
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to modify the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
             }
             finally
             {
@@ -153,16 +153,16 @@ function Invoke-ADTAllUsersRegistryAction
                     {
                         try
                         {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
+                            Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                             $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
                             if ($Global:LastExitCode -ne 0)
                             {
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
+                                Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
                                 [System.GC]::Collect()
                                 [System.GC]::WaitForPendingFinalizers()
                                 [System.Threading.Thread]::Sleep(5000)
 
-                                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
+                                Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                                 $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
                                 if ($Global:LastExitCode -ne 0)
                                 {
@@ -173,18 +173,18 @@ function Invoke-ADTAllUsersRegistryAction
                                         TargetObject = "HKEY_USERS\$($UserProfile.SID)"
                                         RecommendedAction = "Please confirm the state of this user profile and try again."
                                     }
-                                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                                    throw (New-ADTErrorRecord @naerParams)
                                 }
                             }
                         }
                         catch
                         {
-                            & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                            Write-Error -ErrorRecord $_
                         }
                     }
                     catch
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to unload the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
+                        Write-ADTLogEntry -Message "Failed to unload the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
                     }
                 }
             }
@@ -193,6 +193,6 @@ function Invoke-ADTAllUsersRegistryAction
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

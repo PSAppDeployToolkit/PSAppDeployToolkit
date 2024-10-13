@@ -259,13 +259,13 @@ function Open-ADTSession
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtData = Get-ADTModuleData
         $adtSession = $null
         $errRecord = $null
 
         # Determine whether this session is to be in compatibility mode.
-        $PSBoundParameters.CompatibilityMode = (& $Script:CommandTable.'Get-PSCallStack').Command.Contains('AppDeployToolkitMain.ps1')
+        $PSBoundParameters.CompatibilityMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
         $PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)
 
         # Set up the ScriptDirectory if one wasn't provided.
@@ -305,7 +305,7 @@ function Open-ADTSession
                 # Initialize the module before opening the first session.
                 if (($firstSession = !$adtData.Sessions.Count))
                 {
-                    & $Script:CommandTable.'Initialize-ADTModule' -ScriptDirectory $PSBoundParameters.ScriptDirectory
+                    Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
                 $adtData.Sessions.Add(($adtSession = [ADTSession]::new($PSBoundParameters)))
                 $adtSession.Open()
@@ -327,20 +327,20 @@ function Open-ADTSession
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while opening new ADTSession object."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while opening new ADTSession object."
         }
         finally
         {
             # Terminate early if we have an active session that failed to open properly.
             if ($adtSession -and $errRecord)
             {
-                & $Script:CommandTable.'Close-ADTSession' -ExitCode 60008
+                Close-ADTSession -ExitCode 60008
             }
         }
 
@@ -354,6 +354,6 @@ function Open-ADTSession
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

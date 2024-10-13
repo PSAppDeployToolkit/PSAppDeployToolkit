@@ -59,7 +59,7 @@ function Resolve-ADTBoundParameters
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -69,7 +69,7 @@ function Resolve-ADTBoundParameters
             try
             {
                 # Establish array to hold return string.
-                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath Microsoft.PowerShell.Core\Variable::paramsArr))
+                if (!(Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::paramsArr))
                 {
                     $thisFunc = $MyInvocation.MyCommand
                     $paramsArr = [System.Collections.Specialized.StringCollection]::new()
@@ -118,24 +118,24 @@ function Resolve-ADTBoundParameters
                 }
 
                 # Join the array and return as a string to the caller.
-                if ((& $Script:CommandTable.'Get-PSCallStack' | & { process { if ($_.Command.Equals($thisFunc.Name)) { return $_.Command } } }) -is [System.String])
+                if ((Get-PSCallStack | & { process { if ($_.Command.Equals($thisFunc.Name)) { return $_.Command } } }) -is [System.String])
                 {
                     return ($paramsArr -join ' ')
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

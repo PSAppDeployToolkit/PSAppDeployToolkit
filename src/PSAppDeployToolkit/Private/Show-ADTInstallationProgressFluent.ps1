@@ -136,21 +136,21 @@ function Show-ADTInstallationProgressFluent
     # Write warnings for functionality that is not yet implemented.
     if (($WindowLocation -ne 'Default') -or $NoRelocation)
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The parameter '-WindowLocation' is not yet implemented within this function." -Severity 2
+        Write-ADTLogEntry -Message "The parameter '-WindowLocation' is not yet implemented within this function." -Severity 2
     }
     if (!$NotTopMost)
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The TopMost functionality has not yet been implemented within this function." -Severity 2
+        Write-ADTLogEntry -Message "The TopMost functionality has not yet been implemented within this function." -Severity 2
     }
 
     # Check if the progress thread is running before invoking methods on it.
     if (!$Script:Dialogs.Fluent.ProgressWindow.Running)
     {
         # Instantiate a new progress window object and start it up.
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
+        Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
         if (!$Script:Dialogs.Fluent.ProgressWindow.Window)
         {
-            $Script:Dialogs.Fluent.ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (& $Script:CommandTable.'Get-ADTConfig').Assets.Logo, $StatusMessage, $StatusMessageDetail)
+            $Script:Dialogs.Fluent.ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
             $Script:Dialogs.Fluent.ProgressWindow.Thread = $Script:Dialogs.Fluent.ProgressWindow.Window.Start()
 
             # Allow the thread to be spun up safely before invoking actions against it.
@@ -172,6 +172,6 @@ function Show-ADTInstallationProgressFluent
     {
         # Update all values.
         Update-ProgressWindowValues
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Updated the progress message: [$StatusMessage]."
+        Write-ADTLogEntry -Message "Updated the progress message: [$StatusMessage]."
     }
 }

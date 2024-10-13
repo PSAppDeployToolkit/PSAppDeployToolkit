@@ -26,11 +26,11 @@ function Import-ADTConfig
     }
 
     # Get the current environment and create variables within this scope from the database, it's needed during the config import.
-    $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
-    $adtEnv.GetEnumerator() | . { process { & $Script:CommandTable.'New-Variable' -Name $_.Name -Value $_.Value -Option Constant } }
+    $adtEnv = Get-ADTEnvironment
+    $adtEnv.GetEnumerator() | . { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } }
 
     # Read config file and cast the version into an object.
-    $config = & $Script:CommandTable.'Import-LocalizedData' -FileName config.psd1 @PSBoundParameters
+    $config = Import-LocalizedData -FileName config.psd1 @PSBoundParameters
     $config.File.Version = [version]$config.File.Version
 
     # Confirm the config version meets our minimum requirements.
@@ -43,7 +43,7 @@ function Import-ADTConfig
             TargetObject = $config
             RecommendedAction = "Please review the supplied configuration file and try again."
         }
-        $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
     # Confirm the specified dialog type is valid.
@@ -56,7 +56,7 @@ function Import-ADTConfig
             TargetObject = $config
             RecommendedAction = "Please review the supplied configuration file and try again."
         }
-        $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
     # Process the config and expand out variables.
@@ -74,7 +74,7 @@ function Import-ADTConfig
     # Expand out asset file paths and test that the files are present.
     foreach ($asset in ('Icon', 'Logo', 'Banner'))
     {
-        $config.Assets.$asset = (& $Script:CommandTable.'Get-Item' -LiteralPath "$Script:PSScriptRoot\Assets\$($config.Assets.$asset)").FullName
+        $config.Assets.$asset = (Get-Item -LiteralPath "$Script:PSScriptRoot\Assets\$($config.Assets.$asset)").FullName
     }
 
     # Grab the bytes of each image asset, store them into a memory stream, then as an image for the form to use.

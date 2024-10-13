@@ -47,9 +47,9 @@ function Close-ADTInstallationProgress
 
     begin
     {
-        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
-        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtConfig = Get-ADTConfig
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -59,19 +59,19 @@ function Close-ADTInstallationProgress
             try
             {
                 # Return early if we're silent, a window wouldn't have ever opened.
-                if (!(& $Script:CommandTable.'Test-ADTInstallationProgressRunning'))
+                if (!(Test-ADTInstallationProgressRunning))
                 {
                     return
                 }
                 if ($adtSession -and $adtSession.IsSilent())
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]"
                     return
                 }
 
                 # Call the underlying function to close the progress window.
                 & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name)
-                & $Script:CommandTable.'Remove-ADTSessionFinishingCallback' -Callback $MyInvocation.MyCommand
+                Remove-ADTSessionFinishingCallback -Callback $MyInvocation.MyCommand
 
                 # We only send balloon tips when a session is active.
                 if (!$adtSession)
@@ -84,34 +84,34 @@ function Close-ADTInstallationProgress
                 {
                     FastRetry
                     {
-                        & $Script:CommandTable.'Show-ADTBalloonTip' -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((& $Script:CommandTable.'Get-ADTStringTable').BalloonText.$_)"
+                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
                         break
                     }
                     Error
                     {
-                        & $Script:CommandTable.'Show-ADTBalloonTip' -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((& $Script:CommandTable.'Get-ADTStringTable').BalloonText.$_)"
+                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
                         break
                     }
                     default
                     {
-                        & $Script:CommandTable.'Show-ADTBalloonTip' -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((& $Script:CommandTable.'Get-ADTStringTable').BalloonText.$_)"
+                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.$_)"
                         break
                     }
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

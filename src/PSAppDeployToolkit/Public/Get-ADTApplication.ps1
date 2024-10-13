@@ -120,7 +120,7 @@ function Get-ADTApplication
     begin
     {
         # Announce start.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $updatesSkippedCounter = 0
         $uninstallKeyPaths = $(
             'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
@@ -162,13 +162,13 @@ function Get-ADTApplication
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting information for installed applications$(if ($FilterScript) {' matching the provided FilterScript'})..."
+        Write-ADTLogEntry -Message "Getting information for installed applications$(if ($FilterScript) {' matching the provided FilterScript'})..."
         try
         {
             try
             {
                 # Create a custom object with the desired properties for the installed applications and sanitize property details.
-                $installedApplication = & $Script:CommandTable.'Get-ItemProperty' -Path $uninstallKeyPaths -ErrorAction Ignore | & {
+                $installedApplication = Get-ItemProperty -Path $uninstallKeyPaths -ErrorAction Ignore | & {
                     process
                     {
                         # Exclude anything without a DisplayName field.
@@ -198,7 +198,7 @@ function Get-ADTApplication
                         }
 
                         # Apply application type filter if specified.
-                        $windowsInstaller = !!($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty WindowsInstaller -ErrorAction Ignore)
+                        $windowsInstaller = !!($_ | Select-Object -ExpandProperty WindowsInstaller -ErrorAction Ignore)
                         if (($ApplicationType -ne 'All') -and (($ApplicationType -eq 'MSI') -ne $windowsInstaller))
                         {
                             return
@@ -211,22 +211,22 @@ function Get-ADTApplication
                             $_.PSChildName,
                             $appMsiGuid,
                             $_.DisplayName,
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty DisplayVersion -ErrorAction Ignore),
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty UninstallString -ErrorAction Ignore),
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty QuietUninstallString -ErrorAction Ignore),
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallSource -ErrorAction Ignore),
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallLocation -ErrorAction Ignore),
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty InstallDate -ErrorAction Ignore),
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty Publisher -ErrorAction Ignore),
-                            ($_ | & $Script:CommandTable.'Select-Object' -ExpandProperty SystemComponent -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty DisplayVersion -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty UninstallString -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty QuietUninstallString -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty InstallSource -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty InstallLocation -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty InstallDate -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty Publisher -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty SystemComponent -ErrorAction Ignore),
                             $windowsInstaller,
                             ([System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
                         )
 
                         # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
-                        if (!$FilterScript -or (& $Script:CommandTable.'ForEach-Object' -InputObject $app -Process $FilterScript -ErrorAction Ignore))
+                        if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
                         {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Found installed application [$($app.DisplayName)]$(if ($app.DisplayVersion) {" version [$($app.DisplayVersion)]"})."
+                            Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)]$(if ($app.DisplayVersion) {" version [$($app.DisplayVersion)]"})."
                             return $app
                         }
                     }
@@ -237,11 +237,11 @@ function Get-ADTApplication
                 {
                     if ($updatesSkippedCounter -eq 1)
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
+                        Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
+                        Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
                     }
                 }
 
@@ -250,21 +250,21 @@ function Get-ADTApplication
                 {
                     return $installedApplication
                 }
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Found no application based on the supplied FilterScript.'
+                Write-ADTLogEntry -Message 'Found no application based on the supplied FilterScript.'
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

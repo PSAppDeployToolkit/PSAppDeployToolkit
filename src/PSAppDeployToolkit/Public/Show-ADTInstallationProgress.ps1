@@ -90,8 +90,8 @@ function Show-ADTInstallationProgress
     dynamicparam
     {
         # Initialize the module first if needed.
-        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
-        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -129,8 +129,8 @@ function Show-ADTInstallationProgress
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtStrings = Get-ADTStringTable
         $errRecord = $null
 
         # Set up defaults if not specified.
@@ -158,16 +158,16 @@ function Show-ADTInstallationProgress
         {
             if ($adtSession.IsSilent())
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)"
+                Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)"
                 return
             }
 
             # Notify user that the software installation has started.
-            if (!(& $Script:CommandTable.'Test-ADTInstallationProgressRunning'))
+            if (!(Test-ADTInstallationProgressRunning))
             {
                 try
                 {
-                    & $Script:CommandTable.'Show-ADTBalloonTip' -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $($adtStrings.BalloonText.Start)"
+                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $($adtStrings.BalloonText.Start)"
                 }
                 catch
                 {
@@ -182,28 +182,28 @@ function Show-ADTInstallationProgress
             try
             {
                 & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @PSBoundParameters
-                & $Script:CommandTable.'Add-ADTSessionFinishingCallback' -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
+                Add-ADTSessionFinishingCallback -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_)
         }
         finally
         {
             if ($errRecord)
             {
-                & $Script:CommandTable.'Close-ADTInstallationProgress'
+                Close-ADTInstallationProgress
             }
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

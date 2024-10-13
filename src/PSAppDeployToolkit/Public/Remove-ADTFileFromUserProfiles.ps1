@@ -99,7 +99,7 @@ function Remove-ADTFileFromUserProfiles
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $RemoveFileSplat = @{
             Recurse = $Recurse
         }
@@ -114,35 +114,35 @@ function Remove-ADTFileFromUserProfiles
         }
 
         # Store variable based on ParameterSetName.
-        $pathVar = & $Script:CommandTable.'Get-Variable' -Name $PSCmdlet.ParameterSetName
+        $pathVar = Get-Variable -Name $PSCmdlet.ParameterSetName
     }
 
     process
     {
-        foreach ($UserProfilePath in (& $Script:CommandTable.'Get-ADTUserProfiles' @GetUserProfileSplat).ProfilePath)
+        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
         {
             $RemoveFileSplat.Path = $pathVar.Value | & { process { [System.IO.Path]::Combine($UserProfilePath, $_) } }
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
+            Write-ADTLogEntry -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
             try
             {
                 try
                 {
-                    & $Script:CommandTable.'Remove-ADTFile' @RemoveFileSplat
+                    Remove-ADTFile @RemoveFileSplat
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

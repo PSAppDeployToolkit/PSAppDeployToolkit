@@ -50,7 +50,7 @@ function Get-ADTServiceStartMode
         [ValidateScript({
                 if (!$_.Name)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
@@ -60,39 +60,39 @@ function Get-ADTServiceStartMode
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting the service [$($Service.Name)] startup mode."
+        Write-ADTLogEntry -Message "Getting the service [$($Service.Name)] startup mode."
         try
         {
             try
             {
                 # Get the start mode and adjust it if the automatic type is delayed.
-                if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((& $Script:CommandTable.'Get-ItemProperty' -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($Service.Name)" -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
+                if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($Service.Name)" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
                 {
                     $serviceStartMode = 'Automatic (Delayed Start)'
                 }
 
                 # Return startup type to the caller.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
+                Write-ADTLogEntry -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
                 return $serviceStartMode
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

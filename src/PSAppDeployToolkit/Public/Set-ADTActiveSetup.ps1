@@ -96,7 +96,7 @@ function Set-ADTActiveSetup
         [ValidateScript({
                 if (('.exe', '.vbs', '.cmd', '.bat', '.ps1', '.js') -notcontains ($StubExeExt = [System.IO.Path]::GetExtension($_)))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName StubExePath -ProvidedValue $_ -ExceptionMessage "Unsupported Active Setup StubPath file extension [$StubExeExt]."))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName StubExePath -ProvidedValue $_ -ExceptionMessage "Unsupported Active Setup StubPath file extension [$StubExeExt]."))
                 }
                 return !!$_
             })]
@@ -111,7 +111,7 @@ function Set-ADTActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Version = ((& $Script:CommandTable.'Get-Date' -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
+        [System.String]$Version = ((Get-Date -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
@@ -130,9 +130,9 @@ function Set-ADTActiveSetup
     dynamicparam
     {
         # Attempt to get the most recent ADTSession object.
-        $adtSession = if (& $Script:CommandTable.'Test-ADTSessionActive')
+        $adtSession = if (Test-ADTSessionActive)
         {
-            & $Script:CommandTable.'Get-ADTSession'
+            Get-ADTSession
         }
 
         # Define parameter dictionary for returning at the end.
@@ -159,7 +159,7 @@ function Set-ADTActiveSetup
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
         $Description = if (!$PSBoundParameters.ContainsKey('Description'))
@@ -180,7 +180,7 @@ function Set-ADTActiveSetup
         }
 
         # Define initial variables.
-        $runAsActiveUser = & $Script:CommandTable.'Get-ADTRunAsActiveUser'
+        $runAsActiveUser = Get-ADTRunAsActiveUser
         $CUStubExePath = $null
         $CUArguments = $null
         $StubPath = $null
@@ -208,13 +208,13 @@ function Set-ADTActiveSetup
             # Set up initial variables.
             $HKCUProps = if ($SID)
             {
-                & $Script:CommandTable.'Get-ADTRegistryKey' -Key $HKCUKey -SID $SID
+                Get-ADTRegistryKey -Key $HKCUKey -SID $SID
             }
             else
             {
-                & $Script:CommandTable.'Get-ADTRegistryKey' -Key $HKCUKey
+                Get-ADTRegistryKey -Key $HKCUKey
             }
-            $HKLMProps = & $Script:CommandTable.'Get-ADTRegistryKey' -Key $HKLMKey
+            $HKLMProps = Get-ADTRegistryKey -Key $HKLMKey
             $HKCUVer = $HKCUProps.Version
             $HKLMVer = $HKLMProps.Version
             $HKLMInst = $HKLMProps.IsInstalled
@@ -222,49 +222,49 @@ function Set-ADTActiveSetup
             # HKLM entry not present. Nothing to run.
             if (!$HKLMProps)
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM active setup entry is not present.'
+                Write-ADTLogEntry 'HKLM active setup entry is not present.'
                 return $false
             }
 
             # HKLM entry present, but disabled. Nothing to run.
             if ($HKLMInst -eq 0)
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM active setup entry is present, but it is disabled (IsInstalled set to 0).'
+                Write-ADTLogEntry 'HKLM active setup entry is present, but it is disabled (IsInstalled set to 0).'
                 return $false
             }
 
             # HKLM entry present and HKCU entry is not. Run the StubPath.
             if (!$HKCUProps)
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM active setup entry is present. HKCU active setup entry is not present.'
+                Write-ADTLogEntry 'HKLM active setup entry is present. HKCU active setup entry is not present.'
                 return $true
             }
 
             # Both entries present. HKLM entry does not have Version property. Nothing to run.
             if (!$HKLMVer)
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. HKLM Version property is missing.'
+                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is missing.'
                 return $false
             }
 
             # Both entries present. HKLM entry has Version property, but HKCU entry does not. Run the StubPath.
             if (!$HKCUVer)
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. HKCU Version property is missing.'
+                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is missing.'
                 return $true
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
-            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1))))
+            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } } | Select-Object -First 1))))
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
+                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
-            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1))))
+            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } } | Select-Object -First 1))))
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
+                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
             }
 
@@ -275,13 +275,13 @@ function Set-ADTActiveSetup
                 if (([System.Version]$HKLMValidVer.Replace(',', '.')) -gt ([System.Version]$HKCUValidVer.Replace(',', '.')))
                 {
                     # HKLM is greater, run the StubPath.
-                    & $Script:CommandTable.'Write-ADTLogEntry' "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
+                    Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
                     return $true
                 }
                 else
                 {
                     # The HKCU version is equal or higher than HKLM version, Nothing to run.
-                    & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.'
+                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.'
                     return $false
                 }
             }
@@ -298,13 +298,13 @@ function Set-ADTActiveSetup
                 if ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count)
                 {
                     # HKLM is longer, Run the StubPath.
-                    & $Script:CommandTable.'Write-ADTLogEntry' "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKLM Version has more version fields."
+                    Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKLM Version has more version fields."
                     return $true
                 }
                 else
                 {
                     # HKCU is longer, Nothing to run.
-                    & $Script:CommandTable.'Write-ADTLogEntry' "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKCU Version has more version fields."
+                    Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKCU Version has more version fields."
                     return $false
                 }
             }
@@ -318,18 +318,18 @@ function Set-ADTActiveSetup
                     if ([UInt64]::Parse($SplitHKCUValidVer[$i]) -lt [UInt64]::Parse($SplitHKLMValidVer[$i]))
                     {
                         # The HKCU ver is lower, Run the StubPath.
-                        & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, HKCU Version property is lower.'
+                        Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, HKCU Version property is lower.'
                         return $true
                     }
                 }
                 # The HKCU version is equal or higher than HKLM version, Nothing to run.
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, they are either the same or HKCU Version property is higher.'
+                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, they are either the same or HKCU Version property is higher.'
                 return $false
             }
             catch
             {
                 # Failed to parse strings as UInt64, Run the StubPath.
-                & $Script:CommandTable.'Write-ADTLogEntry' 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, parsing string numerics to 64-bit integers failed.' -Severity 2
+                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, parsing string numerics to 64-bit integers failed.' -Severity 2
                 return $true
             }
         }
@@ -362,18 +362,18 @@ function Set-ADTActiveSetup
             )
 
             $srkParams = if ($SID) { @{ SID = $SID } } else { @{} }
-            & $Script:CommandTable.'Set-ADTRegistryKey' -Key $RegPath -Name '(Default)' -Value $Description @srkParams
-            & $Script:CommandTable.'Set-ADTRegistryKey' -Key $RegPath -Name 'Version' -Value $Version @srkParams
-            & $Script:CommandTable.'Set-ADTRegistryKey' -Key $RegPath -Name 'StubPath' -Value $StubPath -Type 'String' @srkParams
+            Set-ADTRegistryKey -Key $RegPath -Name '(Default)' -Value $Description @srkParams
+            Set-ADTRegistryKey -Key $RegPath -Name 'Version' -Value $Version @srkParams
+            Set-ADTRegistryKey -Key $RegPath -Name 'StubPath' -Value $StubPath -Type 'String' @srkParams
             if (![System.String]::IsNullOrWhiteSpace($Locale))
             {
-                & $Script:CommandTable.'Set-ADTRegistryKey' -Key $RegPath -Name 'Locale' -Value $Locale @srkParams
+                Set-ADTRegistryKey -Key $RegPath -Name 'Locale' -Value $Locale @srkParams
             }
 
             # Only Add IsInstalled to HKLM.
             if ($RegPath.Contains('HKEY_LOCAL_MACHINE'))
             {
-                & $Script:CommandTable.'Set-ADTRegistryKey' -Key $RegPath -Name 'IsInstalled' -Value ([System.UInt32]!$DisableActiveSetup) -Type 'DWord' @srkParams
+                Set-ADTRegistryKey -Key $RegPath -Name 'IsInstalled' -Value ([System.UInt32]!$DisableActiveSetup) -Type 'DWord' @srkParams
             }
         }
     }
@@ -399,16 +399,16 @@ function Set-ADTActiveSetup
                 # Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system.
                 if ($PurgeActiveSetupKey)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing Active Setup entry [$HKLMRegKey]."
-                    & $Script:CommandTable.'Remove-ADTRegistryKey' -Key $HKLMRegKey -Recurse
+                    Write-ADTLogEntry -Message "Removing Active Setup entry [$HKLMRegKey]."
+                    Remove-ADTRegistryKey -Key $HKLMRegKey -Recurse
 
                     if ($runAsActiveUser)
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
-                        & $Script:CommandTable.'Invoke-ADTAllUsersRegistryAction' -UserProfiles (& $Script:CommandTable.'Get-ADTUserProfiles' -ExcludeDefaultUser | & { process { if ($_.SID -eq $runAsActiveUser.SID) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1) -ScriptBlock {
-                            if (& $Script:CommandTable.'Get-ADTRegistryKey' -Key $HKCURegKey -SID $_.SID)
+                        Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
+                        Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & { process { if ($_.SID -eq $runAsActiveUser.SID) { return $_ } } } | Select-Object -First 1) -ScriptBlock {
+                            if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
                             {
-                                & $Script:CommandTable.'Remove-ADTRegistryKey' -Key $HKCURegKey -SID $_.SID -Recurse
+                                Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse
                             }
                         }
                     }
@@ -419,16 +419,16 @@ function Set-ADTActiveSetup
                 $StubExePath = [System.Environment]::ExpandEnvironmentVariables($StubExePath)
                 if ($adtSession)
                 {
-                    $StubExeFile = & $Script:CommandTable.'Join-Path' -Path $adtSession.GetPropertyValue('DirFiles') -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
-                    if (& $Script:CommandTable.'Test-Path' -LiteralPath $StubExeFile -PathType Leaf)
+                    $StubExeFile = Join-Path -Path $adtSession.GetPropertyValue('DirFiles') -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
+                    if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
                     {
                         # This will overwrite the StubPath file if $StubExePath already exists on target.
-                        & $Script:CommandTable.'Copy-ADTFile' -Path $StubExeFile -Destination $StubExePath -ErrorAction Stop
+                        Copy-ADTFile -Path $StubExeFile -Destination $StubExePath -ErrorAction Stop
                     }
                 }
 
                 # Check if the $StubExePath file exists.
-                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $StubExePath -PathType Leaf))
+                if (!(Test-Path -LiteralPath $StubExePath -PathType Leaf))
                 {
                     $naerParams = @{
                         Exception = [System.IO.FileNotFoundException]::new("Active Setup StubPath file [$ActiveSetupFileName] is missing.")
@@ -437,7 +437,7 @@ function Set-ADTActiveSetup
                         TargetObject = $ActiveSetupFileName
                         RecommendedAction = "Please confirm the provided value and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Define Active Setup StubPath according to file extension of $StubExePath.
@@ -496,7 +496,7 @@ function Set-ADTActiveSetup
                     }
                     '.ps1'
                     {
-                        $CUStubExePath = & $Script:CommandTable.'Get-ADTPowerShellProcessPath'
+                        $CUStubExePath = Get-ADTPowerShellProcessPath
                         $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
                             "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
@@ -518,7 +518,7 @@ function Set-ADTActiveSetup
                 }
 
                 # Create the Active Setup entry in the registry.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Adding Active Setup Key for local machine: [$HKLMRegKey]."
+                Write-ADTLogEntry -Message "Adding Active Setup Key for local machine: [$HKLMRegKey]."
                 Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKLMRegKey
 
                 # Execute the StubPath file for the current user as long as not in Session 0.
@@ -531,28 +531,28 @@ function Set-ADTActiveSetup
                 {
                     if (!$runAsActiveUser)
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.'
+                        Write-ADTLogEntry -Message 'Session 0 detected: No logged in users detected. Active Setup StubPath file will execute when users first log into their account.'
                         return
                     }
 
                     # Skip if Active Setup reg key is present and Version is equal or higher
                     if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey -SID $runAsActiveUser.SID))
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]." -Severity 2
+                        Write-ADTLogEntry -Message "Session 0 detected: Skipping executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]." -Severity 2
                         return
                     }
 
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]."
+                    Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]."
                     if ($CUArguments)
                     {
-                        & $Script:CommandTable.'Start-ADTProcessAsUser' -FilePath $CUStubExePath -ArgumentList $CUArguments -Wait -HideWindow
+                        Start-ADTProcessAsUser -FilePath $CUStubExePath -ArgumentList $CUArguments -Wait -HideWindow
                     }
                     else
                     {
-                        & $Script:CommandTable.'Start-ADTProcessAsUser' -FilePath $CUStubExePath -Wait -HideWindow
+                        Start-ADTProcessAsUser -FilePath $CUStubExePath -Wait -HideWindow
                     }
 
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
+                    Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
                     Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey -SID $runAsActiveUser.SID
                 }
                 else
@@ -560,37 +560,37 @@ function Set-ADTActiveSetup
                     # Skip if Active Setup reg key is present and Version is equal or higher
                     if (!(Test-ADTActiveSetup -HKLMKey $HKLMRegKey -HKCUKey $HKCURegKey))
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Skipping executing Active Setup StubPath file for current user.' -Severity 2
+                        Write-ADTLogEntry -Message 'Skipping executing Active Setup StubPath file for current user.' -Severity 2
                         return
                     }
 
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Executing Active Setup StubPath file for the current user.'
+                    Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
                     if ($CUArguments)
                     {
-                        & $Script:CommandTable.'Start-ADTProcess' -FilePath $CUStubExePath -Parameters $CUArguments -NoExitOnProcessFailure
+                        Start-ADTProcess -FilePath $CUStubExePath -Parameters $CUArguments -NoExitOnProcessFailure
                     }
                     else
                     {
-                        & $Script:CommandTable.'Start-ADTProcess' -FilePath $CUStubExePath -NoExitOnProcessFailure
+                        Start-ADTProcess -FilePath $CUStubExePath -NoExitOnProcessFailure
                     }
 
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
+                    Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
                     Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to set Active Setup registry entry."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to set Active Setup registry entry."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -75,7 +75,7 @@ function Test-ADTServiceExists
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -88,24 +88,24 @@ function Test-ADTServiceExists
                 if ($UseCIM)
                 {
                     # If nothing is returned from Win32_Service, check Win32_BaseService.
-                    if (!($ServiceObject = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_Service -Filter "Name = '$Name'"))
+                    if (!($ServiceObject = Get-CimInstance -ClassName Win32_Service -Filter "Name = '$Name'"))
                     {
-                        $ServiceObject = & $Script:CommandTable.'Get-CimInstance' -ClassName Win32_BaseService -Filter "Name = '$Name'"
+                        $ServiceObject = Get-CimInstance -ClassName Win32_BaseService -Filter "Name = '$Name'"
                     }
                 }
                 else
                 {
                     # If the result is empty, it means the provided service is invalid.
-                    $ServiceObject = & $Script:CommandTable.'Get-Service' -Name $Name -ErrorAction Ignore
+                    $ServiceObject = Get-Service -Name $Name -ErrorAction Ignore
                 }
 
                 # Return early if null.
                 if (!$ServiceObject)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Service [$Name] does not exist."
+                    Write-ADTLogEntry -Message "Service [$Name] does not exist."
                     return $false
                 }
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Service [$Name] exists."
+                Write-ADTLogEntry -Message "Service [$Name] exists."
 
                 # Return the CIM object if passing through.
                 if ($PassThru)
@@ -116,17 +116,17 @@ function Test-ADTServiceExists
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed check to see if service [$Name] exists."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed check to see if service [$Name] exists."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

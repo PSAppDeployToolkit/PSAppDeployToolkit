@@ -93,5 +93,5 @@ function New-ADTValidateScriptErrorRecord
         TargetType = $(if ($null -ne $ProvidedValue) { $ProvidedValue.GetType().Name })
         RecommendedAction = "Review the supplied $($ParameterName) parameter value and try again."
     }
-    return (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+    return (New-ADTErrorRecord @naerParams)
 }

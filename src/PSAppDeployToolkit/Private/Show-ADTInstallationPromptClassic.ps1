@@ -67,7 +67,7 @@ function Show-ADTInstallationPromptClassic
 
     # Define events for form windows.
     $installPromptTimer_Tick = {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Installation action not taken within a reasonable amount of time.'
+        Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.'
         $buttonAbort.PerformClick()
     }
     $installPromptTimerPersist_Tick = {
@@ -93,12 +93,12 @@ function Show-ADTInstallationPromptClassic
         # Disable the X button.
         try
         {
-            & $Script:CommandTable.'Disable-ADTWindowCloseButton' -WindowHandle $formInstallationPrompt.Handle
+            Disable-ADTWindowCloseButton -WindowHandle $formInstallationPrompt.Handle
         }
         catch
         {
             # Not a terminating error if we can't disable the button. Just disable the Control Box instead.
-            & $Script:CommandTable.'Write-ADTLogEntry' 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
+            Write-ADTLogEntry 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
             $formInstallationPrompt.ControlBox = $false
         }
 
@@ -304,7 +304,7 @@ function Show-ADTInstallationPromptClassic
     $formInstallationPrompt.add_Load($formInstallationPrompt_Load)
     $formInstallationPrompt.add_FormClosed($formInstallationPrompt_FormClosed)
     $formInstallationPrompt.ResumeLayout()
-    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters' -Exclude ADTConfig)]."
+    Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig)]."
 
     # Start the timer.
     $installPromptTimer.Start()
@@ -346,14 +346,14 @@ function Show-ADTInstallationPromptClassic
             $null = $shellApp.UndoMinimizeAll()
             if (!$NoExitOnTimeout)
             {
-                if (& $Script:CommandTable.'Test-ADTSessionActive')
+                if (Test-ADTSessionActive)
                 {
-                    & $Script:CommandTable.'Close-ADTSession' -ExitCode $ADTConfig.UI.DefaultExitCode
+                    Close-ADTSession -ExitCode $ADTConfig.UI.DefaultExitCode
                 }
             }
             else
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'UI timed out but $NoExitOnTimeout specified. Continue...'
+                Write-ADTLogEntry -Message 'UI timed out but $NoExitOnTimeout specified. Continue...'
             }
             break
         }

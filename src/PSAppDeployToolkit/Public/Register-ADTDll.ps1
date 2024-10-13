@@ -50,7 +50,7 @@ function Register-ADTDll
         [ValidateScript({
                 if (![System.IO.File]::Exists($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
                 }
                 return !!$_
             })]
@@ -59,14 +59,14 @@ function Register-ADTDll
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         try
         {
-            & $Script:CommandTable.'Invoke-ADTRegSvr32' @PSBoundParameters -Action Register
+            Invoke-ADTRegSvr32 @PSBoundParameters -Action Register
         }
         catch
         {
@@ -76,6 +76,6 @@ function Register-ADTDll
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

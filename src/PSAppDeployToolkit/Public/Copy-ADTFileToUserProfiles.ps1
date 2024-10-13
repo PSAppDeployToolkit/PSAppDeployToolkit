@@ -149,7 +149,7 @@ function Copy-ADTFileToUserProfiles
     begin
     {
         # Initalize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Define default params for Copy-ADTFile.
         $CopyFileSplat = @{
@@ -202,19 +202,19 @@ function Copy-ADTFileToUserProfiles
     end
     {
         # Copy all paths to the specified destination.
-        foreach ($UserProfile in (& $Script:CommandTable.'Get-ADTUserProfiles' @GetUserProfileSplat))
+        foreach ($UserProfile in (Get-ADTUserProfiles @GetUserProfileSplat))
         {
             if ([string]::IsNullOrWhiteSpace($UserProfile."$BasePath`Path"))
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping user profile [$($UserProfile.NTAccount)] as path [$BasePath`Path] is not available."
+                Write-ADTLogEntry -Message "Skipping user profile [$($UserProfile.NTAccount)] as path [$BasePath`Path] is not available."
                 continue
             }
-            $dest = & $Script:CommandTable.'Join-Path' $UserProfile."$BasePath`Path" $Destination
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Copying path [$Path] to $($dest):"
-            & $Script:CommandTable.'Copy-ADTFile' -Path $sourcePaths -Destination $dest @CopyFileSplat
+            $dest = Join-Path $UserProfile."$BasePath`Path" $Destination
+            Write-ADTLogEntry -Message "Copying path [$Path] to $($dest):"
+            Copy-ADTFile -Path $sourcePaths -Destination $dest @CopyFileSplat
         }
 
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

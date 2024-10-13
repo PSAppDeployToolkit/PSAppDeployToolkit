@@ -22,6 +22,6 @@ function Get-ADTMountedWimFile
     )
 
     # Get the caller's provided input via the ParameterSetName so we can filter on its name and value.
-    $parameter = & $Script:CommandTable.'Get-Variable' -Name $PSCmdlet.ParameterSetName
-    return (& $Script:CommandTable.'Get-WindowsImage' -Mounted | & { process { if ($parameter.Value.FullName.Contains($_.($parameter.Name))) { return $_ } } })
+    $parameter = Get-Variable -Name $PSCmdlet.ParameterSetName
+    return (Get-WindowsImage -Mounted | & { process { if ($parameter.Value.FullName.Contains($_.($parameter.Name))) { return $_ } } })
 }

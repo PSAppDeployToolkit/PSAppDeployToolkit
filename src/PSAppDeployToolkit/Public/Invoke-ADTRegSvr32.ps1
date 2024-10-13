@@ -58,7 +58,7 @@ function Invoke-ADTRegSvr32
         [ValidateScript({
                 if (![System.IO.File]::Exists($_) -and ([System.IO.Path]::GetExtension($_) -ne '.dll'))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist or is not a DLL file.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist or is not a DLL file.'))
                 }
                 return !!$_
             })]
@@ -72,7 +72,7 @@ function Invoke-ADTRegSvr32
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Define parameters to pass to regsrv32.exe.
         $ActionParameters = switch ($Action = $Host.CurrentCulture.TextInfo.ToTitleCase($Action.ToLower()))
@@ -92,13 +92,13 @@ function Invoke-ADTRegSvr32
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "$Action DLL file [$FilePath]."
+        Write-ADTLogEntry -Message "$Action DLL file [$FilePath]."
         try
         {
             try
             {
                 # Determine the bitness of the DLL file.
-                if ((($DLLFileBitness = & $Script:CommandTable.'Get-ADTPEFileArchitecture' -FilePath $FilePath) -ne '64BIT') -and ($DLLFileBitness -ne '32BIT'))
+                if ((($DLLFileBitness = Get-ADTPEFileArchitecture -FilePath $FilePath) -ne '64BIT') -and ($DLLFileBitness -ne '32BIT'))
                 {
                     $naerParams = @{
                         Exception = [System.PlatformNotSupportedException]::new("File [$filePath] has a detected file architecture of [$DLLFileBitness]. Only 32-bit or 64-bit DLL files can be $($Action.ToLower() + 'ed').")
@@ -107,7 +107,7 @@ function Invoke-ADTRegSvr32
                         TargetObject = $FilePath
                         RecommendedAction = "Please review the supplied DLL FilePath and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Get the correct path to regsrv32.exe for the system and DLL file.
@@ -142,11 +142,11 @@ function Invoke-ADTRegSvr32
                         TargetObject = $FilePath
                         RecommendedAction = "Please review the supplied DLL FilePath and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Register the DLL file and measure the success.
-                if (($ExecuteResult = & $Script:CommandTable.'Start-ADTProcess' -Path $RegSvr32Path -Parameters $ActionParameters -WindowStyle Hidden -PassThru -NoExitOnProcessFailure).ExitCode -ne 0)
+                if (($ExecuteResult = Start-ADTProcess -Path $RegSvr32Path -Parameters $ActionParameters -WindowStyle Hidden -PassThru -NoExitOnProcessFailure).ExitCode -ne 0)
                 {
                     if ($ExecuteResult.ExitCode -eq 60002)
                     {
@@ -157,7 +157,7 @@ function Invoke-ADTRegSvr32
                             TargetObject = "$FilePath $ActionParameters"
                             RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                         }
-                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                        throw (New-ADTErrorRecord @naerParams)
                     }
                     else
                     {
@@ -168,23 +168,23 @@ function Invoke-ADTRegSvr32
                             TargetObject = "$FilePath $ActionParameters"
                             RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                         }
-                        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                        throw (New-ADTErrorRecord @naerParams)
                     }
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $($Action.ToLower()) DLL file."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $($Action.ToLower()) DLL file."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

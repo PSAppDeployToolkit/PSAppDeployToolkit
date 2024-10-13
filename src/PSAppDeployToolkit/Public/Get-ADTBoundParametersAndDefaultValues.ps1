@@ -80,7 +80,7 @@ function Get-ADTBoundParametersAndDefaultValues
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Internal function for testing parameter attributes.
         function Test-NamedAttributeArgumentAst
@@ -154,7 +154,7 @@ function Get-ADTBoundParametersAndDefaultValues
                         TargetObject = $Invocation.MyCommand.ScriptBlock.Ast
                         RecommendedAction = "Please verify your function or script parameter configuration and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Open dictionary to store all params and their values to return.
@@ -210,19 +210,19 @@ function Get-ADTBoundParametersAndDefaultValues
             catch
             {
                 # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

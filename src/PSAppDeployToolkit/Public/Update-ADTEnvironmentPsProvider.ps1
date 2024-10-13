@@ -54,10 +54,10 @@ function Update-ADTEnvironmentPsProvider
     begin
     {
         # Perform initial setup.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Determine the user SID to base things off of.
-        $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and ($runAsActiveUser = & $Script:CommandTable.'Get-ADTRunAsActiveUser'))
+        $userSid = if ($LoadLoggedOnUserEnvironmentVariables -and ($runAsActiveUser = Get-ADTRunAsActiveUser))
         {
             $runAsActiveUser.SID
         }
@@ -69,13 +69,13 @@ function Update-ADTEnvironmentPsProvider
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Refreshing the environment variables for this PowerShell session.'
+        Write-ADTLogEntry -Message 'Refreshing the environment variables for this PowerShell session.'
         try
         {
             try
             {
                 # Update all session environment variables. Ordering is important here: user variables comes second so that we can override system variables.
-                & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$userSid\Environment" | & {
+                Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$userSid\Environment" | & {
                     process
                     {
                         $_.PSObject.Properties | & {
@@ -83,7 +83,7 @@ function Update-ADTEnvironmentPsProvider
                             {
                                 if ($_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$')
                                 {
-                                    & $Script:CommandTable.'Set-Item' -LiteralPath "Env:$($_.Name)" -Value $_.Value
+                                    Set-Item -LiteralPath "Env:$($_.Name)" -Value $_.Value
                                 }
                             }
                         }
@@ -91,21 +91,21 @@ function Update-ADTEnvironmentPsProvider
                 }
 
                 # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
-                & $Script:CommandTable.'Set-Item' -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User' | & { process { [System.Environment]::GetEnvironmentVariable('PATH', $_) } }).Split(';') | & { process { if ($_) { return $_ } } } | & $Script:CommandTable.'Select-Object' -Unique)))
+                Set-Item -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User' | & { process { [System.Environment]::GetEnvironmentVariable('PATH', $_) } }).Split(';') | & { process { if ($_) { return $_ } } } | Select-Object -Unique)))
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to refresh the environment variables for this PowerShell session."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to refresh the environment variables for this PowerShell session."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

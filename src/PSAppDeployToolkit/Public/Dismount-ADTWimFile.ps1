@@ -65,16 +65,16 @@ function Dismount-ADTWimFile
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         # Loop through all found mounted images.
-        foreach ($wimFile in (& $Script:CommandTable.'Get-ADTMountedWimFile' @PSBoundParameters))
+        foreach ($wimFile in (Get-ADTMountedWimFile @PSBoundParameters))
         {
             # Announce commencement.
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Dismounting WIM file at path [$($wimFile.Path)]."
+            Write-ADTLogEntry -Message "Dismounting WIM file at path [$($wimFile.Path)]."
             try
             {
                 try
@@ -82,7 +82,7 @@ function Dismount-ADTWimFile
                     # Perform the dismount and discard all changes.
                     try
                     {
-                        $null = & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command $Script:CommandTable.'Dismount-WindowsImage' -Path $wimFile.Path -Discard
+                        $null = Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Dismount-WindowsImage' -Path $wimFile.Path -Discard
                     }
                     catch
                     {
@@ -93,10 +93,10 @@ function Dismount-ADTWimFile
                         }
 
                         # Get all open file handles for our path.
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The directory could not be completely unmounted. Checking for any open file handles that can be closed."
+                        Write-ADTLogEntry -Message "The directory could not be completely unmounted. Checking for any open file handles that can be closed."
                         $exeHandle = "$Script:PSScriptRoot\bin\$([System.Environment]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE'))\handle\handle.exe"
                         $pathRegex = "^$([System.Text.RegularExpressions.Regex]::Escape($($wimFile.Path)))"
-                        $pathHandles = & $Script:CommandTable.'Get-ADTProcessHandles' | & { process { if ($_.Name -match $pathRegex) { return $_ } } }
+                        $pathHandles = Get-ADTProcessHandles | & { process { if ($_.Name -match $pathRegex) { return $_ } } }
 
                         # Throw if we have no handles to close, it means we don't know why the WIM didn't dismount.
                         if (!$pathHandles)
@@ -108,7 +108,7 @@ function Dismount-ADTWimFile
                         foreach ($handle in $pathHandles)
                         {
                             # Close handle using handle.exe. An exit code of 0 is considered successful.
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(($msg = "Closing handle [$($handle.Handle)] for process [$($handle.Process) ($($handle.PID))]"))."
+                            Write-ADTLogEntry -Message "$(($msg = "Closing handle [$($handle.Handle)] for process [$($handle.Process) ($($handle.PID))]"))."
                             $handleResult = & $exeHandle -nobanner -c $handle.Handle -p $handle.PID -y
                             if ($LASTEXITCODE.Equals(0))
                             {
@@ -116,7 +116,7 @@ function Dismount-ADTWimFile
                             }
 
                             # If we're here, we had a bad exit code.
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $handleResult") -Severity 3
+                            Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $handleResult") -Severity 3
                             $naerParams = @{
                                 Exception = [System.ApplicationException]::new($msg)
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
@@ -124,29 +124,29 @@ function Dismount-ADTWimFile
                                 TargetObject = $handleResult
                                 RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                             }
-                            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                            throw (New-ADTErrorRecord @naerParams)
                         }
 
                         # Attempt the dismount again.
-                        $null = & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command $Script:CommandTable.'Dismount-WindowsImage' -Path $wimFile.Path -Discard
+                        $null = Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Dismount-WindowsImage' -Path $wimFile.Path -Discard
                     }
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Successfully dismounted WIM file."
-                    & $Script:CommandTable.'Remove-Item' -LiteralPath $wimFile.Path -Force -Confirm:$false
+                    Write-ADTLogEntry -Message "Successfully dismounted WIM file."
+                    Remove-Item -LiteralPath $wimFile.Path -Force -Confirm:$false
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage 'Error occurred while attempting to dismount WIM file.' -ErrorAction SilentlyContinue
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage 'Error occurred while attempting to dismount WIM file.' -ErrorAction SilentlyContinue
             }
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

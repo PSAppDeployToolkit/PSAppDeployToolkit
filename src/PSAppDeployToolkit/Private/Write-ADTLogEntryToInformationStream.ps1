@@ -33,7 +33,7 @@ function Write-ADTLogEntryToInformationStream
     begin
     {
         # Ensure this function is only called from `[ADTSession]::WriteLogEntry()`.
-        if (!($caller = (& $Script:CommandTable.'Get-PSCallStack')[1]).FunctionName.Equals('WriteLogEntry'))
+        if (!($caller = (Get-PSCallStack)[1]).FunctionName.Equals('WriteLogEntry'))
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new("The function [$($MyInvocation.MyCommand.Name)] can only be called by [ADTSession]::WriteLogEntry().")
@@ -42,7 +42,7 @@ function Write-ADTLogEntryToInformationStream
                 TargetObject = $caller
                 RecommendedAction = "Please review your code to ensure that [$($MyInvocation.MyCommand.Name)] is not directly called and try again."
             }
-            $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
         # Remove parameters that aren't used to generate an InformationRecord object.

@@ -58,11 +58,11 @@ function Get-ADTFileVersion
         [ValidateScript({
                 if (!$_.Exists)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
                 }
                 if (!$_.VersionInfo -or (!$_.VersionInfo.FileVersion -and !$_.VersionInfo.ProductVersion))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The specified file does not have any version info.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The specified file does not have any version info.'))
                 }
                 return !!$_.VersionInfo
             })]
@@ -74,22 +74,22 @@ function Get-ADTFileVersion
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         if ($ProductVersion)
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Product version is [$($File.VersionInfo.ProductVersion)]."
+            Write-ADTLogEntry -Message "Product version is [$($File.VersionInfo.ProductVersion)]."
             return $File.VersionInfo.ProductVersion.Trim()
         }
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "File version is [$($File.VersionInfo.FileVersion)]."
+        Write-ADTLogEntry -Message "File version is [$($File.VersionInfo.FileVersion)]."
         return $File.VersionInfo.FileVersion.Trim()
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

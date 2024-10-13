@@ -50,7 +50,7 @@ function Get-ADTRunAsActiveUser
     # The active console user will be chosen first. Failing that, for multi-session operating systems, the first logged on user will be used instead.
     try
     {
-        $SessionInfoMember = if (& $Script:CommandTable.'Test-ADTIsMultiSessionOS') { 'IsCurrentSession' } else { 'IsActiveUserSession' }
+        $SessionInfoMember = if (Test-ADTIsMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
         return [PSADT.QueryUser]::GetUserSessionInfo().Where({ $_.NTAccount -and $_.$SessionInfoMember }, 'First', 1)
     }
     catch

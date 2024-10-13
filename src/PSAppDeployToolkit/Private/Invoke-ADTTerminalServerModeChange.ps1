@@ -34,7 +34,7 @@ function Invoke-ADTTerminalServerModeChange
     )
 
     # Change the terminal server mode. An exit code of 1 is considered successful.
-    & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(($msg = "Changing terminal server into user $($Mode.ToLower()) mode"))."
+    Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLower()) mode"))."
     $terminalServerResult = & "$([System.Environment]::SystemDirectory)\change.exe" User /$Mode 2>&1
     if ($LASTEXITCODE.Equals(1))
     {
@@ -42,7 +42,7 @@ function Invoke-ADTTerminalServerModeChange
     }
 
     # If we're here, we had a bad exit code.
-    & $Script:CommandTable.'Write-ADTLogEntry' -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $terminalServerResult") -Severity 3
+    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $terminalServerResult") -Severity 3
     $naerParams = @{
         Exception = [System.ApplicationException]::new($msg)
         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
@@ -50,5 +50,5 @@ function Invoke-ADTTerminalServerModeChange
         TargetObject = $terminalServerResult
         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
     }
-    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
 }

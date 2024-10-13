@@ -54,7 +54,7 @@ function Add-ADTSessionOpeningCallback
     # Send it off to the backend function.
     try
     {
-        & $Script:CommandTable.'Invoke-ADTSessionCallbackOperation' -Type Opening -Action Add @PSBoundParameters
+        Invoke-ADTSessionCallbackOperation -Type Opening -Action Add @PSBoundParameters
     }
     catch
     {

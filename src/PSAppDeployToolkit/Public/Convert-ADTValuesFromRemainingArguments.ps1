@@ -56,7 +56,7 @@ function Convert-ADTValuesFromRemainingArguments
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -98,7 +98,7 @@ function Convert-ADTValuesFromRemainingArguments
                         TargetObject = $RemainingArguments
                         RecommendedAction = "Please ensure that only PowerShell-style arguments are provided and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Return dictionary, even if its empty to match $PSBoundParameters API.
@@ -107,19 +107,19 @@ function Convert-ADTValuesFromRemainingArguments
             catch
             {
                 # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

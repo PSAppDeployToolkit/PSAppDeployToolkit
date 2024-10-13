@@ -14,7 +14,7 @@ function Invoke-ADTSubstOperation
         [ValidateScript({
                 if ($_ -notmatch '^[A-Z]:$')
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Drive -ProvidedValue $_ -ExceptionMessage 'The specified drive is not valid. Please specify a drive in the following format: [A:, B:, etc].'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Drive -ProvidedValue $_ -ExceptionMessage 'The specified drive is not valid. Please specify a drive in the following format: [A:, B:, etc].'))
                 }
                 return !!$_.Length
             })]
@@ -25,15 +25,15 @@ function Invoke-ADTSubstOperation
         [ValidateScript({
                 if ($null -eq $_)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
                 }
                 if (!$_.Exists)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be found.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be found.'))
                 }
                 if ([System.Uri]::new($_).IsUnc)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be a network share.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be a network share.'))
                 }
                 return !!$_
             })]
@@ -48,16 +48,16 @@ function Invoke-ADTSubstOperation
     $substResult = if ($Path)
     {
         # Throw if the specified drive letter is in use.
-        if ((& $Script:CommandTable.'Get-PSDrive' -PSProvider FileSystem).Name -contains $Drive.Substring(0, 1))
+        if ((Get-PSDrive -PSProvider FileSystem).Name -contains $Drive.Substring(0, 1))
         {
-            $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Drive -ProvidedValue $Drive -ExceptionMessage 'The specified drive is currently in use. Please try again with an unused drive letter.'))
+            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Drive -ProvidedValue $Drive -ExceptionMessage 'The specified drive is currently in use. Please try again with an unused drive letter.'))
         }
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(($msg = "Creating substitution drive [$Drive] for [$Path]"))."
+        Write-ADTLogEntry -Message "$(($msg = "Creating substitution drive [$Drive] for [$Path]"))."
         & $substPath $Drive $Path.FullName
     }
     elseif ($Delete)
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(($msg = "Deleting substitution drive [$Drive]"))."
+        Write-ADTLogEntry -Message "$(($msg = "Deleting substitution drive [$Drive]"))."
         & $substPath $Drive /D
     }
     else
@@ -70,7 +70,7 @@ function Invoke-ADTSubstOperation
             TargetObject = $PSBoundParameters
             RecommendedAction = "Please review the result in this error's TargetObject property and try again."
         }
-        $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
     if ($LASTEXITCODE.Equals(0))
     {
@@ -78,7 +78,7 @@ function Invoke-ADTSubstOperation
     }
 
     # If we're here, we had a bad exit code.
-    & $Script:CommandTable.'Write-ADTLogEntry' -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $substResult") -Severity 3
+    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $substResult") -Severity 3
     $naerParams = @{
         Exception = [System.ApplicationException]::new($msg)
         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
@@ -86,5 +86,5 @@ function Invoke-ADTSubstOperation
         TargetObject = $substResult
         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
     }
-    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
 }

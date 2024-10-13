@@ -132,12 +132,12 @@ function Show-ADTInstallationPrompt
                 TargetObject = $PSBoundParameters
                 RecommendedAction = "Please review the supplied parameters used against $($MyInvocation.MyCommand.Name) and try again."
             }
-            $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
         # Initialize variables.
-        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
-        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -155,7 +155,7 @@ function Show-ADTInstallationPrompt
                     [System.Management.Automation.ValidateScriptAttribute]::new({
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
                             {
-                                $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
+                                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the configuration file.'))
                             }
                             return !!$_
                         })
@@ -169,7 +169,7 @@ function Show-ADTInstallationPrompt
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
@@ -191,39 +191,39 @@ function Show-ADTInstallationPrompt
                 # Bypass if in non-interactive mode.
                 if ($adtSession -and $adtSession.IsNonInteractive())
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Message: $Message"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Message: $Message"
                     return
                 }
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
-                    & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'; `$null = $($MyInvocation.MyCommand.Name) $(($PSBoundParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters' -Exclude NoWait).Replace('"', '\"'))" -WindowStyle Hidden -ErrorAction Ignore
+                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'; `$null = $($MyInvocation.MyCommand.Name) $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude NoWait).Replace('"', '\"'))" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
                 # Close the Installation Progress dialog if running.
                 if ($adtSession)
                 {
-                    & $Script:CommandTable.'Close-ADTInstallationProgress'
+                    Close-ADTInstallationProgress
                 }
 
                 # Call the underlying function to open the message prompt.
-                & $Script:CommandTable.'Show-ADTInstallationPromptClassic' @PSBoundParameters -ADTConfig $adtConfig
+                Show-ADTInstallationPromptClassic @PSBoundParameters -ADTConfig $adtConfig
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -73,7 +73,7 @@ function Set-ADTShortcut
         [ValidateScript({
                 if (![System.IO.File]::Exists($_) -or (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url')))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
                 }
                 return !!$_
             })]
@@ -118,18 +118,18 @@ function Set-ADTShortcut
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Changing shortcut [$Path]."
+        Write-ADTLogEntry -Message "Changing shortcut [$Path]."
         try
         {
             try
             {
                 # Make sure .NET's current directory is synced with PowerShell's.
-                [System.IO.Directory]::SetCurrentDirectory((& $Script:CommandTable.'Get-Location' -PSProvider FileSystem).ProviderPath)
+                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
                 if ($extension -eq '.url')
                 {
                     $URLFile = [System.IO.File]::ReadAllLines($Path) | & {
@@ -218,12 +218,12 @@ function Set-ADTShortcut
                         $fileBytes = [System.IO.FIle]::ReadAllBytes($Path)
                         $fileBytes[21] = if ($PSBoundParameters.RunAsAdmin)
                         {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Setting shortcut to run program as administrator.'
+                            Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
                             $fileBytes[21] -bor 32
                         }
                         else
                         {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Setting shortcut to not run program as administrator.'
+                            Write-ADTLogEntry -Message 'Setting shortcut to not run program as administrator.'
                             $fileBytes[21] -band (-bnot 32)
                         }
                         [System.IO.FIle]::WriteAllBytes($Path, $fileBytes)
@@ -232,17 +232,17 @@ function Set-ADTShortcut
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to change the shortcut [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to change the shortcut [$Path]."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

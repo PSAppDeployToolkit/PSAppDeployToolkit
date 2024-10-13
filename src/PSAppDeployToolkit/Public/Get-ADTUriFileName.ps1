@@ -51,7 +51,7 @@ function Get-ADTUriFileName
         [ValidateScript({
                 if (![System.Uri]::IsWellFormedUriString($_.AbsoluteUri, [System.UriKind]::Absolute))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Uri -ProvidedValue $_ -ExceptionMessage 'The specified input is not a valid Uri.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Uri -ProvidedValue $_ -ExceptionMessage 'The specified input is not a valid Uri.'))
                 }
                 return !!$_
             })]
@@ -61,7 +61,7 @@ function Get-ADTUriFileName
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -71,8 +71,8 @@ function Get-ADTUriFileName
             try
             {
                 # Re-write the URI to factor in any redirections.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Retrieving the file name for URI [$Uri]."
-                $Uri = & $Script:CommandTable.'Get-ADTRedirectedUri' -Uri $Uri
+                Write-ADTLogEntry -Message "Retrieving the file name for URI [$Uri]."
+                $Uri = Get-ADTRedirectedUri -Uri $Uri
 
                 # Create web request.
                 $webReq = [System.Net.WebRequest]::Create($Uri)
@@ -87,33 +87,33 @@ function Get-ADTUriFileName
                 # If $resCnt is empty, the provided URI likely has the filename in it.
                 $filename = if (!$resCnt.Contains('filename'))
                 {
-                    & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $Uri.ToString().Split('/')[-1]
+                    Remove-ADTInvalidFileNameChars -Name $Uri.ToString().Split('/')[-1]
                 }
                 else
                 {
-                    & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $resCnt.Split(';').Trim().Where({ $_.StartsWith('filename=') }).Split('=')[-1]
+                    Remove-ADTInvalidFileNameChars -Name $resCnt.Split(';').Trim().Where({ $_.StartsWith('filename=') }).Split('=')[-1]
                 }
 
                 # Return the determined filename to the caller.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Resolved filename [$filename] from the provided URI."
+                Write-ADTLogEntry -Message "Resolved filename [$filename] from the provided URI."
                 return $filename
             }
             catch
             {
                 # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to determine the filename for URI [$Uri]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to determine the filename for URI [$Uri]."
         }
     }
 
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

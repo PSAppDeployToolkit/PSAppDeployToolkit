@@ -50,21 +50,21 @@ function Unblock-ADTAppExecution
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (& $Script:CommandTable.'Get-ScheduledTask' -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
+        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (Get-ScheduledTask -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
     )
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $uaaeiParams = @{}; if ($Tasks) { $uaaeiParams.Add('Tasks', $Tasks) }
     }
 
     process
     {
         # Bypass if no admin rights.
-        if (!(& $Script:CommandTable.'Test-ADTCallerIsAdmin'))
+        if (!(Test-ADTCallerIsAdmin))
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)] is not admin."
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)] is not admin."
             return
         }
 
@@ -73,21 +73,21 @@ function Unblock-ADTAppExecution
         {
             try
             {
-                & $Script:CommandTable.'Unblock-ADTAppExecutionInternal' @uaaeiParams -Verbose 4>&1 | & $Script:CommandTable.'Write-ADTLogEntry'
+                Unblock-ADTAppExecutionInternal @uaaeiParams -Verbose 4>&1 | Write-ADTLogEntry
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

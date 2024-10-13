@@ -78,7 +78,7 @@ function Invoke-ADTCommandWithRetries
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -98,12 +98,12 @@ function Invoke-ADTCommandWithRetries
                 }
                 else
                 {
-                    & $Script:CommandTable.'Get-Command' -Name $Command
+                    Get-Command -Name $Command
                 }
 
                 # Convert the passed parameters into a dictionary for splatting onto the command.
-                $boundParams = & $Script:CommandTable.'Convert-ADTValuesFromRemainingArguments' -RemainingArguments $Parameters
-                $callerName = (& $Script:CommandTable.'Get-PSCallStack')[1].Command
+                $boundParams = Convert-ADTValuesFromRemainingArguments -RemainingArguments $Parameters
+                $callerName = (Get-PSCallStack)[1].Command
 
                 # Perform the request, and retry it as per the configured values.
                 for ($i = 0; $i -lt $Retries; $i++)
@@ -114,7 +114,7 @@ function Invoke-ADTCommandWithRetries
                     }
                     catch
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $SleepSeconds second$(if (!$SleepSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
+                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $SleepSeconds second$(if (!$SleepSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
                         [System.Threading.Thread]::Sleep($SleepSeconds * 1000)
                         $errorRecord = $_
                     }
@@ -126,19 +126,19 @@ function Invoke-ADTCommandWithRetries
             catch
             {
                 # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

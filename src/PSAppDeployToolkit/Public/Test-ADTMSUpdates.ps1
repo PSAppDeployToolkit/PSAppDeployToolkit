@@ -56,30 +56,30 @@ function Test-ADTMSUpdates
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking if Microsoft Update [$KbNumber] is installed."
+        Write-ADTLogEntry -Message "Checking if Microsoft Update [$KbNumber] is installed."
         try
         {
             try
             {
                 # Attempt to get the update via Get-HotFix first as it's cheap.
-                if (!($kbFound = !!(& $Script:CommandTable.'Get-HotFix' -Id $KbNumber -ErrorAction Ignore)))
+                if (!($kbFound = !!(Get-HotFix -Id $KbNumber -ErrorAction Ignore)))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.'
-                    $updateSearcher = (& $Script:CommandTable.'New-Object' -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
+                    Write-ADTLogEntry -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.'
+                    $updateSearcher = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
                     $updateSearcher.IncludePotentiallySupersededUpdates = $false
                     $updateSearcher.Online = $false
                     if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -gt 0)
                     {
-                        $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | & { process { if (($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1)
+                        $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | & { process { if (($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)) { return $_ } } } | Select-Object -First 1)
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Unable to detect Windows Update history via COM object.'
+                        Write-ADTLogEntry -Message 'Unable to detect Windows Update history via COM object.'
                         return
                     }
                 }
@@ -87,25 +87,25 @@ function Test-ADTMSUpdates
                 # Return result.
                 if ($kbFound)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Microsoft Update [$KbNumber] is installed."
+                    Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is installed."
                     return $true
                 }
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Microsoft Update [$KbNumber] is not installed."
+                Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is not installed."
                 return $false
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed discovering Microsoft Update [$kbNumber]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed discovering Microsoft Update [$kbNumber]."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

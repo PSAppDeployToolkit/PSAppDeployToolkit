@@ -54,12 +54,12 @@ function Get-ADTRunningProcesses
     }
 
     # Get all running processes and append properties.
-    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking for running applications: [$($ProcessObjects.Name -join ',')]"
-    $runningProcesses = & $Script:CommandTable.'Get-Process' -Name $ProcessObjects.Name -ErrorAction Ignore | & {
+    Write-ADTLogEntry -Message "Checking for running applications: [$($ProcessObjects.Name -join ',')]"
+    $runningProcesses = Get-Process -Name $ProcessObjects.Name -ErrorAction Ignore | & {
         process
         {
-            return $_ | & $Script:CommandTable.'Add-Member' -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | & $Script:CommandTable.'Where-Object' -Property Name -EQ -Value $_.ProcessName | & $Script:CommandTable.'Select-Object' -ExpandProperty Description -ErrorAction Ignore)))
+            return $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
                 {
                     # The description of the process provided with the object.
                     $objDescription
@@ -81,8 +81,8 @@ function Get-ADTRunningProcesses
     # Return output if there's any.
     if ($runningProcesses)
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The following processes are running: [$(($runningProcesses.ProcessName | & $Script:CommandTable.'Select-Object' -Unique) -join ',')]."
-        return ($runningProcesses | & $Script:CommandTable.'Sort-Object' -Property ProcessDescription)
+        Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]."
+        return ($runningProcesses | Sort-Object -Property ProcessDescription)
     }
-    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Specified applications are not running.'
+    Write-ADTLogEntry -Message 'Specified applications are not running.'
 }

@@ -48,37 +48,37 @@ function Test-ADTNetworkConnection
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Checking if system is using a wired network connection...'
+        Write-ADTLogEntry -Message 'Checking if system is using a wired network connection...'
         try
         {
             try
             {
-                if (& $Script:CommandTable.'Get-NetAdapter' -Physical | & { process { if ($_.Status.Equals('Up')) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1)
+                if (Get-NetAdapter -Physical | & { process { if ($_.Status.Equals('Up')) { return $_ } } } | Select-Object -First 1)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Wired network connection found.'
+                    Write-ADTLogEntry -Message 'Wired network connection found.'
                     return $true
                 }
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Wired network connection not found.'
+                Write-ADTLogEntry -Message 'Wired network connection not found.'
                 return $false
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -54,7 +54,7 @@ function Get-ADTRedirectedUri
         [ValidateScript({
                 if (![System.Uri]::IsWellFormedUriString($_.AbsoluteUri, [System.UriKind]::Absolute))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Uri -ProvidedValue $_ -ExceptionMessage 'The specified input is not a valid Uri.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Uri -ProvidedValue $_ -ExceptionMessage 'The specified input is not a valid Uri.'))
                 }
                 return !!$_
             })]
@@ -68,7 +68,7 @@ function Get-ADTRedirectedUri
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -78,7 +78,7 @@ function Get-ADTRedirectedUri
             try
             {
                 # Create web request.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Retrieving the redirected URI for [$Uri]."
+                Write-ADTLogEntry -Message "Retrieving the redirected URI for [$Uri]."
                 $webReq = [System.Net.WebRequest]::Create($Uri)
                 $webReq.AllowAutoRedirect = $false
                 $Headers.GetEnumerator() | & { process { $webReq.($_.Key) = $_.Value } }
@@ -95,25 +95,25 @@ function Get-ADTRedirectedUri
                 }
 
                 # Return the redirected URI to the caller.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Retrieved redireted URI [$Uri] from the provided input."
+                Write-ADTLogEntry -Message "Retrieved redireted URI [$Uri] from the provided input."
                 return $Uri
             }
             catch
             {
                 # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to determine the redirected URI for [$Uri]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to determine the redirected URI for [$Uri]."
         }
     }
 
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

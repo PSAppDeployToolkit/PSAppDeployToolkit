@@ -61,8 +61,8 @@ function Show-ADTBlockedAppDialog
 
     begin
     {
-        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -78,30 +78,30 @@ function Show-ADTBlockedAppDialog
             try
             {
                 # Create a mutex and specify a name without acquiring a lock on the mutex.
-                $showBlockedAppDialogMutexName = "Global\$((& $Script:CommandTable.'Get-ADTEnvironment').appDeployToolkitName)_ShowBlockedAppDialog_Message"
+                $showBlockedAppDialogMutexName = "Global\$((Get-ADTEnvironment).appDeployToolkitName)_ShowBlockedAppDialog_Message"
                 $showBlockedAppDialogMutex = [System.Threading.Mutex]::new($false, $showBlockedAppDialogMutexName)
 
                 # Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock.
-                if ((& $Script:CommandTable.'Test-ADTIsMutexAvailable' -MutexName $showBlockedAppDialogMutexName) -and $showBlockedAppDialogMutex.WaitOne(1))
+                if ((Test-ADTIsMutexAvailable -MutexName $showBlockedAppDialogMutexName) -and $showBlockedAppDialogMutex.WaitOne(1))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to acquire an exclusive lock on mutex [$showBlockedAppDialogMutexName] because another blocked application dialog window is already open. Exiting script..." -Severity 2
+                    Write-ADTLogEntry -Message "Unable to acquire an exclusive lock on mutex [$showBlockedAppDialogMutexName] because another blocked application dialog window is already open. Exiting script..." -Severity 2
                     return
                 }
-                & $Script:CommandTable.'Show-ADTInstallationPrompt' -Title $Title -Message (& $Script:CommandTable.'Get-ADTStringTable').BlockExecution.Message -Icon Warning -ButtonRightText OK
+                Show-ADTInstallationPrompt -Title $Title -Message (Get-ADTStringTable).BlockExecution.Message -Icon Warning -ButtonRightText OK
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

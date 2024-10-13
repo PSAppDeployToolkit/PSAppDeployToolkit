@@ -6,7 +6,7 @@
 
 function Get-ADTStringLanguage
 {
-    if (![System.String]::IsNullOrWhiteSpace(($adtConfig = & $Script:CommandTable.'Get-ADTConfig').UI.LanguageOverride))
+    if (![System.String]::IsNullOrWhiteSpace(($adtConfig = Get-ADTConfig).UI.LanguageOverride))
     {
         # The caller has specified a specific language.
         return $adtConfig.UI.LanguageOverride
