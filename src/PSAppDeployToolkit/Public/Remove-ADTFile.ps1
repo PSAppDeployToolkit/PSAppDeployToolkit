@@ -76,7 +76,7 @@ function Remove-ADTFile
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -90,31 +90,31 @@ function Remove-ADTFile
                 {
                     $Item = if ($PSCmdlet.ParameterSetName -eq 'Path')
                     {
-                        (& $Script:CommandTable.'Resolve-Path' -Path $Item).Path
+                        (Resolve-Path -Path $Item).Path
                     }
                     else
                     {
-                        (& $Script:CommandTable.'Resolve-Path' -LiteralPath $Item).Path
+                        (Resolve-Path -LiteralPath $Item).Path
                     }
                 }
                 catch [System.Management.Automation.ItemNotFoundException]
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to resolve the path [$Item] because it does not exist." -Severity 2
+                    Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because it does not exist." -Severity 2
                     continue
                 }
                 catch [System.Management.Automation.DriveNotFoundException]
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to resolve the path [$Item] because the drive does not exist." -Severity 2
+                    Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because the drive does not exist." -Severity 2
                     continue
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$Item]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$Item]."
                 continue
             }
 
@@ -123,35 +123,35 @@ function Remove-ADTFile
             {
                 try
                 {
-                    if (& $Script:CommandTable.'Test-Path' -LiteralPath $Item -PathType Container)
+                    if (Test-Path -LiteralPath $Item -PathType Container)
                     {
                         if (!$Recurse)
                         {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Skipping folder [$Item] because the Recurse switch was not specified."
+                            Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified."
                             continue
                         }
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Deleting file(s) recursively in path [$Item]..."
+                        Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Deleting file in path [$Item]..."
+                        Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
                     }
-                    $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $Item -Recurse:$Recurse -Force
+                    $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete items in path [$Item]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete items in path [$Item]."
             }
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -147,17 +147,17 @@ function Write-ADTLogEntry
         }
 
         # If we don't have an active session, write the message to the verbose stream (4).
-        if (& $Script:CommandTable.'Test-ADTSessionActive')
+        if (Test-ADTSessionActive)
         {
-            (& $Script:CommandTable.'Get-ADTSession').WriteLogEntry($messages, $Severity, $Source, $ScriptSection, $null, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
+            (Get-ADTSession).WriteLogEntry($messages, $Severity, $Source, $ScriptSection, $null, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
         }
         elseif (!$DebugMessage)
         {
             if ([System.String]::IsNullOrWhiteSpace($Source))
             {
-                $Source = (& $Script:CommandTable.'Get-ADTLogEntryCaller').Command
+                $Source = (Get-ADTLogEntryCaller).Command
             }
-            $messages -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | & $Script:CommandTable.'Write-Verbose'
+            $messages -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
         }
 
         # Return the provided message if PassThru is true.

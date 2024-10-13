@@ -59,40 +59,40 @@ function Remove-ADTEdgeExtension
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing extension with ID [$ExtensionID]."
+        Write-ADTLogEntry -Message "Removing extension with ID [$ExtensionID]."
         try
         {
             try
             {
                 # Return early if the extension isn't installed.
-                if (!($installedExtensions = & $Script:CommandTable.'Get-ADTEdgeExtensions').PSObject.Properties -or ($installedExtensions.PSObject.Properties.Name -notcontains $ExtensionID))
+                if (!($installedExtensions = Get-ADTEdgeExtensions).PSObject.Properties -or ($installedExtensions.PSObject.Properties.Name -notcontains $ExtensionID))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Extension with ID [$ExtensionID] is not configured. Removal not required."
+                    Write-ADTLogEntry -Message "Extension with ID [$ExtensionID] is not configured. Removal not required."
                     return
                 }
 
                 # If the deploymentmode is Remove, remove the extension from the list.
                 $installedExtensions.PSObject.Properties.Remove($ExtensionID)
-                $null = & $Script:CommandTable.'Set-ADTRegistryKey' -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | & $Script:CommandTable.'ConvertTo-Json' -Compress)
+                $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress)
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

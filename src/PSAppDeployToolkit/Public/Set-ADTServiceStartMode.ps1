@@ -53,7 +53,7 @@ function Set-ADTServiceStartMode
         [ValidateScript({
                 if (!$_.Name)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
@@ -67,7 +67,7 @@ function Set-ADTServiceStartMode
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Re-write StartMode to suit sc.exe.
         $StartMode = switch ($StartMode)
@@ -81,7 +81,7 @@ function Set-ADTServiceStartMode
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(($msg = "Setting service [$($Service.Name)] startup mode to [$StartMode]"))."
+        Write-ADTLogEntry -Message "$(($msg = "Setting service [$($Service.Name)] startup mode to [$StartMode]"))."
         try
         {
             try
@@ -90,12 +90,12 @@ function Set-ADTServiceStartMode
                 $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $StartMode 2>&1
                 if (!$LASTEXITCODE)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Successfully set service [($Service.Name)] startup mode to [$StartMode]."
+                    Write-ADTLogEntry -Message "Successfully set service [($Service.Name)] startup mode to [$StartMode]."
                     return
                 }
 
                 # If we're here, we had a bad exit code.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $scResult") -Severity 3
+                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $scResult") -Severity 3
                 $naerParams = @{
                     Exception = [System.ApplicationException]::new($msg)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
@@ -103,21 +103,21 @@ function Set-ADTServiceStartMode
                     TargetObject = $scResult
                     RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
-                throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                throw (New-ADTErrorRecord @naerParams)
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

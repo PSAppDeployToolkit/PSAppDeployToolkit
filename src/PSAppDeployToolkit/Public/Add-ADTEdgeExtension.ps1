@@ -78,12 +78,12 @@ function Add-ADTEdgeExtension
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Adding extension with ID [$ExtensionID] using installation mode [$InstallationMode] and update URL [$UpdateUrl]$(if ($MinimumVersionRequired) {" with minimum version required [$MinimumVersionRequired]"})."
+        Write-ADTLogEntry -Message "Adding extension with ID [$ExtensionID] using installation mode [$InstallationMode] and update URL [$UpdateUrl]$(if ($MinimumVersionRequired) {" with minimum version required [$MinimumVersionRequired]"})."
         try
         {
             try
@@ -92,21 +92,21 @@ function Add-ADTEdgeExtension
                 $additionalExtension = @{ installation_mode = $InstallationMode; update_url = $UpdateUrl }; if ($MinimumVersionRequired) { $additionalExtension.Add('minimum_version_required', $MinimumVersionRequired) }
 
                 # Add the additional extension to the current values, then re-write the definition in the registry.
-                $null = & $Script:CommandTable.'Set-ADTRegistryKey' -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value (& $Script:CommandTable.'Get-ADTEdgeExtensions' | & $Script:CommandTable.'Add-Member' -Name $ExtensionID -Value $additionalExtension -MemberType NoteProperty -Force -PassThru | & $Script:CommandTable.'ConvertTo-Json' -Compress)
+                $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value (Get-ADTEdgeExtensions | Add-Member -Name $ExtensionID -Value $additionalExtension -MemberType NoteProperty -Force -PassThru | ConvertTo-Json -Compress)
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

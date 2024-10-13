@@ -63,7 +63,7 @@ function Install-ADTSCCMSoftwareUpdates
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -73,7 +73,7 @@ function Install-ADTSCCMSoftwareUpdates
             try
             {
                 # If SCCM 2007 Client or lower, exit function.
-                if (($SCCMClientVersion = & $Script:CommandTable.'Get-ADTSCCMClientVersion').Major -le 4)
+                if (($SCCMClientVersion = Get-ADTSCCMClientVersion).Major -le 4)
                 {
                     $naerParams = @{
                         Exception = [System.Data.VersionNotFoundException]::new('SCCM 2007 or lower, which is incompatible with this function, was detected on this system.')
@@ -82,61 +82,61 @@ function Install-ADTSCCMSoftwareUpdates
                         TargetObject = $SCCMClientVersion
                         RecommendedAction = "Please review the installed CcmExec client and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Trigger SCCM client scan for Software Updates.
                 $StartTime = [System.DateTime]::Now
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Triggering SCCM client scan for Software Updates...'
-                & $Script:CommandTable.'Invoke-ADTSCCMTask' -ScheduleId 'SoftwareUpdatesScan'
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish."
-                & $Script:CommandTable.'Start-Sleep' -Seconds $SoftwareUpdatesScanWaitInSeconds
+                Write-ADTLogEntry -Message 'Triggering SCCM client scan for Software Updates...'
+                Invoke-ADTSCCMTask -ScheduleId 'SoftwareUpdatesScan'
+                Write-ADTLogEntry -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish."
+                Start-Sleep -Seconds $SoftwareUpdatesScanWaitInSeconds
 
                 # Find the number of missing updates.
                 try
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Getting the number of missing updates...'
-                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMMissingUpdates = & $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM\ClientSDK -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'"
+                    Write-ADTLogEntry -Message 'Getting the number of missing updates...'
+                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMMissingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'"
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to find the number of missing software updates.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 2
+                    Write-ADTLogEntry -Message "Failed to find the number of missing software updates.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
                     throw
                 }
 
                 # Install missing updates and wait for pending updates to finish installing.
                 if (!$CMMissingUpdates.Count)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'There are no missing updates.'
+                    Write-ADTLogEntry -Message 'There are no missing updates.'
                     return
                 }
 
                 # Install missing updates.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
-                $null = (& $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
+                Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
+                $null = (Get-CimInstance -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
 
                 # Wait for pending updates to finish installing or the timeout value to expire.
                 do
                 {
-                    & $Script:CommandTable.'Start-Sleep' -Seconds 60
-                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = & $Script:CommandTable.'Get-CimInstance' -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "The number of updates pending installation is [$($CMInstallPendingUpdates.Count)]."
+                    Start-Sleep -Seconds 60
+                    [Microsoft.Management.Infrastructure.CimInstance[]]$CMInstallPendingUpdates = Get-CimInstance -Namespace ROOT\CCM\ClientSDK -Query 'SELECT * FROM CCM_SoftwareUpdate WHERE EvaluationState = 6 or EvaluationState = 7'
+                    Write-ADTLogEntry -Message "The number of updates pending installation is [$($CMInstallPendingUpdates.Count)]."
                 }
                 while (($CMInstallPendingUpdates.Count -ne 0) -and ([System.DateTime]::Now - $StartTime) -lt $WaitForPendingUpdatesTimeout)
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to trigger installation of missing software updates."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to trigger installation of missing software updates."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

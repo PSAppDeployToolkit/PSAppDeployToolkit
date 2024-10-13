@@ -30,5 +30,5 @@ function Import-ADTStringTable
     }
 
     # Store the chosen language within this session.
-    & $Script:CommandTable.'Import-LocalizedData' -FileName strings.psd1 @PSBoundParameters
+    Import-LocalizedData -FileName strings.psd1 @PSBoundParameters
 }

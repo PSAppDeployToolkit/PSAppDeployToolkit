@@ -31,8 +31,8 @@ function Show-ADTInstallationRestartPromptClassic
     )
 
     # Initialize variables.
-    $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
-    $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
+    $adtConfig = Get-ADTConfig
+    $adtStrings = Get-ADTStringTable
 
     # Define starting counters.
     $startTime = [System.DateTime]::Now
@@ -48,12 +48,12 @@ function Show-ADTInstallationRestartPromptClassic
         # Disable the X button.
         try
         {
-            & $Script:CommandTable.'Disable-ADTWindowCloseButton' -WindowHandle $formRestart.Handle
+            Disable-ADTWindowCloseButton -WindowHandle $formRestart.Handle
         }
         catch
         {
             # Not a terminating error if we can't disable the button. Just disable the Control Box instead
-            & $Script:CommandTable.'Write-ADTLogEntry' 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
+            Write-ADTLogEntry 'Failed to disable the Close button. Disabling the Control Box instead.' -Severity 2
             $formRestart.ControlBox = $false
         }
 
@@ -95,12 +95,12 @@ function Show-ADTInstallationRestartPromptClassic
         }
     }
     $buttonRestartNow_Click = {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Forcefully restarting the computer...'
-        & $Script:CommandTable.'Restart-Computer' -Force
+        Write-ADTLogEntry -Message 'Forcefully restarting the computer...'
+        Restart-Computer -Force
     }
     $timerCountdown_Tick = {
         # Get the time information.
-        $currentTime = & $Script:CommandTable.'Get-Date'
+        $currentTime = Get-Date
         $countdownTime = $startTime.AddSeconds($countdownSeconds)
         $remainingTime = $countdownTime.Subtract($currentTime)
 
@@ -301,11 +301,11 @@ function Show-ADTInstallationRestartPromptClassic
     # Show the Form.
     if ($NoCountdown)
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Displaying restart prompt with no countdown.'
+        Write-ADTLogEntry -Message 'Displaying restart prompt with no countdown.'
     }
     else
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."
+        Write-ADTLogEntry -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."
     }
     return $formRestart.ShowDialog()
 }

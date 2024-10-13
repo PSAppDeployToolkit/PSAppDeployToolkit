@@ -76,15 +76,15 @@ function Mount-ADTWimFile
         [ValidateScript({
                 if ($null -eq $_)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
                 }
                 if (!$_.Exists)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be found.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be found.'))
                 }
                 if ([System.Uri]::new($_).IsUnc)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be a network share.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be a network share.'))
                 }
                 return !!$_
             })]
@@ -95,19 +95,19 @@ function Mount-ADTWimFile
         [ValidateScript({
                 if ($null -eq $_)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
                 }
                 if ([System.Uri]::new($_).IsUnc)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path cannot be a network share.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path cannot be a network share.'))
                 }
-                if (& $Script:CommandTable.'Get-ADTMountedWimFile' -Path $_)
+                if (Get-ADTMountedWimFile -Path $_)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path has a pre-existing WIM mounted.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path has a pre-existing WIM mounted.'))
                 }
-                if (& $Script:CommandTable.'Get-ChildItem' -LiteralPath $_ -ErrorAction Ignore)
+                if (Get-ChildItem -LiteralPath $_ -ErrorAction Ignore)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path is not empty.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path is not empty.'))
                 }
                 return !!$_
             })]
@@ -138,51 +138,51 @@ function Mount-ADTWimFile
             $PSBoundParameters.Remove('PassThru')
             $PSBoundParameters.Remove('Force')
             $PSBoundParameters.Remove('Path')
-            & $Script:CommandTable.'Get-WindowsImage' @PSBoundParameters
+            Get-WindowsImage @PSBoundParameters
         }
         catch
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         # Announce commencement.
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Mounting WIM file [$ImagePath] to [$Path]."
+        Write-ADTLogEntry -Message "Mounting WIM file [$ImagePath] to [$Path]."
         try
         {
             try
             {
                 # Provide a warning if this WIM file is already mounted.
-                if (($wimFile = & $Script:CommandTable.'Get-ADTMountedWimFile' -ImagePath $ImagePath))
+                if (($wimFile = Get-ADTMountedWimFile -ImagePath $ImagePath))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "The WIM file [$ImagePath] is already mounted at [$($wimFile.Path)] and will be mounted again." -Severity 2
+                    Write-ADTLogEntry -Message "The WIM file [$ImagePath] is already mounted at [$($wimFile.Path)] and will be mounted again." -Severity 2
                 }
 
                 # If we're using the force, forcibly remove the existing directory.
                 if ([System.IO.Directory]::Exists($Path) -and $Force)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing pre-existing path [$Path] as [-Force] was provided."
-                    & $Script:CommandTable.'Remove-Item' -LiteralPath $Path -Force -Confirm:$false
+                    Write-ADTLogEntry -Message "Removing pre-existing path [$Path] as [-Force] was provided."
+                    Remove-Item -LiteralPath $Path -Force -Confirm:$false
                 }
 
                 # If the path doesn't exist, create it.
                 if (![System.IO.Directory]::Exists($Path))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating path [$Path] as it does not exist."
+                    Write-ADTLogEntry -Message "Creating path [$Path] as it does not exist."
                     $Path = [System.IO.Directory]::CreateDirectory($Path).FullName
                 }
 
                 # Mount the WIM file.
-                $res = & $Script:CommandTable.'Mount-WindowsImage' @PSBoundParameters -Path $Path -ReadOnly -CheckIntegrity
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Successfully mounted WIM file [$ImagePath]."
+                $res = Mount-WindowsImage @PSBoundParameters -Path $Path -ReadOnly -CheckIntegrity
+                Write-ADTLogEntry -Message "Successfully mounted WIM file [$ImagePath]."
 
                 # Store the result within the user's ADTSession if there's an active one.
-                if (& $Script:CommandTable.'Test-ADTSessionActive')
+                if (Test-ADTSessionActive)
                 {
-                    (& $Script:CommandTable.'Get-ADTSession').GetMountedWimFiles().Add($ImagePath)
+                    (Get-ADTSession).GetMountedWimFiles().Add($ImagePath)
                 }
 
                 # Return the result if we're passing through.
@@ -193,17 +193,17 @@ function Mount-ADTWimFile
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage 'Error occurred while attemping to mount WIM file.'
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage 'Error occurred while attemping to mount WIM file.'
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -156,7 +156,7 @@ function Uninstall-ADTApplication
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
@@ -168,16 +168,16 @@ function Uninstall-ADTApplication
                     ErrorId           = 'NullParameterValue'
                     RecommendedAction = "Review the supplied parameter values and try again."
                 }
-                $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
 
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
-            $gaiaParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
-            $InstalledApplication = & $Script:CommandTable.'Get-ADTApplication' @gaiaParams
+            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
+            $InstalledApplication = Get-ADTApplication @gaiaParams
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
-        $sampParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType
+        $sampParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude InstalledApplication, Name, NameMatch, ProductCode, FilterScript, ApplicationType
         $sampParams.Action = 'Uninstall'
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
@@ -194,7 +194,7 @@ function Uninstall-ADTApplication
     {
         if (!$InstalledApplication)
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'No applications found for removal.'
+            Write-ADTLogEntry -Message 'No applications found for removal.'
             return
         }
 
@@ -206,18 +206,18 @@ function Uninstall-ADTApplication
                 {
                     if ([string]::IsNullOrWhiteSpace($removeApplication.ProductCode))
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                        Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
                     $sampParams.Path = $removeApplication.ProductCode
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
+                    Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
                     try
                     {
-                        & $Script:CommandTable.'Start-ADTMsiProcess' @sampParams
+                        Start-ADTMsiProcess @sampParams
                     }
                     catch
                     {
-                        & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                        Write-Error -ErrorRecord $_
                     }
                 }
                 else
@@ -232,7 +232,7 @@ function Uninstall-ADTApplication
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                        Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
 
@@ -242,7 +242,7 @@ function Uninstall-ADTApplication
                     if ($uninstallString -match "^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$")
                     {
                         $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                        if (![System.IO.File]::Exists($sapParams.Path) -and ($commandPath = & $Script:CommandTable.'Get-Command' -Name $sapParams.Path -ErrorAction Ignore))
+                        if (![System.IO.File]::Exists($sapParams.Path) -and ($commandPath = Get-Command -Name $sapParams.Path -ErrorAction Ignore))
                         {
                             $sapParams.Path = $commandPath.Source
                         }
@@ -253,7 +253,7 @@ function Uninstall-ADTApplication
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invalid UninstallString [$uninstallString] found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
+                        Write-ADTLogEntry -Message "Invalid UninstallString [$uninstallString] found for EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
 
@@ -281,26 +281,26 @@ function Uninstall-ADTApplication
                         }
                     }
 
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]."
+                    Write-ADTLogEntry -Message "Removing EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]."
                     try
                     {
-                        & $Script:CommandTable.'Start-ADTProcess' @sapParams
+                        Start-ADTProcess @sapParams
                     }
                     catch
                     {
-                        & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                        Write-Error -ErrorRecord $_
                     }
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

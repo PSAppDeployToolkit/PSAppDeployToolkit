@@ -61,7 +61,7 @@ function Start-ADTMspProcess
         [ValidateScript({
                 if (('.msp' -contains [System.IO.Path]::GetExtension($_)))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is not an .msp file.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is not an .msp file.'))
                 }
                 return !!$_
             })]
@@ -75,8 +75,8 @@ function Start-ADTMspProcess
 
     begin
     {
-        $adtSession = & $Script:CommandTable.'Initialize-ADTModuleIfUnitialized' -Cmdlet $PSCmdlet
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -90,13 +90,13 @@ function Start-ADTMspProcess
                 {
                     $dirFilesPath
                 }
-                elseif (& $Script:CommandTable.'Test-Path' -LiteralPath $Path)
+                elseif (Test-Path -LiteralPath $Path)
                 {
-                    (& $Script:CommandTable.'Get-Item' -LiteralPath $Path).FullName
+                    (Get-Item -LiteralPath $Path).FullName
                 }
                 else
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to find MSP file [$Path]." -Severity 3
+                    Write-ADTLogEntry -Message "Failed to find MSP file [$Path]." -Severity 3
                     $naerParams = @{
                         Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$Path].")
                         Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
@@ -104,18 +104,18 @@ function Start-ADTMspProcess
                         TargetObject = $Path
                         RecommendedAction = "Please confirm the path of the MSP file and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Create a Windows Installer object and open the database in read-only mode.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Checking MSP file for valid product codes.'
-                [__ComObject]$Installer = & $Script:CommandTable.'New-Object' -ComObject WindowsInstaller.Installer
-                [__ComObject]$Database = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
+                Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
+                [__ComObject]$Installer = New-Object -ComObject WindowsInstaller.Installer
+                [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
 
                 # Get the SummaryInformation from the windows installer database and store all product codes found.
-                [__ComObject]$SummaryInformation = & $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $Database -PropertyName SummaryInformation
-                $msiProductCode = (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
-                $AllTargetedProductCodes = & $Script:CommandTable.'Get-ADTApplication' -FilterScript { $_.ProductCode -eq $msiProductCode }
+                [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
+                $msiProductCode = (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
+                $AllTargetedProductCodes = Get-ADTApplication -FilterScript { $_.ProductCode -eq $msiProductCode }
 
                 # Free our COM objects.
                 [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)
@@ -125,22 +125,22 @@ function Start-ADTMspProcess
                 # If the application is installed, patch it.
                 if ($AllTargetedProductCodes)
                 {
-                    & $Script:CommandTable.'Start-ADTMsiProcess' -Action Patch @PSBoundParameters
+                    Start-ADTMsiProcess -Action Patch @PSBoundParameters
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

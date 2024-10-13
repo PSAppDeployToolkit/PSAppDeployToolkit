@@ -50,7 +50,7 @@ function Invoke-ADTServiceAndDependencyOperation
         [ValidateScript({
                 if (!$_.Name)
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
@@ -75,24 +75,24 @@ function Invoke-ADTServiceAndDependencyOperation
     function Invoke-DependentServiceOperation
     {
         # Discover all dependent services.
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
-        if (!($dependentServices = & $Script:CommandTable.'Get-Service' -Name $Service.ServiceName -DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } }))
+        Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
+        if (!($dependentServices = Get-Service -Name $Service.ServiceName -DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } }))
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Dependent service(s) were not discovered for service [$Name]."
+            Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Name]."
             return
         }
 
         # Action each found dependent service.
         foreach ($dependent in $dependentServices)
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(('Starting', 'Stopping')[$Operation -eq 'Start']) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
+            Write-ADTLogEntry -Message "$(('Starting', 'Stopping')[$Operation -eq 'Start']) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
             try
             {
                 $dependent | & "$($Operation)-Service" -Force -WarningAction Ignore
             }
             catch
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to $($Operation.ToLower()) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity 2
+                Write-ADTLogEntry -Message "Failed to $($Operation.ToLower()) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity 2
             }
         }
     }
@@ -100,13 +100,13 @@ function Invoke-ADTServiceAndDependencyOperation
     # Wait up to 60 seconds if service is in a pending state.
     if (([System.ServiceProcess.ServiceControllerStatus]$desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }[$Service.Status]))
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]."
+        Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]."
         $Service.WaitForStatus($desiredStatus, $PendingStatusWait)
         $Service.Refresh()
     }
 
     # Discover if the service is currently running.
-    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]."
+    Write-ADTLogEntry -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]."
     if (($Operation -eq 'Stop') -and ($Service.Status -ne 'Stopped'))
     {
         # Process all dependent services.
@@ -116,14 +116,14 @@ function Invoke-ADTServiceAndDependencyOperation
         }
 
         # Stop the parent service.
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
-        $Service = $Service | & $Script:CommandTable.'Stop-Service' -PassThru -WarningAction Ignore -Force
+        Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
+        $Service = $Service | Stop-Service -PassThru -WarningAction Ignore -Force
     }
     elseif (($Operation -eq 'Start') -and ($Service.Status -ne 'Running'))
     {
         # Start the parent service.
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
-        $Service = $Service | & $Script:CommandTable.'Start-Service' -PassThru -WarningAction Ignore
+        Write-ADTLogEntry -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
+        $Service = $Service | Start-Service -PassThru -WarningAction Ignore
 
         # Process all dependent services.
         if (!$SkipDependentServices)

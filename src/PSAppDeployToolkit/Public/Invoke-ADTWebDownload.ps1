@@ -63,7 +63,7 @@ function Invoke-ADTWebDownload
         [ValidateScript({
                 if (![System.Uri]::IsWellFormedUriString($_.AbsoluteUri, [System.UriKind]::Absolute))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Uri -ProvidedValue $_ -ExceptionMessage 'The specified input is not a valid Uri.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Uri -ProvidedValue $_ -ExceptionMessage 'The specified input is not a valid Uri.'))
                 }
                 return !!$_
             })]
@@ -88,7 +88,7 @@ function Invoke-ADTWebDownload
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -98,12 +98,12 @@ function Invoke-ADTWebDownload
             try
             {
                 # Commence download and return the result if passing through.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Downloading $Uri."
-                $iwrParams = & $Script:CommandTable.'Get-ADTBoundParametersAndDefaultValues' -Invocation $MyInvocation -Exclude Sha256Hash
-                $iwrResult = & $Script:CommandTable.'Invoke-ADTCommandWithRetries' -Command $Script:CommandTable.'Invoke-WebRequest' -UseBasicParsing @iwrParams -Verbose:$false
+                Write-ADTLogEntry -Message "Downloading $Uri."
+                $iwrParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Sha256Hash
+                $iwrResult = Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Invoke-WebRequest' -UseBasicParsing @iwrParams -Verbose:$false
 
                 # Validate the hash if one was provided.
-                if ($PSBoundParameters.ContainsKey('Sha256Hash') -and (($fileHash = & $Script:CommandTable.'Get-FileHash' -LiteralPath $OutFile).Hash -ne $Sha256Hash))
+                if ($PSBoundParameters.ContainsKey('Sha256Hash') -and (($fileHash = Get-FileHash -LiteralPath $OutFile).Hash -ne $Sha256Hash))
                 {
                     $naerParams = @{
                         Exception = [System.BadImageFormatException]::new("The downloaded file has an invalid file hash of [$($fileHash.Hash)].", $OutFile)
@@ -112,7 +112,7 @@ function Invoke-ADTWebDownload
                         TargetObject = $fileHash
                         RecommendedAction = "Please compare the downloaded file's hash against the provided value and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Return any results from Invoke-WebRequest if we have any and we're passing through.
@@ -124,19 +124,19 @@ function Invoke-ADTWebDownload
             catch
             {
                 # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Error downloading setup file(s) from the provided URL of [$Uri]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Error downloading setup file(s) from the provided URL of [$Uri]."
         }
     }
 
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

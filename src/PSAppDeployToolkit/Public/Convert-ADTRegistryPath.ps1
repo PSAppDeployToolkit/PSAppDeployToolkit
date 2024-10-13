@@ -77,7 +77,7 @@ function Convert-ADTRegistryPath
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Suppress logging output unless the caller has said otherwise.
         if (!$PSBoundParameters.ContainsKey('InformationAction'))
@@ -135,7 +135,7 @@ function Convert-ADTRegistryPath
                     }
                     else
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
+                        Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
                         return
                     }
                 }
@@ -150,25 +150,25 @@ function Convert-ADTRegistryPath
                         TargetObject = $Key
                         RecommendedAction = "Please confirm the supplied value is correct and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Return fully qualified registry key path [$Key]."
+                Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
                 return $Key
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

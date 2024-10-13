@@ -47,7 +47,7 @@ function Get-ADTPEFileArchitecture
         [ValidateScript({
                 if (!$_.Exists -or ($_ -notmatch '\.(exe|dll|ocx|drv|sys|scr|efi|cpl|fon)$'))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'One or more files either does not exist or has an invalid extension.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'One or more files either does not exist or has an invalid extension.'))
                 }
                 return !!$_
             })]
@@ -56,7 +56,7 @@ function Get-ADTPEFileArchitecture
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         [System.Int32]$MACHINE_OFFSET = 4
         [System.Int32]$PE_POINTER_OFFSET = 60
         [System.Byte[]]$data = [System.Byte[]]::new(4096)
@@ -109,23 +109,23 @@ function Get-ADTPEFileArchitecture
                             break
                         }
                     }
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
+                    Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
                     return $PEArchitecture
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

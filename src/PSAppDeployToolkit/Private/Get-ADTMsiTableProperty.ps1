@@ -73,9 +73,9 @@ function Get-ADTMsiTableProperty
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
+                if (!(Test-Path -Path $_ -PathType Leaf))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
                 return !!$_
             })]
@@ -83,9 +83,9 @@ function Get-ADTMsiTableProperty
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-                if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
+                if (!(Test-Path -Path $_ -PathType Leaf))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName TransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName TransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
                 return !!$_
             })]
@@ -124,25 +124,25 @@ function Get-ADTMsiTableProperty
         }
 
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
         if ($PSCmdlet.ParameterSetName -eq 'TableInfo')
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Reading data from Windows Installer database file [$Path] in table [$Table]."
+            Write-ADTLogEntry -Message "Reading data from Windows Installer database file [$Path] in table [$Table]."
         }
         else
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Reading the Summary Information from the Windows Installer database file [$Path]."
+            Write-ADTLogEntry -Message "Reading the Summary Information from the Windows Installer database file [$Path]."
         }
         try
         {
             try
             {
                 # Create a Windows Installer object and define properties for how the MSI database is opened
-                $Installer = & $Script:CommandTable.'New-Object' -ComObject WindowsInstaller.Installer
+                $Installer = New-Object -ComObject WindowsInstaller.Installer
                 $msiOpenDatabaseModeReadOnly = 0
                 $msiSuppressApplyTransformErrors = 63
                 $msiOpenDatabaseModePatchFile = 32
@@ -156,12 +156,12 @@ function Get-ADTMsiTableProperty
                 }
 
                 # Open database in read only mode and apply a list of transform(s).
-                $Database = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($Path, $msiOpenDatabaseMode)
+                $Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($Path, $msiOpenDatabaseMode)
                 if ($TransformPath -and !$IsMspFile)
                 {
                     $null = foreach ($Transform in $TransformPath)
                     {
-                        & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Database -MethodName ApplyTransform -ArgumentList @($Transform, $msiSuppressApplyTransformErrors)
+                        Invoke-ADTObjectMethod -InputObject $Database -MethodName ApplyTransform -ArgumentList @($Transform, $msiSuppressApplyTransformErrors)
                     }
                 }
 
@@ -170,38 +170,38 @@ function Get-ADTMsiTableProperty
                 {
                     # Get the SummaryInformation from the windows installer database.
                     # Summary property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
-                    $SummaryInformation = & $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $Database -PropertyName SummaryInformation
+                    $SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
                     return [PSADT.Types.MsiSummaryInfo]::new(
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(1)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(2)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(3)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(4)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(5)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(6)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(8)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(9)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(11)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(12)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(13)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(14)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(15)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(16)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(18)),
-                        (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(19))
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(1)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(2)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(3)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(4)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(5)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(6)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(8)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(9)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(11)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(12)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(13)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(14)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(15)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(16)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(18)),
+                        (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(19))
                     )
                 }
 
                 # Open the requested table view from the database.
                 $TableProperties = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
-                $View = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
-                $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Execute
+                $View = Invoke-ADTObjectMethod -InputObject $Database -MethodName OpenView -ArgumentList @("SELECT * FROM $Table")
+                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Execute
 
                 # Retrieve the first row from the requested table. If the first row was successfully retrieved, then save data and loop through the entire table.
                 # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-                while (($Record = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $View -MethodName Fetch))
+                while (($Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch))
                 {
-                    $TableProperties.Add((& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (& $Script:CommandTable.'Get-ADTObjectProperty' -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyValueColumnNum)))
+                    $TableProperties.Add((Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyNameColumnNum)), (Get-ADTObjectProperty -InputObject $Record -PropertyName StringData -ArgumentList @($TablePropertyValueColumnNum)))
                 }
 
                 # Return the accumulated results. We can't use a custom object for this as we have no idea what's going to be in the properties of a given MSI.
@@ -213,17 +213,17 @@ function Get-ADTMsiTableProperty
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to get the MSI table [$Table]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to get the MSI table [$Table]."
         }
         finally
         {
             # Release all COM objects to prevent file locks.
-            $null = foreach ($variable in (& $Script:CommandTable.'Get-Variable' -Name View, SummaryInformation, Database, Installer -ValueOnly -ErrorAction Ignore))
+            $null = foreach ($variable in (Get-Variable -Name View, SummaryInformation, Database, Installer -ValueOnly -ErrorAction Ignore))
             {
                 try
                 {
@@ -239,6 +239,6 @@ function Get-ADTMsiTableProperty
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

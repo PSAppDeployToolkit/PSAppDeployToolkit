@@ -78,7 +78,7 @@ function Test-ADTRegistryValue
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -90,35 +90,35 @@ function Test-ADTRegistryValue
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
                 $Key = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
                 }
 
                 # Test whether value exists or not.
-                if ((& $Script:CommandTable.'Get-Item' -LiteralPath $Key -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty Property -ErrorAction Ignore) -contains $Name)
+                if ((Get-Item -LiteralPath $Key -ErrorAction Ignore | Select-Object -ExpandProperty Property -ErrorAction Ignore) -contains $Name)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Name] does exist."
+                    Write-ADTLogEntry -Message "Registry key value [$Key] [$Name] does exist."
                     return $true
                 }
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Registry key value [$Key] [$Name] does not exist."
+                Write-ADTLogEntry -Message "Registry key value [$Key] [$Name] does not exist."
                 return $false
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

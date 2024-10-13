@@ -77,7 +77,7 @@ function Initialize-ADTFunction
         # Directly go up the scope tree if its an in-session function.
         if ($SessionState.Equals($ExecutionContext.SessionState))
         {
-            & $Script:CommandTable.'Set-Variable' -Name $Name -Value $Value -Scope 2 -Force -Confirm:$false -WhatIf:$false
+            Set-Variable -Name $Name -Value $Value -Scope 2 -Force -Confirm:$false -WhatIf:$false
         }
         else
         {
@@ -89,15 +89,15 @@ function Initialize-ADTFunction
     $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 
     # Write debug log messages.
-    & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Function Start' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
+    Write-ADTLogEntry -Message 'Function Start' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
     if ($Cmdlet.MyInvocation.BoundParameters.Count)
     {
-        $CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | & $Script:CommandTable.'Format-Table' -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) { $_.Value.GetType().Name } }; Alignment = 'Left' } -AutoSize -Wrap | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Function invoked with bound parameter(s):`n$CmdletBoundParameters" -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
+        $CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) { $_.Value.GetType().Name } }; Alignment = 'Left' } -AutoSize -Wrap | Out-String -Width ([System.Int32]::MaxValue)
+        Write-ADTLogEntry -Message "Function invoked with bound parameter(s):`n$CmdletBoundParameters" -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
     }
     else
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Function invoked without any bound parameters.' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
+        Write-ADTLogEntry -Message 'Function invoked without any bound parameters.' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
     }
 
     # Amend the caller's $ErrorActionPreference to archive off their provided value so we can always stop on a dime.

@@ -97,15 +97,15 @@ function New-ADTTemplate
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $templatePath = & $Script:CommandTable.'Join-Path' -Path $Destination -ChildPath $Name
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $templatePath = Join-Path -Path $Destination -ChildPath $Name
         $templateModulePath = if ($Version.Equals(3))
         {
-            & $Script:CommandTable.'Join-Path' -Path $templatePath -ChildPath "AppDeployToolkit\$($MyInvocation.MyCommand.Module.Name)"
+            Join-Path -Path $templatePath -ChildPath "AppDeployToolkit\$($MyInvocation.MyCommand.Module.Name)"
         }
         else
         {
-            & $Script:CommandTable.'Join-Path' -Path $templatePath -ChildPath $MyInvocation.MyCommand.Module.Name
+            Join-Path -Path $templatePath -ChildPath $MyInvocation.MyCommand.Module.Name
         }
     }
 
@@ -117,7 +117,7 @@ function New-ADTTemplate
             {
                 if (![System.IO.Directory]::Exists($Destination))
                 {
-                    $null = & $Script:CommandTable.'New-Item' -Path $Destination -ItemType Directory -Force
+                    $null = New-Item -Path $Destination -ItemType Directory -Force
                 }
                 if ([System.IO.Directory]::Exists($templatePath))
                 {
@@ -132,16 +132,16 @@ function New-ADTTemplate
                                 TargetObject      = $templatePath
                                 RecommendedAction = "Please remove the existing folder, supply a new name, or add the -Force parameter and try again."
                             }
-                            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                            throw (New-ADTErrorRecord @naerParams)
                         }
-                        $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $templatePath -Recurse -Force
+                        $null = Remove-Item -LiteralPath $templatePath -Recurse -Force
                     }
                 }
-                $null = & $Script:CommandTable.'New-Item' -Path "$templatePath\Files" -ItemType Directory -Force
-                $null = & $Script:CommandTable.'New-Item' -Path "$templatePath\SuppportFiles" -ItemType Directory -Force
-                $null = & $Script:CommandTable.'New-Item' -Path $templateModulePath -ItemType Directory -Force
-                & $Script:CommandTable.'Copy-Item' -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
-                & $Script:CommandTable.'Copy-Item' -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
+                $null = New-Item -Path "$templatePath\Files" -ItemType Directory -Force
+                $null = New-Item -Path "$templatePath\SuppportFiles" -ItemType Directory -Force
+                $null = New-Item -Path $templateModulePath -ItemType Directory -Force
+                Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
+                Copy-Item -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
                 if (!$PSCore)
                 {
                     $folderToRemove = "$templateModulePath\lib\net6.0"
@@ -154,32 +154,32 @@ function New-ADTTemplate
                     {
                         if ([System.IO.File]::Exists($file))
                         {
-                            & $Script:CommandTable.'Remove-Item' -LiteralPath $file -Force
+                            Remove-Item -LiteralPath $file -Force
                         }
                     }
                     if ([System.IO.Directory]::Exists($folderToRemove) -and !([System.IO.Directory]::GetFileSystemEntries($folderToRemove)))
                     {
-                        & $Script:CommandTable.'Remove-Item' -LiteralPath $folderToRemove -Recurse -Force
+                        Remove-Item -LiteralPath $folderToRemove -Recurse -Force
                     }
                 }
                 if ($PassThru)
                 {
-                    & $Script:CommandTable.'Get-Item' -LiteralPath $templatePath
+                    Get-Item -LiteralPath $templatePath
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

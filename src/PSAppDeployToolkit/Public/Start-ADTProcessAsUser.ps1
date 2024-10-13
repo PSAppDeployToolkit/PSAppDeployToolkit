@@ -247,7 +247,7 @@ function Start-ADTProcessAsUser
     begin
     {
         # Initialise function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Strip out parameters not destined for the C# code.
         ('SecureParameters', 'PassThru').ForEach({
@@ -266,7 +266,7 @@ function Start-ADTProcessAsUser
         # Translate a provided username into a session Id.
         if ($PSBoundParameters.ContainsKey('Username'))
         {
-            $SessionId = [PSADT.QueryUser]::GetUserSessionInfo() | & { process { if ($_.NTAccount -eq $Username) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1 -ExpandProperty SessionId
+            $SessionId = [PSADT.QueryUser]::GetUserSessionInfo() | & { process { if ($_.NTAccount -eq $Username) { return $_ } } } | Select-Object -First 1 -ExpandProperty SessionId
             $PSBoundParameters.Add('SessionId', $SessionId)
             $null = $PSBoundParameters.Remove('Username')
         }
@@ -310,22 +310,22 @@ function Start-ADTProcessAsUser
         {
             Username
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] as user [$Username]$(if ($Wait) { ", and waiting for invocation to finish" })."
+                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] as user [$Username]$(if ($Wait) { ", and waiting for invocation to finish" })."
                 break
             }
             SessionId
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for session [$SessionId]$(if ($Wait) { ", and waiting for invocation to finish" })."
+                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for session [$SessionId]$(if ($Wait) { ", and waiting for invocation to finish" })."
                 break
             }
             AllActiveUserSessions
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for all active user sessions$(if ($Wait) { ", and waiting for all invocations to finish" })."
+                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for all active user sessions$(if ($Wait) { ", and waiting for all invocations to finish" })."
                 break
             }
             PrimaryActiveUserSession
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for the primary user session$(if ($Wait) { ", and waiting for invocation to finish" })."
+                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for the primary user session$(if ($Wait) { ", and waiting for invocation to finish" })."
                 break
             }
         }
@@ -343,13 +343,13 @@ function Start-ADTProcessAsUser
             catch
             {
                 # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
         finally
         {
@@ -361,6 +361,6 @@ function Start-ADTProcessAsUser
     end
     {
         # Finalise function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

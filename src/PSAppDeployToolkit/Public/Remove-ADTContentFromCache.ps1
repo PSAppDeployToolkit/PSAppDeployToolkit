@@ -48,53 +48,53 @@ function Remove-ADTContentFromCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((& $Script:CommandTable.'Get-ADTConfig').Toolkit.CachePath)\$((& $Script:CommandTable.'Get-ADTSession').GetPropertyValue('installName'))"
+        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).GetPropertyValue('installName'))"
     )
 
     begin
     {
         try
         {
-            $adtSession = & $Script:CommandTable.'Get-ADTSession'
+            $adtSession = Get-ADTSession
             $parentPath = $adtSession.GetPropertyValue('ScriptDirectory')
         }
         catch
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         if (![System.IO.Directory]::Exists($Path))
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Cache folder [$Path] does not exist."
+            Write-ADTLogEntry -Message "Cache folder [$Path] does not exist."
             return
         }
 
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Removing cache folder [$Path]."
+        Write-ADTLogEntry -Message "Removing cache folder [$Path]."
         try
         {
             try
             {
-                & $Script:CommandTable.'Remove-Item' -Path $Path -Recurse
-                $adtSession.SetPropertyValue('DirFiles', (& $Script:CommandTable.'Join-Path' -Path $parentPath -ChildPath Files))
-                $adtSession.SetPropertyValue('DirSupportFiles', (& $Script:CommandTable.'Join-Path' -Path $parentPath -ChildPath SupportFiles))
+                Remove-Item -Path $Path -Recurse
+                $adtSession.SetPropertyValue('DirFiles', (Join-Path -Path $parentPath -ChildPath Files))
+                $adtSession.SetPropertyValue('DirSupportFiles', (Join-Path -Path $parentPath -ChildPath SupportFiles))
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove cache folder [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove cache folder [$Path]."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

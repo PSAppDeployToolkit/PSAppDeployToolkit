@@ -58,7 +58,7 @@ function Get-ADTUniversalDate
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -68,22 +68,22 @@ function Get-ADTUniversalDate
             try
             {
                 # Remove any tailing Z, otherwise it could get converted to a different time zone. Then, convert the date to a universal sortable date time pattern based on the current culture.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Host.CurrentCulture.Name)]."
+                Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Host.CurrentCulture.Name)]."
                 return [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Host.CurrentCulture).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern)
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Host.CurrentCulture.Name)]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "The specified date/time [$DateTime] is not in a format recognized by the current culture [$($Host.CurrentCulture.Name)]."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

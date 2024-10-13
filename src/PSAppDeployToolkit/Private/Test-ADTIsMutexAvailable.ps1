@@ -67,7 +67,7 @@ function Test-ADTIsMutexAvailable
     begin
     {
         # Initialize variables.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $WaitLogMsg = if ($MutexWaitTime.TotalMinutes -ge 1)
         {
             "$($MutexWaitTime.TotalMinutes) minute(s)"
@@ -87,7 +87,7 @@ function Test-ADTIsMutexAvailable
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Checking to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available."
+        Write-ADTLogEntry -Message "Checking to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available."
         try
         {
             # Open the specified named mutex, if it already exists, without acquiring an exclusive lock on it. If the system mutex does not exist, this method throws an exception instead of creating the system object.
@@ -119,7 +119,7 @@ function Test-ADTIsMutexAvailable
         catch
         {
             # Return $true, to signify that mutex is available, because function was unable to successfully complete a check due to an unhandled exception. Default is to err on the side of the mutex being available on a hard failure.
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
+            Write-ADTLogEntry -Message "Unable to check if mutex [$MutexName] is available due to an unhandled exception. Will default to return value of [$true].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
             $IsUnhandledException = $true
             $IsMutexFree = $true
         }
@@ -129,16 +129,16 @@ function Test-ADTIsMutexAvailable
             {
                 if (!$IsUnhandledException)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Mutex [$MutexName] is available for an exclusive lock."
+                    Write-ADTLogEntry -Message "Mutex [$MutexName] is available for an exclusive lock."
                 }
             }
-            elseif (($MutexName -eq 'Global\_MSIExecute') -and ($msiInProgressCmdLine = & $Script:CommandTable.'Get-Process' -Name msiexec -ErrorAction Ignore | & { process { if ($_.CommandLine -match '\.msi') { $_.CommandLine.Trim() } } }))
+            elseif (($MutexName -eq 'Global\_MSIExecute') -and ($msiInProgressCmdLine = Get-Process -Name msiexec -ErrorAction Ignore | & { process { if ($_.CommandLine -match '\.msi') { $_.CommandLine.Trim() } } }))
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$msiInProgressCmdLine]." -Severity 2
+                Write-ADTLogEntry -Message "Mutex [$MutexName] is not available for an exclusive lock because the following MSI installation is in progress [$msiInProgressCmdLine]." -Severity 2
             }
             else
             {
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Mutex [$MutexName] is not available because another thread already has an exclusive lock on it."
+                Write-ADTLogEntry -Message "Mutex [$MutexName] is not available because another thread already has an exclusive lock on it."
             }
 
             if (($null -ne $OpenExistingMutex) -and $IsMutexFree)
@@ -153,6 +153,6 @@ function Test-ADTIsMutexAvailable
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

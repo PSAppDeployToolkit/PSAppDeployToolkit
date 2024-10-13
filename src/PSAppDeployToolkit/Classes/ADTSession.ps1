@@ -99,7 +99,7 @@ class ADTSession
                 TargetType = $State
                 RecommendedAction = "Please review your setup to ensure this ADTSession object isn't being $($State.ToLower()) twice."
             }
-            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+            throw (New-ADTErrorRecord @naerParams)
         }
     }
 
@@ -125,7 +125,7 @@ class ADTSession
                         TargetType = 'Init()'
                         RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
                 if (!$Parameters.$_)
                 {
@@ -138,19 +138,19 @@ class ADTSession
                         TargetType = 'Init()'
                         RecommendedAction = "Please review the supplied parameters to this object's constructor and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
             }
         }
 
         # Establish start date/time first so we can accurately mark the start of execution.
-        $this.CurrentTime = & $Script:CommandTable.'Get-Date' -Date $this.CurrentDateTime -UFormat '%T'
-        $this.CurrentDate = & $Script:CommandTable.'Get-Date' -Date $this.CurrentDateTime -UFormat '%d-%m-%Y'
+        $this.CurrentTime = Get-Date -Date $this.CurrentDateTime -UFormat '%T'
+        $this.CurrentDate = Get-Date -Date $this.CurrentDateTime -UFormat '%d-%m-%Y'
         $this.CurrentTimeZoneBias = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($this.CurrentDateTime)
 
         # Process provided parameters and amend some incoming values.
-        $Properties = (& $Script:CommandTable.'Get-Member' -InputObject $this -MemberType Property -Force).Name
-        $Parameters.GetEnumerator() | & { process { if ($Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((& $Script:CommandTable.'Out-String' -InputObject $_.Value))) { $this.($_.Key) = $_.Value } } }
+        $Properties = (Get-Member -InputObject $this -MemberType Property -Force).Name
+        $Parameters.GetEnumerator() | & { process { if ($Properties.Contains($_.Key) -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $this.($_.Key) = $_.Value } } }
         $this.DeploymentType = $Global:Host.CurrentCulture.TextInfo.ToTitleCase($this.DeploymentType.ToLower())
         $this.CallerVariables = $Parameters.SessionState.PSVariable
 
@@ -196,7 +196,7 @@ class ADTSession
         }
 
         # Find the first WIM file in the Files folder and use that as our install.
-        if (!($wimFile = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.wim" -ErrorAction Ignore | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
+        if (!($wimFile = Get-ChildItem -Path "$($this.DirFiles)\*.wim" -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
         {
             return
         }
@@ -205,16 +205,16 @@ class ADTSession
         $this.WriteZeroConfigDivider()
         $this.WriteLogEntry("Discovered Zero-Config WIM file [$wimFile].")
         $mountPath = [System.IO.Path]::Combine($this.DirFiles, [System.IO.Path]::GetRandomFileName())
-        & $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $wimFile -Path $mountPath -Index 1 6>$null
+        Mount-ADTWimFile -ImagePath $wimFile -Path $mountPath -Index 1 6>$null
         $this.WriteLogEntry("Successfully mounted WIM file to [$(($this.DirFiles = $mountPath))].")
 
         # Subst the new DirFiles path to eliminate any potential path length issues.
-        $usedLetters = (& $Script:CommandTable.'Get-PSDrive' -PSProvider FileSystem).Name
-        $availLetter = [System.String[]][System.Char[]](90..65) | & { process { if ($usedLetters -notcontains $_) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1
+        $usedLetters = (Get-PSDrive -PSProvider FileSystem).Name
+        $availLetter = [System.String[]][System.Char[]](90..65) | & { process { if ($usedLetters -notcontains $_) { return $_ } } } | Select-Object -First 1
         if ($availLetter)
         {
             $this.WriteLogEntry("Creating substitution drive [$(($substDrive = "${availLetter}:"))] for [$($this.DirFiles)].")
-            & $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $substDrive -Path $this.DirFiles 6>$null
+            Invoke-ADTSubstOperation -Drive $substDrive -Path $this.DirFiles 6>$null
             $this.DirFiles = $this.DirFilesSubstDrive = $substDrive
         }
 
@@ -233,12 +233,12 @@ class ADTSession
         if ([System.String]::IsNullOrWhiteSpace($this.DefaultMsiFile))
         {
             # Get all MSI files and return early if we haven't found anything.
-            if (($msiFile = ($msiFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & { process { if ($_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")) { return $_ } } } | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
+            if (($msiFile = ($msiFiles = Get-ChildItem -Path "$($this.DirFiles)\*.msi" -ErrorAction Ignore) | & { process { if ($_.Name.EndsWith(".$($ADTEnv.envOSArchitecture).msi")) { return $_ } } } | Select-Object -ExpandProperty FullName -First 1))
             {
                 $this.WriteZeroConfigDivider()
                 $this.WriteLogEntry("Discovered $($ADTEnv.envOSArchitecture) Zero-Config MSI under $(($this.DefaultMsiFile = $msiFile))")
             }
-            elseif (($msiFile = $msiFiles | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName -First 1))
+            elseif (($msiFile = $msiFiles | Select-Object -ExpandProperty FullName -First 1))
             {
                 $this.WriteZeroConfigDivider()
                 $this.WriteLogEntry("Discovered Arch-Independent Zero-Config MSI under $(($this.DefaultMsiFile = $msiFile))")
@@ -279,12 +279,12 @@ class ADTSession
         # Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
         if (!$this.DefaultMspFiles)
         {
-            if (($mspFiles = & $Script:CommandTable.'Get-ChildItem' -Path "$($this.DirFiles)\*.msp" | & $Script:CommandTable.'Select-Object' -ExpandProperty FullName))
+            if (($mspFiles = Get-ChildItem -Path "$($this.DirFiles)\*.msp" | Select-Object -ExpandProperty FullName))
             {
                 $this.DefaultMspFiles = $mspFiles
             }
         }
-        elseif ($this.DefaultMspFiles | & { process { if (![System.IO.Path]::IsPathRooted($_)) { return $_ } } } | & $Script:CommandTable.'Select-Object' -First 1)
+        elseif ($this.DefaultMspFiles | & { process { if (![System.IO.Path]::IsPathRooted($_)) { return $_ } } } | Select-Object -First 1)
         {
             $this.DefaultMspFiles = $this.DefaultMspFiles | & { process { if (![System.IO.Path]::IsPathRooted($_)) { return [System.IO.Path]::Combine($this.DirFiles, $_) } else { return $_ } } }
         }
@@ -295,16 +295,16 @@ class ADTSession
 
         # Read the MSI and get the installation details.
         $gmtpParams = @{ Path = $this.DefaultMsiFile }; if ($this.DefaultMstFile) { $gmtpParams.Add('TransformPath', $this.DefaultMstFile) }
-        $msiProps = & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File 6>$null
+        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table File 6>$null
 
         # Generate list of MSI executables for testing later on.
-        if (($msiProcs = $msiProps | & $Script:CommandTable.'Get-Member' -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { [PSADT.Types.ProcessObject]::new([System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_') } } }))
+        if (($msiProcs = $msiProps | Get-Member -MemberType NoteProperty | & { process { if ([System.IO.Path]::GetExtension($_.Name) -eq '.exe') { [PSADT.Types.ProcessObject]::new([System.IO.Path]::GetFileNameWithoutExtension($_.Name) -replace '^_') } } }))
         {
             $this.WriteLogEntry("MSI Executable List [$(($this.DefaultMsiExecutablesList = $msiProcs).Name)].")
         }
 
         # Update our app variables with new values.
-        $msiProps = & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property 6>$null
+        $msiProps = Get-ADTMsiTableProperty @gmtpParams -Table Property 6>$null
         $this.WriteLogEntry("App Vendor [$($msiProps.Manufacturer)].")
         $this.WriteLogEntry("App Name [$(($this.AppName = $msiProps.ProductName))].")
         $this.WriteLogEntry("App Version [$(($this.AppVersion = $msiProps.ProductVersion))].")
@@ -337,12 +337,12 @@ class ADTSession
         }
 
         # Sanitize the application details, as they can cause issues in the script.
-        $this.AppVendor = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppVendor
-        $this.AppName = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppName
-        $this.AppVersion = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppVersion
-        $this.AppArch = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppArch
-        $this.AppLang = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppLang
-        $this.AppRevision = & $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $this.AppRevision
+        $this.AppVendor = Remove-ADTInvalidFileNameChars -Name $this.AppVendor
+        $this.AppName = Remove-ADTInvalidFileNameChars -Name $this.AppName
+        $this.AppVersion = Remove-ADTInvalidFileNameChars -Name $this.AppVersion
+        $this.AppArch = Remove-ADTInvalidFileNameChars -Name $this.AppArch
+        $this.AppLang = Remove-ADTInvalidFileNameChars -Name $this.AppLang
+        $this.AppRevision = Remove-ADTInvalidFileNameChars -Name $this.AppRevision
     }
 
     hidden [System.Void] SetInstallProperties([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
@@ -379,7 +379,7 @@ class ADTSession
     hidden [System.Void] InitLogging([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Generate log paths from our installation properties.
-        $this.LogTempFolder = & $Script:CommandTable.'Join-Path' -Path $ADTEnv.envTemp -ChildPath "$($this.InstallName)_$($this.DeploymentType)"
+        $this.LogTempFolder = Join-Path -Path $ADTEnv.envTemp -ChildPath "$($this.InstallName)_$($this.DeploymentType)"
         if ($ADTConfig.Toolkit.CompressLogs)
         {
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
@@ -401,7 +401,7 @@ class ADTSession
         }
         else
         {
-            "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(& $Script:CommandTable.'Remove-ADTInvalidFileNameChars' -Name $ADTEnv.envUserName).log"
+            "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(Remove-ADTInvalidFileNameChars -Name $ADTEnv.envUserName).log"
         }
         $logFile = [System.IO.Path]::Combine($this.LogPath, $this.LogName)
         $logFileInfo = [System.IO.FileInfo]$logFile
@@ -417,7 +417,7 @@ class ADTSession
                 $logFileExtension = [System.IO.Path]::GetExtension($logFile)
                 $Timestamp = $logFileInfo.LastWriteTime.ToString('O').Split('.')[0].Replace(':', $null)
                 $ArchiveLogFileName = [System.String]::Format("{0}_{1}{2}", $logFileNameWithoutExtension, $Timestamp, $logFileExtension)
-                $ArchiveLogFilePath = & $Script:CommandTable.'Join-Path' -Path $this.LogPath -ChildPath $ArchiveLogFileName
+                $ArchiveLogFilePath = Join-Path -Path $this.LogPath -ChildPath $ArchiveLogFileName
 
                 # Log message about archiving the log file.
                 if ($logFileSizeExceeded)
@@ -426,7 +426,7 @@ class ADTSession
                 }
 
                 # Rename the file.
-                & $Script:CommandTable.'Move-Item' -LiteralPath $logFileInfo.FullName -Destination $ArchiveLogFilePath -Force
+                Move-Item -LiteralPath $logFileInfo.FullName -Destination $ArchiveLogFilePath -Force
 
                 # Start new log file and log message about archiving the old log file.
                 if ($logFileSizeExceeded)
@@ -435,23 +435,23 @@ class ADTSession
                 }
 
                 # Get all log files (including any .lo_ files that may have been created by previous toolkit versions) sorted by last write time.
-                $logFiles = $(& $Script:CommandTable.'Get-ChildItem' -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); & $Script:CommandTable.'Get-Item' -LiteralPath ([IO.Path]::ChangeExtension($logFile, 'lo_')) -ErrorAction Ignore) | & $Script:CommandTable.'Sort-Object' -Property LastWriteTime
+                $logFiles = $(Get-ChildItem -LiteralPath $this.LogPath -Filter ("{0}_*{1}" -f $logFileNameWithoutExtension, $logFileExtension); Get-Item -LiteralPath ([IO.Path]::ChangeExtension($logFile, 'lo_')) -ErrorAction Ignore) | Sort-Object -Property LastWriteTime
 
                 # Keep only the max number of log files.
                 if ($logFiles.Count -gt $ADTConfig.Toolkit.LogMaxHistory)
                 {
-                    $logFiles | & $Script:CommandTable.'Select-Object' -First ($logFiles.Count - $ADTConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
+                    $logFiles | Select-Object -First ($logFiles.Count - $ADTConfig.Toolkit.LogMaxHistory) | Remove-Item
                 }
             }
             catch
             {
-                $this.WriteLogEntry("Failed to rotate the log file [$($logFile)].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)", 3)
+                $this.WriteLogEntry("Failed to rotate the log file [$($logFile)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)", 3)
             }
         }
 
         # Open log file with commencement message.
         $this.WriteLogDivider(2)
-        $this.WriteLogEntry("[$($this.InstallName)] $(($this.DeploymentTypeName = (& $Script:CommandTable.'Get-ADTStringTable').DeploymentType.($this.DeploymentType)).ToLower()) started.")
+        $this.WriteLogEntry("[$($this.InstallName)] $(($this.DeploymentTypeName = (Get-ADTStringTable).DeploymentType.($this.DeploymentType)).ToLower()) started.")
     }
 
     hidden [System.Void] LogScriptInfo([System.Management.Automation.PSObject]$ADTData, [System.Collections.Specialized.OrderedDictionary]$ADTEnv)
@@ -477,7 +477,7 @@ class ADTSession
             }
             if ($this.DeployAppScriptParameters -and $this.DeployAppScriptParameters.Count)
             {
-                $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | & $Script:CommandTable.'Resolve-ADTBoundParameters')].")
+                $this.WriteLogEntry("The following parameters were passed to [$($this.DeployAppScriptFriendlyName)]: [$($this.DeployAppScriptParameters | Resolve-ADTBoundParameters)].")
             }
         }
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module version is [$($ADTEnv.appDeployMainScriptVersion)].")
@@ -514,7 +514,7 @@ class ADTSession
     hidden [System.Void] LogUserInfo([System.Management.Automation.PSObject]$ADTData, [System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
         # Log details for all currently logged in users.
-        $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue))", $false)
+        $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | Format-List | Out-String -Width ([System.Int32]::MaxValue))", $false)
 
         # Provide detailed info about current process state.
         if ($ADTEnv.usersLoggedOn)
@@ -532,7 +532,7 @@ class ADTSession
             }
 
             # Guard Intune detection code behind a variable.
-            if ($ADTConfig.Toolkit.OobeDetection -and ([System.Environment]::OSVersion.Version -ge '10.0.16299.0') -and !(& $Script:CommandTable.'Test-ADTOobeCompleted'))
+            if ($ADTConfig.Toolkit.OobeDetection -and ([System.Environment]::OSVersion.Version -ge '10.0.16299.0') -and !(Test-ADTOobeCompleted))
             {
                 $this.WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.")
                 $this.DeployMode = 'Silent'
@@ -668,8 +668,8 @@ class ADTSession
                 RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
             }
             $this.WriteLogEntry($naerParams.Exception.Message, 3)
-            & $Script:CommandTable.'Show-ADTDialogBox' -Text $naerParams.Exception.Message -Icon Stop
-            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+            Show-ADTDialogBox -Text $naerParams.Exception.Message -Icon Stop
+            throw (New-ADTErrorRecord @naerParams)
         }
     }
 
@@ -704,7 +704,7 @@ class ADTSession
 
     [System.String] GetDeploymentStatus()
     {
-        if (($this.ExitCode -eq ($adtConfig = & $Script:CommandTable.'Get-ADTConfig').UI.DefaultExitCode) -or ($this.ExitCode -eq $adtConfig.UI.DeferExitCode))
+        if (($this.ExitCode -eq ($adtConfig = Get-ADTConfig).UI.DefaultExitCode) -or ($this.ExitCode -eq $adtConfig.UI.DeferExitCode))
         {
             return 'FastRetry'
         }
@@ -725,9 +725,9 @@ class ADTSession
     hidden [System.Void] Open()
     {
         # Get the current environment and config.
-        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
-        $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
-        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+        $adtData = Get-ADTModuleData
+        $adtEnv = Get-ADTEnvironment
+        $adtConfig = Get-ADTConfig
 
         # Ensure this session isn't being opened twice.
         $this.TestClassState('Opened')
@@ -752,7 +752,7 @@ class ADTSession
         # If terminal server mode was specified, change the installation mode to support it.
         if ($this.TerminalServerMode)
         {
-            & $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'
+            Enable-ADTTerminalServerInstallMode
         }
 
         # Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
@@ -771,8 +771,8 @@ class ADTSession
         $this.SetPropertyValue('InstallPhase', 'Finalization')
 
         # Set up initial variables.
-        $adtData = & $Script:CommandTable.'Get-ADTModuleData'
-        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+        $adtData = Get-ADTModuleData
+        $adtConfig = Get-ADTConfig
 
         # Store app/deployment details string. If we're exiting before properties are set, use a generic string.
         if ([System.String]::IsNullOrWhiteSpace(($deployString = "[$($this.GetPropertyValue('InstallName'))] $($this.GetDeploymentTypeName().ToLower())".Trim())))
@@ -798,10 +798,10 @@ class ADTSession
             default
             {
                 # Clean up app deferral history.
-                if ($this.RegKeyDeferHistory -and (& $Script:CommandTable.'Test-Path' -LiteralPath $this.RegKeyDeferHistory))
+                if ($this.RegKeyDeferHistory -and (Test-Path -LiteralPath $this.RegKeyDeferHistory))
                 {
                     $this.WriteLogEntry('Removing deferral history...')
-                    & $Script:CommandTable.'Remove-ADTRegistryKey' -Key $this.RegKeyDeferHistory -Recurse
+                    Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
                 }
 
                 # Handle reboot prompts on successful script completion.
@@ -827,13 +827,13 @@ class ADTSession
         # Remove any subst paths if created in the zero-config WIM code.
         if ($this.DirFilesSubstDrive)
         {
-            & $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $this.DirFilesSubstDrive -Delete
+            Invoke-ADTSubstOperation -Drive $this.DirFilesSubstDrive -Delete
         }
 
         # Unmount any stored WIM file entries.
         if ($this.MountedWimFiles.Count)
         {
-            $this.MountedWimFiles.Reverse(); & $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $this.MountedWimFiles
+            $this.MountedWimFiles.Reverse(); Dismount-ADTWimFile -ImagePath $this.MountedWimFiles
             $this.MountedWimFiles.Clear()
         }
 
@@ -850,20 +850,20 @@ class ADTSession
             try
             {
                 # Get all archive files sorted by last write time
-                $ArchiveFiles = & $Script:CommandTable.'Get-ChildItem' -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | & $Script:CommandTable.'Sort-Object' LastWriteTime
+                $ArchiveFiles = Get-ChildItem -LiteralPath $adtConfig.Toolkit.LogPath -Filter ([System.String]::Format($DestinationArchiveFileName, '*')) | Sort-Object LastWriteTime
                 $DestinationArchiveFileName = [System.String]::Format($DestinationArchiveFileName, [System.DateTime]::Now.ToString('O').Split('.')[0].Replace(':', $null))
 
                 # Keep only the max number of archive files
                 if ($ArchiveFiles.Count -gt $adtConfig.Toolkit.LogMaxHistory)
                 {
-                    $ArchiveFiles | & $Script:CommandTable.'Select-Object' -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | & $Script:CommandTable.'Remove-Item'
+                    $ArchiveFiles | Select-Object -First ($ArchiveFiles.Count - $adtConfig.Toolkit.LogMaxHistory) | Remove-Item
                 }
-                & $Script:CommandTable.'Compress-Archive' -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
+                Compress-Archive -LiteralPath $this.GetPropertyValue('LogTempFolder') -DestinationPath $($adtConfig.Toolkit.LogPath)\$DestinationArchiveFileName -Force
                 [System.IO.Directory]::Delete($this.GetPropertyValue('LogTempFolder'), $true)
             }
             catch
             {
-                $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)", 3)
+                $this.WriteLogEntry("Failed to manage archive file [$DestinationArchiveFileName].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)", 3)
             }
         }
 
@@ -874,7 +874,7 @@ class ADTSession
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Nullable[System.UInt32]]$Severity, [System.String]$Source, [System.String]$ScriptSection, [System.Nullable[System.Boolean]]$WriteHost, [System.Boolean]$DebugMessage, [System.String]$LogType, [System.String]$LogFileDirectory, [System.String]$LogFileName)
     {
         # Get the current config.
-        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+        $adtConfig = Get-ADTConfig
 
         # Determine whether we can write to the console.
         if ($null -eq $WriteHost)
@@ -891,7 +891,7 @@ class ADTSession
         # Establish logging date/time vars.
         $dateNow = [System.DateTime]::Now
         $logTime = $dateNow.ToString('HH\:mm\:ss.fff')
-        $invoker = & $Script:CommandTable.'Get-ADTLogEntryCaller'
+        $invoker = Get-ADTLogEntryCaller
         $logFile = if (![System.String]::IsNullOrWhiteSpace($invoker.ScriptName))
         {
             # A proper script or function.
@@ -924,9 +924,9 @@ class ADTSession
         {
             $LogFileDirectory = $this.LogPath
         }
-        elseif (!(& $Script:CommandTable.'Test-Path' -LiteralPath $LogFileDirectory -PathType Container))
+        elseif (!(Test-Path -LiteralPath $LogFileDirectory -PathType Container))
         {
-            $null = & $Script:CommandTable.'New-Item' -Path $LogFileDirectory -Type Directory -Force
+            $null = New-Item -Path $LogFileDirectory -Type Directory -Force
         }
         if ([System.String]::IsNullOrWhiteSpace($LogFileName))
         {
@@ -980,7 +980,7 @@ class ADTSession
                             return [System.String]::Format($logLine, $_)
                         }
                     }
-                } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+                } | Out-File -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
             else
             {
@@ -994,13 +994,13 @@ class ADTSession
                     {
                         return [System.String]::Format($logLine, $_)
                     }
-                } | & $Script:CommandTable.'Out-File' -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
+                } | Out-File -LiteralPath $outFile -Append -NoClobber -Force -Encoding UTF8
             }
         }
         if ($WriteHost)
         {
             $colours = $sevData.Colours
-            $Message | & $Script:CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $Source -Format $logFormats.Legacy
+            $Message | Write-ADTLogEntryToInformationStream @colours -Source $Source -Format $logFormats.Legacy
         }
     }
 

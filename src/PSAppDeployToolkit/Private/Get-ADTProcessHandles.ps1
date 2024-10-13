@@ -23,13 +23,13 @@ function Get-ADTProcessHandles
             TargetObject = $exeHandleResults
             RecommendedAction = "Please review the result in this error's TargetObject property and try again."
         }
-        throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+        throw (New-ADTErrorRecord @naerParams)
     }
 
     # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
-    if (($handles = $exeHandleResults | & $Script:CommandTable.'ConvertFrom-Csv'))
+    if (($handles = $exeHandleResults | ConvertFrom-Csv))
     {
-        return $handles | & $Script:CommandTable.'Select-Object' -Property ($handles[0].PSObject.Properties.Name | & {
+        return $handles | Select-Object -Property ($handles[0].PSObject.Properties.Name | & {
                 process
                 {
                     @{ Label = $_ -replace '[^\w]'; Expression = [scriptblock]::Create("`$_.'$_'.Trim()") }

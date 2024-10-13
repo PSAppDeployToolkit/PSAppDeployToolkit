@@ -111,7 +111,7 @@ function Set-ADTRegistryKey
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -123,21 +123,21 @@ function Set-ADTRegistryKey
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
                 $Key = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    & $Script:CommandTable.'Convert-ADTRegistryPath' -Key $Key -Wow6432Node:$Wow6432Node
+                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
                 }
 
                 # Create registry key if it doesn't exist.
-                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $Key))
+                if (!(Test-Path -LiteralPath $Key))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating registry key [$Key]."
+                    Write-ADTLogEntry -Message "Creating registry key [$Key]."
                     if (($Key.Split('/').Count - 1) -eq 0)
                     {
                         # No forward slash found in Key. Use New-Item cmdlet to create registry key.
-                        $null = & $Script:CommandTable.'New-Item' -Path $Key -ItemType Registry -Force
+                        $null = New-Item -Path $Key -ItemType Registry -Force
                     }
                     else
                     {
@@ -160,18 +160,18 @@ function Set-ADTRegistryKey
                                 TargetObject = $CreateRegKeyResult
                                 RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                             }
-                            throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                            throw (New-ADTErrorRecord @naerParams)
                         }
                     }
                 }
 
                 if ($Name)
                 {
-                    if (!(& $Script:CommandTable.'Get-ItemProperty' -LiteralPath $Key -Name $Name -ErrorAction Ignore))
+                    if (!(Get-ItemProperty -LiteralPath $Key -Name $Name -ErrorAction Ignore))
                     {
                         # Set registry value if it doesn't exist.
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Setting registry key value: [$Key] [$Name = $Value]."
-                        $null = & $Script:CommandTable.'New-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type
+                        Write-ADTLogEntry -Message "Setting registry key value: [$Key] [$Name = $Value]."
+                        $null = New-ItemProperty -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type
                     }
                     else
                     {
@@ -179,29 +179,29 @@ function Set-ADTRegistryKey
                         if ($Name -eq '(Default)')
                         {
                             # Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value.
-                            $null = (& $Script:CommandTable.'Get-Item' -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value)
+                            $null = (Get-Item -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value)
                         }
                         else
                         {
-                            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Updating registry key value: [$Key] [$Name = $Value]."
-                            $null = & $Script:CommandTable.'Set-ItemProperty' -LiteralPath $Key -Name $Name -Value $Value
+                            Write-ADTLogEntry -Message "Updating registry key value: [$Key] [$Name = $Value]."
+                            $null = Set-ItemProperty -LiteralPath $Key -Name $Name -Value $Value
                         }
                     }
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$Key]", "update value [$Value] for registry key [$Key] [$Name]")[!!$Name])."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(("set registry key [$Key]", "update value [$Value] for registry key [$Key] [$Name]")[!!$Name])."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

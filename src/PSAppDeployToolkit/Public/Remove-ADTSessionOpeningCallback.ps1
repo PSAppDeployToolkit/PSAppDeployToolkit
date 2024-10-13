@@ -54,7 +54,7 @@ function Remove-ADTSessionOpeningCallback
     # Send it off to the backend function.
     try
     {
-        & $Script:CommandTable.'Invoke-ADTSessionCallbackOperation' -Type Opening -Action Remove @PSBoundParameters
+        Invoke-ADTSessionCallbackOperation -Type Opening -Action Remove @PSBoundParameters
     }
     catch
     {

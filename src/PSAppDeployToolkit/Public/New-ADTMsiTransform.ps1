@@ -70,9 +70,9 @@ function New-ADTMsiTransform
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
+                if (!(Test-Path -Path $_ -PathType Leaf))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName MsiPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MsiPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
                 return !!$_
             })]
@@ -80,9 +80,9 @@ function New-ADTMsiTransform
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-                if (!(& $Script:CommandTable.'Test-Path' -Path $_ -PathType Leaf))
+                if (!(Test-Path -Path $_ -PathType Leaf))
                 {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName ApplyTransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ApplyTransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
                 return !!$_
             })]
@@ -100,7 +100,7 @@ function New-ADTMsiTransform
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Define properties for how the MSI database is opened.
         $msiOpenDatabaseTypes = @{
@@ -117,29 +117,29 @@ function New-ADTMsiTransform
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating a transform file for MSI [$MsiPath]."
+        Write-ADTLogEntry -Message "Creating a transform file for MSI [$MsiPath]."
         try
         {
             try
             {
                 # Create a second copy of the MSI database.
-                $MsiParentFolder = & $Script:CommandTable.'Split-Path' -Path $MsiPath -Parent
-                $TempMsiPath = & $Script:CommandTable.'Join-Path' -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetFileName(([System.IO.Path]::GetTempFileName())))
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Copying MSI database in path [$MsiPath] to destination [$TempMsiPath]."
-                $null = & $Script:CommandTable.'Copy-Item' -LiteralPath $MsiPath -Destination $TempMsiPath -Force
+                $MsiParentFolder = Split-Path -Path $MsiPath -Parent
+                $TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetFileName(([System.IO.Path]::GetTempFileName())))
+                Write-ADTLogEntry -Message "Copying MSI database in path [$MsiPath] to destination [$TempMsiPath]."
+                $null = Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force
 
                 # Open both copies of the MSI database.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Opening the MSI database [$MsiPath] in read only mode."
-                $Installer = & $Script:CommandTable.'New-Object' -ComObject WindowsInstaller.Installer
-                $MsiPathDatabase = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($MsiPath, $msiOpenDatabaseTypes.OpenDatabaseModeReadOnly)
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Opening the MSI database [$TempMsiPath] in view/modify/update mode."
-                $TempMsiPathDatabase = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiOpenDatabaseTypes.ViewModifyUpdate)
+                Write-ADTLogEntry -Message "Opening the MSI database [$MsiPath] in read only mode."
+                $Installer = New-Object -ComObject WindowsInstaller.Installer
+                $MsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($MsiPath, $msiOpenDatabaseTypes.OpenDatabaseModeReadOnly)
+                Write-ADTLogEntry -Message "Opening the MSI database [$TempMsiPath] in view/modify/update mode."
+                $TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiOpenDatabaseTypes.ViewModifyUpdate)
 
                 # If a MSI transform file was specified, then apply it to the temporary copy of the MSI database.
                 if ($ApplyTransformPath)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Applying transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]."
-                    $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $TempMsiPathDatabase -MethodName ApplyTransform -ArgumentList @($ApplyTransformPath, $msiOpenDatabaseTypes.SuppressApplyTransformErrors)
+                    Write-ADTLogEntry -Message "Applying transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]."
+                    $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName ApplyTransform -ArgumentList @($ApplyTransformPath, $msiOpenDatabaseTypes.SuppressApplyTransformErrors)
                 }
 
                 # Determine the path for the new transform file that will be generated.
@@ -153,36 +153,36 @@ function New-ADTMsiTransform
                     {
                         [System.IO.Path]::GetFileNameWithoutExtension($MsiPath) + '.mst'
                     }
-                    $NewTransformPath = & $Script:CommandTable.'Join-Path' -Path $MsiParentFolder -ChildPath $NewTransformFileName
+                    $NewTransformPath = Join-Path -Path $MsiParentFolder -ChildPath $NewTransformFileName
                 }
 
                 # Set the MSI properties in the temporary copy of the MSI database.
                 foreach ($property in $TransformProperties.GetEnumerator())
                 {
-                    & $Script:CommandTable.'Set-ADTMsiProperty' -DataBase $TempMsiPathDatabase -PropertyName $property.Key -PropertyValue $property.Value
+                    Set-ADTMsiProperty -DataBase $TempMsiPathDatabase -PropertyName $property.Key -PropertyValue $property.Value
                 }
 
                 # Commit the new properties to the temporary copy of the MSI database
-                $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $TempMsiPathDatabase -MethodName Commit
+                $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName Commit
 
                 # Reopen the temporary copy of the MSI database in read only mode.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Re-opening the MSI database [$TempMsiPath] in read only mode."
+                Write-ADTLogEntry -Message "Re-opening the MSI database [$TempMsiPath] in read only mode."
                 $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($TempMsiPathDatabase)
-                $TempMsiPathDatabase = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiOpenDatabaseTypes.OpenDatabaseModeReadOnly)
+                $TempMsiPathDatabase = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($TempMsiPath, $msiOpenDatabaseTypes.OpenDatabaseModeReadOnly)
 
                 # Delete the new transform file path if it already exists.
-                if (& $Script:CommandTable.'Test-Path' -LiteralPath $NewTransformPath -PathType Leaf)
+                if (Test-Path -LiteralPath $NewTransformPath -PathType Leaf)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "A transform file of the same name already exists. Deleting transform file [$NewTransformPath]."
-                    $null = & $Script:CommandTable.'Remove-Item' -LiteralPath $NewTransformPath -Force
+                    Write-ADTLogEntry -Message "A transform file of the same name already exists. Deleting transform file [$NewTransformPath]."
+                    $null = Remove-Item -LiteralPath $NewTransformPath -Force
                 }
 
                 # Generate the new transform file by taking the difference between the temporary copy of the MSI database and the original MSI database.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Generating new transform file [$NewTransformPath]."
-                $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $TempMsiPathDatabase -MethodName GenerateTransform -ArgumentList @($MsiPathDatabase, $NewTransformPath)
-                $null = & $Script:CommandTable.'Invoke-ADTObjectMethod' -InputObject $TempMsiPathDatabase -MethodName CreateTransformSummaryInfo -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiOpenDatabaseTypes.TransformErrorNone, $msiOpenDatabaseTypes.TransformValidationNone)
+                Write-ADTLogEntry -Message "Generating new transform file [$NewTransformPath]."
+                $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName GenerateTransform -ArgumentList @($MsiPathDatabase, $NewTransformPath)
+                $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName CreateTransformSummaryInfo -ArgumentList @($MsiPathDatabase, $NewTransformPath, $msiOpenDatabaseTypes.TransformErrorNone, $msiOpenDatabaseTypes.TransformValidationNone)
 
-                if (!(& $Script:CommandTable.'Test-Path' -LiteralPath $NewTransformPath -PathType Leaf))
+                if (!(Test-Path -LiteralPath $NewTransformPath -PathType Leaf))
                 {
                     $naerParams = @{
                         Exception = [System.IO.IOException]::new("Failed to generate transform file in path [$NewTransformPath].")
@@ -190,23 +190,23 @@ function New-ADTMsiTransform
                         ErrorId = 'MsiTransformFileMissing'
                         TargetObject = $NewTransformPath
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Successfully created new transform file in path [$NewTransformPath]."
+                Write-ADTLogEntry -Message "Successfully created new transform file in path [$NewTransformPath]."
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create new transform file in path [$NewTransformPath]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create new transform file in path [$NewTransformPath]."
         }
         finally
         {
             # Release all COM objects to prevent file locks.
-            $null = foreach ($variable in (& $Script:CommandTable.'Get-Variable' -Name TempMsiPathDatabase, MsiPathDatabase, Installer -ValueOnly -ErrorAction Ignore))
+            $null = foreach ($variable in (Get-Variable -Name TempMsiPathDatabase, MsiPathDatabase, Installer -ValueOnly -ErrorAction Ignore))
             {
                 try
                 {
@@ -219,11 +219,11 @@ function New-ADTMsiTransform
             }
 
             # Delete the temporary copy of the MSI database.
-            $null = if (& $Script:CommandTable.'Test-Path' -LiteralPath $TempMsiPath -PathType Leaf)
+            $null = if (Test-Path -LiteralPath $TempMsiPath -PathType Leaf)
             {
                 try
                 {
-                    & $Script:CommandTable.'Remove-Item' -LiteralPath $TempMsiPath -Force
+                    Remove-Item -LiteralPath $TempMsiPath -Force
                 }
                 catch
                 {
@@ -235,6 +235,6 @@ function New-ADTMsiTransform
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

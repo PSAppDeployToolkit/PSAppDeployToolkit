@@ -69,7 +69,7 @@ function Get-ADTPendingReboot
 
     begin
     {
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $PendRebootErrorMsg = [System.Collections.Specialized.StringCollection]::new()
         $HostName = [System.Net.Dns]::GetHostName()
     }
@@ -81,28 +81,28 @@ function Get-ADTPendingReboot
             try
             {
                 # Get the date/time that the system last booted up.
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Getting the pending reboot status on the local computer [$HostName]."
+                Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$HostName]."
                 $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([System.Environment]::TickCount)
 
                 # Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation.
-                $IsCBServicingRebootPending = & $Script:CommandTable.'Test-Path' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
+                $IsCBServicingRebootPending = Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
 
                 # Determine if there is a pending reboot from a Windows Update.
-                $IsWindowsUpdateRebootPending = & $Script:CommandTable.'Test-Path' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
+                $IsWindowsUpdateRebootPending = Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
 
                 # Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon).
-                $IsAppVRebootPending = & $Script:CommandTable.'Test-Path' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks'
+                $IsAppVRebootPending = Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks'
 
                 # Get the value of PendingFileRenameOperations.
-                $PendingFileRenameOperations = if ($IsFileRenameRebootPending = & $Script:CommandTable.'Test-ADTRegistryValue' -Key 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations')
+                $PendingFileRenameOperations = if ($IsFileRenameRebootPending = Test-ADTRegistryValue -Key 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations')
                 {
                     try
                     {
-                        & $Script:CommandTable.'Get-ItemProperty' -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | & $Script:CommandTable.'Select-Object' -ExpandProperty PendingFileRenameOperations
+                        Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | Select-Object -ExpandProperty PendingFileRenameOperations
                     }
                     catch
                     {
-                        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to get PendingFileRenameOperations.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
+                        Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
                         $null = $PendRebootErrorMsg.Add("Failed to get PendingFileRenameOperations: $($_.Exception.Message)")
                     }
                 }
@@ -110,14 +110,14 @@ function Get-ADTPendingReboot
                 # Determine SCCM 2012 Client reboot pending status.
                 $IsSCCMClientRebootPending = try
                 {
-                    if (($SCCMClientRebootStatus = & $Script:CommandTable.'Invoke-CimMethod' -Namespace ROOT\CCM\ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending).ReturnValue -eq 0)
+                    if (($SCCMClientRebootStatus = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending).ReturnValue -eq 0)
                     {
                         $SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending
                     }
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to get IsSCCMClientRebootPending.`n$(& $Script:CommandTable.'Resolve-ADTErrorRecord' -ErrorRecord $_)" -Severity 3
+                    Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
                     $null = $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
                 }
 
@@ -134,22 +134,22 @@ function Get-ADTPendingReboot
                     $PendingFileRenameOperations,
                     $PendRebootErrorMsg
                 )
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue))"
+                Write-ADTLogEntry -Message "Pending reboot status on the local computer [$HostName]:`n$($PendingRebootInfo | Format-List | Out-String -Width ([System.Int32]::MaxValue))"
                 return $PendingRebootInfo
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

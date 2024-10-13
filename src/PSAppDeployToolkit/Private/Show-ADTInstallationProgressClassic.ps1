@@ -118,7 +118,7 @@ function Show-ADTInstallationProgressClassic
     if (!$Script:Dialogs.Classic.ProgressWindow.Running)
     {
         # Load up the XML file.
-        $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+        $adtConfig = Get-ADTConfig
         $xaml = [System.Xml.XmlDocument]::new()
         $xaml.Load($Script:Dialogs.Classic.ProgressWindow.XamlCode)
         $xaml.Window.Title = $xaml.Window.ToolTip = $WindowTitle
@@ -127,7 +127,7 @@ function Show-ADTInstallationProgressClassic
         $xaml.Window.Grid.TextBlock.TextAlignment = $MessageAlignment.ToString()
 
         # Set up the PowerShell instance and commence invocation.
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
+        Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
         $Script:Dialogs.Classic.ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript($Script:CommandTable.'Show-ADTInstallationProgressClassicInternal'.ScriptBlock.Ast.Body.GetScriptBlock()).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}.Ast.Body.GetScriptBlock()).AddArgument($Script:CommandTable.'Disable-ADTWindowCloseButton'.ScriptBlock.Ast.Body.GetScriptBlock())
         $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
         $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.ApartmentState = [System.Threading.ApartmentState]::STA
@@ -152,7 +152,7 @@ function Show-ADTInstallationProgressClassic
                     TargetObject = $(if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Window')) { $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window })
                     RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
-                $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTErrorRecord' @naerParams))
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
         }
 
@@ -174,6 +174,6 @@ function Show-ADTInstallationProgressClassic
             },
             [System.Windows.Threading.DispatcherPriority]::Send
         )
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "Updated the progress message: [$StatusMessage]."
+        Write-ADTLogEntry -Message "Updated the progress message: [$StatusMessage]."
     }
 }

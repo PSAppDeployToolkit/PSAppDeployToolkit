@@ -64,14 +64,14 @@ function Block-ADTAppExecution
         # Get everything we need before commencing.
         try
         {
-            $adtEnv = & $Script:CommandTable.'Get-ADTEnvironment'
-            $adtSession = & $Script:CommandTable.'Get-ADTSession'
+            $adtEnv = Get-ADTEnvironment
+            $adtSession = Get-ADTSession
         }
         catch
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.GetPropertyValue('installName'))_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
     }
 
@@ -80,7 +80,7 @@ function Block-ADTAppExecution
         # Bypass if no Admin rights.
         if (!$adtEnv.IsAdmin)
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
             return
         }
 
@@ -89,53 +89,53 @@ function Block-ADTAppExecution
             try
             {
                 # Clean up any previous state that might be lingering.
-                if ($task = & $Script:CommandTable.'Get-ScheduledTask' -TaskName $taskName -ErrorAction Ignore)
+                if ($task = Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
-                    & $Script:CommandTable.'Unblock-ADTAppExecution' -Tasks $task
+                    Write-ADTLogEntry -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
+                    Unblock-ADTAppExecution -Tasks $task
                 }
 
                 # Create a scheduled task to run on startup to call this script and clean up blocked applications in case the installation is interrupted, e.g. user shuts down during installation"
-                & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.'
+                Write-ADTLogEntry -Message 'Creating scheduled task to cleanup blocked applications in case the installation is interrupted.'
                 try
                 {
                     $nstParams = @{
-                        Principal = & $Script:CommandTable.'New-ScheduledTaskPrincipal' -Id Author -UserId S-1-5-18
-                        Trigger = & $Script:CommandTable.'New-ScheduledTaskTrigger' -AtStartup
-                        Action = & $Script:CommandTable.'New-ScheduledTaskAction' -Execute $adtEnv.envPSProcessPath -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "& {$((& $Script:CommandTable.'Unblock-ADTAppExecutionInternal').ScriptBlock)} -TaskName '$($taskName.Replace("'", "''"))'")"
-                        Settings = & $Script:CommandTable.'New-ScheduledTaskSettingsSet' -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
+                        Principal = New-ScheduledTaskPrincipal -Id Author -UserId S-1-5-18
+                        Trigger = New-ScheduledTaskTrigger -AtStartup
+                        Action = New-ScheduledTaskAction -Execute $adtEnv.envPSProcessPath -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$((Unblock-ADTAppExecutionInternal).ScriptBlock)} -TaskName '$($taskName.Replace("'", "''"))'")"
+                        Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
                     }
-                    $null = & $Script:CommandTable.'New-ScheduledTask' @nstParams | & $Script:CommandTable.'Register-ScheduledTask' -TaskName $taskName
+                    $null = New-ScheduledTask @nstParams | Register-ScheduledTask -TaskName $taskName
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Failed to create the scheduled task [$taskName]." -Severity 3
+                    Write-ADTLogEntry -Message "Failed to create the scheduled task [$taskName]." -Severity 3
                     return
                 }
 
                 # Enumerate each process and set the debugger value to block application execution.
                 foreach ($process in ($ProcessName -replace '$', '.exe'))
                 {
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
-                    & $Script:CommandTable.'Set-ADTRegistryKey' -Key (& $Script:CommandTable.'Join-Path' -Path 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('InstallName').Replace("'","''"))'"
+                    Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
+                    Set-ADTRegistryKey -Key (Join-Path -Path 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('InstallName').Replace("'","''"))'"
                 }
 
                 # Add callback to remove all blocked app executions during the shutdown of the final session.
-                & $Script:CommandTable.'Add-ADTSessionFinishingCallback' -Callback $Script:CommandTable.'Unblock-ADTAppExecution'
+                Add-ADTSessionFinishingCallback -Callback $Script:CommandTable.'Unblock-ADTAppExecution'
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

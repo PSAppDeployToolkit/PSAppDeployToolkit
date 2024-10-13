@@ -48,7 +48,7 @@ function Update-ADTGroupPolicy
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -61,7 +61,7 @@ function Update-ADTGroupPolicy
                 try
                 {
                     # Invoke gpupdate.exe and cache the results. An exit code of 0 is considered successful.
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(($msg = "Updating Group Policies for the $target"))."
+                    Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
                     $gpUpdateResult = & "$([System.Environment]::SystemDirectory)\cmd.exe" /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
                     if (!$LASTEXITCODE)
                     {
@@ -69,7 +69,7 @@ function Update-ADTGroupPolicy
                     }
 
                     # If we're here, we had a bad exit code.
-                    & $Script:CommandTable.'Write-ADTLogEntry' -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
+                    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
                     $naerParams = @{
                         Exception = [System.ApplicationException]::new($msg)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
@@ -77,22 +77,22 @@ function Update-ADTGroupPolicy
                         TargetObject = $gpUpdateResult
                         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
                 catch
                 {
-                    & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -103,7 +103,7 @@ function Resolve-ADTErrorRecord
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Allows selecting and filtering the properties on the error object if they exist.
         filter Get-ErrorPropertyNames
@@ -118,16 +118,16 @@ function Resolve-ADTErrorRecord
             )
 
             # Store all properties.
-            $properties = $InputObject | & $Script:CommandTable.'Get-Member' -MemberType *Property | & $Script:CommandTable.'Select-Object' -ExpandProperty Name
+            $properties = $InputObject | Get-Member -MemberType *Property | Select-Object -ExpandProperty Name
 
             # If we've asked for all properties, return early with the above.
             if ($($Property) -eq '*')
             {
-                return $properties | & { process { if (![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | & $Script:CommandTable.'Out-String').Trim())) { return $_ } } }
+                return $properties | & { process { if (![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String).Trim())) { return $_ } } }
             }
 
             # Return all valid properties in the order used by the caller.
-            return $Property | & { process { if (($properties -contains $_) -and ![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | & $Script:CommandTable.'Out-String').Trim())) { return $_ } } }
+            return $Property | & { process { if (($properties -contains $_) -and ![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String).Trim())) { return $_ } } }
         }
     }
 
@@ -169,12 +169,12 @@ function Resolve-ADTErrorRecord
             # Append a new line to the last value for formatting purposes.
             if (!$propCount.Equals($logErrorProperties.Count))
             {
-                $logErrorProperties.($logErrorProperties.Keys | & $Script:CommandTable.'Select-Object' -Last 1) += "`n"
+                $logErrorProperties.($logErrorProperties.Keys | Select-Object -Last 1) += "`n"
             }
         }
 
         # Build out error properties.
-        $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (& $Script:CommandTable.'Out-String' -InputObject (& $Script:CommandTable.'Format-List' -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int32]::MaxValue)).Trim())
+        $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int32]::MaxValue)).Trim())
 
         # Capture Error Inner Exception(s).
         if (!$ExcludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
@@ -193,7 +193,7 @@ function Resolve-ADTErrorRecord
                 }
 
                 # Add error record and get next inner exception.
-                $null = $innerExceptions.Add(($errInnerException | & $Script:CommandTable.'Select-Object' -Property ($errInnerException | Get-ErrorPropertyNames) | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)).Trim())
+                $null = $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
                 $errInnerException = $errInnerException.InnerException
             }
 
@@ -208,6 +208,6 @@ function Resolve-ADTErrorRecord
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

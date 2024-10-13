@@ -66,15 +66,15 @@ function Get-ADTSchedulerTask
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Advise that this function is considered deprecated.
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
     }
 
     process
     {
-        & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Retrieving Scheduled Tasks...'
+        Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
         try
         {
             try
@@ -90,13 +90,13 @@ function Get-ADTSchedulerTask
                         TargetObject = $exeSchtasksResults
                         RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                     }
-                    throw (& $Script:CommandTable.'New-ADTErrorRecord' @naerParams)
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
-                if (($schTasks = $exeSchtasksResults | & $Script:CommandTable.'ConvertFrom-Csv' | & { process { if (($_ -match '^\\') -and ($_ -match $TaskName)) { return $_ } } }))
+                if (($schTasks = $exeSchtasksResults | ConvertFrom-Csv | & { process { if (($_ -match '^\\') -and ($_ -match $TaskName)) { return $_ } } }))
                 {
-                    return $schTasks | & $Script:CommandTable.'Select-Object' -Property ($schTasks[0].PSObject.Properties.Name | & {
+                    return $schTasks | Select-Object -Property ($schTasks[0].PSObject.Properties.Name | & {
                             process
                             {
                                 @{ Label = $_ -replace '[^\w]'; Expression = [scriptblock]::Create("`$_.'$_'") }
@@ -106,17 +106,17 @@ function Get-ADTSchedulerTask
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to retrieve scheduled tasks."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to retrieve scheduled tasks."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

@@ -87,18 +87,18 @@ function Get-ADTWindowTitle
     begin
     {
         # Make this function continue on error.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
         if ($GetAllWindowTitles)
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message 'Finding all open window title(s).'
+            Write-ADTLogEntry -Message 'Finding all open window title(s).'
         }
         else
         {
-            & $Script:CommandTable.'Write-ADTLogEntry' -Message "Finding open window title(s) [$WindowTitle] using regex matching."
+            Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching."
         }
 
         try
@@ -137,7 +137,7 @@ function Get-ADTWindowTitle
                         }
 
                         # Return early if the window doesn't have an associated process.
-                        if (!($process = $processes | & $Script:CommandTable.'Where-Object' -Property Id -EQ -Value ([PSADT.PInvoke.NativeMethods]::GetWindowThreadProcessId($_)) | & $Script:CommandTable.'Select-Object' -First 1))
+                        if (!($process = $processes | Where-Object -Property Id -EQ -Value ([PSADT.PInvoke.NativeMethods]::GetWindowThreadProcessId($_)) | Select-Object -First 1))
                         {
                             return
                         }
@@ -155,17 +155,17 @@ function Get-ADTWindowTitle
             }
             catch
             {
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to get requested window title(s)."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to get requested window title(s)."
         }
     }
 
     end
     {
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
