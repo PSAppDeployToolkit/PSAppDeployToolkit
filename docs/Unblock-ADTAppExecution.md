@@ -41,7 +41,7 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: (& $Script:CommandTable.'Get-ScheduledTask' -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
+Default value: (Get-ScheduledTask -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

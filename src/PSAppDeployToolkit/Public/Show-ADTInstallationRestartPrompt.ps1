@@ -137,7 +137,7 @@ function Show-ADTInstallationRestartPrompt
                     if ($SilentRestart)
                     {
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.GetPropertyValue('DeployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
-                        & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & $Script:CommandTable.'Start-Sleep' -Seconds $SilentCountdownSeconds; & $Script:CommandTable.'Restart-Computer' -Force" -WindowStyle Hidden -ErrorAction Ignore
+                        & $Script:CommandTable.'Start-Process' -FilePath (& $Script:CommandTable.'Get-ADTPowerShellProcessPath') -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
                     }
                     else
                     {

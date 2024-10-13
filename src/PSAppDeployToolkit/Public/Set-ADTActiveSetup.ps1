@@ -519,7 +519,7 @@ function Set-ADTActiveSetup
 
                 # Create the Active Setup entry in the registry.
                 & $Script:CommandTable.'Write-ADTLogEntry' -Message "Adding Active Setup Key for local machine: [$HKLMRegKey]."
-                & $Script:CommandTable.'Set-ADTActiveSetup'RegistryEntry @sasreParams -RegPath $HKLMRegKey
+                Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKLMRegKey
 
                 # Execute the StubPath file for the current user as long as not in Session 0.
                 if ($NoExecuteForCurrentUser)
@@ -553,7 +553,7 @@ function Set-ADTActiveSetup
                     }
 
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
-                    & $Script:CommandTable.'Set-ADTActiveSetup'RegistryEntry @sasreParams -RegPath $HKCURegKey -SID $runAsActiveUser.SID
+                    Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey -SID $runAsActiveUser.SID
                 }
                 else
                 {
@@ -575,7 +575,7 @@ function Set-ADTActiveSetup
                     }
 
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
-                    & $Script:CommandTable.'Set-ADTActiveSetup'RegistryEntry @sasreParams -RegPath $HKCURegKey
+                    Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey
                 }
             }
             catch

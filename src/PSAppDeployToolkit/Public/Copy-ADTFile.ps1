@@ -256,7 +256,7 @@ function Copy-ADTFile
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
                         & $Script:CommandTable.'Copy-ADTFile' @copyFileSplat -Path ((& $Script:CommandTable.'Join-Path' $robocopySource $robocopyFile))
 
-                        # Copy all files from subfolders, appending file name to subfolder path and repeat & $Script:CommandTable.'Copy-ADTFile'.
+                        # Copy all files from subfolders, appending file name to subfolder path and repeat Copy-ADTFile.
                         & $Script:CommandTable.'Get-ChildItem' -Path $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
                             process
                             {

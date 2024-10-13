@@ -151,7 +151,7 @@ function Copy-ADTFileToUserProfiles
         # Initalize function.
         & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        # Define default params for & $Script:CommandTable.'Copy-ADTFile'.
+        # Define default params for Copy-ADTFile.
         $CopyFileSplat = @{
             Recurse = $Recurse
             Flatten = $Flatten
@@ -174,7 +174,7 @@ function Copy-ADTFileToUserProfiles
             $CopyFileSplat.ErrorAction = $PSBoundParameters.ErrorAction
         }
 
-        # Define default params for & $Script:CommandTable.'Get-ADTUserProfiles'.
+        # Define default params for Get-ADTUserProfiles.
         $GetUserProfileSplat = @{
             IncludeSystemProfiles = $IncludeSystemProfiles
             IncludeServiceProfiles = $IncludeServiceProfiles

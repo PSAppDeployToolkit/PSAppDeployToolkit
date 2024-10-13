@@ -189,7 +189,7 @@ function Send-ADTKeys
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
                         return
                     }
-                    & $Script:CommandTable.'Send-ADTKeys'ToWindow -WindowHandle $Window.WindowHandle @sktwParams
+                    Send-ADTKeysToWindow -WindowHandle $Window.WindowHandle @sktwParams
                 }
                 else
                 {
@@ -198,7 +198,7 @@ function Send-ADTKeys
                         & $Script:CommandTable.'Write-ADTLogEntry' -Message 'No windows with the specified details were discovered.' -Severity 2
                         return
                     }
-                    $AllWindows | & $Script:CommandTable.'Send-ADTKeys'ToWindow @sktwParams
+                    $AllWindows | Send-ADTKeysToWindow @sktwParams
                 }
             }
             catch
