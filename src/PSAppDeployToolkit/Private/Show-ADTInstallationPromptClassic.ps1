@@ -64,6 +64,7 @@ function Show-ADTInstallationPromptClassic
     $controlSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 0)
     $paddingNone = [System.Windows.Forms.Padding]::new(0, 0, 0, 0)
     $buttonSize = [System.Drawing.Size]::new(130, 24)
+    $adtEnv = Get-ADTEnvironment
 
     # Define events for form windows.
     $installPromptTimer_Tick = {
@@ -311,13 +312,12 @@ function Show-ADTInstallationPromptClassic
     if ($PersistPrompt) { $installPromptTimerPersist.Start() }
 
     # Show the prompt synchronously. If user cancels, then keep showing it until user responds using one of the buttons.
-    $shellApp = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('Shell.Application'))
     do
     {
         # Minimize all other windows
         if ($MinimizeWindows)
         {
-            $null = $shellApp.MinimizeAll()
+            $null = $adtEnv.ShellApp.MinimizeAll()
         }
 
         # Show the Form
@@ -343,7 +343,7 @@ function Show-ADTInstallationPromptClassic
         Abort
         {
             # Restore minimized windows.
-            $null = $shellApp.UndoMinimizeAll()
+            $null = $adtEnv.ShellApp.UndoMinimizeAll()
             if (!$NoExitOnTimeout)
             {
                 if (Test-ADTSessionActive)
