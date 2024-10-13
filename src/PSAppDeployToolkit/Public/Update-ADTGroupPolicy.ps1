@@ -62,7 +62,7 @@ function Update-ADTGroupPolicy
                 {
                     # Invoke gpupdate.exe and cache the results. An exit code of 0 is considered successful.
                     & $Script:CommandTable.'Write-ADTLogEntry' -Message "$(($msg = "Updating Group Policies for the $target"))."
-                    $gpUpdateResult = cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
+                    $gpUpdateResult = & "$([System.Environment]::SystemDirectory)\cmd.exe" /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
                     if (!$LASTEXITCODE)
                     {
                         return
