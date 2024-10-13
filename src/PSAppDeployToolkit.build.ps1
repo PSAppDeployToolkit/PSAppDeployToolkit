@@ -164,7 +164,7 @@ Add-BuildTask TestModuleManifest -Before ImportModuleManifest {
 # Synopsis: Load the module project
 Add-BuildTask ImportModuleManifest {
     Write-Build White '      Attempting to load the project module.'
-    Import-Module $script:ModuleManifestFile -Force -ErrorAction Stop
+    $script:moduleCommandTable = & (Import-Module $script:ModuleManifestFile -Force -PassThru -ErrorAction Stop) { $CommandTable }
     Write-Build Green "      ...$script:ModuleName imported successfully"
 }
 
@@ -495,9 +495,64 @@ Add-BuildTask Build {
         Get-ChildItem -Path $script:BuildModuleRoot\ImportsLast.ps1
     )
     $scriptContent = foreach ($script in $powerShellScripts) {
-        [System.IO.File]::ReadAllText($script.FullName).Trim()
-        [System.String]::Empty
-        [System.String]::Empty
+        # Import the script file as a string for substring replacement.
+        $text = [System.IO.File]::ReadAllText($script.FullName).Trim()
+
+        # If our file isn't internal, redefine its command calls to be via the module's CommandTable.
+        if (!$script.BaseName.EndsWith('Internal') -and !$script.BaseName.StartsWith('Imports'))
+        {
+            # Parse the ps1 file and store its AST.
+            $tokens = $null
+            $errors = $null
+            $scrAst = [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$errors)
+
+            # Throw if we had any parsing errors.
+            if ($errors)
+            {
+                throw "Received $(($errCount = ($errors | Measure-Object).Count)) error$(if (!$errCount.Equals(1)) {'s'}) while parsing [$($script.Name)]."
+            }
+
+            # Throw if we don't have exactly one statement.
+            if (!$scrAst.EndBlock.Statements.Count.Equals(1))
+            {
+                throw "More than one statement is defined in [$($script.Name)]."
+            }
+
+            # Recursively get all CommandAst objects that have an unknown InvocationOperator (bare word within a script).
+            $commandAsts = $scrAst.FindAll({($args[0] -is [System.Management.Automation.Language.CommandAst]) -and $args[0].InvocationOperator.Equals([System.Management.Automation.Language.TokenKind]::Unknown)}, $true)
+
+            # Throw if there's a found CommandAst object where the first command element isn't a bare word (something unknowh has happened here).
+            if (($invalidAsts = $commandAsts.GetEnumerator().ForEach({if (($_.CommandElements[0] -isnot [System.Management.Automation.Language.StringConstantExpressionAst]) -or !$_.CommandElements[0].StringConstantType.Equals([System.Management.Automation.Language.StringConstantType]::BareWord)) {return $_}})).Count)
+            {
+                throw "One or more found CommandAst objects within [$($script.Name)] were invalid."
+            }
+
+            # Get all bare-word constants and process in reverse. We reverse the list so that we 
+            # do the last found items first so the substring values in the AST are always correct.
+            $commandAsts | & { process { $_.CommandElements[0].Extent } } | Sort-Object -Property EndOffset -Descending | . {
+                process
+                {
+                    # Don't replace the calls to any internally defined functions.
+                    if (!$_.Text.Equals($script.BaseName) -and $scrAst.FindAll({($args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]) -and $args[0].Name.Equals($_.Text)}, $true).Count)
+                    {
+                        return
+                    }
+
+                    # Throw if the CommandTable doesn't contain the command.
+                    if (!$script:moduleCommandTable.Contains($_.Text))
+                    {
+                        throw "Unable to find the command [$($_.Text)] from [$($script.Name)] within the module's CommandTable."
+                    }
+
+                    # Remove the offending text and replace with a CommandTable access.
+                    $text = $text.Remove($_.StartOffset, $_.EndOffset - $_.StartOffset)
+                    $text = $text.Insert($_.StartOffset, "& `$Script:CommandTable.'$($_.Text)'")
+                }
+            }
+        }
+
+        # Write out the processed file back to disk.
+        $text; [System.String]::Empty; [System.String]::Empty
     }
     [System.IO.File]::WriteAllLines($script:BuildModuleRootFile, $scriptContent)
     Write-Build Gray '        ...Module creation complete.'
