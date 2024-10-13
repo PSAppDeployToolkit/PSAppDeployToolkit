@@ -156,7 +156,7 @@ function Copy-ADTFile
                     }
 
                     # Older versions of Robocopy do not support /IM, remove if unsupported.
-                    if ((robocopy.exe /?) -notmatch '/IM\s')
+                    if ((& $robocopyCommand /?) -notmatch '/IM\s')
                     {
                         $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
                         $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
