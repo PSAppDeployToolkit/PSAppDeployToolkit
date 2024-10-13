@@ -295,9 +295,6 @@ function New-ADTEnvironmentTable
     $variables.Add('runasUserProfile', (Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
     $variables.Add('loggedOnUserTempPath', $null)  # This will be set in Import-ADTConfig.
 
-    ## Variables: Executables
-    $variables.Add('exeSchTasks', "$($variables.envSystem32Directory)\schtasks.exe")
-
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
 
