@@ -112,7 +112,7 @@ function Show-ADTInstallationRestartPromptClassic
         else
         {
             # Update the form.
-            $labelCountdown.Text = [System.String]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
+            $labelCountdown.Text = [String]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
             if ($remainingTime.TotalSeconds -le $countdownNoHideSeconds)
             {
                 $buttonRestartLater.Enabled = $false

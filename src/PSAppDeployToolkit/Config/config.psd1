@@ -1,4 +1,5 @@
-﻿@{
+﻿
+@{
     File = @{
         # Date this config version was released.
         Date = '05/03/2024'
@@ -7,15 +8,29 @@
         Version = '3.91.0'
     }
 
-    Assets = @{
-        # Specify filename of the banner.
-        Banner = 'AppDeployToolkitBanner.png'
+    Assets  = @{
 
-        # Specify filename of the icon.
-        Icon = 'AppDeployToolkitLogo.ico'
+        Banner = 'Classic.Banner.png'
 
-        # Specify filename of the logo.
-        Logo = 'AppDeployToolkitLogo.png'
+        Icon   = 'AppIcon.ico'
+
+        Logo   = 'AppIcon.png'
+
+        Fluent = @{
+
+            Banner = @{
+
+                # Fluent Banner (Light)
+                Light = 'Fluent.Banner.Light.png'
+
+                # Fluent Banner (Dark)
+                Dark  = 'Fluent.Banner.Dark.png'
+
+            }
+
+        }
+
+
     }
 
     MSI = @{

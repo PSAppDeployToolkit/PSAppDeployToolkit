@@ -117,10 +117,34 @@
     }
 
     WelcomePrompt = @{
+
+        Classic = @{
+
         # The countdown message displayed at the Welcome Screen to indicate when the install will continue if no response from user.
         CountdownMessage = "The {0} will automatically continue in:"
 
         # This is a custom message to display at the Welcome Screen window.
         CustomMessage = ""
+
+        }
+
+        Fluent  = @{
+
+            # The subtitle underneath the Application Title, e.g. Company Name. Using {0} will insert the Application Type, e.g. App "Install"
+            Subtitle             = "PSAppDeployToolkit - App {0}"
+
+            # This is a message to prompt users to save their work.
+            DialogMessage        = "Please save your work before continuing as the following applications will be closed automatically."
+
+            # This is a word used to describe the number of deferrals left. custom message to display at the Welcome Screen window.
+            ButtonDeferRemaining = "remain"
+
+            # This is a phrase used to describe the process of deferring an application installation.
+            ButtonLeftText       = "Defer"
+
+            # This is a phrase used to describe the process of closing applications and installing the application.
+            ButtonRightText      = "Close Apps &amp; Install"
+        }
+
     }
 }
