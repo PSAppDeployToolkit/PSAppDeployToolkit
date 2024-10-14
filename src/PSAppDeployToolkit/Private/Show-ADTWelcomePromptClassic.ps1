@@ -213,9 +213,9 @@ function Show-ADTWelcomePromptClassic
     {
         {
             # Get the time information.
-            $currentTime = [System.DateTime]::Now
-            $countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
-            $remainingTime = $countdownTime.Subtract($currentTime)
+            [DateTime]$currentTime = [System.DateTime]::Now
+            [DateTime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
+            [Timespan]$remainingTime = $countdownTime.Subtract($currentTime)
             $adtSession.CloseAppsCountdownGlobal = $remainingTime.TotalSeconds
 
             # If the countdown is complete, close the application(s) or continue.
