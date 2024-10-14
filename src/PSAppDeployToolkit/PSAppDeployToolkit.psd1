@@ -154,6 +154,7 @@
         'Set-ADTActiveSetup'
         'Set-ADTIniValue'
         'Set-ADTItemPermission'
+        'Set-ADTPowerShellCulture'
         'Set-ADTRegistryKey'
         'Set-ADTServiceStartMode'
         'Set-ADTShortcut'
