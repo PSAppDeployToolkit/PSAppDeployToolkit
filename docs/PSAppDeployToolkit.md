@@ -239,6 +239,9 @@ Opens an INI file and sets the value of the specified section and key.
 ### [Set-ADTItemPermission](Set-ADTItemPermission.md)
 Allows you to easily change permissions on files or folders.
 
+### [Set-ADTPowerShellCulture](Set-ADTPowerShellCulture.md)
+Changes the current thread's Culture and UICulture to the specified culture.
+
 ### [Set-ADTRegistryKey](Set-ADTRegistryKey.md)
 Creates or sets a registry key name, value, and value data.
 
