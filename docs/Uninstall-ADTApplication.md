@@ -15,15 +15,16 @@ Removes all MSI applications matching the specified application name.
 ### InstalledApplication
 ```
 Uninstall-ADTApplication -InstalledApplication <InstalledApplication[]> [-Parameters <String>]
- [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru] [<CommonParameters>]
+ [-AddParameters <String>] [-SecureParameters] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ### Search
 ```
 Uninstall-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <String[]>]
  [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>]
- [-Parameters <String>] [-AddParameters <String>] [-LoggingOptions <String>] [-LogFileName <String>]
- [-PassThru] [<CommonParameters>]
+ [-Parameters <String>] [-AddParameters <String>] [-SecureParameters] [-LoggingOptions <String>]
+ [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -192,6 +193,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SecureParameters
+Hides all parameters passed to the executable from the Toolkit log file.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

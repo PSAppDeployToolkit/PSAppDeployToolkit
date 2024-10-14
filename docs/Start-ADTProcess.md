@@ -80,7 +80,7 @@ Accept wildcard characters: False
 ```
 
 ### -Parameters
-Arguments to be passed to the executable
+Arguments to be passed to the executable.
 
 ```yaml
 Type: String[]
@@ -95,7 +95,7 @@ Accept wildcard characters: False
 ```
 
 ### -SecureParameters
-Hides all parameters passed to the executable from the Toolkit log file
+Hides all parameters passed to the executable from the Toolkit log file.
 
 ```yaml
 Type: SwitchParameter
