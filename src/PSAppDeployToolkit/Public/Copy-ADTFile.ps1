@@ -190,10 +190,10 @@ function Copy-ADTFile
                         {
                             Write-ADTLogEntry -Message "Source path [$srcPath] not found." -Severity 2
                             $naerParams = @{
-                                Exception         = [System.IO.FileNotFoundException]::new("Source path [$srcPath] not found.")
-                                Category          = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                                ErrorId           = 'FileNotFoundError'
-                                TargetObject      = $srcPath
+                                Exception = [System.IO.FileNotFoundException]::new("Source path [$srcPath] not found.")
+                                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                                ErrorId = 'FileNotFoundError'
+                                TargetObject = $srcPath
                                 RecommendedAction = 'Please verify that the path is accessible and try again.'
                             }
                             Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
@@ -241,12 +241,12 @@ function Copy-ADTFile
                     {
                         # Copy all files from the root source folder.
                         $copyFileSplat = @{
-                            Destination              = $Destination  # Use the original destination path, not $robocopyDestination which could have had a subfolder appended to it.
-                            Recurse                  = $false  # Disable recursion as this will create subfolders in the destination.
-                            Flatten                  = $false  # Disable flattening to prevent infinite loops.
-                            ContinueFileCopyOnError  = $ContinueFileCopyOnError
-                            FileCopyMode             = $FileCopyMode
-                            RobocopyParams           = $RobocopyParams
+                            Destination = $Destination  # Use the original destination path, not $robocopyDestination which could have had a subfolder appended to it.
+                            Recurse = $false  # Disable recursion as this will create subfolders in the destination.
+                            Flatten = $false  # Disable flattening to prevent infinite loops.
+                            ContinueFileCopyOnError = $ContinueFileCopyOnError
+                            FileCopyMode = $FileCopyMode
+                            RobocopyParams = $RobocopyParams
                             RobocopyAdditionalParams = $RobocopyAdditionalParams
                         }
                         if ($PSBoundParameters.ContainsKey('ErrorAction'))
@@ -322,10 +322,10 @@ function Copy-ADTFile
                             if (!$ContinueFileCopyOnError)
                             {
                                 $naerParams = @{
-                                    Exception         = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
-                                    Category          = [System.Management.Automation.ErrorCategory]::OperationStopped
-                                    ErrorId           = 'RobocopyError'
-                                    TargetObject      = $srcPath
+                                    Exception = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
+                                    Category = [System.Management.Automation.ErrorCategory]::OperationStopped
+                                    ErrorId = 'RobocopyError'
+                                    TargetObject = $srcPath
                                     RecommendedAction = "Please verify that Path and Destination are accessible and try again."
                                 }
                                 Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
@@ -338,10 +338,10 @@ function Copy-ADTFile
                             if (!$ContinueFileCopyOnError)
                             {
                                 $naerParams = @{
-                                    Exception         = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
-                                    Category          = [System.Management.Automation.ErrorCategory]::OperationStopped
-                                    ErrorId           = 'RobocopyError'
-                                    TargetObject      = $srcPath
+                                    Exception = [System.Management.Automation.ApplicationFailedException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput")
+                                    Category = [System.Management.Automation.ErrorCategory]::OperationStopped
+                                    ErrorId = 'RobocopyError'
+                                    TargetObject = $srcPath
                                     RecommendedAction = "Please verify that Path and Destination are accessible and try again."
                                 }
                                 Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
@@ -386,7 +386,7 @@ function Copy-ADTFile
                         # Set up parameters for Copy-Item operation.
                         $ciParams = @{
                             Destination = $Destination
-                            Force       = $true
+                            Force = $true
                         }
                         if ($ContinueFileCopyOnError)
                         {
