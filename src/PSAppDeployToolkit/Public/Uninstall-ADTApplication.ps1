@@ -41,6 +41,9 @@ function Uninstall-ADTApplication
     .PARAMETER AddParameters
         Adds to the default parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
+    .PARAMETER SecureParameters
+        Hides all parameters passed to the executable from the Toolkit log file.
+
     .PARAMETER LoggingOptions
         Overrides the default MSI logging options specified in the configuration file. Default options are: "/L*v".
 
@@ -140,6 +143,9 @@ function Uninstall-ADTApplication
         [System.String]$AddParameters,
 
         [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SecureParameters,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$LoggingOptions,
 
@@ -181,8 +187,9 @@ function Uninstall-ADTApplication
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
         $sapParams = @{
-            WaitForMsiExec = $true
+            SecureParameters = $SecureParameters
             NoExitOnProcessFailure = $true
+            WaitForMsiExec = $true
             CreateNoWindow = $true
             PassThru = $PassThru
             Path = $null
