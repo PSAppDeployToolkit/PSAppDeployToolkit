@@ -168,6 +168,7 @@ function Start-ADTProcess
         [System.Int32[]]$RebootCodes,
 
         [Parameter(Mandatory = $false)]
+        [SupportsWildcards()]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$IgnoreExitCodes,
 
