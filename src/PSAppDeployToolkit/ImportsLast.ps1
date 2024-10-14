@@ -4,13 +4,11 @@
 #
 #-----------------------------------------------------------------------------
 
-# Set all functions as read-only and define module exports.
+# Set all functions as read-only, export all public definitions and finalise the CommandTable.
 & $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
-& $CommandTable.'Export-ModuleMember' -Function ([System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\PSAppDeployToolkit.psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue().FunctionsToExport)
-
-# Add all module functions to the command table and make it read-only.
 & $CommandTable.'Get-Item' -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
 & $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
+& $CommandTable.'Export-ModuleMember' -Function (& $CommandTable.'Get-ADTModuleManifest').FunctionsToExport
 
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{

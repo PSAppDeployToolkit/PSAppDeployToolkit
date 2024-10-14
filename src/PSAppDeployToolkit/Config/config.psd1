@@ -101,6 +101,9 @@
         # Used to turn automatic balloon notifications on or off.
         BalloonNotifications = $true
 
+        # The name to show by default for all balloon notifications.
+        BalloonTitle = 'PSAppDeployToolkit'
+
         # Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.
         DialogStyle = 'Fluent'
 
@@ -148,8 +151,5 @@
 
         # Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoCountdown parameter is specified. Default is 600 seconds.
         RestartPromptPersistInterval = 600
-
-        # The name to show by default for all toast notifications.
-        ToastName = 'PSAppDeployToolkit'
     }
 }
