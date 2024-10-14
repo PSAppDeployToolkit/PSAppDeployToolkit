@@ -64,9 +64,9 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### - PendingFileRenameOperations
 ### - ErrorMsg
 ## NOTES
-ErrorMsg only contains something if an error occurred.
-
 An active ADT session is NOT required to use this function.
+
+ErrorMsg only contains something if an error occurred.
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com

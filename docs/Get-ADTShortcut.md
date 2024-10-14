@@ -68,9 +68,9 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### - IconIndex
 ### - RunAsAdmin
 ## NOTES
-Url shortcuts only support TargetPath, IconLocation, and IconIndex.
-
 An active ADT session is NOT required to use this function.
+
+Url shortcuts only support TargetPath, IconLocation, and IconIndex.
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com

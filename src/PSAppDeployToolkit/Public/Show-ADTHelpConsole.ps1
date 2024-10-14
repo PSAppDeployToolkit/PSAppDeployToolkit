@@ -29,7 +29,7 @@ function Show-ADTHelpConsole
         Opens a new PowerShell window displaying the help console for the ADT module.
 
     .NOTES
-        This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

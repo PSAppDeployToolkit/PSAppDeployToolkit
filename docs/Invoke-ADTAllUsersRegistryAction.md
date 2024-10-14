@@ -19,9 +19,11 @@ Invoke-ADTAllUsersRegistryAction [-ScriptBlock] <ScriptBlock[]> [-UserProfiles <
 
 ## DESCRIPTION
 Set HKCU registry settings for all current and future users by loading their NTUSER.dat registry hive file, and making the modifications.
-This function will modify HKCU settings for all users even when executed under the SYSTEM account.
+
+This function will modify HKCU settings for all users even when executed under the SYSTEM account and can be used as an alternative to using ActiveSetup for registry settings.
+
 To ensure new users in the future get the registry edits, the Default User registry hive used to provision the registry for new users is modified.
-This function can be used as an alternative to using ActiveSetup for registry settings.
+
 The advantage of using this function over ActiveSetup is that a user does not have to log off and log back on before the changes take effect.
 
 ## EXAMPLES

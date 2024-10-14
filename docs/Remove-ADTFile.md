@@ -108,10 +108,10 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### None
 ### This function does not generate any output.
 ## NOTES
+An active ADT session is NOT required to use this function.
+
 This function continues on received errors by default.
 To have the function stop on an error, please provide \`-ErrorAction Stop\` on the end of your call.
-
-An active ADT session is NOT required to use this function.
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com

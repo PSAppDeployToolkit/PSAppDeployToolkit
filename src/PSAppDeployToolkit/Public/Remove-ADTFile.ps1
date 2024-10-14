@@ -43,9 +43,9 @@ function Remove-ADTFile
         Removes the specified folder and all its contents recursively.
 
     .NOTES
-        This function continues on received errors by default. To have the function stop on an error, please provide `-ErrorAction Stop` on the end of your call.
-
         An active ADT session is NOT required to use this function.
+
+        This function continues on received errors by default. To have the function stop on an error, please provide `-ErrorAction Stop` on the end of your call.
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

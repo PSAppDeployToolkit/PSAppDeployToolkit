@@ -48,9 +48,9 @@ function Get-ADTPendingReboot
         This example returns a boolean value determining whether or not there is a pending reboot operation.
 
     .NOTES
-        ErrorMsg only contains something if an error occurred.
-
         An active ADT session is NOT required to use this function.
+
+        ErrorMsg only contains something if an error occurred.
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

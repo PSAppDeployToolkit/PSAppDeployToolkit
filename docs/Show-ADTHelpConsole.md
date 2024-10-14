@@ -41,7 +41,7 @@ Opens a new PowerShell window displaying the help console for the ADT module.
 ### None
 ### This function does not return any output.
 ## NOTES
-This function can be called without an active ADT session.
+An active ADT session is NOT required to use this function.
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com

@@ -201,9 +201,10 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### This function does not generate any output.
 ## NOTES
 An active ADT session is NOT required to use this function.
+
+Tags: psadt
 Website: https://psappdeploytoolkit.com
 Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
 License: https://opensource.org/license/lgpl-3-0
-https://psappdeploytoolkit.com
 
 ## RELATED LINKS

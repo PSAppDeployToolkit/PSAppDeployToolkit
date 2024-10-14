@@ -43,9 +43,9 @@ function Show-ADTBalloonTip
         Displays a balloon tip with the info icon, the text 'Installation Started', the title 'Application Name', and a display duration of 1000 milliseconds.
 
     .NOTES
-        For Windows 10 OS and above, a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
-
         An active ADT session is NOT required to use this function.
+
+        For Windows 10 OS and above, a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

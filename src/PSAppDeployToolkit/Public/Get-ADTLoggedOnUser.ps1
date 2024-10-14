@@ -49,6 +49,8 @@ function Get-ADTLoggedOnUser
         This example retrieves session details for all local and RDP logged on users.
 
     .NOTES
+        An active ADT session is NOT required to use this function.
+
         Description of ConnectState property:
 
         Value        Description
@@ -73,8 +75,6 @@ function Get-ADTLoggedOnUser
 
         Description of IsLocalAdmin property:
         - Checks whether the user is a member of the Administrators group
-
-        An active ADT session is NOT required to use this function.
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

@@ -59,7 +59,7 @@ function ConvertTo-ADTNTAccountOrSID
     http://blogs.technet.com/b/askds/archive/2011/07/28/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious.aspx
 
     .NOTES
-    This function can be called without an active ADT session.
+    An active ADT session is NOT required to use this function.
 
     .LINK
     https://psappdeploytoolkit.com

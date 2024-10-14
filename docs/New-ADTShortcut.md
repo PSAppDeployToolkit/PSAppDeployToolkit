@@ -203,10 +203,10 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### None
 ### This function does not return any output.
 ## NOTES
+An active ADT session is NOT required to use this function.
+
 Url shortcuts only support TargetPath, IconLocation and IconIndex.
 Other parameters are ignored.
-
-An active ADT session is NOT required to use this function.
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com
