@@ -6,6 +6,41 @@
 
 function Set-ADTPowerShellCulture
 {
+    <#
+    .SYNOPSIS
+        Changes the current thread's Culture and UICulture to the specified culture.
+
+    .DESCRIPTION
+        This function changes the current thread's Culture and UICulture to the specified culture.
+
+    .PARAMETER CultureInfo
+        The culture to set the current thread's Culture and UICulture to. Can be a CultureInfo object, or any valid IETF BCP 47 language tag.
+
+    .EXAMPLE
+        Set-ADTPowerShellCulture -Culture en-US
+
+    .INPUTS
+        None
+
+        You cannot pipe objects to this function.
+
+    .OUTPUTS
+        None
+
+        This function does not generate any output.
+
+    .NOTES
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com
+    #>
+
     [CmdletBinding()]
     param
     (
