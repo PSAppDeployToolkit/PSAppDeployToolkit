@@ -1369,6 +1369,14 @@ namespace PSADT.PInvoke
         [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern int SHQueryUserNotificationState(out UserNotificationState pquns);
 
+        /// <summary>
+        /// Specifies a unique application-defined Application User Model ID (AppUserModelID) that identifies the current process to the
+        /// taskbar. This identifier allows an application to group its associated processes and windows under a single taskbar button.
+        /// </summary>
+        /// <param name="AppID">Pointer to the AppUserModelID to assign to the current process.</param>
+        [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
+
         #endregion
 
         #region PInvoke: wintrust.dll

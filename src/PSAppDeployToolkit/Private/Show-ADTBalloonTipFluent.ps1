@@ -31,7 +31,7 @@ function Show-ADTBalloonTipFluent
     $natnParams = [ordered]@{
         ToolkitName = $adtEnv.appDeployToolkitName
         ModuleBase = $Script:PSScriptRoot
-        ToastName = $adtConfig.UI.ToastName
+        ToastName = $adtConfig.UI.BalloonTitle
         ToastLogo = $adtConfig.Assets.Logo
         ToastTitle = $BalloonTipTitle
         ToastText = $BalloonTipText

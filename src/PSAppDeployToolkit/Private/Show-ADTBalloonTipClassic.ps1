@@ -26,16 +26,20 @@ function Show-ADTBalloonTipClassic
         [System.UInt32]$BalloonTipTime = 10000
     )
 
+    # Initialize variables.
+    $adtConfig = Get-ADTConfig
+
     # Build out parameters for Show-ADTBalloonTipClassicInternal.
     $nabtParams = [ordered]@{
-        BalloonTipText = $BalloonTipText
+        BalloonTitle = $adtConfig.UI.BalloonTitle
         BalloonTipTitle = $BalloonTipTitle
+        BalloonTipText = $BalloonTipText
         BalloonTipIcon = $BalloonTipIcon
         BalloonTipTime = $BalloonTipTime
-        TrayIcon = (Get-ADTConfig).Assets.Icon
+        TrayIcon = $adtConfig.Assets.Icon
     }
 
     # Create in an asynchronous process so that disposal is managed for us.
     Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-    Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Show-ADTBalloonTipClassicInternal'.ScriptBlock)} $(($nabtParams | Resolve-ADTBoundParameters).Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
+    Start-ADTProcess -Path (Get-ADTPowerShellProcessPath) -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Show-ADTBalloonTipClassicInternal'.ScriptBlock)} $(($nabtParams | Resolve-ADTBoundParameters).Replace('"', '\"')) -ModuleAssembly '$(Get-ADTModuleAssemblyPath)'")" -NoWait -WindowStyle Hidden -CreateNoWindow
 }

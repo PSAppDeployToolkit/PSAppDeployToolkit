@@ -12,11 +12,15 @@ function Show-ADTBalloonTipClassicInternal
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$BalloonTipText,
+        [System.String]$BalloonTitle,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$BalloonTipTitle,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$BalloonTipText,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Error', 'Info', 'None', 'Warning')]
@@ -28,7 +32,11 @@ function Show-ADTBalloonTipClassicInternal
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$TrayIcon
+        [System.String]$TrayIcon,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ModuleAssembly
     )
 
     # Ensure script runs in strict mode since this may be called in a new scope.
@@ -36,10 +44,17 @@ function Show-ADTBalloonTipClassicInternal
     $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
     Set-StrictMode -Version 3
 
+    # Add in our module assembly if specified.
+    if ($PSBoundParameters.ContainsKey('ModuleAssembly'))
+    {
+        Add-Type -LiteralPath $ModuleAssembly
+    }
+
     # Add in required types.
     Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 
     # Show the dialog and sleep until done.
+    $null = [PSADT.PInvoke.NativeMethods]::SetCurrentProcessExplicitAppUserModelID($BalloonTitle)
     ([System.Windows.Forms.NotifyIcon]@{ BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = [System.Drawing.Icon]$TrayIcon; Visible = $true }).ShowBalloonTip($BalloonTipTime)
     [System.Threading.Thread]::Sleep($BalloonTipTime)
 }
