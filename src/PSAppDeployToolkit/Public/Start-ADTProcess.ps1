@@ -19,10 +19,10 @@ function Start-ADTProcess
         Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example.
 
     .PARAMETER Parameters
-        Arguments to be passed to the executable
+        Arguments to be passed to the executable.
 
     .PARAMETER SecureParameters
-        Hides all parameters passed to the executable from the Toolkit log file
+        Hides all parameters passed to the executable from the Toolkit log file.
 
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
