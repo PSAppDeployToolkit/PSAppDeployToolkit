@@ -521,12 +521,7 @@ function Set-ADTActiveSetup
                 Write-ADTLogEntry -Message "Adding Active Setup Key for local machine: [$HKLMRegKey]."
                 Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKLMRegKey
 
-                # Execute the StubPath file for the current user as long as not in Session 0.
-                if ($NoExecuteForCurrentUser)
-                {
-                    return
-                }
-
+                # Perform the ActiveSetup process for the currently logged on user.
                 if (![System.Diagnostics.Process]::GetCurrentProcess().SessionId)
                 {
                     if (!$runAsActiveUser)
@@ -542,14 +537,17 @@ function Set-ADTActiveSetup
                         return
                     }
 
-                    Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]."
-                    if ($CUArguments)
+                    if (!$NoExecuteForCurrentUser)
                     {
-                        Start-ADTProcessAsUser -FilePath $CUStubExePath -ArgumentList $CUArguments -Wait -HideWindow
-                    }
-                    else
-                    {
-                        Start-ADTProcessAsUser -FilePath $CUStubExePath -Wait -HideWindow
+                        Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]."
+                        if ($CUArguments)
+                        {
+                            Start-ADTProcessAsUser -FilePath $CUStubExePath -ArgumentList $CUArguments -Wait -HideWindow
+                        }
+                        else
+                        {
+                            Start-ADTProcessAsUser -FilePath $CUStubExePath -Wait -HideWindow
+                        }
                     }
 
                     Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
@@ -564,14 +562,17 @@ function Set-ADTActiveSetup
                         return
                     }
 
-                    Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
-                    if ($CUArguments)
+                    if (!$NoExecuteForCurrentUser)
                     {
-                        Start-ADTProcess -FilePath $CUStubExePath -Parameters $CUArguments -NoExitOnProcessFailure
-                    }
-                    else
-                    {
-                        Start-ADTProcess -FilePath $CUStubExePath -NoExitOnProcessFailure
+                        Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
+                        if ($CUArguments)
+                        {
+                            Start-ADTProcess -FilePath $CUStubExePath -Parameters $CUArguments -NoExitOnProcessFailure
+                        }
+                        else
+                        {
+                            Start-ADTProcess -FilePath $CUStubExePath -NoExitOnProcessFailure
+                        }
                     }
 
                     Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
