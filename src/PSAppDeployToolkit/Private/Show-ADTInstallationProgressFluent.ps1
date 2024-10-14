@@ -41,6 +41,11 @@ function Show-ADTInstallationProgressFluent
         [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
+    # Perform initial setup.
+    $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+    $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
+    $adtSession = & $Script:CommandTable.'Get-ADTSession'
+
     # Internal worker functions.
     function Update-ProgressWindowValues
     {
@@ -52,11 +57,12 @@ function Show-ADTInstallationProgressFluent
         )
 
         # Blanketly update values from incoming parameters.
-        $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentTitle($WindowTitle)
-        $Script:Dialogs.Fluent.ProgressWindow.Window.SetProgressMessage($StatusMessage)
-        $Script:Dialogs.Fluent.ProgressWindow.Window.SetProgressMessageDetail($StatusMessageDetail)
+        $Script:Dialogs.Fluent.ProgressWindow.Window.SetProgressMessageText = $StatusMessage
+        $Script:Dialogs.Fluent.ProgressWindow.Window.SetProgressMessageDetail = $StatusMessageDetail
+
 
         # Only update the window subtitle if it's been specified.
+<<<<<<< Updated upstream
         if ($WindowSubtitle)
         {
             $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
@@ -141,22 +147,49 @@ function Show-ADTInstallationProgressFluent
     if (!$NotTopMost)
     {
         Write-ADTLogEntry -Message "The TopMost functionality has not yet been implemented within this function." -Severity 2
+=======
+        # if ($WindowSubtitle)
+        # {
+        #     $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
+        # }
+>>>>>>> Stashed changes
     }
 
     # Check if the progress thread is running before invoking methods on it.
     if (!$Script:Dialogs.Fluent.ProgressWindow.Running)
     {
+        # Make sure we only create the application session once.
+        If ($null -eq $Script:Dialogs.Fluent.ApplicationSession) {
+            $Script:Dialogs.Fluent.ApplicationSession = [PSADT.UserInterface.ADTApplication]::new()
+        }
+
         # Instantiate a new progress window object and start it up.
         Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
         if (!$Script:Dialogs.Fluent.ProgressWindow.Window)
         {
+<<<<<<< Updated upstream
             $Script:Dialogs.Fluent.ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
             $Script:Dialogs.Fluent.ProgressWindow.Thread = $Script:Dialogs.Fluent.ProgressWindow.Window.Start()
+=======
+                $Script:Dialogs.Fluent.ProgressWindow.Window = $Script:Dialogs.Fluent.ApplicationSession.ShowProgressDialog(`
+                ($adtSession.GetPropertyValue('InstallTitle').Replace('&', '&&')), `
+                $WindowSubtitle, `
+                !$NotTopMost, `
+                $Script:ADT.Config.Assets.Icon, `
+                $Script:ADT.Config.Assets.Fluent.Banner.Light, `
+                $Script:ADT.Config.Assets.Fluent.Banner.Dark, `
+                $StatusMessage, `
+                $StatusMessageDetail)
+
+
+          $Script:Dialogs.Fluent.WelcomePrompt.Window = $Script:Dialogs.Fluent.ApplicationSession.ShowWelcomeDialog(`
+               ($adtSession.GetPropertyValue('InstallTitle').Replace('&', '&&'), $null, !$NotTopMost, $DeferTimes, $ProcessObjects, $Script:ADT.Config.Assets.Icon, $Script:ADT.Config.Assets.Fluent.Banner.Light, $Script:ADT.Config.Assets.Fluent.Banner.Dark, $Script:ADT.Strings.WelcomePrompt.Fluent.Message, $Script:ADT.Strings.WelcomePrompt.Fluent.ButtonDefer, $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.Subtitle), $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.DialogMessage), $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.Remaining), $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.ButtonLeftText), $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.ButtonRightText)));
+>>>>>>> Stashed changes
 
             # Allow the thread to be spun up safely before invoking actions against it.
             do
             {
-                $Script:Dialogs.Fluent.ProgressWindow.Running = $Script:Dialogs.Fluent.ProgressWindow.Thread -and $Script:Dialogs.Fluent.ProgressWindow.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)
+                $Script:Dialogs.Fluent.ProgressWindow.Running = $Script:Dialogs.Fluent.ApplicationSession.CurrentWindow.IsVisible
             }
             until ($Script:Dialogs.Fluent.ProgressWindow.Running)
         }
@@ -164,7 +197,6 @@ function Show-ADTInstallationProgressFluent
         {
             # Update an existing object and present the dialog.
             Update-ProgressWindowValues
-            $Script:Dialogs.Fluent.ProgressWindow.Window.ShowDialog()
             $Script:Dialogs.Fluent.ProgressWindow.Running = $true
         }
     }
