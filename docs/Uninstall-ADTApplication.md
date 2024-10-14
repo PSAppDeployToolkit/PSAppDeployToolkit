@@ -264,6 +264,8 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ## NOTES
 An active ADT session is NOT required to use this function.
 
+More reading on how to create filterscripts https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object?view=powershell-5.1#description
+
 Tags: psadt
 Website: https://psappdeploytoolkit.com
 Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3

@@ -60,10 +60,11 @@ function Set-ADTShortcut
 
     .NOTES
         An active ADT session is NOT required to use this function.
+
+        Tags: psadt
         Website: https://psappdeploytoolkit.com
         Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
         License: https://opensource.org/license/lgpl-3-0
-        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]

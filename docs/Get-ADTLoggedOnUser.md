@@ -64,6 +64,8 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### - ClientDirectory
 ### - ClientBuildNumber
 ## NOTES
+An active ADT session is NOT required to use this function.
+
 Description of ConnectState property:
 
 Value        Description
@@ -88,8 +90,6 @@ Description of IsRdpSession property:
 
 Description of IsLocalAdmin property:
 - Checks whether the user is a member of the Administrators group
-
-An active ADT session is NOT required to use this function.
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com

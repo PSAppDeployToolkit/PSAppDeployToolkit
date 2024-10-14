@@ -40,6 +40,8 @@ function Block-ADTAppExecution
         This example blocks the execution of Microsoft Word and Excel.
 
     .NOTES
+        An active ADT session is required to use this function.
+
         It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to block applications.
 
         Tags: psadt

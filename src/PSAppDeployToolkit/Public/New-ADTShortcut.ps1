@@ -59,9 +59,9 @@ function New-ADTShortcut
         Creates a new shortcut for Notepad with the specified parameters.
 
     .NOTES
-        Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
-
         An active ADT session is NOT required to use this function.
+
+        Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

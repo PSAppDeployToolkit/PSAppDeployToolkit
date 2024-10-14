@@ -41,9 +41,9 @@ function Get-ADTShortcut
         Retrieves information from the specified .lnk shortcut.
 
     .NOTES
-        Url shortcuts only support TargetPath, IconLocation, and IconIndex.
-
         An active ADT session is NOT required to use this function.
+
+        Url shortcuts only support TargetPath, IconLocation, and IconIndex.
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

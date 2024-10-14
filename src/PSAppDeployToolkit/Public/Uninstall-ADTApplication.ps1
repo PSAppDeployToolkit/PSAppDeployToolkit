@@ -81,10 +81,9 @@ function Uninstall-ADTApplication
         Remove all EXE applications starting with the name 'Vim' followed by a space, using the '/S' parameter.
 
     .NOTES
-        More reading on how to create filterscripts https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object?view=powershell-5.1#description
-
-    .NOTES
         An active ADT session is NOT required to use this function.
+
+        More reading on how to create filterscripts https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object?view=powershell-5.1#description
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com

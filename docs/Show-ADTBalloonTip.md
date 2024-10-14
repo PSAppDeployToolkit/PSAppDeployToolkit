@@ -117,9 +117,9 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### None
 ### This function does not return any output.
 ## NOTES
-For Windows 10 OS and above, a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
-
 An active ADT session is NOT required to use this function.
+
+For Windows 10 OS and above, a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com

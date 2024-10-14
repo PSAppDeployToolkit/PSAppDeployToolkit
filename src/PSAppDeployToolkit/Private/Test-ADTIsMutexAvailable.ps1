@@ -41,7 +41,7 @@ function Test-ADTIsMutexAvailable
     This is an internal script function and should typically not be called directly.
 
     .NOTES
-    This function can be called without an active ADT session.
+    An active ADT session is NOT required to use this function.
 
     .LINK
     http://msdn.microsoft.com/en-us/library/aa372909(VS.85).asp

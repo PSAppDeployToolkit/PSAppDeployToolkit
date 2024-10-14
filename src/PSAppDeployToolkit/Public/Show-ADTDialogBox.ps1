@@ -44,7 +44,9 @@ function Show-ADTDialogBox
         Show-ADTDialogBox -Title 'Installation Notice' -Text 'Installation will take approximately 30 minutes. Do you wish to proceed?' -Buttons 'OKCancel' -DefaultButton 'Second' -Icon 'Exclamation' -Timeout 600 -Topmost $false
 
     .NOTES
-        This function can be called without an active ADT session.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
         Website: https://psappdeploytoolkit.com
         Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
         License: https://opensource.org/license/lgpl-3-0

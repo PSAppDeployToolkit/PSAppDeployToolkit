@@ -72,6 +72,8 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 ### None
 ### This function does not generate any output.
 ## NOTES
+An active ADT session is required to use this function.
+
 It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to block applications.
 
 Tags: psadt
