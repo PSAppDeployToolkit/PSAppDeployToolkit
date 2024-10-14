@@ -513,7 +513,7 @@ class ADTSession
 
     hidden [System.Void] LogUserInfo([System.Management.Automation.PSObject]$ADTData, [System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
     {
-        # Log details for all currently logged in users.
+        # Log details for all currently logged on users.
         $this.WriteLogEntry("Display session information for all logged on users:`n$($ADTEnv.LoggedOnUserSessions | Format-List | Out-String -Width ([System.Int32]::MaxValue))", $false)
 
         # Provide detailed info about current process state.
@@ -521,10 +521,10 @@ class ADTSession
         {
             $this.WriteLogEntry("The following users are logged on to the system: [$($ADTEnv.usersLoggedOn -join ', ')].")
 
-            # Check if the current process is running in the context of one of the logged in users
+            # Check if the current process is running in the context of one of the logged on users
             if ($ADTEnv.CurrentLoggedOnUserSession)
             {
-                $this.WriteLogEntry("Current process is running with user account [$($ADTEnv.ProcessNTAccount)] under logged in user session for [$($ADTEnv.CurrentLoggedOnUserSession.NTAccount)].")
+                $this.WriteLogEntry("Current process is running with user account [$($ADTEnv.ProcessNTAccount)] under logged on user session for [$($ADTEnv.CurrentLoggedOnUserSession.NTAccount)].")
             }
             else
             {
@@ -545,7 +545,7 @@ class ADTSession
             }
             else
             {
-                $this.WriteLogEntry('There is no console user logged in (user with control of physical monitor, keyboard, and mouse).')
+                $this.WriteLogEntry('There is no console user logged on (user with control of physical monitor, keyboard, and mouse).')
             }
 
             # Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
@@ -608,11 +608,11 @@ class ADTSession
             elseif (!$ADTEnv.usersLoggedOn)
             {
                 $this.DeployMode = 'NonInteractive'
-                $this.WriteLogEntry("Session 0 detected, process running in user interactive mode, no users logged in; deployment mode set to [$($this.DeployMode)].")
+                $this.WriteLogEntry("Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [$($this.DeployMode)].")
             }
             else
             {
-                $this.WriteLogEntry('Session 0 detected, process running in user interactive mode, user(s) logged in.')
+                $this.WriteLogEntry('Session 0 detected, process running in user interactive mode, user(s) logged on.')
             }
         }
         else
