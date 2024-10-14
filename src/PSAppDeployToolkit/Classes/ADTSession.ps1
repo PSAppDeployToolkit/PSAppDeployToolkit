@@ -401,8 +401,9 @@ class ADTSession
         }
         else
         {
-            "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$(Remove-ADTInvalidFileNameChars -Name $ADTEnv.envUserName).log"
+            "$($this.InstallName)_$($ADTEnv.appDeployToolkitName)_$($this.DeploymentType)_$($ADTEnv.envUserName).log"
         }
+        $this.LogName = Remove-ADTInvalidFileNameChars -Name $this.LogName
         $logFile = [System.IO.Path]::Combine($this.LogPath, $this.LogName)
         $logFileInfo = [System.IO.FileInfo]$logFile
         $logFileSizeExceeded = ($ADTConfig.Toolkit.LogMaxSize -gt 0) -and (($logFileInfo.Length / 1MB) -gt $ADTConfig.Toolkit.LogMaxSize)
