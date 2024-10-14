@@ -266,6 +266,23 @@ function Show-ADTInstallationRestartPromptClassic
     $flowLayoutPanel.Controls.Add($panelButtons)
     $flowLayoutPanel.ResumeLayout()
 
+    # Button Default (Hidden).
+    $buttonDefault = [System.Windows.Forms.Button]::new()
+    $buttonDefault.MinimumSize = $buttonDefault.ClientSize = $buttonDefault.MaximumSize = [System.Drawing.Size]::new(0, 0)
+    $buttonDefault.Margin = $buttonDefault.Padding = $paddingNone
+    $buttonDefault.Name = 'buttonDefault'
+    $buttonDefault.Font = $Script:Dialogs.Classic.Font
+    $buttonDefault.BackColor = [System.Drawing.Color]::Transparent
+    $buttonDefault.ForeColor = [System.Drawing.Color]::Transparent
+    $buttonDefault.FlatAppearance.BorderSize = 0
+    $buttonDefault.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent
+    $buttonDefault.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent
+    $buttonDefault.FlatStyle = [System.Windows.Forms.FlatStyle]::System
+    $buttonDefault.TabStop = $false
+    $buttonDefault.Enabled = $false
+    $buttonDefault.Visible = $true  # Has to be set visible so we can call Click on it.
+    $buttonDefault.UseVisualStyleBackColor = $true
+
     # Form Restart.
     $formRestartPromptStartLocation = $null
     $formRestart = [System.Windows.Forms.Form]::new()
@@ -287,9 +304,12 @@ function Show-ADTInstallationRestartPromptClassic
     $formRestart.Icon = $Script:Dialogs.Classic.Assets.Icon
     $formRestart.Controls.Add($pictureBanner)
     $formRestart.Controls.Add($flowLayoutPanel)
+    $formRestart.Controls.Add($buttonDefault)
     $formRestart.add_Load($formRestart_Load)
     $formRestart.add_FormClosed($formRestart_FormClosed)
     $formRestart.add_FormClosing($formRestart_FormClosing)
+    $formRestart.AcceptButton = $buttonDefault
+    $formRestart.ActiveControl = $buttonDefault
     $formRestart.ResumeLayout()
 
     # Timer Countdown.
