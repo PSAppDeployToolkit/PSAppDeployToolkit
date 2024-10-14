@@ -65,20 +65,20 @@
 # Define dialog function dispatcher between classic/fluent dialogs.
 & $CommandTable.'New-Variable' -Name DialogDispatcher -Option Constant -Value ([ordered]@{
         Classic = ([ordered]@{
-                'Close-ADTInstallationProgress'     = $CommandTable.'Close-ADTInstallationProgressClassic'
-                'Show-ADTBalloonTip'                = $CommandTable.'Show-ADTBalloonTipClassic'
-                'Show-ADTInstallationProgress'      = $CommandTable.'Show-ADTInstallationProgressClassic'
-                'Show-ADTInstallationPrompt'        = $CommandTable.'Show-ADTInstallationPromptClassic'
+                'Close-ADTInstallationProgress' = $CommandTable.'Close-ADTInstallationProgressClassic'
+                'Show-ADTBalloonTip' = $CommandTable.'Show-ADTBalloonTipClassic'
+                'Show-ADTInstallationProgress' = $CommandTable.'Show-ADTInstallationProgressClassic'
+                'Show-ADTInstallationPrompt' = $CommandTable.'Show-ADTInstallationPromptClassic'
                 'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptClassic'
-                'Show-ADTInstallationWelcome'       = $CommandTable.'Show-ADTWelcomePromptClassic'
+                'Show-ADTInstallationWelcome' = $CommandTable.'Show-ADTWelcomePromptClassic'
             }).AsReadOnly()
         Fluent = ([ordered]@{
-                'Close-ADTInstallationProgress'     = $CommandTable.'Close-ADTInstallationProgressFluent'
-                'Show-ADTBalloonTip'                = $CommandTable.'Show-ADTBalloonTipFluent'
-                'Show-ADTInstallationProgress'      = $CommandTable.'Show-ADTInstallationProgressFluent'
-                'Show-ADTInstallationPrompt'        = $CommandTable.'Show-ADTInstallationPromptClassic'
+                'Close-ADTInstallationProgress' = $CommandTable.'Close-ADTInstallationProgressFluent'
+                'Show-ADTBalloonTip' = $CommandTable.'Show-ADTBalloonTipFluent'
+                'Show-ADTInstallationProgress' = $CommandTable.'Show-ADTInstallationProgressFluent'
+                'Show-ADTInstallationPrompt' = $CommandTable.'Show-ADTInstallationPromptClassic'
                 'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptClassic'
-                'Show-ADTInstallationWelcome'       = $CommandTable.'Show-ADTWelcomePromptClassic'
+                'Show-ADTInstallationWelcome' = $CommandTable.'Show-ADTWelcomePromptClassic'
             }).AsReadOnly()
     }).AsReadOnly()
 

@@ -163,9 +163,9 @@ function Uninstall-ADTApplication
             if (!$PSBoundParameters.ContainsKey('Name') -and !$PSBoundParameters.ContainsKey('ProductCode') -and !$PSBoundParameters.ContainsKey('FilterScript'))
             {
                 $naerParams = @{
-                    Exception         = [System.ArgumentNullException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')
-                    Category          = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                    ErrorId           = 'NullParameterValue'
+                    Exception = [System.ArgumentNullException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    ErrorId = 'NullParameterValue'
                     RecommendedAction = "Review the supplied parameter values and try again."
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
@@ -182,11 +182,11 @@ function Uninstall-ADTApplication
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
         $sapParams = @{
-            WaitForMsiExec         = $true
+            WaitForMsiExec = $true
             NoExitOnProcessFailure = $true
-            CreateNoWindow         = $true
-            PassThru               = $PassThru
-            Path                   = $null
+            CreateNoWindow = $true
+            PassThru = $PassThru
+            Path = $null
         }
     }
 
