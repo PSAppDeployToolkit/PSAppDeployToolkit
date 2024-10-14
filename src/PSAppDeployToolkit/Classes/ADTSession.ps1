@@ -593,7 +593,7 @@ class ADTSession
         }
 
         # If the script was launched with deployment mode set to NonInteractive, then continue
-        if ($this.DeployMode -eq 'NonInteractive')
+        if ($this.DeployMode -ne 'Interactive')
         {
             $this.WriteLogEntry("Session 0 detected but deployment mode was manually set to [$($this.DeployMode)].")
         }
