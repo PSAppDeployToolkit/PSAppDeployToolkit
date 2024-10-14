@@ -14,6 +14,6 @@ function Get-ADTStringLanguage
     else
     {
         # Fall back to PowerShell's.
-        return $PSUICulture
+        return [System.Threading.Thread]::CurrentThread.CurrentUICulture
     }
 }
