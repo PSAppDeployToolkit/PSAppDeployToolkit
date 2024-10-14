@@ -587,6 +587,23 @@ function Show-ADTWelcomePromptClassic
     $buttonAbort.Visible = $true  # Has to be set visible so we can call Click on it.
     $buttonAbort.UseVisualStyleBackColor = $true
 
+    # Button Default (Hidden).
+    $buttonDefault = [System.Windows.Forms.Button]::new()
+    $buttonDefault.MinimumSize = $buttonDefault.ClientSize = $buttonDefault.MaximumSize = [System.Drawing.Size]::new(0, 0)
+    $buttonDefault.Margin = $buttonDefault.Padding = $paddingNone
+    $buttonDefault.Name = 'buttonDefault'
+    $buttonDefault.Font = $Script:Dialogs.Classic.Font
+    $buttonDefault.BackColor = [System.Drawing.Color]::Transparent
+    $buttonDefault.ForeColor = [System.Drawing.Color]::Transparent
+    $buttonDefault.FlatAppearance.BorderSize = 0
+    $buttonDefault.FlatAppearance.MouseDownBackColor = [System.Drawing.Color]::Transparent
+    $buttonDefault.FlatAppearance.MouseOverBackColor = [System.Drawing.Color]::Transparent
+    $buttonDefault.FlatStyle = [System.Windows.Forms.FlatStyle]::System
+    $buttonDefault.TabStop = $false
+    $buttonDefault.Enabled = $false
+    $buttonDefault.Visible = $true  # Has to be set visible so we can call Click on it.
+    $buttonDefault.UseVisualStyleBackColor = $true
+
     ## Form Welcome
     $formWelcome = [System.Windows.Forms.Form]::new()
     $formWelcome.SuspendLayout()
@@ -607,9 +624,12 @@ function Show-ADTWelcomePromptClassic
     $formWelcome.Icon = $Script:Dialogs.Classic.Assets.Icon
     $formWelcome.Controls.Add($pictureBanner)
     $formWelcome.Controls.Add($buttonAbort)
+    $formWelcome.Controls.Add($buttonDefault)
     $formWelcome.Controls.Add($flowLayoutPanel)
     $formWelcome.add_Load($formWelcome_Load)
     $formWelcome.add_FormClosed($formWelcome_FormClosed)
+    $formWelcome.AcceptButton = $buttonDefault
+    $formWelcome.ActiveControl = $buttonDefault
     $formWelcome.ResumeLayout()
 
     # Minimize all other windows.
