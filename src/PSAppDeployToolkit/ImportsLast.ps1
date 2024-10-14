@@ -52,6 +52,7 @@
             BannerHeight = 0
         }
         Fluent = [pscustomobject]@{
+            ApplicationSession = [PSADT.UserInterface.ADTApplication]::new()
             ProgressWindow = [pscustomobject]@{
                 Window = $null
                 Thread = $null
@@ -76,7 +77,11 @@
                 'Show-ADTInstallationProgress' = $CommandTable.'Show-ADTInstallationProgressFluent'
                 'Show-ADTInstallationPrompt' = $CommandTable.'Show-ADTInstallationPromptClassic'
                 'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptClassic'
+<<<<<<< Updated upstream
                 'Show-ADTInstallationWelcome' = $CommandTable.'Show-ADTWelcomePromptClassic'
+=======
+                'Show-ADTInstallationWelcome'       = $CommandTable.'Show-ADTWelcomePromptFluent'
+>>>>>>> Stashed changes
             }).AsReadOnly()
     }).AsReadOnly()
 
