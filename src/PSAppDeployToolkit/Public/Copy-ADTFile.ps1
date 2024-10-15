@@ -286,7 +286,7 @@ function Copy-ADTFile
                     $destFolderAttributes = [System.IO.File]::GetAttributes($robocopyDestination)
 
                     # Begin copy operation.
-                    $robocopyArgs = "$RobocopyParams $RobocopyAdditionalParams `"$robocopySource`" `"$robocopyDestination`" `"$robocopyFile`""
+                    $robocopyArgs = "`"$robocopySource`" `"$robocopyDestination`" `"$robocopyFile`" $RobocopyParams $RobocopyAdditionalParams"
                     Write-ADTLogEntry -Message "Executing Robocopy command: $robocopyCommand $robocopyArgs"
                     $robocopyResult = Start-ADTProcess -Path $robocopyCommand -Parameters $robocopyArgs -CreateNoWindow -NoExitOnProcessFailure -PassThru -SuccessCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
 
