@@ -1,0 +1,90 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFrameworks>net462</TargetFrameworks>
+	  <PlatformTarget>AnyCPU</PlatformTarget>
+	  <UseWPF>true</UseWPF>
+	  <LangVersion>latest</LangVersion>
+	  <Deterministic>true</Deterministic>
+	  <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+	  <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+	  <Nullable>enable</Nullable>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <ApplicationManifest>app.manifest</ApplicationManifest>
+	  <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+	  <UserSecretsId>1f9c9b02-c540-4d44-95e4-075d460f0854</UserSecretsId>
+	  <AssemblyName>PSADT.UserInterface</AssemblyName>
+	  <RootNamespace>PSADT</RootNamespace>
+	  <Authors>PSAppDeployToolkit Team</Authors>
+	  <Company>PSAppDeployToolkit Team</Company>
+		<Description>PSAppDeployToolkit Support Library</Description>
+		<Copyright>Copyright © 2024 PSAppDeployToolkit Team</Copyright>
+		<ApplicationIcon>Resources\appIcon.ico</ApplicationIcon>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<SignAssembly>False</SignAssembly>
+		<Title>PSAppDeployToolkit Support Libray</Title>
+		<PackageProjectUrl>https://psappdeploytoolkit.com</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
+		<!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
+		<SelfContained>false</SelfContained>
+		<PublishSingleFile>false</PublishSingleFile>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+		<PublishTrimmed>false</PublishTrimmed>
+		<Platforms>AnyCPU</Platforms>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+		<PackageIcon>Assets\appIcon.png</PackageIcon>
+		<RepositoryType>git</RepositoryType>
+
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
+	<Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
+	<Optimize>False</Optimize>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Resource Include="Resources\appIcon.ico" >
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Resources\appIcon.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Resources\Classic.Banner.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Resources\Fluent.Banner.Dark.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Resources\Fluent.Banner.Light.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Resource>
+	</ItemGroup>
+
+
+  <ItemGroup>
+	<PackageReference Include="System.ValueTuple" Version="4.5.0" />
+	<PackageReference Include="WPF-UI" Version="3.0.5" />
+	<PackageReference Include="WPF-UI.Tray" Version="3.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Reference Include="System.Management" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<None Update="Resources\appIcon.png">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
+  </ItemGroup>
+
+  <ItemGroup>
+	<Folder Include="Classes\" />
+  </ItemGroup>
+
+</Project>

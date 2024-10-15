@@ -1,0 +1,189 @@
+<ui:FluentWindow
+    x:Class="PSADT.UserInterface.CustomDialog"
+    xmlns:base="clr-namespace:PSADT.UserInterface.Utilities"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:PSADT.UserInterface"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:toast="http://schemas.lepo.co/wpfui/2022/xaml/toast"
+    xmlns:tray="http://schemas.lepo.co/wpfui/2022/xaml/tray"
+    ui:Design.Background="{DynamicResource LayerOnMicaBaseAltFillColorTertiaryBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Background="{DynamicResource ControlFillColorInputActiveBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    BorderBrush="{DynamicResource AccentTextFillColorTertiaryBrush}"
+    ExtendsContentIntoTitleBar="True"
+    ResizeMode="NoResize"
+    MinWidth="440"
+    MaxWidth="440"
+    MinHeight="100"
+    SizeToContent="WidthAndHeight"
+    TextOptions.TextFormattingMode="Ideal"
+    WindowBackdropType="Acrylic"
+    WindowCornerPreference="DoNotRound"
+    mc:Ignorable="d"
+    Topmost="True">
+
+    <Grid x:Name="DialogGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="32" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+
+        <tray:NotifyIcon
+            x:Name="NotifyIcon"
+            Icon="/Assets/AppIcon.png"
+            MenuOnRightClick="True">
+            <tray:NotifyIcon.Menu>
+                <ContextMenu ItemsSource="{Binding ViewModel.TrayMenuItems, Mode=OneWay}" />
+            </tray:NotifyIcon.Menu>
+        </tray:NotifyIcon>
+
+
+        <Rectangle
+            x:Name="AccentSidebar"
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.RowSpan="4"
+            Fill="{DynamicResource AccentTextFillColorTertiaryBrush}">
+        </Rectangle>
+
+        <ui:SymbolIcon
+            Grid.Row="0"
+            Grid.Column="0"
+            x:Name="SymbolIcon"
+            Symbol="ShieldError24"
+            Margin="0,12,0,0"
+            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+
+        <Grid
+            x:Name="Column1VerticalGrid"
+            Grid.Column="1"
+            Grid.Row="0"
+            Grid.RowSpan="4" />
+
+        <StackPanel
+            x:Name="HeaderPanel"
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="28,24,28,12"
+            Orientation="Horizontal">
+
+            <Image
+                x:Name="LogoImage"
+                Width="32"
+                Height="32"
+                Source="/Assets/AppIcon.png"
+                Stretch="Uniform" />
+
+            <StackPanel
+                x:Name="HeaderTextPanel"
+                Margin="8,0,8,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center">
+                <ui:TextBlock
+                    x:Name="AppFramework"
+                    FontTypography="Caption"
+                    FontWeight="SemiBold"
+                    Text="PSAppDeployToolkit - App Installation"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    HorizontalAlignment="Left"
+                    TextAlignment="Left"
+                    TextWrapping="WrapWithOverflow" />
+            </StackPanel>
+        </StackPanel>
+
+
+        <StackPanel
+            x:Name="TextPanel"
+            Grid.Column="1"
+            Grid.Row="1"
+            Margin="28,0,28,0">
+            <ui:TextBlock
+                x:Name="AppTitle"
+                FontTypography="SubTitle"
+                FontSize="22"
+                FontWeight="SemiBold"
+                Text="Application Title"
+                MaxWidth="380"
+                HorizontalAlignment="Left"
+                TextAlignment="Left"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                TextWrapping="WrapWithOverflow" />
+
+        </StackPanel>
+
+        <!-- Grid.Row="2" -->
+        <StackPanel
+            x:Name="CloseAppsListPanel"
+            Grid.Column="1"
+            Grid.Row="2"
+            Margin="28,8,28,8">
+            <Border
+                CornerRadius="4"
+                Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+                <ui:TextBlock
+                    Margin="16"
+                    x:Name="CustomMessage"
+                    MaxWidth="380"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    TextWrapping="WrapWithOverflow"
+                    TextAlignment="Left"
+                    FontSize="15"
+                    Text="Please save your work before continuing as the following applications will be closed automatically." />
+
+            </Border>
+        </StackPanel>
+        <StackPanel
+            x:Name="ButtonPanel"
+            Grid.Column="1"
+            Grid.Row="3">
+            <Grid
+                x:Name="ActionButtons"
+                Margin="28,12,28,20"
+                VerticalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ui:Button
+                    x:Name="LeftButton"
+                    Grid.Column="0"
+                    Margin="0,0,4,0"
+                    HorizontalAlignment="Stretch"
+                    Appearance="Secondary"
+                    Content="Yes"
+                    Click="LeftButton_Click" />
+                <ui:Button
+                    x:Name="MiddleButton"
+                    Grid.Column="1"
+                    Margin="4,0,4,0"
+                    HorizontalAlignment="Stretch"
+                    Appearance="Secondary"
+                    Content="No"
+                    Click="MiddleButton_Click" />
+                <ui:Button
+                    x:Name="RightButton"
+                    Grid.Column="2"
+                    Margin="4,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    Appearance="Primary"
+                    Content="Cancel"
+                    Click="RightButton_Click" />
+            </Grid>
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>
