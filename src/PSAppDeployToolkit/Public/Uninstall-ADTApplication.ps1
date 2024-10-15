@@ -165,7 +165,7 @@ function Uninstall-ADTApplication
 
         if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
-            if (!$PSBoundParameters.ContainsKey('Name') -and !$PSBoundParameters.ContainsKey('ProductCode') -and !$PSBoundParameters.ContainsKey('FilterScript'))
+            if (!($PSBoundParameters.Keys -match '^(Name|ProductCode|FilterScript)$'))
             {
                 $naerParams = @{
                     Exception = [System.ArgumentNullException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')
