@@ -138,14 +138,15 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
     try
     {
         Write-Build White '      Running dotNet build...'
-        foreach ($buildConfiguration in @('Release'))#, 'Debug'))
+        foreach ($buildConfiguration in @('Debug', 'Release'))
         {
             & dotnet build "$script:dotnetSourcePath\PSADT\PSADT.sln" --configuration $buildConfiguration
             #& dotnet build "$script:dotnetSourcePath\Deploy-Application\Deploy-Application.sln" --configuration $buildConfiguration
         }
         Write-Build Green '      ...dotNet build Complete!'
 
-        Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Release\*" "$ModuleSourcePath\lib" -Recurse -Force
+        # We use the debug DLLs here against the uncompiled module. The release DLLs are copied into the artifacts at the end.
+        Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Debug\*" "$ModuleSourcePath\lib" -Recurse -Force
     }
     catch
     {
