@@ -586,6 +586,22 @@ Add-BuildTask Build {
         Remove-Item "$script:ArtifactsPath\docs" -Recurse -Force -ErrorAction Stop
         Write-Build Gray '        ...Docs output completed.'
     }
+
+    if ($env:GITHUB_ACTIONS -eq 'true') {
+        if (Get-Command -Name 'azuresigntool') {
+            Write-Build White '        Signing module...'
+            Get-ChildItem -Path $script:BuildModuleRoot -Include '*.psm1', 'PSADT*.dll', 'Deploy-Application.exe' -Recurse | ForEach-Object {
+                & azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 "$_"
+            }
+        }
+        else {
+            Write-Build Yellow '        AzureSignTool not found, skipping code signing...'
+        }
+    }
+    else {
+        Write-Build Yellow '        Not running in GitHub Actions, skipping code signing...'
+    }
+
     Write-Build Green '      ...Build Complete!'
 } #Build
 
