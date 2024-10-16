@@ -177,7 +177,7 @@ function Uninstall-ADTApplication
             }
 
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
-            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru
+            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru, SecureParameters
             $InstalledApplication = Get-ADTApplication @gaiaParams
         }
 
