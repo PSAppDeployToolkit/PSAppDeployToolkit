@@ -6,5 +6,5 @@
 
 function Get-ADTModuleManifest
 {
-    return ([System.Management.Automation.Language.Parser]::ParseFile("$Script:PSScriptRoot\$($MyInvocation.MyCommand.Module.Name).psd1", [ref]$null, [ref]$null).EndBlock.Statements.PipelineElements.Expression.SafeGetValue())
+    return (Import-LocalizedData -BaseDirectory $Script:PSScriptRoot -FileName $MyInvocation.MyCommand.Module.Name)
 }
