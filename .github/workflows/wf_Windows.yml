@@ -15,6 +15,8 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+permissions:
+  id-token: write # Require write permission to Fetch an OIDC token.
 jobs:
   test:
     name: Run Tests
