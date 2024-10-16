@@ -488,13 +488,8 @@ Add-BuildTask Build {
 
     Write-Build Gray '        Merging Public and Private functions to one module file...'
     #$private = "$script:ModuleSourcePath\Private"
-    $scriptContent = [System.Text.StringBuilder]::new()
     #$powerShellScripts = Get-ChildItem -Path $script:ModuleSourcePath -Filter '*.ps1' -Recurse
-    $powerShellScripts = $(
-        Get-ChildItem -Path $script:BuildModuleRoot\ImportsFirst.ps1
-        Get-ChildItem -Path $script:BuildModuleRoot\Classes\*.ps1, $script:BuildModuleRoot\Private\*.ps1, $script:BuildModuleRoot\Public\*.ps1 -Recurse
-        Get-ChildItem -Path $script:BuildModuleRoot\ImportsLast.ps1
-    )
+    $powerShellScripts = Get-ChildItem -Path $script:BuildModuleRoot\ImportsFirst.ps1, $script:BuildModuleRoot\Classes\*.ps1, $script:BuildModuleRoot\Private\*.ps1, $script:BuildModuleRoot\Public\*.ps1, $script:BuildModuleRoot\ImportsLast.ps1 -Recurse
     $scriptContent = foreach ($script in $powerShellScripts) {
         # Import the script file as a string for substring replacement.
         $text = [System.IO.File]::ReadAllText($script.FullName).Trim()
@@ -505,7 +500,7 @@ Add-BuildTask Build {
             # Parse the ps1 file and store its AST.
             $tokens = $null
             $errors = $null
-            $scrAst = [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$errors)
+            $scrAst = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$tokens, [ref]$errors)
 
             # Throw if we had any parsing errors.
             if ($errors)
