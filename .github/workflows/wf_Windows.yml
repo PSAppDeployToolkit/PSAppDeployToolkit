@@ -17,6 +17,7 @@ on:
       - 'docs/**'
 permissions:
   id-token: write # Require write permission to Fetch an OIDC token.
+  contents: read
 jobs:
   test:
     name: Run Tests
