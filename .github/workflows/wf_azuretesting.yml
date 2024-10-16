@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
     - name: Azure CLI Login
       uses: azure/login@v2
