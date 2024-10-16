@@ -138,14 +138,14 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
     try
     {
         Write-Build White '      Running dotNet build...'
-        foreach ($buildConfiguration in @('Debug', 'Release'))
+        foreach ($buildConfiguration in @('Release'))#, 'Debug'))
         {
             & dotnet build "$script:dotnetSourcePath\PSADT\PSADT.sln" --configuration $buildConfiguration
             #& dotnet build "$script:dotnetSourcePath\Deploy-Application\Deploy-Application.sln" --configuration $buildConfiguration
         }
         Write-Build Green '      ...dotNet build Complete!'
 
-        Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Debug\*" "$ModuleSourcePath\lib" -Recurse -Force
+        Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Release\*" "$ModuleSourcePath\lib" -Recurse -Force
     }
     catch
     {
