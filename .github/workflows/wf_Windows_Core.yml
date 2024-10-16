@@ -40,6 +40,8 @@ jobs:
     - name: Bootstrap
       shell: pwsh
       run: ./actions_bootstrap.ps1
+    - name: Install AzureSignTool
+      run: dotnet tool install --global azuresigntool
     - name: Azure Login
       uses: azure/login@v2
       with:
