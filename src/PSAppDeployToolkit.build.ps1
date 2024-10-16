@@ -528,7 +528,7 @@ Add-BuildTask Build {
                 throw "One or more found CommandAst objects within [$($script.Name)] were invalid."
             }
 
-            # Get all bare-word constants and process in reverse. We reverse the list so that we 
+            # Get all bare-word constants and process in reverse. We reverse the list so that we
             # do the last found items first so the substring values in the AST are always correct.
             $commandAsts | & { process { $_.CommandElements[0].Extent } } | Sort-Object -Property EndOffset -Descending | . {
                 process
@@ -586,11 +586,6 @@ Add-BuildTask Build {
         Remove-Item "$script:ArtifactsPath\docs" -Recurse -Force -ErrorAction Stop
         Write-Build Gray '        ...Docs output completed.'
     }
-
-    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v3' -Version 3 -ModulePath $script:BuildModuleRoot
-    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4' -Version 4 -ModulePath $script:BuildModuleRoot
-    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4_PSCore' -Version 4 -PSCore -ModulePath $script:BuildModuleRoot
-
     Write-Build Green '      ...Build Complete!'
 } #Build
 
@@ -637,6 +632,10 @@ Add-BuildTask Archive {
     }
 
     $null = New-Item -Path $archivePath -ItemType Directory -Force
+
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v3' -Version 3 -ModulePath $script:BuildModuleRoot
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4' -Version 4 -ModulePath $script:BuildModuleRoot
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4_PSCore' -Version 4 -PSCore -ModulePath $script:BuildModuleRoot
 
     if ($PSEdition -eq 'Desktop')
     {
