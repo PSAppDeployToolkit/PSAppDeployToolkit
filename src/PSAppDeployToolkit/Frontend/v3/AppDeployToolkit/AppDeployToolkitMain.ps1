@@ -4080,9 +4080,7 @@ Open-ADTSession @sessionProps
 
 # Redefine all functions as read-only and clean up temp variables.
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
-Remove-Variable -Name adtWrapperFuncs -Force -Confirm:$false
-Remove-Variable -Name sessionProps -Force -Confirm:$false
-Remove-Variable -Name adtModule -Force -Confirm:$false
+Remove-Variable -Name adtWrapperFuncs, sessionProps, adtModule -Force -Confirm:$false
 
 
 #---------------------------------------------------------------------------
