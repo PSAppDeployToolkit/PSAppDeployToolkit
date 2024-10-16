@@ -4060,13 +4060,13 @@ Set-StrictMode -Version 1
 
 # Import our local module.
 Remove-Module -Name PSAppDeployToolkit* -Force
-if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
+$adtModule = if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
 {
-    Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force
+    Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force -PassThru
 }
 elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
 {
-    Import-Module -Name "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -Force
+    Import-Module -Name "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -Force -PassThru
 }
 else
 {
@@ -4075,13 +4075,14 @@ else
 
 # Open a new PSADT session, dynamically gathering the required parameters from the stack.
 $sessionProps = @{ SessionState = $ExecutionContext.SessionState }
-Get-Variable -Name ((Get-Command -Name Open-ADTSession -FullyQualifiedModule @{ ModuleName = 'PSAppDeployToolkit'; Guid = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'; ModuleVersion = '3.91.0' }).Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
+Get-Variable -Name ($adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
 Open-ADTSession @sessionProps
 
 # Redefine all functions as read-only and clean up temp variables.
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
 Remove-Variable -Name adtWrapperFuncs -Force -Confirm:$false
 Remove-Variable -Name sessionProps -Force -Confirm:$false
+Remove-Variable -Name adtModule -Force -Confirm:$false
 
 
 #---------------------------------------------------------------------------
