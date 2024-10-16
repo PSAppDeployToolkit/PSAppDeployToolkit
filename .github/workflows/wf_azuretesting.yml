@@ -18,10 +18,10 @@ on:
 
 permissions:
   id-token: write # Require write permission to Fetch an OIDC token.
-  
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - name: Azure CLI Login
       uses: azure/login@v2
@@ -29,7 +29,7 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  
+
     - name: Azure CLI script
       uses: azure/cli@v2
       with:
@@ -37,3 +37,4 @@ jobs:
         inlineScript: |
           az account show
           # You can write your Azure CLI inline scripts here.
+          azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe
