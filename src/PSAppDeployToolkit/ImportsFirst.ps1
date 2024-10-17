@@ -57,7 +57,7 @@ if ($Host.Name.Equals('ConsoleHost'))
     }
 }
 
-# All WinForms-specific initialistion code.
+# All WinForms-specific initialization code.
 try
 {
     [System.Windows.Forms.Application]::EnableVisualStyles()
