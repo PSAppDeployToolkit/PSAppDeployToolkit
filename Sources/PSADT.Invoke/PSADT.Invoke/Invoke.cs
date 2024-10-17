@@ -11,14 +11,14 @@ namespace PSADT
 {
     internal static class Invoke
     {
-        public static int ProcessExitCode { get; set; }
-
         public static void Main()
         {
+            // Set up exit code.
+            int exitCode = 60010;
+
             try
             {
-                // Set up variables
-                ProcessExitCode = 60010;
+                // Set up variables.
                 string currentPath = AppDomain.CurrentDomain.BaseDirectory;
                 string adtInvocationScriptPath = Path.Combine(currentPath, "Invoke-AppDeployToolkit.ps1");
                 string adtToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit\\PSAppDeployToolkit.psd1");
@@ -170,14 +170,14 @@ namespace PSADT
                 if (isRequireAdmin && (Environment.OSVersion.Version.Major >= 6)) processStartInfo.Verb = "runas";
 
                 // Start the PowerShell process and wait for completion
-                ProcessExitCode = 60011;
+                exitCode = 60011;
                 var process = new Process();
                 try
                 {
                     process.StartInfo = processStartInfo;
                     process.Start();
                     process.WaitForExit();
-                    ProcessExitCode = process.ExitCode;
+                    exitCode = process.ExitCode;
                 }
                 finally
                 {
@@ -185,13 +185,13 @@ namespace PSADT
                 }
 
                 // Exit
-                WriteDebugMessage("Exit Code: " + ProcessExitCode);
-                Environment.Exit(ProcessExitCode);
+                WriteDebugMessage("Exit Code: " + exitCode);
+                Environment.Exit(exitCode);
             }
             catch (Exception ex)
             {
                 WriteDebugMessage(ex.Message, true, MessageBoxIcon.Error);
-                Environment.Exit(ProcessExitCode);
+                Environment.Exit(exitCode);
             }
         }
 
