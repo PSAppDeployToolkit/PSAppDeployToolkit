@@ -33,6 +33,12 @@ jobs:
     - name: Version Display
       shell: powershell
       run: $PSVersionTable
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     # uncomment below to explore what modules/variables/env variables are available in the build image
     # - name: Modules and Variables Display
     #   shell: powershell
@@ -48,32 +54,41 @@ jobs:
       run: ./actions_bootstrap.ps1
     - name: Install AzureSignTool
       run: dotnet tool install --global azuresigntool
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    - name: Azure PowerShell script
-      uses: azure/powershell@v2
-      with:
-        azPSVersion: "latest"
-        inlineScript: |
-          Write-Host "Hi Mom"
-          Uninstall-AzureRm
-          Get-AzContext
     - name: Test and Build
       shell: powershell
       run: Invoke-Build -File .\src\PSAppDeployToolkit.build.ps1
     - name: Upload pester results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: pester-results
         path: .\src\Artifacts\testOutput
         if-no-files-found: warn
-    - name: Upload zip module archive build
-      uses: actions/upload-artifact@v3
+        overwrite: true
+    - name: Upload Module
+      uses: actions/upload-artifact@v4
       with:
-        name: zip-archive
-        path: .\src\Archive
+        name: PSAppDeployToolkit
+        path: .\src\Artifacts\Module
         if-no-files-found: warn
+        overwrite: true
+    - name: Upload Template v3
+      uses: actions/upload-artifact@v4
+      with:
+        name: Template_v3
+        path: .\src\Artifacts\Template_v3
+        if-no-files-found: warn
+        overwrite: true
+    - name: Upload Template v4
+      uses: actions/upload-artifact@v4
+      with:
+        name: Template_v4
+        path: .\src\Artifacts\Template_v4
+        if-no-files-found: warn
+        overwrite: true
+    - name: Upload Template v4
+      uses: actions/upload-artifact@v4
+      with:
+        name: Template_v4
+        path: .\src\Artifacts\Template_v4
+        if-no-files-found: warn
+        overwrite: true
