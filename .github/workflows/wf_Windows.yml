@@ -62,8 +62,11 @@ jobs:
           Write-Host "Hi Mom"
           Uninstall-AzureRm
           Get-AzContext
-          $thingToSign = '.\src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
-          azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 "$thingToSign"
+    - name: PowerShell Test
+      shell: powershell
+      run: |
+        $thingToSign = '.\src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
+        azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 "$thingToSign"
     # - name: Test and Build
     #   shell: powershell
     #   run: Invoke-Build -File .\src\PSAppDeployToolkit.build.ps1
