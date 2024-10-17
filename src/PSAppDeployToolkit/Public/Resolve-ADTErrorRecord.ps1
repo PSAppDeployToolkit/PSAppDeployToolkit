@@ -84,6 +84,7 @@ function Resolve-ADTErrorRecord
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
         [Parameter(Mandatory = $false)]
+        [SupportsWildcards()]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Property = ('Message', 'InnerException', 'FullyQualifiedErrorId', 'ScriptStackTrace', 'PositionMessage'),
 
@@ -104,6 +105,7 @@ function Resolve-ADTErrorRecord
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $propsIsWildCard = $($Property).Equals('*')
 
         # Allows selecting and filtering the properties on the error object if they exist.
         filter Get-ErrorPropertyNames
@@ -121,7 +123,7 @@ function Resolve-ADTErrorRecord
             $properties = $InputObject | Get-Member -MemberType *Property | Select-Object -ExpandProperty Name
 
             # If we've asked for all properties, return early with the above.
-            if ($($Property) -eq '*')
+            if ($propsIsWildCard)
             {
                 return $properties | & { process { if (![System.String]::IsNullOrWhiteSpace(($InputObject.$_ | Out-String).Trim())) { return $_ } } }
             }
@@ -135,7 +137,8 @@ function Resolve-ADTErrorRecord
     {
         # Build out error objects to process in the right order.
         $errorObjects = $(
-            if (($($Property) -ne '*') -and !$ExcludeErrorException -and $ErrorRecord.Exception)
+            $canDoException = !$ExcludeErrorException -and $ErrorRecord.Exception
+            if (!$propsIsWildCard -and $canDoException)
             {
                 $ErrorRecord.Exception
             }
@@ -147,7 +150,7 @@ function Resolve-ADTErrorRecord
             {
                 $ErrorRecord.InvocationInfo
             }
-            if (($($Property) -eq '*') -and !$ExcludeErrorException -and $ErrorRecord.Exception)
+            if ($propsIsWildCard -and $canDoException)
             {
                 $ErrorRecord.Exception
             }

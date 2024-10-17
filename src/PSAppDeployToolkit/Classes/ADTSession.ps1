@@ -209,9 +209,7 @@ class ADTSession
         $this.WriteLogEntry("Successfully mounted WIM file to [$(($this.DirFiles = $mountPath))].")
 
         # Subst the new DirFiles path to eliminate any potential path length issues.
-        $usedLetters = (Get-PSDrive -PSProvider FileSystem).Name
-        $availLetter = [System.String[]][System.Char[]](90..65) | & { process { if ($usedLetters -notcontains $_) { return $_ } } } | Select-Object -First 1
-        if ($availLetter)
+        if (($availLetter = [System.String[]][System.Char[]](90..65) | & { begin { $usedLetters = (Get-PSDrive -PSProvider FileSystem).Name } process { if ($usedLetters -notcontains $_) { return $_ } } } | Select-Object -First 1))
         {
             $this.WriteLogEntry("Creating substitution drive [$(($substDrive = "${availLetter}:"))] for [$($this.DirFiles)].")
             Invoke-ADTSubstOperation -Drive $substDrive -Path $this.DirFiles 6>$null

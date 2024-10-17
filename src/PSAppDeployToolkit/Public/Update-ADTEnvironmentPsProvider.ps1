@@ -91,7 +91,7 @@ function Update-ADTEnvironmentPsProvider
                 }
 
                 # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
-                Set-Item -LiteralPath Env:PATH -Value ([System.String]::Join(';', (('Machine', 'User' | & { process { [System.Environment]::GetEnvironmentVariable('PATH', $_) } }).Split(';') | & { process { if ($_) { return $_ } } } | Select-Object -Unique)))
+                Set-Item -LiteralPath Env:PATH -Value ([System.String]::Join(';', (([System.Environment]::GetEnvironmentVariable('PATH', 'Machine'), [System.Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';').Trim() | & { process { if ($_) { return $_ } } } | Select-Object -Unique)))
             }
             catch
             {

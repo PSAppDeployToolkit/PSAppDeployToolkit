@@ -543,15 +543,8 @@ function Show-ADTInstallationWelcome
                             # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
                             if ($adtSession.WelcomeTimer)
                             {
-                                try
-                                {
-                                    $adtSession.WelcomeTimer.Dispose()
-                                    $adtSession.WelcomeTimer = $null
-                                }
-                                catch
-                                {
-                                    $null = $null
-                                }
+                                $adtSession.WelcomeTimer.Dispose()
+                                $adtSession.WelcomeTimer = $null
                             }
 
                             # Restore minimized windows.
