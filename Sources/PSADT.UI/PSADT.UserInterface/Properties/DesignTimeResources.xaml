@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
     <ResourceDictionary.MergedDictionaries>
-        <ui:ThemesDictionary />
+        <ui:ThemesDictionary Theme="Dark"/>
         <ui:ControlsDictionary />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

@@ -77,11 +77,7 @@
                 'Show-ADTInstallationProgress' = $CommandTable.'Show-ADTInstallationProgressFluent'
                 'Show-ADTInstallationPrompt' = $CommandTable.'Show-ADTInstallationPromptClassic'
                 'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptClassic'
-<<<<<<< Updated upstream
-                'Show-ADTInstallationWelcome' = $CommandTable.'Show-ADTWelcomePromptClassic'
-=======
                 'Show-ADTInstallationWelcome'       = $CommandTable.'Show-ADTWelcomePromptFluent'
->>>>>>> Stashed changes
             }).AsReadOnly()
     }).AsReadOnly()
 

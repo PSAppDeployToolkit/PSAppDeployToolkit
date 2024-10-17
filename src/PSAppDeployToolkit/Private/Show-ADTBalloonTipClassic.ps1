@@ -36,7 +36,7 @@ function Show-ADTBalloonTipClassic
         BalloonTipText = $BalloonTipText
         BalloonTipIcon = $BalloonTipIcon
         BalloonTipTime = $BalloonTipTime
-        TrayIcon = $adtConfig.Assets.Icon
+        TrayIcon = $adtConfig.Assets.Classic.Icon
     }
 
     # Create in an asynchronous process so that disposal is managed for us.

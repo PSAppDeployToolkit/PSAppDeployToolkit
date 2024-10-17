@@ -48,19 +48,19 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<Resource Include="Resources\appIcon.ico" >
+		<Resource Include="Resources\appIcon.ico">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
 		<Resource Include="Resources\appIcon.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		<Resource Include="Resources\Classic.Banner.png">
+		<Resource Include="Resources\Banner.Classic.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		<Resource Include="Resources\Fluent.Banner.Dark.png">
+		<Resource Include="Resources\Banner.Fluent.Dark.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		<Resource Include="Resources\Fluent.Banner.Light.png">
+		<Resource Include="Resources\Banner.Fluent.Light.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
 	</ItemGroup>
@@ -68,8 +68,8 @@
 
   <ItemGroup>
 	<PackageReference Include="System.ValueTuple" Version="4.5.0" />
-	<PackageReference Include="WPF-UI" Version="3.0.5" />
-	<PackageReference Include="WPF-UI.Tray" Version="3.0.5" />
+	<PackageReference Include="WPF-UI" Version="4.0.0-rc.2" />
+	<PackageReference Include="WPF-UI.Tray" Version="4.0.0-rc.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -81,10 +81,6 @@
 	  <Pack>True</Pack>
 	  <PackagePath>\</PackagePath>
 	</None>
-  </ItemGroup>
-
-  <ItemGroup>
-	<Folder Include="Classes\" />
   </ItemGroup>
 
 </Project>
