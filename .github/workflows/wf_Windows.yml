@@ -67,28 +67,7 @@ jobs:
     - name: Upload Module
       uses: actions/upload-artifact@v4
       with:
-        name: PSAppDeployToolkit
-        path: .\src\Archive\*Module.zip
-        if-no-files-found: warn
-        overwrite: true
-    - name: Upload Template v3
-      uses: actions/upload-artifact@v4
-      with:
-        name: Template_v3
-        path: .\src\Archive\*Template_v3.zip
-        if-no-files-found: warn
-        overwrite: true
-    - name: Upload Template v4
-      uses: actions/upload-artifact@v4
-      with:
-        name: Template_v4
-        path: .\src\Archive\*Template_v4.zip
-        if-no-files-found: warn
-        overwrite: true
-    - name: Upload Template v4
-      uses: actions/upload-artifact@v4
-      with:
-        name: Template_v4
-        path: .\src\Archive\*Template_v4.zip
+        name: zip-archive
+        path: .\src\Archive
         if-no-files-found: warn
         overwrite: true
