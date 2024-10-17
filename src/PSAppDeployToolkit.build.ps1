@@ -584,7 +584,7 @@ Add-BuildTask Build {
 
     if ($env:GITHUB_ACTIONS -eq 'true') {
         if (Get-Command -Name 'azuresigntool' -ErrorAction Ignore) {
-            Write-Build White '        Signing module...'
+            Write-Build Gray '        Signing module...'
             Get-ChildItem -Path $script:BuildModuleRoot -Include '*.psm1', 'PSADT*.dll', 'Deploy-Application.exe' -Recurse | ForEach-Object {
                 & azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 "$_"
             }
@@ -596,6 +596,11 @@ Add-BuildTask Build {
     else {
         Write-Build Yellow '        Not running in GitHub Actions, skipping code signing...'
     }
+
+    Write-Build Gray '        Creating templates...'
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v3' -Version 3 -ModulePath $script:BuildModuleRoot
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4' -Version 4 -ModulePath $script:BuildModuleRoot
+    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4_PSCore' -Version 4 -PSCore -ModulePath $script:BuildModuleRoot
 
     Write-Build Green '      ...Build Complete!'
 } #Build
@@ -634,34 +639,30 @@ Add-BuildTask IntegrationTest {
 } #IntegrationTest
 
 #Synopsis: Creates an archive of the built Module
-Add-BuildTask Archive {
-    Write-Build White '        Performing Archive...'
+# Add-BuildTask Archive {
+#     Write-Build White '        Performing Archive...'
 
-    $archivePath = Join-Path -Path $BuildRoot -ChildPath 'Archive'
-    if (Test-Path -Path $archivePath) {
-        $null = Remove-Item -Path $archivePath -Recurse -Force
-    }
+#     $archivePath = Join-Path -Path $BuildRoot -ChildPath 'Archive'
+#     if (Test-Path -Path $archivePath) {
+#         $null = Remove-Item -Path $archivePath -Recurse -Force
+#     }
 
-    $null = New-Item -Path $archivePath -ItemType Directory -Force
+#     $null = New-Item -Path $archivePath -ItemType Directory -Force
 
-    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v3' -Version 3 -ModulePath $script:BuildModuleRoot
-    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4' -Version 4 -ModulePath $script:BuildModuleRoot
-    New-ADTTemplate -Destination $script:ArtifactsPath -Name 'Template_v4_PSCore' -Version 4 -PSCore -ModulePath $script:BuildModuleRoot
+#     if ($PSEdition -eq 'Desktop')
+#     {
+#         Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
+#     }
 
-    if ($PSEdition -eq 'Desktop')
-    {
-        Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
-    }
+#     $foldersToArchive = Get-ChildItem -Path $script:ArtifactsPath -Directory -Exclude 'ccReport', 'testOutput'
 
-    $foldersToArchive = Get-ChildItem -Path $script:ArtifactsPath -Directory -Exclude 'ccReport', 'testOutput'
+#     foreach ($folder in $foldersToArchive)
+#     {
+#         $zipFileName = '{0}_{1}_{2}.zip' -f $script:ModuleName, $script:ModuleVersion, $folder.Name
+#         $zipFilePath = Join-Path -Path $archivePath -ChildPath $zipFileName
+#         [System.IO.Compression.ZipFile]::CreateFromDirectory($folder.FullName, $zipFilePath)
+#     }
 
-    foreach ($folder in $foldersToArchive)
-    {
-        $zipFileName = '{0}_{1}_{2}.zip' -f $script:ModuleName, $script:ModuleVersion, $folder.Name
-        $zipFilePath = Join-Path -Path $archivePath -ChildPath $zipFileName
-        [System.IO.Compression.ZipFile]::CreateFromDirectory($folder.FullName, $zipFilePath)
-    }
-
-    Write-Build Green '        ...Archive Complete!'
-} #Archive
+#     Write-Build Green '        ...Archive Complete!'
+# } #Archive
 
