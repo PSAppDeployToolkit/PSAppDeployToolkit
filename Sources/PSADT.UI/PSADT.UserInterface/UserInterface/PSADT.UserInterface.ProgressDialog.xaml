@@ -1,0 +1,222 @@
+<local:BaseDialog
+    x:Class="PSADT.UserInterface.ProgressDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:tray="http://schemas.lepo.co/wpfui/2022/xaml/tray"
+    xmlns:local="clr-namespace:PSADT.UserInterface"
+    ui:Design.Background="Transparent"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Background="Transparent"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ExtendsContentIntoTitleBar="True"
+    ResizeMode="NoResize"
+    MinHeight="100"
+    MaxHeight="768"
+    MinWidth="512"
+    MaxWidth="512"
+    SizeToContent="Height"
+    BorderBrush="{DynamicResource AccentTextFillColorTertiaryBrush}"
+    BorderThickness="1"
+    mc:Ignorable="d"
+    WindowStyle="None"
+    SnapsToDevicePixels="True"
+    WindowBackdropType="Acrylic"
+    WindowCornerPreference="Round"
+    Title="PSAppDeployToolkit"
+    Topmost="True">
+
+    <local:BaseDialog.Resources>
+        <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFCCCCCC" />
+    </local:BaseDialog.Resources>
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition x:Name="ListViewRow" Height="Auto" />
+            <!-- Named RowDefinition for ListView -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Accent Sidebar and Icon -->
+        <Grid
+            x:Name="GridRow0Vertical"
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.RowSpan="4"
+            Background="{DynamicResource AccentTextFillColorTertiaryBrush}"
+            Panel.ZIndex="1">
+            <Grid.Effect>
+                <DropShadowEffect
+                    BlurRadius="35"
+                    Direction="0"
+                    Opacity=".4"
+                    ShadowDepth="5" />
+            </Grid.Effect>
+
+            <ui:SymbolIcon
+                x:Name="SymbolIcon"
+                Symbol="ShieldError24"
+                Margin="0,8,0,0"
+                VerticalAlignment="Top"
+                Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+        </Grid>
+
+        <!-- Banner Image -->
+        <Image
+            x:Name="BannerImage"
+            Grid.Row="0"
+            Grid.Column="1"
+            Grid.RowSpan="4"
+            d:Source="pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Dark.png"
+            VerticalAlignment="Stretch"
+            Stretch="UniformToFill">
+            <Image.OpacityMask>
+                <LinearGradientBrush StartPoint="0.4,0" EndPoint="0.5,1">
+                    <LinearGradientBrush.GradientStops>
+                        <GradientStop Color="#FF000000" Offset=".10" />
+                        <GradientStop Color="#EE000000" Offset=".30" />
+                        <GradientStop Color="#DD000000" Offset=".5" />
+                        <GradientStop Color="#AA000000" Offset=".75" />
+                        <GradientStop Color="#30000000" Offset=".9" />
+                        <GradientStop Color="#00000000" Offset="1" />
+                    </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+            </Image.OpacityMask>
+        </Image>
+
+
+        <!-- Title Bar -->
+        <ui:TitleBar
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.RowSpan="2"
+            Grid.ColumnSpan="2"
+            CloseWindowByDoubleClickOnIcon="False"
+            CanMaximize="False"
+            ShowMaximize="False"
+            ShowClose="false"
+            ShowMinimize="false" />
+
+        <tray:NotifyIcon
+            x:Name="NotifyIcon"
+            FocusOnLeftClick="True"
+            MenuOnRightClick="False"
+            TooltipText="" />
+
+        <!-- Header Panel -->
+        <StackPanel
+            x:Name="HeaderPanel"
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="24,24,24,16"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left">
+            <StackPanel
+                x:Name="HeaderPanelNested"
+                Orientation="Horizontal">
+                <Image
+                    x:Name="AppIconImage"
+                    Width="40"
+                    Height="40"
+                    Stretch="Uniform">
+                    <Image.Source>
+                        <BitmapImage UriSource="pack://application:,,,/PSADT.UserInterface;component/Resources/appIcon.png" />
+                    </Image.Source>
+                </Image>
+                <ui:TextBlock
+                    x:Name="AppTitleTextBlock"
+                    Margin="8,0,8,0"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Left"
+                    TextAlignment="Left"
+                    MaxWidth="390"
+                    TextWrapping="Wrap"
+                    TextTrimming="CharacterEllipsis"
+                    Text="PSAppDeployToolkit 1.0 EN"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+            </StackPanel>
+
+            <ui:TextBlock
+                x:Name="SubtitleTextBlock"
+                HorizontalAlignment="Right"
+                FontSize="12"
+                FontWeight="SemiBold"
+                TextAlignment="Right"
+                Text="PSAppDeployToolkit - App Installation"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+        
+        <!-- Progress Panel -->
+        <Grid
+            x:Name="ProgressPanel"
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="24,0,24,0"
+            VerticalAlignment="Center">
+            <Border
+                CornerRadius="4"
+                Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Progress Message -->
+                    <ui:TextBlock
+                        x:Name="ProgressMessageTextBlock"
+                        Margin="16,8,16,0"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Stretch"
+                        TextAlignment="Left"
+                        Text="Installation In Progress. Please Wait ..."
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        TextWrapping="Wrap"
+                        Grid.Row="0" />
+
+                    <!-- Progress Detail Message -->
+                    <ui:TextBlock
+                        x:Name="ProgressMessageDetailTextBlock"
+                        Margin="16,16,16,16"
+                        FontSize="14"
+                        HorizontalAlignment="Stretch"
+                        TextAlignment="Left"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="Performing post-installation clean up operations ..."
+                        TextWrapping="Wrap"
+                        Grid.Row="1" />
+
+                    <!-- Progress Bar -->
+                    <Border
+                        x:Name="BottomBar"
+                        Background="{DynamicResource SmokeFillColorDefaultBrush}"
+                        Height="8"
+                        Margin="16,0,16,16"
+                        Grid.Row="2">
+                        <ProgressBar
+                            x:Name="ProgressBar"
+                            Foreground="{DynamicResource AccentTextFillColorTertiaryBrush}"
+                            VerticalAlignment="Center"
+                            Height="8"
+                            IsIndeterminate="True" />
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</local:BaseDialog>

@@ -62,7 +62,6 @@ function Show-ADTInstallationProgressFluent
 
 
         # Only update the window subtitle if it's been specified.
-<<<<<<< Updated upstream
         if ($WindowSubtitle)
         {
             $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
@@ -147,12 +146,6 @@ function Show-ADTInstallationProgressFluent
     if (!$NotTopMost)
     {
         Write-ADTLogEntry -Message "The TopMost functionality has not yet been implemented within this function." -Severity 2
-=======
-        # if ($WindowSubtitle)
-        # {
-        #     $Script:Dialogs.Fluent.ProgressWindow.Window.SetDeploymentSubtitle($WindowSubtitle)
-        # }
->>>>>>> Stashed changes
     }
 
     # Check if the progress thread is running before invoking methods on it.
@@ -167,24 +160,8 @@ function Show-ADTInstallationProgressFluent
         Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
         if (!$Script:Dialogs.Fluent.ProgressWindow.Window)
         {
-<<<<<<< Updated upstream
-            $Script:Dialogs.Fluent.ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Logo, $StatusMessage, $StatusMessageDetail)
+            $Script:Dialogs.Fluent.ProgressWindow.Window = [PSADT.UserInterface.ADTProgressWindow]::new($WindowTitle, $WindowSubtitle, (Get-ADTConfig).Assets.Fluent.Logo, $StatusMessage, $StatusMessageDetail)
             $Script:Dialogs.Fluent.ProgressWindow.Thread = $Script:Dialogs.Fluent.ProgressWindow.Window.Start()
-=======
-                $Script:Dialogs.Fluent.ProgressWindow.Window = $Script:Dialogs.Fluent.ApplicationSession.ShowProgressDialog(`
-                ($adtSession.GetPropertyValue('InstallTitle').Replace('&', '&&')), `
-                $WindowSubtitle, `
-                !$NotTopMost, `
-                $Script:ADT.Config.Assets.Icon, `
-                $Script:ADT.Config.Assets.Fluent.Banner.Light, `
-                $Script:ADT.Config.Assets.Fluent.Banner.Dark, `
-                $StatusMessage, `
-                $StatusMessageDetail)
-
-
-          $Script:Dialogs.Fluent.WelcomePrompt.Window = $Script:Dialogs.Fluent.ApplicationSession.ShowWelcomeDialog(`
-               ($adtSession.GetPropertyValue('InstallTitle').Replace('&', '&&'), $null, !$NotTopMost, $DeferTimes, $ProcessObjects, $Script:ADT.Config.Assets.Icon, $Script:ADT.Config.Assets.Fluent.Banner.Light, $Script:ADT.Config.Assets.Fluent.Banner.Dark, $Script:ADT.Strings.WelcomePrompt.Fluent.Message, $Script:ADT.Strings.WelcomePrompt.Fluent.ButtonDefer, $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.Subtitle), $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.DialogMessage), $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.Remaining), $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.ButtonLeftText), $($Script:ADT.Strings.WelcomePrompt.Fluent.Message.ButtonRightText)));
->>>>>>> Stashed changes
 
             # Allow the thread to be spun up safely before invoking actions against it.
             do
