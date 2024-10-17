@@ -43,9 +43,9 @@ jobs:
     - name: PowerShellGet Latest
       shell: powershell
       run: Install-Module -Name PowerShellGet -Repository PSGallery -Force
-    - name: Bootstrap
-      shell: powershell
-      run: ./actions_bootstrap.ps1
+    # - name: Bootstrap
+    #   shell: powershell
+    #   run: ./actions_bootstrap.ps1
     - name: Install AzureSignTool
       run: dotnet tool install --global azuresigntool
     - name: Azure Login
@@ -59,20 +59,24 @@ jobs:
       with:
         azPSVersion: "latest"
         inlineScript: |
+          Write-Host "Hi Mom"
+          Uninstall-AzureRm
           Get-AzContext
-    - name: Test and Build
-      shell: powershell
-      run: Invoke-Build -File .\src\PSAppDeployToolkit.build.ps1
-    - name: Upload pester results
-      uses: actions/upload-artifact@v3
-      with:
-        name: pester-results
-        path: .\src\Artifacts\testOutput
-        if-no-files-found: warn
-    - name: Upload zip module archive build
-      uses: actions/upload-artifact@v3
-      with:
-        name: zip-archive
-        path: .\src\Archive
-        if-no-files-found: warn
+          $thingToSign = '.\src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
+          azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 "$thingToSign"
+    # - name: Test and Build
+    #   shell: powershell
+    #   run: Invoke-Build -File .\src\PSAppDeployToolkit.build.ps1
+    # - name: Upload pester results
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: pester-results
+    #     path: .\src\Artifacts\testOutput
+    #     if-no-files-found: warn
+    # - name: Upload zip module archive build
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: zip-archive
+    #     path: .\src\Archive
+    #     if-no-files-found: warn
 
