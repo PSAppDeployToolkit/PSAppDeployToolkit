@@ -23,7 +23,7 @@ namespace PSADT
                 string adtFrontendPath = Path.Combine(currentPath, "Invoke-AppDeployToolkit.ps1");
                 string adtToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit\\PSAppDeployToolkit.psd1");
                 string adtConfigPath = Path.Combine(currentPath, "PSAppDeployToolkit\\Config\\Config.psd1");
-                string pwshExecutablePath = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "System32\\WindowsPowerShell\\v1.0\\PowerShell.exe");
+                string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string pwshArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
                 List<string> cliArguments = new List<string>(Environment.GetCommandLineArgs());
                 bool isForceX86Mode = false;
