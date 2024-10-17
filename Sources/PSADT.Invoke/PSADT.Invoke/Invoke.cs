@@ -26,13 +26,13 @@ namespace PSADT
                 string pwshExecutablePath = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "System32\\WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string pwshArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
                 List<string> cliArguments = new List<string>(Environment.GetCommandLineArgs());
-                Boolean isForceX86Mode = false;
-                Boolean isRequireAdmin = false;
+                bool isForceX86Mode = false;
+                bool isRequireAdmin = false;
                 StringBuilder stringBuilder = new StringBuilder();
 
                 // Get OS Architecture. Check does not return correct value when running in x86 process on x64 system but it works for our purpose.
                 // To get correct OS architecture when running in x86 process on x64 system, we would also have to check environment variable: PROCESSOR_ARCHITEW6432.
-                Boolean is64BitOS = false;
+                bool is64BitOS = false;
                 if (Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").Contains("64"))
                     is64BitOS = true;
 
