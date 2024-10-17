@@ -20,7 +20,7 @@ namespace PSADT
             {
                 // Set up variables.
                 string currentPath = AppDomain.CurrentDomain.BaseDirectory;
-                string adtInvocationScriptPath = Path.Combine(currentPath, "Invoke-AppDeployToolkit.ps1");
+                string adtFrontendPath = Path.Combine(currentPath, "Invoke-AppDeployToolkit.ps1");
                 string adtToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit\\PSAppDeployToolkit.psd1");
                 string adtConfigPath = Path.Combine(currentPath, "PSAppDeployToolkit\\Config\\Config.psd1");
                 string pwshExecutablePath = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "System32\\WindowsPowerShell\\v1.0\\PowerShell.exe");
@@ -63,20 +63,20 @@ namespace PSADT
                 if (cliArguments.Exists(x => x.StartsWith("-Command ")))
                 {
                     commandLineAppDeployScriptFileArg = cliArguments.Find(x => x.StartsWith("-Command "));
-                    adtInvocationScriptPath = commandLineAppDeployScriptFileArg.Replace("-Command ", string.Empty)
+                    adtFrontendPath = commandLineAppDeployScriptFileArg.Replace("-Command ", string.Empty)
                         .Replace("\"", string.Empty);
-                    if (!Path.IsPathRooted(adtInvocationScriptPath))
-                        adtInvocationScriptPath = Path.Combine(currentPath, adtInvocationScriptPath);
+                    if (!Path.IsPathRooted(adtFrontendPath))
+                        adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                     cliArguments.RemoveAt(cliArguments.FindIndex(x => x.StartsWith("-Command")));
                     WriteDebugMessage(
                         "'-Command' parameter specified on command-line. Passing command-line untouched...");
                 }
                 else if (cliArguments.Exists(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")))
                 {
-                    adtInvocationScriptPath = cliArguments.Find(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\""))
+                    adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\""))
                         .Replace("\"", string.Empty);
-                    if (!Path.IsPathRooted(adtInvocationScriptPath))
-                        adtInvocationScriptPath = Path.Combine(currentPath, adtInvocationScriptPath);
+                    if (!Path.IsPathRooted(adtFrontendPath))
+                        adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                     cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")));
                     WriteDebugMessage(".ps1 file specified on command-line. Appending '-Command' parameter name...");
                 }
@@ -84,21 +84,21 @@ namespace PSADT
                 {
                     WriteDebugMessage(
                         "No '-Command' parameter specified on command-line. Adding parameter '-Command \"" +
-                        adtInvocationScriptPath + "\"'...");
+                        adtFrontendPath + "\"'...");
                 }
 
                 // Define the command line arguments to pass to PowerShell
-                pwshArguments = pwshArguments + " -Command & { & '" + adtInvocationScriptPath + "'";
+                pwshArguments = pwshArguments + " -Command & { & '" + adtFrontendPath + "'";
                 if (cliArguments.Count > 0)
                     pwshArguments = pwshArguments + " " + string.Join(" ", cliArguments.ToArray());
                 pwshArguments += "; Exit $LastExitCode }";
 
                 // Verify if the App Deploy script file exists
-                if (!File.Exists(adtInvocationScriptPath))
+                if (!File.Exists(adtFrontendPath))
                 {
                     throw new Exception("A critical component of PSAppDeployToolkit is missing." + Environment.NewLine +
                                         Environment.NewLine + "Unable to find the App Deploy Script file: " +
-                                        adtInvocationScriptPath + "." + Environment.NewLine + Environment.NewLine +
+                                        adtFrontendPath + "." + Environment.NewLine + Environment.NewLine +
                                         "Please ensure you have all of the required files available to start the installation.");
                 }
 
