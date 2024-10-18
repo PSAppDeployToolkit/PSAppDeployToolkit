@@ -4443,6 +4443,79 @@ function Invoke-ObjectMethod
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around Get-ADTPEFileArchitecture
+#
+#---------------------------------------------------------------------------
+
+function Get-PEFileArchitecture
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })]
+        [Systemn.IO.FileInfo[]]$FilePath,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Systemn.Boolean]$ContinueOnError = $true,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru
+    )
+
+    begin
+    {
+        # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPEFileArchitecture]. Please migrate your scripts to use the new function." -Severity 2
+        if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+        {
+            $null = $PSBoundParameters.Remove('ContinueOnError')
+        }
+        if (!$ContinueOnError)
+        {
+            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+        }
+
+        # Set up collector for pipelined input.
+        $filePaths = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
+    }
+
+    process
+    {
+        # Collect all input for processing at the end.
+        if ($null -ne $FilePath)
+        {
+            $filePaths.Add($FilePath)
+        }
+    }
+
+    end
+    {
+        # Only process if we have files in our collector.
+        if (!$filePaths.Count)
+        {
+            return
+        }
+
+        try
+        {
+            $null = $PSBoundParameters.Remove('FilePath')
+            $filePaths | Get-ADTPEFileArchitecture @PSBoundParameters
+        }
+        catch
+        {
+            if (!$ContinueOnError)
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
+        }
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
