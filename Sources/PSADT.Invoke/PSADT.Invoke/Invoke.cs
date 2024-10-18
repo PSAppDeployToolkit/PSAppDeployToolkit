@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Management.Automation;
+using System.Management.Automation.Language;
 using System.Text;
 using System.Windows.Forms;
 
@@ -117,30 +118,20 @@ namespace PSADT
                                         "Please ensure you have all of the required files available to start the installation.");
                 }
 
-                using (PowerShell psExec = PowerShell.Create())
+                // Parse our config and throw if we have any errors.
+                var configAst = Parser.ParseFile(adtConfigPath, out Token[] configTokens, out ParseError[] configErrors);
+                if (configErrors.Length > 0)
                 {
-                    psExec.AddCommand("Import-PowerShellDataFile").AddParameter("Path", adtConfigPath);
-
-                    var results = psExec.Invoke();
-
-                    Collection<ErrorRecord> errors = psExec.Streams.Error.ReadAll();
-
-                    if (errors.Count > 0)
-                    {
-                        foreach (var error in errors)
-                            stringBuilder.AppendLine(error.ToString());
-                    }
-                    else
-                    {
-                        if (results[0].Members["Toolkit"].Value is PSObject toolkit)
-                        {
-                            isRequireAdmin = (bool)toolkit.Members["RequireAdmin"].Value;
-                            WriteDebugMessage("RequireAdmin: " + isRequireAdmin);
-                        }
-                    }
+                    throw new Exception($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
                 }
 
-                if (isRequireAdmin) WriteDebugMessage("Administrator rights are required...");
+                // Determine whether we require admin rights or not.
+                Hashtable configTable = (Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue();
+                Hashtable toolkitConfig = (Hashtable)configTable["Toolkit"];
+                if (isRequireAdmin = (bool)toolkitConfig["RequireAdmin"])
+                {
+                     WriteDebugMessage("Administrator rights are required...");
+                }
 
                 // Switch to x86 PowerShell if requested
                 if (is64BitOS && isForceX86Mode)
