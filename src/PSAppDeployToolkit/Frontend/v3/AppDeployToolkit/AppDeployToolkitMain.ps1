@@ -4150,6 +4150,70 @@ function ConvertTo-NTAccountOrSID
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around Get-ADTDeferHistory
+#
+#---------------------------------------------------------------------------
+
+function Get-DeferHistory
+{
+    [CmdletBinding()]
+    param
+    (
+    )
+
+    # Announce overall deprecation and any dead parameters before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Invoke underlying function.
+    try
+    {
+        Get-ADTDeferHistory
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# MARK: Wrapper around Set-ADTDeferHistory
+#
+#---------------------------------------------------------------------------
+
+function Set-DeferHistory
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
+    [CmdletBinding(SupportsShouldProcess = $false)]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$DeferTimesRemaining,
+
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyString()]
+        [System.String]$DeferDeadline
+    )
+
+    # Announce overall deprecation and any dead parameters before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Invoke underlying function.
+    try
+    {
+        Set-ADTDeferHistory @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
