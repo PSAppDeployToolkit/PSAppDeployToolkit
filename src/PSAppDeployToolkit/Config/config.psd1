@@ -129,20 +129,21 @@
         DynamicProcessEvaluationInterval = 2
 
         <# Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.
-            Language Code      Language        |       Language Code       Language
-            =============      ========        |       =============       ========
-            EN                 English         |       DA                  Danish
-            FR                 French          |       DE                  German
-            IT                 Italian         |       JA                  Japanese
-            NL                 Dutch           |       NB                  Norwegian (Bokmål)
-            PL                 Polish          |       PT                  Portuguese (Portugal)
-            ES                 Spanish         |       PT-BR               Portuguese (Brazil)
-            SV                 Swedish         |       AR                  Arabic
-            HE                 Hebrew          |       ZH-Hans             Chinese (Simplified)
-            KO                 Korean          |       ZH-Hant             Chinese (Traditional)
-            RU                 Russian         |       SK                  Slovak
-            HU                 Hungarian       |       CZ                  Czech
-            FI                 Finnish         |       TR                  Turkish
+            Language Code    Language       |       Language Code    Language
+            =============    ========       |       =============    ========
+            AR               Arabic         |       KO               Korean
+            CZ               Czech          |       NL               Dutch
+            DA               Danish         |       NB               Norwegian (Bokmål)
+            DE               German         |       PL               Polish
+            EN               English        |       PT               Portuguese (Portugal)
+            EL               Greek          |       PT-BR            Portuguese (Brazil)
+            ES               Spanish        |       RU               Russian
+            FI               Finnish        |       SK               Slovak
+            FR               French         |       SV               Swedish
+            HE               Hebrew         |       TR               Turkish
+            HU               Hungarian      |       ZH-Hans          Chinese (Simplified)
+            IT               Italian        |       ZH-Hant          Chinese (Traditional)
+            JA               Japanese       |
         #>
         LanguageOverride = $null
 
