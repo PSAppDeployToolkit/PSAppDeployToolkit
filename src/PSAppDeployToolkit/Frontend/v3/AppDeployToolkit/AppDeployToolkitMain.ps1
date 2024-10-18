@@ -4049,6 +4049,41 @@ function Execute-ProcessAsUser
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around Close-ADTInstallationProgress
+#
+#---------------------------------------------------------------------------
+
+function Close-InstallationProgress
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 60)]
+        [System.Int32]$WaitingTime = 5
+    )
+
+    # Announce overall deprecation and any dead parameters before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('WaitingTime'))
+    {
+        Write-ADTLogEntry -Message "The parameter '-WaitingTime' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+    }
+
+    # Invoke underlying function.
+    try
+    {
+        Close-ADTInstallationProgress
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
