@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 17
+# Visual Studio Version 17
 VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PSADT.Invoke-AppDeployToolkit", "PSADT.Invoke\PSADT.Invoke-AppDeployToolkit.csproj", "{BBB137BE-D8A2-4781-B393-B92D7F47FD77}"
