@@ -84,17 +84,6 @@ function Initialize-ADTModule
                 $adtData.Sessions.Clear()
                 $adtData.Environment = New-ADTEnvironmentTable
                 $adtData.Config = Import-ADTConfig @PSBoundParameters
-                if ((Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1') -and $adtData.Config.UI.DialogStyle -ne 'Classic')
-                {
-                    $adtData.Config.UI.DialogStyle = if ($adtData.Config.UI.ContainsKey('DialogStyleCompatMode'))
-                    {
-                        $adtData.Config.UI.DialogStyleCompatMode
-                    }
-                    else
-                    {
-                        'Classic'
-                    }
-                }
                 $adtData.Language = Get-ADTStringLanguage
                 $adtData.Strings = Import-ADTStringTable -UICulture $adtData.Language @PSBoundParameters
                 $adtData.LastExitCode = 0
