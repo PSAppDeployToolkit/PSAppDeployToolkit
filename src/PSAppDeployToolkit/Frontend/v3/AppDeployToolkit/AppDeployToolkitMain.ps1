@@ -4516,6 +4516,41 @@ function Get-PEFileArchitecture
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around Test-ADTMutexAvailability
+#
+#---------------------------------------------------------------------------
+
+function Test-IsMutexAvailable
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateLength(1, 260)]
+        [System.String]$MutexName,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.TimeSpan]$MutexWaitTime
+    )
+
+    # Announce overall deprecation and any dead parameters before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMutexAvailability]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Invoke underlying function.
+    try
+    {
+        Test-ADTMutexAvailability @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------

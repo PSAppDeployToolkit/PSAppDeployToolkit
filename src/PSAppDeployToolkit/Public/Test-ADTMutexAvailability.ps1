@@ -1,54 +1,56 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Test-ADTIsMutexAvailable
+# MARK: Test-ADTMutexAvailability
 #
 #-----------------------------------------------------------------------------
 
-function Test-ADTIsMutexAvailable
+function Test-ADTMutexAvailability
 {
     <#
-
     .SYNOPSIS
-    Wait, up to a timeout value, to check if current thread is able to acquire an exclusive lock on a system mutex.
+        Wait, up to a timeout value, to check if current thread is able to acquire an exclusive lock on a system mutex.
 
     .DESCRIPTION
-    A mutex can be used to serialize applications and prevent multiple instances from being opened at the same time.
-    Wait, up to a timeout (default is 1 millisecond), for the mutex to become available for an exclusive lock.
+        A mutex can be used to serialize applications and prevent multiple instances from being opened at the same time.
+
+        Wait, up to a timeout (default is 1 millisecond), for the mutex to become available for an exclusive lock.
 
     .PARAMETER MutexName
-    The name of the system mutex.
+        The name of the system mutex.
 
     .PARAMETER MutexWaitTime
-    The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex. Default is: 1 millisecond.
-    A wait time of -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
+        The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex. Default is: 1 millisecond.
+
+        A wait time of -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None. You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Boolean. Returns $true if the current thread acquires an exclusive lock on the named mutex, $false otherwise.
+        System.Boolean. Returns $true if the current thread acquires an exclusive lock on the named mutex, $false otherwise.
 
     .EXAMPLE
-    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime 5000000
+        Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime 5000000
 
     .EXAMPLE
-    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime (New-TimeSpan -Minutes 5)
+        Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime (New-TimeSpan -Minutes 5)
 
     .EXAMPLE
-    Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime (New-TimeSpan -Seconds 60)
+        Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime (New-TimeSpan -Seconds 60)
 
     .NOTES
-    This is an internal script function and should typically not be called directly.
+        An active ADT session is NOT required to use this function.
 
-    .NOTES
-    An active ADT session is NOT required to use this function.
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    http://msdn.microsoft.com/en-us/library/aa372909(VS.85).asp
+        http://msdn.microsoft.com/en-us/library/aa372909(VS.85).asp
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]

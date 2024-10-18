@@ -186,6 +186,7 @@
         'Test-ADTCallerIsAdmin'
         'Test-ADTModuleInitialized'
         'Test-ADTMSUpdates'
+        'Test-ADTMutexAvailability'
         'Test-ADTNetworkConnection'
         'Test-ADTOobeCompleted'
         'Test-ADTPowerPoint'
