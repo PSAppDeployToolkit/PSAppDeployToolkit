@@ -1,4 +1,4 @@
-# PSAppDeployToolkit default rules for PSScriptAnalyser, to ensure compatibility with PowerSHell 5.1
+# PSAppDeployToolkit default rules for PSScriptAnalyser, to ensure compatibility with PowerShell 5.1
 @{
     Severity     = @(
         'Error',
