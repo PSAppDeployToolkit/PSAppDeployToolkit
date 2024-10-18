@@ -285,7 +285,7 @@ function Start-ADTProcess
                 # to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
                 if (($Path -match 'msiexec') -or $WaitForMsiExec)
                 {
-                    $MsiExecAvailable = Test-ADTIsMutexAvailable -MutexName 'Global\_MSIExecute' -MutexWaitTime ([System.TimeSpan]::FromSeconds($MsiExecWaitTime))
+                    $MsiExecAvailable = Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime ([System.TimeSpan]::FromSeconds($MsiExecWaitTime))
                     [System.Threading.Thread]::Sleep(1000)
                     if (!$MsiExecAvailable)
                     {
