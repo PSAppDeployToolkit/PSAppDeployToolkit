@@ -52,7 +52,7 @@ function Set-ADTPowerShellCulture
     begin
     {
         # Initialize function.
-        & $Script:CommandTable.'Initialize-ADTFunction' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $smaCultureResolver = [System.Reflection.Assembly]::Load('System.Management.Automation').GetType('Microsoft.PowerShell.NativeCultureResolver')
         $smaResolverFlags = [System.Reflection.BindingFlags]::NonPublic -bor [System.Reflection.BindingFlags]::Static
         [System.Globalization.CultureInfo[]]$validCultures = (Get-WinUserLanguageList).LanguageTag
@@ -85,19 +85,19 @@ function Set-ADTPowerShellCulture
             catch
             {
                 # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
-                & $Script:CommandTable.'Write-Error' -ErrorRecord $_
+                Write-Error -ErrorRecord $_
             }
         }
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            & $Script:CommandTable.'Invoke-ADTFunctionErrorHandler' -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
     end
     {
         # Finalize function.
-        & $Script:CommandTable.'Complete-ADTFunction' -Cmdlet $PSCmdlet
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
