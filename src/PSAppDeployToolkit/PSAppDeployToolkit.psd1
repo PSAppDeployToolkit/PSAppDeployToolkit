@@ -141,6 +141,7 @@
         'New-ADTShortcut'
         'New-ADTTemplate'
         'New-ADTValidateScriptErrorRecord'
+        'New-ADTZipFile'
         'Open-ADTSession'
         'Out-ADTPowerShellEncodedCommand'
         'Register-ADTDll'

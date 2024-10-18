@@ -4551,6 +4551,86 @@ function Test-IsMutexAvailable
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around New-ADTZipFile
+#
+#---------------------------------------------------------------------------
+
+function New-ZipFile
+{
+    [CmdletBinding(SupportsShouldProcess = $false)]
+    param
+    (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DestinationArchiveDirectoryPath,
+
+        [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DestinationArchiveFileName,
+
+        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'CreateFromDirectory')]
+        [ValidateScript({ Test-Path -LiteralPath $_ -PathType Container })]
+        [System.String[]]$SourceDirectoryPath,
+
+        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'CreateFromFile')]
+        [ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })]
+        [System.String[]]$SourceFilePath,
+
+        [Parameter(Mandatory = $false, Position = 3)]
+        [System.Management.Automation.SwitchParameter]$RemoveSourceAfterArchiving,
+
+        [Parameter(Mandatory = $false, Position = 4)]
+        [System.Management.Automation.SwitchParameter]$OverWriteArchive,
+
+        [Parameter(Mandatory = $false, Position = 5)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTZipFile]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        $null = $PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+
+    # Convert source path parameter.
+    $PSBoundParameters.Add('LiteralPath', $PSBoundParameters.($PSCmdlet.ParameterSetName))
+    $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
+
+    # Convert destination parameters.
+    $PSBoundParameters.Add('DestinationPath', [System.IO.Path]::Combine($DestinationArchiveDirectoryPath, $DestinationArchiveFileName))
+    $null = $PSBoundParameters.Remove('DestinationArchiveDirectoryPath')
+    $null = $PSBoundParameters.Remove('DestinationArchiveFileName')
+
+    # Convert $OverWriteArchive.
+    if ($PSBoundParameters.ContainsKey('OverWriteArchive'))
+    {
+        $PSBoundParameters.Add('Force', $OverWriteArchive)
+        $null = $PSBoundParameters.Remove('OverWriteArchive')
+    }
+
+    # Invoke replacement function.
+    try
+    {
+        New-ADTZipFile @PSBoundParameters
+    }
+    catch
+    {
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
