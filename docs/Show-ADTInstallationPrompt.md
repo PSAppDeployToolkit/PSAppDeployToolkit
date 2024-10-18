@@ -15,7 +15,7 @@ Displays a custom installation prompt with the toolkit branding and optional but
 ```
 Show-ADTInstallationPrompt [-Message] <String> [[-MessageAlignment] <String>] [[-ButtonRightText] <String>]
  [[-ButtonLeftText] <String>] [[-ButtonMiddleText] <String>] [[-Icon] <String>] [-NoWait] [-PersistPrompt]
- [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] [<CommonParameters>]
+ [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] -Title <String> [-Timeout <UInt32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -209,6 +209,37 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Timeout
+Specifies how long, in seconds, to show the message prompt before aborting.
+
+```yaml
+Type: UInt32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Title
+Title of the prompt.
+Default: the application installation name.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
