@@ -7,40 +7,46 @@
 function Set-ADTMsiProperty
 {
     <#
-
     .SYNOPSIS
-    Set a property in the MSI property table.
+        Set a property in the MSI property table.
 
     .DESCRIPTION
-    Set a property in the MSI property table.
+        Set a property in the MSI property table.
 
     .PARAMETER Database
-    Specify a ComObject representing an MSI database opened in view/modify/update mode.
+        Specify a ComObject representing an MSI database opened in view/modify/update mode.
 
     .PARAMETER PropertyName
-    The name of the property to be set/modified.
+        The name of the property to be set/modified.
 
     .PARAMETER PropertyValue
-    The value of the property to be set/modified.
+        The value of the property to be set/modified.
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not generate any output.
+        None
+
+        This function does not generate any output.
 
     .EXAMPLE
-    Set-ADTMsiProperty -Database $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
+        Set-ADTMsiProperty -Database $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
 
     .NOTES
-    This is an internal script function and should typically not be called directly.
+        An active ADT session is NOT required to use this function.
 
-    .NOTES
-    An active ADT session is NOT required to use this function.
+        Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
