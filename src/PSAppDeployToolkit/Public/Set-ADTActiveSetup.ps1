@@ -89,7 +89,7 @@ function Set-ADTActiveSetup
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Create')]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
@@ -139,15 +139,15 @@ function Set-ADTActiveSetup
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
-        $paramDictionary.Add('Description', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Description', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Defaults to active session InstallName.'; ParameterSetName = 'Create' }
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-                )
-            ))
         $paramDictionary.Add('Key', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Key', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Name of the registry key for the Active Setup entry. Defaults to active session InstallName.' }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
+        $paramDictionary.Add('Description', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'Description', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Defaults to active session InstallName.'; ParameterSetName = 'Create' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
