@@ -44,6 +44,9 @@ Converts the specified registry key path to a format that is compatible with bui
 ### [Convert-ADTValuesFromRemainingArguments](Convert-ADTValuesFromRemainingArguments.md)
 Converts the collected values from a ValueFromRemainingArguments parameter value into a dictionary or PowerShell.exe command line arguments.
 
+### [ConvertTo-ADTNTAccountOrSID](ConvertTo-ADTNTAccountOrSID.md)
+Convert between NT Account names and their security identifiers (SIDs).
+
 ### [Copy-ADTContentToCache](Copy-ADTContentToCache.md)
 Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
 
@@ -71,6 +74,9 @@ Returns a hashtable with the output of $PSBoundParameters and default-valued par
 ### [Get-ADTConfig](Get-ADTConfig.md)
 Retrieves the configuration data for the ADT module.
 
+### [Get-ADTDeferHistory](Get-ADTDeferHistory.md)
+Get the history of deferrals in the registry for the current application.
+
 ### [Get-ADTEnvironment](Get-ADTEnvironment.md)
 Retrieves the environment data for the ADT module.
 
@@ -86,8 +92,20 @@ Parses an INI file and returns the value of the specified section and key.
 ### [Get-ADTLoggedOnUser](Get-ADTLoggedOnUser.md)
 Retrieves session details for all local and RDP logged on users.
 
+### [Get-ADTMsiExitCodeMessage](Get-ADTMsiExitCodeMessage.md)
+Get message for MSI error code.
+
 ### [Get-ADTMsiProductCodeRegexPattern](Get-ADTMsiProductCodeRegexPattern.md)
 Returns a regex pattern to use for MSI ProductCode matching, or matching any UUID.
+
+### [Get-ADTMsiTableProperty](Get-ADTMsiTableProperty.md)
+Get all of the properties from a Windows Installer database table or the Summary Information stream and return as a custom object.
+
+### [Get-ADTObjectProperty](Get-ADTObjectProperty.md)
+Get a property from any object.
+
+### [Get-ADTPEFileArchitecture](Get-ADTPEFileArchitecture.md)
+Determine if a PE file is a 32-bit or a 64-bit file.
 
 ### [Get-ADTPendingReboot](Get-ADTPendingReboot.md)
 Get the pending reboot status on a local computer.
@@ -152,6 +170,9 @@ Drop-in replacement for any cmdlet/function where a retry is desirable due to tr
 ### [Invoke-ADTFunctionErrorHandler](Invoke-ADTFunctionErrorHandler.md)
 Handles errors within ADT functions by logging and optionally passing through the error.
 
+### [Invoke-ADTObjectMethod](Invoke-ADTObjectMethod.md)
+Invoke method on any object.
+
 ### [Invoke-ADTRegSvr32](Invoke-ADTRegSvr32.md)
 Register or unregister a DLL file.
 
@@ -181,6 +202,9 @@ Creates a new folder containing a template front end and module folder, ready to
 
 ### [New-ADTValidateScriptErrorRecord](New-ADTValidateScriptErrorRecord.md)
 Creates a new ErrorRecord for script validation errors.
+
+### [New-ADTZipFile](New-ADTZipFile.md)
+Create a new zip archive or add content to an existing archive.
 
 ### [Open-ADTSession](Open-ADTSession.md)
 Opens a new ADT session.
@@ -224,6 +248,9 @@ Removes a callback function from the ADT session opening event.
 ### [Remove-ADTSessionStartingCallback](Remove-ADTSessionStartingCallback.md)
 Removes a callback function from the ADT session starting event.
 
+### [Reset-ADTDeferHistory](Reset-ADTDeferHistory.md)
+Reset the history of deferrals in the registry for the current application.
+
 ### [Resolve-ADTErrorRecord](Resolve-ADTErrorRecord.md)
 Enumerates error record details.
 
@@ -233,11 +260,17 @@ Send a sequence of keys to one or more application windows.
 ### [Set-ADTActiveSetup](Set-ADTActiveSetup.md)
 Creates an Active Setup entry in the registry to execute a file for each user upon login.
 
+### [Set-ADTDeferHistory](Set-ADTDeferHistory.md)
+Set the history of deferrals in the registry for the current application.
+
 ### [Set-ADTIniValue](Set-ADTIniValue.md)
 Opens an INI file and sets the value of the specified section and key.
 
 ### [Set-ADTItemPermission](Set-ADTItemPermission.md)
 Allows you to easily change permissions on files or folders.
+
+### [Set-ADTMsiProperty](Set-ADTMsiProperty.md)
+Set a property in the MSI property table.
 
 ### [Set-ADTPowerShellCulture](Set-ADTPowerShellCulture.md)
 Changes the current thread's Culture and UICulture to the specified culture.
@@ -304,6 +337,9 @@ Checks if the ADT (PSAppDeployToolkit) module is initialized.
 
 ### [Test-ADTMSUpdates](Test-ADTMSUpdates.md)
 Test whether a Microsoft Windows update is installed.
+
+### [Test-ADTMutexAvailability](Test-ADTMutexAvailability.md)
+Wait, up to a timeout value, to check if current thread is able to acquire an exclusive lock on a system mutex.
 
 ### [Test-ADTNetworkConnection](Test-ADTNetworkConnection.md)
 Tests for an active local network connection, excluding wireless and virtual network adapters.
