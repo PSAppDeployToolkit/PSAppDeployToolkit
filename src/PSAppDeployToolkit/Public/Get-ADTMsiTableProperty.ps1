@@ -7,63 +7,67 @@
 function Get-ADTMsiTableProperty
 {
     <#
-
     .SYNOPSIS
-    Get all of the properties from a Windows Installer database table or the Summary Information stream and return as a custom object.
+        Get all of the properties from a Windows Installer database table or the Summary Information stream and return as a custom object.
 
     .DESCRIPTION
-    Use the Windows Installer object to read all of the properties from a Windows Installer database table or the Summary Information stream.
+        Use the Windows Installer object to read all of the properties from a Windows Installer database table or the Summary Information stream.
 
     .PARAMETER Path
-    The fully qualified path to an database file. Supports .msi and .msp files.
+        The fully qualified path to an database file. Supports .msi and .msp files.
 
     .PARAMETER TransformPath
-    The fully qualified path to a list of MST file(s) which should be applied to the MSI file.
+        The fully qualified path to a list of MST file(s) which should be applied to the MSI file.
 
     .PARAMETER Table
-    The name of the the MSI table from which all of the properties must be retrieved. Default is: 'Property'.
+        The name of the the MSI table from which all of the properties must be retrieved. Default is: 'Property'.
 
     .PARAMETER TablePropertyNameColumnNum
-    Specify the table column number which contains the name of the properties. Default is: 1 for MSIs and 2 for MSPs.
+        Specify the table column number which contains the name of the properties. Default is: 1 for MSIs and 2 for MSPs.
 
     .PARAMETER TablePropertyValueColumnNum
-    Specify the table column number which contains the value of the properties. Default is: 2 for MSIs and 3 for MSPs.
+        Specify the table column number which contains the value of the properties. Default is: 2 for MSIs and 3 for MSPs.
 
     .PARAMETER GetSummaryInformation
-    Retrieves the Summary Information for the Windows Installer database.
+        Retrieves the Summary Information for the Windows Installer database.
 
-    Summary Information property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
+        Summary Information property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Management.Automation.PSObject. Returns a custom object with the following properties: 'Name' and 'Value'.
+        System.Management.Automation.PSObject
+
+        Returns a custom object with the following properties: 'Name' and 'Value'.
 
     .EXAMPLE
-    Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst'
+        Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst'
 
-    Retrieve all of the properties from the default 'Property' table.
-
-    .EXAMPLE
-    Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property' | Select-Object -ExpandProperty ProductCode
-
-    Retrieve all of the properties from the 'Property' table and then pipe to Select-Object to select the ProductCode property.
+        Retrieve all of the properties from the default 'Property' table.
 
     .EXAMPLE
-    Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -GetSummaryInformation
+        Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property' | Select-Object -ExpandProperty ProductCode
 
-    Retrieve the Summary Information for the Windows Installer database.
+        Retrieve all of the properties from the 'Property' table and then pipe to Select-Object to select the ProductCode property.
+
+    .EXAMPLE
+        Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -GetSummaryInformation
+
+        Retrieve the Summary Information for the Windows Installer database.
 
     .NOTES
-    This is an internal script function and should typically not be called directly.
+        An active ADT session is NOT required to use this function.
 
-    .NOTES
-    An active ADT session is NOT required to use this function.
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
