@@ -108,6 +108,7 @@
         'Get-ADTMsiProductCodeRegexPattern'
         'Get-ADTMsiTableProperty'
         'Get-ADTObjectProperty'
+        'Get-ADTPEFileArchitecture'
         'Get-ADTPendingReboot'
         'Get-ADTPowerShellProcessPath'
         'Get-ADTRedirectedUri'

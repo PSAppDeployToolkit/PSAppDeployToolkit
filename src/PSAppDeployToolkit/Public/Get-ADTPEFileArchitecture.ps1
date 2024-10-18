@@ -7,39 +7,47 @@
 function Get-ADTPEFileArchitecture
 {
     <#
-
     .SYNOPSIS
-    Determine if a PE file is a 32-bit or a 64-bit file.
+        Determine if a PE file is a 32-bit or a 64-bit file.
 
     .DESCRIPTION
-    Determine if a PE file is a 32-bit or a 64-bit file by examining the file's image file header.
+        Determine if a PE file is a 32-bit or a 64-bit file by examining the file's image file header.
 
-    PE file extensions: .exe, .dll, .ocx, .drv, .sys, .scr, .efi, .cpl, .fon
+        PE file extensions: .exe, .dll, .ocx, .drv, .sys, .scr, .efi, .cpl, .fon
 
     .PARAMETER FilePath
-    Path to the PE file to examine.
+        Path to the PE file to examine.
+
+    .PARAMETER PassThru
+        Get the file object, attach a property indicating the file binary type, and write to pipeline.
 
     .INPUTS
-    System.IO.FileInfo. Accepts a FileInfo object from the pipeline.
+        System.IO.FileInfo
+
+        Accepts a FileInfo object from the pipeline.
 
     .OUTPUTS
-    System.String. Returns a string indicating the file binary type.
+        System.String
+
+        Returns a string indicating the file binary type.
 
     .EXAMPLE
-    Get-ADTPEFileArchitecture -FilePath "$env:windir\notepad.exe"
+        Get-ADTPEFileArchitecture -FilePath "$env:windir\notepad.exe"
 
     .NOTES
-    This is an internal script function and should typically not be called directly.
+        An active ADT session is NOT required to use this function.
 
-    .NOTES
-    An active ADT session is NOT required to use this function.
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding()]
+    [OutputType([System.IO.FileInfo])]
     [OutputType([System.String])]
     param
     (
@@ -51,7 +59,10 @@ function Get-ADTPEFileArchitecture
                 }
                 return !!$_
             })]
-        [System.IO.FileInfo[]]$FilePath
+        [System.IO.FileInfo[]]$FilePath,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     begin
@@ -110,6 +121,10 @@ function Get-ADTPEFileArchitecture
                         }
                     }
                     Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
+                    if ($PassThru)
+                    {
+                        return ($Path | Add-Member -MemberType NoteProperty -Name BinaryType -Value $PEArchitecture -Force -PassThru)
+                    }
                     return $PEArchitecture
                 }
                 catch
