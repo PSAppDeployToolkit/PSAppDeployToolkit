@@ -52,46 +52,43 @@ namespace PSADT
                 }
 
                 // Check for the App Deploy Script file being specified
-                var commandLineAppDeployScriptFileArg = string.Empty;
-                var commandLineAppDeployScriptPath = string.Empty;
-                if (cliArguments.Exists(x => x.StartsWith("-File ")))
-                {
-                    throw new Exception(
-                        "'-File' parameter was specified on the command-line. Please use the '-Command' parameter instead because using the '-File' parameter can return the incorrect exit code in PowerShell 2.0.");
-                }
-
                 if (cliArguments.Exists(x => x.StartsWith("-Command ")))
                 {
-                    commandLineAppDeployScriptFileArg = cliArguments.Find(x => x.StartsWith("-Command "));
-                    adtFrontendPath = commandLineAppDeployScriptFileArg.Replace("-Command ", string.Empty)
-                        .Replace("\"", string.Empty);
+                    throw new Exception("'-Command' parameter was specified on the command-line. Please use the '-File' parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
+                }
+
+                if (cliArguments.Exists(x => x.StartsWith("-File ")))
+                {
+                    var commandLineAppDeployScriptFileArg = cliArguments.Find(x => x.StartsWith("-File "));
+                    adtFrontendPath = commandLineAppDeployScriptFileArg.Replace("-File ", string.Empty).Replace("\"", string.Empty);
                     if (!Path.IsPathRooted(adtFrontendPath))
+                    {
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
-                    cliArguments.RemoveAt(cliArguments.FindIndex(x => x.StartsWith("-Command")));
-                    WriteDebugMessage(
-                        "'-Command' parameter specified on command-line. Passing command-line untouched...");
+                    }
+                    cliArguments.RemoveAt(cliArguments.FindIndex(x => x.StartsWith("-File")));
+                    WriteDebugMessage("'-File' parameter specified on command-line. Passing command-line untouched...");
                 }
                 else if (cliArguments.Exists(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")))
                 {
-                    adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\""))
-                        .Replace("\"", string.Empty);
+                    adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")).Replace("\"", string.Empty);
                     if (!Path.IsPathRooted(adtFrontendPath))
+                    {
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
+                    }
                     cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")));
                     WriteDebugMessage(".ps1 file specified on command-line. Appending '-Command' parameter name...");
                 }
                 else
                 {
-                    WriteDebugMessage(
-                        "No '-Command' parameter specified on command-line. Adding parameter '-Command \"" +
-                        adtFrontendPath + "\"'...");
+                    WriteDebugMessage($"No '-File' parameter specified on command-line. Adding parameter '-File \"{adtFrontendPath}\"'...");
                 }
 
-                // Define the command line arguments to pass to PowerShell
-                pwshArguments = pwshArguments + " -Command & { & '" + adtFrontendPath + "'";
+                // Define the command line arguments to pass to PowerShell.
+                pwshArguments = $"-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File \"{adtFrontendPath}\"";
                 if (cliArguments.Count > 0)
-                    pwshArguments = pwshArguments + " " + string.Join(" ", cliArguments.ToArray());
-                pwshArguments += "; Exit $LastExitCode }";
+                {
+                    pwshArguments += " " + string.Join(" ", cliArguments.ToArray());
+                }
 
                 // Verify if the App Deploy script file exists
                 if (!File.Exists(adtFrontendPath))
