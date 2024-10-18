@@ -158,6 +158,7 @@
         'Set-ADTDeferHistory'
         'Set-ADTIniValue'
         'Set-ADTItemPermission'
+        'Set-ADTMsiProperty'
         'Set-ADTPowerShellCulture'
         'Set-ADTRegistryKey'
         'Set-ADTServiceStartMode'
