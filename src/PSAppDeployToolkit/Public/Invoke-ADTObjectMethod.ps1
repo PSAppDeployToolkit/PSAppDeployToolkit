@@ -7,52 +7,56 @@
 function Invoke-ADTObjectMethod
 {
     <#
-
     .SYNOPSIS
-    Invoke method on any object.
+        Invoke method on any object.
 
     .DESCRIPTION
-    Invoke method on any object with or without using named parameters.
+        Invoke method on any object with or without using named parameters.
 
     .PARAMETER InputObject
-    Specifies an object which has methods that can be invoked.
+        Specifies an object which has methods that can be invoked.
 
     .PARAMETER MethodName
-    Specifies the name of a method to invoke.
+        Specifies the name of a method to invoke.
 
     .PARAMETER ArgumentList
-    Argument to pass to the method being executed. Allows execution of method without specifying named parameters.
+        Argument to pass to the method being executed. Allows execution of method without specifying named parameters.
 
     .PARAMETER Parameter
-    Argument to pass to the method being executed. Allows execution of method by using named parameters.
+        Argument to pass to the method being executed. Allows execution of method by using named parameters.
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Object. The object returned by the method being invoked.
+        System.Object
+
+        The object returned by the method being invoked.
 
     .EXAMPLE
-    $ShellApp = New-Object -ComObject 'Shell.Application'
-    $null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
+        $ShellApp = New-Object -ComObject 'Shell.Application'
+        $null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
 
-    Minimizes all windows.
+        Minimizes all windows.
 
     .EXAMPLE
-    $ShellApp = New-Object -ComObject 'Shell.Application'
-    $null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
+        $ShellApp = New-Object -ComObject 'Shell.Application'
+        $null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
 
-    Opens the C:\Windows folder in a Windows Explorer window.
-
-    .NOTES
-    This is an internal script function and should typically not be called directly.
+        Opens the C:\Windows folder in a Windows Explorer window.
 
     .NOTES
-    An active ADT session is NOT required to use this function.
+        An active ADT session is NOT required to use this function.
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Positional')]

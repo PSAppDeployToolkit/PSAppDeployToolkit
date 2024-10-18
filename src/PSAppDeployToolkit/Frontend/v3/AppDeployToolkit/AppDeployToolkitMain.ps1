@@ -4361,6 +4361,88 @@ function Get-MsiExitCodeMessage
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around Get-ADTObjectProperty
+#
+#---------------------------------------------------------------------------
+
+function Get-ObjectProperty
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$InputObject,
+
+        [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$PropertyName,
+
+        [Parameter(Mandatory = $false, Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object[]]$ArgumentList
+    )
+
+    # Announce overall deprecation and any dead parameters before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTObjectProperty]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Invoke underlying function.
+    try
+    {
+        Get-ADTObjectProperty @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
+# MARK: Wrapper around Invoke-ADTObjectMethod
+#
+#---------------------------------------------------------------------------
+
+function Invoke-ObjectMethod
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$InputObject,
+
+        [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$MethodName,
+
+        [Parameter(Mandatory = $false, Position = 2, ParameterSetName = 'Positional')]
+        [ValidateNotNullOrEmpty()]
+        [System.Object[]]$ArgumentList,
+
+        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'Named')]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Hashtable]$Parameter
+    )
+
+    # Announce overall deprecation and any dead parameters before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTObjectMethod]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Invoke underlying function.
+    try
+    {
+        Invoke-ADTObjectMethod @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
