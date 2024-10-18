@@ -122,19 +122,6 @@ function Show-ADTInstallationPrompt
 
     dynamicparam
     {
-        # Throw a terminating error if at least one button isn't specified.
-        if (!($PSBoundParameters.Keys -match '^Button'))
-        {
-            $naerParams = @{
-                Exception = [System.ArgumentException]::new('At least one button must be specified when calling this function.')
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                ErrorId = 'MandatoryParameterMissing'
-                TargetObject = $PSBoundParameters
-                RecommendedAction = "Please review the supplied parameters used against $($MyInvocation.MyCommand.Name) and try again."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-        }
-
         # Initialize variables.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtConfig = Get-ADTConfig
@@ -170,6 +157,19 @@ function Show-ADTInstallationPrompt
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Throw a terminating error if at least one button isn't specified.
+        if (!($PSBoundParameters.Keys -match '^Button'))
+        {
+            $naerParams = @{
+                Exception         = [System.ArgumentException]::new('At least one button must be specified when calling this function.')
+                Category          = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId           = 'MandatoryParameterMissing'
+                TargetObject      = $PSBoundParameters
+                RecommendedAction = "Please review the supplied parameters used against $($MyInvocation.MyCommand.Name) and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
