@@ -118,7 +118,7 @@ namespace PSADT
                 Hashtable toolkitConfig = (Hashtable)configTable["Toolkit"];
                 if (isRequireAdmin = (bool)toolkitConfig["RequireAdmin"])
                 {
-                     WriteDebugMessage("Administrator rights are required...");
+                    WriteDebugMessage("Administrator rights are required...");
                 }
 
                 // Switch to x86 PowerShell if requested.
@@ -144,7 +144,7 @@ namespace PSADT
                 // Set the RunAs flag if the PSADT configuration file specifically calls for Admin Rights and OS Vista or higher
                 if (isRequireAdmin && (Environment.OSVersion.Version.Major >= 6))
                 {
-                     processStartInfo.Verb = "runas";
+                    processStartInfo.Verb = "runas";
                 }
 
                 // Start the PowerShell process and wait for completion
