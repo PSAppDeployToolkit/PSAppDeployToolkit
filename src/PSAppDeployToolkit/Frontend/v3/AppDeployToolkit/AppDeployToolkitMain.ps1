@@ -4330,6 +4330,37 @@ function Set-MsiProperty
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around Get-ADTMsiExitCodeMessage
+#
+#---------------------------------------------------------------------------
+
+function Get-MsiExitCodeMessage
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$MsiExitCode
+    )
+
+    # Announce overall deprecation and any dead parameters before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiExitCodeMessage]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Invoke underlying function.
+    try
+    {
+        Get-ADTMsiExitCodeMessage @PSBoundParameters
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
