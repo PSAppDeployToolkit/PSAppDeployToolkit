@@ -4084,6 +4084,72 @@ function Close-InstallationProgress
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around ConvertTo-ADTNTAccountOrSID
+#
+#---------------------------------------------------------------------------
+
+function ConvertTo-NTAccountOrSID
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AccountName,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'SIDToNTAccount', ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$SID,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownName', ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$WellKnownSIDName,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
+        [System.Management.Automation.SwitchParameter]$WellKnownToNTAccount
+    )
+
+    begin
+    {
+        # Announce overall deprecation and any dead parameters before executing.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [ConvertTo-ADTNTAccountOrSID]. Please migrate your scripts to use the new function." -Severity 2
+
+        # Set up collector for pipelined input.
+        $pipedInput = [System.Collections.Specialized.StringCollection]::new()
+    }
+
+    process
+    {
+        # Only add non-null strings to our collector.
+        if (![System.String]::IsNullOrWhiteSpace(($thisInput = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly)))
+        {
+            $null = $pipedInput.Add($thisInput)
+        }
+    }
+
+    end
+    {
+        # Only proceed if we have collected input.
+        if (!$pipedInput.Count)
+        {
+            return
+        }
+
+        try
+        {
+            $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
+            $pipedInput | ConvertTo-ADTNTAccountOrSID @PSBoundParameters
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
