@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("PSAppDeployToolkit")]
 [assembly: AssemblyProduct("Invoke-AppDeployToolkit")]
-[assembly: AssemblyCopyright("Copyright ©  2024 PSAppDeployToolkit Team. All Rights Reserved.")]
+[assembly: AssemblyCopyright("Copyright © 2024 PSAppDeployToolkit Team. All Rights Reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
