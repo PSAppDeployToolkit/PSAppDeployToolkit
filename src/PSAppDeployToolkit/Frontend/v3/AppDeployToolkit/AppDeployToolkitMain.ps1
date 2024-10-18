@@ -311,7 +311,7 @@ function Get-FreeDiskSpace
 
 function Remove-InvalidFileNameChars
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
@@ -424,7 +424,7 @@ function Get-InstalledApplication
 
 function Remove-MSIApplications
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Parameters', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
@@ -677,7 +677,7 @@ function Get-UserProfiles
 
 function Update-Desktop
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -711,7 +711,7 @@ Set-Alias -Name Refresh-Desktop -Value Update-Desktop
 
 function Update-SessionEnvironmentVariables
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
@@ -833,7 +833,7 @@ function Copy-File
 
 function Remove-File
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -1504,7 +1504,7 @@ function Copy-ContentToCache
 
 function Remove-ContentFromCache
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -1627,7 +1627,7 @@ function Get-IniValue
 
 function Set-IniValue
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -1686,7 +1686,7 @@ function Set-IniValue
 
 function New-Folder
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -1751,7 +1751,7 @@ function Test-PowerPoint
 
 function Update-GroupPolicy
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -2164,7 +2164,7 @@ function Get-ServiceStartMode
 
 function Set-ServiceStartMode
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -2707,7 +2707,7 @@ function Test-Battery
 
 function Start-ServiceAndDependencies
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
@@ -2782,7 +2782,7 @@ function Start-ServiceAndDependencies
 
 function Stop-ServiceAndDependencies
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
@@ -2857,7 +2857,7 @@ function Stop-ServiceAndDependencies
 
 function Set-RegistryKey
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -2920,7 +2920,7 @@ function Set-RegistryKey
 
 function Remove-RegistryKey
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -2976,7 +2976,7 @@ function Remove-RegistryKey
 
 function Remove-FileFromUserProfiles
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
@@ -3346,7 +3346,7 @@ function Unregister-DLL
 
 function Remove-Folder
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -3394,7 +3394,7 @@ function Remove-Folder
 
 function Set-ActiveSetup
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -3477,7 +3477,7 @@ function Set-ActiveSetup
 
 function Set-ItemPermission
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -3546,7 +3546,7 @@ function Set-ItemPermission
 
 function New-MsiTransform
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -3765,7 +3765,7 @@ function Get-Shortcut
 
 function Set-Shortcut
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -3873,7 +3873,7 @@ function Set-Shortcut
 
 function New-Shortcut
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -4283,7 +4283,7 @@ function Get-MsiTableProperty
 
 function Set-MsiProperty
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShoutProcess for backwards compatiblity purposes.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
