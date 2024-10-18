@@ -9,63 +9,70 @@ function ConvertTo-ADTNTAccountOrSID
     <#
 
     .SYNOPSIS
-    Convert between NT Account names and their security identifiers (SIDs).
+        Convert between NT Account names and their security identifiers (SIDs).
 
     .DESCRIPTION
-    Specify either the NT Account name or the SID and get the other. Can also convert well known sid types.
+        Specify either the NT Account name or the SID and get the other. Can also convert well known sid types.
 
     .PARAMETER AccountName
-    The Windows NT Account name specified in <domain>\<username> format.
+        The Windows NT Account name specified in <domain>\<username> format.
 
-    Use fully qualified account names (e.g., <domain>\<username>) instead of isolated names (e.g, <username>) because they are unambiguous and provide better performance.
+        Use fully qualified account names (e.g., <domain>\<username>) instead of isolated names (e.g, <username>) because they are unambiguous and provide better performance.
 
     .PARAMETER SID
-    The Windows NT Account SID.
+        The Windows NT Account SID.
 
     .PARAMETER WellKnownSIDName
-    Specify the Well Known SID name translate to the actual SID (e.g., LocalServiceSid).
+        Specify the Well Known SID name translate to the actual SID (e.g., LocalServiceSid).
 
-    To get all well known SIDs available on system: [Enum]::GetNames([Security.Principal.WellKnownSidType])
+        To get all well known SIDs available on system: [Enum]::GetNames([Security.Principal.WellKnownSidType])
 
     .PARAMETER WellKnownToNTAccount
-    Convert the Well Known SID to an NTAccount name
+        Convert the Well Known SID to an NTAccount name.
+
+    .PARAMETER LocalHost
+        Avoids a costly domain check when only converting local accounts.
 
     .INPUTS
-    System.String. Accepts a string containing the NT Account name or SID.
+        System.String
+
+        Accepts a string containing the NT Account name or SID.
 
     .OUTPUTS
-    System.String. Returns the NT Account name or SID.
+        System.String
+
+        Returns the NT Account name or SID.
 
     .EXAMPLE
-    ConvertTo-ADTNTAccountOrSID -AccountName 'CONTOSO\User1'
+        ConvertTo-ADTNTAccountOrSID -AccountName 'CONTOSO\User1'
 
-    Converts a Windows NT Account name to the corresponding SID.
-
-    .EXAMPLE
-    ConvertTo-ADTNTAccountOrSID -SID 'S-1-5-21-1220945662-2111687655-725345543-14012660'
-
-    Converts a Windows NT Account SID to the corresponding NT Account Name.
+        Converts a Windows NT Account name to the corresponding SID.
 
     .EXAMPLE
-    ConvertTo-ADTNTAccountOrSID -WellKnownSIDName 'NetworkServiceSid'
+        ConvertTo-ADTNTAccountOrSID -SID 'S-1-5-21-1220945662-2111687655-725345543-14012660'
 
-    Converts a Well Known SID name to a SID.
+        Converts a Windows NT Account SID to the corresponding NT Account Name.
+
+    .EXAMPLE
+        ConvertTo-ADTNTAccountOrSID -WellKnownSIDName 'NetworkServiceSid'
+
+        Converts a Well Known SID name to a SID.
 
     .NOTES
-    This is an internal script function and should typically not be called directly.
+        An active ADT session is NOT required to use this function.
 
-    The conversion can return an empty result if the user account does not exist anymore or if translation fails.
+        The conversion can return an empty result if the user account does not exist anymore or if translation fails Refer to: http://blogs.technet.com/b/askds/archive/2011/07/28/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious.aspx
 
-    http://blogs.technet.com/b/askds/archive/2011/07/28/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious.aspx
-
-    .NOTES
-    An active ADT session is NOT required to use this function.
-
-    .LINK
-    https://psappdeploytoolkit.com
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidtype(v=vs.110).aspx
+        https://psappdeploytoolkit.com
+
+    .LINK
+        http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidtype(v=vs.110).aspx
 
     #>
 
