@@ -12,15 +12,16 @@ Creates an Active Setup entry in the registry to execute a file for each user up
 
 ## SYNTAX
 
-### Create
+### Create (Default)
 ```
 Set-ADTActiveSetup -StubExePath <String> [-Arguments <String>] [-Wow6432Node] [-Version <String>]
- [-Locale <String>] [-DisableActiveSetup] [-NoExecuteForCurrentUser] [<CommonParameters>]
+ [-Locale <String>] [-DisableActiveSetup] [-NoExecuteForCurrentUser] -Key <String> -Description <String>
+ [<CommonParameters>]
 ```
 
 ### Purge
 ```
-Set-ADTActiveSetup [-Wow6432Node] [-PurgeActiveSetupKey] [<CommonParameters>]
+Set-ADTActiveSetup [-Wow6432Node] [-PurgeActiveSetupKey] -Key <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -193,6 +194,39 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Description
+Description for the Active Setup.
+Users will see "Setting up personalized settings for: $Description" at logon.
+Defaults to active session InstallName.
+
+```yaml
+Type: String
+Parameter Sets: Create
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Key
+Name of the registry key for the Active Setup entry.
+Defaults to active session InstallName.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
