@@ -797,11 +797,7 @@ class ADTSession
             default
             {
                 # Clean up app deferral history.
-                if ($this.RegKeyDeferHistory -and (Test-Path -LiteralPath $this.RegKeyDeferHistory))
-                {
-                    $this.WriteLogEntry('Removing deferral history...')
-                    Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
-                }
+                $this.ResetDeferHistory()
 
                 # Handle reboot prompts on successful script completion.
                 if ($_.Equals('RestartRequired') -and $this.GetPropertyValue('AllowRebootPassThru'))
@@ -1016,6 +1012,39 @@ class ADTSession
     [System.Void] WriteLogEntry([System.String[]]$Message, [System.Boolean]$WriteHost)
     {
         $this.WriteLogEntry($Message, $null, $null, $null, $WriteHost, $false, $null, $null, $null)
+    }
+
+    [System.Object] GetDeferHistory()
+    {
+        if (!$this.RegKeyDeferHistory -or !(Test-Path -LiteralPath $this.RegKeyDeferHistory))
+        {
+            return $null
+        }
+        $this.WriteLogEntry('Getting deferral history...')
+        return (Get-ADTRegistryKey -Key $this.RegKeyDeferHistory)
+    }
+
+    [System.Void] SetDeferHistory([System.Nullable[System.Int32]]$DeferTimesRemaining, [System.String]$DeferDeadline)
+    {
+        if ($null -ne $DeferTimesRemaining)
+        {
+            Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
+            Set-ADTRegistryKey -Key $this.RegKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining
+        }
+        if (![System.String]::IsNullOrWhiteSpace($DeferDeadline))
+        {
+            Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
+            Set-ADTRegistryKey -Key $this.RegKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline
+        }
+    }
+
+    [System.Void] ResetDeferHistory()
+    {
+        if ($this.RegKeyDeferHistory -and (Test-Path -LiteralPath $this.RegKeyDeferHistory))
+        {
+            $this.WriteLogEntry('Removing deferral history...')
+            Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
+        }
     }
 
     [System.Collections.Generic.List[System.IO.FileInfo]] GetMountedWimFiles()

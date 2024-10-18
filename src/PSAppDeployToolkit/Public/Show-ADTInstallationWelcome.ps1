@@ -205,29 +205,6 @@ function Show-ADTInstallationWelcome
 
     begin
     {
-        function Set-ADTDeferHistory
-        {
-            param
-            (
-                [ValidateNotNullOrEmpty()]
-                [System.Int32]$DeferTimesRemaining,
-
-                [AllowEmptyString()]
-                [System.String]$DeferDeadline
-            )
-
-            if ($PSBoundParameters.ContainsKey('DeferTimesRemaining'))
-            {
-                Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
-                Set-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ErrorAction Ignore
-            }
-            if (![System.String]::IsNullOrWhiteSpace($DeferDeadline))
-            {
-                Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
-                Set-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline -ErrorAction Ignore
-            }
-        }
-
         try
         {
             $adtEnv = Get-ADTEnvironment
@@ -307,8 +284,7 @@ function Show-ADTInstallationWelcome
                     $AllowDefer = $true
 
                     # Get the deferral history from the registry.
-                    Write-ADTLogEntry -Message 'Getting deferral history...'
-                    $deferHistory = Get-ADTRegistryKey -Key $adtSession.RegKeyDeferHistory
+                    $deferHistory = Get-ADTDeferHistory
                     $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
                     $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
 
