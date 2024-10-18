@@ -105,6 +105,7 @@
         'Get-ADTApplication'
         'Get-ADTLoggedOnUser'
         'Get-ADTMsiProductCodeRegexPattern'
+        'Get-ADTMsiTableProperty'
         'Get-ADTPendingReboot'
         'Get-ADTPowerShellProcessPath'
         'Get-ADTRedirectedUri'
