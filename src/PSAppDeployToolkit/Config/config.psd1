@@ -107,6 +107,9 @@
         # Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.
         DialogStyle = 'Fluent'
 
+        # Override dialog style when running in compatibility mode. Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.
+        DialogStyleCompatMode  = 'Classic'
+
         # Exit code used when a UI prompt times out or the user opts to defer.
         DefaultExitCode = 1618
 
