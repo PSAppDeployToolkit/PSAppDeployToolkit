@@ -5,7 +5,7 @@
         'Warning'
     );
     ExcludeRules = @(
-        'PSUseDeclaredVarsMoreThanAssignments'
+        'PSAlignAssignmentStatement'
     );
     Rules        = @{
         'PSUseCompatibleCmdlets' = @{
