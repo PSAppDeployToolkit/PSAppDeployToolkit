@@ -46,6 +46,18 @@ function Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
+    if ((Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1') -and $config.UI.DialogStyle -ne 'Classic')
+    {
+        $config.UI.DialogStyle = if ($config.UI.ContainsKey('DialogStyleCompatMode'))
+        {
+            $config.UI.DialogStyleCompatMode
+        }
+        else
+        {
+            'Classic'
+        }
+    }
+
     # Confirm the specified dialog type is valid.
     if (!$Script:DialogDispatcher.Contains($config.UI.DialogStyle))
     {
