@@ -4631,6 +4631,33 @@ function New-ZipFile
 
 #---------------------------------------------------------------------------
 #
+# MARK: Deprecation announcement for Set-PinnedApplication
+#
+#---------------------------------------------------------------------------
+
+function Set-PinnedApplication
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Action', Justification = "The parameter is not used as the function is a deprecation announcement and performs no actions.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FilePath', Justification = "The parameter is not used as the function is a deprecation announcement and performs no actions.")]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('PinToStartMenu', 'UnpinFromStartMenu', 'PinToTaskbar', 'UnpinFromTaskbar')]
+        [System.String]$Action,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullorEmpty()]
+        [System.String]$FilePath
+    )
+
+    # Announce that this function is no more and therefore does nothing within the deployment script.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been removed from PSAppDeployToolkit as its functionality no longer works with Windows 10 1809 or higher targets." -Severity 2
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
