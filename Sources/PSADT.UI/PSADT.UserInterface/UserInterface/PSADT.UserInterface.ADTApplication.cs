@@ -8,7 +8,7 @@ namespace PSADT.UserInterface
     /// <summary>
     /// Helper class to manage WPF dialogs within a console application.
     /// </summary>
-    public class AdtApplication : IDisposable
+    internal class AdtApplication : IDisposable
     {
         private readonly Thread _appThread;
         private Application? _app;
@@ -18,10 +18,18 @@ namespace PSADT.UserInterface
         private bool _disposed = false;
 
         /// <summary>
+        /// Indicates whether the AdtApplication has been disposed.
+        /// </summary>
+        internal bool IsDisposed => _disposed;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AdtApplication"/> class.
         /// </summary>
         public AdtApplication()
         {
+            // Subscribe to the ProcessExit event to ensure Dispose is called
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+
             _appThread = new Thread(InitializeApplication)
             {
                 IsBackground = true
@@ -100,14 +108,14 @@ namespace PSADT.UserInterface
             string? continueButtonText,
             IProcessEvaluationService? processEvaluationService = null)
         {
-            if (_app == null)
+            if (_disposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             string result = "Cancel";
 
-            _app.Dispatcher.Invoke(() =>
+            _app!.Dispatcher.Invoke(() =>
             {
                 var welcomeDialog = new WelcomeDialog(
                     appTitle,
@@ -154,12 +162,12 @@ namespace PSADT.UserInterface
             string? progressMessage,
             string? progressMessageDetail)
         {
-            if (_app == null)
+            if (_disposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
-            _app.Dispatcher.Invoke(() =>
+            _app!.Dispatcher.Invoke(() =>
             {
                 var progressDialog = new ProgressDialog(
                     appTitle,
@@ -204,14 +212,14 @@ namespace PSADT.UserInterface
             string? button2Text,
             string? button3Text)
         {
-            if (_app == null)
+            if (_disposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             string result = "Cancel";
 
-            _app.Dispatcher.Invoke(() =>
+            _app!.Dispatcher.Invoke(() =>
             {
                 var customDialog = new CustomDialog(
                     appTitle,
@@ -261,14 +269,14 @@ namespace PSADT.UserInterface
             string? dismissButtonText,
             string? restartButtonText)
         {
-            if (_app == null)
+            if (_disposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             string result = "Cancel";
 
-            _app.Dispatcher.Invoke(() =>
+            _app!.Dispatcher.Invoke(() =>
             {
                 var restartDialog = new RestartDialog(
                     appTitle,
@@ -298,12 +306,12 @@ namespace PSADT.UserInterface
         /// <param name="appToClose">The application process info to add.</param>
         public void AddAppToClose(AppProcessInfo appToClose)
         {
-            if (_app == null)
+            if (_disposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
-            _app.Dispatcher.Invoke(() =>
+            _app!.Dispatcher.Invoke(() =>
             {
                 if (_currentWindow is WelcomeDialog welcomeDialog)
                 {
@@ -318,12 +326,12 @@ namespace PSADT.UserInterface
         /// <param name="appToClose">The application process info to remove.</param>
         public void RemoveAppToClose(AppProcessInfo appToClose)
         {
-            if (_app == null)
+            if (_disposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
-            _app.Dispatcher.Invoke(() =>
+            _app!.Dispatcher.Invoke(() =>
             {
                 if (_currentWindow is WelcomeDialog welcomeDialog)
                 {
@@ -340,12 +348,12 @@ namespace PSADT.UserInterface
         /// <param name="detailMessage">Optional detailed progress message.</param>
         public void UpdateProgress(double value, string? message = null, string? detailMessage = null)
         {
-            if (_app == null)
+            if (_disposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
-            _app.Dispatcher.Invoke(() =>
+            _app!.Dispatcher.Invoke(() =>
             {
                 if (_currentWindow is ProgressDialog progressDialog)
                 {
@@ -359,16 +367,24 @@ namespace PSADT.UserInterface
         /// </summary>
         public void CloseCurrentDialog()
         {
-            if (_app == null)
+            if (_disposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
-            _app.Dispatcher.Invoke(() =>
+            _app!.Dispatcher.Invoke(() =>
             {
                 _currentWindow?.Close();
                 _currentWindow = null;
             });
+        }
+
+        /// <summary>
+        /// Handles the ProcessExit event to dispose resources.
+        /// </summary>
+        private void OnProcessExit(object sender, EventArgs e)
+        {
+            Dispose();
         }
 
         /// <summary>
@@ -378,6 +394,11 @@ namespace PSADT.UserInterface
         {
             if (!_disposed)
             {
+                _disposed = true;
+
+                // Unsubscribe from ProcessExit event
+                AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+
                 if (_app != null)
                 {
                     _app.Dispatcher.Invoke(() =>
@@ -390,8 +411,6 @@ namespace PSADT.UserInterface
                     _appThread.Join();
                     _app = null!;
                 }
-
-                _disposed = true;
             }
         }
     }
