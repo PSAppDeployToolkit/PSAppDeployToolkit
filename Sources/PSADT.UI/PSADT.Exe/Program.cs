@@ -15,6 +15,7 @@ namespace PSADT.Exe
             {
                 throw new ArgumentNullException(nameof(args));
             }
+
             // Set up parameters for testing
             const string appTitle = "Microsoft Office 365 1.2 x64 EN";
             const string subtitle = "MyCompanyName Technology Ltd - App Install";
@@ -22,6 +23,7 @@ namespace PSADT.Exe
             const string? appIconImage = null;
             const string? bannerImageLight = null;
             const string? bannerImageDark = null;
+
             var appsToClose = new List<AppProcessInfo>
             {
                 new("excel", "Microsoft Office Excel", null, null, null),
@@ -45,10 +47,11 @@ namespace PSADT.Exe
             const string progressMessage = "Performing pre-flight checks ...";
             const string progressMessageDetail = "Testing your system to ensure the installation can proceed, please wait ...";
 
-            const int restartCountdownMins = 5;
+            const double restartCountdownMins = 5;
             const string restartMessage = "The installation will begin in 5 minutes. You can restart your computer now or wait for the countdown to complete.";
             const string dismissButtonText = "Dismiss";
             const string restartButtonText = "Restart Now";
+
             const string customMessage = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed? ";
             const string button1Text = "No thanks";
             const string button2Text = "";
@@ -57,13 +60,10 @@ namespace PSADT.Exe
             // Create ProcessEvaluationService
             var processEvaluationService = new ProcessEvaluationService();
 
-            // Create AdtApplication instance within a using statement to ensure disposal
-            using var app = new AdtApplication();
-
             try
             {
                 // Show Welcome Dialog
-                string welcomeResult = app.ShowWelcomeDialog(
+                string welcomeResult = UnifiedAdtApplication.ShowWelcomeDialog(
                     appTitle,
                     subtitle,
                     topMost,
@@ -80,10 +80,10 @@ namespace PSADT.Exe
 
                 Console.WriteLine($"Welcome Dialog Result: {welcomeResult}");
 
-                if (welcomeResult == "Continue")
+                if (welcomeResult.Equals("Continue", StringComparison.OrdinalIgnoreCase))
                 {
                     // Show Progress Dialog
-                    app.ShowProgressDialog(
+                    UnifiedAdtApplication.ShowProgressDialog(
                         appTitle,
                         subtitle,
                         topMost,
@@ -97,15 +97,15 @@ namespace PSADT.Exe
                     for (int i = 0; i <= 100; i += 10)
                     {
                         // Update progress
-                        app.UpdateProgress(i, $"Installation progress: {i}%", $"Step {i / 10} of 10");
+                        UnifiedAdtApplication.UpdateProgress(i, $"Installation progress: {i}%", $"Step {i / 10} of 10");
                         Thread.Sleep(1000);  // Simulate work being done
                     }
 
                     // Close Progress Dialog
-                    app.CloseCurrentDialog();
+                    UnifiedAdtApplication.CloseCurrentDialog();
 
                     // Show Custom Dialog for completion
-                    string customResult = app.ShowCustomDialog(
+                    string customResult = UnifiedAdtApplication.ShowCustomDialog(
                         appTitle,
                         subtitle,
                         topMost,
@@ -124,8 +124,8 @@ namespace PSADT.Exe
                     Console.WriteLine("Installation deferred or cancelled.");
                 }
 
-                // Test Restart Dialog
-                string restartResult = app.ShowRestartDialog(
+                // Show Restart Dialog
+                string restartResult = UnifiedAdtApplication.ShowRestartDialog(
                     appTitle,
                     subtitle,
                     topMost,
@@ -139,11 +139,12 @@ namespace PSADT.Exe
 
                 Console.WriteLine($"Restart Dialog Result: {restartResult}");
 
-                if (restartResult == "Continue")
+                if (restartResult.Equals("Restart", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine("Proceeding with installation after restart.");
+                    // Implement actual restart logic here
                 }
-                else if (restartResult == "Defer")
+                else if (restartResult.Equals("Defer", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine("Installation deferred by the user.");
                 }
@@ -152,6 +153,39 @@ namespace PSADT.Exe
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
+            finally
+            {
+                // Dispose the UnifiedAdtApplication when done
+                UnifiedAdtApplication.Dispose();
+            }
+
+            // Example of re-instantiating after disposal if needed
+            /*
+            try
+            {
+                // Attempt to use UnifiedAdtApplication after disposal
+                string newWelcomeResult = UnifiedAdtApplication.ShowWelcomeDialog(
+                    appTitle,
+                    subtitle,
+                    topMost,
+                    defersRemaining,
+                    appsToClose,
+                    appIconImage,
+                    bannerImageLight,
+                    bannerImageDark,
+                    closeAppMessage,
+                    deferRemainText,
+                    deferButtonText,
+                    continueButtonText,
+                    processEvaluationService);
+
+                Console.WriteLine($"New Welcome Dialog Result: {newWelcomeResult}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred after disposal: {ex.Message}");
+            }
+            */
         }
     }
 }
