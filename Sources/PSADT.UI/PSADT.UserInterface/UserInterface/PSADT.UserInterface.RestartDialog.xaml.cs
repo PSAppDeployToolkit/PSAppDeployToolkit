@@ -1,6 +1,6 @@
-﻿using System.Collections.Specialized;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Wpf.Ui.Appearance;
 
 namespace PSADT.UserInterface
@@ -8,6 +8,9 @@ namespace PSADT.UserInterface
     public partial class RestartDialog : BaseDialog
     {
         public string? Result { get; private set; }
+
+        private DispatcherTimer _timer;
+        private TimeSpan _remainingTime;
 
         public RestartDialog(
             string? appTitle,
@@ -35,12 +38,9 @@ namespace PSADT.UserInterface
             SubtitleTextBlock.Text = subtitle ?? "";
             Topmost = topMost ?? false;
 
-            // Convert the minutes to a TimeSpan
-            TimeSpan countdownTime = TimeSpan.FromMinutes(restartCountdownMins);
-            // Format the TimeSpan as hh:mm:ss
-            string formattedTime = countdownTime.ToString(@"hh\:mm\:ss");
-            // Set the RestartCountdownMinsTextBlock.Text to the formatted time
-            RestartCountdownMinsTextBlock.Text = formattedTime;
+            // Initialize the countdown timer
+            _remainingTime = TimeSpan.FromMinutes(restartCountdownMins);
+            UpdateCountdownDisplay();
 
             RestartMessageTextBlock.Text = restartMessage;
             DismissButton.Content = dismissButtonText ?? "Dismiss";
@@ -76,27 +76,55 @@ namespace PSADT.UserInterface
             {
                 AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
             }
+
+            // Initialize the DispatcherTimer
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _timer.Tick += Timer_Tick;
         }
 
         private void RestartDialog_Loaded(object sender, RoutedEventArgs e)
         {
+            _timer.Start();
         }
 
-        private void AppsToCloseListView_Loaded(object sender, RoutedEventArgs e)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
+            if (_remainingTime.TotalSeconds > 0)
+            {
+                _remainingTime = _remainingTime.Subtract(TimeSpan.FromSeconds(1));
+                UpdateCountdownDisplay();
+            }
+            else
+            {
+                _timer.Stop();
+                TriggerRestart();
+            }
         }
 
-        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void UpdateCountdownDisplay()
         {
+            // Ensure that the display is in hh:mm:ss format
+            RestartCountdownMinsTextBlock.Text = _remainingTime.ToString(@"hh\:mm\:ss");
+        }
+
+        private void TriggerRestart()
+        {
+            // Simulate the RestartButton being clicked
+            RestartButton_Click(this, new RoutedEventArgs());
         }
 
         private void DismissButton_Click(object sender, RoutedEventArgs e)
         {
-            this.WindowState = WindowState.Minimized;
+            _timer.Stop();
+            this.Close();
         }
 
         private void RestartButton_Click(object sender, RoutedEventArgs e)
         {
+            _timer.Stop();
             Result = "Restart";
             Close();
         }
@@ -106,6 +134,14 @@ namespace PSADT.UserInterface
             base.OnClosed(e);
 
             Loaded -= RestartDialog_Loaded;
+
+            if (_timer.IsEnabled)
+            {
+                _timer.Stop();
+            }
+
+            _timer.Tick -= Timer_Tick;
+            _timer = null!;
 
             Dispose();
         }
