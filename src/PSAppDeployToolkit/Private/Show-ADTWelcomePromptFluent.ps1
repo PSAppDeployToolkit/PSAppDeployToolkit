@@ -63,7 +63,7 @@ function Show-ADTWelcomePromptFluent
             !$NotTopMost,
             $DeferTimes,
             $appsToClose,
-            $adtConfig.Assets.Fluent.Icon,
+            $adtConfig.Assets.Fluent.Logo,
             $adtConfig.Assets.Fluent.Banner.Light,
             $adtConfig.Assets.Fluent.Banner.Dark,
             $adtStrings.WelcomePrompt.Fluent.DialogMessage,
