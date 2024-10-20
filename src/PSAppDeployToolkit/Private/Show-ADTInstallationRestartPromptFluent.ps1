@@ -6,7 +6,9 @@
 
 function Show-ADTInstallationRestartPromptFluent
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -32,15 +34,15 @@ function Show-ADTInstallationRestartPromptFluent
     # Send this straight out to the C# backend.
     Write-ADTLogEntry -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."
     return [PSADT.UserInterface.UnifiedADTApplication]::ShowRestartDialog(
-            $Title,
-            $null,
-            !$NotTopMost,
-            $adtConfig.Assets.Fluent.Logo,
-            $adtConfig.Assets.Fluent.Banner.Light,
-            $adtConfig.Assets.Fluent.Banner.Dark,
-            $CountdownSeconds / 60,
-            $adtStrings.RestartPrompt.MessageRestart,
-            $adtStrings.RestartPrompt.ButtonRestartLater,
-            $adtStrings.RestartPrompt.ButtonRestartNow
-        )
+        $Title,
+        $null,
+        !$NotTopMost,
+        $adtConfig.Assets.Fluent.Logo,
+        $adtConfig.Assets.Fluent.Banner.Light,
+        $adtConfig.Assets.Fluent.Banner.Dark,
+        $CountdownSeconds / 60,
+        $adtStrings.RestartPrompt.MessageRestart,
+        $adtStrings.RestartPrompt.ButtonRestartLater,
+        $adtStrings.RestartPrompt.ButtonRestartNow
+    )
 }
