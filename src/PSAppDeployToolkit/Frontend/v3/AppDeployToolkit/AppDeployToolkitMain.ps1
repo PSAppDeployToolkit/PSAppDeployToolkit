@@ -4671,10 +4671,12 @@ Set-StrictMode -Version 1
 Remove-Module -Name PSAppDeployToolkit* -Force
 $adtModule = if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
 {
+    # Expected directory when running from a template
     Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force -PassThru
 }
 elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
 {
+    # Expected directory if executing directly from inside the module
     Import-Module -Name "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -Force -PassThru
 }
 else
