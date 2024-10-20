@@ -264,7 +264,7 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
-    Import-Module -Name $PSScriptRoot\..\..\PSAppDeployToolkit -Force
+    Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force
     try
     {
         $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession -PassThru
