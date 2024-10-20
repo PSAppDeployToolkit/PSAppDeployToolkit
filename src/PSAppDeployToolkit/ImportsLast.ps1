@@ -52,10 +52,7 @@
             BannerHeight = 0
         }
         Fluent = [pscustomobject]@{
-            ApplicationSession = [PSADT.UserInterface.ADTApplication]::new()
             ProgressWindow = [pscustomobject]@{
-                Window = $null
-                Thread = $null
                 Running = $false
             }
         }

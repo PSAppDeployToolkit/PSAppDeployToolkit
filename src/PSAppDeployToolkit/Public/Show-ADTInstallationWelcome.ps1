@@ -374,7 +374,7 @@ function Show-ADTInstallationWelcome
                     $adtSession.CloseAppsCountdownGlobal = $CloseAppsCountdown
                     $promptResult = $null
 
-                    while (($runningProcesses = Get-ADTRunningProcesses -ProcessObject $ProcessObjects) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningProcesses = Get-ADTRunningProcesses -ProcessObject $ProcessObjects -InformationAction SilentlyContinue) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
                         $adtSession.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
