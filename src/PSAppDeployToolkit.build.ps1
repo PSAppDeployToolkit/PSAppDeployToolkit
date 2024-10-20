@@ -585,7 +585,7 @@ Add-BuildTask Build {
     if ($env:GITHUB_ACTIONS -eq 'true') {
         if (Get-Command -Name 'azuresigntool' -ErrorAction Ignore) {
             Write-Build Gray '        Signing module...'
-            Get-ChildItem -Path $script:BuildModuleRoot -Include '*.psm1', 'PSADT*.dll', 'Deploy-Application.exe', 'Invoke-AppDeployToolkit.exe' -Recurse | ForEach-Object {
+            Get-ChildItem -Path $script:BuildModuleRoot -Include '*.psm1', 'AppDeployToolkitMain.ps1', 'PSADT*.dll', 'Deploy-Application.exe', 'Invoke-AppDeployToolkit.exe' -Recurse | ForEach-Object {
                 & azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 "$_"
             }
         }
