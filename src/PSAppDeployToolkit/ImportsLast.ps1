@@ -72,7 +72,7 @@
                 'Close-ADTInstallationProgress' = $CommandTable.'Close-ADTInstallationProgressFluent'
                 'Show-ADTBalloonTip' = $CommandTable.'Show-ADTBalloonTipFluent'
                 'Show-ADTInstallationProgress' = $CommandTable.'Show-ADTInstallationProgressFluent'
-                'Show-ADTInstallationPrompt' = $CommandTable.'Show-ADTInstallationPromptClassic'
+                'Show-ADTInstallationPrompt' = $CommandTable.'Show-ADTInstallationPromptFluent'
                 'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptClassic'
                 'Show-ADTInstallationWelcome'       = $CommandTable.'Show-ADTWelcomePromptFluent'
             }).AsReadOnly()

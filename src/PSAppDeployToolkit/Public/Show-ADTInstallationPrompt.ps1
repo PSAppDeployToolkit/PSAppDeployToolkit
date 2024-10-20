@@ -209,7 +209,7 @@ function Show-ADTInstallationPrompt
                 }
 
                 # Call the underlying function to open the message prompt.
-                Show-ADTInstallationPromptClassic @PSBoundParameters -ADTConfig $adtConfig
+                & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @PSBoundParameters -ADTConfig $adtConfig
             }
             catch
             {
