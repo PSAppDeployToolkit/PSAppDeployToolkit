@@ -172,7 +172,7 @@ function Show-ADTInstallationRestartPrompt
                 }
 
                 # Call the underlying function to open the restart prompt.
-                Show-ADTInstallationRestartPromptClassic @PSBoundParameters
+                & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @PSBoundParameters
             }
             catch
             {
