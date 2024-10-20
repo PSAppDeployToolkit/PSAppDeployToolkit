@@ -73,7 +73,7 @@
                 'Show-ADTBalloonTip' = $CommandTable.'Show-ADTBalloonTipFluent'
                 'Show-ADTInstallationProgress' = $CommandTable.'Show-ADTInstallationProgressFluent'
                 'Show-ADTInstallationPrompt' = $CommandTable.'Show-ADTInstallationPromptFluent'
-                'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptClassic'
+                'Show-ADTInstallationRestartPrompt' = $CommandTable.'Show-ADTInstallationRestartPromptFluent'
                 'Show-ADTInstallationWelcome'       = $CommandTable.'Show-ADTWelcomePromptFluent'
             }).AsReadOnly()
     }).AsReadOnly()
