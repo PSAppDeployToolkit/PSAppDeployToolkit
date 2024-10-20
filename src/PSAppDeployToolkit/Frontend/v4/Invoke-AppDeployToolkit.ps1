@@ -264,7 +264,20 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
-    Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force
+    if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
+    {
+        # Expected directory when running from a template
+        Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force
+    }
+    elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\PSAppDeployToolkit"))
+    {
+        # Expected directory if executing directly from inside the module
+        Import-Module -Name "$PSScriptRoot\..\..\..\PSAppDeployToolkit" -Force
+    }
+    else
+    {
+        throw [System.Management.Automation.ErrorRecord]::new([System.ArgumentException]::new('The PSAppDeployToolkit module could not be found in the expected location.', $null), 'ModuleNotFoundError', [System.Management.Automation.ErrorCategory]::ObjectNotFound, $null)
+    }
     try
     {
         $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession -PassThru
