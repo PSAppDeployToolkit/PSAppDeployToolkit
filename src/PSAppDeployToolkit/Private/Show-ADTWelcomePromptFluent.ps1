@@ -6,31 +6,16 @@
 
 function Show-ADTWelcomePromptFluent
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProcessObjects', Justification = 'This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
     param
     (
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
-        [Parameter(Mandatory = $false)]
-        [ValidateScript({
-                if ($_ -gt (& $Script:CommandTable.'Get-ADTConfig').UI.DefaultTimeout) {
-                    $PSCmdlet.ThrowTerminatingError((& $Script:CommandTable.'New-ADTValidateScriptErrorRecord' -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
-                }
-                return ($_ -ge 0)
-            })]
-        [System.Double]$CloseAppsCountdown,
-
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$DeferTimes,
 
-        [ValidateNotNullOrEmpty()]
-        [System.String]$DeferDeadline,
-
-        [System.Management.Automation.SwitchParameter]$AllowDefer,
-        [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
         [System.Management.Automation.SwitchParameter]$NotTopMost,
-        [System.Management.Automation.SwitchParameter]$CustomText,
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Collections.Generic.List[System.Object]]$UnboundArguments
@@ -46,32 +31,32 @@ function Show-ADTWelcomePromptFluent
         process
         {
             [PSADT.UserInterface.Services.AppProcessInfo]::new(
-                    $_.Name,
-                    $_.ProcessDescription,
-                    $_.Product,
-                    $_.Company,
-                    $null,
-                    $_.StartTime
-                )
+                $_.Name,
+                $_.ProcessDescription,
+                $_.Product,
+                $_.Company,
+                $null,
+                $_.StartTime
+            )
         }
     }
 
     # Send this out to the C# code.
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowWelcomeDialog(
-            $adtSession.GetPropertyValue('InstallTitle'),
-            [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.GetPropertyValue('DeploymentType')),
-            !$NotTopMost,
-            $DeferTimes,
-            $appsToClose,
-            $adtConfig.Assets.Fluent.Logo,
-            $adtConfig.Assets.Fluent.Banner.Light,
-            $adtConfig.Assets.Fluent.Banner.Dark,
-            $adtStrings.WelcomePrompt.Fluent.DialogMessage,
-            $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,
-            $adtStrings.WelcomePrompt.Fluent.ButtonLeftText,
-            $adtStrings.WelcomePrompt.Fluent.ButtonRightText,
-            $(if ($adtConfig.UI.DynamicProcessEvaluation) {[PSADT.UserInterface.Services.ProcessEvaluationService]::new()})
-        )
+        $adtSession.GetPropertyValue('InstallTitle'),
+        [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.GetPropertyValue('DeploymentType')),
+        !$NotTopMost,
+        $DeferTimes,
+        $appsToClose,
+        $adtConfig.Assets.Fluent.Logo,
+        $adtConfig.Assets.Fluent.Banner.Light,
+        $adtConfig.Assets.Fluent.Banner.Dark,
+        $adtStrings.WelcomePrompt.Fluent.DialogMessage,
+        $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,
+        $adtStrings.WelcomePrompt.Fluent.ButtonLeftText,
+        $adtStrings.WelcomePrompt.Fluent.ButtonRightText,
+        $(if ($adtConfig.UI.DynamicProcessEvaluation) { [PSADT.UserInterface.Services.ProcessEvaluationService]::new() })
+    )
 
     # Return a translated value that's compatible with the toolkit.
     switch ($result)
