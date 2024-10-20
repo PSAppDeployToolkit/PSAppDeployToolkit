@@ -93,6 +93,10 @@ function Resolve-ADTBoundParameters
                             {
                                 "'$($_.Value.Replace("'", "''"))'"
                             }
+                            elseif (($_.Value -is [System.Collections.Generic.List[System.Object]]) -and ($_.Value -match '^-\w+:$'))
+                            {
+                                Convert-ADTValuesFromRemainingArguments -RemainingArguments $_.Value | & $thisFunc
+                            }
                             elseif ($_.Value -is [System.Collections.IEnumerable])
                             {
                                 if ($_.Value[0] -is [System.String])
