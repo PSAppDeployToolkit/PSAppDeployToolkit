@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Threading;
 using PSADT.UserInterface.Services;
 using Wpf.Ui.Markup;
@@ -363,6 +363,26 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Closes the currently open dialog if it's a ProgressDialog.
+        /// </summary>
+        public void CloseProgressDialog()
+        {
+            if (_disposed)
+            {
+                throw new InvalidOperationException("WPF Application is not initialized.");
+            }
+
+            _app!.Dispatcher.Invoke(() =>
+            {
+                if (_currentWindow is ProgressDialog progressDialog)
+                {
+                    _currentWindow?.Close();
+                    _currentWindow = null;
+                }
+            });
+        }
+
+        /// <summary>
         /// Closes the currently open dialog.
         /// </summary>
         public void CloseCurrentDialog()
@@ -377,6 +397,26 @@ namespace PSADT.UserInterface
                 _currentWindow?.Close();
                 _currentWindow = null;
             });
+        }
+
+        /// <summary>
+        /// Returns whether the current window is visible or not.
+        /// </summary>
+        public bool CurrentDialogVisible()
+        {
+            if (_disposed)
+            {
+                throw new InvalidOperationException("WPF Application is not initialized.");
+            }
+
+            bool isVisible = false;
+
+            _app!.Dispatcher.Invoke(() =>
+            {
+                isVisible = _currentWindow != null && _currentWindow.IsVisible;
+            });
+
+            return isVisible;
         }
 
         /// <summary>

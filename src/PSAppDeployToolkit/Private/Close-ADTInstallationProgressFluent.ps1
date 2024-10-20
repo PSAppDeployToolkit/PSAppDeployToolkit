@@ -8,6 +8,6 @@ function Close-ADTInstallationProgressFluent
 {
     # Hide the dialog and reset the state bool.
     Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-    $Script:Dialogs.Fluent.ProgressWindow.Window.HideDialog()
+    [PSADT.UserInterface.UnifiedADTApplication]::CloseProgressDialog()
     $Script:Dialogs.Fluent.ProgressWindow.Running = $false
 }
