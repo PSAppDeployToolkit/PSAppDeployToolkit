@@ -125,7 +125,7 @@ function Get-ADTWindowTitle
                         }
 
                         # Return early if the window doesn't have any text.
-                        if (!($VisibleWindowTitle = [PSADT.PInvoke.NativeMethods]::GetWindowText($_)))
+                        if (!($VisibleWindowTitle = [PSADT.GUI.UiAutomation]::GetWindowText($_)))
                         {
                             return
                         }
