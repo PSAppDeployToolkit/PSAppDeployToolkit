@@ -15,6 +15,23 @@ function Import-ADTConfig
         [System.String]$BaseDirectory
     )
 
+    # Internal filter to process asset filepaths.
+    filter Update-ADTAssetFilePath
+    {
+        # Go recursive if we've received a hashtable, otherwise just update the values.
+        foreach ($asset in $($_.GetEnumerator()))
+        {
+            if ($asset.Value -isnot [System.Collections.Hashtable])
+            {
+                $_.($asset.Key) = (Get-Item -LiteralPath "$Script:PSScriptRoot\Assets\$($_.($asset.Key))").FullName
+            }
+            else
+            {
+                $asset.Value | & $MyInvocation.MyCommand
+            }
+        }
+    }
+
     # Process the incoming $BaseDirectory value.
     $PSBoundParameters.BaseDirectory = if (![System.IO.File]::Exists([System.IO.Path]::Combine(($dataDir = [System.IO.Path]::Combine($BaseDirectory, 'Config')), 'config.psd1')))
     {
@@ -46,6 +63,7 @@ function Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
+    # Confirm the specified dialog type is valid.
     if ((Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1') -and $config.UI.DialogStyle -ne 'Classic')
     {
         $config.UI.DialogStyle = if ($config.UI.ContainsKey('DialogStyleCompatMode'))
@@ -57,8 +75,6 @@ function Import-ADTConfig
             'Classic'
         }
     }
-
-    # Confirm the specified dialog type is valid.
     if (!$Script:DialogDispatcher.Contains($config.UI.DialogStyle))
     {
         $naerParams = @{
@@ -84,30 +100,13 @@ function Import-ADTConfig
     }
 
     # Expand out asset file paths and test that the files are present.
-    foreach ($asset in ('Classic.Icon', 'Classic.Logo', 'Classic.Banner'))
-    {
-        $config.Assets.$asset = (Get-Item -LiteralPath "$Script:PSScriptRoot\Assets\$($config.Assets.$asset)").FullName
-    }
+    $config.Assets | Update-ADTAssetFilePath
 
-    # Grab the bytes of each image asset, store them into a memory stream, then as an image for the form to use.
-    $Script:Dialogs.Classic.Assets.Icon = [System.Drawing.Icon]::new([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Classes.Icon)))
+    # Process the classic assets by grabbing the bytes of each image asset, storing them into a memory stream, then as an image for WinForms to use.
+    $Script:Dialogs.Classic.Assets.Icon = [System.Drawing.Icon]::new([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Classic.Icon)))
     $Script:Dialogs.Classic.Assets.Logo = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Classic.Logo)))
     $Script:Dialogs.Classic.Assets.Banner = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Classic.Banner)))
-    $Script:Dialogs.Classic.Assets.BannerHeight = [System.Math]::Ceiling($Script:Dialogs.Classic.Width * ($Script:Dialogs.Classic.Assets.Banner.Height / $Script:Dialogs.Classic.Assets.Banner.Width))
-
-    # Expand out asset file paths and test that the files are present.
-    foreach ($asset in ('Fluent.Icon', 'Fluent.Logo', 'Fluent.Banner.Dark', 'Fluent.Banner.Light'))
-    {
-        $config.Assets.$asset = (Get-Item -LiteralPath "$Script:PSScriptRoot\Assets\$($config.Assets.$asset)").FullName
-    }
-
-    # Grab the bytes of each image asset, store them into a memory stream, then as an image for the form to use.
-    $Script:Dialogs.Fluent.Assets.Icon = [System.Drawing.Icon]::new([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Classes.Icon)))
-    $Script:Dialogs.Fluent.Assets.Logo = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Classic.Logo)))
-    $Script:Dialogs.Fluent.Assets.BannerDark = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Fluent.Banner.Dark)))
-    $Script:Dialogs.Fluent.Assets.BannerDarkHeight = [System.Math]::Ceiling($Script:Dialogs.Fluent.Width * ($Script:Dialogs.Fluent.Assets.Banner.Dark.Height / $Script:Dialogs.Fluent.Assets.Banner.Dark.Width))
-    $Script:Dialogs.Fluent.Assets.BannerLight = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Fluent.Banner.Light)))
-    $Script:Dialogs.Fluent.Assets.BannerLightHeight = [System.Math]::Ceiling($Script:Dialogs.Fluent.Width * ($Script:Dialogs.Fluent.Assets.Banner.Light.Height / $Script:Dialogs.Fluent.Assets.Banner.Light.Width))
+    $Script:Dialogs.Classic.BannerHeight = [System.Math]::Ceiling($Script:Dialogs.Classic.Width * ($Script:Dialogs.Classic.Assets.Banner.Height / $Script:Dialogs.Classic.Assets.Banner.Width))
 
     # Change paths to user accessible ones if user isn't an admin.
     if (!$adtEnv.IsAdmin)

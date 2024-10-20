@@ -139,7 +139,7 @@
             ButtonLeftText = 'Defer'
 
             # This is a phrase used to describe the process of closing applications and installing the application.
-            ButtonRightText = 'Close Apps &amp; Install'
+            ButtonRightText = 'Close Apps & Install'
         }
     }
 }
