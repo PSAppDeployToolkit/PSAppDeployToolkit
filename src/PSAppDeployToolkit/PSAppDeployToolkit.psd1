@@ -60,7 +60,7 @@
         'PresentationFramework'
         'WindowsBase'
         'lib\net461\PSADT.dll'
-        'lib\PSADT.UserInterface.dll'
+        'lib\net462\PSADT.UserInterface.dll'
     )
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
