@@ -137,7 +137,7 @@ function Get-ADTWindowTitle
                         }
 
                         # Return early if the window doesn't have an associated process.
-                        if (!($process = $processes | Where-Object -Property Id -EQ -Value ([PSADT.PInvoke.NativeMethods]::GetWindowThreadProcessId($_)) | Select-Object -First 1))
+                        if (!($process = $processes | Where-Object -Property Id -EQ -Value ([PSADT.GUI.UiAutomation]::GetWindowThreadProcessId($_)) | Select-Object -First 1))
                         {
                             return
                         }
