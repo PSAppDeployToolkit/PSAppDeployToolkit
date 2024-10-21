@@ -136,7 +136,7 @@ function New-ADTTemplate
                 }
 
                 $null = New-Item -Path "$templatePath\Files" -ItemType Directory -Force
-                $null = New-Item -Path "$templatePath\SuppportFiles" -ItemType Directory -Force
+                $null = New-Item -Path "$templatePath\SupportFiles" -ItemType Directory -Force
                 $null = New-Item -Path $templateModulePath -ItemType Directory -Force
                 Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
                 Copy-Item -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
