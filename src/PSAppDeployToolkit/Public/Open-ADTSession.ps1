@@ -265,7 +265,7 @@ function Open-ADTSession
         $errRecord = $null
 
         # Determine whether this session is to be in compatibility mode.
-        $PSBoundParameters.CompatibilityMode = (Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1')
+        $PSBoundParameters.CompatibilityMode = Test-ADTNonNativeCaller
         $PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)
 
         # Set up the ScriptDirectory if one wasn't provided.
