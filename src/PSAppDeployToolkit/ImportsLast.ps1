@@ -24,6 +24,7 @@
         }
         Sessions = [System.Collections.Generic.List[ADTSession]]::new()
         TerminalServerMode = $false
+        ScriptDirectory = $null
         Environment = $null
         Language = $null
         Config = $null
