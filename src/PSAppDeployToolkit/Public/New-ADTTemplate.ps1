@@ -172,7 +172,7 @@ function New-ADTTemplate
                         ($args[0].Parent.CommandElements[0].Value.Equals('Import-Module'))
                     }
                     $scriptText = [System.IO.File]::ReadAllText(($scriptFile = "$templateModulePath\..\Invoke-AppDeployToolkit.ps1"))
-                    $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]($scriptTokens = $null), [ref]($scriptErrors = $null))
+                    $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]$null, [ref]$null)
                     $astExtent = $scriptAst.FindAll($astLambda, $false).Extent
                     $scriptText = $scriptText.Remove($astExtent.StartOffset, $astExtent.EndOffset - $astExtent.StartOffset)
                     $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$($MyInvocation.MyCommand.Module.Name)")
