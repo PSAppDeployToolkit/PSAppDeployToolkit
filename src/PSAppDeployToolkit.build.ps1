@@ -140,13 +140,18 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
         Write-Build White '      Running dotNet build...'
         foreach ($buildConfiguration in @('Debug', 'Release'))
         {
-            & dotnet build "$script:dotnetSourcePath\PSADT\PSADT.sln" --configuration $buildConfiguration
-            #& dotnet build "$script:dotnetSourcePath\Deploy-Application\Deploy-Application.sln" --configuration $buildConfiguration
+            & dotnet build "$script:dotnetSourcePath\Deploy-Application\Deploy-Application.sln" --configuration $buildConfiguration --verbosity minimal
+            & dotnet build "$script:dotnetSourcePath\PSADT.Invoke\PSADT.Invoke.sln" --configuration $buildConfiguration --verbosity minimal
+            & dotnet build "$script:dotnetSourcePath\PSADT\PSADT.sln" --configuration $buildConfiguration --verbosity minimal
+            & dotnet build "$script:dotnetSourcePath\PSADT.UserInterface\PSADT.UserInterface.sln" --configuration $buildConfiguration --verbosity minimal
         }
         Write-Build Green '      ...dotNet build Complete!'
 
         # We use the debug DLLs here against the uncompiled module. The release DLLs are copied into the artifacts at the end.
-        Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Debug\*" "$ModuleSourcePath\lib" -Recurse -Force
+        Copy-Item "$script:dotnetSourcePath\Deploy-Application\Deploy-Application\bin\Debug\*.exe" "$ModuleSourcePath\Frontend\v3" -Force
+        Copy-Item "$script:dotnetSourcePath\PSADT.Invoke\PSADT.Invoke\bin\Debug\*.exe" "$ModuleSourcePath\Frontend\v4" -Force
+        Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Debug\*" "$ModuleSourcePath\lib" -Exclude '*.pdb' -Recurse -Force
+        Copy-Item "$script:dotnetSourcePath\PSADT.UserInterface\PSADT.UserInterface\bin\Debug\*" -Exclude '*.pdb' "$ModuleSourcePath\lib" -Recurse -Force
     }
     catch
     {
@@ -473,7 +478,10 @@ Add-BuildTask AssetCopy -Before Build {
     Write-Build Gray '        Copying assets to Artifacts...'
     New-Item -Path $script:BuildModuleRoot -ItemType Directory -Force | Out-Null
     Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:BuildModuleRoot -Exclude "$($script:ModuleName).psd1", *.psm1 -Recurse -ErrorAction Stop
-    Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Release\*" "$script:BuildModuleRoot\lib" -Recurse -Force
+    Copy-Item "$script:dotnetSourcePath\Deploy-Application\Deploy-Application\bin\Release\*.exe" "$script:BuildModuleRoot\Frontend\v3" -Force
+    Copy-Item "$script:dotnetSourcePath\PSADT.Invoke\PSADT.Invoke\bin\Release\*.exe" "$script:BuildModuleRoot\Frontend\v4" -Force
+    Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Release\*" "$script:BuildModuleRoot\lib" -Exclude '*.pdb' -Recurse -Force
+    Copy-Item "$script:dotnetSourcePath\PSADT.UserInterface\PSADT.UserInterface\bin\Release\*" "$script:BuildModuleRoot\lib" -Exclude '*.pdb' -Recurse -Force
     Write-Build Gray '        ...Assets copy complete.'
 } #AssetCopy
 
