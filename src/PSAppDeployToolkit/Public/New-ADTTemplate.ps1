@@ -101,11 +101,11 @@ function New-ADTTemplate
         $templatePath = Join-Path -Path $Destination -ChildPath $Name
         $templateModulePath = if ($Version.Equals(3))
         {
-            Join-Path -Path $templatePath -ChildPath "AppDeployToolkit\$($MyInvocation.MyCommand.Module.Name)"
+            [System.IO.Path]::Combine($templatePath, 'AppDeployToolkit', $MyInvocation.MyCommand.Module.Name)
         }
         else
         {
-            Join-Path -Path $templatePath -ChildPath $MyInvocation.MyCommand.Module.Name
+            [System.IO.Path]::Combine($templatePath, $MyInvocation.MyCommand.Module.Name)
         }
     }
 
@@ -119,29 +119,28 @@ function New-ADTTemplate
                 {
                     $null = New-Item -Path $Destination -ItemType Directory -Force
                 }
-                if ([System.IO.Directory]::Exists($templatePath))
+                if ([System.IO.Directory]::Exists($templatePath) -and [System.IO.Directory]::GetFileSystemEntries($templatePath))
                 {
-                    if ([System.IO.Directory]::GetFileSystemEntries($templatePath))
+                    if (!$Force)
                     {
-                        if (!$Force)
-                        {
-                            $naerParams = @{
-                                Exception = [System.IO.IOException]::new("Folders [$templatePath] already exists and is not empty.")
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                                ErrorId = 'NonEmptySubfolderError'
-                                TargetObject = $templatePath
-                                RecommendedAction = "Please remove the existing folder, supply a new name, or add the -Force parameter and try again."
-                            }
-                            throw (New-ADTErrorRecord @naerParams)
+                        $naerParams = @{
+                            Exception = [System.IO.IOException]::new("Folders [$templatePath] already exists and is not empty.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                            ErrorId = 'NonEmptySubfolderError'
+                            TargetObject = $templatePath
+                            RecommendedAction = "Please remove the existing folder, supply a new name, or add the -Force parameter and try again."
                         }
-                        $null = Remove-Item -LiteralPath $templatePath -Recurse -Force
+                        throw (New-ADTErrorRecord @naerParams)
                     }
+                    $null = Remove-Item -LiteralPath $templatePath -Recurse -Force
                 }
+
                 $null = New-Item -Path "$templatePath\Files" -ItemType Directory -Force
                 $null = New-Item -Path "$templatePath\SuppportFiles" -ItemType Directory -Force
                 $null = New-Item -Path $templateModulePath -ItemType Directory -Force
                 Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
                 Copy-Item -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
+
                 if (!$PSCore)
                 {
                     $folderToRemove = "$templateModulePath\lib\net6.0"
