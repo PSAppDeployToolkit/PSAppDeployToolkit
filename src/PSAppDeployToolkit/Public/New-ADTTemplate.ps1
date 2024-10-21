@@ -181,7 +181,7 @@ function New-ADTTemplate
                 $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]($scriptTokens = $null), [ref]($scriptErrors = $null))
                 $astExtent = $scriptAst.FindAll($astLambda, $false).Extent
                 $scriptText = $scriptText.Remove($astExtent.StartOffset, $astExtent.EndOffset - $astExtent.StartOffset)
-                $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$Name")
+                $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$($MyInvocation.MyCommand.Module.Name)")
                 [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
 
                 if ($PassThru)
