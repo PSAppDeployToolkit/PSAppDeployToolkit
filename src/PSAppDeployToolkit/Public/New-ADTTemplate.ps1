@@ -163,26 +163,21 @@ function New-ADTTemplate
                 }
 
                 # Process the generated script to ensure the Import-Module is correct.
-                $scriptFile = if ($Version.Equals(3))
+                if ($Version.Equals(4))
                 {
-                    "$templateModulePath\..\AppDeployToolkitMain.ps1"
+                    $astLambda = {
+                        ($args[0] -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) -and
+                        ($args[0].Parent -is [System.Management.Automation.Language.CommandAst]) -and
+                        ($args[0].Parent.CommandElements.Count) -and
+                        ($args[0].Parent.CommandElements[0].Value.Equals('Import-Module'))
+                    }
+                    $scriptText = [System.IO.File]::ReadAllText(($scriptFile = "$templateModulePath\..\Invoke-AppDeployToolkit.ps1"))
+                    $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]($scriptTokens = $null), [ref]($scriptErrors = $null))
+                    $astExtent = $scriptAst.FindAll($astLambda, $false).Extent
+                    $scriptText = $scriptText.Remove($astExtent.StartOffset, $astExtent.EndOffset - $astExtent.StartOffset)
+                    $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$($MyInvocation.MyCommand.Module.Name)")
+                    [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
                 }
-                else
-                {
-                    "$templateModulePath\..\Invoke-AppDeployToolkit.ps1"
-                }
-                $astLambda = {
-                    ($args[0] -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) -and
-                    ($args[0].Parent -is [System.Management.Automation.Language.CommandAst]) -and
-                    ($args[0].Parent.CommandElements.Count) -and
-                    ($args[0].Parent.CommandElements[0].Value.Equals('Import-Module'))
-                }
-                $scriptText = [System.IO.File]::ReadAllText($scriptFile)
-                $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]($scriptTokens = $null), [ref]($scriptErrors = $null))
-                $astExtent = $scriptAst.FindAll($astLambda, $false).Extent
-                $scriptText = $scriptText.Remove($astExtent.StartOffset, $astExtent.EndOffset - $astExtent.StartOffset)
-                $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$($MyInvocation.MyCommand.Module.Name)")
-                [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
 
                 if ($PassThru)
                 {
