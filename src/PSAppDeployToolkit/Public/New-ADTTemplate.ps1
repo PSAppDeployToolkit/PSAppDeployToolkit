@@ -162,6 +162,29 @@ function New-ADTTemplate
                         Remove-Item -LiteralPath $folderToRemove -Recurse -Force
                     }
                 }
+
+                # Process the generated script to ensure the Import-Module is correct.
+                $scriptFile = if ($Version.Equals(3))
+                {
+                    "$templateModulePath\..\AppDeployToolkitMain.ps1"
+                }
+                else
+                {
+                    "$templateModulePath\..\Invoke-AppDeployToolkit.ps1"
+                }
+                $astLambda = {
+                    ($args[0] -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) -and
+                    ($args[0].Parent -is [System.Management.Automation.Language.CommandAst]) -and
+                    ($args[0].Parent.CommandElements.Count) -and
+                    ($args[0].Parent.CommandElements[0].Value.Equals('Import-Module'))
+                }
+                $scriptText = [System.IO.File]::ReadAllText($scriptFile)
+                $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]($scriptTokens = $null), [ref]($scriptErrors = $null))
+                $astExtent = $scriptAst.FindAll($astLambda, $false).Extent
+                $scriptText = $scriptText.Remove($astExtent.StartOffset, $astExtent.EndOffset - $astExtent.StartOffset)
+                $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$Name")
+                [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
+
                 if ($PassThru)
                 {
                     Get-Item -LiteralPath $templatePath

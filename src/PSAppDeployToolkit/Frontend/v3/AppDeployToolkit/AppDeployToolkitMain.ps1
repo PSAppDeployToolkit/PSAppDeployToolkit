@@ -4667,22 +4667,9 @@ $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 Set-StrictMode -Version 1
 
-# Import our local module.
+# Import our module backend.
 Remove-Module -Name PSAppDeployToolkit* -Force
-$adtModule = if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
-{
-    # Expected directory when running from a template
-    Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force -PassThru
-}
-elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
-{
-    # Expected directory if executing directly from inside the module
-    Import-Module -Name "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -Force -PassThru
-}
-else
-{
-    Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new([System.IO.FileNotFoundException]::new("PSAppDeployToolkit module folder cannot be found."), 'ModuleNotFoundError', [System.Management.Automation.ErrorCategory]::InvalidOperation, $null))
-}
+Import-Module -Name $PSScriptRoot\..\..\..\..\PSAppDeployToolkit -Force -PassThru
 
 # Open a new PSADT session, dynamically gathering the required parameters from the stack.
 $sessionProps = @{ SessionState = $ExecutionContext.SessionState }
