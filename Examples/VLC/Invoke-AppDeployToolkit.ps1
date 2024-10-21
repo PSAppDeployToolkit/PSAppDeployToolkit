@@ -90,7 +90,7 @@ $adtSession = @{
     AppExitCodes = @(0)
     AppRebootCodes = @(1641, 3010)
     AppScriptVersion = [System.Version]'1.0.0'
-    AppScriptDate = '13/06/2024'
+    AppScriptDate = '21/10/2024'
     AppScriptAuthor = 'PSAppDeployToolkit'
 
     # Install Titles (Only set here to override defaults set by the toolkit).
@@ -111,7 +111,7 @@ $adtSession = @{
     DisableLogging = $DisableLogging
 }
 
-function Install-ADTApplication
+function Install-ADTDeployment
 {
     ##================================================
     ## MARK: Pre-Install
@@ -167,7 +167,7 @@ function Install-ADTApplication
     }
 }
 
-function Uninstall-ADTApplication
+function Uninstall-ADTDeployment
 {
     ##================================================
     ## MARK: Pre-Uninstall
@@ -200,8 +200,9 @@ function Uninstall-ADTApplication
     }
 
     ## <Perform Uninstallation tasks here>
-    Start-ADTProcess -Path "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -Parameters '/S' -ErrorAction Continue
-    
+    #Start-ADTProcess -Path "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -Parameters '/S' -ErrorAction Continue
+    Uninstall-ADTApplication -Name 'VLC media player' -NameMatch 'Exact' -Parameters '/S'
+
     ##================================================
     ## MARK: Post-Uninstallation
     ##================================================
@@ -210,7 +211,7 @@ function Uninstall-ADTApplication
     ## <Perform Post-Uninstallation tasks here>
 }
 
-function Repair-ADTApplication
+function Repair-ADTDeployment
 {
     ##================================================
     ## MARK: Pre-Repair
@@ -270,7 +271,7 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
-    Import-Module -Name $PSScriptRoot\..\..\PSAppDeployToolkit -Force
+    Import-Module -Name $PSScriptRoot\PSAppDeployToolkit -Force
     try
     {
         $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession -PassThru
@@ -294,7 +295,7 @@ catch
 
 try
 {
-    & "$($adtSession.DeploymentType)-ADTApplication"
+    & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession
 }
 catch
