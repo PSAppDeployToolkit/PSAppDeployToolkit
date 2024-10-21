@@ -9,11 +9,11 @@ $processEvaluationService = New-Object PSADT.UserInterface.Services.ProcessEvalu
 # Example 1: Show Welcome Dialog
 function Show-WelcomeDialogExample {
     $params = @{
-        AppTitle          = "Welcome Dialog Example"
-        Subtitle          = "PSADT User Interface"
-        TopMost           = $true
-        DefersRemaining   = 3
-        AppsToClose       = @(
+        AppTitle           = "Welcome Dialog Example"
+        Subtitle           = "PSADT User Interface"
+        TopMost            = $true
+        DefersRemaining    = 3
+        AppsToClose        = @(
             [PSADT.UserInterface.Services.AppProcessInfo]@{
                 ProcessName        = "notepad"
                 ProcessDescription = "Notepad"
@@ -23,17 +23,19 @@ function Show-WelcomeDialogExample {
                 ProcessDescription = "Calculator"
             }
         )
-        AppIconImage      = "C:\Path\To\Icon.ico"
-        BannerImageLight  = "C:\Path\To\BannerLight.png"
-        BannerImageDark   = "C:\Path\To\BannerDark.png"
-        CloseAppMessage   = "Please close the following applications:"
-        DeferRemainText   = "remain"
-        DeferButtonText   = "Defer"
-        ContinueButtonText= "Continue"
+        AppIconImage       = "C:\Path\To\Icon.ico"
+        BannerImageLight   = "C:\Path\To\BannerLight.png"
+        BannerImageDark    = "C:\Path\To\BannerDark.png"
+        CloseAppMessage    = "Please close the following applications:"
+        AltCloseAppMessage = "Please select ""Install"" to continue with the installation. If you have any ""Defers"" remaining, you may also choose to delay the installation."
+        DeferRemainText    = "remain"
+        DeferButtonText    = "Defer"
+        ContinueButtonText = "Close Apps & Install"
+        AltContinueButtonText = "Install"
     }
 
     try {
-        # Show Welcome Dialog using UnifiedAdtApplication
+        # Show Welcome Dialog using UnifiedAdtApplication with alternative texts
         $result = [PSADT.UserInterface.UnifiedAdtApplication]::ShowWelcomeDialog(
             $params.AppTitle,
             $params.Subtitle,
@@ -44,9 +46,11 @@ function Show-WelcomeDialogExample {
             $params.BannerImageLight,
             $params.BannerImageDark,
             $params.CloseAppMessage,
+            $params.AltCloseAppMessage,        # **New Parameter**
             $params.DeferRemainText,
             $params.DeferButtonText,
             $params.ContinueButtonText,
+            $params.AltContinueButtonText,     # **New Parameter**
             $processEvaluationService
         )
 
@@ -83,7 +87,7 @@ function Show-ProgressDialogExample {
             $params.ProgressMessageDetail
         )
 
-        # Simulate a complex installation process
+        # Simulate a process with progress updates
         $steps = @(
             @{ Percent = 10; Message = "Downloading files..."; Detail = "Step 1 of 5" },
             @{ Percent = 30; Message = "Installing components..."; Detail = "Step 2 of 5" },
@@ -167,16 +171,16 @@ function Show-CustomDialogExample {
 # Example 4: Show Restart Dialog
 function Show-RestartDialogExample {
     $params = @{
-        AppTitle            = "Restart Dialog Example"
-        Subtitle            = "PSADT User Interface"
-        TopMost             = $true
-        AppIconImage        = "C:\Path\To\Icon.ico"
-        BannerImageLight    = "C:\Path\To\BannerLight.png"
-        BannerImageDark     = "C:\Path\To\BannerDark.png"
-        RestartCountdownMins= 5
-        RestartMessage      = "The installation will begin in 5 minutes. You can restart your computer now or wait for the countdown to complete."
-        DismissButtonText   = "Dismiss"
-        RestartButtonText   = "Restart Now"
+        AppTitle             = "Restart Dialog Example"
+        Subtitle             = "PSADT User Interface"
+        TopMost              = $true
+        AppIconImage         = "C:\Path\To\Icon.ico"
+        BannerImageLight     = "C:\Path\To\BannerLight.png"
+        BannerImageDark      = "C:\Path\To\BannerDark.png"
+        RestartCountdownMins = 5
+        RestartMessage       = "The installation will begin in 5 minutes. You can restart your computer now or wait for the countdown to complete."
+        DismissButtonText    = "Dismiss"
+        RestartButtonText    = "Restart Now"
     }
 
     try {
@@ -234,9 +238,11 @@ function Show-ComplexScenario {
             "C:\Path\To\BannerLight.png",
             "C:\Path\To\BannerDark.png",
             "Please close any open applications before proceeding.",
+            "Please select ""Install"" to continue with the installation. If you have any ""Defers"" remaining, you may also choose to delay the installation.",
             "remain",
             "Defer",
             "Start Installation",
+            "Install",
             $processEvaluationService
         )
 

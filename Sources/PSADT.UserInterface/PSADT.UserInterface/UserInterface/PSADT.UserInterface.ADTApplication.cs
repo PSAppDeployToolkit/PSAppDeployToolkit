@@ -88,9 +88,11 @@ namespace PSADT.UserInterface
         /// <param name="bannerImageLight">URI of the light banner image.</param>
         /// <param name="bannerImageDark">URI of the dark banner image.</param>
         /// <param name="closeAppMessage">Message prompting users to close apps.</param>
+        /// <param name="altCloseAppMessage">Alternative message when no apps need to be closed.</param> <!-- New Parameter -->
         /// <param name="deferRemainText">Text for the word remain in, deferrals remaining.</param>
         /// <param name="deferButtonText">Text for the defer button.</param>
         /// <param name="continueButtonText">Text for the continue button.</param>
+        /// <param name="altContinueButtonText">Alternative text for the continue button when no apps need to be closed.</param> <!-- New Parameter -->
         /// <param name="processEvaluationService">Optional process evaluation service.</param>
         /// <returns>User's response as a string.</returns>
         public string ShowWelcomeDialog(
@@ -103,9 +105,11 @@ namespace PSADT.UserInterface
             string? bannerImageLight,
             string? bannerImageDark,
             string closeAppMessage,
+            string altCloseAppMessage,
             string? deferRemainText,
             string? deferButtonText,
             string? continueButtonText,
+            string? altContinueButtonText,
             IProcessEvaluationService? processEvaluationService = null)
         {
             if (_disposed)
@@ -127,9 +131,11 @@ namespace PSADT.UserInterface
                     bannerImageLight,
                     bannerImageDark,
                     closeAppMessage,
+                    altCloseAppMessage,
                     deferRemainText,
                     deferButtonText,
                     continueButtonText,
+                    altContinueButtonText,
                     processEvaluationService);
 
                 // Show the dialog modally
@@ -363,26 +369,6 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Closes the currently open dialog if it's a ProgressDialog.
-        /// </summary>
-        public void CloseProgressDialog()
-        {
-            if (_disposed)
-            {
-                throw new InvalidOperationException("WPF Application is not initialized.");
-            }
-
-            _app!.Dispatcher.Invoke(() =>
-            {
-                if (_currentWindow is ProgressDialog progressDialog)
-                {
-                    _currentWindow?.Close();
-                    _currentWindow = null;
-                }
-            });
-        }
-
-        /// <summary>
         /// Closes the currently open dialog.
         /// </summary>
         public void CloseCurrentDialog()
@@ -397,26 +383,6 @@ namespace PSADT.UserInterface
                 _currentWindow?.Close();
                 _currentWindow = null;
             });
-        }
-
-        /// <summary>
-        /// Returns whether the current window is visible or not.
-        /// </summary>
-        public bool CurrentDialogVisible()
-        {
-            if (_disposed)
-            {
-                throw new InvalidOperationException("WPF Application is not initialized.");
-            }
-
-            bool isVisible = false;
-
-            _app!.Dispatcher.Invoke(() =>
-            {
-                isVisible = _currentWindow != null && _currentWindow.IsVisible;
-            });
-
-            return isVisible;
         }
 
         /// <summary>

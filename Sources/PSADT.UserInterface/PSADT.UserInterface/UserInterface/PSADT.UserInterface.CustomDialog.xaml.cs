@@ -23,7 +23,6 @@ namespace PSADT.UserInterface
             : base()
 
         {
-
             DataContext = this;
 
             SystemThemeWatcher.Watch(this);
