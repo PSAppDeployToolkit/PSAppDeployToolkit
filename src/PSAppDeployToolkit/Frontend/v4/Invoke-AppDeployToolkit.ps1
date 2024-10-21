@@ -111,7 +111,7 @@ $adtSession = @{
     DisableLogging = $DisableLogging
 }
 
-function Install-ADTApplication
+function Install-ADTDeployment
 {
     ##================================================
     ## MARK: Pre-Install
@@ -165,7 +165,7 @@ function Install-ADTApplication
     }
 }
 
-function Uninstall-ADTApplication
+function Uninstall-ADTDeployment
 {
     ##================================================
     ## MARK: Pre-Uninstall
@@ -208,7 +208,7 @@ function Uninstall-ADTApplication
     ## <Perform Post-Uninstallation tasks here>
 }
 
-function Repair-ADTApplication
+function Repair-ADTDeployment
 {
     ##================================================
     ## MARK: Pre-Repair
@@ -288,7 +288,7 @@ catch
 
 try
 {
-    & "$($adtSession.DeploymentType)-ADTApplication"
+    & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession
 }
 catch
