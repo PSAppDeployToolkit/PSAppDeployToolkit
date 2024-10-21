@@ -8,7 +8,7 @@ An alternate ProcessName can be specified if you only want the toolkit to be vis
 
 Download MDT here: <https://www.microsoft.com/en-us/download/details.aspx?id=54259>
 
-There are x86 and x64 builds of ServiceUI available in MDT under 'Microsoft Deployment Toolkit\Templates\Distribution\Tools'. Rename these to ServiceUI_x86.exe and ServiceUI_x64.exe and place them with this script in the root of the toolkit next to Deploy-Application.exe.
+There are x86 and x64 builds of ServiceUI available in MDT under 'Microsoft Deployment Toolkit\Templates\Distribution\Tools'. Rename these to ServiceUI_x86.exe and ServiceUI_x64.exe and place them with this script in the root of the toolkit next to Invoke-AppDeployToolkit.exe.
 
 ## Parameters
 
@@ -17,11 +17,11 @@ There are x86 and x64 builds of ServiceUI available in MDT under 'Microsoft Depl
 - DeploymentType
   - Specifies the type of deployment. Valid values are 'Install', 'Uninstall', or 'Repair'. Default value is 'Install'.
 - AllowRebootPassThru
-  - Passthru of switch to Deploy-Application.exe, will instruct the toolkit to not to mask a 3010 return code with a 0.
+  - Passthru of switch to Invoke-AppDeployToolkit.exe, will instruct the toolkit to not to mask a 3010 return code with a 0.
 - TerminalServerMode
-  - Passthru of switch to Deploy-Application.exe to enable terminal server mode.
+  - Passthru of switch to Invoke-AppDeployToolkit.exe to enable terminal server mode.
 - DisableLogging
-  - Passthru of switch to Deploy-Application.exe to disable logging.
+  - Passthru of switch to Invoke-AppDeployToolkit.exe to disable logging.
 
 ## Examples
 
