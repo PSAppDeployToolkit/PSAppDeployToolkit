@@ -167,7 +167,7 @@ function Show-ADTInstallationRestartPrompt
                     }
 
                     # Start another powershell instance silently with function parameters from this function.
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'; `$null = $($MyInvocation.MyCommand.Name) $($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart, SilentCountdownSeconds)" -WindowStyle Hidden -ErrorAction Ignore
+                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & (Import-Module -Name '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1' -PassThru) { & `$CommandTable.'Initialize-ADTModule'; `$null = & `$DialogDispatcher.$($adtConfig.UI.DialogStyle).'$($MyInvocation.MyCommand.Name)' $(($PSBoundParameters | Resolve-ADTBoundParameters -Exclude SilentRestart, SilentCountdownSeconds).Replace('"', '\"')) }" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
