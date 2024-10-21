@@ -1,8 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Windows;
-using System.Windows.Media.Animation;
+﻿using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Animation;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using PSADT.UserInterface.Services;
 using Wpf.Ui.Appearance;
 
@@ -35,6 +35,12 @@ namespace PSADT.UserInterface
         // Flag to prevent overlapping animations
         private bool _isAnimating = false;
 
+        // Store original texts
+        private readonly string _originalCloseAppMessageText;
+        private readonly string _originalContinueButtonContent;
+        private readonly string _altCloseAppMessage;
+        private readonly string _altContinueButtonContent;
+
         public WelcomeDialog(
             string? appTitle,
             string? subtitle,
@@ -45,9 +51,11 @@ namespace PSADT.UserInterface
             string? bannerImageLight,
             string? bannerImageDark,
             string closeAppMessage,
+            string altCloseAppMessage,
             string? deferRemainText,
             string? deferButtonText,
             string? continueButtonText,
+            string? altContinueButtonText,
             IProcessEvaluationService? processEvaluationService = null)
             : base()
 
@@ -79,8 +87,14 @@ namespace PSADT.UserInterface
             SubtitleTextBlock.Text = subtitle ?? "";
             Topmost = topMost ?? false;
             DeferButton.Content = deferButtonText ?? "Defer";
-            ContinueButton.Content = continueButtonText ?? "Continue";
+
+            _originalCloseAppMessageText = closeAppMessage;
+            _altCloseAppMessage = altCloseAppMessage;
+            _originalContinueButtonContent = continueButtonText ?? "Continue";
+            _altContinueButtonContent = altContinueButtonText ?? "Install";
+
             CloseAppMessageTextBlock.Text = closeAppMessage;
+            ContinueButton.Content = continueButtonText ?? "Continue";
 
             // Set Banner Image based on theme
             if (ApplicationThemeManager.IsMatchedDark())
@@ -146,6 +160,12 @@ namespace PSADT.UserInterface
                 UpdateRowDefinition();
                 AnimateWindowHeight(); // Set initial height
             });
+
+            if (AppsToCloseCollection.Count == 0)
+            {
+                CloseAppMessageTextBlock.Text = _altCloseAppMessage;
+                ContinueButton.Content = _altContinueButtonContent;
+            }
         }
 
         private void AppsToCloseListView_Loaded(object sender, RoutedEventArgs e)
@@ -156,6 +176,19 @@ namespace PSADT.UserInterface
         private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             UpdateListViewHeight();
+
+            if (AppsToCloseCollection.Count == 0)
+            {
+                // Update the message and button content with alternative texts
+                CloseAppMessageTextBlock.Text = _altCloseAppMessage;
+                ContinueButton.Content = _altContinueButtonContent;
+            }
+            else
+            {
+                // Revert to original texts
+                CloseAppMessageTextBlock.Text = _originalCloseAppMessageText;
+                ContinueButton.Content = _originalContinueButtonContent;
+            }
         }
 
         /// <summary>

@@ -39,10 +39,12 @@ namespace PSADT.Exe
             };
 
             const string closeAppMessage = "Please save your work before continuing. The following applications will be closed automatically.";
+            const string altCloseAppMessage = "Please select \"Install\" to continue with the installation. If you have any \"Defers\" remaining, you may also choose to delay the installation.";
             const int defersRemaining = 5;
             const string deferRemainText = "remain";
             const string deferButtonText = "Defer";
             const string continueButtonText = "Close Apps & Install";
+            const string altContinueButtonText = "Install";
 
             const string progressMessage = "Performing pre-flight checks ...";
             const string progressMessageDetail = "Testing your system to ensure the installation can proceed, please wait ...";
@@ -73,9 +75,11 @@ namespace PSADT.Exe
                     bannerImageLight,
                     bannerImageDark,
                     closeAppMessage,
+                    altCloseAppMessage,
                     deferRemainText,
                     deferButtonText,
                     continueButtonText,
+                    altContinueButtonText,
                     processEvaluationService); // Pass the service as optional parameter
 
                 Console.WriteLine($"Welcome Dialog Result: {welcomeResult}");

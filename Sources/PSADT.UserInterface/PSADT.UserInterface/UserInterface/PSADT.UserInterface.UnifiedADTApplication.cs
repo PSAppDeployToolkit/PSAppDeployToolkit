@@ -44,9 +44,11 @@ namespace PSADT.UserInterface
             string? bannerImageLight,
             string? bannerImageDark,
             string closeAppMessage,
+            string altCloseAppMessage,
             string? deferRemainText,
             string? deferButtonText,
             string? continueButtonText,
+            string? altContinueButtonText,
             IProcessEvaluationService? processEvaluationService = null)
         {
             return Instance.ShowWelcomeDialog(
@@ -59,9 +61,11 @@ namespace PSADT.UserInterface
                 bannerImageLight,
                 bannerImageDark,
                 closeAppMessage,
+                altCloseAppMessage,
                 deferRemainText,
                 deferButtonText,
                 continueButtonText,
+                altContinueButtonText,
                 processEvaluationService);
         }
 
@@ -170,27 +174,11 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Closes the currently open dialog if it's a ProgressDialog.
-        /// </summary>
-        public static void CloseProgressDialog()
-        {
-            Instance.CloseProgressDialog();
-        }
-
-        /// <summary>
         /// Closes the currently open dialog.
         /// </summary>
         public static void CloseCurrentDialog()
         {
             Instance.CloseCurrentDialog();
-        }
-
-        /// <summary>
-        /// Returns whether the current window is visible or not.
-        /// </summary>
-        public static bool CurrentDialogVisible()
-        {
-            return Instance.CurrentDialogVisible();
         }
 
         /// <summary>
