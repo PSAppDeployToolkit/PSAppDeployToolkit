@@ -64,7 +64,7 @@ function Import-ADTConfig
     }
 
     # Confirm the specified dialog type is valid.
-    if ((Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1') -and $config.UI.DialogStyle -ne 'Classic')
+    if ((Get-PSCallStack).Command.Contains('AppDeployToolkitMain.ps1') -and ($config.UI.DialogStyle -ne 'Classic'))
     {
         $config.UI.DialogStyle = if ($config.UI.ContainsKey('DialogStyleCompatMode'))
         {

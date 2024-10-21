@@ -53,6 +53,9 @@ function Initialize-ADTModule
 
     begin
     {
+        # Log our start time to clock the module init duration.
+        $moduleInitStart = [System.DateTime]::Now
+
         # Ensure this function isn't being called mid-flight.
         if (Test-ADTSessionActive)
         {
@@ -76,7 +79,14 @@ function Initialize-ADTModule
             try
             {
                 # Initialize the module's global state.
-                $ModuleInitStart = [System.DateTime]::Now
+                $adtData.ScriptDirectory = if ($PSBoundParameters.ContainsKey('ScriptDirectory'))
+                {
+                    $ScriptDirectory
+                }
+                else
+                {
+                    $Script:PSScriptRoot
+                }
                 $adtData.Callbacks.Starting.Clear()
                 $adtData.Callbacks.Opening.Clear()
                 $adtData.Callbacks.Closing.Clear()
@@ -91,7 +101,7 @@ function Initialize-ADTModule
 
                 # Mark the environment table as read-only before finishing.
                 $adtData.Environment = $adtData.Environment.AsReadOnly()
-                $adtData.Durations.ModuleInit = [System.DateTime]::Now - $ModuleInitStart
+                $adtData.Durations.ModuleInit = [System.DateTime]::Now - $moduleInitStart
                 $adtData.Initialized = $true
             }
             catch
