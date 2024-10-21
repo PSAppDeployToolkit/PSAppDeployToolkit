@@ -1,4 +1,5 @@
 ﻿using System.Windows.Media;
+using Wpf.Ui.Appearance;
 
 namespace PSADT.UserInterface
 {
@@ -15,6 +16,10 @@ namespace PSADT.UserInterface
             string? progressMessageDetail)
             : base()
         {
+            DataContext = this;
+
+            SystemThemeWatcher.Watch(this);
+
             InitializeComponent();
 
             AppTitleTextBlock.Text = appTitle ?? "Application";
