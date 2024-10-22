@@ -24,9 +24,9 @@ function Show-ADTWelcomePromptFluent
     )
 
     # Perform initial setup.
-    $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
-    $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
-    $adtSession = & $Script:CommandTable.'Get-ADTSession'
+    $adtConfig = Get-ADTConfig
+    $adtStrings = Get-ADTStringTable
+    $adtSession = Get-ADTSession
 
     # Convert the incoming ProcessObject objects into AppProcessInfo objects.
     $appsToClose = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue | & {
