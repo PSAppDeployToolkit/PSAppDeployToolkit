@@ -182,12 +182,19 @@ namespace PSADT.UserInterface
                 // Update the message and button content with alternative texts
                 CloseAppMessageTextBlock.Text = _altCloseAppMessage;
                 ContinueButton.Content = _altContinueButtonContent;
+
+                AppsToCloseListView.Visibility = Visibility.Collapsed;
+                SeparatorBorder.Visibility = Visibility.Collapsed;
             }
             else
             {
                 // Revert to original texts
                 CloseAppMessageTextBlock.Text = _originalCloseAppMessageText;
                 ContinueButton.Content = _originalContinueButtonContent;
+
+                AppsToCloseListView.Visibility = Visibility.Visible;
+                SeparatorBorder.Visibility = Visibility.Visible;
+
             }
         }
 
@@ -253,7 +260,7 @@ namespace PSADT.UserInterface
                 {
                     AppsToCloseCollection.Add(app);
                 }
-                AppsToCloseListView.Visibility = AppsToCloseCollection.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
                 return;
             }
 
@@ -268,8 +275,6 @@ namespace PSADT.UserInterface
             {
                 AppsToCloseCollection.Add(app);
             }
-
-            AppsToCloseListView.Visibility = AppsToCloseCollection.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
             _previousProcessInfo = new List<AppProcessInfo>(updatedAppsToClose);
         }
@@ -333,9 +338,6 @@ namespace PSADT.UserInterface
                             {
                                 AppsToCloseCollection.Add(app);
                             }
-
-                            // Update ListView visibility
-                            AppsToCloseListView.Visibility = AppsToCloseCollection.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                         });
 
                         // Update the previous process info for the next comparison
@@ -382,7 +384,6 @@ namespace PSADT.UserInterface
                 if (!AppsToCloseCollection.Contains(e))
                 {
                     AppsToCloseCollection.Add(e);
-                    AppsToCloseListView.Visibility = Visibility.Visible;
                 }
             });
         }
@@ -397,10 +398,6 @@ namespace PSADT.UserInterface
                 if (AppsToCloseCollection.Contains(e))
                 {
                     AppsToCloseCollection.Remove(e);
-                    if (AppsToCloseCollection.Count == 0)
-                    {
-                        AppsToCloseListView.Visibility = Visibility.Collapsed;
-                    }
                 }
             });
         }
