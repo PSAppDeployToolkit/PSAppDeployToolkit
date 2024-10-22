@@ -82,7 +82,7 @@
             Stretch="UniformToFill">
             <Image.OpacityMask>
                 <LinearGradientBrush StartPoint="0.5,0" EndPoint=".5,1">
-                    
+
                     <LinearGradientBrush.GradientStops>
                         <GradientStop Color="#FF000000" Offset=".0" />
                         <GradientStop Color="#EA000000" Offset=".25" />
@@ -177,6 +177,7 @@
                 Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
 
             <Border
+                x:Name="SeparatorBorder"
                 CornerRadius="4"
                 Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
