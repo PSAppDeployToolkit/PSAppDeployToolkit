@@ -46,7 +46,7 @@ function Show-ADTWelcomePromptFluent
         $adtSession.GetPropertyValue('InstallTitle'),
         [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.GetPropertyValue('DeploymentType')),
         !$NotTopMost,
-        $DeferTimes,
+        $DeferTimes + 1,
         $appsToClose,
         $adtConfig.Assets.Fluent.Logo,
         $adtConfig.Assets.Fluent.Banner.Light,
