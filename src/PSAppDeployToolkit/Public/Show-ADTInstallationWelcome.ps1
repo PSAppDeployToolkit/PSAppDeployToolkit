@@ -404,13 +404,13 @@ function Show-ADTInstallationWelcome
                                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
                                 $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }
                                 if ($deferDeadlineUniversal) { $deferParams.Add('DeferDeadline', $deferDeadlineUniversal) }
-                                $promptResult = & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @promptParams @deferParams
+                                $promptResult = & $Script:CommandTable.('Show-ADTWelcomePrompt' + $adtConfig.UI.DialogStyle) @promptParams @deferParams
                             }
                         }
                         elseif ($adtSession.RunningProcessDescriptions -or !!$forceCountdown)
                         {
                             # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
-                            $promptResult = & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @promptParams
+                            $promptResult = & $Script:CommandTable.('Show-ADTWelcomePrompt' + $adtConfig.UI.DialogStyle) @promptParams
                         }
                         else
                         {

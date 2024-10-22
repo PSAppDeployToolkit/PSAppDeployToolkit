@@ -129,7 +129,7 @@ function Show-ADTBalloonTip
                 }
 
                 # Call the underlying function to show the balloon tip.
-                & $Script:DialogDispatcher.($adtConfig.UI.DialogStyle).($MyInvocation.MyCommand.Name) @PSBoundParameters
+                & $Script:CommandTable.($MyInvocation.MyCommand.Name + $adtConfig.UI.DialogStyle) @PSBoundParameters
             }
             catch
             {
