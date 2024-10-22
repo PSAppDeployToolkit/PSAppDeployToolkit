@@ -482,6 +482,9 @@ class ADTSession
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module version is [$($ADTEnv.appDeployMainScriptVersion)].")
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module imported in [$($ADTData.Durations.ModuleImport.TotalSeconds)] seconds.")
         $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module initialized in [$($ADTData.Durations.ModuleInit.TotalSeconds)] seconds.")
+        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] module path is [$($Script:MyInvocation.MyCommand.ScriptBlock.Module.ModuleBase)].")
+        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] config path is [$($ADTData.Directories.Config)].")
+        $this.WriteLogEntry("[$($ADTEnv.appDeployToolkitName)] string path is [$($ADTData.Directories.Strings)].")
 
         # Announce session instantiation mode.
         if ($this.CompatibilityMode)

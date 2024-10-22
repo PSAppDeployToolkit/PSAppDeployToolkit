@@ -18,6 +18,11 @@
             Closing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
             Finishing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
         }
+        Directories = [pscustomobject]@{
+            Script = $null
+            Config = $null
+            Strings = $null
+        }
         Durations = [pscustomobject]@{
             ModuleImport = $null
             ModuleInit = $null
