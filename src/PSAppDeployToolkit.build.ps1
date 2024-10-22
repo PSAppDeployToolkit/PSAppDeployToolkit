@@ -590,19 +590,22 @@ Add-BuildTask Build {
         Write-Build Gray '        ...Docs output completed.'
     }
 
-    if ($env:GITHUB_ACTIONS -eq 'true') {
+    if ($env:GITHUB_ACTIONS -eq 'true' -and $env:GITHUB_REF -eq 'refs/heads/main') {
         if (Get-Command -Name 'azuresigntool' -ErrorAction Ignore) {
             Write-Build Gray '        Signing module...'
             Get-ChildItem -Path $script:BuildModuleRoot -Include '*.psm1', 'AppDeployToolkitMain.ps1', 'PSADT*.dll', 'Deploy-Application.exe', 'Invoke-AppDeployToolkit.exe' -Recurse | ForEach-Object {
                 & azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 "$_"
+                if ($LASTEXITCODE -ne 0) {
+                    throw "Failed to sign file `"$_`". Exit code: $LASTEXITCODE"
+                }
             }
         }
         else {
-            Write-Build Yellow '        AzureSignTool not found, skipping code signing...'
+            throw 'AzureSignTool not found.'
         }
     }
     else {
-        Write-Build Yellow '        Not running in GitHub Actions, skipping code signing...'
+        Write-Build Yellow '        Not running main branch in GitHub Actions, skipping code signing...'
     }
 
     Write-Build Gray '        Creating templates...'

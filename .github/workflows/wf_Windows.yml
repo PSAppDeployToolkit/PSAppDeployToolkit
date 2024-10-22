@@ -34,6 +34,7 @@ jobs:
       shell: powershell
       run: $PSVersionTable
     - name: Azure Login
+      if: github.ref == 'refs/heads/main'
       uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
