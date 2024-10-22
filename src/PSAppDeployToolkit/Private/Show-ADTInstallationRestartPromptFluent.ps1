@@ -28,8 +28,8 @@ function Show-ADTInstallationRestartPromptFluent
     )
 
     # Perform initial setup.
-    $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
-    $adtStrings = & $Script:CommandTable.'Get-ADTStringTable'
+    $adtConfig = Get-ADTConfig
+    $adtStrings = Get-ADTStringTable
 
     # Send this straight out to the C# backend.
     Write-ADTLogEntry -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."

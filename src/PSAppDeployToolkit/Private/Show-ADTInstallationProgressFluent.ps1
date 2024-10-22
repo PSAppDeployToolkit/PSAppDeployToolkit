@@ -35,7 +35,7 @@ function Show-ADTInstallationProgressFluent
     )
 
     # Perform initial setup.
-    $adtConfig = & $Script:CommandTable.'Get-ADTConfig'
+    $adtConfig = Get-ADTConfig
 
     # Check if the progress thread is running before invoking methods on it.
     if (!$Script:Dialogs.Fluent.ProgressWindow.Running)
