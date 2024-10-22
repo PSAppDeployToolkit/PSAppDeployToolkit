@@ -78,8 +78,8 @@ function Initialize-ADTModule
         {
             try
             {
-                # Initialize the module's global state.
-                $adtData.ScriptDirectory = if ($PSBoundParameters.ContainsKey('ScriptDirectory'))
+                # Specify the base directory used when searching for config and string tables.
+                $adtData.Directories.Script = if ($PSBoundParameters.ContainsKey('ScriptDirectory'))
                 {
                     $ScriptDirectory
                 }
@@ -87,15 +87,32 @@ function Initialize-ADTModule
                 {
                     $Script:PSScriptRoot
                 }
+
+                # Initialize remaining directory paths.
+                'Config', 'Strings' | & {
+                    process
+                    {
+                        $adtData.Directories.$_ = if ([System.IO.File]::Exists([System.IO.Path]::Combine($adtData.Directories.Script, $_, "$($_.ToLower()).psd1")))
+                        {
+                            [System.IO.Path]::Combine($adtData.Directories.Script, $_)
+                        }
+                        else
+                        {
+                            [System.IO.Path]::Combine($Script:PSScriptRoot, $_)
+                        }
+                    }
+                }
+
+                # Initialize the module's global state.
                 $adtData.Callbacks.Starting.Clear()
                 $adtData.Callbacks.Opening.Clear()
                 $adtData.Callbacks.Closing.Clear()
                 $adtData.Callbacks.Finishing.Clear()
                 $adtData.Sessions.Clear()
                 $adtData.Environment = New-ADTEnvironmentTable
-                $adtData.Config = Import-ADTConfig -BaseDirectory $adtData.ScriptDirectory
+                $adtData.Config = Import-ADTConfig -BaseDirectory $adtData.Directories.Config
                 $adtData.Language = Get-ADTStringLanguage
-                $adtData.Strings = Import-ADTStringTable -BaseDirectory $adtData.ScriptDirectory -UICulture $adtData.Language
+                $adtData.Strings = Import-LocalizedData -BaseDirectory $adtData.Directories.Strings -FileName strings.psd1 -UICulture $adtData.Language
                 $adtData.LastExitCode = 0
                 $adtData.TerminalServerMode = $false
 

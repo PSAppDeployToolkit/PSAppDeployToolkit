@@ -24,7 +24,7 @@ function Import-ADTConfig
             {
                 if (![System.IO.Path]::IsPathRooted($asset.Value))
                 {
-                    $_.($asset.Key) = (Get-Item -LiteralPath "$BaseDirectory\Assets\$($_.($asset.Key))").FullName
+                    $_.($asset.Key) = (Get-Item -LiteralPath "$BaseDirectory\..\Assets\$($_.($asset.Key))").FullName
                 }
             }
             else
@@ -34,18 +34,12 @@ function Import-ADTConfig
         }
     }
 
-    # Process the incoming $BaseDirectory value.
-    if (!$BaseDirectory.Equals($Script:PSScriptRoot) -and ![System.IO.File]::Exists([System.IO.Path]::Combine($BaseDirectory, 'Config', 'config.psd1')))
-    {
-        $BaseDirectory = $Script:PSScriptRoot
-    }
-
     # Get the current environment and create variables within this scope from the database, it's needed during the config import.
     $adtEnv = Get-ADTEnvironment
     $adtEnv.GetEnumerator() | . { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } }
 
     # Read config file and cast the version into an object.
-    $config = Import-LocalizedData -BaseDirectory ([System.IO.Path]::Combine($BaseDirectory, 'Config')) -FileName config.psd1
+    $config = Import-LocalizedData @PSBoundParameters -FileName config.psd1
     $config.File.Version = [version]$config.File.Version
 
     # Confirm the config version meets our minimum requirements.
