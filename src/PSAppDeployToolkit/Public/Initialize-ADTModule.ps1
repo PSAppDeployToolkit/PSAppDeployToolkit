@@ -93,9 +93,9 @@ function Initialize-ADTModule
                 $adtData.Callbacks.Finishing.Clear()
                 $adtData.Sessions.Clear()
                 $adtData.Environment = New-ADTEnvironmentTable
-                $adtData.Config = Import-ADTConfig @PSBoundParameters
+                $adtData.Config = Import-ADTConfig -BaseDirectory $adtData.ScriptDirectory
                 $adtData.Language = Get-ADTStringLanguage
-                $adtData.Strings = Import-ADTStringTable -UICulture $adtData.Language @PSBoundParameters
+                $adtData.Strings = Import-ADTStringTable -BaseDirectory $adtData.ScriptDirectory -UICulture $adtData.Language
                 $adtData.LastExitCode = 0
                 $adtData.TerminalServerMode = $false
 

@@ -17,7 +17,6 @@
 
             # Specify filename of the logo.
             Logo = 'AppIcon.png'
-
         }
         Fluent = @{
             Banner = @{
@@ -33,7 +32,6 @@
 
             # Specify filename of the logo.
             Logo = 'AppIcon.png'
-
         }
     }
 
