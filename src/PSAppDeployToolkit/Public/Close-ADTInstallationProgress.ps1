@@ -70,7 +70,7 @@ function Close-ADTInstallationProgress
                 }
 
                 # Call the underlying function to close the progress window.
-                & $Script:CommandTable.($MyInvocation.MyCommand.Name + $adtConfig.UI.DialogStyle)
+                & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)"
                 Remove-ADTSessionFinishingCallback -Callback $MyInvocation.MyCommand
 
                 # We only send balloon tips when a session is active.

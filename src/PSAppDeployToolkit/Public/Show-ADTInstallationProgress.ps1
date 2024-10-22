@@ -181,7 +181,7 @@ function Show-ADTInstallationProgress
         {
             try
             {
-                & $Script:CommandTable.($MyInvocation.MyCommand.Name + $adtConfig.UI.DialogStyle) @PSBoundParameters
+                & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
                 Add-ADTSessionFinishingCallback -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
             }
             catch
