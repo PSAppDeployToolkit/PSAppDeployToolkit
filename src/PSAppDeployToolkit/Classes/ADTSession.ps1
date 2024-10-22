@@ -1024,19 +1024,19 @@ class ADTSession
             return $null
         }
         $this.WriteLogEntry('Getting deferral history...')
-        return (Get-ADTRegistryKey -Key $this.RegKeyDeferHistory)
+        return (Get-ADTRegistryKey -Key $this.RegKeyDeferHistory -InformationAction SilentlyContinue)
     }
 
     [System.Void] SetDeferHistory([System.Nullable[System.Int32]]$DeferTimesRemaining, [System.String]$DeferDeadline)
     {
         if ($null -ne $DeferTimesRemaining)
         {
-            Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
+            $this.WriteLogEntry("Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining].")
             Set-ADTRegistryKey -Key $this.RegKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining
         }
         if (![System.String]::IsNullOrWhiteSpace($DeferDeadline))
         {
-            Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
+            $this.WriteLogEntry("Setting deferral history: [DeferDeadline = $DeferDeadline].")
             Set-ADTRegistryKey -Key $this.RegKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline
         }
     }
