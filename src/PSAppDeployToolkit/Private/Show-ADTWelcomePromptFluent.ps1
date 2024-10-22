@@ -15,7 +15,9 @@ function Show-ADTWelcomePromptFluent
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$DeferTimes,
 
+        [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
         [System.Management.Automation.SwitchParameter]$NotTopMost,
+
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Collections.Generic.List[System.Object]]$UnboundArguments
@@ -39,6 +41,12 @@ function Show-ADTWelcomePromptFluent
                 $_.StartTime
             )
         }
+    }
+
+    # Minimize all other windows.
+    if (!$NoMinimizeWindows)
+    {
+        $null = (Get-ADTEnvironment).ShellApp.MinimizeAll()
     }
 
     # Send this out to the C# code.
