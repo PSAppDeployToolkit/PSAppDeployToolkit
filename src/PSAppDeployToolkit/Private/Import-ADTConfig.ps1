@@ -67,10 +67,10 @@ function Import-ADTConfig
             'Classic'
         }
     }
-    if (!$Script:DialogDispatcher.Contains($config.UI.DialogStyle))
+    if (($dialogStyles = 'Classic', 'Fluent') -notcontains $config.UI.DialogStyle)
     {
         $naerParams = @{
-            Exception = [System.NotSupportedException]::new("The specified dialog style [$($config.UI.DialogStyle)] is not supported. Valid styles are ['$($Script:DialogDispatcher.Keys -join "', '")'].")
+            Exception = [System.NotSupportedException]::new("The specified dialog style [$($config.UI.DialogStyle)] is not supported. Valid styles are ['$($dialogStyles -join "', '")'].")
             Category = [System.Management.Automation.ErrorCategory]::InvalidData
             ErrorId = 'DialogStyleNotSupported'
             TargetObject = $config
