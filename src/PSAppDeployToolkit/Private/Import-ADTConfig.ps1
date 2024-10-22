@@ -22,7 +22,10 @@ function Import-ADTConfig
         {
             if ($asset.Value -isnot [System.Collections.Hashtable])
             {
-                $_.($asset.Key) = (Get-Item -LiteralPath "$Script:PSScriptRoot\Assets\$($_.($asset.Key))").FullName
+                if (![System.IO.Path]::IsPathRooted($asset.Value))
+                {
+                    $_.($asset.Key) = (Get-Item -LiteralPath "$BaseDirectory\Assets\$($_.($asset.Key))").FullName
+                }
             }
             else
             {
