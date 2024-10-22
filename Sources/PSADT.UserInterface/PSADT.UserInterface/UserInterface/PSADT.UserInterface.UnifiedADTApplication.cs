@@ -174,11 +174,27 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Closes the currently open dialog if it's a ProgressDialog.
+        /// </summary>
+        public static void CloseProgressDialog()
+        {
+            Instance.CloseProgressDialog();
+        }
+
+        /// <summary>
         /// Closes the currently open dialog.
         /// </summary>
         public static void CloseCurrentDialog()
         {
             Instance.CloseCurrentDialog();
+        }
+
+        /// <summary>
+        /// Returns whether the current window is visible or not.
+        /// </summary>
+        public static bool CurrentDialogVisible()
+        {
+            return Instance.CurrentDialogVisible();
         }
 
         /// <summary>
