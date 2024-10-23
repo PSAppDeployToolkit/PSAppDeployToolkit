@@ -19,7 +19,7 @@
     MaxWidth="512"
     SizeToContent="Height"
     BorderBrush="{DynamicResource AccentTextFillColorTertiaryBrush}"
-    BorderThickness="1"
+    BorderThickness="2"
     mc:Ignorable="d"
     WindowStyle="None"
     SnapsToDevicePixels="True"
@@ -155,7 +155,7 @@
                 Text="PSAppDeployToolkit - App Installation"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
         </StackPanel>
-        
+
         <!-- Restart Countdown Panel -->
         <StackPanel
             x:Name="RestartCountdownPanel"

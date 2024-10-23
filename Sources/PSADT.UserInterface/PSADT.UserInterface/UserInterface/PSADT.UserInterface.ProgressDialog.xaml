@@ -13,13 +13,13 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     ExtendsContentIntoTitleBar="True"
     ResizeMode="NoResize"
-    MinHeight="100"
+    MinHeight="150"
     MaxHeight="768"
     MinWidth="512"
     MaxWidth="512"
     SizeToContent="Height"
     BorderBrush="{DynamicResource AccentTextFillColorTertiaryBrush}"
-    BorderThickness="1"
+    BorderThickness="2"
     mc:Ignorable="d"
     WindowStyle="None"
     SnapsToDevicePixels="True"
@@ -156,7 +156,7 @@
                 Text="PSAppDeployToolkit - App Installation"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
         </StackPanel>
-        
+
         <!-- Progress Panel -->
         <Grid
             x:Name="ProgressPanel"
