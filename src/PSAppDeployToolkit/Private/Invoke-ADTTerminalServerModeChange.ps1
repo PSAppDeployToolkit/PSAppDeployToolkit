@@ -36,13 +36,13 @@ function Invoke-ADTTerminalServerModeChange
     # Change the terminal server mode. An exit code of 1 is considered successful.
     Write-ADTLogEntry -Message "$(($msg = "Changing terminal server into user $($Mode.ToLower()) mode"))."
     $terminalServerResult = & "$([System.Environment]::SystemDirectory)\change.exe" User /$Mode 2>&1
-    if ($LASTEXITCODE.Equals(1))
+    if ($Global:LASTEXITCODE.Equals(1))
     {
         return
     }
 
     # If we're here, we had a bad exit code.
-    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $terminalServerResult") -Severity 3
+    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $terminalServerResult") -Severity 3
     $naerParams = @{
         Exception = [System.ApplicationException]::new($msg)
         Category = [System.Management.Automation.ErrorCategory]::InvalidResult

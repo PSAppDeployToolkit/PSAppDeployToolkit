@@ -110,13 +110,13 @@ function Dismount-ADTWimFile
                             # Close handle using handle.exe. An exit code of 0 is considered successful.
                             Write-ADTLogEntry -Message "$(($msg = "Closing handle [$($handle.Handle)] for process [$($handle.Process) ($($handle.PID))]"))."
                             $handleResult = & $exeHandle -nobanner -c $handle.Handle -p $handle.PID -y
-                            if ($LASTEXITCODE.Equals(0))
+                            if ($Global:LASTEXITCODE.Equals(0))
                             {
                                 continue
                             }
 
                             # If we're here, we had a bad exit code.
-                            Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $handleResult") -Severity 3
+                            Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $handleResult") -Severity 3
                             $naerParams = @{
                                 Exception = [System.ApplicationException]::new($msg)
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult

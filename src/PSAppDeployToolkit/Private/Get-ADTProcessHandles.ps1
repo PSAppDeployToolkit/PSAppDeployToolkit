@@ -14,7 +14,7 @@ function Get-ADTProcessHandles
     # Get CSV data from the binary and confirm success.
     $exeHandle = "$Script:PSScriptRoot\bin\$([System.Environment]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE'))\handle\handle.exe"
     $exeHandleResults = & $exeHandle -nobanner -v 2>&1
-    if ($Global:LastExitCode -ne 0)
+    if ($Global:LASTEXITCODE -ne 0)
     {
         $naerParams = @{
             Exception = [System.ApplicationException]::new("The call to [$exeHandle] failed with exit code [$Global:LASTEXITCODE].")
