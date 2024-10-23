@@ -13,7 +13,7 @@ function Show-ADTWelcomePromptFluent
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$DeferTimes,
+        [System.Int32]$DeferTimes,
 
         [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
         [System.Management.Automation.SwitchParameter]$NotTopMost,

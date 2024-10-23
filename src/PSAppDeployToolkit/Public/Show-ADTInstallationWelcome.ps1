@@ -317,7 +317,6 @@ function Show-ADTInstallationWelcome
                         if ($DeferTimes -lt 0)
                         {
                             Write-ADTLogEntry -Message 'Deferral has expired.'
-                            $DeferTimes = 0
                             $AllowDefer = $false
                         }
                     }
