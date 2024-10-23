@@ -389,16 +389,25 @@ For more information, see about_CommonParameters (http://go.microsoft.com/fwlink
 
 ## INPUTS
 
-### None. You cannot pipe objects to this function.
+### None
+### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### None. This function does not return objects.
+### None
+### This function does not return any output.
 ## NOTES
-The process descriptions are retrieved from WMI, with a fall back on the process name if no description is available.
+An active ADT session is NOT required to use this function.
+
+The process descriptions are retrieved via Get-Process, with a fall back on the process name if no description is available.
 Alternatively, you can specify the description yourself with a '=' symbol - see examples.
 
 The dialog box will timeout after the timeout specified in the XML configuration file (default 1 hour and 55 minutes) to prevent SCCM installations from timing out and returning a failure code to SCCM.
 When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
