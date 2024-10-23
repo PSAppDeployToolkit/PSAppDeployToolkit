@@ -306,7 +306,7 @@ function Start-ADTProcess
                 try
                 {
                     # Disable Zone checking to prevent warnings when running executables.
-                    $env:SEE_MASK_NOZONECHECKS = 1
+                    Set-Item -LiteralPath Microsoft.PowerShell.Core\Environment::SEE_MASK_NOZONECHECKS -Value 1
 
                     # Define process.
                     $process = [System.Diagnostics.Process]@{
@@ -481,7 +481,7 @@ function Start-ADTProcess
                     }
 
                     # Re-enable Zone checking.
-                    Remove-Item -LiteralPath 'env:SEE_MASK_NOZONECHECKS' -ErrorAction Ignore
+                    Remove-Item -LiteralPath Microsoft.PowerShell.Core\Environment::SEE_MASK_NOZONECHECKS
                 }
 
                 if (!$NoWait)
