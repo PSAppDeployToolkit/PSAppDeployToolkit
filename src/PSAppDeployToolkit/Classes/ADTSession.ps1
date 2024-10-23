@@ -26,12 +26,6 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][System.String]$LogPath
     hidden [ValidateNotNullOrEmpty()][System.Int32]$ExitCode
 
-    # Internal variables used within classic welcome dialog.
-    hidden [ValidateNotNullOrEmpty()][System.Drawing.Point]$FormWelcomeStartPosition
-    hidden [ValidateNotNullOrEmpty()][System.Double]$CloseAppsCountdownGlobal
-    hidden [AllowEmptyCollection()][System.String[]]$RunningProcessDescriptions
-    hidden [AllowNull()][System.Windows.Forms.Timer]$WelcomeTimer
-
     # Deploy-Application.ps1 parameters.
     [ValidateSet('Install', 'Uninstall', 'Repair')][System.String]$DeploymentType = 'Install'
     [ValidateSet('Interactive', 'NonInteractive', 'Silent')][System.String]$DeployMode = 'Interactive'

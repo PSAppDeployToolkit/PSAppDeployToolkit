@@ -7,15 +7,30 @@
 function Show-ADTWelcomePromptFluent
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
+    [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DeploymentType,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$DeferTimes,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
@@ -26,7 +41,6 @@ function Show-ADTWelcomePromptFluent
     # Perform initial setup.
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
-    $adtSession = Get-ADTSession
 
     # Convert the incoming ProcessObject objects into AppProcessInfo objects.
     $appsToClose = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue | & {
@@ -51,8 +65,8 @@ function Show-ADTWelcomePromptFluent
 
     # Send this out to the C# code.
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowWelcomeDialog(
-        $adtSession.GetPropertyValue('InstallTitle'),
-        [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.GetPropertyValue('DeploymentType')),
+        $Title,
+        [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $DeploymentType),
         !$NotTopMost,
         $DeferTimes + 1,
         $appsToClose,
