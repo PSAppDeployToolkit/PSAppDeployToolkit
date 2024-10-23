@@ -81,7 +81,7 @@ function Get-ADTSchedulerTask
             {
                 # Get CSV data from the binary and confirm success.
                 $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV 2>&1
-                if ($Global:LastExitCode -ne 0)
+                if ($Global:LASTEXITCODE -ne 0)
                 {
                     $naerParams = @{
                         Exception = [System.ApplicationException]::new("The call to [$([System.Environment]::SystemDirectory)\schtasks.exe] failed with exit code [$Global:LASTEXITCODE].")

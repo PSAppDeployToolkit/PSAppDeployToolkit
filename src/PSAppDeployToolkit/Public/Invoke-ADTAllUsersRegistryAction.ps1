@@ -116,7 +116,7 @@ function Invoke-ADTAllUsersRegistryAction
 
                         Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                         $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
-                        if ($Global:LastExitCode -ne 0)
+                        if ($Global:LASTEXITCODE -ne 0)
                         {
                             $naerParams = @{
                                 Exception = [System.ApplicationException]::new("Failed to load the registry hive for User [$($UserProfile.NTAccount)] with SID [$($UserProfile.SID)]. Failure message [$HiveLoadResult]. Continue...")
@@ -157,19 +157,19 @@ function Invoke-ADTAllUsersRegistryAction
                         {
                             Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                             $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
-                            if ($Global:LastExitCode -ne 0)
+                            if ($Global:LASTEXITCODE -ne 0)
                             {
-                                Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LastExitCode)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
+                                Write-ADTLogEntry -Message "REG.exe failed to unload the registry hive and exited with exit code [$($Global:LASTEXITCODE)]. Performing manual garbage collection to ensure successful unloading of registry hive." -Severity 2
                                 [System.GC]::Collect()
                                 [System.GC]::WaitForPendingFinalizers()
                                 [System.Threading.Thread]::Sleep(5000)
 
                                 Write-ADTLogEntry -Message "Unload the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                                 $HiveLoadResult = & "$([System.Environment]::SystemDirectory)\reg.exe" UNLOAD "HKEY_USERS\$($UserProfile.SID)" 2>&1
-                                if ($Global:LastExitCode -ne 0)
+                                if ($Global:LASTEXITCODE -ne 0)
                                 {
                                     $naerParams = @{
-                                        Exception = [System.ApplicationException]::new("REG.exe failed with exit code [$($Global:LastExitCode)] and result [$HiveLoadResult].")
+                                        Exception = [System.ApplicationException]::new("REG.exe failed with exit code [$($Global:LASTEXITCODE)] and result [$HiveLoadResult].")
                                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                         ErrorId = 'UserRegistryHiveUnloadFailure'
                                         TargetObject = "HKEY_USERS\$($UserProfile.SID)"

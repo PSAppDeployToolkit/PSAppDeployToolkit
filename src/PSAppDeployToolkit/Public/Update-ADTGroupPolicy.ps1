@@ -63,13 +63,13 @@ function Update-ADTGroupPolicy
                     # Invoke gpupdate.exe and cache the results. An exit code of 0 is considered successful.
                     Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
                     $gpUpdateResult = & "$([System.Environment]::SystemDirectory)\cmd.exe" /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
-                    if (!$LASTEXITCODE)
+                    if (!$Global:LASTEXITCODE)
                     {
                         return
                     }
 
                     # If we're here, we had a bad exit code.
-                    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE].") -Severity 3
+                    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE].") -Severity 3
                     $naerParams = @{
                         Exception = [System.ApplicationException]::new($msg)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult

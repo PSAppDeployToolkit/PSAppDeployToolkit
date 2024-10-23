@@ -88,14 +88,14 @@ function Set-ADTServiceStartMode
             {
                 # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
                 $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $StartMode 2>&1
-                if (!$LASTEXITCODE)
+                if (!$Global:LASTEXITCODE)
                 {
                     Write-ADTLogEntry -Message "Successfully set service [($Service.Name)] startup mode to [$StartMode]."
                     return
                 }
 
                 # If we're here, we had a bad exit code.
-                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $scResult") -Severity 3
+                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $scResult") -Severity 3
                 $naerParams = @{
                     Exception = [System.ApplicationException]::new($msg)
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult

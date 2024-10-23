@@ -72,13 +72,13 @@ function Invoke-ADTSubstOperation
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
-    if ($LASTEXITCODE.Equals(0))
+    if ($Global:LASTEXITCODE.Equals(0))
     {
         return
     }
 
     # If we're here, we had a bad exit code.
-    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$LASTEXITCODE]: $substResult") -Severity 3
+    Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $substResult") -Severity 3
     $naerParams = @{
         Exception = [System.ApplicationException]::new($msg)
         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
