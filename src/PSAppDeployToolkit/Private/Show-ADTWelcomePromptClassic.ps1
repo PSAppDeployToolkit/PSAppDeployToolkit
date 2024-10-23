@@ -7,8 +7,22 @@
 function Show-ADTWelcomePromptClassic
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProcessObjects', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Types.WelcomeState]$WelcomeState,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DeploymentType,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
 
@@ -22,27 +36,40 @@ function Show-ADTWelcomePromptClassic
             })]
         [System.Double]$CloseAppsCountdown,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$DeferTimes,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
 
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$ForceCountdown,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceCloseAppsCountdown,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$AllowDefer,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 
     # Perform initial setup.
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
-    $adtSession = Get-ADTSession
 
     # Initialize variables.
     $countdownTime = $startTime = [System.DateTime]::Now
@@ -52,9 +79,9 @@ function Show-ADTWelcomePromptClassic
     $persistWindow = $false
 
     # Initial form layout: Close Applications
-    if ($adtSession.RunningProcessDescriptions)
+    if ($WelcomeState.RunningProcessDescriptions)
     {
-        Write-ADTLogEntry -Message "Prompting the user to close application(s) [$($adtSession.RunningProcessDescriptions -join ',')]..."
+        Write-ADTLogEntry -Message "Prompting the user to close application(s) [$($WelcomeState.RunningProcessDescriptions -join ',')]..."
         $showCloseApps = $true
     }
 
@@ -105,14 +132,14 @@ function Show-ADTWelcomePromptClassic
     $buttonSize = [System.Drawing.Size]::new(130, 24)
 
     # Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked.
-    if (!$adtSession.WelcomeTimer)
+    if (!$WelcomeState.WelcomeTimer)
     {
-        $adtSession.WelcomeTimer = [System.Windows.Forms.Timer]::new()
+        $WelcomeState.WelcomeTimer = [System.Windows.Forms.Timer]::new()
     }
 
     # Define all form events.
     $formWelcome_FormClosed = {
-        $adtSession.WelcomeTimer.remove_Tick($welcomeTimer_Tick)
+        $WelcomeState.WelcomeTimer.remove_Tick($welcomeTimer_Tick)
         $welcomeTimerPersist.remove_Tick($welcomeTimerPersist_Tick)
         $timerRunningProcesses.remove_Tick($timerRunningProcesses_Tick)
         $formWelcome.remove_Load($formWelcome_Load)
@@ -134,7 +161,7 @@ function Show-ADTWelcomePromptClassic
         # Initialize the countdown timer.
         $currentTime = [System.DateTime]::Now
         $countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
-        $adtSession.WelcomeTimer.Start()
+        $WelcomeState.WelcomeTimer.Start()
 
         # Set up the form.
         $remainingTime = $countdownTime.Subtract($currentTime)
@@ -145,7 +172,7 @@ function Show-ADTWelcomePromptClassic
         $formWelcome.BringToFront()
 
         # Get the start position of the form so we can return the form to this position if PersistPrompt is enabled.
-        $adtSession.FormWelcomeStartPosition = $formWelcome.Location
+        $WelcomeState.FormStartLocation = $formWelcome.Location
     }
     $welcomeTimer_Tick = if ($showCountdown)
     {
@@ -154,7 +181,7 @@ function Show-ADTWelcomePromptClassic
             [DateTime]$currentTime = [System.DateTime]::Now
             [DateTime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
             [Timespan]$remainingTime = $countdownTime.Subtract($currentTime)
-            $adtSession.CloseAppsCountdownGlobal = $remainingTime.TotalSeconds
+            $WelcomeState.CloseAppsCountdown = $remainingTime.TotalSeconds
 
             # If the countdown is complete, close the application(s) or continue.
             if ($countdownTime -le $currentTime)
@@ -186,7 +213,7 @@ function Show-ADTWelcomePromptClassic
     }
     else
     {
-        $adtSession.WelcomeTimer.Interval = $adtConfig.UI.DefaultTimeout * 1000
+        $WelcomeState.WelcomeTimer.Interval = $adtConfig.UI.DefaultTimeout * 1000
         {
             $buttonAbort.PerformClick()
         }
@@ -194,24 +221,24 @@ function Show-ADTWelcomePromptClassic
     $welcomeTimerPersist_Tick = {
         $formWelcome.WindowState = [System.Windows.Forms.FormWindowState]::Normal
         $formWelcome.TopMost = !$NotTopMost
-        $formWelcome.Location = $adtSession.FormWelcomeStartPosition
+        $formWelcome.Location = $WelcomeState.FormStartLocation
         $formWelcome.BringToFront()
     }
     $timerRunningProcesses_Tick = {
         # Grab current list of running processes.
         $dynamicRunningProcesses = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue
         $dynamicRunningProcessDescriptions = $dynamicRunningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
-        $previousRunningProcessDescriptions = $adtSession.RunningProcessDescriptions
+        $previousRunningProcessDescriptions = $WelcomeState.RunningProcessDescriptions
 
         # Check the previous list against what's currently running.
-        if (Compare-Object -ReferenceObject @($adtSession.RunningProcessDescriptions | Select-Object) -DifferenceObject @($dynamicRunningProcessDescriptions | Select-Object))
+        if (Compare-Object -ReferenceObject @($WelcomeState.RunningProcessDescriptions | Select-Object) -DifferenceObject @($dynamicRunningProcessDescriptions | Select-Object))
         {
             # Update the runningProcessDescriptions variable for the next time this function runs.
             $listboxCloseApps.Items.Clear()
-            if (($adtSession.RunningProcessDescriptions = $dynamicRunningProcessDescriptions))
+            if (($WelcomeState.RunningProcessDescriptions = $dynamicRunningProcessDescriptions))
             {
-                Write-ADTLogEntry -Message "The running processes have changed. Updating the apps to close: [$($adtSession.RunningProcessDescriptions -join ',')]..."
-                $listboxCloseApps.Items.AddRange($adtSession.RunningProcessDescriptions)
+                Write-ADTLogEntry -Message "The running processes have changed. Updating the apps to close: [$($WelcomeState.RunningProcessDescriptions -join ',')]..."
+                $listboxCloseApps.Items.AddRange($WelcomeState.RunningProcessDescriptions)
             }
         }
 
@@ -233,7 +260,7 @@ function Show-ADTWelcomePromptClassic
     }
 
     # Welcome Timer.
-    $adtSession.WelcomeTimer.add_Tick($welcomeTimer_Tick)
+    $WelcomeState.WelcomeTimer.add_Tick($welcomeTimer_Tick)
 
     # Persistence Timer.
     $welcomeTimerPersist = [System.Windows.Forms.Timer]::new()
@@ -284,7 +311,7 @@ function Show-ADTWelcomePromptClassic
     $labelAppName.Anchor = [System.Windows.Forms.AnchorStyles]::Top
     $labelAppName.Font = [System.Drawing.Font]::new($Script:Dialogs.Classic.Font.Name, ($Script:Dialogs.Classic.Font.Size + 3), [System.Drawing.FontStyle]::Bold)
     $labelAppName.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-    $labelAppName.Text = $adtSession.GetPropertyValue('InstallTitle').Replace('&', '&&')
+    $labelAppName.Text = $Title.Replace('&', '&&')
     $labelAppName.Name = 'LabelAppName'
     $labelAppName.TabStop = $false
     $labelAppName.AutoSize = $true
@@ -299,9 +326,9 @@ function Show-ADTWelcomePromptClassic
     $listBoxCloseApps.HorizontalScrollbar = $true
     $listBoxCloseApps.Name = 'ListBoxCloseApps'
     $listBoxCloseApps.TabIndex = 3
-    if ($adtSession.RunningProcessDescriptions)
+    if ($WelcomeState.RunningProcessDescriptions)
     {
-        $null = $listboxCloseApps.Items.AddRange($adtSession.RunningProcessDescriptions)
+        $null = $listboxCloseApps.Items.AddRange($WelcomeState.RunningProcessDescriptions)
     }
 
     # Label Countdown.
@@ -425,9 +452,9 @@ function Show-ADTWelcomePromptClassic
         $labelCountdownMessage.Name = 'LabelCountdownMessage'
         $labelCountdownMessage.TabStop = $false
         $labelCountdownMessage.AutoSize = $true
-        $labelCountdownMessage.Text = if ($forceCountdown -or !$adtSession.RunningProcessDescriptions)
+        $labelCountdownMessage.Text = if ($forceCountdown -or !$WelcomeState.RunningProcessDescriptions)
         {
-            [System.String]::Format($adtStrings.WelcomePrompt.CountdownMessage, $adtSession.GetDeploymentTypeName())
+            [System.String]::Format($adtStrings.WelcomePrompt.CountdownMessage, $adtStrings.DeploymentType.$DeploymentType)
         }
         else
         {
@@ -549,7 +576,7 @@ function Show-ADTWelcomePromptClassic
     $formWelcome.Margin = $formWelcome.Padding = $paddingNone
     $formWelcome.Font = $Script:Dialogs.Classic.Font
     $formWelcome.Name = 'WelcomeForm'
-    $formWelcome.Text = $adtSession.GetPropertyValue('InstallTitle')
+    $formWelcome.Text = $Title
     $formWelcome.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
     $formWelcome.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 15)
     $formWelcome.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen

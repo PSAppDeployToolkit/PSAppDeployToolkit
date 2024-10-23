@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v6.0": {
       "PSADT/1.0.0": {
         "dependencies": {
-          "System.Management.Automation": "7.2.23"
+          "System.Management.Automation": "7.2.24"
         },
         "runtime": {
           "PSADT.dll": {}
@@ -306,7 +306,7 @@
           }
         }
       },
-      "Microsoft.PowerShell.CoreCLR.Eventing/7.2.23": {
+      "Microsoft.PowerShell.CoreCLR.Eventing/7.2.24": {
         "dependencies": {
           "System.Diagnostics.EventLog": "6.0.0"
         },
@@ -314,8 +314,8 @@
           "runtimes/win/lib/net6.0/Microsoft.PowerShell.CoreCLR.Eventing.dll": {
             "rid": "win",
             "assetType": "runtime",
-            "assemblyVersion": "7.2.23.500",
-            "fileVersion": "7.2.23.500"
+            "assemblyVersion": "7.2.24.500",
+            "fileVersion": "7.2.24.500"
           }
         }
       },
@@ -498,12 +498,12 @@
           }
         }
       },
-      "System.Management.Automation/7.2.23": {
+      "System.Management.Automation/7.2.24": {
         "dependencies": {
           "Microsoft.ApplicationInsights": "2.21.0",
           "Microsoft.CSharp": "4.7.0",
           "Microsoft.Management.Infrastructure": "2.0.0",
-          "Microsoft.PowerShell.CoreCLR.Eventing": "7.2.23",
+          "Microsoft.PowerShell.CoreCLR.Eventing": "7.2.24",
           "Microsoft.PowerShell.Native": "7.2.1",
           "Microsoft.Win32.Registry.AccessControl": "6.0.0",
           "Newtonsoft.Json": "13.0.3",
@@ -522,14 +522,14 @@
           "runtimes/unix/lib/net6.0/System.Management.Automation.dll": {
             "rid": "unix",
             "assetType": "runtime",
-            "assemblyVersion": "7.2.23.500",
-            "fileVersion": "7.2.23.500"
+            "assemblyVersion": "7.2.24.500",
+            "fileVersion": "7.2.24.500"
           },
           "runtimes/win/lib/net6.0/System.Management.Automation.dll": {
             "rid": "win",
             "assetType": "runtime",
-            "assemblyVersion": "7.2.23.500",
-            "fileVersion": "7.2.23.500"
+            "assemblyVersion": "7.2.24.500",
+            "fileVersion": "7.2.24.500"
           }
         }
       },
@@ -629,12 +629,12 @@
       "path": "microsoft.management.infrastructure.runtime.win/2.0.0",
       "hashPath": "microsoft.management.infrastructure.runtime.win.2.0.0.nupkg.sha512"
     },
-    "Microsoft.PowerShell.CoreCLR.Eventing/7.2.23": {
+    "Microsoft.PowerShell.CoreCLR.Eventing/7.2.24": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-GVmLK5jFyR2BlPxy/+I+d7nCTyLRjtrv7omEl6ep/BHDcF0vPrq0e09CGv0PehOtrFKx1+mES7A3+X9klCX35Q==",
-      "path": "microsoft.powershell.coreclr.eventing/7.2.23",
-      "hashPath": "microsoft.powershell.coreclr.eventing.7.2.23.nupkg.sha512"
+      "sha512": "sha512-WCjyZsWP0KsidaYSo6hAKc1uh9YpQaPUXWCtBgU73uwRA22ivKA4pzd4+9V2nb7EbfkOdetLDXtmf+5CUUdLfA==",
+      "path": "microsoft.powershell.coreclr.eventing/7.2.24",
+      "hashPath": "microsoft.powershell.coreclr.eventing.7.2.24.nupkg.sha512"
     },
     "Microsoft.PowerShell.Native/7.2.1": {
       "type": "package",
@@ -720,12 +720,12 @@
       "path": "system.management/6.0.2",
       "hashPath": "system.management.6.0.2.nupkg.sha512"
     },
-    "System.Management.Automation/7.2.23": {
+    "System.Management.Automation/7.2.24": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ISxe7N44FG3MzzElHhjXshh0OSpeAypXzmRSSxVQpTRiEF5CF0nmVijdKkrJuerYrxEgudDIodHJ/rIlhW4fEA==",
-      "path": "system.management.automation/7.2.23",
-      "hashPath": "system.management.automation.7.2.23.nupkg.sha512"
+      "sha512": "sha512-8X1cqI1NCz8Oa+20/+34YFBvs5sk/iSG9C4/49/Z6AeIVeecm+3c3VqaQ0tmSyd/DSEOWxEwLUJpOML/l50C7w==",
+      "path": "system.management.automation/7.2.24",
+      "hashPath": "system.management.automation.7.2.24.nupkg.sha512"
     },
     "System.Runtime.CompilerServices.Unsafe/6.0.0": {
       "type": "package",

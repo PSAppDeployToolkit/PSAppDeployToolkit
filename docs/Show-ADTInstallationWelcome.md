@@ -17,7 +17,8 @@ Show a welcome dialog prompting the user with information about the installation
 Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
  [-ForceCloseAppsCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseApps] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
- [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] [<CommonParameters>]
+ [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String>
+ -DeploymentType <String> [<CommonParameters>]
 ```
 
 ### CheckDiskSpace
@@ -26,7 +27,7 @@ Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-Clos
  [-ForceCloseAppsCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseApps] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-CheckDiskSpace]
  [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText]
- [<CommonParameters>]
+ -Title <String> -DeploymentType <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -379,6 +380,38 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeploymentType
+The deployment type.
+Default: the session's DeploymentType value.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Title
+Title of the prompt.
+Default: the application installation name.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

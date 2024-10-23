@@ -212,19 +212,54 @@ function Show-ADTInstallationWelcome
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 
+    dynamicparam
+    {
+        # Initialize variables.
+        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtStrings = Get-ADTStringTable
+
+        # Define parameter dictionary for returning at the end.
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        # Add in parameters we need as mandatory when there's no active ADTSession.
+        $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'Title', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "Title of the prompt. Default: the application installation name." }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
+        $paramDictionary.Add('DeploymentType', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'DeploymentType', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
+                    [System.Management.Automation.ValidateSetAttribute]::new($adtStrings.DeploymentType.Keys)
+                )
+            ))
+
+        # Return the populated dictionary.
+        return $paramDictionary
+    }
+
     begin
     {
-        try
-        {
-            $adtEnv = Get-ADTEnvironment
-            $adtConfig = Get-ADTConfig
-            $adtSession = Get-ADTSession
-        }
-        catch
-        {
-            $PSCmdlet.ThrowTerminatingError($_)
-        }
+        # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtEnv = Get-ADTEnvironment
+        $adtConfig = Get-ADTConfig
+
+        # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('Title'))
+        {
+            $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
+        }
+        if (!$PSBoundParameters.ContainsKey('DeploymentType'))
+        {
+            $PSBoundParameters.Add('DeploymentType', $adtSession.GetPropertyValue('DeploymentType'))
+        }
+
+        # Instantiate new object to hold all data needed within this call.
+        $welcomeState = [PSADT.Types.WelcomeState]::new()
+        $deferDeadlineUniversal = $null
+        $promptResult = $null
     }
 
     process
@@ -234,19 +269,19 @@ function Show-ADTInstallationWelcome
             try
             {
                 # If running in NonInteractive mode, force the processes to close silently.
-                if ($adtSession.IsNonInteractive())
+                if ($adtSession -and $adtSession.IsNonInteractive())
                 {
                     $Silent = $true
                 }
 
                 # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
-                if (($msiExecutables = $adtSession.GetDefaultMsiExecutablesList()))
+                if ($adtSession -and ($msiExecutables = $adtSession.GetDefaultMsiExecutablesList()))
                 {
                     $ProcessObjects = $(if ($ProcessObjects) { $ProcessObjects }; $msiExecutables)
                 }
 
                 # Check disk space requirements if specified
-                if ($CheckDiskSpace)
+                if ($adtSession -and $CheckDiskSpace)
                 {
                     Write-ADTLogEntry -Message 'Evaluating disk space requirements.'
                     if (!$RequiredDiskSpace)
@@ -278,7 +313,7 @@ function Show-ADTInstallationWelcome
                         Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
                         if (!$Silent)
                         {
-                            Show-ADTInstallationPrompt -Message ((Get-ADTStringTable).DiskSpace.Message -f $adtSession.GetPropertyValue('installTitle'), $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
+                            Show-ADTInstallationPrompt -Message ((Get-ADTStringTable).DiskSpace.Message -f $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
                         }
                         Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                     }
@@ -286,14 +321,13 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Check Deferral history and calculate remaining deferrals.
-                $deferDeadlineUniversal = $null
                 if ($AllowDefer -or $AllowDeferCloseApps)
                 {
                     # Set $AllowDefer to true if $AllowDeferCloseApps is true.
                     $AllowDefer = $true
 
                     # Get the deferral history from the registry.
-                    $deferHistory = Get-ADTDeferHistory
+                    $deferHistory = if ($adtSession) { Get-ADTDeferHistory }
                     $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
                     $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
 
@@ -368,7 +402,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Prompt the user to close running applications and optionally defer if enabled.
-                if (!$adtSession.IsSilent() -and !$Silent)
+                if (!$Silent -and (!$adtSession -or !$adtSession.IsSilent()))
                 {
                     # Keep the same variable for countdown to simplify the code.
                     if ($ForceCloseAppsCountdown -gt 0)
@@ -379,21 +413,23 @@ function Show-ADTInstallationWelcome
                     {
                         $CloseAppsCountdown = $ForceCountdown
                     }
-                    $adtSession.CloseAppsCountdownGlobal = $CloseAppsCountdown
-                    $promptResult = $null
+                    $welcomeState.CloseAppsCountdown = $CloseAppsCountdown
 
                     while (($runningProcesses = Get-ADTRunningProcesses -ProcessObject $ProcessObjects -InformationAction SilentlyContinue) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
-                        $adtSession.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
+                        $welcomeState.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
 
                         # Define parameters for welcome prompt.
                         $promptParams = @{
-                            CloseAppsCountdown = $adtSession.CloseAppsCountdownGlobal
+                            WelcomeState = $welcomeState
+                            Title = $PSBoundParameters.Title
+                            DeploymentType = $PSBoundParameters.DeploymentType
+                            CloseAppsCountdown = $welcomeState.CloseAppsCountdown
                             ForceCloseAppsCountdown = !!$ForceCloseAppsCountdown
                             ForceCountdown = $ForceCountdown
                             PersistPrompt = $PersistPrompt
-                            NoMinimizeWindows =$NoMinimizeWindows
+                            NoMinimizeWindows = $NoMinimizeWindows
                             CustomText = $CustomText
                             NotTopMost = $NotTopMost
                         }
@@ -403,19 +439,18 @@ function Show-ADTInstallationWelcome
                         if ($AllowDefer)
                         {
                             # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
-                            if ($AllowDeferCloseApps -and !$adtSession.RunningProcessDescriptions)
+                            if ($AllowDeferCloseApps -and !$welcomeState.RunningProcessDescriptions)
                             {
                                 break
                             }
-                            elseif (($promptResult -ne 'Close') -or ($adtSession.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
+                            elseif (($promptResult -ne 'Close') -or ($welcomeState.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
                             {
                                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
-                                $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }
-                                if ($deferDeadlineUniversal) { $deferParams.Add('DeferDeadline', $deferDeadlineUniversal) }
+                                $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }; if ($deferDeadlineUniversal) { $deferParams.Add('DeferDeadline', $deferDeadlineUniversal) }
                                 $promptResult = & $Script:CommandTable."Show-ADTWelcomePrompt$($adtConfig.UI.DialogStyle)" @promptParams @deferParams
                             }
                         }
-                        elseif ($adtSession.RunningProcessDescriptions -or !!$forceCountdown)
+                        elseif ($welcomeState.RunningProcessDescriptions -or !!$forceCountdown)
                         {
                             # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
                             $promptResult = & $Script:CommandTable."Show-ADTWelcomePrompt$($adtConfig.UI.DialogStyle)" @promptParams
@@ -519,21 +554,24 @@ function Show-ADTInstallationWelcome
                             # Stop the script (if not actioned before the timeout value).
                             Write-ADTLogEntry -Message 'Installation not actioned before the timeout value.'
                             $BlockExecution = $false
-                            if (($DeferTimes -ge 0) -or $deferDeadlineUniversal)
+                            if ($adtSession -and (($DeferTimes -ge 0) -or $deferDeadlineUniversal))
                             {
                                 Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
                             }
 
                             # Dispose the welcome prompt timer here because if we dispose it within the Show-ADTWelcomePrompt function we risk resetting the timer and missing the specified timeout period.
-                            if ($adtSession.WelcomeTimer)
+                            if ($welcomeState.WelcomeTimer)
                             {
-                                $adtSession.WelcomeTimer.Dispose()
-                                $adtSession.WelcomeTimer = $null
+                                $welcomeState.WelcomeTimer.Dispose()
+                                $welcomeState.WelcomeTimer = $null
                             }
 
                             # Restore minimized windows.
                             $null = $adtEnv.ShellApp.UndoMinimizeAll()
-                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                            if ($adtSession)
+                            {
+                                Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                            }
                         }
                         elseif ($promptResult -eq 'Defer')
                         {
@@ -544,13 +582,16 @@ function Show-ADTInstallationWelcome
 
                             # Restore minimized windows.
                             $null = $adtEnv.ShellApp.UndoMinimizeAll()
-                            Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
+                            if ($adtSession)
+                            {
+                                Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
+                            }
                         }
                     }
                 }
 
                 # Force the processes to close silently, without prompting the user.
-                if (($Silent -or $adtSession.IsSilent()) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects))
+                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects))
                 {
                     Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
                     $runningProcesses.ProcessName | Stop-Process -Force -ErrorAction Ignore
