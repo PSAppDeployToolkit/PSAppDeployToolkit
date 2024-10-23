@@ -7,134 +7,143 @@
 function Show-ADTInstallationWelcome
 {
     <#
-
     .SYNOPSIS
-    Show a welcome dialog prompting the user with information about the installation and actions to be performed before the installation can begin.
+        Show a welcome dialog prompting the user with information about the installation and actions to be performed before the installation can begin.
 
     .DESCRIPTION
-    The following prompts can be included in the welcome dialog:
-        a) Close the specified running applications, or optionally close the applications without showing a prompt (using the -Silent switch).
-        b) Defer the installation a certain number of times, for a certain number of days or until a deadline is reached.
-        c) Countdown until applications are automatically closed.
-        d) Prevent users from launching the specified applications while the installation is in progress.
+        The following prompts can be included in the welcome dialog:
+            a) Close the specified running applications, or optionally close the applications without showing a prompt (using the -Silent switch).
+            b) Defer the installation a certain number of times, for a certain number of days or until a deadline is reached.
+            c) Countdown until applications are automatically closed.
+            d) Prevent users from launching the specified applications while the installation is in progress.
 
     .PARAMETER ProcessObjects
-    Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{ Name = 'winword'; Description = 'Microsoft Office Word'},@{ Name = 'excel'; Description = 'Microsoft Office Excel'}
+        Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{ Name = 'winword'; Description = 'Microsoft Office Word'},@{ Name = 'excel'; Description = 'Microsoft Office Excel'}
 
     .PARAMETER Silent
-    Stop processes without prompting the user.
+        Stop processes without prompting the user.
 
     .PARAMETER CloseAppsCountdown
-    Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired.
+        Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired.
 
     .PARAMETER ForceCloseAppsCountdown
-    Option to provide a countdown in seconds until the specified applications are automatically closed regardless of whether deferral is allowed.
+        Option to provide a countdown in seconds until the specified applications are automatically closed regardless of whether deferral is allowed.
 
     .PARAMETER PromptToSave
-    Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
+        Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
     .PARAMETER PersistPrompt
-    Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+        Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
     .PARAMETER BlockExecution
-    Option to prevent the user from launching processes/applications, specified in -CloseApps, during the installation.
+        Option to prevent the user from launching processes/applications, specified in -CloseApps, during the installation.
 
     .PARAMETER AllowDefer
-    Enables an optional defer button to allow the user to defer the installation.
+        Enables an optional defer button to allow the user to defer the installation.
 
     .PARAMETER AllowDeferCloseApps
-    Enables an optional defer button to allow the user to defer the installation only if there are running applications that need to be closed. This parameter automatically enables -AllowDefer
+        Enables an optional defer button to allow the user to defer the installation only if there are running applications that need to be closed. This parameter automatically enables -AllowDefer
 
     .PARAMETER DeferTimes
-    Specify the number of times the installation can be deferred.
+        Specify the number of times the installation can be deferred.
 
     .PARAMETER DeferDays
-    Specify the number of days since first run that the installation can be deferred. This is converted to a deadline.
+        Specify the number of days since first run that the installation can be deferred. This is converted to a deadline.
 
     .PARAMETER DeferDeadline
-    Specify the deadline date until which the installation can be deferred.
+        Specify the deadline date until which the installation can be deferred.
 
-    Specify the date in the local culture if the script is intended for that same culture.
+        Specify the date in the local culture if the script is intended for that same culture.
 
-    If the script is intended to run on EN-US machines, specify the date in the format: "08/25/2013" or "08-25-2013" or "08-25-2013 18:00:00"
+        If the script is intended to run on EN-US machines, specify the date in the format: "08/25/2013" or "08-25-2013" or "08-25-2013 18:00:00"
 
-    If the script is intended for multiple cultures, specify the date in the universal sortable date/time format: "2013-08-22 11:51:52Z"
+        If the script is intended for multiple cultures, specify the date in the universal sortable date/time format: "2013-08-22 11:51:52Z"
 
-    The deadline date will be displayed to the user in the format of their culture.
+        The deadline date will be displayed to the user in the format of their culture.
 
     .PARAMETER CheckDiskSpace
-    Specify whether to check if there is enough disk space for the installation to proceed.
+        Specify whether to check if there is enough disk space for the installation to proceed.
 
-    If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
+        If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 
     .PARAMETER RequiredDiskSpace
-    Specify required disk space in MB, used in combination with CheckDiskSpace.
+        Specify required disk space in MB, used in combination with CheckDiskSpace.
 
     .PARAMETER MinimizeWindows
-    Specifies whether to minimize other windows when displaying prompt. Default: $true.
+        Specifies whether to minimize other windows when displaying prompt. Default: $true.
 
     .PARAMETER TopMost
-    Specifies whether the windows is the topmost window. Default: $true.
+        Specifies whether the windows is the topmost window. Default: $true.
 
     .PARAMETER ForceCountdown
-    Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.
+        Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.
 
     .PARAMETER CustomText
-    Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
+        Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
 
     .INPUTS
-    None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-    None. This function does not return objects.
+        None
+
+        This function does not return any output.
 
     .EXAMPLE
-    Show-ADTInstallationWelcome -CloseApps @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
+        Show-ADTInstallationWelcome -CloseApps @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
 
-    Prompt the user to close Internet Explorer, Word and Excel.
-
-    .EXAMPLE
-    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -Silent
-
-    Close Word and Excel without prompting the user.
+        Prompt the user to close Internet Explorer, Word and Excel.
 
     .EXAMPLE
-    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution
+        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -Silent
 
-    Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
-
-    .EXAMPLE
-    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' } -CloseAppsCountdown 600
-
-    Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
+        Close Word and Excel without prompting the user.
 
     .EXAMPLE
-    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
+        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution
 
-    Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
-
-    .EXAMPLE
-    Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '25/08/2013'
-
-    Allow the user to defer the installation until the deadline is reached.
+        Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 
     .EXAMPLE
-    Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseAppsCountdown 600
+        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' } -CloseAppsCountdown 600
 
-    Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
+        Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
 
-    Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first.
+    .EXAMPLE
+        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
 
-    When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
+        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
+
+    .EXAMPLE
+        Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '25/08/2013'
+
+        Allow the user to defer the installation until the deadline is reached.
+
+    .EXAMPLE
+        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseAppsCountdown 600
+
+        Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
+
+        Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first.
+
+        When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 
     .NOTES
-    The process descriptions are retrieved from WMI, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself with a '=' symbol - see examples.
+        An active ADT session is NOT required to use this function.
 
-    The dialog box will timeout after the timeout specified in the XML configuration file (default 1 hour and 55 minutes) to prevent SCCM installations from timing out and returning a failure code to SCCM. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
+        The process descriptions are retrieved via Get-Process, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself with a '=' symbol - see examples.
+
+        The dialog box will timeout after the timeout specified in the XML configuration file (default 1 hour and 55 minutes) to prevent SCCM installations from timing out and returning a failure code to SCCM. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
+
+        Tags: psadt
+        Website: https://psappdeploytoolkit.com
+        Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+        License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-    https://psappdeploytoolkit.com
-
+        https://psappdeploytoolkit.com
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
