@@ -23,7 +23,7 @@ function Show-ADTWelcomePromptClassic
         [System.Double]$CloseAppsCountdown,
 
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$DeferTimes,
+        [System.Int32]$DeferTimes,
 
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
