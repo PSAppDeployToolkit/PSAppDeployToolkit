@@ -8,7 +8,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents an installed application and its related information.
     /// </summary>
-    public class InstalledApplication
+    public readonly struct InstalledApplication
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InstalledApplication"/> struct.
