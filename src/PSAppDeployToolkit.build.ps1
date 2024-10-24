@@ -70,7 +70,7 @@ Enter-Build {
     $script:ModuleName = [regex]::Match((Get-Item $BuildFile).Name, '^(.*)\.build\.ps1$').Groups[1].Value
 
     # Identify other required paths
-    $script:dotnetSourcePath = Join-Path -Path (Split-Path -Path $BuildRoot -Parent) -ChildPath 'Sources'
+    $script:RepoRootPath = Split-Path -Path $BuildRoot -Parent
     $script:ModuleSourcePath = Join-Path -Path $BuildRoot -ChildPath $script:ModuleName
     $script:ModuleFiles = Join-Path -Path $script:ModuleSourcePath -ChildPath '*'
 
@@ -137,25 +137,67 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
     }
     try
     {
-        Write-Build White '      Running dotNet build...'
-        foreach ($buildConfiguration in @('Debug', 'Release'))
-        {
-            & dotnet build "$script:dotnetSourcePath\Deploy-Application\Deploy-Application.sln" --configuration $buildConfiguration --verbosity minimal
-            & dotnet build "$script:dotnetSourcePath\PSADT.Invoke\PSADT.Invoke.sln" --configuration $buildConfiguration --verbosity minimal
-            & dotnet build "$script:dotnetSourcePath\PSADT\PSADT.sln" --configuration $buildConfiguration --verbosity minimal
-            & dotnet build "$script:dotnetSourcePath\PSADT.UserInterface\PSADT.UserInterface.sln" --configuration $buildConfiguration --verbosity minimal
+        $buildItems = @(
+            @{
+                SourcePath = 'Sources\Deploy-Application'
+                SolutionPath = 'Sources\Deploy-Application\Deploy-Application.sln'
+                OutputPath = 'src\PSAppDeployToolkit\Frontend\v3'
+                OutputFile = 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
+            },
+            @{
+                SourcePath = 'Sources\PSADT.Invoke'
+                SolutionPath = 'Sources\PSADT.Invoke\PSADT.Invoke.sln'
+                OutputPath = 'src\PSAppDeployToolkit\Frontend\v4'
+                OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe'
+            },
+            @{
+                SourcePath = 'Sources\PSADT'
+                SolutionPath = 'Sources\PSADT\PSADT.sln'
+                OutputPath = 'src\PSAppDeployToolkit\lib'
+                OutputFile = 'src\PSAppDeployToolkit\lib\net461\PSADT.dll'
+            },
+            @{
+                SourcePath = 'Sources\PSADT.UserInterface'
+                SolutionPath = 'Sources\PSADT.UserInterface\PSADT.UserInterface.sln'
+                OutputPath = 'src\PSAppDeployToolkit\lib'
+                OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.UserInterface.dll'
+            }
+        )
+        foreach ($buildItem in $buildItems) {
+            if ($env:GITHUB_ACTIONS -ne 'true') {
+                $gitStatus = git status --porcelain
+                if ($gitStatus -match "^.{3}$([regex]::Escape($buildItem.SourcePath.Replace('\','/')))/") {
+                    Write-Build Blue "      Uncommitted file changes found under $($buildItem.SourcePath), build required."
+                }
+                else {
+                    # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
+                    $lastCommitDate = git log -1 --format="%ci" -- [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.OutputFile)
+                    $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
+                    # Add 1 seconds and convert to proper ISO 8601 format
+                    $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
+                    # Get the list of source files modified since the last commit date of the file we're comparing against
+                    $modifiedFiles = git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SourcePath) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique
+                    if ($modifiedFiles) {
+                        Write-Build Blue "      Files have been modified in $($buildItem.SourcePath) since the last commit date of $($buildItem.OutputFile) ($lastCommitDate), build required."
+                    }
+                    else {
+                        Write-Build White "      No files have been modified in $($buildItem.SourcePath), nothing to build."
+                        continue
+                    }
+                }
+            }
+            $solutionPath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SolutionPath)
+            Write-Build White "      Building $solutionPath..."
+            & dotnet build $solutionPath --configuration Release --verbosity minimal
+            $sourcePath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\*')
+            $destPath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.OutputPath)
+            Write-Build White "      Copying from  $sourcePath to $destPath..."
+            Copy-Item -Path $sourcePath -Destination $destPath -Exclude '*.pdb' -Recurse -Force
         }
         Write-Build Green '      ...dotNet build Complete!'
-
-        # We use the debug DLLs here against the uncompiled module. The release DLLs are copied into the artifacts at the end.
-        Copy-Item "$script:dotnetSourcePath\Deploy-Application\Deploy-Application\bin\Debug\*.exe" "$ModuleSourcePath\Frontend\v3" -Force
-        Copy-Item "$script:dotnetSourcePath\PSADT.Invoke\PSADT.Invoke\bin\Debug\*.exe" "$ModuleSourcePath\Frontend\v4" -Force
-        Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Debug\*" "$ModuleSourcePath\lib" -Exclude '*.pdb' -Recurse -Force
-        Copy-Item "$script:dotnetSourcePath\PSADT.UserInterface\PSADT.UserInterface\bin\Debug\*" -Exclude '*.pdb' "$ModuleSourcePath\lib" -Recurse -Force
     }
-    catch
-    {
-        throw "Failed to compile .NET code. Error: $($_.Exception.Message)"
+    catch {
+        throw "Build failure: $($_.Exception.Message)"
     }
 } #DotNetBuild
 
@@ -478,10 +520,6 @@ Add-BuildTask AssetCopy -Before Build {
     Write-Build Gray '        Copying assets to Artifacts...'
     New-Item -Path $script:BuildModuleRoot -ItemType Directory -Force | Out-Null
     Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:BuildModuleRoot -Exclude "$($script:ModuleName).psd1", *.psm1 -Recurse -ErrorAction Stop
-    Copy-Item "$script:dotnetSourcePath\Deploy-Application\Deploy-Application\bin\Release\*.exe" "$script:BuildModuleRoot\Frontend\v3" -Force
-    Copy-Item "$script:dotnetSourcePath\PSADT.Invoke\PSADT.Invoke\bin\Release\*.exe" "$script:BuildModuleRoot\Frontend\v4" -Force
-    Copy-Item "$script:dotnetSourcePath\PSADT\PSADT\bin\Release\*" "$script:BuildModuleRoot\lib" -Exclude '*.pdb' -Recurse -Force
-    Copy-Item "$script:dotnetSourcePath\PSADT.UserInterface\PSADT.UserInterface\bin\Release\*" "$script:BuildModuleRoot\lib" -Exclude '*.pdb' -Recurse -Force
     Write-Build Gray '        ...Assets copy complete.'
 } #AssetCopy
 
