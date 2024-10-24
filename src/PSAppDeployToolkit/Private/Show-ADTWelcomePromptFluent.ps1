@@ -74,9 +74,11 @@ function Show-ADTWelcomePromptFluent
         $adtConfig.Assets.Fluent.Banner.Light,
         $adtConfig.Assets.Fluent.Banner.Dark,
         $adtStrings.WelcomePrompt.Fluent.DialogMessage,
+        $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses,
         $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,
         $adtStrings.WelcomePrompt.Fluent.ButtonLeftText,
         $adtStrings.WelcomePrompt.Fluent.ButtonRightText,
+        $adtStrings.WelcomePrompt.Fluent.ButtonRightTextNoProcesses,
         $(if ($adtConfig.UI.DynamicProcessEvaluation) { [PSADT.UserInterface.Services.ProcessEvaluationService]::new() })
     )
 
