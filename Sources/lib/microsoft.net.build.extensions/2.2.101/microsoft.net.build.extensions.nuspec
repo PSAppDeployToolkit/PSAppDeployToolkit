@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.NET.Build.Extensions</id>
+    <version>2.2.101</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkId=529443</licenseUrl>
+    <projectUrl>https://github.com/dotnet/sdk</projectUrl>
+    <description>The MSBuild targets and tasks which extend MSBuild's common targets.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <serviceable>true</serviceable>
+    <repository type="git" url="https://github.com/dotnet/sdk" commit="fdfba028d6ab0dae750a904fa6bd11442d2bdc7d" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6" />
+      <group targetFramework=".NETCoreApp2.0" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="mscorlib" targetFramework=".NETFramework4.6" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

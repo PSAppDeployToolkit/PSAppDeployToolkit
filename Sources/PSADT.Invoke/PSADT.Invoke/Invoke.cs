@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Management.Automation.Language;
 using System.Windows.Forms;
 
@@ -29,9 +30,8 @@ namespace PSADT
                 bool isRequireAdmin = false;
                 bool is64BitOS = false;
 
-                // Get OS Architecture. Check does not return correct value when running in x86 process on x64 system but it works for our purpose.
-                // To get correct OS architecture when running in x86 process on x64 system, we would also have to check environment variable: PROCESSOR_ARCHITEW6432.
-                if (Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").Contains("64"))
+                // Get OS Architecture and test whether it ends with 64 or not (covers both x64 and ARM64).
+                if (nameof(RuntimeInformation.OSArchitecture).EndsWith("64"))
                 {
                     is64BitOS = true;
                 }
