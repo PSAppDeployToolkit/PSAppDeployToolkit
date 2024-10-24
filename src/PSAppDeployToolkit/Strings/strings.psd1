@@ -132,6 +132,9 @@
             # This is a message to prompt users to save their work.
             DialogMessage = 'Please save your work before continuing as the following applications will be closed automatically.'
 
+            # This is a message to when there are no running processes available.
+            DialogMessageNoProcesses = 'Please select Install to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.'
+
             # This is a word used to describe the number of deferrals left. custom message to display at the Welcome Screen window.
             ButtonDeferRemaining = 'remain'
 
@@ -140,6 +143,9 @@
 
             # This is a phrase used to describe the process of closing applications and installing the application.
             ButtonRightText = 'Close Apps & Install'
+
+            # This is a phrase used to describe the process of installing the application.
+            ButtonRightTextNoProcesses = 'Install'
         }
     }
 }
