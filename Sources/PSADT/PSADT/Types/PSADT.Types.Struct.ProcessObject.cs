@@ -1,9 +1,9 @@
-namespace PSADT.Types
+﻿namespace PSADT.Types
 {
     /// <summary>
     /// Represents basic information about a process.
     /// </summary>
-    public class ProcessObject
+    public readonly struct ProcessObject
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessObject"/> struct.

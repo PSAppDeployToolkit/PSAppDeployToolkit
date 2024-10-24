@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 
 namespace PSADT.Types
 {
     /// <summary>
     /// Represents information about a user profile.
     /// </summary>
-    public class UserProfile
+    public readonly struct UserProfile
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserProfile"/> struct.
