@@ -5,42 +5,42 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about the system's battery.
     /// </summary>
-    public struct BatteryInfo
+    public readonly struct BatteryInfo
     {
         /// <summary>
         /// Gets the current AC power line status.
         /// </summary>
-        public PowerLineStatus ACPowerLineStatus { get; private set; }
+        public PowerLineStatus ACPowerLineStatus { get; }
 
         /// <summary>
         /// Gets the current battery charge status.
         /// </summary>
-        public BatteryChargeStatus BatteryChargeStatus { get; private set; }
+        public BatteryChargeStatus BatteryChargeStatus { get; }
 
         /// <summary>
         /// Gets the current battery life percentage.
         /// </summary>
-        public float BatteryLifePercent { get; private set; }
+        public float BatteryLifePercent { get; }
 
         /// <summary>
         /// Gets the remaining battery life as a <see cref="TimeSpan"/>.
         /// </summary>
-        public TimeSpan BatteryLifeRemaining { get; private set; }
+        public TimeSpan BatteryLifeRemaining { get; }
 
         /// <summary>
         /// Gets the full battery lifetime as a <see cref="TimeSpan"/>.
         /// </summary>
-        public TimeSpan BatteryFullLifetime { get; private set; }
+        public TimeSpan BatteryFullLifetime { get; }
 
         /// <summary>
         /// Gets a value indicating whether the system is using AC power.
         /// </summary>
-        public bool IsUsingACPower { get; private set; }
+        public bool IsUsingACPower { get; }
 
         /// <summary>
         /// Gets a value indicating whether the system is a laptop.
         /// </summary>
-        public bool IsLaptop { get; private set; }
+        public bool IsLaptop { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BatteryInfo"/> struct,
