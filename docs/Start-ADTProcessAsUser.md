@@ -59,7 +59,7 @@ Invokes a process from SYSTEM in another user's session.
 
 ### EXAMPLE 1
 ```
-Start-ADTProcessAsUser -FilePath "$($adtSession.DirFiles)\setup.exe" -Parameters '/S' -SuccessExitCodes 0, 500
+Start-ADTProcessAsUser -FilePath "$($adtSession.DirFiles)\setup.exe" -ArgumentList '/S' -SuccessExitCodes 0, 500
 ```
 
 ## PARAMETERS

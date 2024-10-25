@@ -80,7 +80,7 @@ function Start-ADTProcessAsUser
         If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process. If NoWait is specified, returns an object with Id, Handle and ProcessName.
 
     .EXAMPLE
-        Start-ADTProcessAsUser -FilePath "$($adtSession.DirFiles)\setup.exe" -Parameters '/S' -SuccessExitCodes 0, 500
+        Start-ADTProcessAsUser -FilePath "$($adtSession.DirFiles)\setup.exe" -ArgumentList '/S' -SuccessExitCodes 0, 500
 
     .INPUTS
         None

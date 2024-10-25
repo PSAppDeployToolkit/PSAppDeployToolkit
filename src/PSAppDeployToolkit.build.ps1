@@ -221,9 +221,9 @@ Add-BuildTask Clean {
     Write-Build White '      Clean up our Artifacts/Archive directory...'
 
     $null = Remove-Item $script:ArtifactsPath -Force -Recurse -ErrorAction 0
-    $null = New-Item $script:ArtifactsPath -ItemType:Directory
+    $null = New-Item $script:ArtifactsPath -ItemType Directory
     $null = Remove-Item $script:ArchivePath -Force -Recurse -ErrorAction 0
-    $null = New-Item $script:ArchivePath -ItemType:Directory
+    $null = New-Item $script:ArchivePath -ItemType Directory
 
     Write-Build Green '      ...Clean Complete!'
 } #Clean
