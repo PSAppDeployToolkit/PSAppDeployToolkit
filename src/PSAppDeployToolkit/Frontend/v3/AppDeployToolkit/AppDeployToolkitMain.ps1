@@ -671,7 +671,7 @@ function Get-UserProfiles
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Get-ADTDesktop
+# MARK: Wrapper around Update-ADTDesktop
 #
 #---------------------------------------------------------------------------
 
@@ -686,7 +686,7 @@ function Update-Desktop
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTDesktop]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTDesktop]. Please migrate your scripts to use the new function." -Severity 2
     try
     {
         Update-ADTDesktop
