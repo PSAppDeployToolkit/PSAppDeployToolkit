@@ -73,7 +73,6 @@
 		</Reference>
 		<Reference Include="System.Runtime.InteropServices.RuntimeInformation" Condition="'$(TargetFramework)' == 'net461'">
 			<HintPath>..\..\lib\microsoft.net.build.extensions\2.2.101\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net461\lib\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
-			<Private>False</Private>
 		</Reference>
 		<Reference Include="System.DirectoryServices" Condition="'$(TargetFramework)' == 'net461'" />
 	</ItemGroup>
