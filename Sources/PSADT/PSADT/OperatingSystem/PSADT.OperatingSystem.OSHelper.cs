@@ -468,6 +468,27 @@ namespace PSADT.OperatingSystem
             }
         }
 
+        /// <summary>
+        /// Returns the OS architecture of the current system.
+        /// </summary>
+        public static OSArchitecture GetArchitecture()
+        {
+            NativeMethods.GetNativeSystemInfo(out SYSTEM_INFO systemInfo);
+            switch (systemInfo.wProcessorArchitecture)
+            {
+                case ProcessorArchitecture.PROCESSOR_ARCHITECTURE_ARM64:
+                    return OSArchitecture.Arm64;
+                case ProcessorArchitecture.PROCESSOR_ARCHITECTURE_ARM:
+                    return OSArchitecture.Arm;
+                case ProcessorArchitecture.PROCESSOR_ARCHITECTURE_AMD64:
+                    return OSArchitecture.X64;
+                case ProcessorArchitecture.PROCESSOR_ARCHITECTURE_INTEL:
+                    return OSArchitecture.X86;
+                default:
+                    throw new Exception("An unsupported operating system architecture was detected.");
+            }
+        }
+
         public static bool GetIsWindowsVersionXOrGreaterThanX(WindowsOS LowerBound, WindowsOS TargetOS)
         {
             var EnumOperatingSystemValues = Enum.GetValues(typeof(WindowsOS)).Cast<int>().OrderBy(x => x);

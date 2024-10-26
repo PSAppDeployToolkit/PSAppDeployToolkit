@@ -795,6 +795,16 @@ namespace PSADT.PInvoke
             return WritePrivateProfileString(lpAppName, lpKeyName!, lpString!, lpFileName);
         }
 
+        /// <summary>
+        /// Retrieves information about the current system to an application running under WOW64. If the function is called from a 64-bit
+        /// application, it is equivalent to the <c>GetSystemInfo</c> function.
+        /// </summary>
+        /// <param name="lpSystemInfo">A pointer to a <c>SYSTEM_INFO</c> structure that receives the information.</param>
+        /// <returns>This function does not return a value.</returns>
+        // void WINAPI GetNativeSystemInfo( _Out_ LPSYSTEM_INFO lpSystemInfo); https://msdn.microsoft.com/en-us/library/windows/desktop/ms724340(v=vs.85).aspx
+        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
+        public static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
+
         #endregion
 
         #region PInvoke: winsta.dll
