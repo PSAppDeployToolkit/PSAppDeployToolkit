@@ -537,6 +537,12 @@ namespace PSADT.PInvoke
         [DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
         public static extern int GetCurrentThreadId();
 
+        /// <summary>Retrieves a handle for the current process.</summary>
+        /// <returns>The return value is a handle to the current process.</returns>
+        // HANDLE WINAPI GetCurrentProcess(void); https://msdn.microsoft.com/en-us/library/windows/desktop/ms683179(v=vs.85).aspx
+        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
+        public static extern IntPtr GetCurrentProcess();
+
         /// <summary>Converts a file time to system time format. System time is based on Coordinated Universal Time (UTC).</summary>
     	/// <param name="lpFileTime">
     	/// A pointer to a FILETIME structure containing the file time to be converted to system (UTC) date and time format. This value must
@@ -804,6 +810,52 @@ namespace PSADT.PInvoke
         // void WINAPI GetNativeSystemInfo( _Out_ LPSYSTEM_INFO lpSystemInfo); https://msdn.microsoft.com/en-us/library/windows/desktop/ms724340(v=vs.85).aspx
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
         public static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
+
+        /// <summary>Retrieves the address of an exported function or variable from the specified dynamic-link library (DLL).</summary>
+        /// <param name="hModule">
+        /// <para>
+        /// A handle to the DLL module that contains the function or variable. The <c>LoadLibrary</c>, <c>LoadLibraryEx</c>,
+        /// <c>LoadPackagedLibrary</c>, or <c>GetModuleHandle</c> function returns this handle.
+        /// </para>
+        /// <para>
+        /// The <c>GetProcAddress</c> function does not retrieve addresses from modules that were loaded using the
+        /// <c>LOAD_LIBRARY_AS_DATAFILE</c> flag. For more information, see <c>LoadLibraryEx</c>.
+        /// </para>
+        /// </param>
+        /// <param name="lpProcName">
+        /// The function or variable name, or the function's ordinal value. If this parameter is an ordinal value, it must be in the
+        /// low-order word; the high-order word must be zero.
+        /// </param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is the address of the exported function or variable.</para>
+        /// <para>If the function fails, the return value is NULL. To get extended error information, call <c>GetLastError</c>.</para>
+        /// </returns>
+        // FARPROC WINAPI GetProcAddress( _In_ HMODULE hModule, _In_ LPCSTR lpProcName); https://msdn.microsoft.com/en-us/library/windows/desktop/ms683212(v=vs.85).aspx
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        public static extern IntPtr GetProcAddress(SafeLibraryHandle hModule, [MarshalAs(UnmanagedType.LPStr)] string lpProcName);
+
+        /// <summary>
+        /// Determines whether the specified process is running under WOW64; also returns additional machine process and architecture information.
+        /// </summary>
+        /// <param name="hProcess">
+        /// A handle to the process. The handle must have the PROCESS_QUERY_INFORMATION or PROCESS_QUERY_LIMITED_INFORMATION access right.
+        /// For more information, see Process Security and Access Rights.
+        /// </param>
+        /// <param name="pProcessMachine">
+        /// On success, returns a pointer to an IMAGE_FILE_MACHINE_* value. The value will be IMAGE_FILE_MACHINE_UNKNOWN if the target
+        /// process is not a WOW64 process; otherwise, it will identify the type of WoW process.
+        /// </param>
+        /// <param name="pNativeMachine">
+        /// On success, returns a pointer to a possible IMAGE_FILE_MACHINE_* value identifying the native architecture of host system.
+        /// </param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is a nonzero value.</para>
+        /// <para>If the function fails, the return value is zero. To get extended error information, call <c>GetLastError</c>.</para>
+        /// </returns>
+        // BOOL WINAPI IsWow64Process( _In_ HANDLE hProcess, _Out_ USHORT *pProcessMachine, _Out_opt_ USHORT *pNativeMachine); https://msdn.microsoft.com/en-us/library/windows/desktop/mt804318(v=vs.85).aspx
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWow64Process2([In] IntPtr hProcess, out IMAGE_FILE_MACHINE pProcessMachine, out IMAGE_FILE_MACHINE pNativeMachine);
 
         #endregion
 
