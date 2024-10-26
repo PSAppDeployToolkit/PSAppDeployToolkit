@@ -210,7 +210,8 @@ function Invoke-HKCURegistrySettingsForAllUsers
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({ if ($_ -match '\$UserProfile\.SID') { Write-ADTLogEntry -Message "The base function [Invoke-ADTAllUsersRegistryAction] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead." -Severity 2 }; ![System.String]::IsNullOrWhiteSpace($_) })]
-        [System.Management.Automation.ScriptBlock]$RegistrySettings,
+        [Alias('RegistrySettings')]
+        [System.Management.Automation.ScriptBlock]$ScriptBlock,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -218,8 +219,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryAction]. Please migrate your scripts to use the new function." -Severity 2
-    $PSBoundParameters.ScriptBlock = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.RegistrySettings
-    $null = $PSBoundParameters.Remove('RegistrySettings')
+    $PSBoundParameters.ScriptBlock = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.ScriptBlock
     try
     {
         Invoke-ADTAllUsersRegistryAction @PSBoundParameters
@@ -2114,7 +2114,8 @@ function Get-ServiceStartMode
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Name,
+        [Alias('Name')]
+        [System.String]$Service,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2140,8 +2141,6 @@ function Get-ServiceStartMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    $PSBoundParameters.Add('Service', $Name)
-    $null = $PSBoundParameters.Remove('Name')
 
     try
     {
@@ -2171,7 +2170,8 @@ function Set-ServiceStartMode
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Name,
+        [Alias('Name')]
+        [System.String]$Service,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2192,8 +2192,6 @@ function Set-ServiceStartMode
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    $PSBoundParameters.Add('Service', $Name)
-    $null = $PSBoundParameters.Remove('Name')
 
     try
     {
@@ -2534,7 +2532,8 @@ function Test-RegistryValue
 
         [Parameter(Mandatory = $true, Position = 1)]
         [ValidateNotNullOrEmpty()]
-        [System.Object]$Value,
+        [Alias('Value')]
+        [System.Object]$Name,
 
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateNotNullOrEmpty()]
@@ -2548,11 +2547,6 @@ function Test-RegistryValue
     {
         # Announce deprecation of function and set up accumulator for all piped in keys.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
-        if ($PSBoundParameters.ContainsKey('Value'))
-        {
-            $PSBoundParameters.Add('Name', $Value)
-            $null = $PSBoundParameters.Remove('Value')
-        }
         $keys = [System.Collections.Generic.List[System.Object]]::new()
     }
 
@@ -2718,7 +2712,8 @@ function Start-ServiceAndDependencies
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Name,
+        [Alias('Name')]
+        [System.String]$Service,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2761,8 +2756,6 @@ function Start-ServiceAndDependencies
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    $PSBoundParameters.Add('Service', $Name)
-    $null = $PSBoundParameters.Remove('Name')
 
     try
     {
@@ -2793,7 +2786,8 @@ function Stop-ServiceAndDependencies
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Name,
+        [Alias('Name')]
+        [System.String]$Service,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2836,8 +2830,6 @@ function Stop-ServiceAndDependencies
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    $PSBoundParameters.Add('Service', $Name)
-    $null = $PSBoundParameters.Remove('Name')
 
     try
     {
@@ -3062,7 +3054,8 @@ function Get-RegistryKey
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Value,
+        [Alias('Value')]
+        [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
@@ -3084,11 +3077,6 @@ function Get-RegistryKey
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
-    if ($PSBoundParameters.ContainsKey('Value'))
-    {
-        $PSBoundParameters.Add('Name', $Value)
-        $null = $PSBoundParameters.Remove('Value')
-    }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3221,7 +3209,8 @@ function Invoke-RegisterOrUnregisterDLL
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Register', 'Unregister')]
-        [System.String]$DLLAction,
+        [Alias('DLLAction')]
+        [System.String]$Action,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3238,8 +3227,6 @@ function Invoke-RegisterOrUnregisterDLL
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-    $PSBoundParameters.Add('Action', $DLLAction)
-    $null = $PSBoundParameters.Remove('DLLAction')
     try
     {
         Invoke-ADTRegSvr32 @PSBoundParameters
@@ -3967,7 +3954,8 @@ function Execute-ProcessAsUser
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path,
+        [Alias('Path')]
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3975,7 +3963,8 @@ function Execute-ProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Parameters,
+        [Alias('Parameters')]
+        [System.String]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [Alias('SecureParameters')]
@@ -4022,17 +4011,6 @@ function Execute-ProcessAsUser
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
-
-    # Translate Parameters to ArgumentList.
-    if ($PSBoundParameters.ContainsKey('Parameters'))
-    {
-        $PSBoundParameters.ArgumentList = $Parameters
-        $null = $PSBoundParameters.Remove('Parameters')
-    }
-
-    # Translate Path to FilePath.
-    $PSBoundParameters.FilePath = $Path
-    $null = $PSBoundParameters.Remove('Path')
 
     # Invoke underlying function.
     try
@@ -4505,7 +4483,10 @@ function Get-PEFileArchitecture
 
         try
         {
-            $null = $PSBoundParameters.Remove('FilePath')
+            if ($PSBoundParameters.ContainsKey('FilePath'))
+            {
+                $null = $PSBoundParameters.Remove('FilePath')
+            }
             $filePaths | Get-ADTPEFileArchitecture @PSBoundParameters | & {
                 process
                 {
