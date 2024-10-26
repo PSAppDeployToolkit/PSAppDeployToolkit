@@ -4501,7 +4501,44 @@ function Get-PEFileArchitecture
         try
         {
             $null = $PSBoundParameters.Remove('FilePath')
-            $filePaths | Get-ADTPEFileArchitecture @PSBoundParameters
+            $filePaths | Get-ADTPEFileArchitecture @PSBoundParameters | & {
+                process
+                {
+                    switch ([System.UInt16]$_)
+                    {
+                        0
+                        {
+                            # The contents of this file are assumed to be applicable to any machine type
+                            'Native'
+                            break
+                        }
+                        0x014C
+                        {
+                            # File for Windows 32-bit systems
+                            '32BIT'
+                            break
+                        }
+                        0x0200
+                        {
+                            # File for Intel Itanium x64 processor family
+                            'Itanium-x64'
+                            break
+                        }
+                        0x8664
+                        {
+                            # File for Windows 64-bit systems
+                            '64BIT'
+                            break
+                        }
+                        default
+                        {
+                            'Unknown'
+                            break
+                        }
+                    }
+
+                }
+            }
         }
         catch
         {

@@ -126,7 +126,7 @@ function New-ADTEnvironmentTable
 
     ## Variables: Current Process Architecture
     $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
-    $variables.Add('psArchitecture', ('32-bit', '64-bit')[$variables.Is64BitProcess])
+    $variables.Add('psArchitecture', (Get-ADTPEFileArchitecture -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path)))
 
     ## Variables: Get normalized paths that vary depending on process bitness.
     if ($variables.Is64Bit)
