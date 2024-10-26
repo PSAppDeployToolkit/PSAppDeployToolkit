@@ -14,46 +14,40 @@ function Import-ADTConfig
         [System.String]$BaseDirectory
     )
 
-    # Internal filter to process asset filepaths.
+    # Internal filter to process asset file paths.
     filter Update-ADTAssetFilePath
     {
         # Go recursive if we've received a hashtable, otherwise just update the values.
         foreach ($asset in $($_.GetEnumerator()))
         {
-            if ($asset.Value -isnot [System.Collections.Hashtable])
+            # Re-process if this is a hashtable.
+            if ($asset.Value -is [System.Collections.Hashtable])
             {
-                if (![System.IO.Path]::IsPathRooted($asset.Value))
-                {
-                    $_.($asset.Key) = (Get-Item -LiteralPath "$BaseDirectory\..\Assets\$($_.($asset.Key))").FullName
-                }
+                $asset.Value | & $MyInvocation.MyCommand; continue
+            }
+
+            # Skip if the path is fully qualified.
+            if ([System.IO.Path]::IsPathRooted($asset.Value))
+            {
+                continue
+            }
+
+            # Get the asset's full path based on the supplied BaseDirectory.
+            # Fall back to the module's path if the asset is unable to be found.
+            if ([System.IO.File]::Exists("$BaseDirectory\$($_.($asset.Key))"))
+            {
+                $_.($asset.Key) = (Get-Item -LiteralPath "$BaseDirectory\$($_.($asset.Key))").FullName
             }
             else
             {
-                $asset.Value | & $MyInvocation.MyCommand
+                $_.($asset.Key) = (Get-Item -LiteralPath "$($BaseDirectory -replace '^.+\\', "$Script:PSScriptRoot\")\$($_.($asset.Key))").FullName
             }
         }
     }
 
     # Get the current environment and create variables within this scope from the database, it's needed during the config import.
-    $adtEnv = Get-ADTEnvironment
-    $adtEnv.GetEnumerator() | . { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } }
-
-    # Read config file and cast the version into an object.
-    $config = Import-LocalizedData @PSBoundParameters -FileName config.psd1
-    $config.File.Version = [version]$config.File.Version
-
-    # Confirm the config version meets our minimum requirements.
-    if ($config.File.Version -lt $MyInvocation.MyCommand.Module.Version)
-    {
-        $naerParams = @{
-            Exception = [System.Data.VersionNotFoundException]::new("The configuration file version [$($config.File.Version)] is lower than the supported of [$($MyInvocation.MyCommand.Module.Version)]. Please upgrade the configuration file.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidData
-            ErrorId = 'ConfigFileVersionMismatch'
-            TargetObject = $config
-            RecommendedAction = "Please review the supplied configuration file and try again."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-    }
+    ($adtEnv = Get-ADTEnvironment).GetEnumerator() | . { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } }
+    $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
 
     # Confirm the specified dialog type is valid.
     if (($config.UI.DialogStyle -ne 'Classic') -and (Test-ADTNonNativeCaller))

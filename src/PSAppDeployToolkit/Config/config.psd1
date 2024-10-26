@@ -1,37 +1,29 @@
 ﻿@{
-    File = @{
-        # Date this config version was released.
-        Date = '05/03/2024'
-
-        # Released config version number.
-        Version = '3.91.0'
-    }
-
     Assets = @{
         Classic = @{
             # Fluent Banner (Classic)
-            Banner = 'Banner.Classic.png'
+            Banner = '..\Assets\Banner.Classic.png'
 
             # Specify filename of the icon.
-            Icon = 'AppIcon.ico'
+            Icon = '..\Assets\AppIcon.ico'
 
             # Specify filename of the logo.
-            Logo = 'AppIcon.png'
+            Logo = '..\Assets\AppIcon.png'
         }
         Fluent = @{
             Banner = @{
                 # Fluent Banner (Light)
-                Light = 'Banner.Fluent.Light.png'
+                Light = '..\Assets\Banner.Fluent.Light.png'
 
                 # Fluent Banner (Dark)
-                Dark = 'Banner.Fluent.Dark.png'
+                Dark = '..\Assets\Banner.Fluent.Dark.png'
             }
 
             # Specify filename of the icon.
-            Icon = 'AppIcon.ico'
+            Icon = '..\Assets\AppIcon.ico'
 
             # Specify filename of the logo.
-            Logo = 'AppIcon.png'
+            Logo = '..\Assets\AppIcon.png'
         }
     }
 
