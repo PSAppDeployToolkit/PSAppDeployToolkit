@@ -65,6 +65,12 @@ function Start-ADTMsiProcess
     .PARAMETER PassThru
         Returns ExitCode, STDOut, and STDErr output from the process.
 
+    .PARAMETER SuccessExitCodes
+        List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
+
+    .PARAMETER RebootExitCodes
+        List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
+
     .PARAMETER IgnoreExitCodes
         List the exit codes to ignore or * to ignore all exit codes.
 
@@ -189,6 +195,14 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$SuccessExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$RebootExitCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -505,6 +519,14 @@ function Start-ADTMsiProcess
                     if ($PassThru)
                     {
                         $ExecuteProcessSplat.Add('PassThru', $PassThru)
+                    }
+                    if ($SuccessExitCodes)
+                    {
+                        $ExecuteProcessSplat.Add('SuccessExitCodes', $SuccessExitCodes)
+                    }
+                    if ($RebootExitCodes)
+                    {
+                        $ExecuteProcessSplat.Add('RebootExitCodes', $RebootExitCodes)
                     }
                     if ($IgnoreExitCodes)
                     {

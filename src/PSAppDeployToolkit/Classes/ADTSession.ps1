@@ -40,8 +40,8 @@ class ADTSession
     [AllowEmptyString()][System.String]$AppArch
     [AllowEmptyString()][System.String]$AppLang
     [AllowEmptyString()][System.String]$AppRevision
-    [ValidateNotNullOrEmpty()][System.Int32[]]$AppExitCodes = 0
-    [ValidateNotNullOrEmpty()][System.Int32[]]$AppRebootCodes = 1641, 3010
+    [ValidateNotNullOrEmpty()][System.Int32[]]$AppSuccessExitCodes = 0
+    [ValidateNotNullOrEmpty()][System.Int32[]]$AppRebootExitCodes = 1641, 3010
     [ValidateNotNullOrEmpty()][System.Version]$AppScriptVersion
     [ValidateNotNullOrEmpty()][System.String]$AppScriptDate
     [ValidateNotNullOrEmpty()][System.String]$AppScriptAuthor
@@ -704,11 +704,11 @@ class ADTSession
         {
             return 'FastRetry'
         }
-        elseif ($this.GetPropertyValue('AppRebootCodes').Contains($this.ExitCode))
+        elseif ($this.GetPropertyValue('AppRebootExitCodes').Contains($this.ExitCode))
         {
             return 'RestartRequired'
         }
-        elseif ($this.GetPropertyValue('AppExitCodes').Contains($this.ExitCode))
+        elseif ($this.GetPropertyValue('AppSuccessExitCodes').Contains($this.ExitCode))
         {
             return 'Complete'
         }

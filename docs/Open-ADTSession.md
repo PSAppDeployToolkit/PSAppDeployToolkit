@@ -19,10 +19,10 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-D
  [[-AppScriptVersion] <Version>] [[-AppScriptDate] <String>] [[-AppScriptAuthor] <String>]
  [[-InstallName] <String>] [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>]
  [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <String>]
- [[-DeployAppScriptParameters] <IDictionary>] [[-AppExitCodes] <Int32[]>] [[-AppRebootCodes] <Int32[]>]
- [[-ScriptDirectory] <String>] [[-DirFiles] <String>] [[-DirSupportFiles] <String>]
- [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>] [[-DefaultMspFiles] <String[]>] [-ForceWimDetection]
- [-PassThru] [<CommonParameters>]
+ [[-DeployAppScriptParameters] <IDictionary>] [[-AppSuccessExitCodes] <Int32[]>]
+ [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>] [[-DirFiles] <String>]
+ [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
+ [[-DefaultMspFiles] <String[]>] [-ForceWimDetection] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -356,7 +356,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AppExitCodes
+### -AppSuccessExitCodes
 Specifies the application exit codes.
 
 ```yaml
@@ -371,7 +371,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AppRebootCodes
+### -AppRebootExitCodes
 Specifies the application reboot codes.
 
 ```yaml

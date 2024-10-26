@@ -47,10 +47,10 @@ function Start-ADTProcess
     .PARAMETER MsiExecWaitTime
         Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
 
-    .PARAMETER SuccessCodes
+    .PARAMETER SuccessExitCodes
         List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
 
-    .PARAMETER RebootCodes
+    .PARAMETER RebootExitCodes
         List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
     .PARAMETER IgnoreExitCodes
@@ -161,11 +161,11 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32[]]$SuccessCodes,
+        [System.Int32[]]$SuccessExitCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32[]]$RebootCodes,
+        [System.Int32[]]$RebootExitCodes,
 
         [Parameter(Mandatory = $false)]
         [SupportsWildcards()]
@@ -194,22 +194,22 @@ function Start-ADTProcess
         {
             $MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime
         }
-        if (!$PSBoundParameters.ContainsKey('SuccessCodes'))
+        if (!$PSBoundParameters.ContainsKey('SuccessExitCodes'))
         {
-            $SuccessCodes = if ($adtSession)
+            $SuccessExitCodes = if ($adtSession)
             {
-                $adtSession.GetPropertyValue('AppExitCodes')
+                $adtSession.GetPropertyValue('AppSuccessExitCodes')
             }
             else
             {
                 0
             }
         }
-        if (!$PSBoundParameters.ContainsKey('RebootCodes'))
+        if (!$PSBoundParameters.ContainsKey('RebootExitCodes'))
         {
-            $RebootCodes = if ($adtSession)
+            $RebootExitCodes = if ($adtSession)
             {
-                $adtSession.GetPropertyValue('AppRebootCodes')
+                $adtSession.GetPropertyValue('AppRebootExitCodes')
             }
             else
             {
@@ -502,7 +502,7 @@ function Start-ADTProcess
                     {
                         Write-ADTLogEntry -Message "Execution completed and the exit code [$returnCode] is being ignored."
                     }
-                    elseif ($RebootCodes.Contains($returnCode))
+                    elseif ($RebootExitCodes.Contains($returnCode))
                     {
                         Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
                     }
@@ -518,7 +518,7 @@ function Start-ADTProcess
                     {
                         Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
                     }
-                    elseif ($SuccessCodes.Contains($returnCode))
+                    elseif ($SuccessExitCodes.Contains($returnCode))
                     {
                         Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]." -Severity 0
                     }

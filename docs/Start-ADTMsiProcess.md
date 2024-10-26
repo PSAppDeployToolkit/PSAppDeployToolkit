@@ -16,8 +16,9 @@ Executes msiexec.exe to perform actions such as install, uninstall, patch, repai
 Start-ADTMsiProcess [[-Action] <String>] [-Path] <String> [[-Transforms] <String[]>] [[-Parameters] <String>]
  [[-AddParameters] <String>] [-SecureParameters] [[-Patches] <String[]>] [[-LoggingOptions] <String>]
  [[-LogFileName] <String>] [[-WorkingDirectory] <String>] [-SkipMSIAlreadyInstalledCheck]
- [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [[-IgnoreExitCodes] <String[]>]
- [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
+ [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [[-SuccessExitCodes] <Int32[]>]
+ [[-RebootExitCodes] <Int32[]>] [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>]
+ [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -293,6 +294,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -SuccessExitCodes
+List of exit codes to be considered successful.
+Defaults to values set during ADTSession initialization, otherwise: 0
+
+```yaml
+Type: Int32[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 10
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RebootExitCodes
+List of exit codes to indicate a reboot is required.
+Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
+
+```yaml
+Type: Int32[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 11
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IgnoreExitCodes
 List the exit codes to ignore or * to ignore all exit codes.
 
@@ -302,7 +335,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: 12
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -320,7 +353,7 @@ Aliases:
 Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 
 Required: False
-Position: 11
+Position: 13
 Default value: Normal
 Accept pipeline input: False
 Accept wildcard characters: False

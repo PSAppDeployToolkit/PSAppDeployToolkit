@@ -15,7 +15,7 @@ Execute a process with optional arguments, working directory, window style.
 ```
 Start-ADTProcess [-Path] <String> [[-Parameters] <String[]>] [-SecureParameters]
  [[-WindowStyle] <ProcessWindowStyle>] [-CreateNoWindow] [[-WorkingDirectory] <String>] [-NoWait] [-PassThru]
- [-WaitForMsiExec] [[-MsiExecWaitTime] <UInt32>] [[-SuccessCodes] <Int32[]>] [[-RebootCodes] <Int32[]>]
+ [-WaitForMsiExec] [[-MsiExecWaitTime] <UInt32>] [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>]
  [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure]
  [-UseShellExecute] [<CommonParameters>]
 ```
@@ -231,7 +231,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SuccessCodes
+### -SuccessExitCodes
 List of exit codes to be considered successful.
 Defaults to values set during ADTSession initialization, otherwise: 0
 
@@ -247,7 +247,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -RebootCodes
+### -RebootExitCodes
 List of exit codes to indicate a reboot is required.
 Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
