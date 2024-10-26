@@ -45,6 +45,23 @@ function Import-ADTConfig
         }
     }
 
+    # Internal filter to expand variables.
+    filter Expand-ADTVariablesInConfig
+    {
+        # Go recursive if we've received a hashtable, otherwise just update the values.
+        foreach ($section in $($_.GetEnumerator()))
+        {
+            if ($section.Value -is [System.Collections.Hashtable])
+            {
+                $section.Value | & $MyInvocation.MyCommand; continue
+            }
+            elseif ($section.Value -is [System.String])
+            {
+                $_.($section.Key) = $ExecutionContext.InvokeCommand.ExpandString($section.Value)
+            }
+        }
+    }
+
     # Get the current environment and create variables within this scope from the database, it's needed during the config import.
     ($adtEnv = Get-ADTEnvironment).GetEnumerator() | . { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } }
     $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
@@ -73,19 +90,8 @@ function Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
-    # Process the config and expand out variables.
-    foreach ($section in $($config.Keys))
-    {
-        foreach ($subsection in $($config.$section.Keys))
-        {
-            if ($config.$section.$subsection -is [System.String])
-            {
-                $config.$section.$subsection = $ExecutionContext.InvokeCommand.ExpandString($config.$section.$subsection)
-            }
-        }
-    }
-
-    # Expand out asset file paths and test that the files are present.
+    # Expand out variables and asset file paths.
+    $config | Expand-ADTVariablesInConfig
     $config.Assets | Update-ADTAssetFilePath
 
     # Process the classic assets by grabbing the bytes of each image asset, storing them into a memory stream, then as an image for WinForms to use.
