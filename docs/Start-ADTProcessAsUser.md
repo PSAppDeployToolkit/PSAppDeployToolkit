@@ -18,7 +18,7 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDi
  [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-UseLinkedAdminToken]
  [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication] [-NoRedirectOutput]
  [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureParameters] [-PassThru]
+ [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -28,7 +28,7 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDi
  [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-AllActiveUserSessions]
  [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
  [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureParameters] [-PassThru]
+ [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -38,7 +38,7 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDi
  [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -SessionId <UInt32>
  [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
  [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureParameters] [-PassThru]
+ [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -48,7 +48,7 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDi
  [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -Username <String>
  [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
  [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureParameters] [-PassThru]
+ [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -366,7 +366,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SecureParameters
+### -SecureArgumentList
 Hides all parameters passed to the executable from the Toolkit log file.
 
 ```yaml

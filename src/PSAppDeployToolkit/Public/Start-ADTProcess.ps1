@@ -13,15 +13,15 @@ function Start-ADTProcess
     .DESCRIPTION
         Executes a process, e.g. a file included in the Files directory of the App Deploy Toolkit, or a file on the local machine. Provides various options for handling the return codes (see Parameters).
 
-    .PARAMETER Path
+    .PARAMETER FilePath
         Path to the file to be executed. If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 
         Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example.
 
-    .PARAMETER Parameters
+    .PARAMETER ArgumentList
         Arguments to be passed to the executable.
 
-    .PARAMETER SecureParameters
+    .PARAMETER SecureArgumentList
         Hides all parameters passed to the executable from the Toolkit log file.
 
     .PARAMETER WindowStyle
@@ -72,23 +72,23 @@ function Start-ADTProcess
         If you set UseShellExecute to $true, there will be no available output from the process.
 
     .EXAMPLE
-        Start-ADTProcess -Path 'setup.exe' -Parameters '/S' -IgnoreExitCodes 1,2
+        Start-ADTProcess -FilePath 'setup.exe' -ArgumentList '/S' -IgnoreExitCodes 1,2
 
     .EXAMPLE
-        Start-ADTProcess -Path "$dirFiles\Bin\setup.exe" -Parameters '/S' -WindowStyle 'Hidden'
+        Start-ADTProcess -FilePath "$dirFiles\Bin\setup.exe" -ArgumentList '/S' -WindowStyle 'Hidden'
 
     .EXAMPLE
-        Start-ADTProcess -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle 'Hidden'
+        Start-ADTProcess -FilePath 'uninstall_flash_player_64bit.exe' -ArgumentList '/uninstall' -WindowStyle 'Hidden'
 
         If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 
     .EXAMPLE
-        Start-ADTProcess -Path 'setup.exe' -Parameters "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
+        Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
 
         Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
 
     .EXAMPLE
-        Start-ADTProcess -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
+        Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
 
         Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 
@@ -124,16 +124,14 @@ function Start-ADTProcess
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [Alias('FilePath')]
-        [System.String]$Path,
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Alias('Arguments')]
-        [System.String[]]$Parameters,
+        [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$SecureParameters,
+        [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Hidden', 'Maximized', 'Minimized')]
@@ -232,46 +230,46 @@ function Start-ADTProcess
         {
             try
             {
-                # Validate and find the fully qualified path for the $Path variable.
-                if ([System.IO.Path]::IsPathRooted($Path) -and [System.IO.Path]::HasExtension($Path))
+                # Validate and find the fully qualified path for the $FilePath variable.
+                if ([System.IO.Path]::IsPathRooted($FilePath) -and [System.IO.Path]::HasExtension($FilePath))
                 {
-                    if (![System.IO.File]::Exists($Path))
+                    if (![System.IO.File]::Exists($FilePath))
                     {
-                        Write-ADTLogEntry -Message "File [$Path] not found." -Severity 3
+                        Write-ADTLogEntry -Message "File [$FilePath] not found." -Severity 3
                         $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("File [$Path] not found.")
+                            Exception = [System.IO.FileNotFoundException]::new("File [$FilePath] not found.")
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                             ErrorId = 'PathFileNotFound'
-                            TargetObject = $Path
+                            TargetObject = $FilePath
                             RecommendedAction = "Please confirm the path of the specified file and try again."
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
-                    Write-ADTLogEntry -Message "[$Path] is a valid fully qualified path, continue."
+                    Write-ADTLogEntry -Message "[$FilePath] is a valid fully qualified path, continue."
                 }
                 else
                 {
                     # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                    if (!($fqPath = Get-Item -Path ("$(if ($adtSession) { "$($adtSession.GetPropertyValue('DirFiles'));" })$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                    if (!($fqPath = Get-Item -Path ("$(if ($adtSession) { "$($adtSession.GetPropertyValue('DirFiles'));" })$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                     {
-                        Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
+                        Write-ADTLogEntry -Message "[$FilePath] contains an invalid path or file name." -Severity 3
                         $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("[$Path] contains an invalid path or file name.")
+                            Exception = [System.IO.FileNotFoundException]::new("[$FilePath] contains an invalid path or file name.")
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                             ErrorId = 'PathFileNotFound'
-                            TargetObject = $Path
+                            TargetObject = $FilePath
                             RecommendedAction = "Please confirm the path of the specified file and try again."
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
-                    Write-ADTLogEntry -Message "[$Path] successfully resolved to fully qualified path [$fqPath]."
-                    $Path = $fqPath
+                    Write-ADTLogEntry -Message "[$FilePath] successfully resolved to fully qualified path [$fqPath]."
+                    $FilePath = $fqPath
                 }
 
                 # Set the Working directory if not specified.
                 if (!$WorkingDirectory)
                 {
-                    $WorkingDirectory = [System.IO.Path]::GetDirectoryName($Path)
+                    $WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
                 }
 
                 # If the WindowStyle parameter is set to 'Hidden', set the UseShellExecute parameter to '$true' unless specifically specified.
@@ -283,7 +281,7 @@ function Start-ADTProcess
                 # If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
                 # Please note that a race condition is possible after this check where another process waiting for the MSI installer
                 # to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
-                if (($Path -match 'msiexec') -or $WaitForMsiExec)
+                if (($FilePath -match 'msiexec') -or $WaitForMsiExec)
                 {
                     $MsiExecAvailable = Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime ([System.TimeSpan]::FromSeconds($MsiExecWaitTime))
                     [System.Threading.Thread]::Sleep(1000)
@@ -296,7 +294,7 @@ function Start-ADTProcess
                             Exception = [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
                             Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
                             ErrorId = 'MsiExecUnavailable'
-                            TargetObject = $Path
+                            TargetObject = $FilePath
                             RecommendedAction = "Please wait for the current MSI operation to finish and try again."
                         }
                         throw (New-ADTErrorRecord @naerParams)
@@ -311,7 +309,7 @@ function Start-ADTProcess
                     # Define process.
                     $process = [System.Diagnostics.Process]@{
                         StartInfo = [System.Diagnostics.ProcessStartInfo]@{
-                            FileName = $Path
+                            FileName = $FilePath
                             WorkingDirectory = $WorkingDirectory
                             UseShellExecute = $UseShellExecute
                             ErrorDialog = $false
@@ -321,9 +319,9 @@ function Start-ADTProcess
                             WindowStyle = $WindowStyle
                         }
                     }
-                    if ($Parameters)
+                    if ($ArgumentList)
                     {
-                        $process.StartInfo.Arguments = $Parameters
+                        $process.StartInfo.Arguments = $ArgumentList
                     }
                     if ($process.StartInfo.UseShellExecute)
                     {
@@ -341,24 +339,24 @@ function Start-ADTProcess
 
                     # Start Process.
                     Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
-                    if ($Parameters)
+                    if ($ArgumentList)
                     {
-                        if ($SecureParameters)
+                        if ($SecureArgumentList)
                         {
-                            Write-ADTLogEntry -Message "Executing [$Path (Parameters Hidden)]..."
+                            Write-ADTLogEntry -Message "Executing [$FilePath (Parameters Hidden)]..."
                         }
-                        elseif ($Parameters -match '-Command \&')
+                        elseif ($ArgumentList -match '-Command \&')
                         {
-                            Write-ADTLogEntry -Message "Executing [$Path [PowerShell ScriptBlock]]..."
+                            Write-ADTLogEntry -Message "Executing [$FilePath [PowerShell ScriptBlock]]..."
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "Executing [$Path $Parameters]..."
+                            Write-ADTLogEntry -Message "Executing [$FilePath $ArgumentList]..."
                         }
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [$Path]..."
+                        Write-ADTLogEntry -Message "Executing [$FilePath]..."
                     }
                     $null = $process.Start()
 
@@ -506,15 +504,15 @@ function Start-ADTProcess
                     {
                         Write-ADTLogEntry -Message "Execution completed successfully with exit code [$returnCode]. A reboot is required." -Severity 2
                     }
-                    elseif (($returnCode -eq 1605) -and ($Path -match 'msiexec'))
+                    elseif (($returnCode -eq 1605) -and ($FilePath -match 'msiexec'))
                     {
                         Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3
                     }
-                    elseif (($returnCode -eq -2145124329) -and ($Path -match 'wusa'))
+                    elseif (($returnCode -eq -2145124329) -and ($FilePath -match 'wusa'))
                     {
                         Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3
                     }
-                    elseif (($returnCode -eq 17025) -and ($Path -match 'fullfile'))
+                    elseif (($returnCode -eq 17025) -and ($FilePath -match 'fullfile'))
                     {
                         Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
                     }
@@ -524,7 +522,7 @@ function Start-ADTProcess
                     }
                     else
                     {
-                        if (($MsiExitCodeMessage = if ($Path -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $returnCode }))
+                        if (($MsiExitCodeMessage = if ($FilePath -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $returnCode }))
                         {
                             Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
                         }

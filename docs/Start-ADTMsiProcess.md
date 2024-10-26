@@ -13,12 +13,12 @@ Executes msiexec.exe to perform actions such as install, uninstall, patch, repai
 ## SYNTAX
 
 ```
-Start-ADTMsiProcess [[-Action] <String>] [-Path] <String> [[-Transforms] <String[]>] [[-Parameters] <String>]
- [[-AddParameters] <String>] [-SecureParameters] [[-Patches] <String[]>] [[-LoggingOptions] <String>]
- [[-LogFileName] <String>] [[-WorkingDirectory] <String>] [-SkipMSIAlreadyInstalledCheck]
- [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [[-SuccessExitCodes] <Int32[]>]
- [[-RebootExitCodes] <Int32[]>] [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>]
- [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
+Start-ADTMsiProcess [[-Action] <String>] [-FilePath] <String> [[-Transforms] <String[]>]
+ [[-ArgumentList] <String[]>] [[-AdditionalArgumentList] <String[]>] [-SecureArgumentList]
+ [[-Patches] <String[]>] [[-LoggingOptions] <String>] [[-LogFileName] <String>] [[-WorkingDirectory] <String>]
+ [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru]
+ [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>] [[-IgnoreExitCodes] <String[]>]
+ [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -87,13 +87,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Path
+### -FilePath
 The file path to the MSI/MSP or the product code of the installed MSI.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: FilePath
+Aliases:
 
 Required: True
 Position: 2
@@ -118,15 +118,15 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Parameters
+### -ArgumentList
 Overrides the default parameters specified in the XML configuration file.
 The install default is: "REBOOT=ReallySuppress /QB!".
 The uninstall default is: "REBOOT=ReallySuppress /QN".
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
-Aliases: Arguments
+Aliases:
 
 Required: False
 Position: 4
@@ -135,13 +135,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AddParameters
+### -AdditionalArgumentList
 Adds additional parameters to the default set specified in the XML configuration file.
 The install default is: "REBOOT=ReallySuppress /QB!".
 The uninstall default is: "REBOOT=ReallySuppress /QN".
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
@@ -152,7 +152,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SecureParameters
+### -SecureArgumentList
 Hides all parameters passed to the MSI or MSP file from the toolkit log file.
 
 ```yaml

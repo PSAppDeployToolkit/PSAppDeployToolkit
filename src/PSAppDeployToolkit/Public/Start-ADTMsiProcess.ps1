@@ -24,7 +24,7 @@ function Start-ADTMsiProcess
     .PARAMETER Action
         Specifies the action to be performed. Available options: Install, Uninstall, Patch, Repair, ActiveSetup.
 
-    .PARAMETER Path
+    .PARAMETER FilePath
         The file path to the MSI/MSP or the product code of the installed MSI.
 
     .PARAMETER Transforms
@@ -33,13 +33,13 @@ function Start-ADTMsiProcess
     .PARAMETER Patches
         The name(s) of the patch (MSP) file(s) to be applied to the MSI for the "Install" action. The patch files should be in the same directory as the MSI file.
 
-    .PARAMETER Parameters
+    .PARAMETER ArgumentList
         Overrides the default parameters specified in the XML configuration file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
 
-    .PARAMETER AddParameters
+    .PARAMETER AdditionalArgumentList
         Adds additional parameters to the default set specified in the XML configuration file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
 
-    .PARAMETER SecureParameters
+    .PARAMETER SecureArgumentList
         Hides all parameters passed to the MSI or MSP file from the toolkit log file.
 
     .PARAMETER LoggingOptions
@@ -149,8 +149,7 @@ function Start-ADTMsiProcess
                 }
                 return !!$_
             })]
-        [Alias('FilePath')]
-        [System.String]$Path,
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -158,15 +157,14 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Alias('Arguments')]
-        [System.String]$Parameters,
+        [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AddParameters,
+        [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$SecureParameters,
+        [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -232,11 +230,11 @@ function Start-ADTMsiProcess
             try
             {
                 # If the path matches a product code.
-                if (($pathIsProductCode = $Path -match (Get-ADTEnvironment).MSIProductCodeRegExPattern))
+                if (($pathIsProductCode = $FilePath -match (Get-ADTEnvironment).MSIProductCodeRegExPattern))
                 {
                     # Resolve the product code to a publisher, application name, and version.
                     Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.'
-                    $productCodeNameVersion = Get-ADTApplication -FilterScript { $_.ProductCode -eq $Path } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
+                    $productCodeNameVersion = Get-ADTApplication -FilterScript { $_.ProductCode -eq $FilePath } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
 
                     # Build the log file name.
                     if (!$LogFileName)
@@ -255,14 +253,14 @@ function Start-ADTMsiProcess
                         else
                         {
                             # Out of other options, make the Product Code the name of the log file.
-                            $Path
+                            $FilePath
                         }
                     }
                 }
                 elseif (!$LogFileName)
                 {
                     # Get the log file name without file extension.
-                    $LogFileName = ([System.IO.FileInfo]$Path).BaseName
+                    $LogFileName = ([System.IO.FileInfo]$FilePath).BaseName
                 }
                 else
                 {
@@ -354,26 +352,26 @@ function Start-ADTMsiProcess
                 }
 
                 # If the MSI is in the Files directory, set the full path to the MSI.
-                $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
+                $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $FilePath))))
                 {
                     $dirFilesPath
                 }
-                elseif (Test-Path -LiteralPath $Path)
+                elseif (Test-Path -LiteralPath $FilePath)
                 {
-                    (Get-Item -LiteralPath $Path).FullName
+                    (Get-Item -LiteralPath $FilePath).FullName
                 }
                 elseif ($pathIsProductCode)
                 {
-                    $Path
+                    $FilePath
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Failed to find MSI file [$Path]." -Severity 3
+                    Write-ADTLogEntry -Message "Failed to find MSI file [$FilePath]." -Severity 3
                     $naerParams = @{
-                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSI file [$Path].")
+                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSI file [$FilePath].")
                         Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                         ErrorId = 'MsiFileNotFound'
-                        TargetObject = $Path
+                        TargetObject = $FilePath
                         RecommendedAction = "Please confirm the path of the MSI file and try again."
                     }
                     throw (New-ADTErrorRecord @naerParams)
@@ -420,7 +418,7 @@ function Start-ADTMsiProcess
                 # Get the ProductCode of the MSI.
                 $MSIProductCode = If ($pathIsProductCode)
                 {
-                    $Path
+                    $FilePath
                 }
                 elseif ([System.IO.Path]::GetExtension($msiFile) -eq '.msi')
                 {
@@ -451,9 +449,9 @@ function Start-ADTMsiProcess
                 }
 
                 # Replace default parameters if specified.
-                $argsMSI = if ($Parameters)
+                $argsMSI = if ($ArgumentList)
                 {
-                    "$argsMSI $Parameters"
+                    "$argsMSI $([System.String]::Join(' ', $ArgumentList))"
                 }
                 else
                 {
@@ -467,9 +465,9 @@ function Start-ADTMsiProcess
                 }
 
                 # Append parameters to default parameters if specified.
-                if ($AddParameters)
+                if ($AdditionalArgumentList)
                 {
-                    $argsMSI = "$argsMSI $AddParameters"
+                    $argsMSI = "$argsMSI $([System.String]::Join(' ', $AdditionalArgumentList))"
                 }
 
                 # Add custom Logging Options if specified, otherwise, add default Logging Options from Config file.
@@ -512,9 +510,9 @@ function Start-ADTMsiProcess
                     {
                         $ExecuteProcessSplat.Add('WorkingDirectory', $WorkingDirectory)
                     }
-                    if ($SecureParameters)
+                    if ($SecureArgumentList)
                     {
-                        $ExecuteProcessSplat.Add('SecureParameters', $SecureParameters)
+                        $ExecuteProcessSplat.Add('SecureArgumentList', $SecureArgumentList)
                     }
                     if ($PassThru)
                     {

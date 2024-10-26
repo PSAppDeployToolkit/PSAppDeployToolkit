@@ -73,7 +73,7 @@ function Start-ADTProcessAsUser
     .PARAMETER WaitOption
         Specifies the wait type to use when waiting for an invoked executable to finish.
 
-    .PARAMETER SecureParameters
+    .PARAMETER SecureArgumentList
         Hides all parameters passed to the executable from the Toolkit log file.
 
     .PARAMETER PassThru
@@ -235,7 +235,7 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
         [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
         [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
-        [System.Management.Automation.SwitchParameter]$SecureParameters,
+        [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
         [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
@@ -250,7 +250,7 @@ function Start-ADTProcessAsUser
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Strip out parameters not destined for the C# code.
-        ('SecureParameters', 'PassThru').ForEach({
+        ('SecureArgumentList', 'PassThru').ForEach({
                 if ($PSBoundParameters.ContainsKey($_))
                 {
                     $null = $PSBoundParameters.Remove($_)
@@ -310,22 +310,22 @@ function Start-ADTProcessAsUser
         {
             Username
             {
-                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] as user [$Username]$(if ($Wait) { ", and waiting for invocation to finish" })."
+                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureArgumentList) { " $ArgumentList" })] as user [$Username]$(if ($Wait) { ", and waiting for invocation to finish" })."
                 break
             }
             SessionId
             {
-                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for session [$SessionId]$(if ($Wait) { ", and waiting for invocation to finish" })."
+                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureArgumentList) { " $ArgumentList" })] for session [$SessionId]$(if ($Wait) { ", and waiting for invocation to finish" })."
                 break
             }
             AllActiveUserSessions
             {
-                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for all active user sessions$(if ($Wait) { ", and waiting for all invocations to finish" })."
+                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureArgumentList) { " $ArgumentList" })] for all active user sessions$(if ($Wait) { ", and waiting for all invocations to finish" })."
                 break
             }
             PrimaryActiveUserSession
             {
-                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureParameters) { " $ArgumentList" })] for the primary user session$(if ($Wait) { ", and waiting for invocation to finish" })."
+                Write-ADTLogEntry -Message "Invoking [$FilePath$(if (!$SecureArgumentList) { " $ArgumentList" })] for the primary user session$(if ($Wait) { ", and waiting for invocation to finish" })."
                 break
             }
         }

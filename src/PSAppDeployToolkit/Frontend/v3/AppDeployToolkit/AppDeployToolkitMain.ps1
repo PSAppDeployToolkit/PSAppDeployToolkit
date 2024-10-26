@@ -427,8 +427,8 @@ function Remove-MSIApplications
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Parameters', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'AddParameters', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ArgumentList', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'AdditionalArgumentList', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'IncludeUpdatesAndHotfixes', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LoggingOptions', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LogFileName', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
@@ -449,13 +449,14 @@ function Remove-MSIApplications
         [System.Management.Automation.SwitchParameter]$WildCard,
 
         [Parameter(Mandatory = $false)]
-        [Alias('Arguments')]
+        [Alias('Arguments', 'Parameters')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Parameters,
+        [System.String]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AddParameters,
+        [Alias('AddParameters')]
+        [System.String]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2221,17 +2222,18 @@ function Execute-Process
     param
     (
         [Parameter(Mandatory = $true)]
-        [Alias('FilePath')]
+        [Alias('Path')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path,
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
-        [Alias('Arguments')]
+        [Alias('Arguments', 'Parameters')]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$Parameters,
+        [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$SecureParameters,
+        [Alias('SecureParameters')]
+        [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Hidden', 'Maximized', 'Minimized')]
@@ -2329,8 +2331,8 @@ function Execute-MSI
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
         [ValidateScript({ ($_ -match (Get-ADTMsiProductCodeRegexPattern)) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_)) })]
-        [Alias('FilePath')]
-        [System.String]$Path,
+        [Alias('Path')]
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2338,15 +2340,17 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Alias('Arguments')]
-        [System.String]$Parameters,
+        [Alias('Arguments', 'Parameters')]
+        [System.String]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AddParameters,
+        [Alias('AddParameters')]
+        [System.String]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$SecureParameters,
+        [Alias('SecureParameters')]
+        [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3974,7 +3978,8 @@ function Execute-ProcessAsUser
         [System.String]$Parameters,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$SecureParameters,
+        [Alias('SecureParameters')]
+        [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('HighestAvailable', 'LeastPrivilege')]

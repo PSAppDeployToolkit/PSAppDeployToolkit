@@ -35,13 +35,13 @@ function Uninstall-ADTApplication
     .PARAMETER FilterScript
         A script used to filter the results as they're processed.
 
-    .PARAMETER Parameters
+    .PARAMETER ArgumentList
         Overrides the default MSI parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
-    .PARAMETER AddParameters
+    .PARAMETER AdditionalArgumentList
         Adds to the default parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
-    .PARAMETER SecureParameters
+    .PARAMETER SecureArgumentList
         Hides all parameters passed to the executable from the Toolkit log file.
 
     .PARAMETER LoggingOptions
@@ -79,7 +79,7 @@ function Uninstall-ADTApplication
         Removes all MSI applications that contain the name 'Java' in the DisplayName, with Publisher as 'Oracle Corporation', are 64-bit, and not version 8.x.
 
     .EXAMPLE
-        Uninstall-ADTApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
+        Uninstall-ADTApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -ArgumentList '/S'
 
         Remove all EXE applications starting with the name 'Vim' followed by a space, using the '/S' parameter.
 
@@ -134,16 +134,15 @@ function Uninstall-ADTApplication
         [System.Management.Automation.ScriptBlock]$FilterScript,
 
         [Parameter(Mandatory = $false)]
-        [Alias('Arguments')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Parameters,
+        [System.String]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AddParameters,
+        [System.String]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$SecureParameters,
+        [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -177,7 +176,7 @@ function Uninstall-ADTApplication
             }
 
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
-            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude Parameters, AddParameters, LoggingOptions, LogFileName, PassThru, SecureParameters
+            $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude ArgumentList, AdditionalArgumentList, LoggingOptions, LogFileName, PassThru, SecureArgumentList
             $InstalledApplication = Get-ADTApplication @gaiaParams
         }
 
@@ -187,7 +186,7 @@ function Uninstall-ADTApplication
 
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
         $sapParams = @{
-            SecureParameters = $SecureParameters
+            SecureArgumentList = $SecureArgumentList
             NoExitOnProcessFailure = $true
             WaitForMsiExec = $true
             CreateNoWindow = $true
@@ -263,27 +262,27 @@ function Uninstall-ADTApplication
                         continue
                     }
 
-                    if (![System.String]::IsNullOrWhiteSpace($Parameters))
+                    if (![System.String]::IsNullOrWhiteSpace($ArgumentList))
                     {
-                        $sapParams.Parameters = $Parameters
+                        $sapParams.ArgumentList = $ArgumentList
                     }
                     elseif (![System.String]::IsNullOrWhiteSpace($uninstallStringParams))
                     {
-                        $sapParams.Parameters = $uninstallStringParams
+                        $sapParams.ArgumentList = $uninstallStringParams
                     }
                     else
                     {
-                        $sapParams.Remove('Parameters')
+                        $sapParams.Remove('ArgumentList')
                     }
-                    if ($AddParameters)
+                    if ($AdditionalArgumentList)
                     {
-                        if ($sapParams.ContainsKey('Parameters'))
+                        if ($sapParams.ContainsKey('ArgumentList'))
                         {
-                            $sapParams.Parameters += " $AddParameters"
+                            $sapParams.ArgumentList += " $([System.String]::Join(' ', $AdditionalArgumentList))"
                         }
                         else
                         {
-                            $sapParams.Parameters = $AddParameters
+                            $sapParams.ArgumentList = $AdditionalArgumentList
                         }
                     }
 

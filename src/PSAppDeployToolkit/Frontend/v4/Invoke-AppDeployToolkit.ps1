@@ -135,7 +135,7 @@ function Install-ADTDeployment
     ## Handle Zero-Config MSI installations.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -189,7 +189,7 @@ function Uninstall-ADTDeployment
     ## Handle Zero-Config MSI uninstallations.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -232,7 +232,7 @@ function Repair-ADTDeployment
     ## Handle Zero-Config MSI repairs.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)

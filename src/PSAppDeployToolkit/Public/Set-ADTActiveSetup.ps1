@@ -567,7 +567,7 @@ function Set-ADTActiveSetup
                     Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
                     if ($CUArguments)
                     {
-                        Start-ADTProcess -FilePath $CUStubExePath -Parameters $CUArguments -NoExitOnProcessFailure
+                        Start-ADTProcess -FilePath $CUStubExePath -ArgumentList $CUArguments -NoExitOnProcessFailure
                     }
                     else
                     {

@@ -135,7 +135,7 @@ function Install-ADTDeployment
     ## Handle Zero-Config MSI installations.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -148,7 +148,7 @@ function Install-ADTDeployment
     }
 
     ## <Perform Installation tasks here>
-    Start-ADTMsiProcess -Action Install -Path "WinSCP-$($adtSession.AppVersion).msi"
+    Start-ADTMsiProcess -Action Install -FilePath "WinSCP-$($adtSession.AppVersion).msi"
 
 
     ##================================================
@@ -197,7 +197,7 @@ function Uninstall-ADTDeployment
     ## Handle Zero-Config MSI uninstallations.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -206,7 +206,7 @@ function Uninstall-ADTDeployment
     }
 
     ## <Perform Uninstallation tasks here>
-    Start-ADTMsiProcess -Action Uninstall -Path "WinSCP-$($adtSession.AppVersion).msi"
+    Start-ADTMsiProcess -Action Uninstall -FilePath "WinSCP-$($adtSession.AppVersion).msi"
 
 
     ##================================================
@@ -241,7 +241,7 @@ function Repair-ADTDeployment
     ## Handle Zero-Config MSI repairs.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -250,7 +250,7 @@ function Repair-ADTDeployment
     }
 
     ## <Perform Repair tasks here>
-    Start-ADTMsiProcess -Action Repair -Path "WinSCP-$($adtSession.AppVersion).msi" -RepairFromSource
+    Start-ADTMsiProcess -Action Repair -FilePath "WinSCP-$($adtSession.AppVersion).msi" -RepairFromSource
 
 
     ##================================================
