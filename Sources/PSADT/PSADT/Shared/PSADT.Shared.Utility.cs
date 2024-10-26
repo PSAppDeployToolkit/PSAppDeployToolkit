@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 using PSADT.PInvoke;
 using PSADT.Diagnostics.Exceptions;
 
@@ -39,14 +38,6 @@ namespace PSADT.Shared
             }
 
             return isOobeComplete != 0;
-        }
-
-        /// <summary>
-        /// Returns the OS architecture of the current system.
-        /// </summary>
-        public static Architecture GetOperatingSystemArchitecture()
-        {
-            return RuntimeInformation.OSArchitecture;
         }
     }
 }

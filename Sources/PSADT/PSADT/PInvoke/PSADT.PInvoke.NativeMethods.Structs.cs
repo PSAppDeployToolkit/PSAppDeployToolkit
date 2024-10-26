@@ -62,6 +62,135 @@ namespace PSADT.PInvoke
         public IntPtr hStdError;
     }
 
+    /// <summary>
+    /// Contains information about the current computer system. This includes the architecture and type of the processor, the number of
+    /// processors in the system, the page size, and other such information.
+    /// </summary>
+    // typedef struct _SYSTEM_INFO { union { DWORD dwOemId; struct { WORD wProcessorArchitecture; WORD wReserved; }; }; DWORD dwPageSize;
+    // LPVOID lpMinimumApplicationAddress; LPVOID lpMaximumApplicationAddress; DWORD_PTR dwActiveProcessorMask; DWORD
+    // dwNumberOfProcessors; DWORD dwProcessorType; DWORD dwAllocationGranularity; WORD wProcessorLevel; WORD wProcessorRevision;}
+    // SYSTEM_INFO; https://msdn.microsoft.com/en-us/library/windows/desktop/ms724958(v=vs.85).aspx
+    [StructLayout(LayoutKind.Sequential, Pack = 2)]
+    public struct SYSTEM_INFO
+    {
+        /// <summary>
+        /// <para>The processor architecture of the installed operating system. This member can be one of the following values.</para>
+        /// <para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Value</term>
+        /// <term>Meaning</term>
+        /// </listheader>
+        /// <item>
+        /// <term>PROCESSOR_ARCHITECTURE_AMD649</term>
+        /// <term>x64 (AMD or Intel)</term>
+        /// </item>
+        /// <item>
+        /// <term>PROCESSOR_ARCHITECTURE_ARM5</term>
+        /// <term>ARM</term>
+        /// </item>
+        /// <item>
+        /// <term>PROCESSOR_ARCHITECTURE_ARM6412</term>
+        /// <term>ARM64</term>
+        /// </item>
+        /// <item>
+        /// <term>PROCESSOR_ARCHITECTURE_IA646</term>
+        /// <term>Intel Itanium-based</term>
+        /// </item>
+        /// <item>
+        /// <term>PROCESSOR_ARCHITECTURE_INTEL0</term>
+        /// <term>x86</term>
+        /// </item>
+        /// <item>
+        /// <term>PROCESSOR_ARCHITECTURE_UNKNOWN0xffff</term>
+        /// <term>Unknown architecture.</term>
+        /// </item>
+        /// </list>
+        /// </para>
+        /// </summary>
+        public ProcessorArchitecture wProcessorArchitecture;
+
+        /// <summary>This member is reserved for future use.</summary>
+        public ushort wReserved;
+
+        /// <summary>
+        /// The page size and the granularity of page protection and commitment. This is the page size used by the <c>VirtualAlloc</c> function.
+        /// </summary>
+        public uint dwPageSize;
+
+        /// <summary>A pointer to the lowest memory address accessible to applications and dynamic-link libraries (DLLs).</summary>
+        public IntPtr lpMinimumApplicationAddress;
+
+        /// <summary>A pointer to the highest memory address accessible to applications and DLLs.</summary>
+        public IntPtr lpMaximumApplicationAddress;
+
+        /// <summary>
+        /// A mask representing the set of processors configured into the system. Bit 0 is processor 0; bit 31 is processor 31.
+        /// </summary>
+        public nuint dwActiveProcessorMask;
+
+        /// <summary>
+        /// The number of logical processors in the current group. To retrieve this value, use the <c>GetLogicalProcessorInformation</c> function.
+        /// </summary>
+        public uint dwNumberOfProcessors;
+
+        /// <summary>
+        /// An obsolete member that is retained for compatibility. Use the <c>wProcessorArchitecture</c>, <c>wProcessorLevel</c>, and
+        /// <c>wProcessorRevision</c> members to determine the type of processor.
+        /// </summary>
+        public uint dwProcessorType;
+
+        /// <summary>
+        /// The granularity for the starting address at which virtual memory can be allocated. For more information, see <c>VirtualAlloc</c>.
+        /// </summary>
+        public uint dwAllocationGranularity;
+
+        /// <summary>
+        /// <para>
+        /// The architecture-dependent processor level. It should be used only for display purposes. To determine the feature set of a
+        /// processor, use the <c>IsProcessorFeaturePresent</c> function.
+        /// </para>
+        /// <para>If <c>wProcessorArchitecture</c> is PROCESSOR_ARCHITECTURE_INTEL, <c>wProcessorLevel</c> is defined by the CPU vendor.</para>
+        /// <para>If <c>wProcessorArchitecture</c> is PROCESSOR_ARCHITECTURE_IA64, <c>wProcessorLevel</c> is set to 1.</para>
+        /// </summary>
+        public ushort wProcessorLevel;
+
+        /// <summary>
+        /// <para>
+        /// The architecture-dependent processor revision. The following table shows how the revision value is assembled for each type of
+        /// processor architecture.
+        /// </para>
+        /// <para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Processor</term>
+        /// <term>Value</term>
+        /// </listheader>
+        /// <item>
+        /// <term>Intel Pentium, Cyrix, or NextGen 586</term>
+        /// <term>
+        /// The high byte is the model and the low byte is the stepping. For example, if the value is xxyy, the model number and stepping
+        /// can be displayed as
+        /// follows: Model xx, Stepping yy
+        /// </term>
+        /// </item>
+        /// <item>
+        /// <term>Intel 80386 or 80486</term>
+        /// <term>
+        /// A value of the form xxyz. If xx is equal to 0xFF, y - 0xA is the model number, and z is the stepping identifier.If xx is not
+        /// equal to 0xFF, xx + 'A' is the stepping letter and yz is the minor stepping.
+        /// </term>
+        /// </item>
+        /// <item>
+        /// <term>ARM</term>
+        /// <term>Reserved.</term>
+        /// </item>
+        /// </list>
+        /// </para>
+        /// </summary>
+        public ushort wProcessorRevision;
+    }
+
     #endregion
 
     #region wtsapi32.dll

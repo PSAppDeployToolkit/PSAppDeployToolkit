@@ -71,9 +71,6 @@
 			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="System.Runtime.InteropServices.RuntimeInformation" Condition="'$(TargetFramework)' == 'net462'">
-			<HintPath>..\..\lib\microsoft.net.build.extensions\2.2.101\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net462\lib\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
-		</Reference>
 		<Reference Include="System.DirectoryServices" Condition="'$(TargetFramework)' == 'net462'" />
 	</ItemGroup>
 
