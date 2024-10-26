@@ -31,7 +31,7 @@
     Description = 'Enterprise App Deployment, Simplified.'
 
     # Minimum version of the Windows PowerShell engine required by this module
-    PowerShellVersion = '5.1'
+    PowerShellVersion = '5.1.14393.0'
 
     # Name of the Windows PowerShell host required by this module
     # PowerShellHostName = ''
@@ -43,7 +43,7 @@
     DotNetFrameworkVersion = '4.6.2.0'
 
     # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-    CLRVersion = '4.0.0.0'
+    CLRVersion = '4.0.30319.42000'
 
     # Processor architecture (None, X86, Amd64) required by this module
     # ProcessorArchitecture = ''
