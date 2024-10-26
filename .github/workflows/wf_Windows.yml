@@ -46,14 +46,6 @@ jobs:
     - name: Bootstrap
       shell: powershell
       run: ./actions_bootstrap.ps1
-    - name: Install .NET Framework 4.6.1 Developer Pack
-      shell: powershell
-      run: |
-        if (!(Test-Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\NETFXSDK\4.6.1')) {
-        $downloadUrl = "https://download.visualstudio.microsoft.com/download/pr/33a48e6c-c0d1-4321-946b-042b92bad691/a9a88bd451286ab9ea015ecc2208d725/ndp461-devpack-kb3105179-enu.exe"
-        $downloadPath = "$env:TEMP\ndp461-devpack-kb3105179-enu.exe"
-        Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
-        Start-Process -FilePath $downloadPath -ArgumentList '/quiet /norestart' -Wait }
     - name: Install AzureSignTool
       run: dotnet tool install --global azuresigntool
     - name: Azure Login

@@ -154,7 +154,7 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
                 SourcePath = 'Sources\PSADT'
                 SolutionPath = 'Sources\PSADT\PSADT.sln'
                 OutputPath = 'src\PSAppDeployToolkit\lib'
-                OutputFile = 'src\PSAppDeployToolkit\lib\net461\PSADT.dll'
+                OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.dll'
             },
             @{
                 SourcePath = 'Sources\PSADT.UserInterface'

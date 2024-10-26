@@ -59,7 +59,7 @@
         'PresentationCore'
         'PresentationFramework'
         'WindowsBase'
-        'lib\net461\PSADT.dll'
+        'lib\net462\PSADT.dll'
         'lib\net462\PSADT.UserInterface.dll'
     )
 

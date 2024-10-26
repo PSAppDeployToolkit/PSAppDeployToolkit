@@ -19,7 +19,7 @@
 		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
 		
 		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-		<TargetFrameworks>net461;net6.0-windows</TargetFrameworks>
+		<TargetFrameworks>net462;net6.0-windows</TargetFrameworks>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 		<LangVersion>latest</LangVersion>
 		<Deterministic>true</Deterministic>
@@ -47,7 +47,7 @@
 		<DefineConstants>$(DefineConstants);CoreCLR</DefineConstants>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net461'">
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net462'">
 		<DefineConstants>$(DefineConstants);NETFramework</DefineConstants>
 	</PropertyGroup>
 
@@ -67,14 +67,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="System.Management.Automation" Condition="'$(TargetFramework)' == 'net461'">
+		<Reference Include="System.Management.Automation" Condition="'$(TargetFramework)' == 'net462'">
 			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="System.Runtime.InteropServices.RuntimeInformation" Condition="'$(TargetFramework)' == 'net461'">
-			<HintPath>..\..\lib\microsoft.net.build.extensions\2.2.101\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net461\lib\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+		<Reference Include="System.Runtime.InteropServices.RuntimeInformation" Condition="'$(TargetFramework)' == 'net462'">
+			<HintPath>..\..\lib\microsoft.net.build.extensions\2.2.101\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net462\lib\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
 		</Reference>
-		<Reference Include="System.DirectoryServices" Condition="'$(TargetFramework)' == 'net461'" />
+		<Reference Include="System.DirectoryServices" Condition="'$(TargetFramework)' == 'net462'" />
 	</ItemGroup>
 
 </Project>
