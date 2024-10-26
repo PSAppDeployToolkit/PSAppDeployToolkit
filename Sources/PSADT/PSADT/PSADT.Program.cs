@@ -131,13 +131,13 @@ namespace PSADT
 #if !CoreCLR
     internal static class NETStandardSupport
     {
-        private const int Net461Version = 394254;
+        private const int Net462Version = 394802;
         /// <summary>
         /// Checks to see if the .NET Framework version supports .NET Standard 2.0
         /// </summary>
         public static void CheckNetFxVersion()
         {
-            UnifiedLogger.Create().Message("Checking that .NET Framework version is at least 4.6.1.").Severity(LogLevel.Debug);
+            UnifiedLogger.Create().Message("Checking that .NET Framework version is at least 4.6.2.").Severity(LogLevel.Debug);
             using Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Net Framework Setup\NDP\v4\Full");
             object? netFxValue = key?.GetValue("Release");
             if (netFxValue == null || netFxValue is not int netFxVersion)
@@ -147,9 +147,9 @@ namespace PSADT
 
             UnifiedLogger.Create().Message($".NET Framework version is {netFxVersion}.").Severity(LogLevel.Debug);
 
-            if (netFxVersion < Net461Version)
+            if (netFxVersion < Net462Version)
             {
-                UnifiedLogger.Create().Message($".NET Framework version {netFxVersion} lower than .NET 4.6.1. This runtime is not supported and you may experience errors. Please update your .NET runtime version.").Severity(LogLevel.Warning);
+                UnifiedLogger.Create().Message($".NET Framework version {netFxVersion} lower than .NET 4.6.2. This runtime is not supported and you may experience errors. Please update your .NET runtime version.").Severity(LogLevel.Warning);
             }
         }
     }

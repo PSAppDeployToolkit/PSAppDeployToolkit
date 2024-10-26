@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>Invoke-AppDeployToolkit</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -66,7 +66,7 @@
     <Reference Include="System" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\microsoft.net.build.extensions\2.2.101\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net461\lib\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <HintPath>..\..\lib\microsoft.net.build.extensions\2.2.101\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net462\lib\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
