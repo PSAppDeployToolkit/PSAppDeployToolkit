@@ -7,9 +7,9 @@
 		<NoWarn>$(NoWarn);CA1416;CS4014</NoWarn>
 		<UseWindowsForms>true</UseWindowsForms>
 
-		<AssemblyVersion>3.91.0.0</AssemblyVersion>
-		<FileVersion>3.91.0</FileVersion>
-		<InformationalVersion>3.91.0-beta0</InformationalVersion>
+		<AssemblyVersion>3.93.0.0</AssemblyVersion>
+		<FileVersion>3.93.0</FileVersion>
+		<InformationalVersion>3.93.0-beta0</InformationalVersion>
 		<Authors>PSADT</Authors>
 		<Company>PSADT</Company>
 		<Description>A utility for launching and managing processes across multiple user sessions in Windows environments.</Description>

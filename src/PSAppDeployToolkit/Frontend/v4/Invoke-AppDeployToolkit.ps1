@@ -99,7 +99,7 @@ $adtSession = @{
 
     # Script variables.
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
-    DeployAppScriptVersion = [System.Version]'3.91.0'
+    DeployAppScriptVersion = [System.Version]'3.93.0'
     DeployAppScriptDate = '05/03/2024'
     DeployAppScriptParameters = $PSBoundParameters
 
