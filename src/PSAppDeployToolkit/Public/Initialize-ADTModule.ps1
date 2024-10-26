@@ -85,7 +85,7 @@ function Initialize-ADTModule
                 }
                 else
                 {
-                    $Script:PSScriptRoot
+                    $adtData.Directories.Defaults.Script
                 }
 
                 # Initialize remaining directory paths.
@@ -98,7 +98,7 @@ function Initialize-ADTModule
                         }
                         else
                         {
-                            [System.IO.Path]::Combine($Script:PSScriptRoot, $_)
+                            $adtData.Directories.Defaults.$_
                         }
                     }
                 }
