@@ -49,10 +49,10 @@ function Open-ADTSession
     .PARAMETER AppRevision
         Specifies the application revision.
 
-    .PARAMETER AppExitCodes
+    .PARAMETER AppSuccessExitCodes
         Specifies the application exit codes.
 
-    .PARAMETER AppRebootCodes
+    .PARAMETER AppRebootExitCodes
         Specifies the application reboot codes.
 
     .PARAMETER AppScriptVersion
@@ -219,11 +219,11 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32[]]$AppExitCodes,
+        [System.Int32[]]$AppSuccessExitCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32[]]$AppRebootCodes,
+        [System.Int32[]]$AppRebootExitCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
