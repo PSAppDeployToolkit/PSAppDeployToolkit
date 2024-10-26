@@ -48,7 +48,7 @@ function Get-ADTPEFileArchitecture
 
     [CmdletBinding()]
     [OutputType([System.IO.FileInfo])]
-    [OutputType([System.String])]
+    [OutputType([PSADT.Shared.SystemArchitecture])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -88,37 +88,13 @@ function Get-ADTPEFileArchitecture
                     $stream.Close()
 
                     # Get the file header from the header's address, factoring in any offsets.
-                    $PEArchitecture = switch ([System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET))
+                    $PEArchitecture = try
                     {
-                        0
-                        {
-                            # The contents of this file are assumed to be applicable to any machine type
-                            'Native'
-                            break
-                        }
-                        0x014C
-                        {
-                            # File for Windows 32-bit systems
-                            '32BIT'
-                            break
-                        }
-                        0x0200
-                        {
-                            # File for Intel Itanium x64 processor family
-                            'Itanium-x64'
-                            break
-                        }
-                        0x8664
-                        {
-                            # File for Windows 64-bit systems
-                            '64BIT'
-                            break
-                        }
-                        default
-                        {
-                            'Unknown'
-                            break
-                        }
+                        [PSADT.Shared.SystemArchitecture][System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)
+                    }
+                    catch
+                    {
+                        [PSADT.Shared.SystemArchitecture]::Unknown
                     }
                     Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
                     if ($PassThru)

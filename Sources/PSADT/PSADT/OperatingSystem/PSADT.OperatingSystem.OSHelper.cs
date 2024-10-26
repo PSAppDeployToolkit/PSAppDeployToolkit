@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using PSADT.PInvoke;
+using PSADT.Shared;
 
 namespace PSADT.OperatingSystem
 {
@@ -471,19 +472,19 @@ namespace PSADT.OperatingSystem
         /// <summary>
         /// Returns the OS architecture of the current system.
         /// </summary>
-        public static OSArchitecture GetArchitecture()
+        public static SystemArchitecture GetArchitecture()
         {
             NativeMethods.GetNativeSystemInfo(out SYSTEM_INFO systemInfo);
             switch (systemInfo.wProcessorArchitecture)
             {
                 case ProcessorArchitecture.PROCESSOR_ARCHITECTURE_ARM64:
-                    return OSArchitecture.Arm64;
+                    return SystemArchitecture.ARM64;
                 case ProcessorArchitecture.PROCESSOR_ARCHITECTURE_ARM:
-                    return OSArchitecture.Arm;
+                    return SystemArchitecture.ARM;
                 case ProcessorArchitecture.PROCESSOR_ARCHITECTURE_AMD64:
-                    return OSArchitecture.X64;
+                    return SystemArchitecture.AMD64;
                 case ProcessorArchitecture.PROCESSOR_ARCHITECTURE_INTEL:
-                    return OSArchitecture.X86;
+                    return SystemArchitecture.i386;
                 default:
                     throw new Exception("An unsupported operating system architecture was detected.");
             }
