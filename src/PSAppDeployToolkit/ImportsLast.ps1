@@ -19,6 +19,11 @@
             Finishing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
         }
         Directories = [pscustomobject]@{
+            Defaults = ([ordered]@{
+                    Script = "$PSScriptRoot"
+                    Config = "$PSScriptRoot\Config"
+                    Strings = "$PSScriptRoot\Strings"
+                }).AsReadOnly()
             Script = $null
             Config = $null
             Strings = $null
