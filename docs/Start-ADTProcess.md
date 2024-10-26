@@ -13,7 +13,7 @@ Execute a process with optional arguments, working directory, window style.
 ## SYNTAX
 
 ```
-Start-ADTProcess [-Path] <String> [[-Parameters] <String[]>] [-SecureParameters]
+Start-ADTProcess [-FilePath] <String> [[-ArgumentList] <String[]>] [-SecureArgumentList]
  [[-WindowStyle] <ProcessWindowStyle>] [-CreateNoWindow] [[-WorkingDirectory] <String>] [-NoWait] [-PassThru]
  [-WaitForMsiExec] [[-MsiExecWaitTime] <UInt32>] [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>]
  [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure]
@@ -29,38 +29,38 @@ Provides various options for handling the return codes (see Parameters).
 
 ### EXAMPLE 1
 ```
-Start-ADTProcess -Path 'setup.exe' -Parameters '/S' -IgnoreExitCodes 1,2
+Start-ADTProcess -FilePath 'setup.exe' -ArgumentList '/S' -IgnoreExitCodes 1,2
 ```
 
 ### EXAMPLE 2
 ```
-Start-ADTProcess -Path "$dirFiles\Bin\setup.exe" -Parameters '/S' -WindowStyle 'Hidden'
+Start-ADTProcess -FilePath "$dirFiles\Bin\setup.exe" -ArgumentList '/S' -WindowStyle 'Hidden'
 ```
 
 ### EXAMPLE 3
 ```
-Start-ADTProcess -Path 'uninstall_flash_player_64bit.exe' -Parameters '/uninstall' -WindowStyle 'Hidden'
+Start-ADTProcess -FilePath 'uninstall_flash_player_64bit.exe' -ArgumentList '/uninstall' -WindowStyle 'Hidden'
 ```
 
 If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 
 ### EXAMPLE 4
 ```
-Start-ADTProcess -Path 'setup.exe' -Parameters "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
+Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
 ```
 
 Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
 
 ### EXAMPLE 5
 ```
-Start-ADTProcess -Path 'setup.exe' -Parameters "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
+Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
 ```
 
 Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 
 ## PARAMETERS
 
-### -Path
+### -FilePath
 Path to the file to be executed.
 If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 
@@ -70,7 +70,7 @@ If the files is in a subdirectory of "Files", use the "$dirFiles" variable as sh
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: FilePath
+Aliases:
 
 Required: True
 Position: 1
@@ -79,13 +79,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Parameters
+### -ArgumentList
 Arguments to be passed to the executable.
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: Arguments
+Aliases:
 
 Required: False
 Position: 2
@@ -94,7 +94,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SecureParameters
+### -SecureArgumentList
 Hides all parameters passed to the executable from the Toolkit log file.
 
 ```yaml

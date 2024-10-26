@@ -13,7 +13,7 @@ Executes an MSP file using the same logic as Start-ADTMsiProcess.
 ## SYNTAX
 
 ```
-Start-ADTMspProcess [-Path] <String> [[-AddParameters] <String>] [<CommonParameters>]
+Start-ADTMspProcess [-FilePath] <String> [[-AdditionalArgumentList] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,7 +21,7 @@ Reads SummaryInfo targeted product codes in MSP file and determines if the MSP f
 If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
 
 Uses default config MSI parameters.
-You can use -AddParameters to add additional parameters.
+You can use -AdditionalArgumentList to add additional parameters.
 
 ## EXAMPLES
 
@@ -34,20 +34,20 @@ Executes the specified MSP file for Adobe Reader 11.0.3.
 
 ### EXAMPLE 2
 ```
-Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AddParameters 'ALLUSERS=1'
+Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
 ```
 
 Executes the specified MSP file for Acrobat Reader 2017 with additional parameters.
 
 ## PARAMETERS
 
-### -Path
-Path to the MSP file.
+### -FilePath
+Please enter the path to the MSP file
 
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: FilePath
+Aliases:
 
 Required: True
 Position: 1
@@ -56,11 +56,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AddParameters
+### -AdditionalArgumentList
 Additional parameters.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 

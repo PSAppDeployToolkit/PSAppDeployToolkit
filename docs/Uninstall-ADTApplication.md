@@ -14,16 +14,16 @@ Removes all MSI applications matching the specified application name.
 
 ### InstalledApplication
 ```
-Uninstall-ADTApplication -InstalledApplication <InstalledApplication[]> [-Parameters <String>]
- [-AddParameters <String>] [-SecureParameters] [-LoggingOptions <String>] [-LogFileName <String>] [-PassThru]
- [<CommonParameters>]
+Uninstall-ADTApplication -InstalledApplication <InstalledApplication[]> [-ArgumentList <String>]
+ [-AdditionalArgumentList <String>] [-SecureArgumentList] [-LoggingOptions <String>] [-LogFileName <String>]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ### Search
 ```
 Uninstall-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <String[]>]
  [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>]
- [-Parameters <String>] [-AddParameters <String>] [-SecureParameters] [-LoggingOptions <String>]
+ [-ArgumentList <String>] [-AdditionalArgumentList <String>] [-SecureArgumentList] [-LoggingOptions <String>]
  [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
@@ -49,7 +49,7 @@ Removes all MSI applications that contain the name 'Java' in the DisplayName, wi
 
 ### EXAMPLE 3
 ```
-Uninstall-ADTApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -Parameters '/S'
+Uninstall-ADTApplication -FilterScript {$_.DisplayName -match '^Vim\s'} -Verbose -ApplicationType EXE -ArgumentList '/S'
 ```
 
 Remove all EXE applications starting with the name 'Vim' followed by a space, using the '/S' parameter.
@@ -167,13 +167,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Parameters
+### -ArgumentList
 Overrides the default MSI parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases: Arguments
+Aliases:
 
 Required: False
 Position: Named
@@ -182,7 +182,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AddParameters
+### -AdditionalArgumentList
 Adds to the default parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
 ```yaml
@@ -197,7 +197,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SecureParameters
+### -SecureArgumentList
 Hides all parameters passed to the executable from the Toolkit log file.
 
 ```yaml

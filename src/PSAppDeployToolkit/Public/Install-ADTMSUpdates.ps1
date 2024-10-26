@@ -76,11 +76,11 @@ function Install-ADTMSUpdates
                         Write-ADTLogEntry -Message "Installing [$redistDescription $redistVersion]..."
                         if ($redistDescription -match 'Win32 Cabinet Self-Extractor')
                         {
-                            Start-ADTProcess -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                            Start-ADTProcess -FilePath $file.FullName -ArgumentList '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
                         else
                         {
-                            Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                            Start-ADTProcess -FilePath $file.FullName -ArgumentList '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
                     }
                     elseif ($kbNumber = [System.Text.RegularExpressions.Regex]::Match($file.Name, $kbPattern).ToString())
@@ -97,13 +97,13 @@ function Install-ADTMSUpdates
                             '.exe'
                             {
                                 # Installation type for executables (i.e., Microsoft Office Updates).
-                                Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                                Start-ADTProcess -FilePath $file.FullName -ArgumentList '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                                 break
                             }
                             '.msu'
                             {
                                 # Installation type for Windows updates using Windows Update Standalone Installer.
-                                Start-ADTProcess -Path "$([System.Environment]::SystemDirectory)\wusa.exe" -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                                Start-ADTProcess -FilePath "$([System.Environment]::SystemDirectory)\wusa.exe" -ArgumentList "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                                 break
                             }
                             '.msp'

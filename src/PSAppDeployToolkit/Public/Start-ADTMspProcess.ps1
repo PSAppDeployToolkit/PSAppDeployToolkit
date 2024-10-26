@@ -13,12 +13,12 @@ function Start-ADTMspProcess
     .DESCRIPTION
         Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products. If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
 
-        Uses default config MSI parameters. You can use -AddParameters to add additional parameters.
+        Uses default config MSI parameters. You can use -AdditionalArgumentList to add additional parameters.
 
     .PARAMETER Path
         Path to the MSP file.
 
-    .PARAMETER AddParameters
+    .PARAMETER AdditionalArgumentList
         Additional parameters.
 
     .INPUTS
@@ -37,7 +37,7 @@ function Start-ADTMspProcess
         Executes the specified MSP file for Adobe Reader 11.0.3.
 
     .EXAMPLE
-        Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AddParameters 'ALLUSERS=1'
+        Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
 
         Executes the specified MSP file for Acrobat Reader 2017 with additional parameters.
 
@@ -65,12 +65,11 @@ function Start-ADTMspProcess
                 }
                 return !!$_
             })]
-        [Alias('FilePath')]
-        [System.String]$Path,
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AddParameters
+        [System.String[]]$AdditionalArgumentList
     )
 
     begin
@@ -86,22 +85,22 @@ function Start-ADTMspProcess
             try
             {
                 # If the MSP is in the Files directory, set the full path to the MSP.
-                $mspFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
+                $mspFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $FilePath))))
                 {
                     $dirFilesPath
                 }
-                elseif (Test-Path -LiteralPath $Path)
+                elseif (Test-Path -LiteralPath $FilePath)
                 {
-                    (Get-Item -LiteralPath $Path).FullName
+                    (Get-Item -LiteralPath $FilePath).FullName
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Failed to find MSP file [$Path]." -Severity 3
+                    Write-ADTLogEntry -Message "Failed to find MSP file [$FilePath]." -Severity 3
                     $naerParams = @{
-                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$Path].")
+                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSP file [$FilePath].")
                         Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                         ErrorId = 'MsiFileNotFound'
-                        TargetObject = $Path
+                        TargetObject = $FilePath
                         RecommendedAction = "Please confirm the path of the MSP file and try again."
                     }
                     throw (New-ADTErrorRecord @naerParams)

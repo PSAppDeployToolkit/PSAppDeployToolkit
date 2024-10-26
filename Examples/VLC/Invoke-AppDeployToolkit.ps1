@@ -135,7 +135,7 @@ function Install-ADTDeployment
     ## Handle Zero-Config MSI installations.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -148,7 +148,7 @@ function Install-ADTDeployment
     }
 
     ## <Perform Installation tasks here>
-    Start-ADTProcess -Path "vlc-$($adtSession.AppVersion)-win64.exe" -Parameters '/L=1033 /S'
+    Start-ADTProcess -FilePath "vlc-$($adtSession.AppVersion)-win64.exe" -ArgumentList '/L=1033 /S'
 
 
     ##================================================
@@ -191,7 +191,7 @@ function Uninstall-ADTDeployment
     ## Handle Zero-Config MSI uninstallations.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -200,8 +200,8 @@ function Uninstall-ADTDeployment
     }
 
     ## <Perform Uninstallation tasks here>
-    #Start-ADTProcess -Path "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -Parameters '/S' -ErrorAction Continue
-    Uninstall-ADTApplication -Name 'VLC media player' -NameMatch 'Exact' -Parameters '/S'
+    #Start-ADTProcess -FilePath "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -ArgumentList '/S' -ErrorAction SilentlyContinue
+    Uninstall-ADTApplication -Name 'VLC media player' -NameMatch 'Exact' -ArgumentList '/S'
 
     ##================================================
     ## MARK: Post-Uninstallation
@@ -235,7 +235,7 @@ function Repair-ADTDeployment
     ## Handle Zero-Config MSI repairs.
     if ($adtSession.UseDefaultMsi)
     {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; Path = $adtSession.DefaultMsiFile }
+        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
         if ($adtSession.DefaultMstFile)
         {
             $ExecuteDefaultMSISplat.Add('Transform', $adtSession.DefaultMstFile)
@@ -244,8 +244,9 @@ function Repair-ADTDeployment
     }
 
     ## <Perform Repair tasks here>
-    Start-ADTProcess -Path "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -Parameters '/S' -ErrorAction Continue
-    Start-ADTProcess -Path "vlc-$($adtSession.AppVersion)-win64.exe" -Parameters '/L=1033 /S'
+    #Start-ADTProcess -FilePath "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -ArgumentList '/S' -ErrorAction SilentlyContinue
+    Uninstall-ADTApplication -Name 'VLC media player' -NameMatch 'Exact' -ArgumentList '/S'
+    Start-ADTProcess -FilePath "vlc-$($adtSession.AppVersion)-win64.exe" -ArgumentList '/L=1033 /S'
 
 
     ##================================================
