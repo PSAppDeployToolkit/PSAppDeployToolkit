@@ -30,6 +30,12 @@ namespace PSADT
                 bool isRequireAdmin = false;
                 bool is64BitOS = false;
 
+                // Test whether we've got a local config before continuing.
+                if (File.Exists(Path.Combine(currentPath, "Config\\config.psd1")))
+                {
+                    adtConfigPath = Path.Combine(currentPath, "Config\\config.psd1");
+                }
+
                 // Get OS Architecture and test whether it ends with 64 or not (covers both x64 and ARM64).
                 if (nameof(RuntimeInformation.OSArchitecture).EndsWith("64"))
                 {
