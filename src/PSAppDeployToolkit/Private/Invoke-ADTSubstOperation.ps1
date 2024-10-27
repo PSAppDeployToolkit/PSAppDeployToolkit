@@ -16,9 +16,8 @@ function Invoke-ADTSubstOperation
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Drive -ProvidedValue $_ -ExceptionMessage 'The specified drive is not valid. Please specify a drive in the following format: [A:, B:, etc].'))
                 }
-                return !!$_.Length
+                return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [ValidatePattern('^[A-Z]:$')]
         [System.String]$Drive,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]

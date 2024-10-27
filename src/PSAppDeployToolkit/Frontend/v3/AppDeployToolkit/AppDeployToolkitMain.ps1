@@ -1583,7 +1583,7 @@ function Get-IniValue
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
                 }
-                return !!$_
+                return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$FilePath,
 
@@ -1638,7 +1638,7 @@ function Set-IniValue
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
                 }
-                return !!$_
+                return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$FilePath,
 

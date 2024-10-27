@@ -60,7 +60,7 @@ function Invoke-ADTRegSvr32
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist or is not a DLL file.'))
                 }
-                return !!$_
+                return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$FilePath,
 
