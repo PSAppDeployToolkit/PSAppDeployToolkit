@@ -64,7 +64,13 @@ function Add-ADTEdgeExtension
         [System.String]$ExtensionID,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript({ [System.Uri]::IsWellFormedUriString($_, [System.UriKind]::Absolute) })]
+        [ValidateScript({
+                if (![System.Uri]::IsWellFormedUriString($_, [System.UriKind]::Absolute))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName UpdateUrl -ProvidedValue $_ -ExceptionMessage 'The specified input is not a valid URL.'))
+                }
+                return ![System.String]::IsNullOrWhiteSpace($_)
+            })]
         [System.String]$UpdateUrl,
 
         [Parameter(Mandatory = $true)]
