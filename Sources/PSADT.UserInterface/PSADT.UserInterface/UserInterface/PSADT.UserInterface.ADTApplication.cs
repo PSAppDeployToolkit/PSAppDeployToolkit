@@ -27,9 +27,6 @@ namespace PSADT.UserInterface
         /// </summary>
         public AdtApplication()
         {
-            // Subscribe to the ProcessExit event to ensure Dispose is called
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
-
             _appThread = new Thread(InitializeApplication)
             {
                 IsBackground = true
@@ -426,14 +423,6 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Handles the ProcessExit event to dispose resources.
-        /// </summary>
-        private void OnProcessExit(object sender, EventArgs e)
-        {
-            Dispose();
-        }
-
-        /// <summary>
         /// Disposes the WPF Application and cleans up resources.
         /// </summary>
         public void Dispose()
@@ -441,9 +430,6 @@ namespace PSADT.UserInterface
             if (!_disposed)
             {
                 _disposed = true;
-
-                // Unsubscribe from ProcessExit event
-                AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
 
                 if (_app != null)
                 {
