@@ -62,8 +62,7 @@ function Import-ADTConfig
         }
     }
 
-    # Get the current environment and create variables within this scope from the database, it's needed during the config import.
-    ($adtEnv = Get-ADTEnvironment).GetEnumerator() | . { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } }
+    # Import the config from disk.
     $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
 
     # Confirm the specified dialog type is valid.
@@ -94,7 +93,8 @@ function Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
-    # Expand out variables and asset file paths.
+    # Expand out environment variables and asset file paths.
+    ($adtEnv = Get-ADTEnvironment).GetEnumerator() | . { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } }
     $config | Expand-ADTVariablesInConfig
     $config.Assets | Update-ADTAssetFilePath
 
