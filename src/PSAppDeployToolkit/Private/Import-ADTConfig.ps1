@@ -67,6 +67,10 @@ function Import-ADTConfig
     $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
 
     # Confirm the specified dialog type is valid.
+    if (!$Host.Name.Equals('ConsoleHost'))
+    {
+        $config.UI.DialogStyle = 'Classic'
+    }
     if (($config.UI.DialogStyle -ne 'Classic') -and (Test-ADTNonNativeCaller))
     {
         $config.UI.DialogStyle = if ($config.UI.ContainsKey('DialogStyleCompatMode'))
