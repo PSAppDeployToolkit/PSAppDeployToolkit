@@ -53,7 +53,7 @@ function Import-ADTConfig
         {
             if ($section.Value -is [System.Collections.Hashtable])
             {
-                $section.Value | & $MyInvocation.MyCommand; continue
+                $section.Value | & $MyInvocation.MyCommand
             }
             elseif ($section.Value -is [System.String])
             {
