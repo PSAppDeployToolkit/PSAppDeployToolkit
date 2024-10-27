@@ -189,6 +189,7 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
             $solutionPath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SolutionPath)
             Write-Build White "      Building $solutionPath..."
             & dotnet build $solutionPath --configuration Release --verbosity minimal
+            if ($LASTEXITCODE) { throw "Failed to solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
             $sourcePath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\*')
             $destPath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.OutputPath)
             Write-Build White "      Copying from  $sourcePath to $destPath..."
