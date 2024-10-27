@@ -98,7 +98,7 @@ function Set-ADTActiveSetup
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName StubExePath -ProvidedValue $_ -ExceptionMessage "Unsupported Active Setup StubPath file extension [$StubExeExt]."))
                 }
-                return !!$_
+                return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$StubExePath,
 

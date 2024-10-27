@@ -65,7 +65,7 @@ function Get-ADTShortcut
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
                 }
-                return !!$_
+                return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$Path
     )

@@ -63,7 +63,7 @@ function Start-ADTMspProcess
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is not an .msp file.'))
                 }
-                return !!$_
+                return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$FilePath,
 

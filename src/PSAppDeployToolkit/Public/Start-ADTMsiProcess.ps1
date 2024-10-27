@@ -147,7 +147,7 @@ function Start-ADTMsiProcess
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
                 }
-                return !!$_
+                return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$FilePath,
 
