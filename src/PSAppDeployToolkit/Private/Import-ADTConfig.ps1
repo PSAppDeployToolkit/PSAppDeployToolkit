@@ -10,7 +10,17 @@ function Import-ADTConfig
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ([System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
+                }
+                if (![System.IO.Directory]::Exists($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified directory does not exist.'))
+                }
+                return $_
+            })]
         [System.String]$BaseDirectory
     )
 
