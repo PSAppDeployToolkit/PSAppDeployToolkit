@@ -92,15 +92,7 @@ namespace PSADT.OperatingSystem
                 OSVersionInfoEx.SuiteMask);
 
             OSVersionInfo.Edition = OSEdition;
-
-            if (Environment.Is64BitOperatingSystem)
-            {
-                OSVersionInfo.Architecture = "64-bit";
-            }
-            else
-            {
-                OSVersionInfo.Architecture = "32-bit";
-            }
+            OSVersionInfo.Architecture = GetArchitecture();
 
             return OSVersionInfo;
         }
