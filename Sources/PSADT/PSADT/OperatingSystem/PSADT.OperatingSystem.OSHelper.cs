@@ -76,7 +76,10 @@ namespace PSADT.OperatingSystem
             OSVersionInfo.ReleaseId = GetOsReleaseId();
             OSVersionInfo.ReleaseIdName = GetOsReleaseIdName();
             OSVersionInfo.ServicePackName = OSVersionInfoEx.CSDVersion;
-            OSVersionInfo.ServicePackVersion = Version.Parse($"{OSVersionInfoEx.ServicePackMajor}.{OSVersionInfoEx.ServicePackMinor}");
+            if (OSVersionInfoEx.ServicePackMajor > 0)
+            {
+                OSVersionInfo.ServicePackVersion = Version.Parse($"{OSVersionInfoEx.ServicePackMajor}.{OSVersionInfoEx.ServicePackMinor}");
+            }
             OSVersionInfo.OperatingSystem = GetOperatingSystem(
                 OSVersionInfoEx.MajorVersion,
                 OSVersionInfoEx.MinorVersion,
