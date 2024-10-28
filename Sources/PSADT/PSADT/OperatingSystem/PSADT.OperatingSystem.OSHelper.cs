@@ -106,13 +106,13 @@ namespace PSADT.OperatingSystem
         {
             string? OSVersionRevision = String.Empty;
             
-            if (TestValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR"))
+            if (TestValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR"))
             {
-                OSVersionRevision = GetValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR");
+                OSVersionRevision = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR");
             }
-            else if (TestValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "BuildLabEx"))
+            else if (TestValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "BuildLabEx"))
             {
-                string? BuildLabEx = GetValue(@"HKLM\SOFTWARE\\Microsoft\Windows NT\CurrentVersion", "BuildLabEx");
+                string? BuildLabEx = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "BuildLabEx");
                 if (!String.IsNullOrWhiteSpace(BuildLabEx))
                 {
                     OSVersionRevision = BuildLabEx?.Split(".".ToCharArray())[1];
@@ -141,9 +141,9 @@ namespace PSADT.OperatingSystem
         {
             string? OSReleaseId = String.Empty;
 
-            if (TestValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId"))
+            if (TestValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId"))
             {
-                OSReleaseId = GetValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId");
+                OSReleaseId = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId");
             }
 
             return OSReleaseId;
@@ -153,9 +153,9 @@ namespace PSADT.OperatingSystem
         {
             string? OSReleaseIdName = String.Empty;
 
-            if (TestValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DisplayVersion"))
+            if (TestValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DisplayVersion"))
             {
-                OSReleaseIdName = GetValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DisplayVersion");
+                OSReleaseIdName = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DisplayVersion");
             }
             else
             {
@@ -210,9 +210,9 @@ namespace PSADT.OperatingSystem
             if (isProductInfoRetrieved && productType == PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER)
             {
                 // Check the EditionID registry key to differentiate between Server and Multi-Session Workstation
-                string? editionId = GetValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID");
+                string? editionId = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID");
 
-                string? productName = GetValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName");
+                string? productName = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName");
                 
 
 
