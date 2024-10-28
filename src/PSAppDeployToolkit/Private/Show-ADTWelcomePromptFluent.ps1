@@ -68,7 +68,7 @@ function Show-ADTWelcomePromptFluent
         $Title,
         [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $DeploymentType),
         !$NotTopMost,
-        $DeferTimes + 1,
+        $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes + 1 }),
         $appsToClose,
         $adtConfig.Assets.Fluent.Logo,
         $adtConfig.Assets.Fluent.Banner.Light,
