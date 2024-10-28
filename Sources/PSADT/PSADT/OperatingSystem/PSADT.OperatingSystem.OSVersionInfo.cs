@@ -1,5 +1,6 @@
 ﻿using System;
 using PSADT.PInvoke;
+using PSADT.Shared;
 
 namespace PSADT.OperatingSystem
 {
@@ -13,7 +14,7 @@ namespace PSADT.OperatingSystem
         public string? ReleaseIdName { get; set; }
         public string? ServicePackName { get; set; }
         public Version? ServicePackVersion { get; set; }
-        public string? Architecture { get; set; }
+        public SystemArchitecture Architecture { get; set; }
         public bool Is64BitOperatingSystem { get; set; }
         public bool IsTerminalServer { get; set; }
         public bool IsWorkstationEnterpriseMultiSessionOS { get; set; }
