@@ -1285,7 +1285,7 @@ function Show-InstallationWelcome
     # Tune up parameters. A lot has changed.
     if ($PSBoundParameters.ContainsKey('CloseApps'))
     {
-        $PSBoundParameters.ProcessObjects = $CloseApps.Split(',') | & {
+        $PSBoundParameters.CloseProcesses = $CloseApps.Split(',') | & {
             process
             {
                 $name, $description = $_.Split('=')

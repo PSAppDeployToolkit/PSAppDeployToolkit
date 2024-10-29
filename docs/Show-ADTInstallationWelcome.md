@@ -14,7 +14,7 @@ Show a welcome dialog prompting the user with information about the installation
 
 ### None (Default)
 ```
-Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
+Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
  [-ForceCloseAppsCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseApps] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String>
@@ -23,7 +23,7 @@ Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-Clos
 
 ### CheckDiskSpace
 ```
-Show-ADTInstallationWelcome [-ProcessObjects <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
+Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
  [-ForceCloseAppsCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseApps] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-CheckDiskSpace]
  [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText]
@@ -95,7 +95,7 @@ When deferral expires, prompt the user to close the applications and automatical
 
 ## PARAMETERS
 
-### -ProcessObjects
+### -CloseProcesses
 Name of the process to stop (do not include the .exe).
 Specify multiple processes separated by a comma.
 Specify custom descriptions like this: @{ Name = 'winword'; Description = 'Microsoft Office Word'},@{ Name = 'excel'; Description = 'Microsoft Office Excel'}
