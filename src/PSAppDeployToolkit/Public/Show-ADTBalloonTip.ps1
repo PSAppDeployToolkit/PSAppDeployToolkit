@@ -107,6 +107,12 @@ function Show-ADTBalloonTip
 
     process
     {
+        # Don't allow toast notifications with fluent dialogs at this time.
+        if ($adtConfig.UI.DialogStyle -eq 'Fluent')
+        {
+            return
+        }
+
         try
         {
             try
