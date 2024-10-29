@@ -17,7 +17,7 @@ function Show-ADTInstallationWelcome
             c) Countdown until applications are automatically closed.
             d) Prevent users from launching the specified applications while the installation is in progress.
 
-    .PARAMETER ProcessObjects
+    .PARAMETER CloseProcesses
         Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{ Name = 'winword'; Description = 'Microsoft Office Word'},@{ Name = 'excel'; Description = 'Microsoft Office Excel'}
 
     .PARAMETER Silent
@@ -151,7 +151,7 @@ function Show-ADTInstallationWelcome
     (
         [Parameter(Mandatory = $false, HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.ProcessObject[]]$ProcessObjects,
+        [PSADT.Types.ProcessObject[]]$CloseProcesses,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to prompt user or force close the applications.')]
         [System.Management.Automation.SwitchParameter]$Silent,
@@ -277,7 +277,7 @@ function Show-ADTInstallationWelcome
                 # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
                 if ($adtSession -and ($msiExecutables = $adtSession.GetDefaultMsiExecutablesList()))
                 {
-                    $ProcessObjects = $(if ($ProcessObjects) { $ProcessObjects }; $msiExecutables)
+                    $CloseProcesses = $(if ($CloseProcesses) { $CloseProcesses }; $msiExecutables)
                 }
 
                 # Check disk space requirements if specified
@@ -415,7 +415,7 @@ function Show-ADTInstallationWelcome
                     }
                     $welcomeState.CloseAppsCountdown = $CloseAppsCountdown
 
-                    while (($runningProcesses = Get-ADTRunningProcesses -ProcessObject $ProcessObjects -InformationAction SilentlyContinue) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
                         $welcomeState.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
@@ -433,7 +433,7 @@ function Show-ADTInstallationWelcome
                             CustomText = $CustomText
                             NotTopMost = $NotTopMost
                         }
-                        if ($ProcessObjects) { $promptParams.Add('ProcessObjects', $ProcessObjects) }
+                        if ($CloseProcesses) { $promptParams.Add('ProcessObjects', $CloseProcesses) }
 
                         # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                         if ($AllowDefer)
@@ -486,7 +486,7 @@ function Show-ADTInstallationWelcome
                             $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -InformationAction SilentlyContinue
                             $PromptToSaveTimeout = [System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)
                             $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
-                            foreach ($runningProcess in ($runningProcesses = Get-ADTRunningProcesses -ProcessObject $ProcessObjects))
+                            foreach ($runningProcess in ($runningProcesses = Get-ADTRunningProcesses -ProcessObject $CloseProcesses))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
                                 if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & { process { if ($_.ParentProcess -eq $runningProcess.ProcessName) { return $_ } } } | Select-Object -First 1) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
@@ -542,7 +542,7 @@ function Show-ADTInstallationWelcome
                                 }
                             }
 
-                            if ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue)
+                            if ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue)
                             {
                                 # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
                                 Write-ADTLogEntry -Message 'Sleeping for 2 seconds because the processes are still not closed...'
@@ -591,7 +591,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Force the processes to close silently, without prompting the user.
-                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects))
+                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses))
                 {
                     Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
                     $runningProcesses.ProcessName | Stop-Process -Force -ErrorAction Ignore
@@ -599,10 +599,10 @@ function Show-ADTInstallationWelcome
                 }
 
                 # If block execution switch is true, call the function to block execution of these processes.
-                if ($BlockExecution -and $ProcessObjects)
+                if ($BlockExecution -and $CloseProcesses)
                 {
                     Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
-                    Block-ADTAppExecution -ProcessName $ProcessObjects.Name
+                    Block-ADTAppExecution -ProcessName $CloseProcesses.Name
                 }
             }
             catch
