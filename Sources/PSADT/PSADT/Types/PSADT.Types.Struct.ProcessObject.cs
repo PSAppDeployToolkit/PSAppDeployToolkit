@@ -1,4 +1,7 @@
-﻿namespace PSADT.Types
+﻿using System;
+using System.Collections;
+
+namespace PSADT.Types
 {
     /// <summary>
     /// Represents basic information about a process.
@@ -11,8 +14,11 @@
         /// <param name="name">The name of the process.</param>
         public ProcessObject(string name)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("Name", "A mandatory property was null or empty.");
+            }
             Name = name;
-            Description = string.Empty;
         }
 
         /// <summary>
@@ -22,8 +28,40 @@
         /// <param name="description">The description of the process.</param>
         public ProcessObject(string name, string description)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("Name", "A mandatory property was null or empty.");
+            }
             Name = name;
-            Description = description;
+
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                Description = description;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessObject"/> struct.
+        /// </summary>
+        /// <param name="properties">The hashtable with a process's name, and optionally a description.</param>
+        public ProcessObject(Hashtable properties)
+        {
+            // Validate the provided name value.
+            if (!properties.ContainsKey("Name"))
+            {
+                throw new ArgumentException("A mandatory property was not provided.", "Name");
+            }
+            if (string.IsNullOrWhiteSpace(properties["Name"]?.ToString()))
+            {
+                throw new ArgumentNullException("Name", "A mandatory property was null or empty.");
+            }
+            Name = properties["Name"]!.ToString()!;
+
+            // Add in the description if it's valid.
+            if (!string.IsNullOrWhiteSpace(properties["Description"]?.ToString()))
+            {
+                Description = properties["Description"]!.ToString();
+            }
         }
 
         /// <summary>
@@ -34,7 +72,7 @@
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
-        public string Description { get; }
+        public string? Description { get; }
 
         /// <summary>
         /// Returns a string that represents the current <see cref="ProcessObject"/> object.
