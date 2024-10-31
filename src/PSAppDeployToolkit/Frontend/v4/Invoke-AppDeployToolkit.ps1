@@ -288,6 +288,7 @@ catch
 
 try
 {
+    Import-Module -Name $PSScriptRoot\PSAppDeployToolkit.Extensions -Force
     & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession
 }
