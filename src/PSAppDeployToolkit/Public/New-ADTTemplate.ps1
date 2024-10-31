@@ -98,14 +98,15 @@ function New-ADTTemplate
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $moduleName = $MyInvocation.MyCommand.Module.Name
         $templatePath = Join-Path -Path $Destination -ChildPath $Name
         $templateModulePath = if ($Version.Equals(3))
         {
-            [System.IO.Path]::Combine($templatePath, 'AppDeployToolkit', $MyInvocation.MyCommand.Module.Name)
+            [System.IO.Path]::Combine($templatePath, 'AppDeployToolkit', $moduleName)
         }
         else
         {
-            [System.IO.Path]::Combine($templatePath, $MyInvocation.MyCommand.Module.Name)
+            [System.IO.Path]::Combine($templatePath, $moduleName)
         }
     }
 
@@ -167,6 +168,7 @@ function New-ADTTemplate
                 {
                     $astLambda = {
                         ($args[0] -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) -and
+                        ($args[0].Value.EndsWith("\$moduleName")) -and
                         ($args[0].Parent -is [System.Management.Automation.Language.CommandAst]) -and
                         ($args[0].Parent.CommandElements.Count) -and
                         ($args[0].Parent.CommandElements[0].Value.Equals('Import-Module'))
@@ -175,7 +177,7 @@ function New-ADTTemplate
                     $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]$null, [ref]$null)
                     $astExtent = $scriptAst.FindAll($astLambda, $false).Extent
                     $scriptText = $scriptText.Remove($astExtent.StartOffset, $astExtent.EndOffset - $astExtent.StartOffset)
-                    $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$($MyInvocation.MyCommand.Module.Name)")
+                    $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$moduleName")
                     [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
                 }
 
