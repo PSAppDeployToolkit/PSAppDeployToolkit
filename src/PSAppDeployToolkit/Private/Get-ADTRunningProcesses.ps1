@@ -21,7 +21,7 @@ function Get-ADTRunningProcesses
     None. You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Diagnostics.Process. Returns one or more process objects representing each running process found.
+    PSADT.UserInterface.Services.AppProcessInfo. Returns a custom object representing each app's process info.
 
     .EXAMPLE
     Get-ADTRunningProcesses -ProcessObjects $processObjects
@@ -39,7 +39,7 @@ function Get-ADTRunningProcesses
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
-    [OutputType([System.Diagnostics.Process])]
+    [OutputType([PSADT.UserInterface.Services.AppProcessInfo])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -58,22 +58,29 @@ function Get-ADTRunningProcesses
     $runningProcesses = Get-Process -Name $ProcessObjects.Name -ErrorAction Ignore | & {
         process
         {
-            return $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
-                {
-                    # The description of the process provided with the object.
-                    $objDescription
-                }
-                elseif ($_.Description)
-                {
-                    # If the process already has a description field specified, then use it.
-                    $_.Description
-                }
-                else
-                {
-                    # Fall back on the process name if no description is provided by the process or as a parameter to the function.
-                    $_.ProcessName
-                }
+            return [PSADT.UserInterface.Services.AppProcessInfo]::new(
+                $_.Name,
+                $(
+                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
+                    {
+                        # The description of the process provided with the object.
+                        $objDescription
+                    }
+                    elseif ($_.Description)
+                    {
+                        # If the process already has a description field specified, then use it.
+                        $_.Description
+                    }
+                    else
+                    {
+                        # Fall back on the process name if no description is provided by the process or as a parameter to the function.
+                        $_.ProcessName
+                    }
+                ),
+                $_.Product,
+                $_.Company,
+                $null,
+                $_.StartTime
             )
         }
     }

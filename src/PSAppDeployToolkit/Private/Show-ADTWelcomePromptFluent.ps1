@@ -42,21 +42,6 @@ function Show-ADTWelcomePromptFluent
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
 
-    # Convert the incoming ProcessObject objects into AppProcessInfo objects.
-    $appsToClose = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue | & {
-        process
-        {
-            [PSADT.UserInterface.Services.AppProcessInfo]::new(
-                $_.Name,
-                $_.ProcessDescription,
-                $_.Product,
-                $_.Company,
-                $null,
-                $_.StartTime
-            )
-        }
-    }
-
     # Minimize all other windows.
     if (!$NoMinimizeWindows)
     {
@@ -69,7 +54,7 @@ function Show-ADTWelcomePromptFluent
         [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $DeploymentType),
         !$NotTopMost,
         $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes + 1 }),
-        $appsToClose,
+        (Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue),
         $adtConfig.Assets.Fluent.Logo,
         $adtConfig.Assets.Fluent.Banner.Light,
         $adtConfig.Assets.Fluent.Banner.Dark,
