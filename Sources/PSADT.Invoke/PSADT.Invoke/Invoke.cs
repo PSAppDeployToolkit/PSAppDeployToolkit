@@ -125,7 +125,7 @@ namespace PSADT
                 // Switch to x86 PowerShell if requested.
                 if (is64BitOS && isForceX86Mode)
                 {
-                    pwshExecutablePath = Path.Combine(Environment.GetEnvironmentVariable("WinDir"), "SysWOW64\\WindowsPowerShell\\v1.0\\PowerShell.exe");
+                    pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 }
 
                 // Define PowerShell process.
