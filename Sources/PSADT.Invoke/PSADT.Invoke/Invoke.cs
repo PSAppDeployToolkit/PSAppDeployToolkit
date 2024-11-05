@@ -1,8 +1,9 @@
 using System;
+using System.IO;
+using System.Reflection;
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Management.Automation.Language;
 using System.Windows.Forms;
@@ -20,15 +21,15 @@ namespace PSADT
             {
                 // Set up variables.
                 string currentPath = AppDomain.CurrentDomain.BaseDirectory;
-                string adtFrontendPath = Path.Combine(currentPath, "Invoke-AppDeployToolkit.ps1");
-                string adtToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit\\PSAppDeployToolkit.psd1");
-                string adtConfigPath = Path.Combine(currentPath, "PSAppDeployToolkit\\Config\\config.psd1");
+                string adtFrontendPath = Path.Combine(currentPath, $"{AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Name}.ps1");
+                string adtToolkitPath = Directory.Exists(Path.Combine(currentPath, "PSAppDeployToolkit")) ? Path.Combine(currentPath, "PSAppDeployToolkit") : (Directory.Exists(Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit")) ? Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit") : String.Empty);
+                string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string pwshArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
                 List<string> cliArguments = new List<string>(Environment.GetCommandLineArgs());
+                bool is64BitOS = nameof(RuntimeInformation.OSArchitecture).EndsWith("64");
                 bool isForceX86Mode = false;
                 bool isRequireAdmin = false;
-                bool is64BitOS = false;
 
                 // Test whether we've got a local config before continuing.
                 if (File.Exists(Path.Combine(currentPath, "Config\\config.psd1")))
@@ -36,10 +37,29 @@ namespace PSADT
                     adtConfigPath = Path.Combine(currentPath, "Config\\config.psd1");
                 }
 
-                // Get OS Architecture and test whether it ends with 64 or not (covers both x64 and ARM64).
-                if (nameof(RuntimeInformation.OSArchitecture).EndsWith("64"))
+                // Verify if the App Deploy script file exists.
+                if (!File.Exists(adtFrontendPath))
                 {
-                    is64BitOS = true;
+                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the App Deploy Script file at '{adtFrontendPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
+                }
+
+                // Verify if the PSAppDeployToolkit folder exists.
+                if (String.IsNullOrWhiteSpace(adtToolkitPath))
+                {
+                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'PSAppDeployToolkit' module directory'.\n\nPlease ensure you have all of the required files available to start the installation.");
+                }
+
+                // Verify if the PSAppDeployToolkit config file exists.
+                if (!File.Exists(adtConfigPath))
+                {
+                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
+                }
+
+                // Parse our config and throw if we have any errors.
+                var configAst = Parser.ParseFile(adtConfigPath, out Token[] configTokens, out ParseError[] configErrors);
+                if (configErrors.Length > 0)
+                {
+                    throw new Exception($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
                 }
 
                 // Trim ending & starting empty space from each element in the command-line.
@@ -92,31 +112,6 @@ namespace PSADT
                 if (cliArguments.Count > 0)
                 {
                     pwshArguments += " " + string.Join(" ", cliArguments.ToArray());
-                }
-
-                // Verify if the App Deploy script file exists.
-                if (!File.Exists(adtFrontendPath))
-                {
-                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the App Deploy Script file at '{adtFrontendPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
-                }
-
-                // Verify if the App Deploy Toolkit folder exists.
-                if (!File.Exists(adtToolkitPath))
-                {
-                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'PSAppDeployToolkit.psd1' module file at '{adtToolkitPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
-                }
-
-                // Verify if the App Deploy Toolkit Config XML file exists.
-                if (!File.Exists(adtConfigPath))
-                {
-                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
-                }
-
-                // Parse our config and throw if we have any errors.
-                var configAst = Parser.ParseFile(adtConfigPath, out Token[] configTokens, out ParseError[] configErrors);
-                if (configErrors.Length > 0)
-                {
-                    throw new Exception($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
                 }
 
                 // Determine whether we require admin rights or not.
