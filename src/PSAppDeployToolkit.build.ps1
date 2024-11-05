@@ -525,7 +525,7 @@ Add-BuildTask UpdateCBH -After AssetCopy $null; $null = {
 Add-BuildTask AssetCopy -Before Build {
     Write-Build Gray '        Copying assets to Artifacts...'
     New-Item -Path $script:BuildModuleRoot -ItemType Directory -Force | Out-Null
-    Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:BuildModuleRoot -Exclude "$($script:ModuleName).psd1", *.psm1 -Recurse -ErrorAction Stop
+    Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:BuildModuleRoot -Exclude "$($script:ModuleName).ps*1" -Recurse -ErrorAction Stop
     Write-Build Gray '        ...Assets copy complete.'
 } #AssetCopy
 
