@@ -111,7 +111,7 @@ function Write-Log
     begin
     {
         # Announce overall deprecation.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity 2 -Source $MyInvocation.MyCommand.Name -DebugMessage:$noDepWarnings
 
         # Announce dead parameters.
         ('AppendToLogFile', 'MaxLogHistory', 'MaxLogFileSizeMB', 'WriteHost', 'LogDebugMessage').ForEach({
@@ -184,7 +184,7 @@ function Exit-Script
         [System.Int32]$ExitCode
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTSession]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTSession]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Close-ADTSession @PSBoundParameters
@@ -218,7 +218,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
         [PSADT.Types.UserProfile[]]$UserProfiles
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryAction]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryAction]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     $PSBoundParameters.ScriptBlock = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.ScriptBlock
     try
     {
@@ -247,7 +247,7 @@ function Get-HardwarePlatform
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [`$envHardwareType]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [`$envHardwareType]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         return $envHardwareType
@@ -282,7 +282,7 @@ function Get-FreeDiskSpace
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFreeDiskSpace]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFreeDiskSpace]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -324,7 +324,7 @@ function Remove-InvalidFileNameChars
     begin
     {
         # Announce deprecation of function and set up accumulator for all piped in names.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity 2
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         $names = [System.Collections.Specialized.StringCollection]::new()
     }
 
@@ -388,7 +388,7 @@ function Get-InstalledApplication
     )
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Exact, WildCard, RegEx
 
     if ($Exact)
@@ -487,7 +487,7 @@ function Remove-MSIApplications
     )
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Uninstall-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Uninstall-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Build out hashtable for splatting.
     $uaaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Exact, WildCard, FilterApplication, ExcludeFromUninstall, ContinueOnError
@@ -600,7 +600,7 @@ function Get-FileVersion
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFileVersion]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFileVersion]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -658,7 +658,7 @@ function Get-UserProfiles
             $PSBoundParameters.Remove("Exclude$_")
         })
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUserProfiles]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Get-ADTUserProfiles @PSBoundParameters
@@ -687,7 +687,7 @@ function Update-Desktop
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTDesktop]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTDesktop]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Update-ADTDesktop
@@ -723,7 +723,7 @@ function Update-SessionEnvironmentVariables
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTEnvironmentPsProvider]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTEnvironmentPsProvider]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Update-ADTEnvironmentPsProvider -LoadLoggedOnUserEnvironmentVariables:$LoadLoggedOnUserEnvironmentVariables
@@ -786,7 +786,7 @@ function Copy-File
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFile]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFile]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -855,7 +855,7 @@ function Remove-File
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFile]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFile]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -938,7 +938,7 @@ function Copy-FileToUserProfiles
     begin
     {
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
                 if (!$PSBoundParameters."Exclude$_")
                 {
@@ -1062,7 +1062,7 @@ function Show-InstallationPrompt
     )
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationPrompt]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationPrompt]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Tune up parameters. A lot has changed.
     if ($PSBoundParameters.ContainsKey('Icon') -and ($PSBoundParameters.Icon -eq 'None'))
@@ -1123,7 +1123,7 @@ function Show-InstallationProgress
     )
 
     # Announce overall deprecation before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
@@ -1186,7 +1186,7 @@ function Show-DialogBox
     )
 
     # Announce overall deprecation before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTDialogBox]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTDialogBox]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
@@ -1280,7 +1280,7 @@ function Show-InstallationWelcome
     )
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationWelcome]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationWelcome]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Tune up parameters. A lot has changed.
     if ($PSBoundParameters.ContainsKey('CloseApps'))
@@ -1346,7 +1346,7 @@ function Get-WindowTitle
         [System.Management.Automation.SwitchParameter]$DisableFunctionLogging
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
     {
         $PSBoundParameters.Add('InformationAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
@@ -1399,7 +1399,7 @@ function Show-InstallationRestartPrompt
     )
 
     # Announce overall deprecation before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationRestartPrompt]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationRestartPrompt]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('NoSilentRestart'))
     {
         $PSBoundParameters.Add('SilentRestart', !$PSBoundParameters.NoSilentRestart)
@@ -1452,7 +1452,7 @@ function Show-BalloonTip
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTBalloonTip]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTBalloonTip]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($NoWait)
     {
         Write-ADTLogEntry -Message "The parameter '-NoWait' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
@@ -1485,7 +1485,7 @@ function Copy-ContentToCache
         [System.String]$Path
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTContentToCache]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTContentToCache]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Copy-ADTContentToCache @PSBoundParameters
@@ -1514,7 +1514,7 @@ function Remove-ContentFromCache
         [System.String]$Path
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTContentFromCache]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTContentFromCache]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Remove-ADTContentFromCache @PSBoundParameters
@@ -1534,7 +1534,7 @@ function Remove-ContentFromCache
 
 function Test-NetworkConnection
 {
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTNetworkConnection]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTNetworkConnection]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Test-ADTNetworkConnection
@@ -1554,7 +1554,7 @@ function Test-NetworkConnection
 
 function Get-LoggedOnUser
 {
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTLoggedOnUser]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTLoggedOnUser]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Get-ADTLoggedOnUser
@@ -1600,7 +1600,7 @@ function Get-IniValue
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTIniValue]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTIniValue]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1659,7 +1659,7 @@ function Set-IniValue
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTIniValue]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTIniValue]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1701,7 +1701,7 @@ function New-Folder
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1732,7 +1732,7 @@ function New-Folder
 
 function Test-PowerPoint
 {
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-PowerPoint]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-PowerPoint]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Test-ADTPowerPoint
@@ -1762,7 +1762,7 @@ function Update-GroupPolicy
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTGroupPolicy]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTGroupPolicy]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1805,7 +1805,7 @@ function Get-UniversalDate
         [System.Boolean]$ContinueOnError = $false
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUniversalDate]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUniversalDate]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1853,7 +1853,7 @@ function Test-ServiceExists
         [System.Boolean]$ContinueOnError = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTServiceExists]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTServiceExists]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($ComputerName)
     {
         Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
@@ -1895,7 +1895,7 @@ function Disable-TerminalServerInstallMode
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Disable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Disable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1935,7 +1935,7 @@ function Enable-TerminalServerInstallMode
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Enable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Enable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1994,7 +1994,7 @@ function Configure-EdgeExtension
         [System.String]$MinimumVersionRequired
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [$($PSCmdlet.ParameterSetName)-ADTEdgeExtension]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [$($PSCmdlet.ParameterSetName)-ADTEdgeExtension]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
     try
     {
@@ -2043,7 +2043,7 @@ function Resolve-Error
     begin
     {
         # Announce overall deprecation and translate bad switches before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({ $PSBoundParameters.ContainsKey($_) }).ForEach({
                 $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters."Get$_")
                 $PSBoundParameters.Remove("Get$_")
@@ -2127,7 +2127,7 @@ function Get-ServiceStartMode
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($ComputerName)
     {
         Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
@@ -2183,7 +2183,7 @@ function Set-ServiceStartMode
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2278,7 +2278,7 @@ function Execute-Process
     )
 
     # Announce deprecation of this function.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcess]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Convert out changed parameters.
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
@@ -2401,7 +2401,7 @@ function Execute-MSI
     )
 
     # Announce deprecation of this function.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMsiProcess]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMsiProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Convert out changed parameters.
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
@@ -2456,7 +2456,7 @@ function Execute-MSP
         [System.String]$AddParameters
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMspProcess]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMspProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Start-ADTMspProcess @PSBoundParameters
@@ -2476,7 +2476,7 @@ function Execute-MSP
 
 function Unblock-AppExecution
 {
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unblock-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unblock-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Unblock-ADTAppExecution
@@ -2504,7 +2504,7 @@ function Block-AppExecution
         [System.String[]]$ProcessName
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Block-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Block-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Block-ADTAppExecution @PSBoundParameters
@@ -2546,7 +2546,7 @@ function Test-RegistryValue
     begin
     {
         # Announce deprecation of function and set up accumulator for all piped in keys.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         $keys = [System.Collections.Generic.List[System.Object]]::new()
     }
 
@@ -2605,7 +2605,7 @@ function Convert-RegistryPath
         [System.Boolean]$DisableFunctionLogging = $true
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Convert-ADTRegistryPath]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Convert-ADTRegistryPath]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
     {
         $null = $PSBoundParameters.Remove('DisableFunctionLogging')
@@ -2647,7 +2647,7 @@ function Test-MSUpdates
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2685,7 +2685,7 @@ function Test-Battery
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTBattery]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTBattery]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Test-ADTBattery @PSBoundParameters
@@ -2738,7 +2738,7 @@ function Start-ServiceAndDependencies
     )
 
     # Announce overall deprecation and dead parameters.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     ('ComputerName', 'SkipServiceExistsTest').ForEach({
             if ($PSBoundParameters.ContainsKey($_))
             {
@@ -2812,7 +2812,7 @@ function Stop-ServiceAndDependencies
     )
 
     # Announce overall deprecation and dead parameters.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     ('ComputerName', 'SkipServiceExistsTest').ForEach({
             if ($PSBoundParameters.ContainsKey($_))
             {
@@ -2885,7 +2885,7 @@ function Set-RegistryKey
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2941,7 +2941,7 @@ function Remove-RegistryKey
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3009,7 +3009,7 @@ function Remove-FileFromUserProfiles
     )
 
     # Announce overall deprecation and dead parameters.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
             if (!$PSBoundParameters."Exclude$_")
             {
@@ -3076,7 +3076,7 @@ function Get-RegistryKey
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3116,7 +3116,7 @@ function Install-MSUpdates
         [System.String]$Directory
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Install-ADTMSUpdates @PSBoundParameters
@@ -3149,7 +3149,7 @@ function Get-SchedulerTask
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTSchedulerTask]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTSchedulerTask]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3180,7 +3180,7 @@ function Get-SchedulerTask
 
 function Get-PendingReboot
 {
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPendingReboot]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPendingReboot]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Get-ADTPendingReboot
@@ -3218,7 +3218,7 @@ function Invoke-RegisterOrUnregisterDLL
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTRegSvr32]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTRegSvr32]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3262,7 +3262,7 @@ function Register-DLL
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Register-ADTDll]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Register-ADTDll]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3306,7 +3306,7 @@ function Unregister-DLL
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unregister-ADTDll]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unregister-ADTDll]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3354,7 +3354,7 @@ function Remove-Folder
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3432,7 +3432,7 @@ function Set-ActiveSetup
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTActiveSetup]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTActiveSetup]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ExecuteForCurrentUser'))
     {
         $PSBoundParameters.Add('NoExecuteForCurrentUser', !$PSBoundParameters.ExecuteForCurrentUser)
@@ -3513,7 +3513,7 @@ function Set-ItemPermission
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTItemPermission]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTItemPermission]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('Method'))
     {
         $PSBoundParameters.Method = $PSBoundParameters.Method -replace '^(Add|Set|Reset|Remove)(Specific|All)?$', '$1AccessRule$2'
@@ -3563,7 +3563,7 @@ function New-MsiTransform
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTMsiTransform]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTMsiTransform]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3607,7 +3607,7 @@ function Invoke-SCCMTask
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTSCCMTask]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTSCCMTask]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3656,7 +3656,7 @@ function Install-SCCMSoftwareUpdates
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTSCCMSoftwareUpdates]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTSCCMSoftwareUpdates]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3692,7 +3692,7 @@ function Send-Keys
     (
     )
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
         Send-ADTKeys
@@ -3725,7 +3725,7 @@ function Get-Shortcut
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3811,7 +3811,7 @@ function Set-Shortcut
     begin
     {
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
         {
             $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3913,7 +3913,7 @@ function New-Shortcut
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3991,7 +3991,7 @@ function Execute-ProcessAsUser
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcessAsUser]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcessAsUser]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Announce dead parameters.
     ('TempPath', 'RunLevel').ForEach({
@@ -4047,7 +4047,7 @@ function Close-InstallationProgress
     )
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('WaitingTime'))
     {
         Write-ADTLogEntry -Message "The parameter '-WaitingTime' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
@@ -4095,7 +4095,7 @@ function ConvertTo-NTAccountOrSID
     begin
     {
         # Announce overall deprecation and any dead parameters before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [ConvertTo-ADTNTAccountOrSID]. Please migrate your scripts to use the new function." -Severity 2
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [ConvertTo-ADTNTAccountOrSID]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
         # Set up collector for pipelined input.
         $pipedInput = [System.Collections.Specialized.StringCollection]::new()
@@ -4145,7 +4145,7 @@ function Get-DeferHistory
     )
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4181,7 +4181,7 @@ function Set-DeferHistory
     )
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4235,7 +4235,7 @@ function Get-MsiTableProperty
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiTableProperty]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiTableProperty]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4288,7 +4288,7 @@ function Set-MsiProperty
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTMsiProperty]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTMsiProperty]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4328,7 +4328,7 @@ function Get-MsiExitCodeMessage
     )
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiExitCodeMessage]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiExitCodeMessage]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4367,7 +4367,7 @@ function Get-ObjectProperty
     )
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTObjectProperty]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTObjectProperty]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4410,7 +4410,7 @@ function Invoke-ObjectMethod
     )
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTObjectMethod]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTObjectMethod]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4450,7 +4450,7 @@ function Get-PEFileArchitecture
     begin
     {
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPEFileArchitecture]. Please migrate your scripts to use the new function." -Severity 2
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPEFileArchitecture]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
         {
             $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4558,7 +4558,7 @@ function Test-IsMutexAvailable
     )
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMutexAvailability]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMutexAvailability]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4611,7 +4611,7 @@ function New-ZipFile
     )
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTZipFile]. Please migrate your scripts to use the new function." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTZipFile]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4714,9 +4714,11 @@ $sessionProps = @{ SessionState = $ExecutionContext.SessionState }
 Get-Variable -Name ($adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
 Open-ADTSession @sessionProps
 
-# Redefine all functions as read-only and clean up temp variables.
+# Finalize setup of AppDeployToolkitMain.ps1.
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
-Remove-Variable -Name adtWrapperFuncs, sessionProps, adtModule -Force -Confirm:$false
+$adtConfig = Get-ADTConfig
+$noDepWarnings = $adtConfig.Toolkit.ContainsKey('WrapperWarnings') -and !$adtConfig.Toolkit.WrapperWarnings
+Remove-Variable -Name adtWrapperFuncs, sessionProps, adtModule, adtConfig -Force -Confirm:$false
 
 
 #---------------------------------------------------------------------------
