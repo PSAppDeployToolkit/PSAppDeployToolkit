@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Management.Automation.Language;
 using System.Windows.Forms;
@@ -12,6 +13,10 @@ namespace PSADT
 {
     internal static class Invoke
     {
+        private static readonly string assemblyName = AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Name;
+        private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
+        private static readonly string timeStamp = DateTime.Now.ToString("O").Split(".".ToCharArray())[0].Replace(":", null);
+
         public static void Main()
         {
             // Set up exit code.
@@ -21,7 +26,7 @@ namespace PSADT
             {
                 // Set up variables.
                 string currentPath = AppDomain.CurrentDomain.BaseDirectory;
-                string adtFrontendPath = Path.Combine(currentPath, $"{AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Name}.ps1");
+                string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
                 string adtToolkitPath = Directory.Exists(Path.Combine(currentPath, "PSAppDeployToolkit")) ? Path.Combine(currentPath, "PSAppDeployToolkit") : (Directory.Exists(Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit")) ? Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit") : String.Empty);
                 string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
@@ -30,6 +35,9 @@ namespace PSADT
                 bool is64BitOS = nameof(RuntimeInformation.OSArchitecture).EndsWith("64");
                 bool isForceX86Mode = false;
                 bool isRequireAdmin = false;
+
+                // Announce commencement
+                WriteDebugMessage($"Commencing invocation of {adtFrontendPath}.");
 
                 // Test whether we've got a local config before continuing.
                 if (File.Exists(Path.Combine(currentPath, "Config\\config.psd1")))
@@ -60,6 +68,14 @@ namespace PSADT
                 if (configErrors.Length > 0)
                 {
                     throw new Exception($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
+                }
+
+                // Determine whether we require admin rights or not.
+                Hashtable configTable = (Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue();
+                Hashtable toolkitConfig = (Hashtable)configTable["Toolkit"];
+                if (isRequireAdmin = (bool)toolkitConfig["RequireAdmin"])
+                {
+                    WriteDebugMessage("Administrator rights are required. The verb 'RunAs' will be used with the invocation.");
                 }
 
                 // Trim ending & starting empty space from each element in the command-line.
@@ -112,14 +128,6 @@ namespace PSADT
                 if (cliArguments.Count > 0)
                 {
                     pwshArguments += " " + string.Join(" ", cliArguments.ToArray());
-                }
-
-                // Determine whether we require admin rights or not.
-                Hashtable configTable = (Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue();
-                Hashtable toolkitConfig = (Hashtable)configTable["Toolkit"];
-                if (isRequireAdmin = (bool)toolkitConfig["RequireAdmin"])
-                {
-                    WriteDebugMessage("Administrator rights are required...");
                 }
 
                 // Switch to x86 PowerShell if requested.
@@ -184,8 +192,16 @@ namespace PSADT
 
         public static void WriteDebugMessage(string debugMessage = null, bool IsDisplayError = false, MessageBoxIcon MsgBoxStyle = MessageBoxIcon.Information)
         {
-            // Output to the Console
-            Console.WriteLine(debugMessage);
+            // Output to the log file.
+            var logPath = Path.Combine(loggingPath, $"{assemblyName}.exe");
+            if (!Directory.Exists(logPath))
+            {
+                Directory.CreateDirectory(logPath);
+            }
+            using (StreamWriter sw = File.AppendText(Path.Combine(logPath, $"{assemblyName}.exe_{timeStamp}.log")))
+            {
+                sw.WriteLine(debugMessage);
+            }
 
             // If we are to display an error message...
             if (IsDisplayError)
