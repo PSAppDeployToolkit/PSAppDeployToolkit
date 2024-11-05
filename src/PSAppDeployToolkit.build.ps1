@@ -139,16 +139,10 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
     {
         $buildItems = @(
             @{
-                SourcePath = 'Sources\Deploy-Application'
-                SolutionPath = 'Sources\Deploy-Application\Deploy-Application.sln'
-                OutputPath = 'src\PSAppDeployToolkit\Frontend\v3'
-                OutputFile = 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
-            },
-            @{
                 SourcePath = 'Sources\PSADT.Invoke'
                 SolutionPath = 'Sources\PSADT.Invoke\PSADT.Invoke.sln'
-                OutputPath = 'src\PSAppDeployToolkit\Frontend\v4'
-                OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe'
+                OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
+                OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
             },
             @{
                 SourcePath = 'Sources\PSADT'
@@ -171,18 +165,20 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
                 }
                 else {
                     # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
-                    $lastCommitDate = git log -1 --format="%ci" -- [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.OutputFile)
-                    $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
-                    # Add 1 seconds and convert to proper ISO 8601 format
-                    $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
-                    # Get the list of source files modified since the last commit date of the file we're comparing against
-                    $modifiedFiles = git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SourcePath) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique
-                    if ($modifiedFiles) {
-                        Write-Build Blue "      Files have been modified in $($buildItem.SourcePath) since the last commit date of $($buildItem.OutputFile) ($lastCommitDate), build required."
-                    }
-                    else {
-                        Write-Build White "      No files have been modified in $($buildItem.SourcePath), nothing to build."
-                        continue
+                    $buildItem.OutputFile | ForEach-Object {
+                        $lastCommitDate = git log -1 --format="%ci" -- [System.IO.Path]::Combine($script:RepoRootPath, $_)
+                        $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
+                        # Add 1 seconds and convert to proper ISO 8601 format
+                        $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
+                        # Get the list of source files modified since the last commit date of the file we're comparing against
+                        $modifiedFiles = git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SourcePath) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique
+                        if ($modifiedFiles) {
+                            Write-Build Blue "      Files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($lastCommitDate), build required."
+                        }
+                        else {
+                            Write-Build White "      No files have been modified in $($buildItem.SourcePath), nothing to build."
+                            continue
+                        }
                     }
                 }
             }
@@ -191,9 +187,18 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
             & dotnet build $solutionPath --configuration Release --verbosity minimal
             if ($LASTEXITCODE) { throw "Failed to solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
             $sourcePath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\*')
-            $destPath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.OutputPath)
-            Write-Build White "      Copying from  $sourcePath to $destPath..."
-            Copy-Item -Path $sourcePath -Destination $destPath -Exclude '*.pdb' -Recurse -Force
+            $buildItem.OutputPath | ForEach-Object {
+                $destPath = [System.IO.Path]::Combine($script:RepoRootPath, $_)
+                Write-Build White "      Copying from  $sourcePath to $destPath..."
+                Copy-Item -Path $sourcePath -Destination $destPath -Exclude '*.pdb' -Recurse -Force
+            }
+        }
+
+        # For Invoke-AppDeployToolkit.exe, we need an additional check to make sure the assembly is renamed.
+        if ([System.IO.File]::Exists("$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Invoke-AppDeployToolkit.exe"))
+        {
+            Remove-Item -LiteralPath "$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe" -Force -Confirm:$false
+            Rename-Item -LiteralPath "$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Invoke-AppDeployToolkit.exe" -NewName Deploy-Application.exe -Force -Confirm:$false
         }
         Write-Build Green '      ...dotNet build Complete!'
     }
