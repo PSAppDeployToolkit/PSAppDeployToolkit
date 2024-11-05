@@ -264,7 +264,8 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
-    Import-Module -Name $PSScriptRoot\..\..\PSAppDeployToolkit -Force
+    Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File
+    Import-Module -Name $PSScriptRoot\..\..\..\PSAppDeployToolkit -Force
     try
     {
         $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession -PassThru
@@ -288,6 +289,7 @@ catch
 
 try
 {
+    Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit.Extensions -Recurse -File | Unblock-File
     Import-Module -Name $PSScriptRoot\PSAppDeployToolkit.Extensions -Force
     & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession

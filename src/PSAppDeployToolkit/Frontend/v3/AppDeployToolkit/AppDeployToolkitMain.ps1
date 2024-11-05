@@ -4695,12 +4695,14 @@ Remove-Module -Name PSAppDeployToolkit* -Force
 $adtModule = if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
 {
     # Expected directory when running from a template.
-    Import-Module -Name "$PSScriptRoot\PSAppDeployToolkit" -Force -PassThru
+    Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File
+    Import-Module -Name $PSScriptRoot\PSAppDeployToolkit -Force -PassThru
 }
 elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
 {
     # Expected directory if executing directly from inside the module.
-    Import-Module -Name "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -Force -PassThru
+    Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File
+    Import-Module -Name $PSScriptRoot\..\..\..\..\PSAppDeployToolkit -Force -PassThru
 }
 else
 {

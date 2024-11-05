@@ -168,16 +168,17 @@ function New-ADTTemplate
                 {
                     $astLambda = {
                         ($args[0] -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) -and
-                        ($args[0].Value.EndsWith("\$moduleName")) -and
-                        ($args[0].Parent -is [System.Management.Automation.Language.CommandAst]) -and
-                        ($args[0].Parent.CommandElements.Count) -and
-                        ($args[0].Parent.CommandElements[0].Value.Equals('Import-Module'))
+                        ($args[0].Value.Equals("`$PSScriptRoot\..\..\..\$moduleName"))
                     }
                     $scriptText = [System.IO.File]::ReadAllText(($scriptFile = "$templateModulePath\..\Invoke-AppDeployToolkit.ps1"))
                     $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref]$null, [ref]$null)
-                    $astExtent = $scriptAst.FindAll($astLambda, $false).Extent
-                    $scriptText = $scriptText.Remove($astExtent.StartOffset, $astExtent.EndOffset - $astExtent.StartOffset)
-                    $scriptText = $scriptText.Insert($astExtent.StartOffset, "`$PSScriptRoot\$moduleName")
+                    $scriptAst.FindAll($astLambda, $false).Extent | Sort-Object -Property EndOffset -Descending | . {
+                        process
+                        {
+                            $scriptText = $scriptText.Remove($_.StartOffset, $_.EndOffset - $_.StartOffset)
+                            $scriptText = $scriptText.Insert($_.StartOffset, "`$PSScriptRoot\$moduleName")
+                        }
+                    }
                     [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
                 }
 
