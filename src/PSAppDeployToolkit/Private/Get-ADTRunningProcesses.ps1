@@ -61,7 +61,7 @@ function Get-ADTRunningProcesses
             return [PSADT.UserInterface.Services.AppProcessInfo]::new(
                 $_.Name,
                 $(
-                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
+                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -First 1 -ExpandProperty Description -ErrorAction Ignore)))
                     {
                         # The description of the process provided with the object.
                         $objDescription
