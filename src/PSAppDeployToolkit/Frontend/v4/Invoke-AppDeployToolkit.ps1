@@ -42,7 +42,7 @@ powershell.exe -File Invoke-AppDeployToolkit.ps1 -AllowRebootPassThru
 powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeploymentType Uninstall
 
 .EXAMPLE
-Deploy-Application.exe -DeploymentType "Install" -DeployMode "Silent"
+Invoke-AppDeployToolkit.exe -DeploymentType "Install" -DeployMode "Silent"
 
 .INPUTS
 None. You cannot pipe objects to this script.
@@ -52,9 +52,9 @@ None. This script does not generate any output.
 
 .NOTES
 Toolkit Exit Code Ranges:
-- 60000 - 68999: Reserved for built-in exit codes in Invoke-AppDeployToolkit.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
+- 60000 - 68999: Reserved for built-in exit codes in Invoke-AppDeployToolkit.ps1, and Invoke-AppDeployToolkit.exe
 - 69000 - 69999: Recommended for user customized exit codes in Invoke-AppDeployToolkit.ps1
-- 70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
+- 70000 - 79999: Recommended for user customized exit codes in PSAppDeployToolkit.Extensions module.
 
 .LINK
 https://psappdeploytoolkit.com
