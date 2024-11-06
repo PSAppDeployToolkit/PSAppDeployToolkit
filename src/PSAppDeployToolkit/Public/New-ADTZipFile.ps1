@@ -103,7 +103,7 @@ function New-ADTZipFile
                 TargetObject = $DestinationArchiveFileName
                 RecommendedAction = "Please review the supplied value to '-DestinationArchiveFileName' and try again."
             }
-            throw (New-ADTErrorRecord @naerParams)
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
         # Remove parameters from PSBoundParameters that don't apply to Compress-Archive.
