@@ -51,9 +51,9 @@ function New-ADTErrorRecord
         This function returns an ErrorRecord object.
 
     .EXAMPLE
-        $exception = [System.Exception]::new("An error occurred.")
-        $category = [System.Management.Automation.ErrorCategory]::NotSpecified
-        New-ADTErrorRecord -Exception $exception -Category $category -ErrorId "CustomErrorId" -TargetObject $null -TargetName "TargetName" -TargetType "TargetType" -Activity "Activity" -Reason "Reason" -RecommendedAction "RecommendedAction"
+        PS C:\>$exception = [System.Exception]::new("An error occurred.")
+        PS C:\>$category = [System.Management.Automation.ErrorCategory]::NotSpecified
+        PS C:\>New-ADTErrorRecord -Exception $exception -Category $category -ErrorId "CustomErrorId" -TargetObject $null -TargetName "TargetName" -TargetType "TargetType" -Activity "Activity" -Reason "Reason" -RecommendedAction "RecommendedAction"
 
         Creates a new ErrorRecord object with the specified parameters.
 

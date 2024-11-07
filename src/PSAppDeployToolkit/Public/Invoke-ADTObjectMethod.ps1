@@ -36,14 +36,14 @@ function Invoke-ADTObjectMethod
         The object returned by the method being invoked.
 
     .EXAMPLE
-        $ShellApp = New-Object -ComObject 'Shell.Application'
-        $null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
+        PS C:\>$ShellApp = New-Object -ComObject 'Shell.Application'
+        PS C:\>$null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
 
         Minimizes all windows.
 
     .EXAMPLE
-        $ShellApp = New-Object -ComObject 'Shell.Application'
-        $null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
+        PS C:\>$ShellApp = New-Object -ComObject 'Shell.Application'
+        PS C:\>$null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
 
         Opens the C:\Windows folder in a Windows Explorer window.
 
