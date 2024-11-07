@@ -114,11 +114,11 @@ function Write-Log
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity 2 -Source $MyInvocation.MyCommand.Name -DebugMessage:$noDepWarnings
 
         # Announce dead parameters.
-        ('AppendToLogFile', 'MaxLogHistory', 'MaxLogFileSizeMB', 'WriteHost', 'LogDebugMessage').ForEach({
+        $null = ('AppendToLogFile', 'MaxLogHistory', 'MaxLogFileSizeMB', 'WriteHost', 'LogDebugMessage').ForEach({
                 if ($PSBoundParameters.ContainsKey($_))
                 {
                     Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-                    $null = $PSBoundParameters.Remove($_)
+                    $PSBoundParameters.Remove($_)
                 }
             })
 
@@ -2739,11 +2739,11 @@ function Start-ServiceAndDependencies
 
     # Announce overall deprecation and dead parameters.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
-    ('ComputerName', 'SkipServiceExistsTest').ForEach({
+    $null = ('ComputerName', 'SkipServiceExistsTest').ForEach({
             if ($PSBoundParameters.ContainsKey($_))
             {
                 Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-                $null = $PSBoundParameters.Remove($_)
+                $PSBoundParameters.Remove($_)
             }
         })
 
@@ -2813,11 +2813,11 @@ function Stop-ServiceAndDependencies
 
     # Announce overall deprecation and dead parameters.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
-    ('ComputerName', 'SkipServiceExistsTest').ForEach({
+    $null = ('ComputerName', 'SkipServiceExistsTest').ForEach({
             if ($PSBoundParameters.ContainsKey($_))
             {
                 Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-                $null = $PSBoundParameters.Remove($_)
+                $PSBoundParameters.Remove($_)
             }
         })
 
@@ -3994,11 +3994,11 @@ function Execute-ProcessAsUser
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcessAsUser]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Announce dead parameters.
-    ('TempPath', 'RunLevel').ForEach({
+    $null = ('TempPath', 'RunLevel').ForEach({
             if ($PSBoundParameters.ContainsKey($_))
             {
                 Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
-                $null = $PSBoundParameters.Remove($_)
+                $PSBoundParameters.Remove($_)
             }
         })
 
