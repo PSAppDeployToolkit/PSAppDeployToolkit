@@ -52,9 +52,9 @@ function Show-ADTInstallationRestartPrompt
         Displays a restart prompt with a 300-second countdown.
 
     .EXAMPLE
-        Displays a restart prompt with a 600-second countdown and triggers a silent restart with a 60-second countdown in silent mode.
-
         Show-ADTInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
+
+        Displays a restart prompt with a 600-second countdown and triggers a silent restart with a 60-second countdown in silent mode.
 
     .NOTES
         Be mindful of the countdown you specify for the reboot as code directly after this function might NOT be able to execute - that includes logging.

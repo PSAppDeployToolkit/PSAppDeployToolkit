@@ -46,7 +46,6 @@ function Test-ADTBattery
         Checks if the local machine is running on AC power and returns true or false.
 
     .EXAMPLE
-        # Determine if the current system is a laptop or not.
         (Test-ADTBattery -PassThru).IsLaptop
 
         Returns true if the current system is a laptop, otherwise false.
