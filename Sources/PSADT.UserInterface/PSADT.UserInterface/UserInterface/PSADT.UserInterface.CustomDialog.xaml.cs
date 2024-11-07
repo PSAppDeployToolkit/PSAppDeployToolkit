@@ -40,14 +40,14 @@ namespace PSADT.UserInterface
             Button2.Content = button2Text ?? "Cancel";
             Button3.Content = button3Text ?? "Continue";
 
-            Button1.Visibility = string.IsNullOrEmpty(button1Text) ? Visibility.Collapsed : Visibility.Visible;
-            Button2.Visibility = string.IsNullOrEmpty(button2Text) ? Visibility.Collapsed : Visibility.Visible;
-            Button3.Visibility = string.IsNullOrEmpty(button3Text) ? Visibility.Collapsed : Visibility.Visible;
+            Button1.Visibility = string.IsNullOrWhiteSpace(button1Text) ? Visibility.Collapsed : Visibility.Visible;
+            Button2.Visibility = string.IsNullOrWhiteSpace(button2Text) ? Visibility.Collapsed : Visibility.Visible;
+            Button3.Visibility = string.IsNullOrWhiteSpace(button3Text) ? Visibility.Collapsed : Visibility.Visible;
 
             // Set Banner Image based on theme
             if (ApplicationThemeManager.IsMatchedDark())
             {
-                if (!string.IsNullOrEmpty(bannerImageDark))
+                if (!string.IsNullOrWhiteSpace(bannerImageDark))
                 {
                     BannerImage.Source = new BitmapImage(new Uri(bannerImageDark, UriKind.Absolute));
                 }
@@ -58,7 +58,7 @@ namespace PSADT.UserInterface
             }
             else
             {
-                if (!string.IsNullOrEmpty(bannerImageLight))
+                if (!string.IsNullOrWhiteSpace(bannerImageLight))
                 {
                     BannerImage.Source = new BitmapImage(new Uri(bannerImageLight, UriKind.Absolute));
                 }
@@ -70,7 +70,7 @@ namespace PSADT.UserInterface
 
             // Set App Icon Image
             appIconImage ??= "pack://application:,,,/PSADT.UserInterface;component/Resources/appIcon.png";
-            if (!string.IsNullOrEmpty(appIconImage))
+            if (!string.IsNullOrWhiteSpace(appIconImage))
             {
                 AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
             }

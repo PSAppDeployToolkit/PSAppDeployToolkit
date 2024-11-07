@@ -246,7 +246,7 @@ namespace PSADT.UserInterface.Utilities
                     {
                         // Analyze lpszDefaultScheme to determine if the High Contrast theme is dark
                         var schemeName = Marshal.PtrToStringAuto(highContrast.lpszDefaultScheme);
-                        if (!string.IsNullOrEmpty(schemeName))
+                        if (!string.IsNullOrWhiteSpace(schemeName))
                         {
                             // List of known dark and light High Contrast themes
                             var darkSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)

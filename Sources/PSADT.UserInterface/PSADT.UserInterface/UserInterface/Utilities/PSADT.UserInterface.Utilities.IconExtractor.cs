@@ -8,7 +8,7 @@ namespace PSADT.UserInterface.Utilities
     {
         public static Icon? GetIconFromFile(string filePath, bool largeIcon = true)
         {
-            if (string.IsNullOrEmpty(filePath))
+            if (string.IsNullOrWhiteSpace(filePath))
                 throw new ArgumentNullException(nameof(filePath));
 
             IntPtr[] largeIcons = new IntPtr[1];

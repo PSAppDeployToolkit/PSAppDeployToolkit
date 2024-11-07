@@ -80,7 +80,7 @@ namespace PSADT.ConsoleEx
 
             string fullMessage = string.Empty;
 
-            if (!string.IsNullOrEmpty(prefix))
+            if (!string.IsNullOrWhiteSpace(prefix))
             {
                 var fileNameParts = Path.GetFileName(callerFilePath).Split('.');
                 var lastTwoParts = fileNameParts.Length >= 2

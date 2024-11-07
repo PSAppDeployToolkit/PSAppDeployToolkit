@@ -270,7 +270,7 @@ namespace PSADT.PowerShellHost
             PowerShell powershell,
             Shared.ExecutionContext context)
         {
-            if (!string.IsNullOrEmpty(context.PSOptions.WorkingDirectory))
+            if (!string.IsNullOrWhiteSpace(context.PSOptions.WorkingDirectory))
             {
                 powershell.AddCommand("Set-Location").AddParameter("Path", context.PSOptions.WorkingDirectory).Invoke();
                 powershell.Commands.Clear();

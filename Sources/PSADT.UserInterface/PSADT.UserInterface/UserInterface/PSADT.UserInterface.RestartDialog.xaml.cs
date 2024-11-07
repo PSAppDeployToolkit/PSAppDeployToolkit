@@ -49,7 +49,7 @@ namespace PSADT.UserInterface
             // Set Banner Image based on theme
             if (ApplicationThemeManager.IsMatchedDark())
             {
-                if (!string.IsNullOrEmpty(bannerImageDark))
+                if (!string.IsNullOrWhiteSpace(bannerImageDark))
                 {
                     BannerImage.Source = new BitmapImage(new Uri(bannerImageDark, UriKind.Absolute));
                 }
@@ -60,7 +60,7 @@ namespace PSADT.UserInterface
             }
             else
             {
-                if (!string.IsNullOrEmpty(bannerImageLight))
+                if (!string.IsNullOrWhiteSpace(bannerImageLight))
                 {
                     BannerImage.Source = new BitmapImage(new Uri(bannerImageLight, UriKind.Absolute));
                 }
@@ -72,7 +72,7 @@ namespace PSADT.UserInterface
 
             // Set App Icon Image
             appIconImage ??= "pack://application:,,,/PSADT.UserInterface;component/Resources/appIcon.png";
-            if (!string.IsNullOrEmpty(appIconImage))
+            if (!string.IsNullOrWhiteSpace(appIconImage))
             {
                 AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
             }

@@ -459,7 +459,7 @@ namespace PSADT.AccessToken
                 while (true)
                 {
                     string entry = Marshal.PtrToStringUni(pEnvBlock.DangerousGetHandle(), offset);
-                    if (string.IsNullOrEmpty(entry)) break;
+                    if (string.IsNullOrWhiteSpace(entry)) break;
 
                     int equalsIndex = entry.IndexOf('=');
                     if (equalsIndex > 0)

@@ -35,7 +35,7 @@ namespace PSADT.Diagnostics.Validation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ThrowIfNullOrEmpty(string argument)
         {
-            if (string.IsNullOrEmpty(argument))
+            if (string.IsNullOrWhiteSpace(argument))
             {
                 throw new ArgumentException("Argument cannot be null or empty.", nameof(argument));
             }

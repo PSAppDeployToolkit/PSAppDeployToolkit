@@ -76,7 +76,7 @@ namespace PSADT.Logging.Utilities
         /// <returns>A sanitized message string.</returns>
         public static string SanitizeMessage(string message)
         {
-            if (string.IsNullOrEmpty(message))
+            if (string.IsNullOrWhiteSpace(message))
                 return message;
 
             message = ConvertControlCharsToUnicode(message);

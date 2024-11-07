@@ -65,7 +65,7 @@ namespace PSADT.ProcessEx
                 var exitedProcesses = runningProcesses
                     .Where(p => p.HasExited)
                     .Select(p => new ExecutionDetails(
-                        String.IsNullOrEmpty(p.Process?.ProcessName) ? String.Empty : $"{p.Process!.ProcessName}.exe",
+                        String.IsNullOrWhiteSpace(p.Process?.ProcessName) ? String.Empty : $"{p.Process!.ProcessName}.exe",
                         p.ProcessId,
                         p.ExitCode ?? -1,
                         p.SessionInfo.SessionId,

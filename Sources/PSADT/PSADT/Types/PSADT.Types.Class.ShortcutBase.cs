@@ -52,7 +52,7 @@ namespace PSADT.Types
             get => _iconIndex;
             set
             {
-                if (!string.IsNullOrEmpty(value) && !int.TryParse(value, out _))
+                if (!string.IsNullOrWhiteSpace(value) && !int.TryParse(value, out _))
                 {
                     throw new ArgumentException("IconIndex must be a numeric value.");
                 }
