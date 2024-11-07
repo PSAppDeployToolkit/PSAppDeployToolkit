@@ -51,6 +51,9 @@
         # Specify if the log files should be bundled together in a compressed zip file.
         CompressLogs = $false
 
+        # Choose from either 'Native' for native PowerShell file copy via Copy-Item, or 'Robocopy' to use robocopy.exe.
+        FileCopyMode = 'Native'
+
         # Specify if an existing log file should be appended to.
         LogAppend = $true
 
@@ -95,9 +98,6 @@
 
         # Same as TempPath but used when RequireAdmin is False.
         TempPathNoAdminRights = '$envTemp'
-
-        # Choose from either 'Native' for native PowerShell file copy via Copy-Item, or 'Robocopy' to use robocopy.exe.
-        FileCopyMode = 'Native'
     }
 
     UI = @{
