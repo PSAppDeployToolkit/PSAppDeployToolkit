@@ -36,10 +36,10 @@ function New-ADTValidateScriptErrorRecord
         This function returns an ErrorRecord object.
 
     .EXAMPLE
-        $paramName = "FilePath"
-        $providedValue = "C:\InvalidPath"
-        $exceptionMessage = "The specified path does not exist."
-        New-ADTValidateScriptErrorRecord -ParameterName $paramName -ProvidedValue $providedValue -ExceptionMessage $exceptionMessage
+        PS C:\>$paramName = "FilePath"
+        PS C:\>$providedValue = "C:\InvalidPath"
+        PS C:\>$exceptionMessage = "The specified path does not exist."
+        PS C:\>New-ADTValidateScriptErrorRecord -ParameterName $paramName -ProvidedValue $providedValue -ExceptionMessage $exceptionMessage
 
         Creates a new ErrorRecord for a validation error with the specified parameters.
 
