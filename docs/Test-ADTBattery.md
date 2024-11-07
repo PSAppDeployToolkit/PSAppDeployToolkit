@@ -31,10 +31,8 @@ Checks if the local machine is running on AC power and returns true or false.
 
 ### EXAMPLE 2
 ```
-# Determine if the current system is a laptop or not.
 (Test-ADTBattery -PassThru).IsLaptop
 ```
-
 
 Returns true if the current system is a laptop, otherwise false.
 
@@ -92,5 +90,4 @@ License: https://opensource.org/license/lgpl-3-0
 ## RELATED LINKS
 
 [https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
-
 

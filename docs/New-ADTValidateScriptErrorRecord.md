@@ -27,9 +27,9 @@ This helps in identifying and handling invalid parameter values in scripts.
 ### EXAMPLE 1
 ```
 $paramName = "FilePath"
-$providedValue = "C:\InvalidPath"
-$exceptionMessage = "The specified path does not exist."
-New-ADTValidateScriptErrorRecord -ParameterName $paramName -ProvidedValue $providedValue -ExceptionMessage $exceptionMessage
+PS C:\\\>$providedValue = "C:\InvalidPath"
+PS C:\\\>$exceptionMessage = "The specified path does not exist."
+PS C:\\\>New-ADTValidateScriptErrorRecord -ParameterName $paramName -ProvidedValue $providedValue -ExceptionMessage $exceptionMessage
 ```
 
 
