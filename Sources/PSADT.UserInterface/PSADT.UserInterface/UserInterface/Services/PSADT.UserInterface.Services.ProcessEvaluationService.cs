@@ -139,7 +139,7 @@ namespace PSADT.UserInterface.Services
 
             foreach (AppProcessInfo app in appsToClose.Distinct().ToList())
             {
-                if (string.IsNullOrEmpty(app.ProcessName))
+                if (string.IsNullOrWhiteSpace(app.ProcessName))
                     continue;
 
                 string processName = app.ProcessName!;
@@ -203,7 +203,7 @@ namespace PSADT.UserInterface.Services
                         cancellationToken.ThrowIfCancellationRequested();
 
                         var processFullFileName = await Task.Run(() => process.GetMainModuleFileName(), cancellationToken).ConfigureAwait(false);
-                        if (string.IsNullOrEmpty(processFullFileName))
+                        if (string.IsNullOrWhiteSpace(processFullFileName))
                             continue;
 
                         cancellationToken.ThrowIfCancellationRequested();
@@ -265,7 +265,7 @@ namespace PSADT.UserInterface.Services
                     try
                     {
                         var processFullFileName = process.GetMainModuleFileName();
-                        if (string.IsNullOrEmpty(processFullFileName))
+                        if (string.IsNullOrWhiteSpace(processFullFileName))
                             continue;
 
                         var processFileVersionInfo = FileVersionInfo.GetVersionInfo(processFullFileName);
@@ -356,7 +356,7 @@ namespace PSADT.UserInterface.Services
             if (_disposed)
                 throw new ObjectDisposedException(nameof(ProcessEvaluationService));
 
-            if (string.IsNullOrEmpty(processName))
+            if (string.IsNullOrWhiteSpace(processName))
                 return false;
 
             if (_trackedProcesses.TryGetValue(processName, out var cachedInfo))
@@ -373,7 +373,7 @@ namespace PSADT.UserInterface.Services
             if (_disposed)
                 throw new ObjectDisposedException(nameof(ProcessEvaluationService));
 
-            if (string.IsNullOrEmpty(processName))
+            if (string.IsNullOrWhiteSpace(processName))
                 return false;
 
             var processes = Process.GetProcessesByName(processName);

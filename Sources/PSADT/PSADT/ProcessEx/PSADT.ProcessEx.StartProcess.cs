@@ -254,7 +254,7 @@ namespace PSADT.ProcessEx
                     options.SessionId = SessionManager.GetCurrentProcessSessionId();
                 }
 
-                if (string.IsNullOrEmpty(options.Username))
+                if (string.IsNullOrWhiteSpace(options.Username))
                 {
                     options.UpdateUsername($@"{Environment.UserDomainName}\{Environment.UserName}");
                 }

@@ -157,7 +157,7 @@ namespace PSADT.PathEx
             string? assemblyLocation = GetExecutingAssemblyFilePath();
 
             // If we managed to get a valid file path, get its directory, else return the application base directory
-            string assemblyDirectory = !string.IsNullOrEmpty(assemblyLocation)
+            string assemblyDirectory = !string.IsNullOrWhiteSpace(assemblyLocation)
                 ? Path.GetDirectoryName(assemblyLocation) ?? AppDomain.CurrentDomain.BaseDirectory
                 : AppDomain.CurrentDomain.BaseDirectory;
 
@@ -195,7 +195,7 @@ namespace PSADT.PathEx
         public static string? GetExecutingAssemblyFileNameWithoutExtension()
         {
             string? fileName = GetExecutingAssemblyFileName();
-            return !string.IsNullOrEmpty(fileName) ? Path.GetFileNameWithoutExtension(fileName) : null;
+            return !string.IsNullOrWhiteSpace(fileName) ? Path.GetFileNameWithoutExtension(fileName) : null;
         }
 
         /// <summary>
@@ -220,14 +220,14 @@ namespace PSADT.PathEx
             string location = executingAssembly.Location;
 
             // 2. Handle cases where the location is empty (e.g., single-file executables, dynamically generated assemblies)
-            if (string.IsNullOrEmpty(location))
+            if (string.IsNullOrWhiteSpace(location))
             {
                 // Fallback to AppContext.BaseDirectory for single-file executables and other scenarios
                 string baseDirectory = AppContext.BaseDirectory;
-                if (!string.IsNullOrEmpty(baseDirectory))
+                if (!string.IsNullOrWhiteSpace(baseDirectory))
                 {
                     var entryAssembly = Assembly.GetEntryAssembly();
-                    if (entryAssembly != null && !string.IsNullOrEmpty(entryAssembly.Location))
+                    if (entryAssembly != null && !string.IsNullOrWhiteSpace(entryAssembly.Location))
                     {
                         // Return full path of the entry assembly
                         location = entryAssembly.Location;
@@ -240,13 +240,13 @@ namespace PSADT.PathEx
             }
 
             // 3. If the location is still empty, fallback to the base directory of the current application domain
-            if (string.IsNullOrEmpty(location))
+            if (string.IsNullOrWhiteSpace(location))
             {
                 location = AppDomain.CurrentDomain.BaseDirectory;
             }
 
             // Return null if we still can't get a valid path
-            return !string.IsNullOrEmpty(location) ? location : null;
+            return !string.IsNullOrWhiteSpace(location) ? location : null;
         }
 
 

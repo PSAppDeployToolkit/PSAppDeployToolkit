@@ -200,7 +200,7 @@ namespace PSADT.WTSSession
             }
 
             OSVersionInfo osVersionInfo = OSHelper.GetOsVersionInfo();
-            bool isLocalServer = string.IsNullOrEmpty(hServerName);
+            bool isLocalServer = string.IsNullOrWhiteSpace(hServerName);
 
             foreach (WTS_SESSION_INFO session in sessionsInfo)
             {
@@ -445,7 +445,7 @@ namespace PSADT.WTSSession
                 string userName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName);
                 sessionInfo.UserName = userName;
 
-                if (!string.IsNullOrEmpty(domainName) && !string.IsNullOrEmpty(userName))
+                if (!string.IsNullOrWhiteSpace(domainName) && !string.IsNullOrWhiteSpace(userName))
                 {
                     sessionInfo.NTAccount = new NTAccount($@"{domainName}\{userName}");
                     sessionInfo.Sid = (SecurityIdentifier)sessionInfo.NTAccount.Translate(typeof(SecurityIdentifier));
@@ -521,7 +521,7 @@ namespace PSADT.WTSSession
 
             UnifiedLogger.Create().Message($"Domain: {domainName}, Username: {userName}.").Severity(LogLevel.Debug);
 
-            if (string.IsNullOrEmpty(domainName) || string.IsNullOrEmpty(userName))
+            if (string.IsNullOrWhiteSpace(domainName) || string.IsNullOrWhiteSpace(userName))
             {
                 throw new InvalidOperationException($"Failed to retrieve a valid domain or username for session id [{sessionId}].");
             }

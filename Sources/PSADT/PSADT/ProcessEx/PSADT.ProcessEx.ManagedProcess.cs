@@ -105,7 +105,7 @@ namespace PSADT.ProcessEx
                 string timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
                 string baseFileName = $"S_{this.SessionInfo.SessionId}_P_{this.Process.Id}_{timestamp}";
 
-                if (!string.IsNullOrEmpty(options.OutputDirectory))
+                if (!string.IsNullOrWhiteSpace(options.OutputDirectory))
                 {
                     string stdoutFile = Path.Combine(options.OutputDirectory, $"{baseFileName}_stdout.txt");
                     string stderrFile = Path.Combine(options.OutputDirectory, $"{baseFileName}_stderr.txt");

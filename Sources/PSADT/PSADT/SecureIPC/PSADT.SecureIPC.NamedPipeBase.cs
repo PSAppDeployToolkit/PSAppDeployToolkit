@@ -371,7 +371,7 @@ namespace PSADT.SecureIPC
                 using DigitalSignature verifier = new DigitalSignature();
                 string? filePath = PathHelper.ResolveExecutableFullPath(process.StartInfo.FileName);
 
-                if (string.IsNullOrEmpty(filePath))
+                if (string.IsNullOrWhiteSpace(filePath))
                 {
                     UnifiedLogger.Create().Message($"Failed to resolve executable path so that we could validate the client process is a PowerShell host.").Severity(LogLevel.Debug);
                     return false;

@@ -30,7 +30,7 @@ namespace PSADT.UserInterface.Utilities
             try
             {
                 string? mainModuleFileName = process.GetMainModuleFileName();
-                if (string.IsNullOrEmpty(mainModuleFileName))
+                if (string.IsNullOrWhiteSpace(mainModuleFileName))
                 {
                     return null;
                 }

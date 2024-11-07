@@ -523,7 +523,7 @@ namespace PSADT.Diagnostics.StackTraces
         /// </summary>
         private static string WrapString(string input, StackParserConfig config, int currentIndentation)
         {
-            if (string.IsNullOrEmpty(input))
+            if (string.IsNullOrWhiteSpace(input))
                 return "";
 
             var sb = new StringBuilder();

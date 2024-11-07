@@ -286,7 +286,7 @@ namespace PSADT.Logging
                     details = message;
                 }
 
-                var fullMessage = string.IsNullOrEmpty(message)
+                var fullMessage = string.IsNullOrWhiteSpace(message)
                     ? details
                     : $"{message}{Environment.NewLine}{details}";
 

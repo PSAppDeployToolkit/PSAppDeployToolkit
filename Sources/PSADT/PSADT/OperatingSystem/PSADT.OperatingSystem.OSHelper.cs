@@ -214,9 +214,9 @@ namespace PSADT.OperatingSystem
                 // Typical EditionID values for multi-session workstations
                 string[] multiSessionEditionIds = { "EnterpriseMultiSession", "ServerRdsh" };
 
-                if (!string.IsNullOrEmpty(editionId) && multiSessionEditionIds.Any(id => id.Equals(editionId, StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrWhiteSpace(editionId) && multiSessionEditionIds.Any(id => id.Equals(editionId, StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (!string.IsNullOrEmpty(productName) &&
+                    if (!string.IsNullOrWhiteSpace(productName) &&
                         (productName!.IndexOf("Virtual Desktops", StringComparison.OrdinalIgnoreCase) >= 0 ||
                          productName.IndexOf("Multi-Session", StringComparison.OrdinalIgnoreCase) >= 0))
                     {
