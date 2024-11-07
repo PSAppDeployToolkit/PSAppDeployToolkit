@@ -363,7 +363,7 @@ Checks if there is an active ADT session.
 Unblocks the execution of applications performed by the Block-ADTAppExecution function.
 
 ### [Uninstall-ADTApplication](Uninstall-ADTApplication.md)
-Removes all MSI applications matching the specified application name.
+Removes one or more applications specified by name, filter script, or InstalledApplication object from Get-ADTApplication.
 
 ### [Unregister-ADTDll](Unregister-ADTDll.md)
 Unregister a DLL file.

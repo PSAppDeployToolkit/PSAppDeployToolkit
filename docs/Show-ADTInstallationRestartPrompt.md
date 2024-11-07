@@ -41,10 +41,10 @@ Displays a restart prompt with a 300-second countdown.
 
 ### EXAMPLE 3
 ```
-Displays a restart prompt with a 600-second countdown and triggers a silent restart with a 60-second countdown in silent mode.
+Show-ADTInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
 ```
 
-Show-ADTInstallationRestartPrompt -CountdownSeconds 600 -CountdownNoHideSeconds 60
+Displays a restart prompt with a 600-second countdown and triggers a silent restart with a 60-second countdown in silent mode.
 
 ## PARAMETERS
 
