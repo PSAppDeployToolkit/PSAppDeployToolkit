@@ -8,11 +8,12 @@ function Uninstall-ADTApplication
 {
     <#
     .SYNOPSIS
-        Removes all MSI applications matching the specified application name.
+        Removes one or more applications specified by name, filter script, or InstalledApplication object from Get-ADTApplication.
 
     .DESCRIPTION
-        Removes all MSI applications matching the specified application name and filter.
-        Enumerates the registry for installed applications matching the specified application name and uninstalls that application using the product code.
+        Removes one or more applications specified by name, filter script, or InstalledApplication object from Get-ADTApplication.
+
+        Enumerates the registry for installed applications via Get-ADTApplication, matching the specified application name and uninstalls that application using its uninstall string, with the ability to specify additional uninstall parameters also.
 
     .PARAMETER InstalledApplication
         Specifies the [PSADT.Types.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTApplication to this function.
