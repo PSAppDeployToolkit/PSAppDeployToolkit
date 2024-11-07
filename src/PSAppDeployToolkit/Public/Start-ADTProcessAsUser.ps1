@@ -250,10 +250,10 @@ function Start-ADTProcessAsUser
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Strip out parameters not destined for the C# code.
-        ('SecureArgumentList', 'PassThru').ForEach({
+        $null = ('SecureArgumentList', 'PassThru').ForEach({
                 if ($PSBoundParameters.ContainsKey($_))
                 {
-                    $null = $PSBoundParameters.Remove($_)
+                    $PSBoundParameters.Remove($_)
                 }
             })
 
@@ -285,9 +285,9 @@ function Start-ADTProcessAsUser
         }
 
         # Translate switches that require negation for the LaunchOptions.
-        ('RedirectOutput', 'TerminateOnTimeout').Where({ $PSBoundParameters.ContainsKey("No$_") }).ForEach({
+        $null = ('RedirectOutput', 'TerminateOnTimeout').Where({ $PSBoundParameters.ContainsKey("No$_") }).ForEach({
                 $PSBoundParameters.$_ = !$PSBoundParameters."No$_"
-                $null = $PSBoundParameters.Remove("No$_")
+                $PSBoundParameters.Remove("No$_")
             })
 
         # Unless explicitly provided, don't terminate on timeout.
