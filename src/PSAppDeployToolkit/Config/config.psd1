@@ -4,9 +4,6 @@
             # Fluent Banner (Classic)
             Banner = '..\Assets\Banner.Classic.png'
 
-            # Specify filename of the icon.
-            Icon = '..\Assets\AppIcon.ico'
-
             # Specify filename of the logo.
             Logo = '..\Assets\AppIcon.png'
         }
@@ -18,9 +15,6 @@
                 # Fluent Banner (Dark)
                 Dark = '..\Assets\Banner.Fluent.Dark.png'
             }
-
-            # Specify filename of the icon.
-            Icon = '..\Assets\AppIcon.ico'
 
             # Specify filename of the logo.
             Logo = '..\Assets\AppIcon.png'
