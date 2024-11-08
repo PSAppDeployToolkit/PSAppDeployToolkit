@@ -89,7 +89,7 @@ $adtSession = @{
     AppRevision = '01'
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
-    AppScriptVersion = [System.Version]'1.0.0'
+    AppScriptVersion = '1.0.0'
     AppScriptDate = '21/10/2024'
     AppScriptAuthor = 'PSAppDeployToolkit'
 
@@ -99,7 +99,7 @@ $adtSession = @{
 
     # Script variables.
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
-    DeployAppScriptVersion = [System.Version]'3.93.0'
+    DeployAppScriptVersion = '3.93.0'
     DeployAppScriptDate = '05/03/2024'
     DeployAppScriptParameters = $PSBoundParameters
 
