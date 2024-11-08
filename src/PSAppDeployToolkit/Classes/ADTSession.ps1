@@ -50,7 +50,7 @@ class ADTSession
     [ValidateNotNullOrEmpty()][System.String]$DeployAppScriptFriendlyName
     [ValidateNotNullOrEmpty()][System.Version]$DeployAppScriptVersion
     [ValidateNotNullOrEmpty()][System.String]$DeployAppScriptDate
-    [AllowEmptyCollection()][System.Collections.IDictionary]$DeployAppScriptParameters
+    [ValidateNotNullOrEmpty()][System.Collections.IDictionary]$DeployAppScriptParameters
     [ValidateNotNullOrEmpty()][System.String]$InstallPhase = 'Initialization'
 
     # Calculated variables we publicize.
