@@ -187,7 +187,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AppScriptDate,
+        [System.DateTime]$AppScriptDate,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
@@ -211,7 +211,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeployAppScriptDate,
+        [System.DateTime]$DeployAppScriptDate,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyCollection()]

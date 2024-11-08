@@ -113,7 +113,7 @@ Try {
     [String]$appLang = 'EN'
     [String]$appRevision = '01'
     [String]$appScriptVersion = '1.0.0'
-    [String]$appScriptDate = '13/06/2024'
+    [String]$appScriptDate = '06/13/2024'
     [String]$appScriptAuthor = 'PsAppDeployToolkit'
     ##*===============================================
     ## Variables: Install Titles (Only set here to override defaults set by the toolkit)
