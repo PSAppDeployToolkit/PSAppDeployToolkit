@@ -26,14 +26,14 @@ class ADTSession
     hidden [ValidateNotNullOrEmpty()][System.String]$LogPath
     hidden [ValidateNotNullOrEmpty()][System.Int32]$ExitCode
 
-    # Deploy-Application.ps1 parameters.
+    # Frontend parameters.
     [ValidateSet('Install', 'Uninstall', 'Repair')][System.String]$DeploymentType = 'Install'
     [ValidateSet('Interactive', 'NonInteractive', 'Silent')][System.String]$DeployMode = 'Interactive'
     [ValidateNotNullOrEmpty()][System.Boolean]$AllowRebootPassThru
     [ValidateNotNullOrEmpty()][System.Boolean]$TerminalServerMode
     [ValidateNotNullOrEmpty()][System.Boolean]$DisableLogging
 
-    # Deploy-Application.ps1 variables.
+    # Frontend variables.
     [AllowEmptyString()][System.String]$AppVendor
     [AllowEmptyString()][System.String]$AppName
     [AllowEmptyString()][System.String]$AppVersion
@@ -177,7 +177,7 @@ class ADTSession
 
     hidden [System.Void] DetectDefaultWimFile()
     {
-        # If the default Deploy-Application.ps1 hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
+        # If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
         if (![System.String]::IsNullOrWhiteSpace($this.AppName) -and !$this.ForceWimDetection)
         {
             return
@@ -215,7 +215,7 @@ class ADTSession
 
     hidden [System.Void] DetectDefaultMsi([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
     {
-        # If the default Deploy-Application.ps1 hasn't been modified, check for MSI / MST and modify the install accordingly.
+        # If the default frontend hasn't been modified, check for MSI / MST and modify the install accordingly.
         if (![System.String]::IsNullOrWhiteSpace($this.AppName))
         {
             return
