@@ -332,12 +332,12 @@ class ADTSession
         }
 
         # Sanitize the application details, as they can cause issues in the script.
-        $this.AppVendor = Remove-ADTInvalidFileNameChars -Name $this.AppVendor
-        $this.AppName = Remove-ADTInvalidFileNameChars -Name $this.AppName
-        $this.AppVersion = Remove-ADTInvalidFileNameChars -Name $this.AppVersion
-        $this.AppArch = Remove-ADTInvalidFileNameChars -Name $this.AppArch
-        $this.AppLang = Remove-ADTInvalidFileNameChars -Name $this.AppLang
-        $this.AppRevision = Remove-ADTInvalidFileNameChars -Name $this.AppRevision
+        $this.AppVendor = $this.AppVendor -replace $ADTEnv.invalidFileNameCharsRegExPattern
+        $this.AppName = $this.AppName -replace $ADTEnv.invalidFileNameCharsRegExPattern
+        $this.AppVersion = $this.AppVersion -replace $ADTEnv.invalidFileNameCharsRegExPattern
+        $this.AppArch = $this.AppArch -replace $ADTEnv.invalidFileNameCharsRegExPattern
+        $this.AppLang = $this.AppLang -replace $ADTEnv.invalidFileNameCharsRegExPattern
+        $this.AppRevision = $this.AppRevision -replace $ADTEnv.invalidFileNameCharsRegExPattern
 
         # If we're left with a null AppName, throw a terminating error.
         if ([System.String]::IsNullOrWhiteSpace($this.AppName))

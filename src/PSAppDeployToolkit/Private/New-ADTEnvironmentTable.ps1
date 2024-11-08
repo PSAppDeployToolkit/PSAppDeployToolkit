@@ -297,6 +297,7 @@ function New-ADTEnvironmentTable
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
+    $variables.Add('invalidFileNameCharsRegExPattern', [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, $variables.invalidFileNameChars)))
 
     ## Variables: RegEx Patterns
     $variables.Add('MSIProductCodeRegExPattern', (Get-ADTMsiProductCodeRegexPattern))
