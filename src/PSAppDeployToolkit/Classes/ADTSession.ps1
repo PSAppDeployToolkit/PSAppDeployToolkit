@@ -305,6 +305,9 @@ class ADTSession
 
     hidden [System.Void] SetAppProperties([System.Collections.Specialized.OrderedDictionary]$ADTEnv)
     {
+        # Archive off the current AppName value so we can use it if we have to throw.
+        $initialAppName = $this.AppName
+
         # Set up sample variables if Dot Sourcing the script, app details have not been specified
         if ([System.String]::IsNullOrWhiteSpace($this.AppName))
         {
@@ -335,6 +338,21 @@ class ADTSession
         $this.AppArch = Remove-ADTInvalidFileNameChars -Name $this.AppArch
         $this.AppLang = Remove-ADTInvalidFileNameChars -Name $this.AppLang
         $this.AppRevision = Remove-ADTInvalidFileNameChars -Name $this.AppRevision
+
+        # If we're left with a null AppName, throw a terminating error.
+        if ([System.String]::IsNullOrWhiteSpace($this.AppName))
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentException]::new('The specified AppName contains only invalid filename characters.', 'AppName')
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'AppNameAllCharactersInvalid'
+                TargetObject = $initialAppName
+                TargetName = '[ADTSession]'
+                TargetType = 'Init()'
+                RecommendedAction = "Please review the supplied AppName value and try again."
+            }
+            throw (New-ADTErrorRecord @naerParams)
+        }
     }
 
     hidden [System.Void] SetInstallProperties([System.Collections.Specialized.OrderedDictionary]$ADTEnv, [System.Collections.Hashtable]$ADTConfig)
