@@ -90,7 +90,7 @@ $adtSession = @{
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
     AppScriptVersion = '1.0.0'
-    AppScriptDate = 'XX/XX/20XX'
+    AppScriptDate = '12/31/2000'
     AppScriptAuthor = '<author name>'
 
     # Install Titles (Only set here to override defaults set by the toolkit).

@@ -43,13 +43,13 @@ class ADTSession
     [ValidateNotNullOrEmpty()][System.Int32[]]$AppSuccessExitCodes = 0
     [ValidateNotNullOrEmpty()][System.Int32[]]$AppRebootExitCodes = 1641, 3010
     [ValidateNotNullOrEmpty()][System.Version]$AppScriptVersion
-    [ValidateNotNullOrEmpty()][System.String]$AppScriptDate
+    [ValidateNotNullOrEmpty()][System.DateTime]$AppScriptDate
     [ValidateNotNullOrEmpty()][System.String]$AppScriptAuthor
     [ValidateNotNullOrEmpty()][System.String]$InstallName
     [ValidateNotNullOrEmpty()][System.String]$InstallTitle
     [ValidateNotNullOrEmpty()][System.String]$DeployAppScriptFriendlyName
     [ValidateNotNullOrEmpty()][System.Version]$DeployAppScriptVersion
-    [ValidateNotNullOrEmpty()][System.String]$DeployAppScriptDate
+    [ValidateNotNullOrEmpty()][System.DateTime]$DeployAppScriptDate
     [ValidateNotNullOrEmpty()][System.Collections.IDictionary]$DeployAppScriptParameters
     [ValidateNotNullOrEmpty()][System.String]$InstallPhase = 'Initialization'
 
@@ -456,7 +456,7 @@ class ADTSession
         }
         if ($this.AppScriptDate)
         {
-            $this.WriteLogEntry("[$($this.InstallName)] script date is [$($this.AppScriptDate)].")
+            $this.WriteLogEntry("[$($this.InstallName)] script date is [$($this.AppScriptDate.ToString('O').Split('T')[0])].")
         }
         if ($this.AppScriptAuthor)
         {

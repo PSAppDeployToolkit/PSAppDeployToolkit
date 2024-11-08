@@ -90,7 +90,7 @@ $adtSession = @{
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
     AppScriptVersion = '1.0.0'
-    AppScriptDate = '21/10/2024'
+    AppScriptDate = '10/21/2024'
     AppScriptAuthor = 'PSAppDeployToolkit'
 
     # Install Titles (Only set here to override defaults set by the toolkit).
