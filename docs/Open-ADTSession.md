@@ -16,9 +16,9 @@ Opens a new ADT session.
 Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-DeployMode] <String>]
  [-AllowRebootPassThru] [-TerminalServerMode] [-DisableLogging] [[-AppVendor] <String>] [[-AppName] <String>]
  [[-AppVersion] <String>] [[-AppArch] <String>] [[-AppLang] <String>] [[-AppRevision] <String>]
- [[-AppScriptVersion] <Version>] [[-AppScriptDate] <String>] [[-AppScriptAuthor] <String>]
+ [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>] [[-AppScriptAuthor] <String>]
  [[-InstallName] <String>] [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>]
- [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <String>]
+ [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <DateTime>]
  [[-DeployAppScriptParameters] <IDictionary>] [[-AppSuccessExitCodes] <Int32[]>]
  [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>] [[-DirFiles] <String>]
  [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
@@ -240,7 +240,7 @@ Accept wildcard characters: False
 Specifies the application script date.
 
 ```yaml
-Type: String
+Type: DateTime
 Parameter Sets: (All)
 Aliases:
 
@@ -330,7 +330,7 @@ Accept wildcard characters: False
 Specifies the date of the deploy application script.
 
 ```yaml
-Type: String
+Type: DateTime
 Parameter Sets: (All)
 Aliases:
 
