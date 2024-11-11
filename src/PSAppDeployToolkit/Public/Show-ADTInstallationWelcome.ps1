@@ -23,10 +23,10 @@ function Show-ADTInstallationWelcome
     .PARAMETER Silent
         Stop processes without prompting the user.
 
-    .PARAMETER CloseAppsCountdown
+    .PARAMETER CloseProcessesCountdown
         Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired.
 
-    .PARAMETER ForceCloseAppsCountdown
+    .PARAMETER ForceCloseProcessesCountdown
         Option to provide a countdown in seconds until the specified applications are automatically closed regardless of whether deferral is allowed.
 
     .PARAMETER PromptToSave
@@ -36,12 +36,12 @@ function Show-ADTInstallationWelcome
         Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
     .PARAMETER BlockExecution
-        Option to prevent the user from launching processes/applications, specified in -CloseApps, during the installation.
+        Option to prevent the user from launching processes/applications, specified in -CloseProcesses, during the installation.
 
     .PARAMETER AllowDefer
         Enables an optional defer button to allow the user to defer the installation.
 
-    .PARAMETER AllowDeferCloseApps
+    .PARAMETER AllowDeferCloseProcesses
         Enables an optional defer button to allow the user to defer the installation only if there are running applications that need to be closed. This parameter automatically enables -AllowDefer
 
     .PARAMETER DeferTimes
@@ -92,27 +92,27 @@ function Show-ADTInstallationWelcome
         This function does not return any output.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -CloseApps @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
+        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
 
         Prompt the user to close Internet Explorer, Word and Excel.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -Silent
+        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -Silent
 
         Close Word and Excel without prompting the user.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution
+        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution
 
         Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' } -CloseAppsCountdown 600
+        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' } -CloseProcessesCountdown 600
 
         Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
+        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
 
         Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
 
@@ -122,7 +122,7 @@ function Show-ADTInstallationWelcome
         Allow the user to defer the installation until the deadline is reached.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseAppsCountdown 600
+        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseProcessesCountdown 600
 
         Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 
@@ -158,11 +158,11 @@ function Show-ADTInstallationWelcome
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [ValidateNotNullOrEmpty()]
-        [System.Double]$CloseAppsCountdown,
+        [System.Double]$CloseProcessesCountdown,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$ForceCloseAppsCountdown,
+        [System.UInt32]$ForceCloseProcessesCountdown,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
         [System.Management.Automation.SwitchParameter]$PromptToSave,
@@ -177,7 +177,7 @@ function Show-ADTInstallationWelcome
         [System.Management.Automation.SwitchParameter]$AllowDefer,
 
         [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
-        [System.Management.Automation.SwitchParameter]$AllowDeferCloseApps,
+        [System.Management.Automation.SwitchParameter]$AllowDeferCloseProcesses,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of times the deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
@@ -274,7 +274,7 @@ function Show-ADTInstallationWelcome
                     $Silent = $true
                 }
 
-                # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseApps list
+                # If using Zero-Config MSI Deployment, append any executables found in the MSI to the CloseProcesses list
                 if ($adtSession -and ($msiExecutables = $adtSession.GetDefaultMsiExecutablesList()))
                 {
                     $CloseProcesses = $(if ($CloseProcesses) { $CloseProcesses }; $msiExecutables)
@@ -321,9 +321,9 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Check Deferral history and calculate remaining deferrals.
-                if ($AllowDefer -or $AllowDeferCloseApps)
+                if ($AllowDefer -or $AllowDeferCloseProcesses)
                 {
-                    # Set $AllowDefer to true if $AllowDeferCloseApps is true.
+                    # Set $AllowDefer to true if $AllowDeferCloseProcesses is true.
                     $AllowDefer = $true
 
                     # Get the deferral history from the registry.
@@ -405,15 +405,15 @@ function Show-ADTInstallationWelcome
                 if (!$Silent -and (!$adtSession -or !$adtSession.IsSilent()))
                 {
                     # Keep the same variable for countdown to simplify the code.
-                    if ($ForceCloseAppsCountdown -gt 0)
+                    if ($ForceCloseProcessesCountdown -gt 0)
                     {
-                        $CloseAppsCountdown = $ForceCloseAppsCountdown
+                        $CloseProcessesCountdown = $ForceCloseProcessesCountdown
                     }
                     elseif ($ForceCountdown -gt 0)
                     {
-                        $CloseAppsCountdown = $ForceCountdown
+                        $CloseProcessesCountdown = $ForceCountdown
                     }
-                    $welcomeState.CloseAppsCountdown = $CloseAppsCountdown
+                    $welcomeState.CloseProcessesCountdown = $CloseProcessesCountdown
 
                     while (($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
@@ -425,8 +425,8 @@ function Show-ADTInstallationWelcome
                             WelcomeState = $welcomeState
                             Title = $PSBoundParameters.Title
                             DeploymentType = $PSBoundParameters.DeploymentType
-                            CloseAppsCountdown = $welcomeState.CloseAppsCountdown
-                            ForceCloseAppsCountdown = !!$ForceCloseAppsCountdown
+                            CloseProcessesCountdown = $welcomeState.CloseProcessesCountdown
+                            ForceCloseProcessesCountdown = !!$ForceCloseProcessesCountdown
                             ForceCountdown = $ForceCountdown
                             PersistPrompt = $PersistPrompt
                             NoMinimizeWindows = $NoMinimizeWindows
@@ -439,7 +439,7 @@ function Show-ADTInstallationWelcome
                         if ($AllowDefer)
                         {
                             # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
-                            if ($AllowDeferCloseApps -and !$welcomeState.RunningProcessDescriptions)
+                            if ($AllowDeferCloseProcesses -and !$welcomeState.RunningProcessDescriptions)
                             {
                                 break
                             }

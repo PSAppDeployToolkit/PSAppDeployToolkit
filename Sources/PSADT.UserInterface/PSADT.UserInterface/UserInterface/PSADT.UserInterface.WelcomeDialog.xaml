@@ -161,7 +161,7 @@
 
         <!-- Close Apps List Panel -->
         <StackPanel
-            x:Name="CloseAppsListPanel"
+            x:Name="CloseProcessesListPanel"
             Grid.Column="1"
             Grid.Row="2"
             Margin="24,0,24,8">

@@ -173,7 +173,7 @@ function Uninstall-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses iexplore -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -CloseProcesses iexplore -CloseProcessesCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -216,7 +216,7 @@ function Repair-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses iexplore -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -CloseProcesses iexplore -CloseProcessesCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

@@ -14,20 +14,20 @@ Show a welcome dialog prompting the user with information about the installation
 
 ### None (Default)
 ```
-Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
- [-ForceCloseAppsCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
- [-AllowDeferCloseApps] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseProcessesCountdown <Double>]
+ [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
+ [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String>
  -DeploymentType <String> [<CommonParameters>]
 ```
 
 ### CheckDiskSpace
 ```
-Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseAppsCountdown <Double>]
- [-ForceCloseAppsCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
- [-AllowDeferCloseApps] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-CheckDiskSpace]
- [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText]
- -Title <String> -DeploymentType <String> [<CommonParameters>]
+Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseProcessesCountdown <Double>]
+ [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
+ [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+ [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>]
+ [-CustomText] -Title <String> -DeploymentType <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -41,35 +41,35 @@ The following prompts can be included in the welcome dialog:
 
 ### EXAMPLE 1
 ```
-Show-ADTInstallationWelcome -CloseApps @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
+Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
 ```
 
 Prompt the user to close Internet Explorer, Word and Excel.
 
 ### EXAMPLE 2
 ```
-Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -Silent
+Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -Silent
 ```
 
 Close Word and Excel without prompting the user.
 
 ### EXAMPLE 3
 ```
-Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution
+Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution
 ```
 
 Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 
 ### EXAMPLE 4
 ```
-Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' } -CloseAppsCountdown 600
+Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' } -CloseProcessesCountdown 600
 ```
 
 Prompt the user to close Word and Excel, with customized descriptions for the applications and automatically close the applications after 10 minutes.
 
 ### EXAMPLE 5
 ```
-Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
+Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
 ```
 
 Prompt the user to close Word, MSAccess and Excel.
@@ -84,7 +84,7 @@ Allow the user to defer the installation until the deadline is reached.
 
 ### EXAMPLE 7
 ```
-Show-ADTInstallationWelcome -CloseApps @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseAppsCountdown 600
+Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseProcessesCountdown 600
 Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
 ```
 
@@ -127,7 +127,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -CloseAppsCountdown
+### -CloseProcessesCountdown
 Option to provide a countdown in seconds until the specified applications are automatically closed.
 This only takes effect if deferral is not allowed or has expired.
 
@@ -143,7 +143,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ForceCloseAppsCountdown
+### -ForceCloseProcessesCountdown
 Option to provide a countdown in seconds until the specified applications are automatically closed regardless of whether deferral is allowed.
 
 ```yaml
@@ -192,7 +192,7 @@ Accept wildcard characters: False
 ```
 
 ### -BlockExecution
-Option to prevent the user from launching processes/applications, specified in -CloseApps, during the installation.
+Option to prevent the user from launching processes/applications, specified in -CloseProcesses, during the installation.
 
 ```yaml
 Type: SwitchParameter
@@ -221,7 +221,7 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AllowDeferCloseApps
+### -AllowDeferCloseProcesses
 Enables an optional defer button to allow the user to defer the installation only if there are running applications that need to be closed.
 This parameter automatically enables -AllowDefer
 
