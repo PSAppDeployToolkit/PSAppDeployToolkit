@@ -42,7 +42,7 @@ powershell.exe -File Invoke-AppDeployToolkit.ps1 -AllowRebootPassThru
 powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeploymentType Uninstall
 
 .EXAMPLE
-Deploy-Application.exe -DeploymentType "Install" -DeployMode "Silent"
+Invoke-AppDeployToolkit.exe -DeploymentType "Install" -DeployMode "Silent"
 
 .INPUTS
 None. You cannot pipe objects to this script.
@@ -52,9 +52,9 @@ None. This script does not generate any output.
 
 .NOTES
 Toolkit Exit Code Ranges:
-- 60000 - 68999: Reserved for built-in exit codes in Invoke-AppDeployToolkit.ps1, Deploy-Application.exe, and AppDeployToolkitMain.ps1
+- 60000 - 68999: Reserved for built-in exit codes in Invoke-AppDeployToolkit.ps1, and Invoke-AppDeployToolkit.exe
 - 69000 - 69999: Recommended for user customized exit codes in Invoke-AppDeployToolkit.ps1
-- 70000 - 79999: Recommended for user customized exit codes in AppDeployToolkitExtensions.ps1
+- 70000 - 79999: Recommended for user customized exit codes in PSAppDeployToolkit.Extensions module.
 
 .LINK
 https://psappdeploytoolkit.com
@@ -160,6 +160,7 @@ function Install-ADTDeployment
     Remove-ADTFile -Path "$envCommonDesktop\VLC media player.lnk","$envCommonStartMenuPrograms\VideoLAN\Release Notes.lnk","$envCommonStartMenuPrograms\VideoLAN\Documentation.lnk","$envCommonStartMenuPrograms\VideoLAN\VideoLAN Website.lnk"
     Copy-ADTFileToUserProfiles -Path "$($adtSession.DirSupportFiles)\vlc" -Destination 'AppData\Roaming' -Recurse
 
+
     ## Display a message at the end of the install.
     if (!$adtSession.UseDefaultMsi)
     {
@@ -202,6 +203,7 @@ function Uninstall-ADTDeployment
     ## <Perform Uninstallation tasks here>
     #Start-ADTProcess -FilePath "$envProgramFiles\VideoLAN\VLC\uninstall.exe" -ArgumentList '/S' -ErrorAction SilentlyContinue
     Uninstall-ADTApplication -Name 'VLC media player' -NameMatch 'Exact' -ArgumentList '/S'
+
 
     ##================================================
     ## MARK: Post-Uninstallation
@@ -261,7 +263,7 @@ function Repair-ADTDeployment
 
 
 ##================================================
-## MARK: Initialisation
+## MARK: Initialization
 ##================================================
 
 # Set strict error handling across entire operation.
@@ -272,6 +274,7 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
+    Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File
     Import-Module -Name $PSScriptRoot\PSAppDeployToolkit -Force
     try
     {
@@ -285,7 +288,7 @@ try
 }
 catch
 {
-    $Host.UI.WriteErrorLine((Out-String -InputObject $_))
+    $Host.UI.WriteErrorLine((Out-String -InputObject $_ -Width ([System.Int32]::MaxValue)))
     exit 60008
 }
 
@@ -296,6 +299,8 @@ catch
 
 try
 {
+    Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit.Extensions -Recurse -File | Unblock-File
+    Import-Module -Name $PSScriptRoot\PSAppDeployToolkit.Extensions -Force
     & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession
 }
