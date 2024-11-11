@@ -15,7 +15,7 @@ function Start-ADTMspProcess
 
         Uses default config MSI parameters. You can use -AdditionalArgumentList to add additional parameters.
 
-    .PARAMETER Path
+    .PARAMETER FilePath
         Path to the MSP file.
 
     .PARAMETER AdditionalArgumentList
@@ -32,12 +32,12 @@ function Start-ADTMspProcess
         This function does not generate any output.
 
     .EXAMPLE
-        Start-ADTMspProcess -Path 'Adobe_Reader_11.0.3_EN.msp'
+        Start-ADTMspProcess -FilePath 'Adobe_Reader_11.0.3_EN.msp'
 
         Executes the specified MSP file for Adobe Reader 11.0.3.
 
     .EXAMPLE
-        Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
+        Start-ADTMspProcess -FilePath 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
 
         Executes the specified MSP file for Acrobat Reader 2017 with additional parameters.
 
