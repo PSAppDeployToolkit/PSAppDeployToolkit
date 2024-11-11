@@ -13,9 +13,9 @@ namespace PSADT.Types
         public System.Drawing.Point FormStartLocation { get; set; }
 
         /// <summary>
-        /// Gets/sets the InstallationWelcome's CloseApps countdown.
+        /// Gets/sets the InstallationWelcome's CloseProcesses countdown.
         /// </summary>
-        public double CloseAppsCountdown { get; set; }
+        public double CloseProcessesCountdown { get; set; }
 
         /// <summary>
         /// Gets/sets the running process descriptions.

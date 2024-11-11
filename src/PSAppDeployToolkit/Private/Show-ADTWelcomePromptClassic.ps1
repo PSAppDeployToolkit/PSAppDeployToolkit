@@ -30,11 +30,11 @@ function Show-ADTWelcomePromptClassic
         [ValidateScript({
                 if ($_ -gt (Get-ADTConfig).UI.DefaultTimeout)
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseAppsCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
                 }
                 return ($_ -ge 0)
             })]
-        [System.Double]$CloseAppsCountdown,
+        [System.Double]$CloseProcessesCountdown,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -49,7 +49,7 @@ function Show-ADTWelcomePromptClassic
         [System.UInt32]$ForceCountdown,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$ForceCloseAppsCountdown,
+        [System.Management.Automation.SwitchParameter]$ForceCloseProcessesCountdown,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
@@ -74,7 +74,7 @@ function Show-ADTWelcomePromptClassic
     # Initialize variables.
     $countdownTime = $startTime = [System.DateTime]::Now
     $showCountdown = $false
-    $showCloseApps = $false
+    $showCloseProcesses = $false
     $showDeference = $false
     $persistWindow = $false
 
@@ -82,7 +82,7 @@ function Show-ADTWelcomePromptClassic
     if ($WelcomeState.RunningProcessDescriptions)
     {
         Write-ADTLogEntry -Message "Prompting the user to close application(s) [$($WelcomeState.RunningProcessDescriptions -join ',')]..."
-        $showCloseApps = $true
+        $showCloseProcesses = $true
     }
 
     # Initial form layout: Allow Deferral
@@ -101,9 +101,9 @@ function Show-ADTWelcomePromptClassic
     # If deferral is being shown and 'close apps countdown' or 'persist prompt' was specified, enable those features.
     if (!$showDeference)
     {
-        if ($CloseAppsCountdown -gt 0)
+        if ($CloseProcessesCountdown -gt 0)
         {
-            Write-ADTLogEntry -Message "Close applications countdown has [$CloseAppsCountdown] seconds remaining."
+            Write-ADTLogEntry -Message "Close applications countdown has [$CloseProcessesCountdown] seconds remaining."
             $showCountdown = $true
         }
     }
@@ -113,16 +113,16 @@ function Show-ADTWelcomePromptClassic
     }
 
     # If 'force close apps countdown' was specified, enable that feature.
-    if ($ForceCloseAppsCountdown)
+    if ($ForceCloseProcessesCountdown)
     {
-        Write-ADTLogEntry -Message "Close applications countdown has [$CloseAppsCountdown] seconds remaining."
+        Write-ADTLogEntry -Message "Close applications countdown has [$CloseProcessesCountdown] seconds remaining."
         $showCountdown = $true
     }
 
     # If 'force countdown' was specified, enable that feature.
     if ($ForceCountdown)
     {
-        Write-ADTLogEntry -Message "Countdown has [$CloseAppsCountdown] seconds remaining."
+        Write-ADTLogEntry -Message "Countdown has [$CloseProcessesCountdown] seconds remaining."
         $showCountdown = $true
     }
 
@@ -160,7 +160,7 @@ function Show-ADTWelcomePromptClassic
 
         # Initialize the countdown timer.
         $currentTime = [System.DateTime]::Now
-        $countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
+        $countdownTime = $startTime.AddSeconds($CloseProcessesCountdown)
         $WelcomeState.WelcomeTimer.Start()
 
         # Set up the form.
@@ -179,9 +179,9 @@ function Show-ADTWelcomePromptClassic
         {
             # Get the time information.
             [DateTime]$currentTime = [System.DateTime]::Now
-            [DateTime]$countdownTime = $startTime.AddSeconds($CloseAppsCountdown)
+            [DateTime]$countdownTime = $startTime.AddSeconds($CloseProcessesCountdown)
             [Timespan]$remainingTime = $countdownTime.Subtract($currentTime)
-            $WelcomeState.CloseAppsCountdown = $remainingTime.TotalSeconds
+            $WelcomeState.CloseProcessesCountdown = $remainingTime.TotalSeconds
 
             # If the countdown is complete, close the application(s) or continue.
             if ($countdownTime -le $currentTime)
@@ -194,9 +194,9 @@ function Show-ADTWelcomePromptClassic
                 else
                 {
                     Write-ADTLogEntry -Message 'Close application(s) countdown timer has elapsed. Force closing application(s).'
-                    if ($buttonCloseApps.CanFocus)
+                    if ($buttonCloseProcesses.CanFocus)
                     {
-                        $buttonCloseApps.PerformClick()
+                        $buttonCloseProcesses.PerformClick()
                     }
                     else
                     {
@@ -234,15 +234,15 @@ function Show-ADTWelcomePromptClassic
         if (Compare-Object -ReferenceObject @($WelcomeState.RunningProcessDescriptions | Select-Object) -DifferenceObject @($dynamicRunningProcessDescriptions | Select-Object))
         {
             # Update the runningProcessDescriptions variable for the next time this function runs.
-            $listboxCloseApps.Items.Clear()
+            $listboxCloseProcesses.Items.Clear()
             if (($WelcomeState.RunningProcessDescriptions = $dynamicRunningProcessDescriptions))
             {
                 Write-ADTLogEntry -Message "The running processes have changed. Updating the apps to close: [$($WelcomeState.RunningProcessDescriptions -join ',')]..."
-                $listboxCloseApps.Items.AddRange($WelcomeState.RunningProcessDescriptions)
+                $listboxCloseProcesses.Items.AddRange($WelcomeState.RunningProcessDescriptions)
             }
         }
 
-        # If CloseApps processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseApps conditions will be re-evaluated.
+        # If CloseProcesses processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseProcesses conditions will be re-evaluated.
         if ($previousRunningProcessDescriptions)
         {
             if (!$dynamicRunningProcesses)
@@ -253,7 +253,7 @@ function Show-ADTWelcomePromptClassic
         }
         elseif ($dynamicRunningProcesses)
         {
-            # If CloseApps processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseApps conditions will be re-evaluated.
+            # If CloseProcesses processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseProcesses conditions will be re-evaluated.
             Write-ADTLogEntry -Message 'New running processes detected. Updating the form to prompt to close the running applications.'
             $formWelcome.Dispose()
         }
@@ -317,18 +317,18 @@ function Show-ADTWelcomePromptClassic
     $labelAppName.AutoSize = $true
 
     # Listbox Close Applications.
-    $listBoxCloseApps = [System.Windows.Forms.ListBox]::new()
-    $listBoxCloseApps.MinimumSize = $listBoxCloseApps.ClientSize = $listBoxCloseApps.MaximumSize = [System.Drawing.Size]::new(420, 100)
-    $listBoxCloseApps.Margin = [System.Windows.Forms.Padding]::new(15, 0, 15, 0)
-    $listBoxCloseApps.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
-    $listboxCloseApps.Font = $Script:Dialogs.Classic.Font
-    $listBoxCloseApps.FormattingEnabled = $true
-    $listBoxCloseApps.HorizontalScrollbar = $true
-    $listBoxCloseApps.Name = 'ListBoxCloseApps'
-    $listBoxCloseApps.TabIndex = 3
+    $listBoxCloseProcesses = [System.Windows.Forms.ListBox]::new()
+    $listBoxCloseProcesses.MinimumSize = $listBoxCloseProcesses.ClientSize = $listBoxCloseProcesses.MaximumSize = [System.Drawing.Size]::new(420, 100)
+    $listBoxCloseProcesses.Margin = [System.Windows.Forms.Padding]::new(15, 0, 15, 0)
+    $listBoxCloseProcesses.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
+    $listboxCloseProcesses.Font = $Script:Dialogs.Classic.Font
+    $listBoxCloseProcesses.FormattingEnabled = $true
+    $listBoxCloseProcesses.HorizontalScrollbar = $true
+    $listBoxCloseProcesses.Name = 'ListBoxCloseProcesses'
+    $listBoxCloseProcesses.TabIndex = 3
     if ($WelcomeState.RunningProcessDescriptions)
     {
-        $null = $listboxCloseApps.Items.AddRange($WelcomeState.RunningProcessDescriptions)
+        $null = $listboxCloseProcesses.Items.AddRange($WelcomeState.RunningProcessDescriptions)
     }
 
     # Label Countdown.
@@ -372,24 +372,24 @@ function Show-ADTWelcomePromptClassic
         $labelCustomMessage.AutoSize = $true
         $flowLayoutPanel.Controls.Add($labelCustomMessage)
     }
-    if ($showCloseApps)
+    if ($showCloseProcesses)
     {
-        # Label CloseAppsMessage.
-        $labelCloseAppsMessage = [System.Windows.Forms.Label]::new()
-        $labelCloseAppsMessage.MinimumSize = $labelCloseAppsMessage.ClientSize = $labelCloseAppsMessage.MaximumSize = $controlSize
-        $labelCloseAppsMessage.Margin = [System.Windows.Forms.Padding]::new(0, 0, 0, 5)
-        $labelCloseAppsMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
-        $labelCloseAppsMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
-        $labelCloseAppsMessage.Font = $Script:Dialogs.Classic.Font
-        $labelCloseAppsMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelCloseAppsMessage.Text = $adtStrings.ClosePrompt.Message
-        $labelCloseAppsMessage.Name = 'LabelCloseAppsMessage'
-        $labelCloseAppsMessage.TabStop = $false
-        $labelCloseAppsMessage.AutoSize = $true
-        $flowLayoutPanel.Controls.Add($labelCloseAppsMessage)
+        # Label CloseProcessesMessage.
+        $labelCloseProcessesMessage = [System.Windows.Forms.Label]::new()
+        $labelCloseProcessesMessage.MinimumSize = $labelCloseProcessesMessage.ClientSize = $labelCloseProcessesMessage.MaximumSize = $controlSize
+        $labelCloseProcessesMessage.Margin = [System.Windows.Forms.Padding]::new(0, 0, 0, 5)
+        $labelCloseProcessesMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
+        $labelCloseProcessesMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
+        $labelCloseProcessesMessage.Font = $Script:Dialogs.Classic.Font
+        $labelCloseProcessesMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+        $labelCloseProcessesMessage.Text = $adtStrings.ClosePrompt.Message
+        $labelCloseProcessesMessage.Name = 'LabelCloseProcessesMessage'
+        $labelCloseProcessesMessage.TabStop = $false
+        $labelCloseProcessesMessage.AutoSize = $true
+        $flowLayoutPanel.Controls.Add($labelCloseProcessesMessage)
 
         # Listbox Close Applications.
-        $flowLayoutPanel.Controls.Add($listBoxCloseApps)
+        $flowLayoutPanel.Controls.Add($listBoxCloseProcesses)
     }
     if ($showDeference)
     {
@@ -473,21 +473,21 @@ function Show-ADTWelcomePromptClassic
     $panelButtons.Margin = [System.Windows.Forms.Padding]::new(0, 10, 0, 0)
     $panelButtons.Padding = $paddingNone
     $panelButtons.AutoSize = $true
-    if ($showCloseApps)
+    if ($showCloseProcesses)
     {
         # Button Close For Me.
-        $buttonCloseApps = [System.Windows.Forms.Button]::new()
-        $buttonCloseApps.MinimumSize = $buttonCloseApps.ClientSize = $buttonCloseApps.MaximumSize = $buttonSize
-        $buttonCloseApps.Margin = $buttonCloseApps.Padding = $paddingNone
-        $buttonCloseApps.Location = [System.Drawing.Point]::new(14, 4)
-        $buttonCloseApps.DialogResult = [System.Windows.Forms.DialogResult]::Yes
-        $buttonCloseApps.Font = $Script:Dialogs.Classic.Font
-        $buttonCloseApps.Name = 'ButtonCloseApps'
-        $buttonCloseApps.Text = $adtStrings.ClosePrompt.ButtonClose
-        $buttonCloseApps.TabIndex = 1
-        $buttonCloseApps.AutoSize = $true
-        $buttonCloseApps.UseVisualStyleBackColor = $true
-        $panelButtons.Controls.Add($buttonCloseApps)
+        $buttonCloseProcesses = [System.Windows.Forms.Button]::new()
+        $buttonCloseProcesses.MinimumSize = $buttonCloseProcesses.ClientSize = $buttonCloseProcesses.MaximumSize = $buttonSize
+        $buttonCloseProcesses.Margin = $buttonCloseProcesses.Padding = $paddingNone
+        $buttonCloseProcesses.Location = [System.Drawing.Point]::new(14, 4)
+        $buttonCloseProcesses.DialogResult = [System.Windows.Forms.DialogResult]::Yes
+        $buttonCloseProcesses.Font = $Script:Dialogs.Classic.Font
+        $buttonCloseProcesses.Name = 'ButtonCloseProcesses'
+        $buttonCloseProcesses.Text = $adtStrings.ClosePrompt.ButtonClose
+        $buttonCloseProcesses.TabIndex = 1
+        $buttonCloseProcesses.AutoSize = $true
+        $buttonCloseProcesses.UseVisualStyleBackColor = $true
+        $panelButtons.Controls.Add($buttonCloseProcesses)
     }
     if ($showDeference)
     {
@@ -495,7 +495,7 @@ function Show-ADTWelcomePromptClassic
         $buttonDefer = [System.Windows.Forms.Button]::new()
         $buttonDefer.MinimumSize = $buttonDefer.ClientSize = $buttonDefer.MaximumSize = $buttonSize
         $buttonDefer.Margin = $buttonDefer.Padding = $paddingNone
-        $buttonDefer.Location = [System.Drawing.Point]::new((14, 160)[$showCloseApps], 4)
+        $buttonDefer.Location = [System.Drawing.Point]::new((14, 160)[$showCloseProcesses], 4)
         $buttonDefer.DialogResult = [System.Windows.Forms.DialogResult]::No
         $buttonDefer.Font = $Script:Dialogs.Classic.Font
         $buttonDefer.Name = 'ButtonDefer'
@@ -518,7 +518,7 @@ function Show-ADTWelcomePromptClassic
     $buttonContinue.TabIndex = 2
     $buttonContinue.AutoSize = $true
     $buttonContinue.UseVisualStyleBackColor = $true
-    if ($showCloseApps)
+    if ($showCloseProcesses)
     {
         # Add tooltip to Continue button.
         $toolTip = [System.Windows.Forms.ToolTip]::new()

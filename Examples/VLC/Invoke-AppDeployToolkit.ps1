@@ -119,7 +119,7 @@ function Install-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close VLC if required, allow up to 3 deferrals, and persist the prompt
-    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'vlc'; Description = $adtSession.AppName } -AllowDeferCloseApps -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
+    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'vlc'; Description = $adtSession.AppName } -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -175,7 +175,7 @@ function Uninstall-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close VLC with a 60 second countdown before automatically closing
-    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'vlc'; Description = $adtSession.AppName } -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'vlc'; Description = $adtSession.AppName } -CloseProcessesCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -219,7 +219,7 @@ function Repair-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close VLC with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'vlc'; Description = $adtSession.AppName } -CloseAppsCountdown 60
+    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'vlc'; Description = $adtSession.AppName } -CloseProcessesCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

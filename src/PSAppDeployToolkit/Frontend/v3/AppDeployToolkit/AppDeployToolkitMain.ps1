@@ -1301,6 +1301,13 @@ function Show-InstallationWelcome
         }
         $null = $PSBoundParameters.Remove('CloseApps')
     }
+    $null = ('{0}Countdown', 'Force{0}Countdown', 'AllowDefer{0}').ForEach({
+            if ($PSBoundParameters.ContainsKey(($oldParam = [System.String]::Format($_, 'CloseApps'))))
+            {
+                $PSBoundParameters.Add([System.String]::Format($_, 'CloseProcesses'), $PSBoundParameters.$oldParam)
+                $PSBoundParameters.Remove($oldParam)
+            }
+        })
     if ($PSBoundParameters.ContainsKey('MinimizeWindows'))
     {
         $PSBoundParameters.Add('NoMinimizeWindows', !$PSBoundParameters.MinimizeWindows)
