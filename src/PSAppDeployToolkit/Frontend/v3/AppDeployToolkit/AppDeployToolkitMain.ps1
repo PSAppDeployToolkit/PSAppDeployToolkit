@@ -2455,8 +2455,8 @@ function Execute-MSP
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
         [ValidateScript({ ('.msp' -contains [System.IO.Path]::GetExtension($_)) })]
-        [Alias('FilePath')]
-        [System.String]$Path,
+        [Alias('Path')]
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
