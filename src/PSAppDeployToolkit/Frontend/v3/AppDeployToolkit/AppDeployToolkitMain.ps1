@@ -3695,14 +3695,31 @@ function Install-SCCMSoftwareUpdates
 function Send-Keys
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
+    [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false, Position = 0)]
+        [AllowEmptyString()]
+        [ValidateNotNull()]
+        [System.String]$WindowTitle,
+        [Parameter(Mandatory = $false, Position = 1)]
+        [ValidateNotNullorEmpty()]
+        [System.Management.Automation.SwitchParameter]$GetAllWindowTitles,
+        [Parameter(Mandatory = $false, Position = 2)]
+        [ValidateNotNullorEmpty()]
+        [System.IntPtr]$WindowHandle,
+        [Parameter(Mandatory = $false, Position = 3)]
+        [ValidateNotNullorEmpty()]
+        [System.String]$Keys,
+        [Parameter(Mandatory = $false, Position = 4)]
+        [ValidateNotNullorEmpty()]
+        [System.Int32]$WaitSeconds
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
-        Send-ADTKeys
+        Send-ADTKeys @PSBoundParameters
     }
     catch
     {
