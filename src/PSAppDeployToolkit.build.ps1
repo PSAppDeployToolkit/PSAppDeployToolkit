@@ -139,16 +139,16 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
     {
         $buildItems = @(
             @{
-                SourcePath = 'Sources\PSADT.Invoke'
-                SolutionPath = 'Sources\PSADT.Invoke\PSADT.Invoke.sln'
-                OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
-                OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
-            },
-            @{
                 SourcePath = 'Sources\PSADT'
                 SolutionPath = 'Sources\PSADT\PSADT.sln'
                 OutputPath = 'src\PSAppDeployToolkit\lib'
                 OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.dll'
+            },
+            @{
+                SourcePath = 'Sources\PSADT.Invoke'
+                SolutionPath = 'Sources\PSADT.Invoke\PSADT.Invoke.sln'
+                OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
+                OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
             },
             @{
                 SourcePath = 'Sources\PSADT.UserInterface'
