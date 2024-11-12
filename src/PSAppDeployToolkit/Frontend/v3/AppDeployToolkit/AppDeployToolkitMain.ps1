@@ -4627,11 +4627,11 @@ function New-ZipFile
         [ValidateNotNullOrEmpty()]
         [System.String]$DestinationArchiveFileName,
 
-        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'CreateFromDirectory')]
+        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'SourceDirectoryPath')]
         [ValidateScript({ Test-Path -LiteralPath $_ -PathType Container })]
         [System.String[]]$SourceDirectoryPath,
 
-        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'CreateFromFile')]
+        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'SourceFilePath')]
         [ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })]
         [System.String[]]$SourceFilePath,
 
