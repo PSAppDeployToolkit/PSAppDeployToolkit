@@ -3866,7 +3866,7 @@ function Set-Shortcut
                 {
                     $null = $PSBoundParameters.Remove('Path')
                 }
-                $paths | Test-ADTRegistryValue @PSBoundParameters
+                $paths | Set-ADTShortcut @PSBoundParameters
             }
             catch
             {
