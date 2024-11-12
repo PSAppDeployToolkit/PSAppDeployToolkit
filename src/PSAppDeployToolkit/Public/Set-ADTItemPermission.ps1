@@ -135,6 +135,18 @@ function Set-ADTItemPermission
 
     begin
     {
+        # Test elevated permissions before initializing.
+        if (!(Test-ADTCallerIsAdmin))
+        {
+            Write-ADTLogEntry -Message 'Unable to use the function [Set-ADTItemPermission] without elevated permissions.' -Severity 3
+            $naerParams = @{
+                Exception = [System.UnauthorizedAccessException]::new('Unable to use the function [Set-ADTItemPermission] without elevated permissions.')
+                Category = [System.Management.Automation.ErrorCategory]::PermissionDenied
+                ErrorId = 'CallerNotLocalAdmin'
+                RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -144,19 +156,6 @@ function Set-ADTItemPermission
         {
             try
             {
-                # Test elevated permissions.
-                if (!(Test-ADTCallerIsAdmin))
-                {
-                    Write-ADTLogEntry -Message 'Unable to use the function [Set-ADTItemPermission] without elevated permissions.' -Severity 3
-                    $naerParams = @{
-                        Exception = [System.UnauthorizedAccessException]::new('Unable to use the function [Set-ADTItemPermission] without elevated permissions.')
-                        Category = [System.Management.Automation.ErrorCategory]::PermissionDenied
-                        ErrorId = 'CallerNotLocalAdmin'
-                        RecommendedAction = "Please review the executing user's permissions or the supplied config and try again."
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
-
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
                 {
