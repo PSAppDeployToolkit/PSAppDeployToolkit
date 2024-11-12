@@ -20,16 +20,16 @@ Block-ADTAppExecution [-ProcessName] <String[]> [<CommonParameters>]
 This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function.
 It does the following:
 
-1. 
+1.
 Makes a copy of this script in a temporary directory on the local machine.
-2. 
+2.
 Checks for an existing scheduled task from previous failed installation attempt where apps were blocked and if found, calls the Unblock-ADTAppExecution function to restore the original IFEO registry keys.
     This is to prevent the function from overriding the backup of the original IFEO options.
-3. 
+3.
 Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameter -CleanupBlockedApps.
-4. 
+4.
 Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameter -ShowBlockedAppDialog.
-5. 
+5.
 When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress.
     The text of this message can be customized in the XML configuration file.
 
@@ -78,10 +78,9 @@ It is used when the -BlockExecution parameter is specified with the Show-ADTInst
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com
-Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
 License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
 [https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
-

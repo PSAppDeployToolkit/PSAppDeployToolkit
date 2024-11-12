@@ -285,10 +285,9 @@ More reading on how to create filterscripts https://learn.microsoft.com/en-us/po
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com
-Copyright: (c) 2024 PSAppDeployToolkit Team, licensed under LGPLv3
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
 License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
 [https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
-
