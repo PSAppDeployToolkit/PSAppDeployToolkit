@@ -20,8 +20,8 @@ Set-ADTItemPermission [-Path] <String> [-EnableInheritance] [<CommonParameters>]
 ### DisableInheritance
 ```
 Set-ADTItemPermission [-Path] <String> [-User] <String[]> [-Permission] <FileSystemRights>
- [[-PermissionType] <AccessControlType>] [[-Inheritance] <InheritanceFlags>]
- [[-Propagation] <PropagationFlags>] [[-Method] <String>] [<CommonParameters>]
+[[-PermissionType] <AccessControlType>] [[-Inheritance] <InheritanceFlags>]
+[[-Propagation] <PropagationFlags>] [[-Method] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

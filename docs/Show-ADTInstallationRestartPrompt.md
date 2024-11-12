@@ -14,8 +14,8 @@ Displays a restart prompt with a countdown to a forced restart.
 
 ```
 Show-ADTInstallationRestartPrompt [[-CountdownSeconds] <UInt32>] [[-CountdownNoHideSeconds] <UInt32>]
- [[-SilentCountdownSeconds] <UInt32>] [-SilentRestart] [-NoCountdown] [-NotTopMost] -Title <String>
- [<CommonParameters>]
+[[-SilentCountdownSeconds] <UInt32>] [-SilentRestart] [-NoCountdown] [-NotTopMost] -Title <String>
+[<CommonParameters>]
 ```
 
 ## DESCRIPTION

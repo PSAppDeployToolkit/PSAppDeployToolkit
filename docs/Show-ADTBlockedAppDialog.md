@@ -14,7 +14,7 @@ Displays a dialog to inform the user about a blocked application.
 
 ```
 Show-ADTBlockedAppDialog [-Title] <String>
- [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
+[[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

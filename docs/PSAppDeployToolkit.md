@@ -113,9 +113,6 @@ Get the pending reboot status on a local computer.
 ### [Get-ADTPowerShellProcessPath](Get-ADTPowerShellProcessPath.md)
 Retrieves the path to the PowerShell executable.
 
-### [Get-ADTRedirectedUri](Get-ADTRedirectedUri.md)
-Returns the resolved URI from the provided permalink.
-
 ### [Get-ADTRegistryKey](Get-ADTRegistryKey.md)
 Retrieves value names and value data for a specified registry key or optionally, a specific value.
 
@@ -139,9 +136,6 @@ Retrieves the string database from the ADT module.
 
 ### [Get-ADTUniversalDate](Get-ADTUniversalDate.md)
 Returns the date/time for the local culture in a universal sortable date time pattern.
-
-### [Get-ADTUriFileName](Get-ADTUriFileName.md)
-Returns the filename of the provided URI.
 
 ### [Get-ADTUserProfiles](Get-ADTUserProfiles.md)
 Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine and also the Default User.
@@ -178,9 +172,6 @@ Register or unregister a DLL file.
 
 ### [Invoke-ADTSCCMTask](Invoke-ADTSCCMTask.md)
 Triggers SCCM to invoke the requested schedule task ID.
-
-### [Invoke-ADTWebDownload](Invoke-ADTWebDownload.md)
-Wraps around Invoke-WebRequest to provide logging and retry support.
 
 ### [Mount-ADTWimFile](Mount-ADTWimFile.md)
 Mounts a WIM file to a specified directory.
@@ -379,5 +370,4 @@ Performs a gpupdate command to refresh Group Policies on the local machine.
 
 ### [Write-ADTLogEntry](Write-ADTLogEntry.md)
 Write messages to a log file in CMTrace.exe compatible format or Legacy text file format.
-
 

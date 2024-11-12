@@ -14,7 +14,7 @@ Set a property in the MSI property table.
 
 ```
 Set-ADTMsiProperty [-Database] <__ComObject> [-PropertyName] <String> [-PropertyValue] <String>
- [<CommonParameters>]
+[<CommonParameters>]
 ```
 
 ## DESCRIPTION

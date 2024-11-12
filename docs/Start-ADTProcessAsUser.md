@@ -15,41 +15,41 @@ Invokes a process in another user's session.
 ### PrimaryActiveUserSession (Default)
 ```
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-UseLinkedAdminToken]
- [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication] [-NoRedirectOutput]
- [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
- [<CommonParameters>]
+[-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-UseLinkedAdminToken]
+[-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication] [-NoRedirectOutput]
+[-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
+[-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
+[<CommonParameters>]
 ```
 
 ### AllActiveUserSessions
 ```
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-AllActiveUserSessions]
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
- [<CommonParameters>]
+[-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-AllActiveUserSessions]
+[-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
+[-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
+[-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
+[<CommonParameters>]
 ```
 
 ### SessionId
 ```
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -SessionId <UInt32>
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
- [<CommonParameters>]
+[-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -SessionId <UInt32>
+[-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
+[-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
+[-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
+[<CommonParameters>]
 ```
 
 ### Username
 ```
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -Username <String>
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
- [<CommonParameters>]
+[-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -Username <String>
+[-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
+[-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
+[-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
+[<CommonParameters>]
 ```
 
 ## DESCRIPTION

@@ -14,15 +14,15 @@ Opens a new ADT session.
 
 ```
 Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-DeployMode] <String>]
- [-AllowRebootPassThru] [-TerminalServerMode] [-DisableLogging] [[-AppVendor] <String>] [[-AppName] <String>]
- [[-AppVersion] <String>] [[-AppArch] <String>] [[-AppLang] <String>] [[-AppRevision] <String>]
- [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>] [[-AppScriptAuthor] <String>]
- [[-InstallName] <String>] [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>]
- [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <DateTime>]
- [[-DeployAppScriptParameters] <IDictionary>] [[-AppSuccessExitCodes] <Int32[]>]
- [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>] [[-DirFiles] <String>]
- [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
- [[-DefaultMspFiles] <String[]>] [-ForceWimDetection] [-PassThru] [<CommonParameters>]
+[-AllowRebootPassThru] [-TerminalServerMode] [-DisableLogging] [[-AppVendor] <String>] [[-AppName] <String>]
+[[-AppVersion] <String>] [[-AppArch] <String>] [[-AppLang] <String>] [[-AppRevision] <String>]
+[[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>] [[-AppScriptAuthor] <String>]
+[[-InstallName] <String>] [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>]
+[[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <DateTime>]
+[[-DeployAppScriptParameters] <IDictionary>] [[-AppSuccessExitCodes] <Int32[]>]
+[[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>] [[-DirFiles] <String>]
+[[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
+[[-DefaultMspFiles] <String[]>] [-ForceWimDetection] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

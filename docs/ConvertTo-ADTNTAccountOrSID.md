@@ -25,7 +25,7 @@ ConvertTo-ADTNTAccountOrSID -SID <String> [<CommonParameters>]
 ### WellKnownName
 ```
 ConvertTo-ADTNTAccountOrSID -WellKnownSIDName <String> [-WellKnownToNTAccount] [-LocalHost]
- [<CommonParameters>]
+[<CommonParameters>]
 ```
 
 ## DESCRIPTION

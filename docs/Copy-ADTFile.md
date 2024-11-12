@@ -14,7 +14,7 @@ Copies files and directories from a source to a destination.
 
 ```
 Copy-ADTFile [-Path] <String[]> [-Destination] <String> [-Recurse] [-Flatten] [-ContinueFileCopyOnError]
- [-FileCopyMode <String>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>] [<CommonParameters>]
+[-FileCopyMode <String>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

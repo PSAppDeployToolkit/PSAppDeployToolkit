@@ -14,7 +14,7 @@ Display a custom dialog box with optional title, buttons, icon, and timeout.
 
 ```
 Show-ADTDialogBox [-Text] <String> [-Buttons <String>] [-DefaultButton <String>] [-Icon <String>] [-NotTopMost]
- -Title <String> [-Timeout <UInt32>] [<CommonParameters>]
+-Title <String> [-Timeout <UInt32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

@@ -14,7 +14,7 @@ Stop a Windows service and its dependencies.
 
 ```
 Stop-ADTServiceAndDependencies [-Service] <ServiceController> [-SkipDependentServices]
- [[-PendingStatusWait] <TimeSpan>] [-PassThru] [<CommonParameters>]
+[[-PendingStatusWait] <TimeSpan>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

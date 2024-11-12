@@ -427,10 +427,10 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
     $OutputDir = "$script:ArtifactsPath\docs\"
     $OutputDir | Get-ChildItem -File | ForEach-Object {
         # fix formatting in multiline examples
-        $content = Get-Content $_.FullName -Raw
-        $newContent = $content -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6'
+        $content = [System.IO.File]::ReadAllText($_.FullName)
+        $newContent = $content.Trim() -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6'
         if ($newContent -ne $content) {
-            Set-Content -Path $_.FullName -Value $newContent -Force
+            [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").Trim())
         }
     }
     # Replace each missing element we need for a proper generic module page .md file

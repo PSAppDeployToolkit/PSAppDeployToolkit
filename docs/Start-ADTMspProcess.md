@@ -27,14 +27,14 @@ You can use -AdditionalArgumentList to add additional parameters.
 
 ### EXAMPLE 1
 ```
-Start-ADTMspProcess -Path 'Adobe_Reader_11.0.3_EN.msp'
+Start-ADTMspProcess -FilePath 'Adobe_Reader_11.0.3_EN.msp'
 ```
 
 Executes the specified MSP file for Adobe Reader 11.0.3.
 
 ### EXAMPLE 2
 ```
-Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
+Start-ADTMspProcess -FilePath 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
 ```
 
 Executes the specified MSP file for Acrobat Reader 2017 with additional parameters.
@@ -42,7 +42,7 @@ Executes the specified MSP file for Acrobat Reader 2017 with additional paramete
 ## PARAMETERS
 
 ### -FilePath
-Please enter the path to the MSP file
+Path to the MSP file.
 
 ```yaml
 Type: String

@@ -15,13 +15,13 @@ Get all of the properties from a Windows Installer database table or the Summary
 ### TableInfo (Default)
 ```
 Get-ADTMsiTableProperty -Path <String> [-TransformPath <String[]>] [-Table <String>]
- [-TablePropertyNameColumnNum <Int32>] [-TablePropertyValueColumnNum <Int32>] [<CommonParameters>]
+[-TablePropertyNameColumnNum <Int32>] [-TablePropertyValueColumnNum <Int32>] [<CommonParameters>]
 ```
 
 ### SummaryInfo
 ```
 Get-ADTMsiTableProperty -Path <String> [-TransformPath <String[]>] [-GetSummaryInformation]
- [<CommonParameters>]
+[<CommonParameters>]
 ```
 
 ## DESCRIPTION
