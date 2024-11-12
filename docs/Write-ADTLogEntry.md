@@ -14,8 +14,8 @@ Write messages to a log file in CMTrace.exe compatible format or Legacy text fil
 
 ```
 Write-ADTLogEntry [-Message] <String[]> [[-Severity] <UInt32>] [[-Source] <String>] [[-ScriptSection] <String>]
- [[-LogType] <String>] [[-LogFileDirectory] <String>] [[-LogFileName] <String>] [-PassThru] [-DebugMessage]
- [<CommonParameters>]
+[[-LogType] <String>] [[-LogFileDirectory] <String>] [[-LogFileName] <String>] [-PassThru] [-DebugMessage]
+[<CommonParameters>]
 ```
 
 ## DESCRIPTION

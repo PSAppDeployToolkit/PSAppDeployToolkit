@@ -14,7 +14,7 @@ Creates a new ErrorRecord for script validation errors.
 
 ```
 New-ADTValidateScriptErrorRecord [-ParameterName] <String> [-ProvidedValue] <Object>
- [-ExceptionMessage] <String> [[-InnerException] <Exception>] [<CommonParameters>]
+[-ExceptionMessage] <String> [[-InnerException] <Exception>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

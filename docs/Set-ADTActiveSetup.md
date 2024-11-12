@@ -15,8 +15,8 @@ Creates an Active Setup entry in the registry to execute a file for each user up
 ### Create (Default)
 ```
 Set-ADTActiveSetup -StubExePath <String> [-Arguments <String>] [-Wow6432Node] [-Version <String>]
- [-Locale <String>] [-DisableActiveSetup] [-NoExecuteForCurrentUser] -Key <String> -Description <String>
- [<CommonParameters>]
+[-Locale <String>] [-DisableActiveSetup] [-NoExecuteForCurrentUser] -Key <String> -Description <String>
+[<CommonParameters>]
 ```
 
 ### Purge
@@ -32,11 +32,11 @@ A registry key is created in the HKLM registry hive which gets replicated to the
 If the "Version" value of the Active Setup entry in HKLM is higher than the version value in HKCU, the file referenced in "StubPath" is executed.
 
 This Function:
-    - Creates the registry entries in HKLM:SOFTWARE\Microsoft\Active Setup\Installed Components\$installName.
-    - Creates StubPath value depending on the file extension of the $StubExePath parameter.
-    - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
-    - Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
-    - Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
+- Creates the registry entries in HKLM:SOFTWARE\Microsoft\Active Setup\Installed Components\$installName.
+- Creates StubPath value depending on the file extension of the $StubExePath parameter.
+- Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
+- Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
+- Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
 
 ## EXAMPLES
 
@@ -115,9 +115,9 @@ Use commas to get around this limitation.
 Default: YYYYMMDDHHMMSS
 
 Note:
-    - Do not use this parameter if it is not necessary.
+- Do not use this parameter if it is not necessary.
 PSADT will handle this parameter automatically using the time of the installation as the version number.
-    - In Windows 10, Scripts and EXEs might be blocked by AppLocker.
+- In Windows 10, Scripts and EXEs might be blocked by AppLocker.
 Ensure that the path given to -StubExePath will permit end users to run Scripts and EXEs unelevated.
 
 ```yaml

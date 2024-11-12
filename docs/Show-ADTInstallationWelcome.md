@@ -15,27 +15,27 @@ Show a welcome dialog prompting the user with information about the installation
 ### None (Default)
 ```
 Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseProcessesCountdown <Double>]
- [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
- [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
- [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String>
- -DeploymentType <String> [<CommonParameters>]
+[-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
+[-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+[-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String>
+-DeploymentType <String> [<CommonParameters>]
 ```
 
 ### CheckDiskSpace
 ```
 Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseProcessesCountdown <Double>]
- [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
- [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
- [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>]
- [-CustomText] -Title <String> -DeploymentType <String> [<CommonParameters>]
+[-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
+[-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+[-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>]
+[-CustomText] -Title <String> -DeploymentType <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 The following prompts can be included in the welcome dialog:
-    a) Close the specified running applications, or optionally close the applications without showing a prompt (using the -Silent switch).
-    b) Defer the installation a certain number of times, for a certain number of days or until a deadline is reached.
-    c) Countdown until applications are automatically closed.
-    d) Prevent users from launching the specified applications while the installation is in progress.
+a) Close the specified running applications, or optionally close the applications without showing a prompt (using the -Silent switch).
+b) Defer the installation a certain number of times, for a certain number of days or until a deadline is reached.
+c) Countdown until applications are automatically closed.
+d) Prevent users from launching the specified applications while the installation is in progress.
 
 ## EXAMPLES
 

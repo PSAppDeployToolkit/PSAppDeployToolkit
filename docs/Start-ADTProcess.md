@@ -14,10 +14,10 @@ Execute a process with optional arguments, working directory, window style.
 
 ```
 Start-ADTProcess [-FilePath] <String> [[-ArgumentList] <String[]>] [-SecureArgumentList]
- [[-WindowStyle] <ProcessWindowStyle>] [-CreateNoWindow] [[-WorkingDirectory] <String>] [-NoWait] [-PassThru]
- [-WaitForMsiExec] [[-MsiExecWaitTime] <UInt32>] [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>]
- [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure]
- [-UseShellExecute] [<CommonParameters>]
+[[-WindowStyle] <ProcessWindowStyle>] [-CreateNoWindow] [[-WorkingDirectory] <String>] [-NoWait] [-PassThru]
+[-WaitForMsiExec] [[-MsiExecWaitTime] <UInt32>] [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>]
+[[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure]
+[-UseShellExecute] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

@@ -14,7 +14,7 @@ Retrieves information about installed applications.
 
 ```
 Get-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <String[]>]
- [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>] [<CommonParameters>]
+[-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

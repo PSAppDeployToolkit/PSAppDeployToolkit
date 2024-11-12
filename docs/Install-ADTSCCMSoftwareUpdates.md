@@ -14,7 +14,7 @@ Scans for outstanding SCCM updates to be installed and installs the pending upda
 
 ```
 Install-ADTSCCMSoftwareUpdates [[-SoftwareUpdatesScanWaitInSeconds] <Int32>]
- [[-WaitForPendingUpdatesTimeout] <TimeSpan>] [<CommonParameters>]
+[[-WaitForPendingUpdatesTimeout] <TimeSpan>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

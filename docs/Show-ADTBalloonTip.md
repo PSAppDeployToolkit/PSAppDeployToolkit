@@ -14,7 +14,7 @@ Displays a balloon tip notification in the system tray.
 
 ```
 Show-ADTBalloonTip [-BalloonTipText] <String> [-BalloonTipIcon <ToolTipIcon>] [-BalloonTipTime <UInt32>]
- -BalloonTipTitle <String> [<CommonParameters>]
+-BalloonTipTitle <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION

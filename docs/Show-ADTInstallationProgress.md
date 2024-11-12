@@ -14,8 +14,8 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 
 ```
 Show-ADTInstallationProgress [[-WindowLocation] <String>] [[-MessageAlignment] <TextAlignment>] [-NotTopMost]
- [-NoRelocation] -WindowTitle <String> [-WindowSubtitle <String>] -StatusMessage <String>
- -StatusMessageDetail <String> [<CommonParameters>]
+[-NoRelocation] -WindowTitle <String> [-WindowSubtitle <String>] -StatusMessage <String>
+-StatusMessageDetail <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION

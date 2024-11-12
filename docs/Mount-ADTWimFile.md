@@ -15,13 +15,13 @@ Mounts a WIM file to a specified directory.
 ### Name
 ```
 Mount-ADTWimFile -ImagePath <FileInfo> -Path <DirectoryInfo> -Name <String> [-Force] [-PassThru]
- [<CommonParameters>]
+[<CommonParameters>]
 ```
 
 ### Index
 ```
 Mount-ADTWimFile -ImagePath <FileInfo> -Path <DirectoryInfo> -Index <UInt32> [-Force] [-PassThru]
- [<CommonParameters>]
+[<CommonParameters>]
 ```
 
 ## DESCRIPTION

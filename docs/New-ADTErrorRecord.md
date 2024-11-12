@@ -14,8 +14,8 @@ Creates a new ErrorRecord object.
 
 ```
 New-ADTErrorRecord [-Exception] <Exception> [-Category] <ErrorCategory> [[-ErrorId] <String>]
- [[-TargetObject] <Object>] [[-TargetName] <String>] [[-TargetType] <String>] [[-Activity] <String>]
- [[-Reason] <String>] [[-RecommendedAction] <String>] [<CommonParameters>]
+[[-TargetObject] <Object>] [[-TargetName] <String>] [[-TargetType] <String>] [[-Activity] <String>]
+[[-Reason] <String>] [[-RecommendedAction] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
