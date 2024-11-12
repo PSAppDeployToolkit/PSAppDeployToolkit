@@ -15,13 +15,13 @@ Removes one or more items from each user profile on the system.
 ### Path
 ```
 Remove-ADTFileFromUserProfiles [-Path] <String[]> [-Recurse] [-ExcludeNTAccount <String[]>]
-[-ExcludeDefaultUser] [-IncludeSystemProfiles] [-IncludeServiceProfiles] [<CommonParameters>]
+ [-ExcludeDefaultUser] [-IncludeSystemProfiles] [-IncludeServiceProfiles] [<CommonParameters>]
 ```
 
 ### LiteralPath
 ```
 Remove-ADTFileFromUserProfiles [-LiteralPath] <String[]> [-Recurse] [-ExcludeNTAccount <String[]>]
-[-ExcludeDefaultUser] [-IncludeSystemProfiles] [-IncludeServiceProfiles] [<CommonParameters>]
+ [-ExcludeDefaultUser] [-IncludeSystemProfiles] [-IncludeServiceProfiles] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

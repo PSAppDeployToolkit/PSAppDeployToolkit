@@ -14,7 +14,7 @@ Create a transform file for an MSI database.
 
 ```
 New-ADTMsiTransform [-MsiPath] <String> [[-ApplyTransformPath] <String>] [[-NewTransformPath] <String>]
-[-TransformProperties] <Hashtable> [<CommonParameters>]
+ [-TransformProperties] <Hashtable> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -28,10 +28,10 @@ If the new transform file already exists, it will be deleted before creating a n
 ```
 New-ADTMsiTransform -MsiPath 'C:\Temp\PSADTInstall.msi' -TransformProperties @{
 'ALLUSERS' = '1'
-'AgreeToLicense' = 'Yes'
-'REBOOT' = 'ReallySuppress'
-'RebootYesNo' = 'No'
-'ROOTDRIVE' = 'C:'
+    'AgreeToLicense' = 'Yes'
+    'REBOOT' = 'ReallySuppress'
+    'RebootYesNo' = 'No'
+    'ROOTDRIVE' = 'C:'
 }
 ```
 

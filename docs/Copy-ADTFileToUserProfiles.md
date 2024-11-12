@@ -14,9 +14,9 @@ Copy one or more items to each user profile on the system.
 
 ```
 Copy-ADTFileToUserProfiles [-Path] <String[]> [[-Destination] <String>] [-BasePath <String>] [-Recurse]
-[-Flatten] [-FileCopyMode <String>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>]
-[-ExcludeNTAccount <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles] [-ExcludeDefaultUser]
-[-ContinueFileCopyOnError] [<CommonParameters>]
+ [-Flatten] [-FileCopyMode <String>] [-RobocopyParams <String>] [-RobocopyAdditionalParams <String>]
+ [-ExcludeNTAccount <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles] [-ExcludeDefaultUser]
+ [-ContinueFileCopyOnError] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

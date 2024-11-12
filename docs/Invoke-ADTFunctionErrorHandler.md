@@ -15,13 +15,13 @@ Handles errors within ADT functions by logging and optionally passing through th
 ### None (Default)
 ```
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
-[<CommonParameters>]
+ [<CommonParameters>]
 ```
 
 ### LogMessage
 ```
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
--LogMessage <String> [-DisableErrorResolving] [<CommonParameters>]
+ -LogMessage <String> [-DisableErrorResolving] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

@@ -14,7 +14,7 @@ Returns a hashtable with the output of $PSBoundParameters and default-valued par
 
 ```
 Get-ADTBoundParametersAndDefaultValues [-Invocation] <InvocationInfo> [[-ParameterSetName] <String>]
-[[-HelpMessage] <String>] [[-Exclude] <String[]>] [<CommonParameters>]
+ [[-HelpMessage] <String>] [[-Exclude] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

@@ -14,7 +14,7 @@ Creates a new folder containing a template front end and module folder, ready to
 
 ```
 New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-ModulePath] <String>] [[-Version] <Int32>]
-[-PSCore] [-Force] [-PassThru] [<CommonParameters>]
+ [-PSCore] [-Force] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

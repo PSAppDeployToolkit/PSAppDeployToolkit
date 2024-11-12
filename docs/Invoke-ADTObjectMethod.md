@@ -15,13 +15,13 @@ Invoke method on any object.
 ### Positional (Default)
 ```
 Invoke-ADTObjectMethod [-InputObject] <Object> [-MethodName] <String> [[-ArgumentList] <Object[]>]
-[<CommonParameters>]
+ [<CommonParameters>]
 ```
 
 ### Named
 ```
 Invoke-ADTObjectMethod [-InputObject] <Object> [-MethodName] <String> [-Parameter] <Hashtable>
-[<CommonParameters>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION

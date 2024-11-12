@@ -14,7 +14,7 @@ Creates or sets a registry key name, value, and value data.
 
 ```
 Set-ADTRegistryKey [-Key] <String> [[-Name] <String>] [[-Value] <Object>] [[-Type] <RegistryValueKind>]
-[-Wow6432Node] [[-SID] <String>] [<CommonParameters>]
+ [-Wow6432Node] [[-SID] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

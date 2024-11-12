@@ -14,7 +14,7 @@ Retrieves value names and value data for a specified registry key or optionally,
 
 ```
 Get-ADTRegistryKey [-Key] <String> [[-Name] <String>] [-Wow6432Node] [[-SID] <String>]
-[-ReturnEmptyKeyIfExists] [-DoNotExpandEnvironmentNames] [<CommonParameters>]
+ [-ReturnEmptyKeyIfExists] [-DoNotExpandEnvironmentNames] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

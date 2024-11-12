@@ -14,8 +14,8 @@ Modifies a .lnk or .url type shortcut.
 
 ```
 Set-ADTShortcut [-Path] <String> [-TargetPath <String>] [-Arguments <String>] [-IconLocation <String>]
-[-IconIndex <String>] [-Description <String>] [-WorkingDirectory <String>] [-WindowStyle <String>]
-[-RunAsAdmin] [-Hotkey <String>] [<CommonParameters>]
+ [-IconIndex <String>] [-Description <String>] [-WorkingDirectory <String>] [-WindowStyle <String>]
+ [-RunAsAdmin] [-Hotkey <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

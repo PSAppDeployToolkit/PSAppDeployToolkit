@@ -14,11 +14,11 @@ Executes msiexec.exe to perform actions such as install, uninstall, patch, repai
 
 ```
 Start-ADTMsiProcess [[-Action] <String>] [-FilePath] <String> [[-Transforms] <String[]>]
-[[-ArgumentList] <String[]>] [[-AdditionalArgumentList] <String[]>] [-SecureArgumentList]
-[[-Patches] <String[]>] [[-LoggingOptions] <String>] [[-LogFileName] <String>] [[-WorkingDirectory] <String>]
-[-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru]
-[[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>] [[-IgnoreExitCodes] <String[]>]
-[[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
+ [[-ArgumentList] <String[]>] [[-AdditionalArgumentList] <String[]>] [-SecureArgumentList]
+ [[-Patches] <String[]>] [[-LoggingOptions] <String>] [[-LogFileName] <String>] [[-WorkingDirectory] <String>]
+ [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru]
+ [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>] [[-IgnoreExitCodes] <String[]>]
+ [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

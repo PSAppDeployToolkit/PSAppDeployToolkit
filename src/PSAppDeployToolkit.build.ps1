@@ -430,7 +430,7 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
         $content = [System.IO.File]::ReadAllText($_.FullName)
         $newContent = $content.Trim() -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6'
         if ($newContent -ne $content) {
-            [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").Trim())
+            [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").TrimEnd())
         }
     }
     # Replace each missing element we need for a proper generic module page .md file
