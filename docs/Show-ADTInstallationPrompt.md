@@ -14,8 +14,8 @@ Displays a custom installation prompt with the toolkit branding and optional but
 
 ```
 Show-ADTInstallationPrompt [-Message] <String> [[-MessageAlignment] <String>] [[-ButtonRightText] <String>]
-[[-ButtonLeftText] <String>] [[-ButtonMiddleText] <String>] [[-Icon] <String>] [-NoWait] [-PersistPrompt]
-[-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] -Title <String> [-Timeout <UInt32>] [<CommonParameters>]
+ [[-ButtonLeftText] <String>] [[-ButtonMiddleText] <String>] [[-Icon] <String>] [-NoWait] [-PersistPrompt]
+ [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] -Title <String> [-Timeout <UInt32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

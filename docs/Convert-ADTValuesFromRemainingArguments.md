@@ -14,7 +14,7 @@ Converts the collected values from a ValueFromRemainingArguments parameter value
 
 ```
 Convert-ADTValuesFromRemainingArguments
-[-RemainingArguments] <System.Collections.Generic.List`1[System.Object]> [<CommonParameters>]
+ [-RemainingArguments] <System.Collections.Generic.List`1[System.Object]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION

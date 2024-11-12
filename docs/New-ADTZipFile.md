@@ -15,13 +15,13 @@ Create a new zip archive or add content to an existing archive.
 ### Path
 ```
 New-ADTZipFile -Path <String[]> -DestinationPath <String> [-CompressionLevel <String>] [-Update] [-Force]
-[-RemoveSourceAfterArchiving] [<CommonParameters>]
+ [-RemoveSourceAfterArchiving] [<CommonParameters>]
 ```
 
 ### LiteralPath
 ```
 New-ADTZipFile -LiteralPath <String[]> -DestinationPath <String> [-CompressionLevel <String>] [-Update]
-[-Force] [-RemoveSourceAfterArchiving] [<CommonParameters>]
+ [-Force] [-RemoveSourceAfterArchiving] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

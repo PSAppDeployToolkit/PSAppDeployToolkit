@@ -14,7 +14,7 @@ Enumerates error record details.
 
 ```
 Resolve-ADTErrorRecord [-ErrorRecord] <ErrorRecord> [[-Property] <String[]>] [-ExcludeErrorRecord]
-[-ExcludeErrorInvocation] [-ExcludeErrorException] [-ExcludeErrorInnerException] [<CommonParameters>]
+ [-ExcludeErrorInvocation] [-ExcludeErrorException] [-ExcludeErrorInnerException] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

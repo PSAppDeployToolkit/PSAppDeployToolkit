@@ -14,8 +14,8 @@ Creates a new .lnk or .url type shortcut.
 
 ```
 New-ADTShortcut [-Path] <String> -TargetPath <String> [-Arguments <String>] [-IconLocation <String>]
-[-IconIndex <Int32>] [-Description <String>] [-WorkingDirectory <String>] [-WindowStyle <String>]
-[-RunAsAdmin] [-Hotkey <String>] [<CommonParameters>]
+ [-IconIndex <Int32>] [-Description <String>] [-WorkingDirectory <String>] [-WindowStyle <String>]
+ [-RunAsAdmin] [-Hotkey <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

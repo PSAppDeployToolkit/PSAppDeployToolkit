@@ -14,7 +14,7 @@ Drop-in replacement for any cmdlet/function where a retry is desirable due to tr
 
 ```
 Invoke-ADTCommandWithRetries [-Command] <Object> [[-Retries] <UInt32>] [[-SleepSeconds] <UInt32>]
-[[-Parameters] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
+ [[-Parameters] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

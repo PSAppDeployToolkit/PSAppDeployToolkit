@@ -14,7 +14,7 @@ Start a Windows service and its dependencies.
 
 ```
 Start-ADTServiceAndDependencies [-Service] <ServiceController> [-SkipDependentServices]
-[[-PendingStatusWait] <TimeSpan>] [-PassThru] [<CommonParameters>]
+ [[-PendingStatusWait] <TimeSpan>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

@@ -15,16 +15,16 @@ Removes one or more applications specified by name, filter script, or InstalledA
 ### InstalledApplication
 ```
 Uninstall-ADTApplication -InstalledApplication <InstalledApplication[]> [-ArgumentList <String>]
-[-AdditionalArgumentList <String>] [-SecureArgumentList] [-LoggingOptions <String>] [-LogFileName <String>]
-[-PassThru] [<CommonParameters>]
+ [-AdditionalArgumentList <String>] [-SecureArgumentList] [-LoggingOptions <String>] [-LogFileName <String>]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ### Search
 ```
 Uninstall-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <String[]>]
-[-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>]
-[-ArgumentList <String>] [-AdditionalArgumentList <String>] [-SecureArgumentList] [-LoggingOptions <String>]
-[-LogFileName <String>] [-PassThru] [<CommonParameters>]
+ [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>]
+ [-ArgumentList <String>] [-AdditionalArgumentList <String>] [-SecureArgumentList] [-LoggingOptions <String>]
+ [-LogFileName <String>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

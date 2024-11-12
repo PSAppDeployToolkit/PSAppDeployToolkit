@@ -14,7 +14,7 @@ Get the User Profile Path, User Account SID, and the User Account Name for all u
 
 ```
 Get-ADTUserProfiles [[-ExcludeNTAccount] <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles]
-[-IncludeIISAppPoolProfiles] [-ExcludeDefaultUser] [-LoadProfilePaths] [<CommonParameters>]
+ [-IncludeIISAppPoolProfiles] [-ExcludeDefaultUser] [-LoadProfilePaths] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

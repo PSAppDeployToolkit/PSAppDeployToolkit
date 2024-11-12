@@ -14,7 +14,7 @@ Get a property from any object.
 
 ```
 Get-ADTObjectProperty [-InputObject] <Object> [-PropertyName] <String> [[-ArgumentList] <Object[]>]
-[<CommonParameters>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION

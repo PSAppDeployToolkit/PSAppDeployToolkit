@@ -13,7 +13,8 @@ Adds an extension for Microsoft Edge using the ExtensionSettings policy.
 ## SYNTAX
 
 ```
-Add-ADTEdgeExtension [-ExtensionID] <String> [-UpdateUrl] <String> [-InstallationMode] <String> [[-MinimumVersionRequired] <String>] [<CommonParameters>]
+Add-ADTEdgeExtension [-ExtensionID] <String> [-UpdateUrl] <String> [-InstallationMode] <String>
+ [[-MinimumVersionRequired] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
