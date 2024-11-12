@@ -3702,17 +3702,21 @@ function Send-Keys
         [AllowEmptyString()]
         [ValidateNotNull()]
         [System.String]$WindowTitle,
+
         [Parameter(Mandatory = $false, Position = 1)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.SwitchParameter]$GetAllWindowTitles,
+
         [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.IntPtr]$WindowHandle,
+
         [Parameter(Mandatory = $false, Position = 3)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Keys,
+
         [Parameter(Mandatory = $false, Position = 4)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.Int32]$WaitSeconds
     )
 
@@ -3790,7 +3794,7 @@ function Set-Shortcut
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Pipeline')]
         [ValidateNotNullOrEmpty()]
-        [System.Object]$PathHash,
+        [System.Collections.Hashtable]$PathHash,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3852,7 +3856,14 @@ function Set-Shortcut
     process
     {
         # Add all paths to the collector.
-        $paths.Add($Path)
+        if ($PSCmdlet.ParameterSetName.Equals('Default'))
+        {
+            $paths.Add($Path)
+        }
+        elseif ($PSCmdlet.ParameterSetName.Equals('Pipeline') -and $PathHash.ContainsKey('Path') -and ![System.String]::IsNullOrWhiteSpace($PathHash.Path))
+        {
+            $paths.Add($PathHash.Path)
+        }
     }
 
     end
