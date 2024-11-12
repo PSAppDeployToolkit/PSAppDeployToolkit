@@ -4753,8 +4753,7 @@ Open-ADTSession @sessionProps
 
 # Finalize setup of AppDeployToolkitMain.ps1.
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
-$adtConfig = Get-ADTConfig
-$noDepWarnings = $adtConfig.Toolkit.ContainsKey('WrapperWarnings') -and !$adtConfig.Toolkit.WrapperWarnings
+New-Variable -Name noDepWarnings -Value (($adtConfig = Get-ADTConfig).Toolkit.ContainsKey('WrapperWarnings') -and !$adtConfig.Toolkit.WrapperWarnings) -Option ReadOnly -Force
 Remove-Variable -Name adtWrapperFuncs, sessionProps, adtModule, adtConfig -Force -Confirm:$false
 
 
