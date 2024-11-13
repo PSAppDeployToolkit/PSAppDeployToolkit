@@ -18,10 +18,10 @@
     GUID = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'
 
     # Author of this module
-    Author = 'PSAppDeployToolkit Team'
+    Author = 'PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough)'
 
     # Company or vendor of this module
-    CompanyName = 'PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham and Muhammad Mashwani)'
+    CompanyName = 'PSAppDeployToolkit Team'
 
     # Copyright statement for this module
     Copyright = 'Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.'
