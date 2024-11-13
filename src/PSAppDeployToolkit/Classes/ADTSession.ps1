@@ -944,12 +944,12 @@ class ADTSession
         }
 
         # Cache all data pertaining to current severity.
-        $sevData = $Script:Logging.Severities[$Severity]
+        $sevData = ($logData = (Get-ADTModuleData).Logging).Severities[$Severity]
 
         # Store log string to format with message.
         $logFormats = @{
-            Legacy = [System.String]::Format($Script:Logging.Formats.Legacy, '{0}', $dateNow.ToString('O').Split('T')[0], $logTime, $ScriptSection, $Source, $sevData.Name)
-            CMTrace = [System.String]::Format($Script:Logging.Formats.CMTrace, '{0}', $ScriptSection, "$($logTime)+$($this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes)", $dateNow.ToString('M-dd-yyyy'), $Source, $Severity, $logFile)
+            Legacy = [System.String]::Format($logData.Formats.Legacy, '{0}', $dateNow.ToString('O').Split('T')[0], $logTime, $ScriptSection, $Source, $sevData.Name)
+            CMTrace = [System.String]::Format($logData.Formats.CMTrace, '{0}', $ScriptSection, "$($logTime)+$($this.GetPropertyValue('CurrentTimeZoneBias').TotalMinutes)", $dateNow.ToString('M-dd-yyyy'), $Source, $Severity, $logFile)
         }
 
         # Add this log message to the session's buffer.

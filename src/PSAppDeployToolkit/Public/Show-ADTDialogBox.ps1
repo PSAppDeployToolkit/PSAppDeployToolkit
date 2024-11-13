@@ -149,7 +149,7 @@ function Show-ADTDialogBox
         {
             try
             {
-                $result = switch ((Get-ADTEnvironment).Shell.Popup($Text, $Timeout, $Title, ($Script:DialogBox.Buttons.$Buttons + $Script:DialogBox.Icons.$Icon + $Script:DialogBox.DefaultButtons.$DefaultButton + (4096 * !$NotTopMost))))
+                $result = switch ((Get-ADTEnvironment).Shell.Popup($Text, $Timeout, $Title, ($Script:Dialogs.Box.Buttons.$Buttons + $Script:Dialogs.Box.Icons.$Icon + $Script:Dialogs.Box.DefaultButtons.$DefaultButton + (4096 * !$NotTopMost))))
                 {
                     1 { 'OK'; break }
                     2 { 'Cancel'; break }
