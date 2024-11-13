@@ -2364,42 +2364,42 @@ namespace PSADT.PInvoke
     /// <summary>
     /// Enum representing the state of user notifications.
     /// </summary>
-    public enum UserNotificationState
+    public enum QUERY_USER_NOTIFICATION_STATE
     {
         /// <summary>
-        /// Indicates that a screensaver is running, the system is locked, or fast user switching is enabled.
+        /// A screen saver is displayed, the machine is locked, or a nonactive Fast User Switching session is in progress.
         /// </summary>
-        ScreenSaverOrLockedOrFastUserSwitching = 1,
+        QUNS_NOT_PRESENT = 1,
 
         /// <summary>
-        /// Indicates that the user is in full-screen mode, in presentation mode, or the login screen is active.
+        /// A full-screen application is running or Presentation Settings are applied. Presentation Settings allow a user to put their machine into a state fit for an uninterrupted presentation, such as a set of PowerPoint slides, with a single click.
         /// </summary>
-        FullScreenOrPresentationModeOrLoginScreen = 2,
+        QUNS_BUSY = 2,
 
         /// <summary>
-        /// Indicates that a Direct3D full-screen application is running.
+        /// A full-screen (exclusive mode) Direct3D application is running.
         /// </summary>
-        RunningDirect3DFullScreen = 3,
+        QUNS_RUNNING_D3D_FULL_SCREEN = 3,
 
         /// <summary>
-        /// Indicates that the system is in presentation mode, meaning that notifications and interruptions are minimized.
+        /// The user has activated Windows presentation settings to block notifications and pop-up messages.
         /// </summary>
-        PresentationMode = 4,
+        QUNS_PRESENTATION_MODE = 4,
 
         /// <summary>
-        /// Indicates that the system is accepting user notifications.
+        /// None of the other states are found, notifications can be freely sent.
         /// </summary>
-        AcceptsNotifications = 5,
+        QUNS_ACCEPTS_NOTIFICATIONS = 5,
 
         /// <summary>
-        /// Indicates that the system is in quiet time, a period during which notifications are suppressed or reduced.
+        /// The current user is in "quiet time", which is the first hour after a new user logs into his or her account for the first time. During this time, most notifications should not be sent or shown. This lets a user become accustomed to a new computer system without those distractions. Quiet time also occurs for each user after an operating system upgrade or clean installation.
         /// </summary>
-        QuietTime = 6,
+        QUNS_QUIET_TIME = 6,
 
         /// <summary>
-        /// Indicates that a Windows Store app is running and likely to be in the foreground.
+        /// Introduced in Windows 8. A Windows Store app is running.
         /// </summary>
-        WindowsStoreAppRunning = 7
+        QUNS_APP = 7
     }
 
     #endregion
