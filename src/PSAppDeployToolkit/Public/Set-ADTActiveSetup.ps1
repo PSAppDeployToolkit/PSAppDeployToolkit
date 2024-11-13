@@ -151,6 +151,15 @@ function Set-ADTActiveSetup
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
+        if ($StubExePath.EndsWith('.ps1'))
+        {
+            $paramDictionary.Add('ExecutionPolicy', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                    'ExecutionPolicy', [Microsoft.PowerShell.ExecutionPolicy], $(
+                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'An optional ExecutionPolicy to use with PowerShell scripts.'; ParameterSetName = 'Create' }
+                        [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    )
+                ))
+        }
 
         # Return the populated dictionary.
         return $paramDictionary
@@ -499,11 +508,11 @@ function Set-ADTActiveSetup
                         $CUStubExePath = Get-ADTPowerShellProcessPath
                         $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
-                            "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $($PSBoundParameters.ExecutionPolicy)" })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
                         }
                         else
                         {
-                            "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
+                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $($PSBoundParameters.ExecutionPolicy)" })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
                         }
                         $StubPath = "`"$CUStubExePath`" $CUArguments"
                         break
