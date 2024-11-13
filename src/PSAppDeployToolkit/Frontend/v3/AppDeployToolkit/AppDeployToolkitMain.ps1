@@ -3449,6 +3449,10 @@ function Set-ActiveSetup
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
+    if ($StubExePath.EndsWith('.ps1'))
+    {
+        $PSBoundParameters.Add('ExecutionPolicy', [Microsoft.PowerShell.ExecutionPolicy]::Bypass)
+    }
     if (!$ContinueOnError)
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
