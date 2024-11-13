@@ -55,6 +55,12 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 # Ensure module operates under the strictest of conditions.
 & $CommandTable.'Set-StrictMode' -Version 3
 
+# Store build information pertaining to this module's state.
+& $CommandTable.'New-Variable' -Name Module -Option Constant -Value ([ordered]@{
+        Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
+        Signed = (& $CommandTable.'Get-AuthenticodeSignature' -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
+    }).AsReadOnly()
+
 # Throw hard if there's already a PSADT assembly loaded from a different location.
 if (($assembly = [System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1) -and !$assembly.Location.StartsWith($Script:PSScriptRoot))
 {
@@ -91,7 +97,7 @@ catch
 }
 
 # Remove any previous functions that may have been defined.
-if ((New-Variable -Name ReleaseBuild -Value $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1') -Option Constant -Force -PassThru).Value)
+if ($Module.Compiled)
 {
     & $CommandTable.'New-Variable' -Name FunctionNames -Option Constant -Value ($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return $_.Name } } })
     & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($FunctionNames -replace '^', 'Microsoft.PowerShell.Core\Function::')
