@@ -35,6 +35,9 @@ function Set-ADTActiveSetup
     .PARAMETER Wow6432Node
         Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS. Default is: $false.
 
+    .PARAMETER ExecutionPolicy
+        Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script. Default is: system's ExecutionPolicy.
+
     .PARAMETER Version
         Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
 
@@ -111,6 +114,10 @@ function Set-ADTActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
+        [Microsoft.PowerShell.ExecutionPolicy]$ExecutionPolicy,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Version = ((Get-Date -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
@@ -151,15 +158,6 @@ function Set-ADTActiveSetup
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
-        if ($StubExePath.EndsWith('.ps1'))
-        {
-            $paramDictionary.Add('ExecutionPolicy', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                    'ExecutionPolicy', [Microsoft.PowerShell.ExecutionPolicy], $(
-                        [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'An optional ExecutionPolicy to use with PowerShell scripts.'; ParameterSetName = 'Create' }
-                        [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-                    )
-                ))
-        }
 
         # Return the populated dictionary.
         return $paramDictionary
@@ -508,11 +506,11 @@ function Set-ADTActiveSetup
                         $CUStubExePath = Get-ADTPowerShellProcessPath
                         $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
-                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $($PSBoundParameters.ExecutionPolicy)" })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $ExecutionPolicy" })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
                         }
                         else
                         {
-                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $($PSBoundParameters.ExecutionPolicy)" })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
+                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $ExecutionPolicy" })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
                         }
                         $StubPath = "`"$CUStubExePath`" $CUArguments"
                         break

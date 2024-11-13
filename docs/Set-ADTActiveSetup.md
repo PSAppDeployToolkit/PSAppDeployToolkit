@@ -14,9 +14,9 @@ Creates an Active Setup entry in the registry to execute a file for each user up
 
 ### Create (Default)
 ```
-Set-ADTActiveSetup -StubExePath <String> [-Arguments <String>] [-Wow6432Node] [-Version <String>]
- [-Locale <String>] [-DisableActiveSetup] [-NoExecuteForCurrentUser] -Key <String> -Description <String>
- [<CommonParameters>]
+Set-ADTActiveSetup -StubExePath <String> [-Arguments <String>] [-Wow6432Node]
+ [-ExecutionPolicy <ExecutionPolicy>] [-Version <String>] [-Locale <String>] [-DisableActiveSetup]
+ [-NoExecuteForCurrentUser] -Key <String> -Description <String> [<CommonParameters>]
 ```
 
 ### Purge
@@ -103,6 +103,23 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExecutionPolicy
+Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script.
+Default is: system's ExecutionPolicy.
+
+```yaml
+Type: ExecutionPolicy
+Parameter Sets: Create
+Aliases:
+Accepted values: Unrestricted, RemoteSigned, AllSigned, Restricted, Default, Bypass, Undefined
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
