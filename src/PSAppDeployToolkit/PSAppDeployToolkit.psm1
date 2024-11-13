@@ -8,7 +8,7 @@
 . "$PSScriptRoot\ImportsFirst.ps1"
 
 # Dot-source our imports.
-if (!(& $CommandTable.'Test-Path' -LiteralPath Microsoft.PowerShell.Core\Variable::FunctionPaths))
+if (!$ReleaseBuild)
 {
     & $CommandTable.'New-Variable' -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Classes"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
     & $CommandTable.'New-Variable' -Name FunctionNames -Option Constant -Value ($ModuleFiles | & { process { if ($_.FullName -notmatch '\\Classes\\') { return $_.BaseName } } })

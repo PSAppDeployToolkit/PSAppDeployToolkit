@@ -91,7 +91,7 @@ catch
 }
 
 # Remove any previous functions that may have been defined.
-if ($MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1'))
+if ((New-Variable -Name ReleaseBuild -Value $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1') -Option Constant -Force -PassThru).Value)
 {
     & $CommandTable.'New-Variable' -Name FunctionNames -Option Constant -Value ($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return $_.Name } } })
     & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($FunctionNames -replace '^', 'Microsoft.PowerShell.Core\Function::')
