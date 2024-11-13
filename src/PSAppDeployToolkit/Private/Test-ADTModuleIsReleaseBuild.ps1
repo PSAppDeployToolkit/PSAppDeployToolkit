@@ -6,5 +6,5 @@
 
 function Test-ADTModuleIsReleaseBuild
 {
-    return $Script:ReleaseBuild
+    return $Script:Module.Compiled -and $Script:Module.Signed
 }

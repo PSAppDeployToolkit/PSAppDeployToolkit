@@ -8,7 +8,7 @@
 . "$PSScriptRoot\ImportsFirst.ps1"
 
 # Dot-source our imports.
-if (!$ReleaseBuild)
+if (!$Module.Compiled)
 {
     & $CommandTable.'New-Variable' -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Classes"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
     & $CommandTable.'New-Variable' -Name FunctionNames -Option Constant -Value ($ModuleFiles | & { process { if ($_.FullName -notmatch '\\Classes\\') { return $_.BaseName } } })
