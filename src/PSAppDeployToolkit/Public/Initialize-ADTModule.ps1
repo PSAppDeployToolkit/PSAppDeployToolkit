@@ -123,8 +123,8 @@ function Initialize-ADTModule
                 $adtData.Config = Import-ADTConfig -BaseDirectory $adtData.Directories.Config
                 $adtData.Language = Get-ADTStringLanguage
                 $adtData.Strings = Import-ADTModuleDataFile -BaseDirectory $adtData.Directories.Strings -FileName strings.psd1 -UICulture $adtData.Language
-                $adtData.LastExitCode = 0
                 $adtData.TerminalServerMode = $false
+                $adtData.LastExitCode = 0
 
                 # Mark the environment table as read-only before finishing.
                 $adtData.Environment = $adtData.Environment.AsReadOnly()
