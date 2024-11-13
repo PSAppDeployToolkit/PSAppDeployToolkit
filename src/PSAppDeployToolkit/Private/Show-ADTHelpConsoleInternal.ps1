@@ -11,7 +11,15 @@ function Show-ADTHelpConsoleInternal
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ModulePath
+        [System.IO.FileInfo]$ModulePath,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Guid]$ModuleGuid,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Version]$ModuleVersion
     )
 
     # Ensure script runs in strict mode since this may be called in a new scope.
@@ -20,7 +28,7 @@ function Show-ADTHelpConsoleInternal
     Set-StrictMode -Version 3
 
     # Import the module and store its passthru data so we can access it later.
-    $module = Import-Module -Name $ModulePath -PassThru
+    $module = Import-Module -FullyQualifiedName @{ ModuleName = $ModulePath.FullName; Guid = $ModuleGuid; ModuleVersion = $ModuleVersion } -PassThru
 
     # Build out the form's listbox.
     $helpListBox = [System.Windows.Forms.ListBox]::new()

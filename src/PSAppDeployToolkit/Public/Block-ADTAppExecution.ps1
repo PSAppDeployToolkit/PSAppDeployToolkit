@@ -119,7 +119,7 @@ function Block-ADTAppExecution
                 foreach ($process in ($ProcessName -replace '$', '.exe'))
                 {
                     Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
-                    Set-ADTRegistryKey -Key (Join-Path -Path 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('InstallName').Replace("'","''"))'"
+                    Set-ADTRegistryKey -Key (Join-Path -Path 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) -ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -FullyQualifiedName @{ ModuleName = '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1'; Guid = '$($MyInvocation.MyCommand.Module.Guid)'; ModuleVersion = '$($MyInvocation.MyCommand.Module.Version)' }; Show-ADTBlockedAppDialog -Title '$($adtSession.GetPropertyValue('InstallName').Replace("'","''"))'"
                 }
 
                 # Add callback to remove all blocked app executions during the shutdown of the final session.
