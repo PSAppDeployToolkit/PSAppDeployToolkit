@@ -1429,7 +1429,7 @@ namespace PSADT.PInvoke
         /// <param name="pquns">An output parameter that receives the user notification state.</param>
         /// <returns>An integer representing the status of the query.</returns>
         [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern int SHQueryUserNotificationState(out UserNotificationState pquns);
+        public static extern int SHQueryUserNotificationState(out QUERY_USER_NOTIFICATION_STATE pquns);
 
         /// <summary>
         /// Specifies a unique application-defined Application User Model ID (AppUserModelID) that identifies the current process to the

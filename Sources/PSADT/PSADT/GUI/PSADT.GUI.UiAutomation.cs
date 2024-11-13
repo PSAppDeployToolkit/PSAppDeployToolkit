@@ -276,7 +276,7 @@ namespace PSADT.GUI
         /// <returns>The user notification state.</returns>
         public static string GetUserNotificationState()
         {
-            if (NativeMethods.SHQueryUserNotificationState(out UserNotificationState state) != 0)
+            if (NativeMethods.SHQueryUserNotificationState(out QUERY_USER_NOTIFICATION_STATE state) != 0)
             {
                 int errorCode = Marshal.GetLastWin32Error();
                 throw new InvalidOperationException($"Failed to query user notification state. Error code: {errorCode}");
