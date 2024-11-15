@@ -425,6 +425,28 @@ namespace PSADT.Types
 
 
             #endregion
+            #region SetDeploymentProperties
+
+
+            // Set Deploy Mode switches.
+            WriteLogEntry($"Installation is running in [{DeployMode}] mode.");
+            switch (DeployMode)
+            {
+                case "Silent":
+                    DeployModeNonInteractive = true;
+                    DeployModeSilent = true;
+                    break;
+                case "NonInteractive":
+                    DeployModeNonInteractive = true;
+                    break;
+            }
+
+
+            // Check deployment type (install/uninstall).
+            WriteLogEntry($"Deployment type is [{DeploymentTypeName}].");
+
+
+            #endregion
         }
 
 
@@ -718,11 +740,6 @@ namespace PSADT.Types
         private string RegKeyDeferHistory { get; }
 
         /// <summary>
-        /// Gets the deployment type name from the language string table for the given DeploymentType.
-        /// </summary>
-        private string DeploymentTypeName { get; }
-
-        /// <summary>
         /// Gets whether this session object is in non-interactive mode.
         /// </summary>
         private bool DeployModeNonInteractive { get; }
@@ -751,6 +768,11 @@ namespace PSADT.Types
         /// Gets the session object's deployment type.
         /// </summary>
         public string DeploymentType { get; } = "Install";
+
+        /// <summary>
+        /// Gets the deployment type name from the language string table for the given DeploymentType.
+        /// </summary>
+        public string DeploymentTypeName { get; }
 
         /// <summary>
         /// Gets the session object's deployment mode.
