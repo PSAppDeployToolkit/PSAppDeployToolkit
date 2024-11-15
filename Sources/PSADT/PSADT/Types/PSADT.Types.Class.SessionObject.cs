@@ -369,6 +369,21 @@ namespace PSADT.Types
 
 
             #endregion
+            #region PerformConfigMgrTests
+
+
+            // Check if script is running from a SCCM Task Sequence.
+            if ((bool)ADTEnv["RunningTaskSequence"]!)
+            {
+                WriteLogEntry("Successfully found COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.");
+            }
+            else
+            {
+                WriteLogEntry("Unable to find COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.");
+            }
+
+
+            #endregion
         }
 
 
