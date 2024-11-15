@@ -395,7 +395,7 @@ class ADTSession
             # If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
             if ([System.IO.Directory]::Exists($this.LogTempFolder))
             {
-                [System.IO.Directory]::Remove($this.LogTempFolder, $true)
+                [System.IO.Directory]::Delete($this.LogTempFolder, $true)
             }
             $this.LogPath = [System.IO.Directory]::CreateDirectory($this.LogTempFolder).FullName
         }
