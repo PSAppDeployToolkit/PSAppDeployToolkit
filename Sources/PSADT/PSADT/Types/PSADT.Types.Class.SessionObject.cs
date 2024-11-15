@@ -384,6 +384,47 @@ namespace PSADT.Types
 
 
             #endregion
+            #region PerformSystemAccountTests
+
+
+            // Return early if we're not in session 0.
+            if ((bool)ADTEnv["SessionZero"]!)
+            {
+                // If the script was launched with deployment mode set to NonInteractive, then continue.
+                if (DeployMode != "Interactive")
+                {
+                    WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{DeployMode}].");
+                }
+                else if ((bool)configToolkit["SessionDetection"]!)
+                {
+                    // If the process is not able to display a UI, enable NonInteractive mode.
+                    if ((bool)ADTEnv["IsProcessUserInteractive"]!)
+                    {
+                        DeployMode = "NonInteractive";
+                        WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{DeployMode}].");
+                    }
+                    else if (null == ADTEnv["usersLoggedOn"])
+                    {
+                        DeployMode = "NonInteractive";
+                        WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{DeployMode}].");
+                    }
+                    else
+                    {
+                        WriteLogEntry("Session 0 detected, process running in user interactive mode, user(s) logged on.");
+                    }
+                }
+                else
+                {
+                    WriteLogEntry("Session 0 detected but toolkit is configured to not adjust deployment mode.");
+                }
+            }
+            else
+            {
+                WriteLogEntry("Session 0 not detected.");
+            }
+
+
+            #endregion
         }
 
 
