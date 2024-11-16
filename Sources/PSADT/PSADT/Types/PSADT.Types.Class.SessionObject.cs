@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Globalization;
 using System.Management.Automation;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 
 namespace PSADT.Types
 {
@@ -15,14 +17,69 @@ namespace PSADT.Types
         /// Initializes a new instance of the <see cref="SessionObject"/> class.
         /// </summary>
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
-        public SessionObject(IDictionary parameters)
+        public SessionObject(OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, PSVariableIntrinsics callerVariables, Dictionary<string, object> parameters)
         {
+            #region Init
+
+
+            // Establish start date/time first so we can accurately mark the start of execution.
+            CurrentDate = CurrentDateTime.ToString("dd-MM-yyyy");
+            CurrentTime = CurrentDateTime.ToString("HH:mm:ss");
+
+            // Establish initial variable values.
+            ADTEnv = adtEnv;
+            ADTConfig = adtConfig;
+            ADTStrings = adtStrings;
+            CallerVariables = callerVariables;
+
+            // Establish the caller's variables.
+            foreach (var p in this.GetType().GetProperties())
+            {
+                if (parameters.ContainsKey(p.Name))
+                {
+                    p.SetValue(this, parameters[p.Name]);
+                }
+            }
+
+            // Ensure DeploymentType is title cased for aesthetics.
+            DeploymentType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(DeploymentType.ToLower());
+
+            // Establish script directories.
+            if (null != ScriptDirectory)
+            {
+                if (string.IsNullOrWhiteSpace(DirFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "Files")))
+                {
+                    DirFiles = Path.Combine(ScriptDirectory, "Files");
+                }
+                if (string.IsNullOrWhiteSpace(DirSupportFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "SupportFiles")))
+                {
+                    DirSupportFiles = Path.Combine(ScriptDirectory, "SupportFiles");
+                }
+            }
+
+
+            #endregion
         }
 
 
         #endregion
         #region Internal variables.
 
+
+        /// <summary>
+        /// Gets the environment table that was supplied during object instantiation.
+        /// </summary>
+        private OrderedDictionary ADTEnv { get; }
+
+        /// <summary>
+        /// Gets the config table that was supplied during object instantiation.
+        /// </summary>
+        private Hashtable ADTConfig { get; }
+
+        /// <summary>
+        /// Gets the string table that was supplied during object instantiation.
+        /// </summary>
+        private Hashtable ADTStrings { get; }
 
         /// <summary>
         /// Gets whether this session object is operating in compatibility mode.
@@ -88,21 +145,6 @@ namespace PSADT.Types
         /// Gets whether this session object is in silent mode.
         /// </summary>
         private bool DeployModeSilent { get; }
-
-        /// <summary>
-        /// Gets whether this session object has been instantiated.
-        /// </summary>
-        private bool Instantiated { get; }
-
-        /// <summary>
-        /// Gets whether this session object has been opened.
-        /// </summary>
-        private bool Opened { get; }
-
-        /// <summary>
-        /// Gets whether this session object has been closed.
-        /// </summary>
-        private bool Closed { get; }
 
         /// <summary>
         /// Gets the session object's filesystem log path.
