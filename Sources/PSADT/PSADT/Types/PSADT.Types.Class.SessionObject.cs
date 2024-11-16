@@ -239,6 +239,55 @@ namespace PSADT.Types
 
 
             #endregion
+            #region LogScriptInfo
+
+
+            // Announce provided deployment script info.
+            if (null != AppScriptVersion)
+            {
+                WriteLogEntry($"[{InstallName}] script version is [{AppScriptVersion}].");
+            }
+            if (null != AppScriptDate)
+            {
+                WriteLogEntry($"[{InstallName}] script date is [{((DateTime)AppScriptDate).ToString("O").Split('T')[0]}].");
+            }
+            if (!string.IsNullOrWhiteSpace(AppScriptAuthor))
+            {
+                WriteLogEntry($"[{InstallName}] script author is [{AppScriptAuthor}].");
+            }
+            if (!string.IsNullOrWhiteSpace(DeployAppScriptFriendlyName))
+            {
+                if (null != DeployAppScriptVersion)
+                {
+                    WriteLogEntry($"[{DeployAppScriptFriendlyName}] script version is [{DeployAppScriptVersion}].");
+                }
+                if ((null != DeployAppScriptParameters) && (DeployAppScriptParameters.Count > 0))
+                {
+                    WriteLogEntry($"The following parameters were passed to [${DeployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(DeployAppScriptParameters)}].");
+                }
+            }
+            PSObject adtDirectories = (PSObject)ADTData.Properties["Directories"].Value;
+            PSObject adtDurations = (PSObject)ADTData.Properties["Durations"].Value;
+            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module version is [{ADTEnv["appDeployMainScriptVersion"]}].");
+            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
+            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
+            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module path is [{ADTEnv["appDeployToolkitPath"]}].");
+            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] config path is [{adtDirectories.Properties["Config"].Value}].");
+            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] string path is [{adtDirectories.Properties["Strings"].Value}].");
+
+            // Announce session instantiation mode.
+            if (CompatibilityMode)
+            {
+                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", 2);
+                WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2);
+            }
+            else
+            {
+                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Native].");
+            }
+
+
+            #endregion
         }
 
 
@@ -639,7 +688,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the session object's application package date.
         /// </summary>
-        public string AppScriptDate { get; }
+        public DateTime? AppScriptDate { get; }
 
         /// <summary>
         /// Gets the session object's application package author.

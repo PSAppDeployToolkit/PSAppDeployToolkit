@@ -65,44 +65,8 @@ function Convert-ADTValuesFromRemainingArguments
         {
             try
             {
-                # Open dictionary to hold all values, using same base type as $PSBoundParameters.
-                $boundParams = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
-
                 # Process input into a dictionary and return it. Assume anything starting with a '-' is a new variable.
-                try
-                {
-                    $RemainingArguments | & {
-                        process
-                        {
-                            if ($null -eq $_)
-                            {
-                                return
-                            }
-                            if (($_ -is [System.String]) -and ($_ -match '^-'))
-                            {
-                                $boundParams.Add(($thisVar = $_ -replace '(^-|:$)'), [System.Management.Automation.SwitchParameter]$true)
-                            }
-                            else
-                            {
-                                $boundParams.$thisVar = $_
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    $naerParams = @{
-                        Exception = [System.FormatException]::new("The parser was unable to process the provided arguments.", $_.Exception)
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidData
-                        ErrorId = 'ArgumentsMalformedException'
-                        TargetObject = $RemainingArguments
-                        RecommendedAction = "Please ensure that only PowerShell-style arguments are provided and try again."
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
-
-                # Return dictionary, even if its empty to match $PSBoundParameters API.
-                return $boundParams
+                return [PSADT.Shared.Utility]::ConvertValuesFromRemainingArguments($RemainingArguments)
             }
             catch
             {

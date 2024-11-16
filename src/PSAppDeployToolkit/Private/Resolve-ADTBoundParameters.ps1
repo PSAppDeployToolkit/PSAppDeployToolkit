@@ -46,6 +46,7 @@ function Resolve-ADTBoundParameters
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Exclude', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
@@ -68,64 +69,8 @@ function Resolve-ADTBoundParameters
         {
             try
             {
-                # Establish array to hold return string.
-                if (!(Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::paramsArr))
-                {
-                    $thisFunc = $MyInvocation.MyCommand
-                    $paramsArr = [System.Collections.Specialized.StringCollection]::new()
-                }
-
-                # Process the piped hashtable.
-                $InputObject.GetEnumerator() | & {
-                    process
-                    {
-                        # Return early if the key is excluded.
-                        if ($Exclude -contains $_.Key)
-                        {
-                            return
-                        }
-
-                        # Recursively expand child hashtables.
-                        if ($_.Value -isnot [System.Collections.IDictionary])
-                        {
-                            # Determine value.
-                            $val = if ($_.Value -is [System.String])
-                            {
-                                "'$($_.Value.Replace("'", "''"))'"
-                            }
-                            elseif (($_.Value -is [System.Collections.Generic.List[System.Object]]) -and ($_.Value -match '^-\w+:$'))
-                            {
-                                Convert-ADTValuesFromRemainingArguments -RemainingArguments $_.Value | & $thisFunc
-                            }
-                            elseif ($_.Value -is [System.Collections.IEnumerable])
-                            {
-                                if ($_.Value[0] -is [System.String])
-                                {
-                                    "'$([System.String]::Join("','", $_.Value.Replace("'", "''")))'"
-                                }
-                                else
-                                {
-                                    [System.String]::Join(',', $_.Value)
-                                }
-                            }
-                            elseif ($_.Value -isnot [System.Management.Automation.SwitchParameter])
-                            {
-                                $_.Value
-                            }
-                            $null = $paramsArr.Add("-$($_.Key)$(if ($val) {":$val"})")
-                        }
-                        else
-                        {
-                            $_.Value | & $thisFunc
-                        }
-                    }
-                }
-
-                # Join the array and return as a string to the caller.
-                if ((Get-PSCallStack | & { process { if ($_.Command.Equals($thisFunc.Name)) { return $_.Command } } }) -is [System.String])
-                {
-                    return ($paramsArr -join ' ')
-                }
+                # Send this out to the backend for processing.
+                return [PSADT.Shared.Utility]::ConvertDictToPowerShellArgs($InputObject, $Exclude);
             }
             catch
             {
