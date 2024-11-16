@@ -33,6 +33,9 @@ namespace PSADT.Types
             ADTStrings = adtStrings;
             CallerVariables = callerVariables;
 
+            // Extrapolate the Toolkit options from the config hashtable.
+            Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
+
             // Establish the caller's variables.
             foreach (var p in this.GetType().GetProperties())
             {
@@ -122,6 +125,28 @@ namespace PSADT.Types
             {
                 throw new ArgumentNullException("AppName", "The application name was not specified.");
             }
+
+
+            #endregion
+            #region SetInstallProperties
+
+
+            // Build the Installation Title.
+            if (string.IsNullOrWhiteSpace(InstallTitle))
+            {
+                InstallTitle = $"{AppVendor} {AppName} {AppVersion}".Trim();
+            }
+            InstallTitle = Regex.Replace(InstallTitle, "\\s{2,}", string.Empty);
+
+            // Build the Installation Name.
+            if (string.IsNullOrWhiteSpace(InstallName))
+            {
+                InstallName = $"{AppVendor}_{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
+            }
+            InstallName = Regex.Replace(Regex.Replace(InstallName, "\\s|^_|_$", string.Empty), "_+", "_");
+
+            // Set the Defer History registry path.
+            RegKeyDeferHistory = $"{configToolkit["RegPath"]}\\{ADTEnv["appDeployToolkitName"]}\\DeferHistory\\{InstallName}";
 
 
             #endregion
