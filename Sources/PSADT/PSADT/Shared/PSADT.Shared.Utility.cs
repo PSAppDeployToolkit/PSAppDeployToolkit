@@ -124,48 +124,6 @@ namespace PSADT.Shared
         }
 
         /// <summary>
-        /// Gets all the call stack frames from the current PowerShell session.
-        /// </summary>
-        /// <returns>An array of <see cref="CallStackFrame"/> objects representing the call stack.</returns>
-        public static CallStackFrame[]? GetPowerShellCallStackFrames()
-        {
-            // Use the default runspace
-            Runspace defaultRunspace = Runspace.DefaultRunspace;
-
-            if (defaultRunspace == null)
-            {
-                Console.WriteLine("No default runspace available.");
-                return null;
-            }
-
-            // Use a nested pipeline within the default runspace and invoke it. We need to skip the first item as its the current frame of the nested pipeline.
-            return defaultRunspace.CreateNestedPipeline("Get-PSCallStack", false).Invoke().Where(o => o.BaseObject is CallStackFrame).Skip(1).Select(o => o.BaseObject as CallStackFrame).ToArray()!;
-        }
-
-        /// <summary>
-        /// Gets the command name from a <see cref="CallStackFrame"/> object.
-        /// </summary>
-        /// <param name="frame">The call stack frame to get the command name from.</param>
-        /// <returns>The command name of the call stack frame.</returns>
-        public static string GetPowerShellCallStackFrameCommand(CallStackFrame frame)
-        {
-            // We must re-create the "Command" ScriptProperty as it's only available in PowerShell.
-            if (null == frame.InvocationInfo)
-            {
-                return frame.FunctionName;
-            }
-            if (null == frame.InvocationInfo.MyCommand)
-            {
-                return frame.InvocationInfo.InvocationName;
-            }
-            if (frame.InvocationInfo.MyCommand.Name != string.Empty)
-            {
-                return frame.InvocationInfo.MyCommand.Name;
-            }
-            return frame.FunctionName;
-        }
-
-        /// <summary>
         /// Converts a list of remaining arguments to a dictionary of key-value pairs.
         /// </summary>
         /// <param name="remainingArguments">A list of remaining arguments to convert.</param>

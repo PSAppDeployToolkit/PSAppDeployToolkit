@@ -612,18 +612,36 @@ namespace PSADT.Types
         #region Methods.
 
 
-        public static CallStackFrame GetLogEntryCaller()
+        public static CallStackFrame GetLogEntryCaller(CallStackFrame[] stackFrames)
         {
-            foreach (CallStackFrame frame in Utility.GetPowerShellCallStackFrames()!)
+            foreach (CallStackFrame frame in stackFrames)
             {
                 // Get the command from the frame and test its validity.
-                string command = Utility.GetPowerShellCallStackFrameCommand(frame);
+                string command = GetPowerShellCallStackFrameCommand(frame);
                 if (!string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, "^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\\w+>)?)$") || (Regex.IsMatch(command, "^(<ScriptBlock>(<\\w+>)?)$") && frame.GetScriptLocation().Equals("<No file>"))))
                 {
                     return frame;
                 }
             }
             return null!;
+        }
+
+        private static string GetPowerShellCallStackFrameCommand(CallStackFrame frame)
+        {
+            // We must re-create the "Command" ScriptProperty as it's only available in PowerShell.
+            if (null == frame.InvocationInfo)
+            {
+                return frame.FunctionName;
+            }
+            if (null == frame.InvocationInfo.MyCommand)
+            {
+                return frame.InvocationInfo.InvocationName;
+            }
+            if (frame.InvocationInfo.MyCommand.Name != string.Empty)
+            {
+                return frame.InvocationInfo.MyCommand.Name;
+            }
+            return frame.FunctionName;
         }
 
         public int Close()
@@ -772,7 +790,7 @@ namespace PSADT.Types
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
             string logTime = dateNow.ToString("HH\\:mm\\:ss.fff");
-            CallStackFrame invoker = GetLogEntryCaller();
+            CallStackFrame invoker = GetLogEntryCaller(ModuleSessionState.InvokeCommand.InvokeScript("& $CommandTable.'Get-PSCallStack'").Skip(1).Select(o => (CallStackFrame)o.BaseObject).ToArray());
 
             // Determine the log file name; either a proper script/function, or a caller directly from the console.
             string logFile = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
@@ -784,7 +802,7 @@ namespace PSADT.Types
             }
             if (string.IsNullOrWhiteSpace(source))
             {
-                source = Utility.GetPowerShellCallStackFrameCommand(invoker);
+                source = GetPowerShellCallStackFrameCommand(invoker);
             }
             if (string.IsNullOrWhiteSpace(scriptSection))
             {
