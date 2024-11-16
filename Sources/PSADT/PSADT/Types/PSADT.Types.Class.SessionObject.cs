@@ -23,6 +23,13 @@ namespace PSADT.Types
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionObject"/> class.
         /// </summary>
+        /// <param name="adtData">The ADT data.</param>
+        /// <param name="adtEnv">The ADT environment.</param>
+        /// <param name="adtConfig">The ADT configuration.</param>
+        /// <param name="adtStrings">The ADT strings.</param>
+        /// <param name="moduleSessionState">The module session state.</param>
+        /// <param name="runspaceOrigin">Indicates if the origin is a runspace.</param>
+        /// <param name="callerSessionState">The caller session state.</param>
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
         public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, SessionState moduleSessionState, bool? runspaceOrigin = null, SessionState? callerSessionState = null, Dictionary<string, object>? parameters = null)
         {
@@ -612,6 +619,11 @@ namespace PSADT.Types
         #region Methods.
 
 
+        /// <summary>
+        /// Gets the caller of the log entry from the call stack frames.
+        /// </summary>
+        /// <param name="stackFrames">The call stack frames.</param>
+        /// <returns>The call stack frame of the log entry caller.</returns>
         public static CallStackFrame GetLogEntryCaller(CallStackFrame[] stackFrames)
         {
             foreach (CallStackFrame frame in stackFrames)
@@ -626,6 +638,11 @@ namespace PSADT.Types
             return null!;
         }
 
+        /// <summary>
+        /// Gets the PowerShell call stack frame command.
+        /// </summary>
+        /// <param name="frame">The call stack frame.</param>
+        /// <returns>The PowerShell call stack frame command.</returns>
         private static string GetPowerShellCallStackFrameCommand(CallStackFrame frame)
         {
             // We must re-create the "Command" ScriptProperty as it's only available in PowerShell.
@@ -644,6 +661,10 @@ namespace PSADT.Types
             return frame.FunctionName;
         }
 
+        /// <summary>
+        /// Closes the session and releases resources.
+        /// </summary>
+        /// <returns>The exit code.</returns>
         public int Close()
         {
             // Throw if this object has already been disposed.
@@ -748,6 +769,11 @@ namespace PSADT.Types
             return ExitCode;
         }
 
+        /// <summary>
+        /// Gets the value of a property by name.
+        /// </summary>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <returns>The value of the property.</returns>
         public object GetPropertyValue(string propertyName)
         {
             // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
@@ -759,6 +785,11 @@ namespace PSADT.Types
             return this.GetType().GetProperty(propertyName)!.GetValue(this)!;
         }
 
+        /// <summary>
+        /// Sets the value of a property by name.
+        /// </summary>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="propertyValue">The value to set.</param>
         public void SetPropertyValue(string propertyName, object propertyValue)
         {
             // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
@@ -770,6 +801,18 @@ namespace PSADT.Types
             this.GetType().GetProperty(propertyName)!.SetValue(this, propertyValue);
         }
 
+        /// <summary>
+        /// Writes a log entry with detailed parameters.
+        /// </summary>
+        /// <param name="message">The log message.</param>
+        /// <param name="severity">The severity level.</param>
+        /// <param name="source">The source of the log entry.</param>
+        /// <param name="scriptSection">The script section.</param>
+        /// <param name="writeHost">Whether to write to the host.</param>
+        /// <param name="debugMessage">Whether it is a debug message.</param>
+        /// <param name="logType">The type of log.</param>
+        /// <param name="logFileDirectory">The log file directory.</param>
+        /// <param name="logFileName">The log file name.</param>
         public void WriteLogEntry(string[] message, uint? severity, string source, string scriptSection, bool? writeHost, bool debugMessage, string logType, string logFileDirectory, string logFileName)
         {
             // Extrapolate the Toolkit options from the config hashtable.
@@ -911,47 +954,86 @@ namespace PSADT.Types
             }
         }
 
+        /// <summary>
+        /// Writes a log entry with a message array.
+        /// </summary>
+        /// <param name="message">The log message array.</param>
         public void WriteLogEntry(string[] message)
         {
             WriteLogEntry(message, null, string.Empty, string.Empty, null, false, string.Empty, string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Writes a log entry with a message array and severity.
+        /// </summary>
+        /// <param name="message">The log message array.</param>
+        /// <param name="severity">The severity level.</param>
         public void WriteLogEntry(string[] message, uint? severity)
         {
             WriteLogEntry(message, severity, string.Empty, string.Empty, null, false, string.Empty, string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Writes a log entry with a message array and host write option.
+        /// </summary>
+        /// <param name="message">The log message array.</param>
+        /// <param name="writeHost">Whether to write to the host.</param>
         public void WriteLogEntry(string[] message, bool writeHost)
         {
             WriteLogEntry(message, null, string.Empty, string.Empty, writeHost, false, string.Empty, string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Writes a log entry with a single message.
+        /// </summary>
+        /// <param name="message">The log message.</param>
         public void WriteLogEntry(string message)
         {
             WriteLogEntry([message], null, string.Empty, string.Empty, null, false, string.Empty, string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Writes a log entry with a single message and severity.
+        /// </summary>
+        /// <param name="message">The log message.</param>
+        /// <param name="severity">The severity level.</param>
         public void WriteLogEntry(string message, uint? severity)
         {
             WriteLogEntry([message], severity, string.Empty, string.Empty, null, false, string.Empty, string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Writes a log entry with a single message and host write option.
+        /// </summary>
+        /// <param name="message">The log message.</param>
+        /// <param name="writeHost">Whether to write to the host.</param>
         public void WriteLogEntry(string message, bool writeHost)
         {
             WriteLogEntry([message], null, string.Empty, string.Empty, writeHost, false, string.Empty, string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Writes a log divider with a specified count.
+        /// </summary>
+        /// <param name="count">The number of dividers to write.</param>
         public void WriteLogDivider(uint count)
         {
             StringCollection dividers = []; for (uint i = 0; i < count; i++) { dividers.Add(new string('*', 79)); }
             WriteLogEntry(dividers.Cast<string>().ToArray());
         }
 
+        /// <summary>
+        /// Writes a log divider.
+        /// </summary>
         public void WriteLogDivider()
         {
             WriteLogDivider(1);
         }
 
+        /// <summary>
+        /// Gets the deployment status.
+        /// </summary>
+        /// <returns>The deployment status.</returns>
         public string GetDeploymentStatus()
         {
             // Extrapolate the UI options from the config hashtable.
@@ -975,36 +1057,64 @@ namespace PSADT.Types
             }
         }
 
+        /// <summary>
+        /// Gets the mounted WIM files.
+        /// </summary>
+        /// <returns>A read-only collection of mounted WIM files.</returns>
         public ReadOnlyCollection<FileInfo> GetMountedWimFiles()
         {
             return MountedWimFiles.AsReadOnly();
         }
 
+        /// <summary>
+        /// Gets the default MSI executables list.
+        /// </summary>
+        /// <returns>An array of default MSI executables.</returns>
         public ProcessObject[]? GetDefaultMsiExecutablesList()
         {
             return DefaultMsiExecutablesList;
         }
 
+        /// <summary>
+        /// Gets the deployment type name.
+        /// </summary>
+        /// <returns>The deployment type name.</returns>
         public string GetDeploymentTypeName()
         {
             return DeploymentTypeName;
         }
 
+        /// <summary>
+        /// Determines whether the origin is a runspace.
+        /// </summary>
+        /// <returns>True if the origin is a runspace; otherwise, false.</returns>
         public bool IsRunspaceOrigin()
         {
             return RunspaceOrigin;
         }
 
+        /// <summary>
+        /// Determines whether the mode is non-interactive.
+        /// </summary>
+        /// <returns>True if the mode is non-interactive; otherwise, false.</returns>
         public bool IsNonInteractive()
         {
             return DeployModeNonInteractive;
         }
 
+        /// <summary>
+        /// Determines whether the mode is silent.
+        /// </summary>
+        /// <returns>True if the mode is silent; otherwise, false.</returns>
         public bool IsSilent()
         {
             return DeployModeSilent;
         }
 
+        /// <summary>
+        /// Sets the exit code.
+        /// </summary>
+        /// <param name="exitCode">The exit code to set.</param>
         public void SetExitCode(int exitCode)
         {
             ExitCode = exitCode;
