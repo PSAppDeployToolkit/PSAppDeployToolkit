@@ -918,7 +918,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the list of executables found within a Zero-Config MSI file.
         /// </summary>
-        private ProcessObject[] DefaultMsiExecutablesList { get; }
+        private ProcessObject[]? DefaultMsiExecutablesList { get; }
 
         /// <summary>
         /// Gets whether this session object has finished processing the Zero-Config MSI file detection.
@@ -938,7 +938,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
         /// </summary>
-        private string DirFilesSubstDrive { get; }
+        private string? DirFilesSubstDrive { get; }
 
         /// <summary>
         /// Gets the registry path used for getting/setting deferral information.
@@ -1008,32 +1008,32 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the session object's application vendor.
         /// </summary>
-        public string AppVendor { get; }
+        public string? AppVendor { get; }
 
         /// <summary>
         /// Gets the session object's application name.
         /// </summary>
-        public string AppName { get; }
+        public string? AppName { get; }
 
         /// <summary>
         /// Gets the session object's application version.
         /// </summary>
-        public string AppVersion { get; }
+        public string? AppVersion { get; }
 
         /// <summary>
         /// Gets the session object's application architecture.
         /// </summary>
-        public string AppArch { get; }
+        public string? AppArch { get; }
 
         /// <summary>
         /// Gets the session object's application language.
         /// </summary>
-        public string AppLang { get; }
+        public string? AppLang { get; }
 
         /// <summary>
         /// Gets the session object's application package revision.
         /// </summary>
-        public string AppRevision { get; }
+        public string? AppRevision { get; }
 
         /// <summary>
         /// Gets the session object's exit code(s) to indicate a successful deployment.
@@ -1048,7 +1048,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the session object's application package version.
         /// </summary>
-        public Version AppScriptVersion { get; }
+        public Version? AppScriptVersion { get; }
 
         /// <summary>
         /// Gets the session object's application package date.
@@ -1058,7 +1058,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the session object's application package author.
         /// </summary>
-        public string AppScriptAuthor { get; }
+        public string? AppScriptAuthor { get; }
 
         /// <summary>
         /// Gets an override to the session object's installation name.
@@ -1073,17 +1073,17 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the session object's frontend script name.
         /// </summary>
-        public string DeployAppScriptFriendlyName { get; }
+        public string? DeployAppScriptFriendlyName { get; }
 
         /// <summary>
         /// Gets the session object's frontend script version.
         /// </summary>
-        public Version DeployAppScriptVersion { get; }
+        public Version? DeployAppScriptVersion { get; }
 
         /// <summary>
         /// Gets the session object's frontend script parameters.
         /// </summary>
-        public IDictionary DeployAppScriptParameters { get; }
+        public IDictionary? DeployAppScriptParameters { get; }
 
         /// <summary>
         /// Gets/sets the session object's installation phase'.
@@ -1118,32 +1118,32 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public string ScriptDirectory { get; }
+        public string? ScriptDirectory { get; }
 
         /// <summary>
         /// Gets the specified or determined path to the Files folder.
         /// </summary>
-        public string DirFiles { get; }
+        public string? DirFiles { get; }
 
         /// <summary>
         /// Gets the specified or determined path to the SupportFiles folder.
         /// </summary>
-        public string DirSupportFiles { get; }
+        public string? DirSupportFiles { get; }
 
         /// <summary>
         /// Gets the session object's Zero-Config MSI file path.
         /// </summary>
-        public string DefaultMsiFile { get; }
+        public string? DefaultMsiFile { get; }
 
         /// <summary>
         /// Gets the session object's Zero-Config MST file path.
         /// </summary>
-        public string DefaultMstFile { get; }
+        public string? DefaultMstFile { get; }
 
         /// <summary>
         /// Gets the session object's Zero-Config MSP file paths.
         /// </summary>
-        public string[] DefaultMspFiles { get; }
+        public string[]? DefaultMspFiles { get; }
 
         /// <summary>
         /// Gets whether this session object found a valid Zero-Config MSI file.
