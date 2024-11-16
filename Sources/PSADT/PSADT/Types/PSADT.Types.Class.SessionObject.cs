@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Globalization;
 using System.Management.Automation;
+using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -55,6 +56,71 @@ namespace PSADT.Types
                 {
                     DirSupportFiles = Path.Combine(ScriptDirectory, "SupportFiles");
                 }
+            }
+
+
+            #endregion
+            #region DetectDefaultWimFile
+            #endregion
+            #region DetectDefaultMsi
+            #endregion
+            #region SetAppProperties
+
+
+            // Set up sample variables if Dot Sourcing the script, app details have not been specified.
+            if (string.IsNullOrWhiteSpace(AppName))
+            {
+                AppName = (string)ADTEnv["appDeployToolkitName"]!;
+
+                if (!string.IsNullOrWhiteSpace(AppVendor))
+                {
+                    AppVendor = null;
+                }
+                if (string.IsNullOrWhiteSpace(AppVersion))
+                {
+                    AppVersion = ADTEnv["appDeployMainScriptVersion"]!.ToString()!;
+                }
+                if (string.IsNullOrWhiteSpace(AppLang))
+                {
+                    AppLang = (string)ADTEnv["currentLanguage"]!;
+                }
+                if (string.IsNullOrWhiteSpace(AppRevision))
+                {
+                    AppRevision = "01";
+                }
+            }
+
+            // Sanitize the application details, as they can cause issues in the script.
+            string invalidChars = string.Join(null, Path.GetInvalidFileNameChars());
+            if (null != AppVendor)
+            {
+                AppVendor = Regex.Replace(AppVendor, invalidChars, string.Empty);
+            }
+            if (null != AppName)
+            {
+                AppName = Regex.Replace(AppName, invalidChars, string.Empty);
+            }
+            if (null != AppVersion)
+            {
+                AppVersion = Regex.Replace(AppVersion, invalidChars, string.Empty);
+            }
+            if (null != AppArch)
+            {
+                AppArch = Regex.Replace(AppArch, invalidChars, string.Empty);
+            }
+            if (null != AppLang)
+            {
+                AppLang = Regex.Replace(AppLang, invalidChars, string.Empty);
+            }
+            if (null != AppRevision)
+            {
+                AppRevision = Regex.Replace(AppRevision, invalidChars, string.Empty);
+            }
+
+            // If we're left with a null AppName, throw a terminating error.
+            if (string.IsNullOrWhiteSpace(AppName))
+            {
+                throw new ArgumentNullException("AppName", "The application name was not specified.");
             }
 
 
