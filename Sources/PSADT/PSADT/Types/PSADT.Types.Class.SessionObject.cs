@@ -830,6 +830,41 @@ namespace PSADT.Types
             }
         }
 
+        public ReadOnlyCollection<FileInfo> GetMountedWimFiles()
+        {
+            return MountedWimFiles.AsReadOnly();
+        }
+
+        public ProcessObject[]? GetDefaultMsiExecutablesList()
+        {
+            return DefaultMsiExecutablesList;
+        }
+
+        public string GetDeploymentTypeName()
+        {
+            return DeploymentTypeName;
+        }
+
+        public bool IsRunspaceOrigin()
+        {
+            return RunspaceOrigin;
+        }
+
+        public bool IsNonInteractive()
+        {
+            return DeployModeNonInteractive;
+        }
+
+        public bool IsSilent()
+        {
+            return DeployModeSilent;
+        }
+
+        public void SetExitCode(int exitCode)
+        {
+            ExitCode = exitCode;
+        }
+
 
         #endregion
         #region Internal variables.
