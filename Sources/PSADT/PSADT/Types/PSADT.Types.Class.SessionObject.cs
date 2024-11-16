@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Globalization;
 using System.Management.Automation;
 using System.Management.Automation.Host;
@@ -24,7 +25,7 @@ namespace PSADT.Types
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
         public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, PSVariableIntrinsics callerVariables, Dictionary<string, object> parameters)
         {
-            #region Init
+            #region Initialization
 
 
             // Establish start date/time first so we can accurately mark the start of execution.
@@ -465,6 +466,24 @@ namespace PSADT.Types
             if ((bool)configToolkit["RequireAdmin"]! && !(bool)ADTEnv["IsAdmin"]!)
             {
                 throw new UnauthorizedAccessException($"[{ADTEnv["appDeployToolkitName"]}] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.");
+            }
+
+
+            #endregion
+            #region Finalization
+
+
+            // If terminal server mode was specified, change the installation mode to support it.
+            if (TerminalServerMode)
+            {
+                #warning "Terminal Server Mode not fully implemented."
+            }
+
+            // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
+            // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
+            if (CompatibilityMode)
+            {
+                this.GetType().GetProperties(BindingFlags.Public).ToList().ForEach(p => CallerVariables.Set(p.Name, p.GetValue(this)));
             }
 
 
