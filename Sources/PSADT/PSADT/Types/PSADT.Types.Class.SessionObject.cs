@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Globalization;
 using System.Management.Automation;
+using System.Management.Automation.Host;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
@@ -284,6 +285,25 @@ namespace PSADT.Types
             else
             {
                 WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Native].");
+            }
+
+
+            #endregion
+            #region LogSystemInfo
+
+
+            // Report on all determined system info.
+            WriteLogEntry($"Computer Name is [{ADTEnv["envComputerNameFQDN"]}].");
+            WriteLogEntry($"Current User is [{ADTEnv["ProcessNTAccount"]}].");
+            WriteLogEntry($"OS Version is [{ADTEnv["envOSName"]}{((ADTEnv["envOSServicePack"] is string envOSServicePack) && !string.IsNullOrWhiteSpace(envOSServicePack) ? envOSServicePack : string.Empty)} {ADTEnv["envOSArchitecture"]} {ADTEnv["envOSVersion"]}].");
+            WriteLogEntry($"OS Type is [{ADTEnv["envOSProductTypeName"]}].");
+            WriteLogEntry($"Hardware Platform is [{ADTEnv["envHardwareType"]}].");
+            WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{ADTEnv["currentLanguage"]}] and UI language is [{ADTEnv["currentUILanguage"]}].");
+            WriteLogEntry($"PowerShell Host is [{((PSHost)ADTEnv["envHost"]!).Name}] with version [{((PSHost)ADTEnv["envHost"]!).Version}].");
+            WriteLogEntry($"PowerShell Version is [{ADTEnv["envPSVersion"]} {ADTEnv["psArchitecture"]}].");
+            if (null != ADTEnv["envCLRVersion"])
+            {
+                WriteLogEntry($"PowerShell CLR (.NET) version is [{ADTEnv["envCLRVersion"]}].");
             }
 
 
