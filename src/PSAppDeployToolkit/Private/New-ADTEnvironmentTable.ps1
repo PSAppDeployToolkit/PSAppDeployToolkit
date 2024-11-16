@@ -16,6 +16,7 @@ function New-ADTEnvironmentTable
 
     ## Variables: Toolkit Info
     $variables.Add('appDeployToolkitName', $MyInvocation.MyCommand.Module.Name)
+    $variables.Add('appDeployToolkitPath', $MyInvocation.MyCommand.Module.ModuleBase)
     $variables.Add('appDeployMainScriptVersion', $MyInvocation.MyCommand.Module.Version)
 
     ## Variables: Culture
