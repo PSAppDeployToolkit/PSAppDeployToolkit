@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Collections.ObjectModel;
+using PSADT.Shared;
 
 namespace PSADT.Types
 {
@@ -19,7 +21,7 @@ namespace PSADT.Types
         /// Initializes a new instance of the <see cref="SessionObject"/> class.
         /// </summary>
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
-        public SessionObject(OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, PSVariableIntrinsics callerVariables, Dictionary<string, object> parameters)
+        public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, PSVariableIntrinsics callerVariables, Dictionary<string, object> parameters)
         {
             #region Init
 
@@ -30,6 +32,7 @@ namespace PSADT.Types
 
             // Establish initial variable values.
             ADTEnv = adtEnv;
+            ADTData = adtData;
             ADTConfig = adtConfig;
             ADTStrings = adtStrings;
             CallerVariables = callerVariables;
@@ -156,7 +159,7 @@ namespace PSADT.Types
 
 
             // Generate log paths from our installation properties.
-            LogTempFolder = Path.Combine(ADTEnv["envTemp"]!.ToString()!, $"{InstallName}_{DeploymentType}");
+            LogTempFolder = Path.Combine((string)ADTEnv["envTemp"]!, $"{InstallName}_{DeploymentType}");
             if ((bool)configToolkit["CompressLogs"]!)
             {
                 // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
@@ -168,7 +171,7 @@ namespace PSADT.Types
             }
             else
             {
-                LogPath = Directory.CreateDirectory(configToolkit["LogPath"]!.ToString()!).FullName;
+                LogPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
             }
 
             // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
@@ -203,7 +206,7 @@ namespace PSADT.Types
                     // Log message about archiving the log file.
                     if (logFileSizeExceeded)
                     {
-                        // WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", 2);
+                        WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", 2);
                     }
 
                     // Rename the file.
@@ -212,7 +215,7 @@ namespace PSADT.Types
                     // Start new log file and log message about archiving the old log file.
                     if (logFileSizeExceeded)
                     {
-                        // WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", 2);
+                        WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", 2);
                     }
 
                     // Get all log files sorted by last write time.
@@ -226,13 +229,13 @@ namespace PSADT.Types
                 }
                 catch (Exception ex)
                 {
-                    // WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", 3);
+                    WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", 3);
                 }
             }
 
             // Open log file with commencement message.
-            // WriteLogDivider(2);
-            // WriteLogEntry($"[{InstallName}] {DeploymentTypeName.ToLower()} started.");
+            WriteLogDivider(2);
+            WriteLogEntry($"[{InstallName}] {DeploymentTypeName.ToLower()} started.");
 
 
             #endregion
@@ -240,8 +243,228 @@ namespace PSADT.Types
 
 
         #endregion
+        #region Methods.
+
+
+        public static CallStackFrame GetLogEntryCaller()
+        {
+            foreach (CallStackFrame frame in Utility.GetPowerShellCallStackFrames()!)
+            {
+                // Get the command from the frame and test its validity.
+                string command = Utility.GetPowerShellCallStackFrameCommand(frame);
+                if (!string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, "^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\\w+>)?)$") || (Regex.IsMatch(command, "^(<ScriptBlock>(<\\w+>)?)$") && frame.GetScriptLocation().Equals("<No file>"))))
+                {
+                    return frame;
+                }
+            }
+            return null!;
+        }
+
+        public object GetPropertyValue(string propertyName)
+        {
+            // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
+            // We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
+            if (CompatibilityMode)
+            {
+                return CallerVariables.Get(propertyName)!.Value;
+            }
+            return this.GetType().GetProperty(propertyName)!.GetValue(this)!;
+        }
+
+        public void SetPropertyValue(string propertyName, object propertyValue)
+        {
+            // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
+            // We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
+            if (CompatibilityMode)
+            {
+                CallerVariables.Set(propertyName, propertyValue);
+            }
+            this.GetType().GetProperty(propertyName)!.SetValue(this, propertyValue);
+        }
+
+        public void WriteLogEntry(string[] message, uint? severity, string source, string scriptSection, bool? writeHost, bool debugMessage, string logType, string logFileDirectory, string logFileName)
+        {
+            // Extrapolate the Toolkit options from the config hashtable.
+            Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
+
+            // Determine whether we can write to the console.
+            if (null == writeHost)
+            {
+                writeHost = (bool)configToolkit["LogWriteToHost"]!;
+            }
+
+            // Perform early return checks before wasting time.
+            if (((bool)GetPropertyValue(nameof(DisableLogging))! && (bool)!writeHost) || (debugMessage && !(bool)configToolkit["LogDebugMessage"]!))
+            {
+                return;
+            }
+
+            // Establish logging date/time vars.
+            DateTime dateNow = DateTime.Now;
+            string logTime = dateNow.ToString("HH\\:mm\\:ss.fff");
+            CallStackFrame invoker = GetLogEntryCaller();
+
+            // Determine the log file name; either a proper script/function, or a caller directly from the console.
+            string logFile = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
+
+            // Set up default values if not specified.
+            if (null == severity)
+            {
+                severity = 1;
+            }
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                source = Utility.GetPowerShellCallStackFrameCommand(invoker);
+            }
+            if (string.IsNullOrWhiteSpace(scriptSection))
+            {
+                scriptSection = (string)GetPropertyValue(nameof(InstallPhase))!;
+            }
+            if (string.IsNullOrWhiteSpace(logType))
+            {
+                logType = (string)configToolkit["LogStyle"]!;
+            }
+            if (string.IsNullOrWhiteSpace(logFileDirectory))
+            {
+                logFileDirectory = LogPath;
+            }
+            else if (!Directory.Exists(logFileDirectory))
+            {
+                Directory.CreateDirectory(logFileDirectory);
+            }
+            if (string.IsNullOrWhiteSpace(logFileName))
+            {
+                logFileName = (string)GetPropertyValue(nameof(LogName))!;
+            }
+
+            // Cache all data pertaining to current severity.
+            OrderedDictionary logData = (OrderedDictionary)ADTData.Properties["Logging"].Value;
+            OrderedDictionary logFmts = (OrderedDictionary)logData["Formats"]!;
+            OrderedDictionary sevData = ((ReadOnlyCollection<OrderedDictionary>)logData["Severities"]!)[(int)severity];
+            OrderedDictionary sevCols = (OrderedDictionary)sevData["Colours"]!;
+            string outFile = Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty);
+
+            // Store log string to format with message.
+            StringDictionary logFormats = new StringDictionary()
+            {
+                { "Legacy", string.Format((string)logFmts["Legacy"]!, "{0}", dateNow.ToString("O").Split('T')[0], logTime, scriptSection, source, sevData["Name"]) },
+                { "CMTrace", string.Format((string)logFmts["CMTrace"]!, "{0}", scriptSection, $"{logTime}+{((TimeSpan)GetPropertyValue(nameof(CurrentTimeZoneBias))!).TotalMinutes}", dateNow.ToString("M-dd-yyyy"), source, severity, logFile) },
+            };
+
+            // Add this log message to the session's buffer.
+            message.ToList().ForEach(msg => LogBuffer.Add(new LogEntry(dateNow, invoker, msg, (uint)severity, source, scriptSection)));
+
+            // Write out all messages to disk if configured/permitted to do so.
+            if (!string.IsNullOrWhiteSpace(outFile) && !(bool)GetPropertyValue(nameof(DisableLogging))!)
+            {
+                using (StreamWriter logFileWriter = File.AppendText(outFile))
+                {
+                    string logLine = logFormats[logType]!;
+                    switch (logType)
+                    {
+                        case "CMTrace":
+                            foreach (string msg in message)
+                            {
+                                if (msg.Contains("\n"))
+                                {
+                                    // Replace all empty lines with a space so OneTrace doesn't trim them.
+                                    // When splitting the message, we want to trim all lines but not replace genuine
+                                    // spaces. As such, replace all spaces and empty lines with a punctuation space.
+                                    // C# identifies this character as whitespace but OneTrace does not so it works.
+                                    // The empty line feed at the end is required by OneTrace to format correctly.
+                                    logFileWriter.WriteLine(string.Format(logLine, string.Join("\n", msg.Replace("\r", null).Trim().Replace(' ', (char)0x2008).Split((char)10).ToList().Select(m => Regex.Replace(m, "^$", $"{(char)0x2008}"))).Replace("\n", "\r\n") + "\r\n"));
+                                }
+                                else
+                                {
+                                    logFileWriter.WriteLine(string.Format(logLine, msg));
+                                }
+                            }
+                            break;
+                        case "Legacy":
+                            foreach (string msg in message)
+                            {
+                                logFileWriter.WriteLine(string.Format(logLine, msg));
+                            }
+                            break;
+                    }
+                }
+            }
+
+            // Write out all messages to host if configured/permitted to do so.
+            if ((bool)writeHost!)
+            {
+                // Colour the console if we're not informational.
+                if (severity != 1)
+                {
+                    Console.ForegroundColor = (ConsoleColor)sevCols["ForegroundColor"]!;
+                    Console.BackgroundColor = (ConsoleColor)sevCols["BackgroundColor"]!;
+                }
+
+                // Write errors to stderr, otherwise send everything else to stdout.
+                if (severity == 3)
+                {
+                    Console.Error.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logFormats["Legacy"]!, msg))));
+                }
+                else
+                {
+                    Console.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logFormats["Legacy"]!, msg))));
+                }
+
+                // Reset the console colours back to default.
+                Console.ResetColor();
+            }
+        }
+
+        public void WriteLogEntry(string[] message)
+        {
+            WriteLogEntry(message, null, string.Empty, string.Empty, null, false, string.Empty, string.Empty, string.Empty);
+        }
+
+        public void WriteLogEntry(string[] message, uint? severity)
+        {
+            WriteLogEntry(message, severity, string.Empty, string.Empty, null, false, string.Empty, string.Empty, string.Empty);
+        }
+
+        public void WriteLogEntry(string[] message, bool writeHost)
+        {
+            WriteLogEntry(message, null, string.Empty, string.Empty, writeHost, false, string.Empty, string.Empty, string.Empty);
+        }
+
+        public void WriteLogEntry(string message)
+        {
+            WriteLogEntry([message], null, string.Empty, string.Empty, null, false, string.Empty, string.Empty, string.Empty);
+        }
+
+        public void WriteLogEntry(string message, uint? severity)
+        {
+            WriteLogEntry([message], severity, string.Empty, string.Empty, null, false, string.Empty, string.Empty, string.Empty);
+        }
+
+        public void WriteLogEntry(string message, bool writeHost)
+        {
+            WriteLogEntry([message], null, string.Empty, string.Empty, writeHost, false, string.Empty, string.Empty, string.Empty);
+        }
+
+        public void WriteLogDivider(uint count)
+        {
+            StringCollection dividers = []; for (uint i = 0; i < count; i++) { dividers.Add(new string('*', 79)); }
+            WriteLogEntry(dividers.Cast<string>().ToArray());
+        }
+
+        public void WriteLogDivider()
+        {
+            WriteLogDivider(1);
+        }
+
+
+        #endregion
         #region Internal variables.
 
+
+        /// <summary>
+        /// Gets the environment table that was supplied during object instantiation.
+        /// </summary>
+        private PSObject ADTData { get; }
 
         /// <summary>
         /// Gets the environment table that was supplied during object instantiation.
