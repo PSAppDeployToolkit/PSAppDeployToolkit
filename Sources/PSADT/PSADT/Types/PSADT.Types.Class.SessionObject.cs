@@ -47,6 +47,12 @@ namespace PSADT.Types
             ADTStrings = adtStrings;
             ModuleSessionState = moduleSessionState;
 
+            // Abort if the caller isn't coming in via our module's Open-ADTSession function.
+            if (!GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Open-ADTSession"))
+            {
+                throw new InvalidOperationException("A session object must be instantiated via the Open-ADTSession function.");
+            }
+
             // Extrapolate the Toolkit options from the config hashtable.
             Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
 
@@ -717,6 +723,15 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the caller of the log entry from the call stack frames.
         /// </summary>
+        /// <returns>The call stack frame of the log entry caller.</returns>
+        private CallStackFrame GetLogEntryCallerInternal()
+        {
+            return GetLogEntryCaller(ModuleSessionState.InvokeCommand.InvokeScript("& $CommandTable.'Get-PSCallStack'").Skip(1).Select(o => (CallStackFrame)o.BaseObject).ToArray());
+        }
+
+        /// <summary>
+        /// Gets the caller of the log entry from the call stack frames.
+        /// </summary>
         /// <param name="stackFrames">The call stack frames.</param>
         /// <returns>The call stack frame of the log entry caller.</returns>
         public static CallStackFrame GetLogEntryCaller(CallStackFrame[] stackFrames)
@@ -762,6 +777,12 @@ namespace PSADT.Types
         /// <returns>The exit code.</returns>
         public int Close()
         {
+            // Abort if the caller isn't coming in via our module's Open-ADTSession function.
+            if (!GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Close-ADTSession"))
+            {
+                throw new InvalidOperationException("A session object must be closed via the Close-ADTSession function.");
+            }
+
             // Throw if this object has already been disposed.
             if (Disposed)
             {
@@ -928,7 +949,7 @@ namespace PSADT.Types
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
             string logTime = dateNow.ToString("HH\\:mm\\:ss.fff");
-            CallStackFrame invoker = GetLogEntryCaller(ModuleSessionState.InvokeCommand.InvokeScript("& $CommandTable.'Get-PSCallStack'").Skip(1).Select(o => (CallStackFrame)o.BaseObject).ToArray());
+            CallStackFrame invoker = GetLogEntryCallerInternal();
 
             // Determine the log file name; either a proper script/function, or a caller directly from the console.
             string logFile = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
