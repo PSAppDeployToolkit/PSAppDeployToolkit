@@ -17,7 +17,7 @@ namespace PSADT.Types
         /// <param name="Severity">The log entry's severity.</param>
         /// <param name="Source">The log entry's source.</param>
         /// <param name="ScriptSection">The log entry's script section, typically defaulting to the active session's InstallPhase value.</param>
-        public LogEntry(DateTime timeStamp, CallStackFrame invoker, string message, int severity, string source, string scriptSection)
+        public LogEntry(DateTime timeStamp, CallStackFrame invoker, string message, uint severity, string source, string scriptSection)
         {
             Timestamp = timeStamp;
             Invoker = invoker;
@@ -45,7 +45,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the log entry's severity.
         /// </summary>
-        public int Severity { get; }
+        public uint Severity { get; }
 
         /// <summary>
         /// Gets the log entry's source.

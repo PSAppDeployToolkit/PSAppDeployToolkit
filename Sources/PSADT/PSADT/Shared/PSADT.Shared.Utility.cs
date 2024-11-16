@@ -1,8 +1,13 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Runtime.CompilerServices;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
+using System.Collections.Generic;
 using PSADT.PInvoke;
 using PSADT.Diagnostics.Exceptions;
 
@@ -79,7 +84,7 @@ namespace PSADT.Shared
         /// <summary>
         /// Converts an image to an icon, automatically resizing to the maximum icon size if greater than 128px.
         /// </summary>
-        /// <param name="image">The image to resize.</param>
+        /// <param name="img">The image to resize.</param>
         /// <returns>The resized image.</returns>
         public static Icon ConvertImageToIcon(Image img)
         {
@@ -114,6 +119,48 @@ namespace PSADT.Shared
                 }
             }
             return icon;
+        }
+
+        /// <summary>
+        /// Gets all the call stack frames from the current PowerShell session.
+        /// </summary>
+        /// <returns>An array of <see cref="CallStackFrame"/> objects representing the call stack.</returns>
+        public static CallStackFrame[]? GetPowerShellCallStackFrames()
+        {
+            // Use the default runspace
+            Runspace defaultRunspace = Runspace.DefaultRunspace;
+
+            if (defaultRunspace == null)
+            {
+                Console.WriteLine("No default runspace available.");
+                return null;
+            }
+
+            // Use a nested pipeline within the default runspace and invoke it. We need to skip the first item as its the current frame of the nested pipeline.
+            return defaultRunspace.CreateNestedPipeline("Get-PSCallStack", false).Invoke().Where(o => o.BaseObject is CallStackFrame).Skip(1).Select(o => o.BaseObject as CallStackFrame).ToArray()!;
+        }
+
+        /// <summary>
+        /// Gets the command name from a <see cref="CallStackFrame"/> object.
+        /// </summary>
+        /// <param name="frame">The call stack frame to get the command name from.</param>
+        /// <returns>The command name of the call stack frame.</returns>
+        public static string GetPowerShellCallStackFrameCommand(CallStackFrame frame)
+        {
+            // We must re-create the "Command" ScriptProperty as it's only available in PowerShell.
+            if (null == frame.InvocationInfo)
+            {
+                return frame.FunctionName;
+            }
+            if (null == frame.InvocationInfo.MyCommand)
+            {
+                return frame.InvocationInfo.InvocationName;
+            }
+            if (frame.InvocationInfo.MyCommand.Name != string.Empty)
+            {
+                return frame.InvocationInfo.MyCommand.Name;
+            }
+            return frame.FunctionName;
         }
     }
 }
