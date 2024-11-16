@@ -308,6 +308,67 @@ namespace PSADT.Types
 
 
             #endregion
+            #region LogUserInfo
+
+
+            // Log details for all currently logged on users.
+            WriteLogEntry($"Display session information for all logged on users:{PowerShell.Create().AddScript("$args[0] | Format-List | Out-String -Width ([System.Int32]::MaxValue)").AddArgument(ADTEnv["LoggedOnUserSessions"]).Invoke().First().BaseObject}", false);
+
+            // Provide detailed info about current process state.
+            if (null != ADTEnv["usersLoggedOn"])
+            {
+                WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", ADTEnv["usersLoggedOn"])}].");
+
+                // Check if the current process is running in the context of one of the logged on users
+                if (null != ADTEnv["CurrentLoggedOnUserSession"])
+                {
+                    WriteLogEntry($"Current process is running with user account [{ADTEnv["ProcessNTAccount"]}] under logged on user session for [{((QueryUser.TerminalSessionInfo)ADTEnv["CurrentLoggedOnUserSession"]!).NTAccount}].");
+                }
+                else
+                {
+                    WriteLogEntry($"Current process is running under a system account [{ADTEnv["ProcessNTAccount"]}].");
+                }
+
+                // Guard Intune detection code behind a variable.
+                if ((bool)configToolkit["OobeDetection"]! && (Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Utility.IsOOBEComplete())
+                {
+                    WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
+                    DeployMode = "Silent";
+                }
+
+                // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
+                if (null != ADTEnv["CurrentConsoleUserSession"])
+                {
+                    WriteLogEntry($"The following user is the console user [{((QueryUser.TerminalSessionInfo)ADTEnv["CurrentConsoleUserSession"]!).NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
+                }
+                else
+                {
+                    WriteLogEntry("There is no console user logged on (user with control of physical monitor, keyboard, and mouse).");
+                }
+
+                // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+                if (null != ADTEnv["RunAsActiveUser"])
+                {
+                    WriteLogEntry($"The active logged on user is [{((QueryUser.TerminalSessionInfo)ADTEnv["RunAsActiveUser"]!).NTAccount}].");
+                }
+            }
+            else
+            {
+                WriteLogEntry("No users are logged on to the system.");
+            }
+
+            // Log which language's UI messages are loaded from the config file
+            WriteLogEntry($"The current execution context has a primary UI language of [{ADTEnv["currentLanguage"]}].");
+
+            // Advise whether the UI language was overridden.
+            if (((Hashtable)ADTConfig["UI"]!)["LanguageOverride"] is string languageOverride)
+            {
+                WriteLogEntry($"The config file was configured to override the detected primary UI language with the following UI language: [{languageOverride}].");
+            }
+            WriteLogEntry($"The following UI messages were imported from the config file: [{ADTData.Properties["Language"].Value}].");
+
+
+            #endregion
         }
 
 
