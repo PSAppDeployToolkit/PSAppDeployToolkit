@@ -277,7 +277,8 @@ namespace PSADT.Types
             InstallName = Regex.Replace(Regex.Replace(InstallName, "\\s|^_|_$", string.Empty), "_+", "_");
 
             // Set the Defer History registry path.
-            RegKeyDeferHistory = $"{configToolkit["RegPath"]}\\{ADTEnv["appDeployToolkitName"]}\\DeferHistory\\{InstallName}";
+            RegKeyDeferBase = $"{configToolkit["RegPath"]}\\{ADTEnv["appDeployToolkitName"]}\\DeferHistory";
+            RegKeyDeferHistory = $"{RegKeyDeferBase}\\{InstallName}";
 
 
             #endregion
@@ -696,7 +697,7 @@ namespace PSADT.Types
                     break;
                 default:
                     // Clean up app deferral history.
-                    #warning "DeferHistory cleanup not implemented."
+                    ResetDeferHistory();
 
                     // Handle reboot prompts on successful script completion.
                     if (deploymentStatus.Equals("RestartRequired") && (bool)GetPropertyValue(nameof(AllowRebootPassThru))!)
@@ -1031,6 +1032,72 @@ namespace PSADT.Types
         }
 
         /// <summary>
+        /// Tests the deferral history path.
+        /// </summary>
+        /// <returns>True if the deferral history path exists; otherwise, false.</returns>
+        private bool TestDeferHistoryPath()
+        {
+            return ModuleSessionState.InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
+        }
+
+        /// <summary>
+        /// Creates the deferral history path.
+        /// </summary>
+        private void CreateDeferHistoryPath()
+        {
+            ModuleSessionState.InvokeProvider.Item.New(RegKeyDeferBase, InstallName, "None", null);
+        }
+
+        /// <summary>
+        /// Gets the deferral history.
+        /// </summary>
+        /// <returns>The deferral history.</returns>
+        public PSObject? GetDeferHistory()
+        {
+            if (string.IsNullOrWhiteSpace(RegKeyDeferHistory) || !TestDeferHistoryPath())
+            {
+                return null;
+            }
+            WriteLogEntry("Getting deferral history...");
+            return ModuleSessionState.InvokeProvider.Property.Get(RegKeyDeferHistory, null)[0];
+        }
+
+        /// <summary>
+        /// Sets the deferral history.
+        /// </summary>
+        /// <param name="deferDeadline">The deferral deadline.</param>
+        /// <param name="deferTimesRemaining">The deferral times remaining.</param>
+        public void SetDeferHistory(int? deferTimesRemaining, string deferDeadline)
+        {
+            if (null != deferTimesRemaining)
+            {
+                WriteLogEntry($"Setting deferral history: [DeferTimesRemaining = {deferTimesRemaining}].");
+                if (!TestDeferHistoryPath())
+                {
+                    CreateDeferHistoryPath();
+                }
+                ModuleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferTimesRemaining", "String", deferTimesRemaining, true, true);
+            }
+            if (!string.IsNullOrWhiteSpace(deferDeadline))
+            {
+                WriteLogEntry($"Setting deferral history: [DeferDeadline = {deferDeadline}].");
+                ModuleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", "String", deferDeadline, true, true);
+            }
+        }
+
+        /// <summary>
+        /// Resets the deferral history.
+        /// </summary>
+        public void ResetDeferHistory()
+        {
+            if (!string.IsNullOrWhiteSpace(RegKeyDeferHistory) && TestDeferHistoryPath())
+            {
+                WriteLogEntry("Removing deferral history...");
+                ModuleSessionState.InvokeProvider.Item.Remove(RegKeyDeferHistory, true);
+            }
+        }
+
+        /// <summary>
         /// Gets the deployment status.
         /// </summary>
         /// <returns>The deployment status.</returns>
@@ -1199,6 +1266,11 @@ namespace PSADT.Types
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
         /// </summary>
         private string? DirFilesSubstDrive { get; }
+
+        /// <summary>
+        /// Gets the base registry path used for getting/setting deferral information.
+        /// </summary>
+        private string RegKeyDeferBase { get; }
 
         /// <summary>
         /// Gets the registry path used for getting/setting deferral information.
