@@ -14,16 +14,17 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using PSADT.Shared;
+using PSADT.Types;
 
-namespace PSADT.Types
+namespace PSADT.Module
 {
-    public sealed class SessionObject
+    public sealed class DeploymentSession
     {
         #region Constructors.
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SessionObject"/> class.
+        /// Initializes a new instance of the <see cref="DeploymentSession"/> class.
         /// </summary>
         /// <param name="adtData">The ADT data.</param>
         /// <param name="adtEnv">The ADT environment.</param>
@@ -33,7 +34,7 @@ namespace PSADT.Types
         /// <param name="runspaceOrigin">Indicates if the origin is a runspace.</param>
         /// <param name="callerSessionState">The caller session state.</param>
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
-        public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, SessionState moduleSessionState, bool? runspaceOrigin = null, SessionState? callerSessionState = null, Dictionary<string, object>? parameters = null)
+        public DeploymentSession(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, SessionState moduleSessionState, bool? runspaceOrigin = null, SessionState? callerSessionState = null, Dictionary<string, object>? parameters = null)
         {
             try
             {
@@ -54,7 +55,7 @@ namespace PSADT.Types
                 // Abort if the caller isn't coming in via our module's Open-ADTSession function.
                 if (!GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Open-ADTSession"))
                 {
-                    throw new InvalidOperationException("A session object must be instantiated via the Open-ADTSession function.");
+                    throw new InvalidOperationException("A deployment session can only be instantiated via the Open-ADTSession function.");
                 }
 
                 // Extrapolate the Toolkit options from the config hashtable.
@@ -750,7 +751,7 @@ namespace PSADT.Types
             }
             catch (Exception ex)
             {
-                WriteLogEntry($"Failure occurred while opening new SessionObject: \"{ex.Message}\".", 3);
+                WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", 3);
                 SetExitCode(60008);
                 Close();
                 throw;
@@ -822,13 +823,13 @@ namespace PSADT.Types
             // Abort if the caller isn't coming in via our module's Close-ADTSession function.
             if (!(new StackFrame(1, false).GetMethod()!.Name.Equals(".ctor")) && !GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Close-ADTSession"))
             {
-                throw new InvalidOperationException("A session object must be closed via the Close-ADTSession function.");
+                throw new InvalidOperationException("A deployment session can only be closed via the Close-ADTSession function.");
             }
 
             // Throw if this object has already been disposed.
             if (Disposed)
             {
-                throw new ObjectDisposedException("SessionObject", "This object has already been disposed.");
+                throw new ObjectDisposedException(this.GetType().Name, "This object has already been disposed.");
             }
 
             // If terminal server mode was specified, revert the installation mode to support it.
@@ -1424,17 +1425,17 @@ namespace PSADT.Types
         private ProcessObject[]? DefaultMsiExecutablesList { get; }
 
         /// <summary>
-        /// Gets whether this session object has finished processing the Zero-Config MSI file detection.
+        /// Gets whether this deployment session has finished processing the Zero-Config MSI file detection.
         /// </summary>
         private bool ZeroConfigInitiated { get; }
 
         /// <summary>
-        /// Gets whether this session object was instantiated via a script or the command line.
+        /// Gets whether this deployment session was instantiated via a script or the command line.
         /// </summary>
         private bool RunspaceOrigin { get; }
 
         /// <summary>
-        /// Gets whether this session object should force WIM file detection, even if AppName was defined.
+        /// Gets whether this deployment session should force WIM file detection, even if AppName was defined.
         /// </summary>
         private bool ForceWimDetection { get; }
 
@@ -1454,22 +1455,22 @@ namespace PSADT.Types
         private string RegKeyDeferHistory { get; }
 
         /// <summary>
-        /// Gets whether this session object is in non-interactive mode.
+        /// Gets whether this deployment session is in non-interactive mode.
         /// </summary>
         private bool DeployModeNonInteractive { get; }
 
         /// <summary>
-        /// Gets whether this session object is in silent mode.
+        /// Gets whether this deployment session is in silent mode.
         /// </summary>
         private bool DeployModeSilent { get; }
 
         /// <summary>
-        /// Gets the session object's filesystem log path.
+        /// Gets the deployment session's filesystem log path.
         /// </summary>
         private string LogPath { get; }
 
         /// <summary>
-        /// Gets the session object's closing exit code.
+        /// Gets the deployment session's closing exit code.
         /// </summary>
         private int ExitCode { get; set; }
 
@@ -1479,7 +1480,7 @@ namespace PSADT.Types
 
 
         /// <summary>
-        /// Gets the session object's deployment type.
+        /// Gets the deployment session's deployment type.
         /// </summary>
         public string DeploymentType { get; } = "Install";
 
@@ -1489,22 +1490,22 @@ namespace PSADT.Types
         public string DeploymentTypeName { get; }
 
         /// <summary>
-        /// Gets the session object's deployment mode.
+        /// Gets the deployment session's deployment mode.
         /// </summary>
         public string DeployMode { get; } = "Interactive";
 
         /// <summary>
-        /// Gets whether this session object is allowed to exit with a reboot exit code.
+        /// Gets whether this deployment session is allowed to exit with a reboot exit code.
         /// </summary>
         public bool AllowRebootPassThru { get; }
 
         /// <summary>
-        /// Gets whether this session object should enable terminal services install mode.
+        /// Gets whether this deployment session should enable terminal services install mode.
         /// </summary>
         public bool TerminalServerMode { get; }
 
         /// <summary>
-        /// Gets whether this session object should disable logging for the operation.
+        /// Gets whether this deployment session should disable logging for the operation.
         /// </summary>
         public bool DisableLogging { get; }
 
@@ -1514,87 +1515,87 @@ namespace PSADT.Types
 
 
         /// <summary>
-        /// Gets the session object's application vendor.
+        /// Gets the deployment session's application vendor.
         /// </summary>
         public string? AppVendor { get; }
 
         /// <summary>
-        /// Gets the session object's application name.
+        /// Gets the deployment session's application name.
         /// </summary>
         public string? AppName { get; }
 
         /// <summary>
-        /// Gets the session object's application version.
+        /// Gets the deployment session's application version.
         /// </summary>
         public string? AppVersion { get; }
 
         /// <summary>
-        /// Gets the session object's application architecture.
+        /// Gets the deployment session's application architecture.
         /// </summary>
         public string? AppArch { get; }
 
         /// <summary>
-        /// Gets the session object's application language.
+        /// Gets the deployment session's application language.
         /// </summary>
         public string? AppLang { get; }
 
         /// <summary>
-        /// Gets the session object's application package revision.
+        /// Gets the deployment session's application package revision.
         /// </summary>
         public string? AppRevision { get; }
 
         /// <summary>
-        /// Gets the session object's exit code(s) to indicate a successful deployment.
+        /// Gets the deployment session's exit code(s) to indicate a successful deployment.
         /// </summary>
         public int[] AppSuccessExitCodes { get; } = [0];
 
         /// <summary>
-        /// Gets the session object's exit code(s) to indicate a reboot is required.
+        /// Gets the deployment session's exit code(s) to indicate a reboot is required.
         /// </summary>
         public int[] AppRebootExitCodes { get; } = [1641, 3010];
 
         /// <summary>
-        /// Gets the session object's application package version.
+        /// Gets the deployment session's application package version.
         /// </summary>
         public Version? AppScriptVersion { get; }
 
         /// <summary>
-        /// Gets the session object's application package date.
+        /// Gets the deployment session's application package date.
         /// </summary>
         public DateTime? AppScriptDate { get; }
 
         /// <summary>
-        /// Gets the session object's application package author.
+        /// Gets the deployment session's application package author.
         /// </summary>
         public string? AppScriptAuthor { get; }
 
         /// <summary>
-        /// Gets an override to the session object's installation name.
+        /// Gets an override to the deployment session's installation name.
         /// </summary>
         public string InstallName { get; }
 
         /// <summary>
-        /// Gets an override to the session object's installation title.
+        /// Gets an override to the deployment session's installation title.
         /// </summary>
         public string InstallTitle { get; }
 
         /// <summary>
-        /// Gets the session object's frontend script name.
+        /// Gets the deployment session's frontend script name.
         /// </summary>
         public string? DeployAppScriptFriendlyName { get; }
 
         /// <summary>
-        /// Gets the session object's frontend script version.
+        /// Gets the deployment session's frontend script version.
         /// </summary>
         public Version? DeployAppScriptVersion { get; }
 
         /// <summary>
-        /// Gets the session object's frontend script parameters.
+        /// Gets the deployment session's frontend script parameters.
         /// </summary>
         public IDictionary? DeployAppScriptParameters { get; }
 
         /// <summary>
-        /// Gets/sets the session object's installation phase'.
+        /// Gets/sets the deployment session's installation phase'.
         /// </summary>
         public string InstallPhase { get; set; } = "Initialization";
 
@@ -1604,22 +1605,22 @@ namespace PSADT.Types
 
 
         /// <summary>
-        /// Gets the session object's starting date and time.
+        /// Gets the deployment session's starting date and time.
         /// </summary>
         public readonly DateTime CurrentDateTime = DateTime.Now;
 
         /// <summary>
-        /// Gets the session object's starting date as a string.
+        /// Gets the deployment session's starting date as a string.
         /// </summary>
         public string CurrentDate { get; }
 
         /// <summary>
-        /// Gets the session object's starting time as a string.
+        /// Gets the deployment session's starting time as a string.
         /// </summary>
         public string CurrentTime { get; }
 
         /// <summary>
-        /// Gets the session object's UTC offset from GMT 0.
+        /// Gets the deployment session's UTC offset from GMT 0.
         /// </summary>
         public readonly TimeSpan CurrentTimeZoneBias = TimeZoneInfo.Local.BaseUtcOffset;
 
@@ -1639,32 +1640,32 @@ namespace PSADT.Types
         public string? DirSupportFiles { get; }
 
         /// <summary>
-        /// Gets the session object's Zero-Config MSI file path.
+        /// Gets the deployment session's Zero-Config MSI file path.
         /// </summary>
         public string? DefaultMsiFile { get; }
 
         /// <summary>
-        /// Gets the session object's Zero-Config MST file path.
+        /// Gets the deployment session's Zero-Config MST file path.
         /// </summary>
         public string? DefaultMstFile { get; }
 
         /// <summary>
-        /// Gets the session object's Zero-Config MSP file paths.
+        /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
         public string[]? DefaultMspFiles { get; }
 
         /// <summary>
-        /// Gets whether this session object found a valid Zero-Config MSI file.
+        /// Gets whether this deployment session found a valid Zero-Config MSI file.
         /// </summary>
         private bool UseDefaultMsi { get; }
 
         /// <summary>
-        /// Gets the session object's Zero-Config MSP file paths.
+        /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
         public string LogTempFolder { get; }
 
         /// <summary>
-        /// Gets the session object's log filename.
+        /// Gets the deployment session's log filename.
         /// </summary>
         public string LogName { get; }
 
