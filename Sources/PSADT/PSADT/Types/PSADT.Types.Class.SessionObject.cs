@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Globalization;
+using System.IO.Compression;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Text.RegularExpressions;
@@ -509,6 +510,107 @@ namespace PSADT.Types
             return null!;
         }
 
+        public int Close()
+        {
+            // Throw if this object has already been disposed.
+            if (Disposed)
+            {
+                throw new ObjectDisposedException("SessionObject", "This object has already been disposed.");
+            }
+
+            // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
+            string deployString = $"[{GetPropertyValue(nameof(InstallName))}] {DeploymentTypeName.ToLower()}".Trim();
+            if (string.IsNullOrWhiteSpace(deployString))
+            {
+                deployString = $"{ADTEnv["appDeployToolkitName"]} deployment";
+            }
+
+            // Process resulting exit code.
+            string deploymentStatus = GetDeploymentStatus();
+            switch (deploymentStatus)
+            {
+                case "FastRetry":
+                    // Just advise of the exit code with the appropriate severity.
+                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 2);
+                    break;
+                case "Error":
+                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 3);
+                    break;
+                default:
+                    // Clean up app deferral history.
+                    #warning "DeferHistory cleanup not implemented."
+
+                    // Handle reboot prompts on successful script completion.
+                    if (deploymentStatus.Equals("RestartRequired") && (bool)GetPropertyValue(nameof(AllowRebootPassThru))!)
+                    {
+                        WriteLogEntry("A restart has been flagged as required.");
+                    }
+                    else
+                    {
+                        ExitCode = 0;
+                    }
+                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 0);
+                    break;
+            }
+
+            // Update the module's last tracked exit code.
+            if (ExitCode != 0)
+            {
+                ADTData.Properties["LastExitCode"].Value = ExitCode;
+            }
+
+            // Remove any subst paths if created in the zero-config WIM code.
+            if (DirFilesSubstDrive != null)
+            {
+                #warning "WimFiles subst reversal not implemented."
+            }
+
+            // Unmount any stored WIM file entries.
+            if (MountedWimFiles.Count > 0)
+            {
+                #warning "WimFiles unmount not implemented."
+            }
+
+            // Write out a log divider to indicate the end of logging.
+            WriteLogDivider();
+            Disposed = true;
+
+            // Extrapolate the Toolkit options from the config hashtable.
+            Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
+
+            // Compress log files if configured to do so.
+            if ((bool)configToolkit["CompressLogs"]!)
+            {
+                // Archive the log files to zip format and then delete the temporary logs folder.
+                string destArchiveFileName = $"{GetPropertyValue(nameof(InstallName))}_{GetPropertyValue(nameof(DeploymentType))}_{0}.zip";
+                try
+                {
+                    // Get all archive files sorted by last write time.
+                    var archiveFiles = Directory.GetFiles((string)configToolkit["LogPath"]!, string.Format(destArchiveFileName, "*")).Select(f => new FileInfo(f)).OrderBy(f => f.LastWriteTime);
+                    destArchiveFileName = string.Format(destArchiveFileName, DateTime.Now.ToString("O").Split('.')[0].Replace(":", null));
+
+                    // Keep only the max number of archive files
+                    int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+                    if (archiveFiles.Count() > logMaxHistory)
+                    {
+                        archiveFiles.Take(archiveFiles.Count() - logMaxHistory).ToList().ForEach(f => f.Delete());
+                    }
+
+                    // Compression of the log files.
+                    string logTempFolder = (string)this.GetPropertyValue(nameof(LogTempFolder))!;
+                    ZipFile.CreateFromDirectory(logTempFolder, destArchiveFileName, CompressionLevel.Optimal, false);
+                    Directory.Delete(logTempFolder, true);
+                }
+                catch (Exception ex)
+                {
+                    WriteLogEntry($"Failed to manage archive file [$DestinationArchiveFileName]: {ex.Message}", 3);
+                }
+            }
+
+            // Return the exit code to the caller.
+            return ExitCode;
+        }
+
         public object GetPropertyValue(string propertyName)
         {
             // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
@@ -705,10 +807,38 @@ namespace PSADT.Types
             WriteLogDivider(1);
         }
 
+        public string GetDeploymentStatus()
+        {
+            // Extrapolate the UI options from the config hashtable.
+            Hashtable configUI = (Hashtable)ADTConfig["UI"]!;
+
+            if ((ExitCode == (int)configUI["DefaultExitCode"]!) || (ExitCode == (int)configUI["DeferExitCode"]!))
+            {
+                return "FastRetry";
+            }
+            else if (((int[])GetPropertyValue(nameof(AppRebootExitCodes))!).Contains(ExitCode))
+            {
+                return "RestartRequired";
+            }
+            else if (((int[])GetPropertyValue(nameof(AppSuccessExitCodes))!).Contains(ExitCode))
+            {
+                return "Complete";
+            }
+            else
+            {
+                return "Error";
+            }
+        }
+
 
         #endregion
         #region Internal variables.
 
+
+        /// <summary>
+        /// Gets/sets the disposal state of this object.
+        /// </summary>
+        private bool Disposed { get; set; }
 
         /// <summary>
         /// Gets the environment table that was supplied during object instantiation.
