@@ -74,6 +74,7 @@ function Unblock-ADTAppExecution
             try
             {
                 Unblock-ADTAppExecutionInternal @uaaeiParams -Verbose 4>&1 | Write-ADTLogEntry
+                Remove-ADTSessionFinishingCallback -Callback $MyInvocation.MyCommand
             }
             catch
             {
