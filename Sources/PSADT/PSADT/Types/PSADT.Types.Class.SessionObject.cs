@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Reflection;
 using System.Diagnostics;
 using System.Globalization;
@@ -571,7 +572,7 @@ namespace PSADT.Types
 
 
                 // Log details for all currently logged on users.
-                WriteLogEntry($"Display session information for all logged on users:{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"]).First().BaseObject}", false);
+                WriteLogEntry($"Display session information for all logged on users:\n{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"]).First().BaseObject}", false);
 
                 // Provide detailed info about current process state.
                 if (null != ADTEnv["usersLoggedOn"])
@@ -1052,7 +1053,7 @@ namespace PSADT.Types
             // Write out all messages to disk if configured/permitted to do so.
             if (!string.IsNullOrWhiteSpace(outFile) && !(bool)GetPropertyValue(nameof(DisableLogging))!)
             {
-                using (StreamWriter logFileWriter = File.AppendText(outFile))
+                using (StreamWriter logFileWriter = new StreamWriter(outFile, true, new UTF8Encoding(true)))
                 {
                     string logLine = logFormats[logType]!;
                     switch (logType)
