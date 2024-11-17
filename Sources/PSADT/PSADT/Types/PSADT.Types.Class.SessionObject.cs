@@ -24,7 +24,7 @@ namespace PSADT.Types
         /// Initializes a new instance of the <see cref="SessionObject"/> class.
         /// </summary>
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
-        public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, PSVariableIntrinsics callerVariables, Dictionary<string, object> parameters)
+        public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, bool runspaceOrigin, SessionState? sessionState, Dictionary<string, object>? parameters = null)
         {
             #region Initialization
 
@@ -38,17 +38,129 @@ namespace PSADT.Types
             ADTData = adtData;
             ADTConfig = adtConfig;
             ADTStrings = adtStrings;
-            CallerVariables = callerVariables;
+            RunspaceOrigin = runspaceOrigin;
 
             // Extrapolate the Toolkit options from the config hashtable.
             Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
 
-            // Establish the caller's variables.
-            foreach (var p in this.GetType().GetProperties())
+            // Set up other variable values based on incoming dictionary.
+            if (null != sessionState)
             {
-                if (parameters.ContainsKey(p.Name))
+                CallerSessionState = sessionState;
+            }
+            if (null != parameters)
+            {
+                if (parameters.ContainsKey("DeploymentType"))
                 {
-                    p.SetValue(this, parameters[p.Name]);
+                    DeploymentType = (string)parameters["DeploymentType"];
+                }
+                if (parameters.ContainsKey("DeployMode"))
+                {
+                    DeployMode = (string)parameters["DeployMode"];
+                }
+                if (parameters.ContainsKey("AllowRebootPassThru"))
+                {
+                    AllowRebootPassThru = (SwitchParameter)parameters["AllowRebootPassThru"];
+                }
+                if (parameters.ContainsKey("TerminalServerMode"))
+                {
+                    TerminalServerMode = (SwitchParameter)parameters["TerminalServerMode"];
+                }
+                if (parameters.ContainsKey("DisableLogging"))
+                {
+                    DisableLogging = (SwitchParameter)parameters["DisableLogging"];
+                }
+                if (parameters.ContainsKey("AppVendor"))
+                {
+                    AppVendor = (string)parameters["AppVendor"];
+                }
+                if (parameters.ContainsKey("AppName"))
+                {
+                    AppName = (string)parameters["AppName"];
+                }
+                if (parameters.ContainsKey("AppVersion"))
+                {
+                    AppVersion = (string)parameters["AppVersion"];
+                }
+                if (parameters.ContainsKey("AppArch"))
+                {
+                    AppArch = (string)parameters["AppArch"];
+                }
+                if (parameters.ContainsKey("AppLang"))
+                {
+                    AppLang = (string)parameters["AppLang"];
+                }
+                if (parameters.ContainsKey("AppRevision"))
+                {
+                    AppRevision = (string)parameters["AppRevision"];
+                }
+                if (parameters.ContainsKey("AppScriptVersion"))
+                {
+                    AppScriptVersion = (Version)parameters["AppScriptVersion"];
+                }
+                if (parameters.ContainsKey("AppScriptDate"))
+                {
+                    AppScriptDate = (DateTime)parameters["AppScriptDate"];
+                }
+                if (parameters.ContainsKey("AppScriptAuthor"))
+                {
+                    AppScriptAuthor = (string)parameters["AppScriptAuthor"];
+                }
+                if (parameters.ContainsKey("InstallName"))
+                {
+                    InstallName = (string)parameters["InstallName"];
+                }
+                if (parameters.ContainsKey("InstallTitle"))
+                {
+                    InstallTitle = (string)parameters["InstallTitle"];
+                }
+                if (parameters.ContainsKey("DeployAppScriptFriendlyName"))
+                {
+                    DeployAppScriptFriendlyName = (string)parameters["DeployAppScriptFriendlyName"];
+                }
+                if (parameters.ContainsKey("DeployAppScriptVersion"))
+                {
+                    DeployAppScriptVersion = (Version)parameters["DeployAppScriptVersion"];
+                }
+                if (parameters.ContainsKey("DeployAppScriptParameters"))
+                {
+                    DeployAppScriptParameters = (IDictionary)parameters["DeployAppScriptParameters"];
+                }
+                if (parameters.ContainsKey("AppSuccessExitCodes"))
+                {
+                    AppSuccessExitCodes = (int[])parameters["AppSuccessExitCodes"];
+                }
+                if (parameters.ContainsKey("AppRebootExitCodes"))
+                {
+                    AppRebootExitCodes = (int[])parameters["AppRebootExitCodes"];
+                }
+                if (parameters.ContainsKey("ScriptDirectory"))
+                {
+                    ScriptDirectory = (string)parameters["ScriptDirectory"];
+                }
+                if (parameters.ContainsKey("DirFiles"))
+                {
+                    DirFiles = (string)parameters["DirFiles"];
+                }
+                if (parameters.ContainsKey("DirSupportFiles"))
+                {
+                    DirSupportFiles = (string)parameters["DirSupportFiles"];
+                }
+                if (parameters.ContainsKey("DefaultMsiFile"))
+                {
+                    DefaultMsiFile = (string)parameters["DefaultMsiFile"];
+                }
+                if (parameters.ContainsKey("DefaultMstFile"))
+                {
+                    DefaultMstFile = (string)parameters["DefaultMstFile"];
+                }
+                if (parameters.ContainsKey("DefaultMspFiles"))
+                {
+                    DefaultMspFiles = (string[])parameters["DefaultMspFiles"];
+                }
+                if (parameters.ContainsKey("ForceWimDetection"))
+                {
+                    ForceWimDetection = (SwitchParameter)parameters["ForceWimDetection"];
                 }
             }
 
@@ -279,7 +391,7 @@ namespace PSADT.Types
             WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] string path is [{adtDirectories.Properties["Strings"].Value}].");
 
             // Announce session instantiation mode.
-            if (CompatibilityMode)
+            if (null != CallerSessionState)
             {
                 WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", 2);
                 WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2);
@@ -482,9 +594,9 @@ namespace PSADT.Types
 
             // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
             // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-            if (CompatibilityMode)
+            if (null != CallerSessionState)
             {
-                this.GetType().GetProperties(BindingFlags.Public).ToList().ForEach(p => CallerVariables.Set(p.Name, p.GetValue(this)));
+                this.GetType().GetProperties(BindingFlags.Public).ToList().ForEach(p => CallerSessionState.PSVariable.Set(p.Name, p.GetValue(this)));
             }
 
 
@@ -519,8 +631,11 @@ namespace PSADT.Types
             }
 
             // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
-            string deployString = $"[{GetPropertyValue(nameof(InstallName))}] {DeploymentTypeName.ToLower()}".Trim();
-            if (string.IsNullOrWhiteSpace(deployString))
+            if ((GetPropertyValue(nameof(InstallName)) is string deployString) && !string.IsNullOrWhiteSpace(deployString))
+            {
+                deployString = $"[{GetPropertyValue(nameof(InstallName))}] {DeploymentTypeName.ToLower()}".Trim();
+            }
+            else
             {
                 deployString = $"{ADTEnv["appDeployToolkitName"]} deployment";
             }
@@ -615,9 +730,9 @@ namespace PSADT.Types
         {
             // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
             // We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-            if (CompatibilityMode)
+            if (null != CallerSessionState)
             {
-                return CallerVariables.Get(propertyName)!.Value;
+                return CallerSessionState.PSVariable.Get(propertyName)!.Value;
             }
             return this.GetType().GetProperty(propertyName)!.GetValue(this)!;
         }
@@ -626,9 +741,9 @@ namespace PSADT.Types
         {
             // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
             // We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-            if (CompatibilityMode)
+            if (null != CallerSessionState)
             {
-                CallerVariables.Set(propertyName, propertyValue);
+                CallerSessionState.PSVariable.Set(propertyName, propertyValue);
             }
             this.GetType().GetProperty(propertyName)!.SetValue(this, propertyValue);
         }
@@ -699,7 +814,7 @@ namespace PSADT.Types
             StringDictionary logFormats = new StringDictionary()
             {
                 { "Legacy", string.Format((string)logFmts["Legacy"]!, "{0}", dateNow.ToString("O").Split('T')[0], logTime, scriptSection, source, sevData["Name"]) },
-                { "CMTrace", string.Format((string)logFmts["CMTrace"]!, "{0}", scriptSection, $"{logTime}+{((TimeSpan)GetPropertyValue(nameof(CurrentTimeZoneBias))!).TotalMinutes}", dateNow.ToString("M-dd-yyyy"), source, severity, logFile) },
+                { "CMTrace", string.Format((string)logFmts["CMTrace"]!, "{0}", scriptSection, $"{logTime}+{CurrentTimeZoneBias.TotalMinutes}", dateNow.ToString("M-dd-yyyy"), source, severity, logFile) },
             };
 
             // Add this log message to the session's buffer.
@@ -896,14 +1011,9 @@ namespace PSADT.Types
         private Hashtable ADTStrings { get; }
 
         /// <summary>
-        /// Gets whether this session object is operating in compatibility mode.
-        /// </summary>
-        private bool CompatibilityMode { get; }
-
-        /// <summary>
         /// Gets the caller's variables from the provided $ExecutionContext.
         /// </summary>
-        private PSVariableIntrinsics CallerVariables { get; }
+        private SessionState? CallerSessionState { get; }
 
         /// <summary>
         /// Gets the mounted WIM files within this session.

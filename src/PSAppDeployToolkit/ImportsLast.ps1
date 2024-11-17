@@ -8,7 +8,7 @@
 & $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
 & $CommandTable.'Get-Item' -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
 & $CommandTable.'New-Variable' -Name CommandTable -Value $CommandTable.AsReadOnly() -Option Constant -Force -Confirm:$false
-& $CommandTable.'Export-ModuleMember' -Function (& $CommandTable.'Get-ADTModuleManifest').FunctionsToExport
+& $CommandTable.'Export-ModuleMember' -Function $Module.Manifest.FunctionsToExport
 
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
@@ -65,7 +65,7 @@
             ModuleImport = $null
             ModuleInit = $null
         }
-        Sessions = [System.Collections.Generic.List[ADTSession]]::new()
+        Sessions = [System.Collections.Generic.List[PSADT.Types.SessionObject]]::new()
         TerminalServerMode = $false
         Environment = $null
         Language = $null

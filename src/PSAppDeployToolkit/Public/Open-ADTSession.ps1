@@ -295,15 +295,15 @@ function Open-ADTSession
         $errRecord = $null
 
         # Determine whether this session is to be in compatibility mode.
-        $PSBoundParameters.CompatibilityMode = Test-ADTNonNativeCaller
-        $PSBoundParameters.RunspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)
+        $compatibilityMode = Test-ADTNonNativeCaller
+        $runspaceOrigin = $MyInvocation.CommandOrigin.Equals([System.Management.Automation.CommandOrigin]::Runspace)
 
         # Set up the ScriptDirectory if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))
         {
             $PSBoundParameters.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
             {
-                if ($PSBoundParameters.CompatibilityMode)
+                if ($compatibilityMode)
                 {
                     [System.IO.Directory]::GetParent($scriptRoot).FullName
                 }
@@ -322,7 +322,7 @@ function Open-ADTSession
     process
     {
         # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialization.
-        if ($PSBoundParameters.RunspaceOrigin -or $PSBoundParameters.CompatibilityMode)
+        if ($runspaceOrigin -or $compatibilityMode)
         {
             $adtData.Sessions.Clear()
             $adtData.Initialized = $false
@@ -339,8 +339,7 @@ function Open-ADTSession
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
-                $adtData.Sessions.Add(($adtSession = [ADTSession]::new($PSBoundParameters)))
-                $adtSession.Open()
+                $adtData.Sessions.Add(($adtSession = [PSADT.Types.SessionObject]::new($adtData, (Get-ADTEnvironment), (Get-ADTConfig), (Get-ADTStringTable), $runspaceOrigin, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
 
                 # Invoke all callbacks.
                 foreach ($callback in $(if ($firstSession) { $adtData.Callbacks.Starting }; $adtData.Callbacks.Opening))
@@ -365,7 +364,7 @@ function Open-ADTSession
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while opening new ADTSession object."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while opening new SessionObject."
         }
         finally
         {

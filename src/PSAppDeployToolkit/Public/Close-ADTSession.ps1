@@ -152,7 +152,7 @@ function Close-ADTSession
         $adtData.Initialized = $false
 
         # Return early if this function was called from the command line.
-        if ($adtSession.RunspaceOrigin -and !$Force)
+        if ($adtSession.IsRunspaceOrigin() -and !$Force)
         {
             return
         }

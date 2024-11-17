@@ -155,7 +155,7 @@ function Write-ADTLogEntry
         {
             if ([System.String]::IsNullOrWhiteSpace($Source))
             {
-                $Source = (Get-ADTLogEntryCaller).Command
+                $Source = [PSADT.Types.SessionObject]::GetLogEntryCaller().Command
             }
             $messages -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
         }
