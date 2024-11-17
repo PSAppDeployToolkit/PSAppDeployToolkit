@@ -65,7 +65,7 @@
             ModuleImport = $null
             ModuleInit = $null
         }
-        Sessions = [System.Collections.Generic.List[PSADT.Types.SessionObject]]::new()
+        Sessions = [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new()
         TerminalServerMode = $false
         Environment = $null
         Language = $null

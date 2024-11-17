@@ -338,7 +338,7 @@ function Open-ADTSession
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
-                $Script:ADT.Sessions.Add(($adtSession = [PSADT.Types.SessionObject]::new($Script:ADT, (Get-ADTEnvironment), (Get-ADTConfig), (Get-ADTStringTable), $ExecutionContext.SessionState, $runspaceOrigin, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
+                $Script:ADT.Sessions.Add(($adtSession = [PSADT.Module.DeploymentSession]::new($Script:ADT, (Get-ADTEnvironment), (Get-ADTConfig), (Get-ADTStringTable), $ExecutionContext.SessionState, $runspaceOrigin, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
 
                 # Invoke all callbacks.
                 foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))
@@ -363,7 +363,7 @@ function Open-ADTSession
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while opening new SessionObject."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_) -LogMessage "Failure occurred while opening new deployment session."
         }
         finally
         {

@@ -155,7 +155,7 @@ function Write-ADTLogEntry
         {
             if ([System.String]::IsNullOrWhiteSpace($Source))
             {
-                $Source = [PSADT.Types.SessionObject]::GetLogEntryCaller((Get-PSCallStack)).Command
+                $Source = [PSADT.Module.DeploymentSession]::GetLogEntryCaller((Get-PSCallStack)).Command
             }
             $messages -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
         }
