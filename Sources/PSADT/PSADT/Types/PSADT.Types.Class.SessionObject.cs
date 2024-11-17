@@ -204,6 +204,36 @@ namespace PSADT.Types
 
                 #endregion
                 #region DetectDefaultWimFile
+
+
+                // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
+                if (string.IsNullOrWhiteSpace(AppName) || ForceWimDetection)
+                {
+                    // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
+                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
+                    {
+                        // Mount the WIM file and reset DirFiles to the mount point.
+                        WriteZeroConfigDivider(); ZeroConfigInitiated = true;
+                        WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
+                        string mountPath = Path.Combine(DirFiles, Path.GetRandomFileName());
+                        ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("& $CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
+                        MountedWimFiles.Add(new FileInfo(wimFile));
+                        DirFiles = mountPath;
+                        WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
+
+                        // Subst the new DirFiles path to eliminate any potential path length issues.
+                        string[] usedLetters = DriveInfo.GetDrives().Select(d => d.Name).ToArray();
+                        if ((new string[] {"Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"}).Where(l => !usedLetters.Contains(l)).FirstOrDefault() is string availLetter)
+                        {
+                            availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
+                            ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("& $CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Path $args[1]"), availLetter, DirFiles);
+                            DirFiles = DirFilesSubstDrive = availLetter;
+                        }
+                        WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
+                    }
+                }
+
+
                 #endregion
                 #region DetectDefaultMsi
 
@@ -221,11 +251,11 @@ namespace PSADT.Types
                             string[] msiFiles = Directory.GetFiles(DirFiles, "*.msi", SearchOption.TopDirectoryOnly);
                             if (msiFiles.Where(f => !f.EndsWith($".{ADTEnv["envOSArchitecture"]}.msi")).FirstOrDefault() is string msiFile)
                             {
-                                DefaultMsiFile = msiFile;
+                                DefaultMsiFile = new FileInfo(msiFile).FullName;
                             }
                             else if (msiFiles.Length > 0)
                             {
-                                DefaultMsiFile = msiFiles[0];
+                                DefaultMsiFile = new FileInfo(msiFiles[0]).FullName;
                             }
                         }
                     }
@@ -845,15 +875,16 @@ namespace PSADT.Types
             }
 
             // Remove any subst paths if created in the zero-config WIM code.
-            if (DirFilesSubstDrive != null)
+            if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
             {
-                #warning "WimFiles subst reversal not implemented."
+                ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("& $CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Delete"), DirFilesSubstDrive);
             }
 
             // Unmount any stored WIM file entries.
             if (MountedWimFiles.Count > 0)
             {
-                #warning "WimFiles unmount not implemented."
+                MountedWimFiles.Reverse(); ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("& $CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
+                MountedWimFiles.Clear();
             }
 
             // Write out a log divider to indicate the end of logging.
