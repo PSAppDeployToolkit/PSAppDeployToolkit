@@ -48,16 +48,16 @@ function Get-ADTStringTable
     )
 
     # Return the string database if initialized.
-    if (!($adtData = Get-ADTModuleData).Strings -or !$adtData.Strings.Count)
+    if (!$Script:ADT.Strings -or !$Script:ADT.Strings.Count)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTStringTableNotInitialized'
-            TargetObject = $adtData.Strings
+            TargetObject = $Script:ADT.Strings
             RecommendedAction = "Please ensure the module is initialized via [Initialize-ADTModule] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
-    return $adtData.Strings
+    return $Script:ADT.Strings
 }

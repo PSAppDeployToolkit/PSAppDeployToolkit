@@ -48,16 +48,16 @@ function Get-ADTSession
     )
 
     # Return the most recent session in the database.
-    if (!($adtData = Get-ADTModuleData).Sessions.Count)
+    if (!$Script:ADT.Sessions.Count)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Open-ADTSession] is called before using any $($MyInvocation.MyCommand.Module.Name) functions.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
             ErrorId = 'ADTSessionBufferEmpty'
-            TargetObject = $adtData.Sessions
+            TargetObject = $Script:ADT.Sessions
             RecommendedAction = "Please ensure a session is opened via [Open-ADTSession] and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
-    return $adtData.Sessions[-1]
+    return $Script:ADT.Sessions[-1]
 }
