@@ -734,7 +734,7 @@ namespace PSADT.Types
                 // If terminal server mode was specified, change the installation mode to support it.
                 if (TerminalServerMode)
                 {
-                    #warning "Terminal Server Mode not fully implemented."
+                    ModuleSessionState.InvokeCommand.InvokeScript("& $CommandTable.'Enable-ADTTerminalServerInstallMode'");
                 }
 
                 // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
@@ -828,6 +828,12 @@ namespace PSADT.Types
             if (Disposed)
             {
                 throw new ObjectDisposedException("SessionObject", "This object has already been disposed.");
+            }
+
+            // If terminal server mode was specified, revert the installation mode to support it.
+            if (TerminalServerMode)
+            {
+                ModuleSessionState.InvokeCommand.InvokeScript("& $CommandTable.'Disable-ADTTerminalServerInstallMode'");
             }
 
             // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
