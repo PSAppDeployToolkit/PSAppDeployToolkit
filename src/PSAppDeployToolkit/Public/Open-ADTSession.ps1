@@ -290,7 +290,6 @@ function Open-ADTSession
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtData = Get-ADTModuleData
         $adtSession = $null
         $errRecord = $null
 
@@ -324,10 +323,10 @@ function Open-ADTSession
         # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialization.
         if ($runspaceOrigin -or $compatibilityMode)
         {
-            $adtData.Sessions.Clear()
-            $adtData.Initialized = $false
+            $Script:ADT.Sessions.Clear()
+            $Script:ADT.Initialized = $false
         }
-        $firstSession = !$adtData.Sessions.Count
+        $firstSession = !$Script:ADT.Sessions.Count
 
         # Commence the opening process.
         try
@@ -335,14 +334,14 @@ function Open-ADTSession
             try
             {
                 # Initialize the module before opening the first session.
-                if ($firstSession -and !$adtData.Initialized)
+                if ($firstSession -and !$Script:ADT.Initialized)
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
-                $adtData.Sessions.Add(($adtSession = [PSADT.Types.SessionObject]::new($adtData, (Get-ADTEnvironment), (Get-ADTConfig), (Get-ADTStringTable), $runspaceOrigin, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
+                $Script:ADT.Sessions.Add(($adtSession = [PSADT.Types.SessionObject]::new($Script:ADT, (Get-ADTEnvironment), (Get-ADTConfig), (Get-ADTStringTable), $runspaceOrigin, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
 
                 # Invoke all callbacks.
-                foreach ($callback in $(if ($firstSession) { $adtData.Callbacks.Starting }; $adtData.Callbacks.Opening))
+                foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))
                 {
                     & $callback
                 }
@@ -350,7 +349,7 @@ function Open-ADTSession
                 # Export the environment table to variables within the caller's scope.
                 if ($firstSession)
                 {
-                    $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtData.Environment)
+                    $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $Script:ADT.Environment)
                 }
 
                 # Change the install phase since we've finished initialising. This should get overwritten shortly.

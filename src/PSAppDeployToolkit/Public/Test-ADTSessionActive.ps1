@@ -40,5 +40,5 @@ function Test-ADTSessionActive
         https://psappdeploytoolkit.com
     #>
 
-    return !!(Get-ADTModuleData).Sessions.Count
+    return !!$Script:ADT.Sessions.Count
 }

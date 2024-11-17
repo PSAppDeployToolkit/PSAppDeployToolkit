@@ -79,7 +79,6 @@ function Initialize-ADTModule
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtData = Get-ADTModuleData
     }
 
     process
@@ -89,47 +88,47 @@ function Initialize-ADTModule
             try
             {
                 # Specify the base directory used when searching for config and string tables.
-                $adtData.Directories.Script = if ($PSBoundParameters.ContainsKey('ScriptDirectory'))
+                $Script:ADT.Directories.Script = if ($PSBoundParameters.ContainsKey('ScriptDirectory'))
                 {
                     $ScriptDirectory
                 }
                 else
                 {
-                    $adtData.Directories.Defaults.Script
+                    $Script:ADT.Directories.Defaults.Script
                 }
 
                 # Initialize remaining directory paths.
                 'Config', 'Strings' | & {
                     process
                     {
-                        $adtData.Directories.$_ = if ([System.IO.File]::Exists([System.IO.Path]::Combine($adtData.Directories.Script, $_, "$($_.ToLower()).psd1")))
+                        $Script:ADT.Directories.$_ = if ([System.IO.File]::Exists([System.IO.Path]::Combine($Script:ADT.Directories.Script, $_, "$($_.ToLower()).psd1")))
                         {
-                            [System.IO.Path]::Combine($adtData.Directories.Script, $_)
+                            [System.IO.Path]::Combine($Script:ADT.Directories.Script, $_)
                         }
                         else
                         {
-                            $adtData.Directories.Defaults.$_
+                            $Script:ADT.Directories.Defaults.$_
                         }
                     }
                 }
 
                 # Initialize the module's global state.
-                $adtData.Callbacks.Starting.Clear()
-                $adtData.Callbacks.Opening.Clear()
-                $adtData.Callbacks.Closing.Clear()
-                $adtData.Callbacks.Finishing.Clear()
-                $adtData.Sessions.Clear()
-                $adtData.Environment = New-ADTEnvironmentTable
-                $adtData.Config = Import-ADTConfig -BaseDirectory $adtData.Directories.Config
-                $adtData.Language = Get-ADTStringLanguage
-                $adtData.Strings = Import-ADTModuleDataFile -BaseDirectory $adtData.Directories.Strings -FileName strings.psd1 -UICulture $adtData.Language
-                $adtData.TerminalServerMode = $false
-                $adtData.LastExitCode = 0
+                $Script:ADT.Callbacks.Starting.Clear()
+                $Script:ADT.Callbacks.Opening.Clear()
+                $Script:ADT.Callbacks.Closing.Clear()
+                $Script:ADT.Callbacks.Finishing.Clear()
+                $Script:ADT.Sessions.Clear()
+                $Script:ADT.Environment = New-ADTEnvironmentTable
+                $Script:ADT.Config = Import-ADTConfig -BaseDirectory $Script:ADT.Directories.Config
+                $Script:ADT.Language = Get-ADTStringLanguage
+                $Script:ADT.Strings = Import-ADTModuleDataFile -BaseDirectory $Script:ADT.Directories.Strings -FileName strings.psd1 -UICulture $Script:ADT.Language
+                $Script:ADT.TerminalServerMode = $false
+                $Script:ADT.LastExitCode = 0
 
                 # Mark the environment table as read-only before finishing.
-                $adtData.Environment = $adtData.Environment.AsReadOnly()
-                $adtData.Durations.ModuleInit = [System.DateTime]::Now - $moduleInitStart
-                $adtData.Initialized = $true
+                $Script:ADT.Environment = $Script:ADT.Environment.AsReadOnly()
+                $Script:ADT.Durations.ModuleInit = [System.DateTime]::Now - $moduleInitStart
+                $Script:ADT.Initialized = $true
             }
             catch
             {

@@ -49,12 +49,11 @@ function Enable-ADTTerminalServerInstallMode
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
-        $adtData = Get-ADTModuleData
     }
 
     process
     {
-        if ($adtData.TerminalServerMode)
+        if ($Script:ADT.TerminalServerMode)
         {
             return
         }
@@ -65,7 +64,7 @@ function Enable-ADTTerminalServerInstallMode
             {
                 Invoke-ADTTerminalServerModeChange -Mode Install
                 Add-ADTSessionClosingCallback -Callback $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'
-                $adtData.TerminalServerMode = $true
+                $Script:ADT.TerminalServerMode = $true
             }
             catch
             {

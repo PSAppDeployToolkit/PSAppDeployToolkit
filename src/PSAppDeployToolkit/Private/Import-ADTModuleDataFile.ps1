@@ -67,7 +67,7 @@ function Import-ADTModuleDataFile
     $importedData = Import-LocalizedData @PSBoundParameters
 
     # Return early if the BaseDirectory is that of the module.
-    if ($BaseDirectory.Equals((Get-ADTModuleData).Directories.Defaults.([regex]::Replace($BaseDirectory, '^.+\\', [System.String]::Empty))))
+    if ($BaseDirectory.Equals($Script:ADT.Directories.Defaults.([regex]::Replace($BaseDirectory, '^.+\\', [System.String]::Empty))))
     {
         return $importedData
     }

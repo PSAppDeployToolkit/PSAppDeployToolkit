@@ -77,7 +77,6 @@ function Close-ADTSession
             return
         }
         $adtSession = Get-ADTSession
-        $adtData = Get-ADTModuleData
 
         # Change the install phase since we've finished initialising. This should get overwritten shortly.
         $adtSession.SetPropertyValue('InstallPhase', 'Finalization')
@@ -89,7 +88,7 @@ function Close-ADTSession
         }
 
         # Invoke all callbacks and capture all errors.
-        $callbackErrors = foreach ($callback in $($adtData.Callbacks.Closing; if ($adtData.Sessions.Count.Equals(1)) { $adtData.Callbacks.Finishing }))
+        $callbackErrors = foreach ($callback in $($Script:ADT.Callbacks.Closing; if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Callbacks.Finishing }))
         {
             try
             {
@@ -126,11 +125,11 @@ function Close-ADTSession
         }
         finally
         {
-            $null = $adtData.Sessions.Remove($adtSession)
+            $null = $Script:ADT.Sessions.Remove($adtSession)
         }
 
         # Return early if this wasn't the last session.
-        if ($adtData.Sessions.Count)
+        if ($Script:ADT.Sessions.Count)
         {
             return
         }
@@ -149,7 +148,7 @@ function Close-ADTSession
         }
 
         # Flag the module as uninitialized upon last session closure.
-        $adtData.Initialized = $false
+        $Script:ADT.Initialized = $false
 
         # Return early if this function was called from the command line.
         if ($adtSession.IsRunspaceOrigin() -and !$Force)
