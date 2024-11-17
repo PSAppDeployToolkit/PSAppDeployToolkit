@@ -56,13 +56,16 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 & $CommandTable.'Set-StrictMode' -Version 3
 
 # Store build information pertaining to this module's state.
-& $CommandTable.'New-Variable' -Name Module -Option Constant -Value ([ordered]@{
+$Module = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName 'PSAppDeployToolkit'
+& $CommandTable.'New-Variable' -Name Module -Option Constant -Force -Value ([ordered]@{
+        Manifest = $Module
+        Assembly = (& $CommandTable.'Get-Item' -LiteralPath "$($PSScriptRoot)\$($Module.RequiredAssemblies | & { process { if ($_.EndsWith('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1)").FullName
         Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
         Signed = (& $CommandTable.'Get-AuthenticodeSignature' -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
     }).AsReadOnly()
 
 # Throw hard if there's already a PSADT assembly loaded from a different location.
-if (($assembly = [System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1) -and !$assembly.Location.StartsWith($Script:PSScriptRoot))
+if (($assembly = [System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1) -and !$assembly.Location.Equals($Module.Assembly))
 {
     & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
             [System.InvalidOperationException]::new("A duplicate PSAppDeployToolkit module is already loaded. Please restart PowerShell and try again."),

@@ -130,6 +130,26 @@ Add-BuildTask ValidateRequirements {
 } #ValidateRequirements
 
 #Synopsis: Run dotNet build
+$Script:buildItems = @(
+    @{
+        SourcePath = 'Sources\PSADT'
+        SolutionPath = 'Sources\PSADT\PSADT\PSADT.csproj'
+        OutputPath = 'src\PSAppDeployToolkit\lib'
+        OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.dll'
+    },
+    @{
+        SourcePath = 'Sources\PSADT.Invoke'
+        SolutionPath = 'Sources\PSADT.Invoke\PSADT.Invoke.sln'
+        OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
+        OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
+    },
+    @{
+        SourcePath = 'Sources\PSADT.UserInterface'
+        SolutionPath = 'Sources\PSADT.UserInterface\PSADT.UserInterface.sln'
+        OutputPath = 'src\PSAppDeployToolkit\lib'
+        OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.UserInterface.dll'
+    }
+)
 Add-BuildTask DotNetBuild -Before TestModuleManifest {
     if (!(Get-Command -Name 'dotnet' -ErrorAction Ignore))
     {
@@ -137,27 +157,7 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
     }
     try
     {
-        $buildItems = @(
-            @{
-                SourcePath = 'Sources\PSADT'
-                SolutionPath = 'Sources\PSADT\PSADT.sln'
-                OutputPath = 'src\PSAppDeployToolkit\lib'
-                OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.dll'
-            },
-            @{
-                SourcePath = 'Sources\PSADT.Invoke'
-                SolutionPath = 'Sources\PSADT.Invoke\PSADT.Invoke.sln'
-                OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
-                OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
-            },
-            @{
-                SourcePath = 'Sources\PSADT.UserInterface'
-                SolutionPath = 'Sources\PSADT.UserInterface\PSADT.UserInterface.sln'
-                OutputPath = 'src\PSAppDeployToolkit\lib'
-                OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.UserInterface.dll'
-            }
-        )
-        foreach ($buildItem in $buildItems) {
+        foreach ($buildItem in $Script:buildItems) {
             if ($env:GITHUB_ACTIONS -ne 'true') {
                 $gitStatus = git status --porcelain
                 if ($gitStatus -match "^.{3}$([regex]::Escape($buildItem.SourcePath.Replace('\','/')))/") {
@@ -186,11 +186,13 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
             Write-Build White "      Building $solutionPath..."
             & dotnet build $solutionPath --configuration Release --verbosity minimal
             if ($LASTEXITCODE) { throw "Failed to solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
-            $sourcePath = [System.IO.Path]::Combine($script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\*')
+            & dotnet build $solutionPath --configuration Debug --verbosity minimal
+            if ($LASTEXITCODE) { throw "Failed to solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
+            $sourcePath = [System.IO.Path]::Combine($script:RepoRootPath, $(if ($buildItem.SolutionPath.EndsWith('.sln')) { $buildItem.SolutionPath.Replace('.sln', '') } else { "$($buildItem.SolutionPath.Replace('.csproj', ''))\.." }), 'bin\Debug\*')
             $buildItem.OutputPath | ForEach-Object {
                 $destPath = [System.IO.Path]::Combine($script:RepoRootPath, $_)
                 Write-Build White "      Copying from  $sourcePath to $destPath..."
-                Copy-Item -Path $sourcePath -Destination $destPath -Exclude '*.pdb' -Recurse -Force
+                Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
             }
         }
 
@@ -526,6 +528,14 @@ Add-BuildTask AssetCopy -Before Build {
     Write-Build Gray '        Copying assets to Artifacts...'
     New-Item -Path $script:BuildModuleRoot -ItemType Directory -Force | Out-Null
     Copy-Item -Path "$script:ModuleSourcePath\*" -Destination $script:BuildModuleRoot -Exclude "$($script:ModuleName).ps*1" -Recurse -ErrorAction Stop
+    foreach ($buildItem in $Script:buildItems) {
+        $sourcePath = [System.IO.Path]::Combine($script:RepoRootPath, $(if ($buildItem.SolutionPath.EndsWith('.sln')) { $buildItem.SolutionPath.Replace('.sln', '') } else { "$($buildItem.SolutionPath.Replace('.csproj', ''))\.." }), 'bin\Release\*')
+        $buildItem.OutputPath.Replace("src\PSAppDeployToolkit\", $null) | ForEach-Object {
+            $destPath = [System.IO.Path]::Combine($script:BuildModuleRoot, $_)
+            Write-Build White "      Copying from  $sourcePath to $destPath..."
+            Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
+        }
+    }
     Write-Build Gray '        ...Assets copy complete.'
 } #AssetCopy
 
@@ -541,7 +551,7 @@ Add-BuildTask Build {
     Write-Build Gray '        Merging Public and Private functions to one module file...'
     #$private = "$script:ModuleSourcePath\Private"
     #$powerShellScripts = Get-ChildItem -Path $script:ModuleSourcePath -Filter '*.ps1' -Recurse
-    $powerShellScripts = Get-ChildItem -Path $script:BuildModuleRoot\ImportsFirst.ps1, $script:BuildModuleRoot\Classes\*.ps1, $script:BuildModuleRoot\Private\*.ps1, $script:BuildModuleRoot\Public\*.ps1, $script:BuildModuleRoot\ImportsLast.ps1 -Recurse
+    $powerShellScripts = Get-ChildItem -Path $script:BuildModuleRoot\ImportsFirst.ps1, $script:BuildModuleRoot\Private\*.ps1, $script:BuildModuleRoot\Public\*.ps1, $script:BuildModuleRoot\ImportsLast.ps1 -Recurse
     $scriptContent = foreach ($script in $powerShellScripts) {
         # Import the script file as a string for substring replacement.
         $text = [System.IO.File]::ReadAllText($script.FullName).Trim()
@@ -612,9 +622,6 @@ Add-BuildTask Build {
     }
     if (Test-Path "$script:BuildModuleRoot\Private") {
         Remove-Item "$script:BuildModuleRoot\Private" -Recurse -Force -ErrorAction Stop
-    }
-    if (Test-Path "$script:BuildModuleRoot\Classes") {
-        Remove-Item "$script:BuildModuleRoot\Classes" -Recurse -Force -ErrorAction Stop
     }
     if (Test-Path "$script:BuildModuleRoot\ImportsFirst.ps1") {
         Remove-Item "$script:BuildModuleRoot\ImportsFirst.ps1" -Force -ErrorAction SilentlyContinue

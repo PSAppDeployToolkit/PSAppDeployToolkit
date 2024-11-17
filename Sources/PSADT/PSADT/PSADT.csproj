@@ -51,6 +51,24 @@
 		<DefineConstants>$(DefineConstants);NETFramework</DefineConstants>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
+	  <DebugType>portable</DebugType>
+	  <WarningLevel>2</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-windows|AnyCPU'">
+	  <DebugType>portable</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
+	  <DebugType>portable</DebugType>
+	  <WarningLevel>2</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-windows|AnyCPU'">
+	  <DebugType>portable</DebugType>
+	</PropertyGroup>
+
 	<ItemGroup>
 	  <Compile Remove="LINQ\**" />
 	  <EmbeddedResource Remove="LINQ\**" />
