@@ -782,7 +782,6 @@ class ADTSession
     {
         # Ensure this session isn't being closed twice.
         $this.TestClassState('Closed')
-        $this.SetPropertyValue('InstallPhase', 'Finalization')
 
         # Set up initial variables.
         $adtData = Get-ADTModuleData
