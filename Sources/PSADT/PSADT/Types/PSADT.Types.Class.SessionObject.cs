@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Globalization;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
@@ -47,6 +48,7 @@ namespace PSADT.Types
 
             // Ensure DeploymentType is title cased for aesthetics.
             DeploymentType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(DeploymentType.ToLower());
+            DeploymentTypeName = (string)((Hashtable)ADTStrings["DeploymentType"]!)[DeploymentType]!;
 
             // Establish script directories.
             if (null != ScriptDirectory)
@@ -147,6 +149,90 @@ namespace PSADT.Types
 
             // Set the Defer History registry path.
             RegKeyDeferHistory = $"{configToolkit["RegPath"]}\\{ADTEnv["appDeployToolkitName"]}\\DeferHistory\\{InstallName}";
+
+
+            #endregion
+            #region InitLogging
+
+
+            // Generate log paths from our installation properties.
+            LogTempFolder = Path.Combine(ADTEnv["envTemp"]!.ToString()!, $"{InstallName}_{DeploymentType}");
+            if ((bool)configToolkit["CompressLogs"]!)
+            {
+                // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
+                if (Directory.Exists(LogTempFolder))
+                {
+                    Directory.Delete(LogTempFolder, true);
+                }
+                LogPath = Directory.CreateDirectory(LogTempFolder).FullName;
+            }
+            else
+            {
+                LogPath = Directory.CreateDirectory(configToolkit["LogPath"]!.ToString()!).FullName;
+            }
+
+            // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
+            // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+            if ((bool)ADTEnv["IsAdmin"]!)
+            {
+                LogName = $"{InstallName}_{ADTEnv["appDeployToolkitName"]}_{DeploymentType}.log";
+            }
+            else
+            {
+                LogName = $"{InstallName}_{ADTEnv["appDeployToolkitName"]}_{DeploymentType}_{ADTEnv["envUserName"]}.log";
+            }
+            LogName = Regex.Replace(LogName, invalidChars, string.Empty);
+            string logFile = Path.Combine(LogPath, LogName);
+            FileInfo logFileInfo = new FileInfo(logFile);
+            int logMaxSize = (int)configToolkit["LogMaxSize"]!;
+            bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
+
+            // Check if log file needs to be rotated.
+            if ((logFileInfo.Exists && !(bool)configToolkit["LogAppend"]!) || logFileSizeExceeded)
+            {
+                try
+                {
+                    // Get new log file path.
+                    string logFileNameOnly = Path.GetFileNameWithoutExtension(LogName);
+                    string logFileExtension = Path.GetExtension(LogName);
+                    string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
+                    string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
+                    string archiveLogFilePath = Path.Combine(LogPath, archiveLogFileName);
+                    int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+
+                    // Log message about archiving the log file.
+                    if (logFileSizeExceeded)
+                    {
+                        // WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", 2);
+                    }
+
+                    // Rename the file.
+                    logFileInfo.MoveTo(archiveLogFilePath);
+
+                    // Start new log file and log message about archiving the old log file.
+                    if (logFileSizeExceeded)
+                    {
+                        // WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", 2);
+                    }
+
+                    // Get all log files sorted by last write time.
+                    var logFiles = new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").OrderBy(f => f.LastWriteTime);
+
+                    // Keep only the max number of log files.
+                    if (logFiles.Count() > logMaxHistory)
+                    {
+                        logFiles.Take(logFiles.Count() - logMaxHistory).ToList().ForEach(f => f.Delete());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", 3);
+                }
+            }
+
+            // Open log file with commencement message.
+            // WriteLogDivider(2);
+            // WriteLogEntry($"[{InstallName}] {DeploymentTypeName.ToLower()} started.");
 
 
             #endregion
