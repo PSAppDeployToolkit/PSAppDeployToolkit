@@ -326,6 +326,7 @@ function Open-ADTSession
         {
             $adtData.Sessions.Clear()
         }
+        $firstSession = !$adtData.Sessions.Count
 
         # Commence the opening process.
         try
@@ -333,7 +334,7 @@ function Open-ADTSession
             try
             {
                 # Initialize the module before opening the first session.
-                if (($firstSession = !$adtData.Sessions.Count))
+                if ($firstSession -and !$adtData.Initialized)
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
