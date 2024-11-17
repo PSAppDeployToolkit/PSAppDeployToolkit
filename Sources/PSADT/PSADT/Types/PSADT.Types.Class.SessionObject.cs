@@ -197,6 +197,97 @@ namespace PSADT.Types
             #region DetectDefaultWimFile
             #endregion
             #region DetectDefaultMsi
+
+
+            // If the default frontend hasn't been modified, check for MSI / MST and modify the install accordingly.
+            if (string.IsNullOrWhiteSpace(AppName))
+            {
+                // Find the first MSI file in the Files folder and use that as our install.
+                if (string.IsNullOrWhiteSpace(DefaultMsiFile))
+                {
+                    // Only proceed if the Files directory is set.
+                    if (!string.IsNullOrWhiteSpace(DirFiles))
+                    {
+                        // Get the first MSI file in the Files directory.
+                        string[] msiFiles = Directory.GetFiles(DirFiles, "*.msi", SearchOption.TopDirectoryOnly);
+                        if (msiFiles.Where(f => !f.EndsWith($".{ADTEnv["envOSArchitecture"]}.msi")).FirstOrDefault() is string msiFile)
+                        {
+                            DefaultMsiFile = msiFile;
+                        }
+                        else if (msiFiles.Length > 0)
+                        {
+                            DefaultMsiFile = msiFiles[0];
+                        }
+                    }
+                }
+                else if (!Path.IsPathRooted(DefaultMsiFile) && !string.IsNullOrWhiteSpace(DirFiles))
+                {
+                    DefaultMsiFile = Path.Combine(DirFiles, DefaultMsiFile);
+                }
+
+                // If we have a default MSI file, proceed further with the Zero-Config configuration.
+                if (!string.IsNullOrWhiteSpace(DefaultMsiFile))
+                {
+                    WriteZeroConfigDivider(); ZeroConfigInitiated = true;
+                    WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
+
+                    // Discover if there is a zero-config MST file.
+                    if (string.IsNullOrWhiteSpace(DefaultMstFile))
+                    {
+                        string mstFile = Path.ChangeExtension(DefaultMsiFile, "mst");
+                        if (File.Exists(mstFile))
+                        {
+                            DefaultMstFile = mstFile;
+                        }
+                    }
+                    else if (!Path.IsPathRooted(DefaultMstFile) && !string.IsNullOrWhiteSpace(DirFiles))
+                    {
+                        DefaultMstFile = Path.Combine(DirFiles, DefaultMstFile);
+                    }
+                    if (!string.IsNullOrWhiteSpace(DefaultMstFile))
+                    {
+                        WriteLogEntry($"Discovered Zero-Config MST installation file [{DefaultMstFile}].");
+                    }
+
+                    // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
+                    if (null == DefaultMspFiles)
+                    {
+                        if (!string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.msp", SearchOption.TopDirectoryOnly) is string[] mspFiles))
+                        {
+                            DefaultMspFiles = mspFiles;
+                        }
+                    }
+                    else if (DefaultMspFiles.Select(f => Path.IsPathRooted(f)).FirstOrDefault() && !string.IsNullOrWhiteSpace(DirFiles))
+                    {
+                        DefaultMspFiles = DefaultMspFiles.Where(f => !Path.IsPathRooted(f)).Select(f => Path.Combine(DirFiles, f)).ToArray();
+                    }
+                    if (DefaultMspFiles?.Length > 0)
+                    {
+                        WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", DefaultMspFiles)}].");
+                    }
+
+                    // Read the MSI and get the installation details.
+                    ReadOnlyDictionary<string, object> msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
+                    DefaultMsiExecutablesList = msiProps.Where(p => Path.GetExtension(p.Key).Equals(".exe")).Select(p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray();
+
+                    // Generate list of MSI executables for testing later on.
+                    if (null != DefaultMsiExecutablesList)
+                    {
+                        WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(p => p.Name))}].");
+                    }
+
+                    // Update our app variables with new values.
+                    msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
+                    AppName = (string)msiProps["ProductName"];
+                    AppVersion = (string)msiProps["ProductVersion"];
+                    WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
+                    WriteLogEntry($"App Name [{AppName}].");
+                    WriteLogEntry($"App Version [{AppVersion}].");
+                    UseDefaultMsi = true;
+                }
+            }
+
+
             #endregion
             #region SetAppProperties
 
@@ -1029,6 +1120,18 @@ namespace PSADT.Types
         public void WriteLogDivider()
         {
             WriteLogDivider(1);
+        }
+
+        /// <summary>
+        /// Writes a log divider prior to a Zero-Config setup.
+        /// </summary>
+        private void WriteZeroConfigDivider()
+        {
+            // Print an extra divider when we process a Zero-Config setup before the main logging starts.
+            if (!ZeroConfigInitiated)
+            {
+                WriteLogDivider(2);
+            }
         }
 
         /// <summary>
