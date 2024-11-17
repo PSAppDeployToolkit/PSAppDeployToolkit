@@ -63,7 +63,6 @@ function Enable-ADTTerminalServerInstallMode
             try
             {
                 Invoke-ADTTerminalServerModeChange -Mode Install
-                Add-ADTSessionClosingCallback -Callback $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'
                 $Script:ADT.TerminalServerMode = $true
             }
             catch
