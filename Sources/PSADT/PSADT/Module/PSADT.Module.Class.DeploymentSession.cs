@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
+using System.Security.Principal;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Text.RegularExpressions;
@@ -1034,25 +1035,18 @@ namespace PSADT.Module
                 logFileName = (string)GetPropertyValue(nameof(LogName))!;
             }
 
-            // Cache all data pertaining to current severity.
-            OrderedDictionary logData = (OrderedDictionary)ADTData.Properties["Logging"].Value;
-            OrderedDictionary logFmts = (OrderedDictionary)logData["Formats"]!;
-            OrderedDictionary sevData = ((ReadOnlyCollection<OrderedDictionary>)logData["Severities"]!)[(int)severity];
-            OrderedDictionary sevCols = (OrderedDictionary)sevData["Colours"]!;
-            string outFile = Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty);
-
             // Store log string to format with message.
             StringDictionary logFormats = new StringDictionary()
             {
-                { "Legacy", string.Format((string)logFmts["Legacy"]!, "{0}", dateNow.ToString("O").Split('T')[0], logTime, scriptSection, source, sevData["Name"]) },
-                { "CMTrace", string.Format((string)logFmts["CMTrace"]!, "{0}", scriptSection, $"{logTime}+{CurrentTimeZoneBias.TotalMinutes}", dateNow.ToString("M-dd-yyyy"), source, severity, logFile) },
+                { "Legacy", $"[{dateNow.ToString("O").Split('T')[0]} {logTime}] [{scriptSection}] [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}" },
+                { "CMTrace", $"<![LOG[[{scriptSection}] :: {{0}}]LOG]!><time=\"{logTime}+{CurrentTimeZoneBias.TotalMinutes}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">" },
             };
 
             // Add this log message to the session's buffer.
             message.ToList().ForEach(msg => LogBuffer.Add(new LogEntry(dateNow, invoker, msg, (uint)severity, source, scriptSection)));
 
             // Write out all messages to disk if configured/permitted to do so.
-            if (!string.IsNullOrWhiteSpace(outFile) && !(bool)GetPropertyValue(nameof(DisableLogging))!)
+            if (!(bool)GetPropertyValue(nameof(DisableLogging))! && Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty) is string outFile && !string.IsNullOrWhiteSpace(outFile))
             {
                 using (StreamWriter logFileWriter = new StreamWriter(outFile, true, new UTF8Encoding(true)))
                 {
@@ -1090,13 +1084,14 @@ namespace PSADT.Module
             // Write out all messages to host if configured/permitted to do so.
             if ((bool)writeHost!)
             {
+                var sevCols = LogSeverityColors[(int)severity];
                 if ((bool)configToolkit["LogHostOutputToStdStreams"]!)
                 {
                     // Colour the console if we're not informational.
                     if (severity != 1)
                     {
-                        Console.ForegroundColor = (ConsoleColor)sevCols["ForegroundColor"]!;
-                        Console.BackgroundColor = (ConsoleColor)sevCols["BackgroundColor"]!;
+                        Console.ForegroundColor = sevCols["ForegroundColor"];
+                        Console.BackgroundColor = sevCols["BackgroundColor"];
                     }
 
                     // Write errors to stderr, otherwise send everything else to stdout.
@@ -1370,9 +1365,35 @@ namespace PSADT.Module
 
 
         /// <summary>
+        /// Gets the log severity colors.
+        /// </summary>
+        private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(new[]
+        {
+            new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green }, { "BackgroundColor", ConsoleColor.Black } }),
+            new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor>()),
+            new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow }, { "BackgroundColor", ConsoleColor.Black } }),
+            new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red }, { "BackgroundColor", ConsoleColor.Black } })
+        });
+
+        /// <summary>
+        /// Gets the log severity names.
+        /// </summary>
+        private static readonly ReadOnlyCollection<string> LogSeverityNames = new(["Success", "Info", "Warning", "Error"]);
+
+        /// <summary>
         /// Gets the Write-LogEntry delegate script block.
         /// </summary>
         private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $args[2] -Format $args[3]");
+
+        /// <summary>
+        /// Gets the current process ID.
+        /// </summary>
+        private static readonly int PID = Process.GetCurrentProcess().Id;
+
+        /// <summary>
+        /// Gets the session caller's username.
+        /// </summary>
+        private static readonly string Username = WindowsIdentity.GetCurrent().Name;
 
         /// <summary>
         /// Gets/sets the disposal state of this object.
