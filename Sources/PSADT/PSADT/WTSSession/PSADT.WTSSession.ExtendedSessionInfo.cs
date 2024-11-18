@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Security.Principal;
 
@@ -6,10 +6,10 @@ namespace PSADT.WTSSession
 {
     public class ExtendedSessionInfo
     {
-        public long SessionId { get; set; }
+        public int SessionId { get; set; }
         public string SessionName { get; set; } = string.Empty;
         public string ConnectionState { get; set; } = string.Empty;
-        public NTAccount NTAccount { get; set; } = new NTAccount("");
+        public NTAccount? NTAccount { get; set; }
         public string DomainName { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public SecurityIdentifier Sid { get; set; } = new SecurityIdentifier(WellKnownSidType.NullSid, null);
