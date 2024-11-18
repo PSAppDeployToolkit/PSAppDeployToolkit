@@ -325,6 +325,7 @@ function Open-ADTSession
         if ($PSBoundParameters.RunspaceOrigin -or $PSBoundParameters.CompatibilityMode)
         {
             $adtData.Sessions.Clear()
+            $adtData.Initialized = $false
         }
         $firstSession = !$adtData.Sessions.Count
 
