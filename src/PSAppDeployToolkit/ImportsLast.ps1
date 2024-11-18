@@ -12,39 +12,6 @@
 
 # Define object for holding all PSADT variables.
 & $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
-        Logging = ([ordered]@{
-                Formats = ([ordered]@{
-                        CMTrace = "<![LOG[[{1}] :: {0}]LOG]!><time=`"{2}`" date=`"{3}`" component=`"{4}`" context=`"$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)`" type=`"{5}`" thread=`"$PID`" file=`"{6}`">"
-                        Legacy = '[{1} {2}] [{3}] [{4}] [{5}] :: {0}'
-                    }).AsReadOnly()
-                Severities = [System.Collections.ObjectModel.ReadOnlyCollection[System.Collections.Specialized.OrderedDictionary]]$(
-                    ([ordered]@{
-                        Name = 'Success'
-                        Colours = ([ordered]@{
-                                ForegroundColor = [System.ConsoleColor]::Green
-                                BackgroundColor = [System.ConsoleColor]::Black
-                            }).AsReadOnly()
-                    }).AsReadOnly()
-                    ([ordered]@{
-                        Name = 'Info'
-                        Colours = ([ordered]@{}).AsReadOnly()
-                    }).AsReadOnly()
-                    ([ordered]@{
-                        Name = 'Warning'
-                        Colours = ([ordered]@{
-                                ForegroundColor = [System.ConsoleColor]::Yellow
-                                BackgroundColor = [System.ConsoleColor]::Black
-                            }).AsReadOnly()
-                    }).AsReadOnly()
-                    ([ordered]@{
-                        Name = 'Error'
-                        Colours = ([ordered]@{
-                                ForegroundColor = [System.ConsoleColor]::Red
-                                BackgroundColor = [System.ConsoleColor]::Black
-                            }).AsReadOnly()
-                    }).AsReadOnly()
-                )
-            }).AsReadOnly()
         Callbacks = [pscustomobject]@{
             Starting = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
             Opening = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
