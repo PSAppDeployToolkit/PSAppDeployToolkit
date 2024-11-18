@@ -236,7 +236,7 @@ namespace PSADT.PInvoke
     public struct WTS_CLIENT_ADDRESS
     {
         /// <summary>Address family. This member can be <c>AF_INET</c>, <c>AF_INET6</c>, <c>AF_IPX</c>, <c>AF_NETBIOS</c>, or <c>AF_UNSPEC</c>.</summary>
-        public uint AddressFamily;
+        public ADDRESS_FAMILY AddressFamily;
 
         /// <summary>
         /// <para>
@@ -264,11 +264,12 @@ namespace PSADT.PInvoke
     public struct WTS_SESSION_ADDRESS
     {
         /// <summary>A null-terminated string that contains the address family. Always set this member to "AF_INET".</summary>
-        public uint AddressFamily;
+        public ADDRESS_FAMILY AddressFamily;
 
         /// <summary>
         /// The virtual IP address assigned to the session. The format of this address is identical to that used in the
-        /// WTS_CLIENT_ADDRESS structure.
+        /// WTS_CLIENT_ADDRESS structure. If the session does not have a virtual IP address, the WTSQuerySessionInformation
+        /// function returns ERROR_NOT_SUPPORTED
         /// </summary>
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
         public byte[] Address;
