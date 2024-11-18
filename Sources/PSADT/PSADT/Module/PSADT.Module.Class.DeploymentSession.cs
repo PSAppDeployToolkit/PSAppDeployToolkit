@@ -1182,7 +1182,7 @@ namespace PSADT.Module
         /// Writes a log divider with a specified count.
         /// </summary>
         /// <param name="count">The number of dividers to write.</param>
-        public void WriteLogDivider(uint count)
+        private void WriteLogDivider(uint count)
         {
             StringCollection dividers = []; for (uint i = 0; i < count; i++) { dividers.Add(new string('*', 79)); }
             WriteLogEntry(dividers.Cast<string>().ToArray());
@@ -1191,7 +1191,7 @@ namespace PSADT.Module
         /// <summary>
         /// Writes a log divider.
         /// </summary>
-        public void WriteLogDivider()
+        private void WriteLogDivider()
         {
             WriteLogDivider(1);
         }
