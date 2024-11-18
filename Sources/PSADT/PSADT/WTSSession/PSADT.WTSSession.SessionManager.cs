@@ -120,23 +120,115 @@ namespace PSADT.WTSSession
         /// <exception cref="InvalidOperationException">
         /// Thrown if the memory tokenInfo returned is invalid or the handle is closed.
         /// </exception>
-        private static T GetWTSInfoClassProperty<T>(SafeWTSServer hServer, uint sessionId, WTS_INFO_CLASS wtsInfoClass)
+        private static T? GetWTSInfoClassProperty<T>(SafeWTSServer hServer, uint sessionId, WTS_INFO_CLASS wtsInfoClass)
         {
-            if (!NativeMethods.WTSQuerySessionInformation(hServer, sessionId, wtsInfoClass, out SafeWtsMemory? ppBuffer, out uint pBytesReturned))
+            try
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to query 'WTSQuerySessionInformation'.");
-            }
-
-            using (ppBuffer)
-            {
+                // Determine buffer size conditionally
+                int bufferSize = 0;
                 if (typeof(T) == typeof(string))
                 {
-                    return (T)(object)ppBuffer.ToString(pBytesReturned);
+                    // Strings are handled differently; buffer size is managed by the API
+                }
+                else if (typeof(T) == typeof(bool) || typeof(T).IsPrimitive)
+                {
+                    bufferSize = Marshal.SizeOf(typeof(T));
+                }
+                else if (typeof(T).IsEnum)
+                {
+                    // Use underlying type for enum
+                    Type enumUnderlyingType = Enum.GetUnderlyingType(typeof(T));
+                    bufferSize = Marshal.SizeOf(enumUnderlyingType);
+                }
+                else if (typeof(T).IsValueType || typeof(T).IsLayoutSequential || typeof(T).IsExplicitLayout)
+                {
+                    bufferSize = Marshal.SizeOf(typeof(T));
                 }
                 else
                 {
-                    return ppBuffer.ToStructure<T>(pBytesReturned);
+                    return default;
                 }
+
+                if (!NativeMethods.WTSQuerySessionInformation(hServer, sessionId, wtsInfoClass, out SafeWtsMemory? ppBuffer, out uint pBytesReturned))
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    return default;
+                }
+
+                using (ppBuffer)
+                {
+                    IntPtr bufferPtr = ppBuffer.DangerousGetHandle();
+
+                    if (typeof(T) == typeof(string))
+                    {
+                        string? result = Marshal.PtrToStringUni(bufferPtr, (int)pBytesReturned / sizeof(char));
+                        
+                        return (T?)(object?)result;
+                    }
+                    else if (typeof(T) == typeof(bool))
+                    {
+                        bool result = Marshal.ReadInt32(bufferPtr) != 0;
+                        
+                        return (T?)(object)result;
+                    }
+                    else if (typeof(T).IsEnum)
+                    {
+                        Type enumUnderlyingType = Enum.GetUnderlyingType(typeof(T));
+                        object? value = null;
+
+                        if (enumUnderlyingType == typeof(int))
+                        {
+                            int intValue = Marshal.ReadInt32(bufferPtr);
+                            value = Enum.ToObject(typeof(T), intValue);
+                        }
+                        else if (enumUnderlyingType == typeof(uint))
+                        {
+                            uint uintValue = (uint)Marshal.ReadInt32(bufferPtr);
+                            value = Enum.ToObject(typeof(T), uintValue);
+                        }
+                        else if (enumUnderlyingType == typeof(short))
+                        {
+                            short shortValue = Marshal.ReadInt16(bufferPtr);
+                            value = Enum.ToObject(typeof(T), shortValue);
+                        }
+                        else if (enumUnderlyingType == typeof(ushort))
+                        {
+                            ushort ushortValue = (ushort)Marshal.ReadInt16(bufferPtr);
+                            value = Enum.ToObject(typeof(T), ushortValue);
+                        }
+                        else if (enumUnderlyingType == typeof(byte))
+                        {
+                            byte byteValue = Marshal.ReadByte(bufferPtr);
+                            value = Enum.ToObject(typeof(T), byteValue);
+                        }
+                        else if (enumUnderlyingType == typeof(sbyte))
+                        {
+                            sbyte sbyteValue = (sbyte)Marshal.ReadByte(bufferPtr);
+                            value = Enum.ToObject(typeof(T), sbyteValue);
+                        }
+                        else
+                        {
+                            return default;
+                        }
+
+                        return (T?)value;
+                    }
+                    else
+                    {
+                        // For structs and other value types
+                        object? result = Marshal.PtrToStructure(bufferPtr, typeof(T));
+                        if (result == null)
+                        {
+                            return default;
+                        }
+
+                        return (T?)result;
+                    }
+                }
+            }
+            catch
+            {
+                return default;
             }
         }
 
@@ -425,72 +517,69 @@ namespace PSADT.WTSSession
         {
             try
             {
-                var hServer = GetWTSServer(hServerName);
+                using var hServer = GetWTSServer(hServerName);
+
                 var sessionInfo = new ExtendedSessionInfo
                 {
-                    SessionId = GetWTSInfoClassProperty<long>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionId),
-                    SessionName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSWinStationName),
-
-                    ClientBuildNumber = GetWTSInfoClassProperty<long>(hServer, sessionId, WTS_INFO_CLASS.WTSClientBuildNumber),
-                    ClientDirectory = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientDirectory),
-                    ClientName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientName),
-                    ClientProtocolType = GetWTSInfoClassProperty<WTS_CLIENT_PROTOCOL_TYPE>(hServer, sessionId, WTS_INFO_CLASS.WTSClientProtocolType).ToString(),
-
-                    ConnectionState = GetWTSInfoClassProperty<WTS_CONNECTSTATE_CLASS>(hServer, sessionId, WTS_INFO_CLASS.WTSConnectState).ToString()
+                    // Default to -3 because 0, -1, and -2 are reserved session IDs
+                    SessionId = -3
                 };
 
-                string domainName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSDomainName).ToUpperInvariant();
-                sessionInfo.DomainName = domainName;
+                sessionInfo.SessionId = GetWTSInfoClassProperty<int>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionId);
 
-                string userName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName);
-                sessionInfo.UserName = userName;
+                sessionInfo.SessionName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSWinStationName)?.TrimEnd('\0')?.ToUpperInvariant() ?? string.Empty;
 
-                if (!string.IsNullOrWhiteSpace(domainName) && !string.IsNullOrWhiteSpace(userName))
+                sessionInfo.DomainName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSDomainName)?.TrimEnd('\0') ?? string.Empty;
+
+                sessionInfo.UserName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName)?.TrimEnd('\0') ?? string.Empty;
+
+                if (!string.IsNullOrEmpty(sessionInfo.UserName))
                 {
-                    sessionInfo.NTAccount = new NTAccount($@"{domainName}\{userName}");
-                    sessionInfo.Sid = (SecurityIdentifier)sessionInfo.NTAccount.Translate(typeof(SecurityIdentifier));
+                    try
+                    {
+                        if (string.Equals(sessionInfo.DomainName, "AzureAD", StringComparison.OrdinalIgnoreCase))
+                        {
+                            UnifiedLogger.Create().Message("AzureAD accounts do not have a local SID. Skipping SID resolution.").Severity(LogLevel.Debug);
+                        }
+                        else
+                        {
+                            NTAccount ntAccount = new NTAccount(sessionInfo.DomainName, sessionInfo.UserName);
+
+                            SecurityIdentifier sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UnifiedLogger.Create().Message($"Error creating NTAccount or SecurityIdentifier: {ex.Message}").Error(ex);
+                    }
+                }
+                else
+                {
+                    sessionInfo.Sid = new SecurityIdentifier(WellKnownSidType.NullSid, null);
                 }
 
-                WTS_CLIENT_ADDRESS clientAddress = GetWTSInfoClassProperty<WTS_CLIENT_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSClientAddress);
-                sessionInfo.ClientIPAddress = GetWtsIPAddress((ADDRESS_FAMILY_TYPE)clientAddress.AddressFamily, clientAddress.Address);
+                sessionInfo.ConnectionState = GetWTSInfoClassProperty<WTS_CONNECTSTATE_CLASS>(hServer, sessionId, WTS_INFO_CLASS.WTSConnectState).ToString();
+                sessionInfo.ClientBuildNumber = GetWTSInfoClassProperty<int>(hServer, sessionId, WTS_INFO_CLASS.WTSClientBuildNumber);
+                sessionInfo.ClientName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientName) ?? string.Empty;
+                sessionInfo.ClientDirectory = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientDirectory) ?? string.Empty;
+                sessionInfo.ClientProtocolType = GetWTSInfoClassProperty<WTS_CLIENT_PROTOCOL_TYPE>(hServer, sessionId, WTS_INFO_CLASS.WTSClientProtocolType).ToString();
+
+                var clientAddress = GetWTSInfoClassProperty<WTS_CLIENT_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSClientAddress);
+                sessionInfo.ClientIPAddress = GetWtsIPAddress(clientAddress, default);
                 sessionInfo.ClientIPAddressFamily = ((ADDRESS_FAMILY_TYPE)clientAddress.AddressFamily).ToString();
 
-                WTS_SESSION_ADDRESS sessionAddress = GetWTSInfoClassProperty<WTS_SESSION_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionAddressV4);
+                var sessionAddress = GetWTSInfoClassProperty<WTS_SESSION_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionAddressV4);
                 if (!sessionAddress.Equals(default(WTS_SESSION_ADDRESS)))
                 {
-                    sessionInfo.SessionIPAddress = GetWtsIPAddress((ADDRESS_FAMILY_TYPE)sessionAddress.AddressFamily, sessionAddress.Address);
+                    sessionInfo.SessionIPAddress = GetWtsIPAddress(default, sessionAddress);
                 }
 
-                WTS_CLIENT_DISPLAY clientDisplay = GetWTSInfoClassProperty<WTS_CLIENT_DISPLAY>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionAddressV4);
+                var clientDisplay = GetWTSInfoClassProperty<WTS_CLIENT_DISPLAY>(hServer, sessionId, WTS_INFO_CLASS.WTSClientDisplay);
                 sessionInfo.HorizontalResolution = clientDisplay.HorizontalResolution;
                 sessionInfo.VerticalResolution = clientDisplay.VerticalResolution;
                 sessionInfo.ColorDepth = clientDisplay.ColorDepth;
 
-                OSVersionInfo osVersionInfo = OSHelper.GetOsVersionInfo();
-
-                if (OSHelper.GetIsWindowsVistaSP1OrGreater(osVersionInfo.OperatingSystem))
-                {
-                    WTSINFO wtsInfo = GetWTSInfoClassProperty<WTSINFO>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionInfo);
-                    DateTime? logonTime = FileTimeToDateTime(wtsInfo.LogonTime);
-                    DateTime? lastInputTime = FileTimeToDateTime(wtsInfo.LastInputTime);
-                    DateTime? disconnectTime = FileTimeToDateTime(wtsInfo.DisconnectTime);
-                    DateTime? currentTime = FileTimeToDateTime(wtsInfo.CurrentTime);
-                    sessionInfo.LogonTime = logonTime;
-                    sessionInfo.IdleTime = currentTime != null && lastInputTime != null ? currentTime - lastInputTime : TimeSpan.Zero;
-                    sessionInfo.DisconnectTime = disconnectTime;
-                }
-                else
-                {
-                    var winStationInfo = WinStationQueryInformation(hServer, sessionId);
-                    DateTime? logonTime = FileTimeToDateTime(winStationInfo.LoginTime);
-                    DateTime? lastInputTime = FileTimeToDateTime(winStationInfo.LastInputTime);
-                    DateTime? disconnectTime = FileTimeToDateTime(winStationInfo.DisconnectTime);
-                    DateTime? currentTime = FileTimeToDateTime(winStationInfo.CurrentTime);
-                    sessionInfo.LogonTime = logonTime;
-                    sessionInfo.IdleTime = currentTime != null && lastInputTime != null ? currentTime - lastInputTime : TimeSpan.Zero;
-                    sessionInfo.DisconnectTime = disconnectTime;
-                }
-
+                var osVersionInfo = OSHelper.GetOsVersionInfo();
                 if (osVersionInfo.IsWorkstation && OSHelper.GetIsWindows7OrGreater(osVersionInfo.OperatingSystem) &&
                     osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem) &&
                     hServer.IsLocalServer)
@@ -498,12 +587,26 @@ namespace PSADT.WTSSession
                     sessionInfo.IsRemoteSession = GetWTSInfoClassProperty<bool>(hServer, sessionId, WTS_INFO_CLASS.WTSIsRemoteSession);
                 }
 
-                UnifiedLogger.Create().Message($"Retrieved extended session information for session id [{sessionId}].").Severity(LogLevel.Debug);
+                if (OSHelper.GetIsWindowsVistaSP1OrGreater(osVersionInfo.OperatingSystem))
+                {
+                    var wtsInfo = GetWTSInfoClassProperty<WTSINFO>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionInfo);
+                    sessionInfo.LogonTime = FileTimeToDateTime(wtsInfo.LogonTime);
+                    sessionInfo.IdleTime = FileTimeToDateTime(wtsInfo.CurrentTime) - FileTimeToDateTime(wtsInfo.LastInputTime);
+                    sessionInfo.DisconnectTime = FileTimeToDateTime(wtsInfo.DisconnectTime);
+                }
+                else
+                {
+                    var winStationInfo = WinStationQueryInformation(hServer, sessionId);
+                    sessionInfo.LogonTime = FileTimeToDateTime(winStationInfo.LoginTime);
+                    sessionInfo.IdleTime = FileTimeToDateTime(winStationInfo.CurrentTime) - FileTimeToDateTime(winStationInfo.LastInputTime);
+                    sessionInfo.DisconnectTime = FileTimeToDateTime(winStationInfo.DisconnectTime);
+                }
+
                 return sessionInfo;
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Error in GetExtendedSessionInfo: {ex.Message}").Error(ex);
+                UnifiedLogger.Create().Message($"Exception in GetExtendedSessionInfo: {ex}").Error(ex);
                 throw;
             }
         }
@@ -515,8 +618,8 @@ namespace PSADT.WTSSession
 
             using (var hServer = GetWTSServer(hServerName))
             {
-                domainName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSDomainName).ToUpperInvariant();
-                userName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName);
+                domainName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSDomainName)?.TrimEnd('\0')?.ToUpperInvariant() ?? string.Empty;
+                userName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName)?.TrimEnd('\0') ?? string.Empty;
             }
 
             UnifiedLogger.Create().Message($"Domain: {domainName}, Username: {userName}.").Severity(LogLevel.Debug);
@@ -529,9 +632,9 @@ namespace PSADT.WTSSession
             return $@"{domainName}\{userName}";
         }
 
-        public static IPAddress GetWtsIPAddress(ADDRESS_FAMILY_TYPE family, byte[] rawAddress)
+        public static IPAddress? GetWtsIPAddress(ADDRESS_FAMILY_TYPE family, byte[] rawAddress)
         {
-            IPAddress parsedAddress = IPAddress.None;
+            IPAddress? parsedAddress = null;
 
             switch (family)
             {
@@ -539,15 +642,11 @@ namespace PSADT.WTSSession
                     string ipV4String = string.Join(".", rawAddress.Skip(2).Take(4));
                     if (!IPAddress.TryParse(ipV4String, out parsedAddress!))
                     {
-                        parsedAddress = IPAddress.None;
+                        parsedAddress = null;
                     }
                     break;
                 case ADDRESS_FAMILY_TYPE.IPv6:
-                    string ipV6String = string.Join(":", rawAddress.Skip(2).Take(16));
-                    if (!IPAddress.TryParse(ipV6String, out parsedAddress!))
-                    {
-                        parsedAddress = IPAddress.None;
-                    }
+                    parsedAddress = null;
                     break;
             }
 
