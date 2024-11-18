@@ -1,6 +1,13 @@
 The toolkit generates extensive logging for all toolkit and MSI operations.
 
-The default log directory for the toolkit and MSI log files can be specified in the XML configuration file. The default directory is `C:\Windows\Logs\Software\`.
+The toolkit will automatically place logs in the default log location for ConfigMgr or Intune. A custom default log path can be specified by setting LogPathAutoDetect to *False* and specifying the LogPath in the XML configuration file.
+
+**Log Locations**
+  - Deployed from ConfigMgr: `C:\Windows\CCM\Logs\`
+
+  - Deployed from Intune: `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\`
+
+  - Default: `C:\Windows\Logs\Software\`
 
 The toolkit log file is named after the application with `_PSAppDeployToolkit` appended to the end, e.g.
 

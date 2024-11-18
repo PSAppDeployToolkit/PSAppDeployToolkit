@@ -384,6 +384,10 @@ Else {
     [String]$scriptParentPath = (Get-Item -LiteralPath $scriptRoot).Parent.FullName
 }
 
+## Variables: Deployment System Check
+[Boolean]$IsConfigMgr = [Boolean]($scriptRoot -like "$envWinDir\ccmcache\*")
+[Boolean]$IsIntune = [Boolean]($scriptRoot -like "$envWinDir\IMECache\*")
+
 ## Variables: App Deploy Script Dependency Files
 [String]$appDeployConfigFile = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitConfig.xml'
 [String]$appDeployCustomTypesSourceCode = Join-Path -Path $scriptRoot -ChildPath 'AppDeployToolkitMain.cs'
@@ -452,6 +456,15 @@ If (-not (Test-Path -LiteralPath $appDeployLogoBanner -PathType 'Leaf')) {
 [String]$configMSIUninstallParams = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_UninstallParams)
 [String]$configMSILogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlConfigMSIOptions.MSI_LogPath)
 [Int32]$configMSIMutexWaitTime = $xmlConfigMSIOptions.MSI_MutexWaitTime
+[Boolean]$configToolkitLogPathAutoDetect = [Boolean]::Parse($xmlToolkitOptions.Toolkit_LogPathAutoDetect)
+#  Set Log Path
+If ($configToolkitLogPathAutoDetect) {
+    If ($IsConfigMgr) {
+        [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPathConfigMgr)
+    } elseif ($IsIntune) {
+        [String]$configToolkitLogDir = $ExecutionContext.InvokeCommand.ExpandString($xmlToolkitOptions.Toolkit_LogPathIntune)
+    }
+}
 #  Change paths to user accessible ones if user isn't an admin
 If (!$IsAdmin) {
     If ($xmlToolkitOptions.Toolkit_TempPathNoAdminRights) {

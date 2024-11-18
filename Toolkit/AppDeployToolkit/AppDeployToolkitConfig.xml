@@ -40,6 +40,12 @@
         registry key), e.g. deferral history. -->
         <Toolkit_LogPath>$envWinDir\Logs\Software</Toolkit_LogPath>
         <!-- Log path used for Toolkit logging. -->
+        <Toolkit_LogPathConfigMgr>$envWinDir\CCM\Logs</Toolkit_LogPathConfigMgr>
+        <!-- Log path used for Toolkit logging if script path is within CCMCache. -->
+        <Toolkit_LogPathIntune>$envProgramData\Microsoft\IntuneManagementExtension\Logs</Toolkit_LogPathIntune>
+        <!-- Log path used for Toolkit logging if script path is within IMECache. -->
+        <Toolkit_LogPathAutoDetect>True</Toolkit_LogPathAutoDetect>
+        <!-- Enable detection automatic log location based on where the script is executed from. -->
         <Toolkit_TempPathNoAdminRights>$envTemp</Toolkit_TempPathNoAdminRights>
         <!-- Same as TempPath but used when RequireAdmin is False. -->
         <Toolkit_RegPathNoAdminRights>HKCU:\SOFTWARE</Toolkit_RegPathNoAdminRights>
