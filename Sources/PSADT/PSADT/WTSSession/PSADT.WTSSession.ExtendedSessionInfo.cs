@@ -19,13 +19,13 @@ namespace PSADT.WTSSession
         public string ClientName { get; set; } = string.Empty;
         public string ClientProtocolType { get; set; } = string.Empty;
         public string ClientDirectory { get; set; } = string.Empty;
-        public long ClientBuildNumber { get; set; }
-        public IPAddress ClientIPAddress { get; set; } = IPAddress.None;
+        public long? ClientBuildNumber { get; set; }
+        public IPAddress? ClientIPAddress { get; set; }
         public string ClientIPAddressFamily { get; set; } = string.Empty;
-        public IPAddress SessionIPAddress { get; set; } = IPAddress.None;
-        public uint HorizontalResolution { get; set; }
-        public uint VerticalResolution { get; set; }
-        public uint ColorDepth { get; set; }
+        public IPAddress? SessionIPAddress { get; set; }
+        public uint? HorizontalResolution { get; set; }
+        public uint? VerticalResolution { get; set; }
+        public uint? ColorDepth { get; set; }
         public bool? IsRemoteSession { get; set; } = null;
 
         /// <summary>
