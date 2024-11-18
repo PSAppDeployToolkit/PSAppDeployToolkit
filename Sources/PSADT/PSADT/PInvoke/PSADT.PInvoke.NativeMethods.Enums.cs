@@ -496,13 +496,119 @@ namespace PSADT.PInvoke
         RDP
     }
 
-    public enum ADDRESS_FAMILY_TYPE
+    /// <summary>The address family specification.</summary>
+    public enum ADDRESS_FAMILY
     {
-        IPv4,
-        IPv6,
-        IPX_SPX,
-        NETBIOS,
-        Unspecified
+        /// <summary>Unknown address family.</summary>
+        AF_UNKNOWN = -1,
+
+        /// <summary>Unspecified address family.</summary>
+        AF_UNSPEC = 0,
+
+        /// <summary>Unix local to host address.</summary>
+        AF_UNIX = 1,
+
+        /// <summary>Address for IP version 4.</summary>
+        AF_INET = 2,
+
+        /// <summary>ARPANET IMP address.</summary>
+        AF_IMPLINK = 3,
+
+        /// <summary>Address for PUP protocols.</summary>
+        AF_PUP = 4,
+
+        /// <summary>Address for MIT CHAOS protocols.</summary>
+        AF_CHAOS = 5,
+
+        /// <summary>Address for Xerox NS protocols.</summary>
+        AF_NS = 6,
+
+        /// <summary>IPX or SPX address.</summary>
+        AF_IPX = AF_NS,
+
+        /// <summary>Address for ISO protocols.</summary>
+        AF_ISO = 7,
+
+        /// <summary>Address for OSI protocols.</summary>
+        AF_OSI = AF_ISO,
+
+        /// <summary>European Computer Manufacturers Association (ECMA) address.</summary>
+        AF_ECMA = 8,
+
+        /// <summary>Address for Datakit protocols.</summary>
+        AF_DATAKIT = 9,
+
+        /// <summary>Addresses for CCITT protocols, such as X.25.</summary>
+        AF_CCITT = 10,
+
+        /// <summary>IBM SNA address.</summary>
+        AF_SNA = 11,
+
+        /// <summary>DECnet address.</summary>
+        AF_DECnet = 12,
+
+        /// <summary>Direct data-link interface address.</summary>
+        AF_DLI = 13,
+
+        /// <summary>LAT address.</summary>
+        AF_LAT = 14,
+
+        /// <summary>NSC Hyperchannel address.</summary>
+        AF_HYLINK = 15,
+
+        /// <summary>AppleTalk address.</summary>
+        AF_APPLETALK = 16,
+
+        /// <summary>NetBios address.</summary>
+        AF_NETBIOS = 17,
+
+        /// <summary>VoiceView address.</summary>
+        AF_VOICEVIEW = 18,
+
+        /// <summary>FireFox address.</summary>
+        AF_FIREFOX = 19,
+
+        /// <summary>Undocumented.</summary>
+        AF_UNKNOWN1 = 20,
+
+        /// <summary>Banyan address.</summary>
+        AF_BAN = 21,
+
+        /// <summary>Native ATM services address.</summary>
+        AF_ATM = 22,
+
+        /// <summary>Address for IP version 6.</summary>
+        AF_INET6 = 23,
+
+        /// <summary>Address for Microsoft cluster products.</summary>
+        AF_CLUSTER = 24,
+
+        /// <summary>IEEE 1284.4 workgroup address.</summary>
+        AF_12844 = 25,
+
+        /// <summary>IrDA address.</summary>
+        AF_IRDA = 26,
+
+        /// <summary>Address for Network Designers OSI gateway-enabled protocols.</summary>
+        AF_NETDES = 28,
+
+        /// <summary>Undocumented.</summary>
+        AF_TCNPROCESS = 29,
+
+        /// <summary>Undocumented.</summary>
+        AF_TCNMESSAGE = 30,
+
+        /// <summary>Undocumented.</summary>
+        AF_ICLFXBM = 31,
+
+        /// <summary>Bluetooth RFCOMM/L2CAP protocols.</summary>
+        AF_BTH = 32,
+
+        /// <summary>Link layer interface.</summary>
+        AF_LINK = 33,
+
+        /// <summary>Windows Hyper-V.</summary>
+        AF_HYPERV = 34,
     }
 
     public enum WINSTATIONINFOCLASS

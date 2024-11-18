@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 using PSADT.Logging;
+using System.Net.Sockets;
 
 namespace PSADT.WTSSession
 {
@@ -564,14 +565,14 @@ namespace PSADT.WTSSession
                 sessionInfo.ClientDirectory = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientDirectory) ?? string.Empty;
                 sessionInfo.ClientProtocolType = GetWTSInfoClassProperty<WTS_CLIENT_PROTOCOL_TYPE>(hServer, sessionId, WTS_INFO_CLASS.WTSClientProtocolType).ToString();
 
-                var clientAddress = GetWTSInfoClassProperty<WTS_CLIENT_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSClientAddress);
-                sessionInfo.ClientIPAddress = GetWtsIPAddress(clientAddress, default);
-                sessionInfo.ClientIPAddressFamily = ((ADDRESS_FAMILY_TYPE)clientAddress.AddressFamily).ToString();
+                WTS_CLIENT_ADDRESS clientAddress = GetWTSInfoClassProperty<WTS_CLIENT_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSClientAddress);
+                sessionInfo.ClientIPAddress = GetWtsIPAddress(clientAddress);
+                sessionInfo.ClientIPAddressFamily = clientAddress.AddressFamily.ToString();
 
-                var sessionAddress = GetWTSInfoClassProperty<WTS_SESSION_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionAddressV4);
+                WTS_SESSION_ADDRESS sessionAddress = GetWTSInfoClassProperty<WTS_SESSION_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionAddressV4);
                 if (!sessionAddress.Equals(default(WTS_SESSION_ADDRESS)))
                 {
-                    sessionInfo.SessionIPAddress = GetWtsIPAddress(default, sessionAddress);
+                    sessionInfo.SessionIPAddress = GetWtsIPAddress(sessionAddress);
                 }
 
                 var clientDisplay = GetWTSInfoClassProperty<WTS_CLIENT_DISPLAY>(hServer, sessionId, WTS_INFO_CLASS.WTSClientDisplay);
@@ -632,21 +633,49 @@ namespace PSADT.WTSSession
             return $@"{domainName}\{userName}";
         }
 
-        public static IPAddress? GetWtsIPAddress(ADDRESS_FAMILY_TYPE family, byte[] rawAddress)
+        /// <summary>
+        /// Retrieves the IP address from the provided WTS_CLIENT_ADDRESS or WTS_SESSION_ADDRESS structure.
+        /// </summary>
+        /// <typeparam name="T">The type of the address structure (WTS_CLIENT_ADDRESS or WTS_SESSION_ADDRESS).</typeparam>
+        /// <param name="addressStruct">The address structure.</param>
+        /// <returns>The extracted IPAddress if successful; otherwise, IPAddress.None.</returns>
+        public static IPAddress? GetWtsIPAddress<T>(T addressStruct) where T : struct
         {
             IPAddress? parsedAddress = null;
+            ADDRESS_FAMILY addressFamily;
+            byte[]? sourceIpBytes;
 
-            switch (family)
+            // Determine the type of the address structure and extract data accordingly
+            switch (addressStruct)
             {
-                case ADDRESS_FAMILY_TYPE.IPv4:
-                    string ipV4String = string.Join(".", rawAddress.Skip(2).Take(4));
-                    if (!IPAddress.TryParse(ipV4String, out parsedAddress!))
-                    {
-                        parsedAddress = null;
-                    }
+                case WTS_CLIENT_ADDRESS clientAddress:
+                    addressFamily = clientAddress.AddressFamily;
+                    sourceIpBytes = clientAddress.Address;
                     break;
-                case ADDRESS_FAMILY_TYPE.IPv6:
-                    parsedAddress = null;
+
+                case WTS_SESSION_ADDRESS sessionAddress:
+                    addressFamily = sessionAddress.AddressFamily;
+                    sourceIpBytes = sessionAddress.Address;
+                    break;
+
+                default:
+                    return parsedAddress;
+            }
+
+            if (sourceIpBytes == null || sourceIpBytes.Length == 0)
+            {
+                return parsedAddress;
+            }
+
+            switch (addressFamily)
+            {
+                case ADDRESS_FAMILY.AF_INET:
+                    return IPAddress.Parse(string.Join(".", sourceIpBytes.Skip(2).Take(4)));
+                case ADDRESS_FAMILY.AF_INET6:
+                    // TODO: The current API call does not support IPv6 addresses.
+                    return null;
+                default:
+                    // Unsupported address family
                     break;
             }
 
