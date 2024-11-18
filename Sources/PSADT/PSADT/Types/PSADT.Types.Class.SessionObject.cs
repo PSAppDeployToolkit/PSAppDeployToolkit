@@ -24,7 +24,7 @@ namespace PSADT.Types
         /// Initializes a new instance of the <see cref="SessionObject"/> class.
         /// </summary>
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
-        public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, bool runspaceOrigin, SessionState? sessionState, Dictionary<string, object>? parameters = null)
+        public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, SessionState moduleSessionState, bool? runspaceOrigin = null, SessionState? callerSessionState = null, Dictionary<string, object>? parameters = null)
         {
             #region Initialization
 
@@ -38,15 +38,19 @@ namespace PSADT.Types
             ADTData = adtData;
             ADTConfig = adtConfig;
             ADTStrings = adtStrings;
-            RunspaceOrigin = runspaceOrigin;
+            ModuleSessionState = moduleSessionState;
 
             // Extrapolate the Toolkit options from the config hashtable.
             Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
 
             // Set up other variable values based on incoming dictionary.
-            if (null != sessionState)
+            if (null != runspaceOrigin)
             {
-                CallerSessionState = sessionState;
+                RunspaceOrigin = (bool)runspaceOrigin;
+            }
+            if (null != callerSessionState)
+            {
+                CallerSessionState = callerSessionState;
             }
             if (null != parameters)
             {
@@ -426,7 +430,7 @@ namespace PSADT.Types
 
 
             // Log details for all currently logged on users.
-            WriteLogEntry($"Display session information for all logged on users:{PowerShell.Create().AddScript("$args[0] | Format-List | Out-String -Width ([System.Int32]::MaxValue)").AddArgument(ADTEnv["LoggedOnUserSessions"]).Invoke().First().BaseObject}", false);
+            WriteLogEntry($"Display session information for all logged on users:{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"]).First().BaseObject}", false);
 
             // Provide detailed info about current process state.
             if (null != ADTEnv["usersLoggedOn"])
@@ -859,25 +863,33 @@ namespace PSADT.Types
             // Write out all messages to host if configured/permitted to do so.
             if ((bool)writeHost!)
             {
-                // Colour the console if we're not informational.
-                if (severity != 1)
+                if ((bool)configToolkit["LogHostOutputToStdStreams"]!)
                 {
-                    Console.ForegroundColor = (ConsoleColor)sevCols["ForegroundColor"]!;
-                    Console.BackgroundColor = (ConsoleColor)sevCols["BackgroundColor"]!;
-                }
+                    // Colour the console if we're not informational.
+                    if (severity != 1)
+                    {
+                        Console.ForegroundColor = (ConsoleColor)sevCols["ForegroundColor"]!;
+                        Console.BackgroundColor = (ConsoleColor)sevCols["BackgroundColor"]!;
+                    }
 
-                // Write errors to stderr, otherwise send everything else to stdout.
-                if (severity == 3)
-                {
-                    Console.Error.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logFormats["Legacy"]!, msg))));
+                    // Write errors to stderr, otherwise send everything else to stdout.
+                    if (severity == 3)
+                    {
+                        Console.Error.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logFormats["Legacy"]!, msg))));
+                    }
+                    else
+                    {
+                        Console.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logFormats["Legacy"]!, msg))));
+                    }
+
+                    // Reset the console colours back to default.
+                    Console.ResetColor();
                 }
                 else
                 {
-                    Console.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logFormats["Legacy"]!, msg))));
+                    // Write the host output to PowerShell's InformationStream.
+                    ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, WriteLogEntryDelegate, message, sevCols, source, logFormats["Legacy"]!);
                 }
-
-                // Reset the console colours back to default.
-                Console.ResetColor();
             }
         }
 
@@ -986,6 +998,11 @@ namespace PSADT.Types
 
 
         /// <summary>
+        /// Gets the Write-LogEntry delegate script block.
+        /// </summary>
+        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $args[2] -Format $args[3]");
+
+        /// <summary>
         /// Gets/sets the disposal state of this object.
         /// </summary>
         private bool Disposed { get; set; }
@@ -1011,7 +1028,12 @@ namespace PSADT.Types
         private Hashtable ADTStrings { get; }
 
         /// <summary>
-        /// Gets the caller's variables from the provided $ExecutionContext.
+        /// Gets the module's SessionState from value that was supplied during object instantiation.
+        /// </summary>
+        private SessionState ModuleSessionState { get; }
+
+        /// <summary>
+        /// Gets the caller's SessionState from value that was supplied during object instantiation.
         /// </summary>
         private SessionState? CallerSessionState { get; }
 

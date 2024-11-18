@@ -78,6 +78,10 @@
         # Specify if log messages should be written to the console.
         LogWriteToHost = $true
 
+        # Specify if console log messages should bypass PowerShell's subsystems and be sent direct to stdout/stderr.
+        # This only applies if "LogWriteToHost" is true, and the script is being ran in a ConsoleHost (not the ISE, or another host).
+        LogHostOutputToStdStreams = $false
+
         # Automatically changes DeployMode to Silent during the OOBE.
         OobeDetection = $true
 
