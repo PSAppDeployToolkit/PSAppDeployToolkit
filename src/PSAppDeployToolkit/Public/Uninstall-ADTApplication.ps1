@@ -192,7 +192,7 @@ function Uninstall-ADTApplication
             WaitForMsiExec = $true
             CreateNoWindow = $true
             PassThru = $PassThru
-            Path = $null
+            FilePath = $null
         }
     }
 
@@ -215,7 +215,7 @@ function Uninstall-ADTApplication
                         Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
-                    $sampParams.Path = $removeApplication.ProductCode
+                    $sampParams.FilePath = $removeApplication.ProductCode
                     Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
                     try
                     {
@@ -247,10 +247,10 @@ function Uninstall-ADTApplication
 
                     if ($uninstallString -match "^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$")
                     {
-                        $sapParams.Path = [System.Environment]::ExpandEnvironmentVariables($matches[1])
-                        if (![System.IO.File]::Exists($sapParams.Path) -and ($commandPath = Get-Command -Name $sapParams.Path -ErrorAction Ignore))
+                        $sapParams.FilePath = [System.Environment]::ExpandEnvironmentVariables($matches[1])
+                        if (![System.IO.File]::Exists($sapParams.FilePath) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
                         {
-                            $sapParams.Path = $commandPath.Source
+                            $sapParams.FilePath = $commandPath.Source
                         }
                         $uninstallStringParams = if ($matches.Count -gt 2)
                         {

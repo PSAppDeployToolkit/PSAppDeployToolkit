@@ -501,8 +501,8 @@ function Start-ADTMsiProcess
                     # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
                     Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
                     $ExecuteProcessSplat = @{
-                        Path = "$([System.Environment]::SystemDirectory)\msiexec.exe"
-                        Parameters = $argsMSI
+                        FilePath = "$([System.Environment]::SystemDirectory)\msiexec.exe"
+                        ArgumentList = $argsMSI
                         WindowStyle = 'Normal'
                         NoExitOnProcessFailure = $NoExitOnProcessFailure
                     }
