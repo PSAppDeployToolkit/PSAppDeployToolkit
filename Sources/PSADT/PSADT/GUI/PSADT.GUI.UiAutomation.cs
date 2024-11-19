@@ -543,7 +543,7 @@ namespace PSADT.GUI
         /// </remarks>
         public static void SetProcessDpiAwarenessForOSVersion()
         {
-            OSVersionInfo osVersionInfo = OSHelper.GetOsVersionInfo();
+            OSVersionInfo osVersionInfo = new OSVersionInfo();
 
             if (osVersionInfo.Version >= new Version(10, 0, 15063)) // Windows 10, Creators Update (Version 1703) and later
             {
