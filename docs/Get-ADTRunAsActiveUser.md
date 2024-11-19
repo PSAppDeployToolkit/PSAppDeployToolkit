@@ -13,7 +13,7 @@ Retrieves the active user session information.
 ## SYNTAX
 
 ```
-Get-ADTRunAsActiveUser [<CommonParameters>]
+Get-ADTRunAsActiveUser [[-UserSessionInfo] <TerminalSessionInfo[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,6 +31,22 @@ Get-ADTRunAsActiveUser
 This example retrieves the active user session information.
 
 ## PARAMETERS
+
+### -UserSessionInfo
+An array of UserSessionInfo objects to enumerate through.
+If not supplied, a fresh query will be performed.
+
+```yaml
+Type: TerminalSessionInfo[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: (Get-ADTLoggedOnUser)
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.

@@ -12,13 +12,24 @@ Executes msiexec.exe to perform actions such as install, uninstall, patch, repai
 
 ## SYNTAX
 
+### FilePath
 ```
-Start-ADTMsiProcess [[-Action] <String>] [-FilePath] <String> [[-Transforms] <String[]>]
- [[-ArgumentList] <String[]>] [[-AdditionalArgumentList] <String[]>] [-SecureArgumentList]
- [[-Patches] <String[]>] [[-LoggingOptions] <String>] [[-LogFileName] <String>] [[-WorkingDirectory] <String>]
+Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-Transforms <String[]>] [-ArgumentList <String[]>]
+ [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>] [-LoggingOptions <String>]
+ [-LogFileName <String>] [-WorkingDirectory <String>] [-SkipMSIAlreadyInstalledCheck]
+ [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-NoExitOnProcessFailure]
+ [-RepairFromSource] [<CommonParameters>]
+```
+
+### InstalledApplication
+```
+Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplication> [-Transforms <String[]>]
+ [-ArgumentList <String[]>] [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>]
+ [-LoggingOptions <String>] [-LogFileName <String>] [-WorkingDirectory <String>]
  [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru]
- [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>] [[-IgnoreExitCodes] <String[]>]
- [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -81,7 +92,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: Install
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -92,11 +103,26 @@ The file path to the MSI/MSP or the product code of the installed MSI.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: FilePath
 Aliases:
 
 Required: True
-Position: 2
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -InstalledApplication
+Please supply the InstalledApplication object to process.
+
+```yaml
+Type: InstalledApplication
+Parameter Sets: InstalledApplication
+Aliases:
+
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
@@ -112,7 +138,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -129,7 +155,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -146,7 +172,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -177,7 +203,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -192,7 +218,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -211,7 +237,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -227,7 +253,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 9
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -304,7 +330,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -320,7 +346,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 11
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -335,7 +361,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 12
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -353,7 +379,7 @@ Aliases:
 Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 
 Required: False
-Position: 13
+Position: Named
 Default value: Normal
 Accept pipeline input: False
 Accept wildcard characters: False
