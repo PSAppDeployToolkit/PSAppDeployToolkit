@@ -1048,7 +1048,7 @@ namespace PSADT.Module
             // Write out all messages to disk if configured/permitted to do so.
             if (!(bool)GetPropertyValue(nameof(DisableLogging))! && Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty) is string outFile && !string.IsNullOrWhiteSpace(outFile))
             {
-                using (StreamWriter logFileWriter = new StreamWriter(outFile, true, new UTF8Encoding(true)))
+                using (StreamWriter logFileWriter = new StreamWriter(outFile, true, LogEncoding))
                 {
                     string logLine = logFormats[logType]!;
                     switch (logType)
@@ -1394,6 +1394,11 @@ namespace PSADT.Module
         /// Gets the session caller's username.
         /// </summary>
         private static readonly string Username = WindowsIdentity.GetCurrent().Name;
+
+        /// <summary>
+        /// Gets the session's default log file encoding.
+        /// </summary>
+        private static readonly UTF8Encoding LogEncoding = new UTF8Encoding(true);
 
         /// <summary>
         /// Gets/sets the disposal state of this object.
