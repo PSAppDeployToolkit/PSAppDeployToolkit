@@ -14,6 +14,9 @@ function Get-ADTRunAsActiveUser
         The Get-ADTRunAsActiveUser function determines the account that will be used to execute commands in the user session when the toolkit is running under the SYSTEM account.
         The active console user will be chosen first. If no active console user is found, for multi-session operating systems, the first logged-on user will be used instead.
 
+    .PARAMETER UserSessionInfo
+        An array of UserSessionInfo objects to enumerate through. If not supplied, a fresh query will be performed.
+
     .INPUTS
         None
 
@@ -44,6 +47,9 @@ function Get-ADTRunAsActiveUser
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.QueryUser+TerminalSessionInfo[]]$UserSessionInfo = (Get-ADTLoggedOnUser)
     )
 
     # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account.
@@ -51,7 +57,7 @@ function Get-ADTRunAsActiveUser
     try
     {
         $sessionInfoMember = if (Test-ADTIsMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
-        foreach ($userSessionInfo in [PSADT.QueryUser]::GetUserSessionInfo())
+        foreach ($userSessionInfo in $UserSessionInfo)
         {
             if ($userSessionInfo.NTAccount -and $userSessionInfo.$sessionInfoMember)
             {
