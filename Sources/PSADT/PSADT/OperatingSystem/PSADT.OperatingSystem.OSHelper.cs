@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -57,25 +57,26 @@ namespace PSADT.OperatingSystem
                 (ushort)OSVersionInfoEx.MinorVersion,
                 (ushort)OSVersionInfoEx.ServicePackMajor,
                 (ushort)OSVersionInfoEx.ServicePackMinor,
-                out PRODUCT_TYPE OSEdition);
+                out PRODUCT_SKU OSEdition);
 
             var isTerminal = (OSVersionInfoEx.SuiteMask & SuiteMask.VER_SUITE_TERMINAL) == SuiteMask.VER_SUITE_TERMINAL;
             var isSingleUserTs = (OSVersionInfoEx.SuiteMask & SuiteMask.VER_SUITE_SINGLEUSERTS) == SuiteMask.VER_SUITE_SINGLEUSERTS;
             var isTerminalServer = isTerminal && !isSingleUserTs;
 
-            var isWorkstationEnterpriseMultiSessionOS = isTerminalServer && OSEdition == PRODUCT_TYPE.PRODUCT_SERVERRDSH && IsWorkstationEnterpriseMultiSessionOS();
+            var isWorkstationEnterpriseMultiSessionOS = isTerminalServer && OSEdition == PRODUCT_SKU.PRODUCT_SERVERRDSH && IsWorkstationEnterpriseMultiSessionOS();
+            var isProductSKUServer = OSEdition.ToString().Contains("SERVER");
 
             var OSVersionInfo = new OSVersionInfo();
             OSVersionInfo.Version = Version.Parse(OSVersion);
             OSVersionInfo.IsTerminalServer = isTerminalServer;
             OSVersionInfo.IsWorkstationEnterpriseMultiSessionOS = isWorkstationEnterpriseMultiSessionOS;
-            OSVersionInfo.IsWorkstation = OSVersionInfoEx.ProductType == ProductType.Workstation || isWorkstationEnterpriseMultiSessionOS;
-            OSVersionInfo.IsServer = (OSVersionInfoEx.ProductType == ProductType.Server && !isWorkstationEnterpriseMultiSessionOS) || (OSVersionInfoEx.ProductType == ProductType.DomainController);
+            OSVersionInfo.IsWorkstation = OSVersionInfoEx.ProductType == ProductType.Workstation || isWorkstationEnterpriseMultiSessionOS || !isProductSKUServer;
+            OSVersionInfo.IsServer = isProductSKUServer || ((OSVersionInfoEx.ProductType == ProductType.Server || OSVersionInfoEx.ProductType == ProductType.DomainController) && !isWorkstationEnterpriseMultiSessionOS);
             OSVersionInfo.IsDomainController = OSVersionInfoEx.ProductType == ProductType.DomainController;
             OSVersionInfo.Is64BitOperatingSystem = Environment.Is64BitOperatingSystem;
             OSVersionInfo.ReleaseId = GetOsReleaseId();
             OSVersionInfo.ReleaseIdName = GetOsReleaseIdName();
-            OSVersionInfo.ServicePackName = OSVersionInfoEx.CSDVersion;
+            OSVersionInfo.ServicePackName = OSVersionInfoEx.CSDVersion.Trim('\0');
             if (OSVersionInfoEx.ServicePackMajor > 0)
             {
                 OSVersionInfo.ServicePackVersion = Version.Parse($"{OSVersionInfoEx.ServicePackMajor}.{OSVersionInfoEx.ServicePackMinor}");
@@ -160,9 +161,9 @@ namespace PSADT.OperatingSystem
             return OSReleaseIdName;
         }
         
-        public static bool GetIsWindowsIoTCore(PRODUCT_TYPE ProductType)
+        public static bool GetIsWindowsIoTCore(PRODUCT_SKU ProductType)
         {
-            if ((ProductType == PRODUCT_TYPE.PRODUCT_IOTENTERPRISE) || (ProductType == PRODUCT_TYPE.PRODUCT_IOTUAP))
+            if ((ProductType == PRODUCT_SKU.PRODUCT_IOTENTERPRISE) || (ProductType == PRODUCT_SKU.PRODUCT_IOTUAP))
             {
                 return true;
             }
@@ -170,18 +171,18 @@ namespace PSADT.OperatingSystem
             return false;
         }
 
-        public static bool GetIsWindowsHomeEdition(PRODUCT_TYPE ProductType)
+        public static bool GetIsWindowsHomeEdition(PRODUCT_SKU ProductType)
         {
             switch (ProductType)
             {
-                case PRODUCT_TYPE.PRODUCT_CORE:
-                case PRODUCT_TYPE.PRODUCT_CORE_COUNTRYSPECIFIC:
-                case PRODUCT_TYPE.PRODUCT_CORE_N:
-                case PRODUCT_TYPE.PRODUCT_CORE_SINGLELANGUAGE:
-                case PRODUCT_TYPE.PRODUCT_HOME_BASIC:
-                case PRODUCT_TYPE.PRODUCT_HOME_BASIC_N:
-                case PRODUCT_TYPE.PRODUCT_HOME_PREMIUM:
-                case PRODUCT_TYPE.PRODUCT_HOME_PREMIUM_N:
+                case PRODUCT_SKU.PRODUCT_CORE:
+                case PRODUCT_SKU.PRODUCT_CORE_COUNTRYSPECIFIC:
+                case PRODUCT_SKU.PRODUCT_CORE_N:
+                case PRODUCT_SKU.PRODUCT_CORE_SINGLELANGUAGE:
+                case PRODUCT_SKU.PRODUCT_HOME_BASIC:
+                case PRODUCT_SKU.PRODUCT_HOME_BASIC_N:
+                case PRODUCT_SKU.PRODUCT_HOME_PREMIUM:
+                case PRODUCT_SKU.PRODUCT_HOME_PREMIUM_N:
                     return true;
                 default:
                     return false;
@@ -199,10 +200,10 @@ namespace PSADT.OperatingSystem
                 (uint)osVersionInfo.MinorVersion,
                 (uint)osVersionInfo.ServicePackMajor,
                 (uint)osVersionInfo.ServicePackMinor,
-                out PRODUCT_TYPE productType);
+                out PRODUCT_SKU productType);
 
             // If the ProductType is 3 (Server), perform additional checks
-            if (isProductInfoRetrieved && productType == PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER)
+            if (isProductInfoRetrieved && productType == PRODUCT_SKU.PRODUCT_DATACENTER_SERVER)
             {
                 // Check the EditionID registry key to differentiate between Server and Multi-Session Workstation
                 string? editionId = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID");
