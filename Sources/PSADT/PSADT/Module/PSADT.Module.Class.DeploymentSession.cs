@@ -580,6 +580,7 @@ namespace PSADT.Module
 
 
                 // Log details for all currently logged on users.
+                WriteLogDivider();
                 WriteLogEntry($"Display session information for all logged on users:\n{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"])[0].BaseObject}", false);
 
                 // Provide detailed info about current process state.
