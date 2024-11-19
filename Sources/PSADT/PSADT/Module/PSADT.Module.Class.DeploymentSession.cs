@@ -151,11 +151,11 @@ namespace PSADT.Module
                     }
                     if (parameters.ContainsKey("AppSuccessExitCodes"))
                     {
-                        AppSuccessExitCodes = (int[])parameters["AppSuccessExitCodes"];
+                        AppSuccessExitCodes = new ReadOnlyCollection<int>((int[])parameters["AppSuccessExitCodes"]);
                     }
                     if (parameters.ContainsKey("AppRebootExitCodes"))
                     {
-                        AppRebootExitCodes = (int[])parameters["AppRebootExitCodes"];
+                        AppRebootExitCodes = new ReadOnlyCollection<int>((int[])parameters["AppRebootExitCodes"]);
                     }
                     if (parameters.ContainsKey("ScriptDirectory"))
                     {
@@ -179,7 +179,7 @@ namespace PSADT.Module
                     }
                     if (parameters.ContainsKey("DefaultMspFiles"))
                     {
-                        DefaultMspFiles = (string[])parameters["DefaultMspFiles"];
+                        DefaultMspFiles = new ReadOnlyCollection<string>((string[])parameters["DefaultMspFiles"]);
                     }
                     if (parameters.ContainsKey("ForceWimDetection"))
                     {
@@ -292,29 +292,29 @@ namespace PSADT.Module
                         }
 
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-                        if (null == DefaultMspFiles)
+                        if (DefaultMspFiles.Count == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.msp", SearchOption.TopDirectoryOnly) is string[] mspFiles))
+                            if (!string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.msp", SearchOption.TopDirectoryOnly) is string[] mspFiles) && (mspFiles.Length > 0))
                             {
-                                DefaultMspFiles = mspFiles;
+                                DefaultMspFiles = new ReadOnlyCollection<string>(mspFiles);
                             }
                         }
-                        else if (DefaultMspFiles.Select(f => Path.IsPathRooted(f)).FirstOrDefault() && !string.IsNullOrWhiteSpace(DirFiles))
+                        else if (!string.IsNullOrWhiteSpace(DirFiles) && DefaultMspFiles.Select(f => !Path.IsPathRooted(f)).FirstOrDefault())
                         {
-                            DefaultMspFiles = DefaultMspFiles.Where(f => !Path.IsPathRooted(f)).Select(f => Path.Combine(DirFiles, f)).ToArray();
+                            DefaultMspFiles = DefaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(DirFiles, f) : f).ToList().AsReadOnly();
                         }
-                        if (DefaultMspFiles?.Length > 0)
+                        if (DefaultMspFiles.Count > 0)
                         {
                             WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", DefaultMspFiles)}].");
                         }
 
                         // Read the MSI and get the installation details.
                         ReadOnlyDictionary<string, object> msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
-                        DefaultMsiExecutablesList = msiProps.Where(p => Path.GetExtension(p.Key).Equals(".exe")).Select(p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray();
 
                         // Generate list of MSI executables for testing later on.
-                        if (null != DefaultMsiExecutablesList)
+                        if ((msiProps.Where(p => Path.GetExtension(p.Key).Equals(".exe")).Select(p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray() is ProcessObject[] msiExecList) && (msiExecList.Length > 0))
                         {
+                            DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessObject>(msiExecList);
                             WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(p => p.Name))}].");
                         }
 
@@ -1282,11 +1282,11 @@ namespace PSADT.Module
             {
                 return "FastRetry";
             }
-            else if (((int[])GetPropertyValue(nameof(AppRebootExitCodes))!).Contains(ExitCode))
+            else if (((ReadOnlyCollection<int>)GetPropertyValue(nameof(AppRebootExitCodes))!).Contains(ExitCode))
             {
                 return "RestartRequired";
             }
-            else if (((int[])GetPropertyValue(nameof(AppSuccessExitCodes))!).Contains(ExitCode))
+            else if (((ReadOnlyCollection<int>)GetPropertyValue(nameof(AppSuccessExitCodes))!).Contains(ExitCode))
             {
                 return "Complete";
             }
@@ -1297,19 +1297,19 @@ namespace PSADT.Module
         }
 
         /// <summary>
-        /// Gets the mounted WIM files.
+        /// Add the mounted WIM files.
         /// </summary>
-        /// <returns>A read-only collection of mounted WIM files.</returns>
-        public ReadOnlyCollection<FileInfo> GetMountedWimFiles()
+        /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
+        public void AddMountedWimFile(FileInfo wimFile)
         {
-            return MountedWimFiles.AsReadOnly();
+            MountedWimFiles.Add(wimFile);
         }
 
         /// <summary>
         /// Gets the default MSI executables list.
         /// </summary>
         /// <returns>An array of default MSI executables.</returns>
-        public ProcessObject[]? GetDefaultMsiExecutablesList()
+        public ReadOnlyCollection<ProcessObject> GetDefaultMsiExecutablesList()
         {
             return DefaultMsiExecutablesList;
         }
@@ -1448,7 +1448,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the list of executables found within a Zero-Config MSI file.
         /// </summary>
-        private ProcessObject[]? DefaultMsiExecutablesList { get; }
+        private ReadOnlyCollection<ProcessObject> DefaultMsiExecutablesList { get; } = new ReadOnlyCollection<ProcessObject>([]);
 
         /// <summary>
         /// Gets whether this deployment session has finished processing the Zero-Config MSI file detection.
@@ -1573,12 +1573,12 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a successful deployment.
         /// </summary>
-        public int[] AppSuccessExitCodes { get; } = [0];
+        public ReadOnlyCollection<int> AppSuccessExitCodes { get; } = new ReadOnlyCollection<int>([0]);
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a reboot is required.
         /// </summary>
-        public int[] AppRebootExitCodes { get; } = [1641, 3010];
+        public ReadOnlyCollection<int> AppRebootExitCodes { get; } = new ReadOnlyCollection<int>([1641, 3010]);
 
         /// <summary>
         /// Gets the deployment session's application package version.
@@ -1678,7 +1678,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public string[]? DefaultMspFiles { get; }
+        public ReadOnlyCollection<string> DefaultMspFiles { get; } = new ReadOnlyCollection<string>([]);
 
         /// <summary>
         /// Gets whether this deployment session found a valid Zero-Config MSI file.
