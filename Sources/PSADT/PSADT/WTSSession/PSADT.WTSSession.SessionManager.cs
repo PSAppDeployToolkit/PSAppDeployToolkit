@@ -292,7 +292,7 @@ namespace PSADT.WTSSession
                 isCurrentProcessSession = null;
             }
 
-            OSVersionInfo osVersionInfo = OSHelper.GetOsVersionInfo();
+            OSVersionInfo osVersionInfo = new OSVersionInfo();
             bool isLocalServer = string.IsNullOrWhiteSpace(hServerName);
 
             foreach (WTS_SESSION_INFO session in sessionsInfo)
@@ -580,7 +580,7 @@ namespace PSADT.WTSSession
                 sessionInfo.VerticalResolution = clientDisplay.VerticalResolution;
                 sessionInfo.ColorDepth = clientDisplay.ColorDepth;
 
-                var osVersionInfo = OSHelper.GetOsVersionInfo();
+                var osVersionInfo = new OSVersionInfo();
                 if (((osVersionInfo.IsWorkstation && OSHelper.GetIsWindows7OrGreater(osVersionInfo.OperatingSystem)) ||
                     (osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem))) &&
                     hServer.IsLocalServer)

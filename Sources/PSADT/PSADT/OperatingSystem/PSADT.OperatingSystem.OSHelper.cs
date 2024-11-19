@@ -25,7 +25,7 @@ namespace PSADT.OperatingSystem
             }
         }
 
-        private static bool GetRtlVersion(out OSVERSIONINFOEX OSVersionInfo)
+        public static bool GetRtlVersion(out OSVERSIONINFOEX OSVersionInfo)
         {
             OSVersionInfo = new OSVERSIONINFOEX { OSVersionInfoSize = Marshal.SizeOf(typeof(OSVERSIONINFOEX)) };
 
@@ -35,67 +35,6 @@ namespace PSADT.OperatingSystem
             }
 
             return true;
-        }
-
-        public static OSVersionInfo GetOsVersionInfo()
-        {
-            GetRtlVersion(out OSVERSIONINFOEX OSVersionInfoEx);
-
-            string OSVersion;
-            int? Revision = GetOsRevision();
-            if (Revision.HasValue)
-            {
-                OSVersion = $"{OSVersionInfoEx.MajorVersion}.{OSVersionInfoEx.MinorVersion}.{OSVersionInfoEx.BuildNumber}.{Revision}";
-            }
-            else
-            {
-                OSVersion = $"{OSVersionInfoEx.MajorVersion}.{OSVersionInfoEx.MinorVersion}.{OSVersionInfoEx.BuildNumber}";
-            }
-
-            NativeMethods.GetProductInfo(
-                (ushort)OSVersionInfoEx.MajorVersion,
-                (ushort)OSVersionInfoEx.MinorVersion,
-                (ushort)OSVersionInfoEx.ServicePackMajor,
-                (ushort)OSVersionInfoEx.ServicePackMinor,
-                out PRODUCT_SKU OSEdition);
-
-            var isTerminal = (OSVersionInfoEx.SuiteMask & SuiteMask.VER_SUITE_TERMINAL) == SuiteMask.VER_SUITE_TERMINAL;
-            var isSingleUserTs = (OSVersionInfoEx.SuiteMask & SuiteMask.VER_SUITE_SINGLEUSERTS) == SuiteMask.VER_SUITE_SINGLEUSERTS;
-            var isTerminalServer = isTerminal && !isSingleUserTs;
-
-            var isWorkstationEnterpriseMultiSessionOS = isTerminalServer && OSEdition == PRODUCT_SKU.PRODUCT_SERVERRDSH && IsWorkstationEnterpriseMultiSessionOS();
-            var isProductSKUServer = OSEdition.ToString().Contains("SERVER");
-
-            var OSVersionInfo = new OSVersionInfo();
-            OSVersionInfo.Version = Version.Parse(OSVersion);
-            OSVersionInfo.IsTerminalServer = isTerminalServer;
-            OSVersionInfo.IsWorkstationEnterpriseMultiSessionOS = isWorkstationEnterpriseMultiSessionOS;
-            OSVersionInfo.IsWorkstation = OSVersionInfoEx.ProductType == ProductType.Workstation || isWorkstationEnterpriseMultiSessionOS || !isProductSKUServer;
-            OSVersionInfo.IsServer = isProductSKUServer || ((OSVersionInfoEx.ProductType == ProductType.Server || OSVersionInfoEx.ProductType == ProductType.DomainController) && !isWorkstationEnterpriseMultiSessionOS);
-            OSVersionInfo.IsDomainController = OSVersionInfoEx.ProductType == ProductType.DomainController;
-            OSVersionInfo.Is64BitOperatingSystem = Environment.Is64BitOperatingSystem;
-            OSVersionInfo.ReleaseId = GetOsReleaseId();
-            OSVersionInfo.ReleaseIdName = GetOsReleaseIdName();
-            OSVersionInfo.ServicePackName = OSVersionInfoEx.CSDVersion.Trim('\0');
-            if (OSVersionInfoEx.ServicePackMajor > 0)
-            {
-                OSVersionInfo.ServicePackVersion = Version.Parse($"{OSVersionInfoEx.ServicePackMajor}.{OSVersionInfoEx.ServicePackMinor}");
-            }
-            OSVersionInfo.OperatingSystem = GetOperatingSystem(
-                OSVersionInfoEx.MajorVersion,
-                OSVersionInfoEx.MinorVersion,
-                OSVersionInfoEx.BuildNumber,
-                OSVersionInfoEx.ServicePackMajor,
-                OSVersionInfo.ReleaseId,
-                OSVersionInfo.IsWorkstation,
-                OSVersionInfo.IsServer,
-                OSVersionInfo.Is64BitOperatingSystem,
-                OSVersionInfoEx.SuiteMask);
-
-            OSVersionInfo.Edition = OSEdition;
-            OSVersionInfo.Architecture = GetArchitecture();
-
-            return OSVersionInfo;
         }
 
         public static int? GetOsRevision()
