@@ -99,21 +99,24 @@ function Invoke-ADTFunctionErrorHandler
         $SessionState.PSVariable.Get('OriginalErrorAction').Value
     }
 
+    # If the caller hasn't specified a LogMessage, use the ErrorRecord's message.
+    if ([System.String]::IsNullOrWhiteSpace($LogMessage))
+    {
+        $LogMessage = $ErrorRecord.Exception.Message
+    }
+
     # Write-Error enforces its own name against the Activity, let's re-write it.
     if ($ErrorRecord.CategoryInfo.Activity -match '^Write-Error$')
     {
         $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name
     }
 
-    # Write out the caller's prefix, if provided.
-    if ($LogMessage)
+    # Write out the error to the log file.
+    if (!$DisableErrorResolving)
     {
-        if (!$DisableErrorResolving)
-        {
-            $LogMessage += "`n$(Resolve-ADTErrorRecord -ErrorRecord $ErrorRecord)"
-        }
-        Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
+        $LogMessage += "`n$(Resolve-ADTErrorRecord -ErrorRecord $ErrorRecord)"
     }
+    Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
 
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
     # this can also write out an [System.Management.Automation.ActionPreferenceStopException] object.
