@@ -527,11 +527,8 @@ namespace PSADT.WTSSession
                 };
 
                 sessionInfo.SessionId = GetWTSInfoClassProperty<int>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionId);
-
                 sessionInfo.SessionName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSWinStationName)?.TrimEnd('\0')?.ToUpperInvariant() ?? string.Empty;
-
                 sessionInfo.DomainName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSDomainName)?.TrimEnd('\0') ?? string.Empty;
-
                 sessionInfo.UserName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName)?.TrimEnd('\0') ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(sessionInfo.UserName))
@@ -544,9 +541,8 @@ namespace PSADT.WTSSession
                         }
                         else
                         {
-                            NTAccount ntAccount = new NTAccount($@"{sessionInfo.DomainName}\{sessionInfo.UserName}");
-
-                            SecurityIdentifier sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
+                            sessionInfo.NTAccount = new NTAccount($@"{sessionInfo.DomainName}\{sessionInfo.UserName}");
+                            sessionInfo.Sid = (SecurityIdentifier)sessionInfo.NTAccount.Translate(typeof(SecurityIdentifier));
                         }
                     }
                     catch (Exception ex)
