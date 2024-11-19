@@ -581,14 +581,11 @@ namespace PSADT.WTSSession
                     (osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem))) &&
                     hServer.IsLocalServer)
                 {
-                    Console.WriteLine($"OS Version Info2: {osVersionInfo.Version}");
                     sessionInfo.IsRemoteSession = GetWTSInfoClassProperty<bool>(hServer, sessionId, WTS_INFO_CLASS.WTSIsRemoteSession);
-                    Console.WriteLine($"IsRemoteSession: {sessionInfo.IsRemoteSession}");
                 }
 
                 if (OSHelper.GetIsWindowsVistaSP1OrGreater(osVersionInfo.OperatingSystem))
                 {
-                    Console.WriteLine($"GetIsWindowsVistaSP1OrGreater: {osVersionInfo.OperatingSystem}");
                     var wtsInfo = GetWTSInfoClassProperty<WTSINFO>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionInfo);
                     sessionInfo.LogonTime = FileTimeToDateTime(wtsInfo.LogonTime);
                     sessionInfo.IdleTime = FileTimeToDateTime(wtsInfo.CurrentTime) - FileTimeToDateTime(wtsInfo.LastInputTime);
