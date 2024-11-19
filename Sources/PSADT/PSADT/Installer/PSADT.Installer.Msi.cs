@@ -11,24 +11,17 @@ namespace PSADT.Installer
         /// </summary>
         /// <param name="msiExitCode">The MSI exit code.</param>
         /// <returns>The message string associated with the given MSI exit code.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="msiExitCode"/> is negative.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
-        public static string GetMessageFromMsiExitCode(int msiExitCode)
+        public static string GetMessageFromMsiExitCode(uint msiExitCode)
         {
-            if (msiExitCode < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(msiExitCode), "MSI exit code cannot be negative.");
-            }
-
             const string libraryName = "msimsg.dll";
-
             using SafeLibraryHandle hMsiMsgDll = NativeMethods.LoadLibraryEx(libraryName, SafeLibraryHandle.Null, LoadLibraryExFlags.LOAD_LIBRARY_AS_DATAFILE);
+
             if (hMsiMsgDll.IsInvalid || hMsiMsgDll.IsClosed)
             {
                 ErrorHandler.ThrowSystemError($"Failed to load library [{libraryName}].", SystemErrorType.Win32);
             }
-
-            if (!NativeMethods.LoadString(hMsiMsgDll, msiExitCode, out string? message))
+            if (!NativeMethods.LoadString(hMsiMsgDll, (int)msiExitCode, out string? message))
             {
                 ErrorHandler.ThrowSystemError($"Failed to retrieve the message for MSI exit code {msiExitCode}.", SystemErrorType.Win32);
             }
