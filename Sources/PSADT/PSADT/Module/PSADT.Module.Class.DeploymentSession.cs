@@ -563,7 +563,7 @@ namespace PSADT.Module
                 // Report on all determined system info.
                 WriteLogEntry($"Computer Name is [{ADTEnv["envComputerNameFQDN"]}].");
                 WriteLogEntry($"Current User is [{ADTEnv["ProcessNTAccount"]}].");
-                WriteLogEntry($"OS Version is [{ADTEnv["envOSName"]}{((ADTEnv["envOSServicePack"] is string envOSServicePack) && !string.IsNullOrWhiteSpace(envOSServicePack) ? envOSServicePack : string.Empty)} {ADTEnv["envOSArchitecture"]} {ADTEnv["envOSVersion"]}].");
+                WriteLogEntry($"OS Version is [{ADTEnv["envOSName"]}{((ADTEnv["envOSServicePack"] is string envOSServicePack) && !string.IsNullOrWhiteSpace(envOSServicePack) ? $" {envOSServicePack}" : string.Empty)} {ADTEnv["envOSArchitecture"]} {ADTEnv["envOSVersion"]}].");
                 WriteLogEntry($"OS Type is [{ADTEnv["envOSProductTypeName"]}].");
                 WriteLogEntry($"Hardware Platform is [{ADTEnv["envHardwareType"]}].");
                 WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{ADTEnv["currentLanguage"]}] and UI language is [{ADTEnv["currentUILanguage"]}].");
