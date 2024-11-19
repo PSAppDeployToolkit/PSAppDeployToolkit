@@ -544,7 +544,7 @@ namespace PSADT.WTSSession
                         }
                         else
                         {
-                            NTAccount ntAccount = new NTAccount(sessionInfo.DomainName, sessionInfo.UserName);
+                            NTAccount ntAccount = new NTAccount($@"{sessionInfo.DomainName}\{sessionInfo.UserName}");
 
                             SecurityIdentifier sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
                         }
@@ -581,15 +581,18 @@ namespace PSADT.WTSSession
                 sessionInfo.ColorDepth = clientDisplay.ColorDepth;
 
                 var osVersionInfo = OSHelper.GetOsVersionInfo();
-                if (osVersionInfo.IsWorkstation && OSHelper.GetIsWindows7OrGreater(osVersionInfo.OperatingSystem) &&
-                    osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem) &&
+                if (((osVersionInfo.IsWorkstation && OSHelper.GetIsWindows7OrGreater(osVersionInfo.OperatingSystem)) ||
+                    (osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem))) &&
                     hServer.IsLocalServer)
                 {
+                    Console.WriteLine($"OS Version Info2: {osVersionInfo.Version}");
                     sessionInfo.IsRemoteSession = GetWTSInfoClassProperty<bool>(hServer, sessionId, WTS_INFO_CLASS.WTSIsRemoteSession);
+                    Console.WriteLine($"IsRemoteSession: {sessionInfo.IsRemoteSession}");
                 }
 
                 if (OSHelper.GetIsWindowsVistaSP1OrGreater(osVersionInfo.OperatingSystem))
                 {
+                    Console.WriteLine($"GetIsWindowsVistaSP1OrGreater: {osVersionInfo.OperatingSystem}");
                     var wtsInfo = GetWTSInfoClassProperty<WTSINFO>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionInfo);
                     sessionInfo.LogonTime = FileTimeToDateTime(wtsInfo.LogonTime);
                     sessionInfo.IdleTime = FileTimeToDateTime(wtsInfo.CurrentTime) - FileTimeToDateTime(wtsInfo.LastInputTime);

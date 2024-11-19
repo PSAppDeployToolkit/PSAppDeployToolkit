@@ -1815,7 +1815,7 @@ namespace PSADT.PInvoke
     /// <summary>
     /// Enum representing different Windows product types.
     /// </summary>
-    public enum PRODUCT_TYPE : uint
+    public enum PRODUCT_SKU : uint
     {
         /// <summary>An unknown product type.</summary>
         PRODUCT_UNDEFINED = 0x00000000,
@@ -1944,7 +1944,7 @@ namespace PSADT.PInvoke
         PRODUCT_ENTERPRISE_SERVER_CORE_V = 0x00000029,
 
         /// <summary>Windows Hyper-V Server.</summary>
-        PRODUCT_HYPERV = 0x0000002A,
+        PRODUCT_HYPERV_SERVER = 0x0000002A,
 
         /// <summary>Windows Storage Server Express (core installation).</summary>
         PRODUCT_STORAGE_EXPRESS_SERVER_CORE = 0x0000002B,
@@ -2256,13 +2256,13 @@ namespace PSADT.PInvoke
         PRODUCT_AZURE_SERVER = 0x00000137,
 
         /// <summary>Windows Server Datacenter Core edition.</summary>
-        PRODUCT_DATACENTER_CORE = 0x00000138,
+        PRODUCT_DATACENTER_CORE_SERVER = 0x00000138,
 
         /// <summary>Windows Server Standard Core edition.</summary>
-        PRODUCT_STANDARD_CORE = 0x00000139,
+        PRODUCT_STANDARD_CORE_SERVER = 0x00000139,
 
         /// <summary>Windows Server Enterprise Core edition.</summary>
-        PRODUCT_ENTERPRISE_CORE = 0x0000013A
+        PRODUCT_ENTERPRISE_CORE_SERVER = 0x0000013A
     }
 
     public enum ProductType : byte

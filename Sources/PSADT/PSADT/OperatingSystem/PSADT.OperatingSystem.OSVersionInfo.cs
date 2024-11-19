@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using PSADT.PInvoke;
 using PSADT.Shared;
 
@@ -8,7 +8,7 @@ namespace PSADT.OperatingSystem
     {
         public WindowsOS OperatingSystem { get; set; }
         public string? Name { get; set; }
-        public PRODUCT_TYPE Edition { get; set; }
+        public PRODUCT_SKU Edition { get; set; }
         public Version? Version { get; set; }
         public string? ReleaseId { get; set; }
         public string? ReleaseIdName { get; set; }
