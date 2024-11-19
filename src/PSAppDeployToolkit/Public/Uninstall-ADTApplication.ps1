@@ -192,7 +192,6 @@ function Uninstall-ADTApplication
             WaitForMsiExec = $true
             CreateNoWindow = $true
             PassThru = $PassThru
-            FilePath = $null
         }
     }
 
@@ -215,11 +214,14 @@ function Uninstall-ADTApplication
                         Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
-                    $sampParams.FilePath = $removeApplication.ProductCode
                     Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
                     try
                     {
-                        Start-ADTMsiProcess @sampParams
+                        if ($sampParams.ContainsKey('FilePath'))
+                        {
+                            $null = $sampParams.Remove('FilePath')
+                        }
+                        $removeApplication | Start-ADTMsiProcess @sampParams
                     }
                     catch
                     {

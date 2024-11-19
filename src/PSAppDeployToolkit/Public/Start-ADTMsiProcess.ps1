@@ -141,7 +141,7 @@ function Start-ADTMsiProcess
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
         [System.String]$Action = 'Install',
 
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'FilePath', ValueFromPipeline = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode.')]
         [ValidateScript({
                 if (($_ -notmatch (Get-ADTMsiProductCodeRegexPattern)) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
                 {
@@ -150,6 +150,9 @@ function Start-ADTMsiProcess
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$FilePath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
+        [PSADT.Types.InstalledApplication]$InstalledApplication,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -221,6 +224,7 @@ function Start-ADTMsiProcess
     {
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet; $adtConfig = Get-ADTConfig
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $msiProductCodeRegexPattern = (Get-ADTEnvironment).MSIProductCodeRegExPattern
     }
 
     process
@@ -229,12 +233,83 @@ function Start-ADTMsiProcess
         {
             try
             {
+                # Determine whether the input is a ProductCode or not.
+                Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
+                $pathIsProductCode = $FilePath -match $msiProductCodeRegexPattern
+
+                # If the MSI is in the Files directory, set the full path to the MSI.
+                $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $FilePath))))
+                {
+                    $dirFilesPath
+                }
+                elseif ($pathIsProductCode)
+                {
+                    $FilePath
+                }
+                elseif ($InstalledApplication)
+                {
+                    $InstalledApplication.ProductCode
+                }
+                elseif (Test-Path -LiteralPath $FilePath)
+                {
+                    (Get-Item -LiteralPath $FilePath).FullName
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "Failed to find MSI file [$FilePath]." -Severity 3
+                    $naerParams = @{
+                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSI file [$FilePath].")
+                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                        ErrorId = 'MsiFileNotFound'
+                        TargetObject = $FilePath
+                        RecommendedAction = "Please confirm the path of the MSI file and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+
+                # Get the ProductCode of the MSI.
+                $MSIProductCode = if ($pathIsProductCode)
+                {
+                    $FilePath
+                }
+                elseif ($InstalledApplication)
+                {
+                    $InstalledApplication.ProductCode
+                }
+                elseif ([System.IO.Path]::GetExtension($msiFile) -eq '.msi')
+                {
+                    try
+                    {
+                        $GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }; if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
+                        (Get-ADTMsiTableProperty @GetMsiTablePropertySplat).ProductCode
+                    }
+                    catch
+                    {
+                        Write-ADTLogEntry -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..."
+                    }
+                }
+
+                # Get the InstalledApplication object if one wasn't supplied.
+                if (!$InstalledApplication -and $MSIProductCode)
+                {
+                    $InstalledApplication = Get-ADTApplication -FilterScript { $_.ProductCode -eq $MSIProductCode } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes
+                }
+
+                # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
+                $IsMsiInstalled = if ($MSIProductCode -and !$SkipMSIAlreadyInstalledCheck)
+                {
+                    !!$InstalledApplication
+                }
+                else
+                {
+                    $Action -ne 'Install'
+                }
+
                 # If the path matches a product code.
-                if (($pathIsProductCode = $FilePath -match (Get-ADTEnvironment).MSIProductCodeRegExPattern))
+                if ($InstalledApplication)
                 {
                     # Resolve the product code to a publisher, application name, and version.
-                    Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.'
-                    $productCodeNameVersion = Get-ADTApplication -FilterScript { $_.ProductCode -eq $FilePath } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
+                    $productCodeNameVersion = $InstalledApplication | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
 
                     # Build the log file name.
                     if (!$LogFileName)
@@ -351,34 +426,8 @@ function Start-ADTMsiProcess
                     $msiLogFile = "`"$($msiLogFile + '.log')`""
                 }
 
-                # If the MSI is in the Files directory, set the full path to the MSI.
-                $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $FilePath))))
-                {
-                    $dirFilesPath
-                }
-                elseif (Test-Path -LiteralPath $FilePath)
-                {
-                    (Get-Item -LiteralPath $FilePath).FullName
-                }
-                elseif ($pathIsProductCode)
-                {
-                    $FilePath
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "Failed to find MSI file [$FilePath]." -Severity 3
-                    $naerParams = @{
-                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSI file [$FilePath].")
-                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        ErrorId = 'MsiFileNotFound'
-                        TargetObject = $FilePath
-                        RecommendedAction = "Please confirm the path of the MSI file and try again."
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
-
                 # Set the working directory of the MSI.
-                if (!$pathIsProductCode -and !$workingDirectory)
+                if ($PSCmdlet.ParameterSetName.Equals('FilePath') -and !$pathIsProductCode -and !$workingDirectory)
                 {
                     $WorkingDirectory = [System.IO.Path]::GetDirectoryName($msiFile)
                 }
@@ -413,24 +462,6 @@ function Start-ADTMsiProcess
 
                     # Echo an msiexec.exe compatible string back out with all patches.
                     "`"$($Patches -join ';')`""
-                }
-
-                # Get the ProductCode of the MSI.
-                $MSIProductCode = If ($pathIsProductCode)
-                {
-                    $FilePath
-                }
-                elseif ([System.IO.Path]::GetExtension($msiFile) -eq '.msi')
-                {
-                    try
-                    {
-                        $GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }; if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
-                        (Get-ADTMsiTableProperty @GetMsiTablePropertySplat).ProductCode
-                    }
-                    catch
-                    {
-                        Write-ADTLogEntry -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..."
-                    }
                 }
 
                 # Start building the MsiExec command line starting with the base action and file.
@@ -480,16 +511,6 @@ function Start-ADTMsiProcess
                     "$argsMSI $($adtConfig.MSI.LoggingOptions) $msiLogFile"
                 }
 
-                # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
-                $IsMsiInstalled = if ($MSIProductCode -and !$SkipMSIAlreadyInstalledCheck)
-                {
-                    !!(Get-ADTApplication -FilterScript { $_.ProductCode -eq $MSIProductCode } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes)
-                }
-                else
-                {
-                    $Action -ne 'Install'
-                }
-
                 # Bypass if we're installing and the MSI is already installed, otherwise proceed.
                 $ExecuteResults = if ($IsMsiInstalled -and ($Action -eq 'Install'))
                 {
@@ -499,7 +520,6 @@ function Start-ADTMsiProcess
                 elseif ((!$IsMsiInstalled -and ($Action -eq 'Install')) -or $IsMsiInstalled)
                 {
                     # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
-                    Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
                     $ExecuteProcessSplat = @{
                         FilePath = "$([System.Environment]::SystemDirectory)\msiexec.exe"
                         ArgumentList = $argsMSI
