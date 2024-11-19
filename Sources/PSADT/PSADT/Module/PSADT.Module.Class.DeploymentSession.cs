@@ -60,7 +60,7 @@ namespace PSADT.Module
                 }
 
                 // Extrapolate the Toolkit options from the config hashtable.
-                Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
+                var configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
 
                 // Set up other variable values based on incoming dictionary.
                 if (null != runspaceOrigin)
@@ -192,7 +192,7 @@ namespace PSADT.Module
                 DeploymentTypeName = (string)((Hashtable)ADTStrings["DeploymentType"]!)[DeploymentType]!;
 
                 // Establish script directories.
-                if (null != ScriptDirectory)
+                if (!string.IsNullOrWhiteSpace(ScriptDirectory))
                 {
                     if (string.IsNullOrWhiteSpace(DirFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "Files")))
                     {
@@ -225,7 +225,7 @@ namespace PSADT.Module
                         WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
                         // Subst the new DirFiles path to eliminate any potential path length issues.
-                        string[] usedLetters = DriveInfo.GetDrives().Select(d => d.Name).ToArray();
+                        IEnumerable<string> usedLetters = DriveInfo.GetDrives().Select(static d => d.Name);
                         if ((new string[] {"Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"}).Where(l => !usedLetters.Contains(l)).FirstOrDefault() is string availLetter)
                         {
                             availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
@@ -252,7 +252,8 @@ namespace PSADT.Module
                         {
                             // Get the first MSI file in the Files directory.
                             string[] msiFiles = Directory.GetFiles(DirFiles, "*.msi", SearchOption.TopDirectoryOnly);
-                            if (msiFiles.Where(f => !f.EndsWith($".{ADTEnv["envOSArchitecture"]}.msi")).FirstOrDefault() is string msiFile)
+                            var envOSArchitecture = (string)ADTEnv["envOSArchitecture"]!;
+                            if (msiFiles.Where(f => !f.EndsWith($".{envOSArchitecture}.msi")).FirstOrDefault() is string msiFile)
                             {
                                 DefaultMsiFile = new FileInfo(msiFile).FullName;
                             }
@@ -294,12 +295,12 @@ namespace PSADT.Module
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
                         if (DefaultMspFiles.Count == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.msp", SearchOption.TopDirectoryOnly) is string[] mspFiles) && (mspFiles.Length > 0))
+                            if (!string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.msp", SearchOption.TopDirectoryOnly) is var mspFiles) && (mspFiles.Length > 0))
                             {
                                 DefaultMspFiles = new ReadOnlyCollection<string>(mspFiles);
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(DirFiles) && DefaultMspFiles.Select(f => !Path.IsPathRooted(f)).FirstOrDefault())
+                        else if (!string.IsNullOrWhiteSpace(DirFiles) && (null != DefaultMspFiles.Where(static f => !Path.IsPathRooted(f)).FirstOrDefault()))
                         {
                             DefaultMspFiles = DefaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(DirFiles, f) : f).ToList().AsReadOnly();
                         }
@@ -309,17 +310,18 @@ namespace PSADT.Module
                         }
 
                         // Read the MSI and get the installation details.
-                        ReadOnlyDictionary<string, object> msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
+                        var msiProps = (ReadOnlyDictionary<string, object>)ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile, DefaultMstFile)[0].BaseObject;
+                        List<ProcessObject> msiExecList = msiProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
 
                         // Generate list of MSI executables for testing later on.
-                        if ((msiProps.Where(p => Path.GetExtension(p.Key).Equals(".exe")).Select(p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray() is ProcessObject[] msiExecList) && (msiExecList.Length > 0))
+                        if (msiExecList.Count > 0)
                         {
-                            DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessObject>(msiExecList);
-                            WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(p => p.Name))}].");
+                            DefaultMsiExecutablesList = msiExecList.AsReadOnly();
+                            WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(static p => p.Name))}].");
                         }
 
                         // Update our app variables with new values.
-                        msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
+                        msiProps = (ReadOnlyDictionary<string, object>)ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile, DefaultMstFile)[0].BaseObject;
                         AppName = (string)msiProps["ProductName"];
                         AppVersion = (string)msiProps["ProductVersion"];
                         WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
@@ -359,32 +361,32 @@ namespace PSADT.Module
 
                 // Sanitize the application details, as they can cause issues in the script.
                 string invalidChars = string.Join(null, Path.GetInvalidFileNameChars());
-                if (null != AppVendor)
+                if (!string.IsNullOrWhiteSpace(AppVendor))
                 {
-                    AppVendor = Regex.Replace(AppVendor, invalidChars, string.Empty);
+                    AppVendor = Regex.Replace(AppVendor, invalidChars, string.Empty).Trim();
                 }
-                if (null != AppName)
+                if (!string.IsNullOrWhiteSpace(AppName))
                 {
-                    AppName = Regex.Replace(AppName, invalidChars, string.Empty);
+                    AppName = Regex.Replace(AppName, invalidChars, string.Empty).Trim();
                 }
-                if (null != AppVersion)
+                if (!string.IsNullOrWhiteSpace(AppVersion))
                 {
-                    AppVersion = Regex.Replace(AppVersion, invalidChars, string.Empty);
+                    AppVersion = Regex.Replace(AppVersion, invalidChars, string.Empty).Trim();
                 }
-                if (null != AppArch)
+                if (!string.IsNullOrWhiteSpace(AppArch))
                 {
-                    AppArch = Regex.Replace(AppArch, invalidChars, string.Empty);
+                    AppArch = Regex.Replace(AppArch, invalidChars, string.Empty).Trim();
                 }
-                if (null != AppLang)
+                if (!string.IsNullOrWhiteSpace(AppLang))
                 {
-                    AppLang = Regex.Replace(AppLang, invalidChars, string.Empty);
+                    AppLang = Regex.Replace(AppLang, invalidChars, string.Empty).Trim();
                 }
-                if (null != AppRevision)
+                if (!string.IsNullOrWhiteSpace(AppRevision))
                 {
-                    AppRevision = Regex.Replace(AppRevision, invalidChars, string.Empty);
+                    AppRevision = Regex.Replace(AppRevision, invalidChars, string.Empty).Trim();
                 }
 
-                // If we're left with a null AppName, throw a terminating error.
+                // If we're left with a blank AppName, throw a terminating error.
                 if (string.IsNullOrWhiteSpace(AppName))
                 {
                     throw new ArgumentNullException("AppName", "The application name was not specified.");
@@ -447,7 +449,7 @@ namespace PSADT.Module
                 LogName = Regex.Replace(LogName, invalidChars, string.Empty);
                 string logFile = Path.Combine(LogPath, LogName);
                 FileInfo logFileInfo = new FileInfo(logFile);
-                int logMaxSize = (int)configToolkit["LogMaxSize"]!;
+                var logMaxSize = (int)configToolkit["LogMaxSize"]!;
                 bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
 
                 // Check if log file needs to be rotated.
@@ -461,7 +463,7 @@ namespace PSADT.Module
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
                         string archiveLogFilePath = Path.Combine(LogPath, archiveLogFileName);
-                        int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+                        var logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
 
                         // Log message about archiving the log file.
                         if (logFileSizeExceeded)
@@ -479,12 +481,16 @@ namespace PSADT.Module
                         }
 
                         // Get all log files sorted by last write time.
-                        var logFiles = new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").OrderBy(f => f.LastWriteTime);
+                        IOrderedEnumerable<FileInfo> logFiles = new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").OrderBy(static f => f.LastWriteTime);
+                        int logFilesCount = logFiles.Count();
 
                         // Keep only the max number of log files.
-                        if (logFiles.Count() > logMaxHistory)
+                        if (logFilesCount > logMaxHistory)
                         {
-                            logFiles.Take(logFiles.Count() - logMaxHistory).ToList().ForEach(f => f.Delete());
+                            foreach (FileInfo file in logFiles.Take(logFilesCount - logMaxHistory))
+                            {
+                                file.Delete();
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -511,7 +517,7 @@ namespace PSADT.Module
                     }
                     if (null != AppScriptDate)
                     {
-                        WriteLogEntry($"[{InstallName}] script date is [{((DateTime)AppScriptDate).ToString("O").Split('T')[0]}].");
+                        WriteLogEntry($"[{InstallName}] script date is [{AppScriptDate?.ToString("O").Split('T')[0]}].");
                     }
                     if (!string.IsNullOrWhiteSpace(AppScriptAuthor))
                     {
@@ -529,8 +535,8 @@ namespace PSADT.Module
                         WriteLogEntry($"The following parameters were passed to [${DeployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(DeployAppScriptParameters)}].");
                     }
                 }
-                PSObject adtDirectories = (PSObject)ADTData.Properties["Directories"].Value;
-                PSObject adtDurations = (PSObject)ADTData.Properties["Durations"].Value;
+                var adtDirectories = (PSObject)ADTData.Properties["Directories"].Value;
+                var adtDurations = (PSObject)ADTData.Properties["Durations"].Value;
                 WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module version is [{ADTEnv["appDeployMainScriptVersion"]}].");
                 WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
                 WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
@@ -563,9 +569,9 @@ namespace PSADT.Module
                 WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{ADTEnv["currentLanguage"]}] and UI language is [{ADTEnv["currentUILanguage"]}].");
                 WriteLogEntry($"PowerShell Host is [{((PSHost)ADTEnv["envHost"]!).Name}] with version [{((PSHost)ADTEnv["envHost"]!).Version}].");
                 WriteLogEntry($"PowerShell Version is [{ADTEnv["envPSVersion"]} {ADTEnv["psArchitecture"]}].");
-                if (null != ADTEnv["envCLRVersion"])
+                if (ADTEnv["envCLRVersion"] is Version envCLRVersion)
                 {
-                    WriteLogEntry($"PowerShell CLR (.NET) version is [{ADTEnv["envCLRVersion"]}].");
+                    WriteLogEntry($"PowerShell CLR (.NET) version is [{envCLRVersion}].");
                 }
 
 
@@ -574,17 +580,17 @@ namespace PSADT.Module
 
 
                 // Log details for all currently logged on users.
-                WriteLogEntry($"Display session information for all logged on users:\n{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"]).First().BaseObject}", false);
+                WriteLogEntry($"Display session information for all logged on users:\n{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"])[0].BaseObject}", false);
 
                 // Provide detailed info about current process state.
-                if (null != ADTEnv["usersLoggedOn"])
+                if (ADTEnv["usersLoggedOn"] is var usersLoggedOn)
                 {
-                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", ADTEnv["usersLoggedOn"])}].");
+                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn)}].");
 
                     // Check if the current process is running in the context of one of the logged on users
-                    if (null != ADTEnv["CurrentLoggedOnUserSession"])
+                    if (ADTEnv["CurrentLoggedOnUserSession"] is QueryUser.TerminalSessionInfo CurrentLoggedOnUserSession)
                     {
-                        WriteLogEntry($"Current process is running with user account [{ADTEnv["ProcessNTAccount"]}] under logged on user session for [{((QueryUser.TerminalSessionInfo)ADTEnv["CurrentLoggedOnUserSession"]!).NTAccount}].");
+                        WriteLogEntry($"Current process is running with user account [{ADTEnv["ProcessNTAccount"]}] under logged on user session for [{CurrentLoggedOnUserSession.NTAccount}].");
                     }
                     else
                     {
@@ -599,9 +605,9 @@ namespace PSADT.Module
                     }
 
                     // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-                    if (null != ADTEnv["CurrentConsoleUserSession"])
+                    if (ADTEnv["CurrentConsoleUserSession"] is QueryUser.TerminalSessionInfo CurrentConsoleUserSession)
                     {
-                        WriteLogEntry($"The following user is the console user [{((QueryUser.TerminalSessionInfo)ADTEnv["CurrentConsoleUserSession"]!).NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
+                        WriteLogEntry($"The following user is the console user [{CurrentConsoleUserSession.NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
                     }
                     else
                     {
@@ -609,9 +615,9 @@ namespace PSADT.Module
                     }
 
                     // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-                    if (null != ADTEnv["RunAsActiveUser"])
+                    if (ADTEnv["RunAsActiveUser"] is QueryUser.TerminalSessionInfo RunAsActiveUser)
                     {
-                        WriteLogEntry($"The active logged on user is [{((QueryUser.TerminalSessionInfo)ADTEnv["RunAsActiveUser"]!).NTAccount}].");
+                        WriteLogEntry($"The active logged on user is [{RunAsActiveUser.NTAccount}].");
                     }
                 }
                 else
@@ -744,7 +750,10 @@ namespace PSADT.Module
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
                 if (null != CallerSessionState)
                 {
-                    this.GetType().GetProperties(BindingFlags.Public).ToList().ForEach(p => CallerSessionState.PSVariable.Set(p.Name, p.GetValue(this)));
+                    foreach (PropertyInfo property in this.GetType().GetProperties(BindingFlags.Public))
+                    {
+                        CallerSessionState.PSVariable.Set(property.Name, property.GetValue(this));
+                    }
                 }
 
 
@@ -770,7 +779,7 @@ namespace PSADT.Module
         /// <returns>The call stack frame of the log entry caller.</returns>
         private CallStackFrame GetLogEntryCallerInternal()
         {
-            return GetLogEntryCaller(ModuleSessionState.InvokeCommand.InvokeScript("& $CommandTable.'Get-PSCallStack'").Skip(1).Select(o => (CallStackFrame)o.BaseObject).ToArray());
+            return GetLogEntryCaller(ModuleSessionState.InvokeCommand.InvokeScript("& $CommandTable.'Get-PSCallStack'").Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
         }
 
         /// <summary>
@@ -778,7 +787,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="stackFrames">The call stack frames.</param>
         /// <returns>The call stack frame of the log entry caller.</returns>
-        public static CallStackFrame GetLogEntryCaller(CallStackFrame[] stackFrames)
+        public static CallStackFrame GetLogEntryCaller(IEnumerable<CallStackFrame> stackFrames)
         {
             foreach (CallStackFrame frame in stackFrames)
             {
@@ -901,7 +910,7 @@ namespace PSADT.Module
             Disposed = true;
 
             // Extrapolate the Toolkit options from the config hashtable.
-            Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
+            var configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
 
             // Compress log files if configured to do so.
             if ((bool)configToolkit["CompressLogs"]!)
@@ -911,18 +920,22 @@ namespace PSADT.Module
                 try
                 {
                     // Get all archive files sorted by last write time.
-                    var archiveFiles = Directory.GetFiles((string)configToolkit["LogPath"]!, string.Format(destArchiveFileName, "*")).Select(f => new FileInfo(f)).OrderBy(f => f.LastWriteTime);
+                    IOrderedEnumerable<FileInfo> archiveFiles = Directory.GetFiles((string)configToolkit["LogPath"]!, string.Format(destArchiveFileName, "*")).Select(static f => new FileInfo(f)).OrderBy(static f => f.LastWriteTime);
                     destArchiveFileName = string.Format(destArchiveFileName, DateTime.Now.ToString("O").Split('.')[0].Replace(":", null));
 
                     // Keep only the max number of archive files
-                    int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
-                    if (archiveFiles.Count() > logMaxHistory)
+                    var logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+                    int archiveFilesCount = archiveFiles.Count();
+                    if (archiveFilesCount > logMaxHistory)
                     {
-                        archiveFiles.Take(archiveFiles.Count() - logMaxHistory).ToList().ForEach(f => f.Delete());
+                        foreach (FileInfo file in archiveFiles.Take(archiveFilesCount - logMaxHistory))
+                        {
+                            file.Delete();
+                        }
                     }
 
                     // Compression of the log files.
-                    string logTempFolder = (string)this.GetPropertyValue(nameof(LogTempFolder))!;
+                    var logTempFolder = (string)this.GetPropertyValue(nameof(LogTempFolder));
                     ZipFile.CreateFromDirectory(logTempFolder, destArchiveFileName, CompressionLevel.Optimal, false);
                     Directory.Delete(logTempFolder, true);
                 }
@@ -983,7 +996,7 @@ namespace PSADT.Module
         public void WriteLogEntry(string[] message, uint? severity, string source, string scriptSection, bool? writeHost, bool debugMessage, string logType, string logFileDirectory, string logFileName)
         {
             // Extrapolate the Toolkit options from the config hashtable.
-            Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
+            var configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
 
             // Determine whether we can write to the console.
             if (null == writeHost)
@@ -1043,10 +1056,13 @@ namespace PSADT.Module
             };
 
             // Add this log message to the session's buffer.
-            message.ToList().ForEach(msg => LogBuffer.Add(new LogEntry(dateNow, invoker, msg, (uint)severity, source, scriptSection)));
+            foreach (string msg in message)
+            {
+                LogBuffer.Add(new LogEntry(dateNow, invoker, msg, (uint)severity, source, scriptSection));
+            }
 
             // Write out all messages to disk if configured/permitted to do so.
-            if (!(bool)GetPropertyValue(nameof(DisableLogging))! && Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty) is string outFile && !string.IsNullOrWhiteSpace(outFile))
+            if (!(bool)GetPropertyValue(nameof(DisableLogging))! && (Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty) is string outFile) && !string.IsNullOrWhiteSpace(outFile))
             {
                 using (StreamWriter logFileWriter = new StreamWriter(outFile, true, LogEncoding))
                 {
@@ -1063,7 +1079,7 @@ namespace PSADT.Module
                                     // spaces. As such, replace all spaces and empty lines with a punctuation space.
                                     // C# identifies this character as whitespace but OneTrace does not so it works.
                                     // The empty line feed at the end is required by OneTrace to format correctly.
-                                    logFileWriter.WriteLine(string.Format(logLine, string.Join("\n", msg.Replace("\r", null).Trim().Replace(' ', (char)0x2008).Split((char)10).ToList().Select(m => Regex.Replace(m, "^$", $"{(char)0x2008}"))).Replace("\n", "\r\n") + "\r\n"));
+                                    logFileWriter.WriteLine(string.Format(logLine, string.Join("\n", msg.Replace("\r", null).Trim().Replace(' ', (char)0x2008).Split((char)10).Select(static m => Regex.Replace(m, "^$", $"{(char)0x2008}"))).Replace("\n", "\r\n") + "\r\n"));
                                 }
                                 else
                                 {
@@ -1084,7 +1100,7 @@ namespace PSADT.Module
             // Write out all messages to host if configured/permitted to do so.
             if ((bool)writeHost!)
             {
-                var sevCols = LogSeverityColors[(int)severity];
+                ReadOnlyDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
                 if ((bool)configToolkit["LogHostOutputToStdStreams"]!)
                 {
                     // Colour the console if we're not informational.
@@ -1179,8 +1195,8 @@ namespace PSADT.Module
         /// <param name="count">The number of dividers to write.</param>
         private void WriteLogDivider(uint count)
         {
-            StringCollection dividers = []; for (uint i = 0; i < count; i++) { dividers.Add(new string('*', 79)); }
-            WriteLogEntry(dividers.Cast<string>().ToArray());
+            string[] dividers = new string[count]; for (uint i = 0; i < count; i++) { dividers[i] = new string('*', 79); }
+            WriteLogEntry(dividers);
         }
 
         /// <summary>
@@ -1231,7 +1247,7 @@ namespace PSADT.Module
                 return null;
             }
             WriteLogEntry("Getting deferral history...");
-            return ModuleSessionState.InvokeProvider.Property.Get(RegKeyDeferHistory, null)[0];
+            return ModuleSessionState.InvokeProvider.Property.Get(RegKeyDeferHistory, null).FirstOrDefault();
         }
 
         /// <summary>
@@ -1276,7 +1292,7 @@ namespace PSADT.Module
         public string GetDeploymentStatus()
         {
             // Extrapolate the UI options from the config hashtable.
-            Hashtable configUI = (Hashtable)ADTConfig["UI"]!;
+            var configUI = (Hashtable)ADTConfig["UI"]!;
 
             if ((ExitCode == (int)configUI["DefaultExitCode"]!) || (ExitCode == (int)configUI["DeferExitCode"]!))
             {
