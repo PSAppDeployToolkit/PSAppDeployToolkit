@@ -135,7 +135,7 @@ function Close-ADTSession
         }
 
         # Hand over to our backend closure routine. This is split as we might need to call it before a session is instantiated.
-        Exit-ADTInvocation -ExitCode $ExitCode -RunspaceOrigin:($adtSession.IsRunspaceOrigin()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
+        Exit-ADTInvocation -ExitCode $ExitCode -BypassShellExit:($adtSession.IsRunspaceOrigin()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
     }
 
     end

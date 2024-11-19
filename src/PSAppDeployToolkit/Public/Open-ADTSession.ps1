@@ -372,7 +372,7 @@ function Open-ADTSession
             {
                 if (!$adtSession)
                 {
-                    Exit-ADTInvocation -ExitCode 60008 -RunspaceOrigin:$runspaceOrigin
+                    Exit-ADTInvocation -ExitCode 60008 -BypassShellExit:$runspaceOrigin
                 }
                 else
                 {

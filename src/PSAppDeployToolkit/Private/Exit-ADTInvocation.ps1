@@ -9,12 +9,12 @@ function Exit-ADTInvocation
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$ExitCode,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$RunspaceOrigin,
+        [System.Management.Automation.SwitchParameter]$BypassShellExit,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force
@@ -37,7 +37,7 @@ function Exit-ADTInvocation
     $Script:ADT.Initialized = $false
 
     # Return early if this function was called from the command line.
-    if ($RunspaceOrigin -and !$Force)
+    if ($BypassShellExit)
     {
         return
     }
