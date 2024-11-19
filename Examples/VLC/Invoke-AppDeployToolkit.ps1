@@ -61,16 +61,24 @@ https://psappdeploytoolkit.com
 
 #>
 
+[CmdletBinding()]
 param
 (
+    [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
     [System.String]$DeploymentType = 'Install',
 
+    [Parameter(Mandatory = $false)]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
     [System.String]$DeployMode = 'Interactive',
 
+    [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
+
+    [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$TerminalServerMode,
+
+    [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$DisableLogging
 )
 
