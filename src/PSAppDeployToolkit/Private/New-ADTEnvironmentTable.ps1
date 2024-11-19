@@ -70,13 +70,13 @@ function New-ADTEnvironmentTable
     $w32cs = Get-CimInstance -ClassName Win32_ComputerSystem -Verbose:$false
     $w32csd = $w32cs.Domain | & { process { if ($_) { return $_ } } } | Select-Object -First 1
     $variables.Add('IsMachinePartOfDomain', $w32cs.PartOfDomain)
-    $variables.Add('envMachineWorkgroup', [System.String]::Empty)
-    $variables.Add('envMachineADDomain', [System.String]::Empty)
-    $variables.Add('envLogonServer', [System.String]::Empty)
-    $variables.Add('MachineDomainController', [System.String]::Empty)
-    $variables.Add('envMachineDNSDomain', [string]([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLower() } } } | Select-Object -First 1))
-    $variables.Add('envUserDNSDomain', [string]([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLower() } } } | Select-Object -First 1))
-    $variables.Add('envUserDomain', [string]$(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpper() }))
+    $variables.Add('envMachineWorkgroup', $null)
+    $variables.Add('envMachineADDomain', $null)
+    $variables.Add('envLogonServer', $null)
+    $variables.Add('MachineDomainController', $null)
+    $variables.Add('envMachineDNSDomain', ([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().DomainName | & { process { if ($_) { return $_.ToLower() } } } | Select-Object -First 1))
+    $variables.Add('envUserDNSDomain', ([System.Environment]::GetEnvironmentVariable('USERDNSDOMAIN') | & { process { if ($_) { return $_.ToLower() } } } | Select-Object -First 1))
+    $variables.Add('envUserDomain', $(if ([System.Environment]::UserDomainName) { [System.Environment]::UserDomainName.ToUpper() }))
     $variables.Add('envComputerName', $w32cs.DNSHostName.ToUpper())
     $variables.Add('envComputerNameFQDN', $variables.envComputerName)
     if ($variables.IsMachinePartOfDomain)
@@ -93,7 +93,7 @@ function New-ADTEnvironmentTable
         }
 
         # Set the logon server and remove backslashes at the beginning.
-        $variables.envLogonServer = [string]$(try
+        $variables.envLogonServer = $(try
             {
                 [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & { process { if ($_ -and !$_.Contains('\\MicrosoftAccount')) { [System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName } } }
             }
@@ -152,11 +152,11 @@ function New-ADTEnvironmentTable
     else
     {
         $variables.Add('envProgramFiles', [System.Environment]::GetFolderPath('ProgramFiles'))
-        $variables.Add('envProgramFilesX86', [System.String]::Empty)
+        $variables.Add('envProgramFilesX86', $null)
         $variables.Add('envCommonProgramFiles', [System.Environment]::GetFolderPath('CommonProgramFiles'))
-        $variables.Add('envCommonProgramFilesX86', [System.String]::Empty)
+        $variables.Add('envCommonProgramFilesX86', $null)
         $variables.Add('envSysNativeDirectory', [System.Environment]::SystemDirectory)
-        $variables.Add('envSYSWOW64Directory', [System.String]::Empty)
+        $variables.Add('envSYSWOW64Directory', $null)
     }
 
     ## Variables: Operating System
@@ -185,8 +185,8 @@ function New-ADTEnvironmentTable
 
     ## Variables: Office C2R version, bitness and channel
     $variables.Add('envOfficeVars', (Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
-    $variables.Add('envOfficeVersion', [string]($variables.envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction Ignore))
-    $variables.Add('envOfficeBitness', [string]($variables.envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction Ignore))
+    $variables.Add('envOfficeVersion', ($variables.envOfficeVars | Select-Object -ExpandProperty VersionToReport -ErrorAction Ignore))
+    $variables.Add('envOfficeBitness', ($variables.envOfficeVars | Select-Object -ExpandProperty Platform -ErrorAction Ignore))
 
     # Channel needs special handling for group policy values.
     $officeChannelProperty = if ($variables.envOfficeVars | Select-Object -ExpandProperty UpdateChannel -ErrorAction Ignore)
@@ -197,7 +197,7 @@ function New-ADTEnvironmentTable
     {
         $variables.envOfficeVars.CDNBaseURL
     }
-    $variables.Add('envOfficeChannel', [string]$(switch ($officeChannelProperty -replace '^.+/')
+    $variables.Add('envOfficeChannel', $(switch ($officeChannelProperty -replace '^.+/')
             {
                 "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" { "monthly"; break }
                 "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" { "semi-annual"; break }
