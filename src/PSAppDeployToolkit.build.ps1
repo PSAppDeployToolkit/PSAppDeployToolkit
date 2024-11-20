@@ -292,6 +292,10 @@ Add-BuildTask FormattingCheck {
         Recurse     = $true
         Verbose     = $false
     }
+    if ($env:GITHUB_ACTIONS -ne 'true')
+    {
+        $scriptAnalyzerParams.Add('Fix', $true)
+    }
 
     Write-Build White '      Performing script formatting checks...'
     $scriptAnalyzerResults = Get-ChildItem -Path $script:ModuleSourcePath | Invoke-ScriptAnalyzer @scriptAnalyzerParams

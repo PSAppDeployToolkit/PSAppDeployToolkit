@@ -526,10 +526,10 @@ function Start-ADTProcess
 
                     # Generate and store the PassThru data.
                     $passthruObj = [PSADT.Types.ProcessResult]::new(
-                            $returnCode,
-                            $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut }),
-                            $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
-                        )
+                        $returnCode,
+                        $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut }),
+                        $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
+                    )
 
                     # If we have an error in our process, throw it and let the catch block handle it.
                     if ($errorMessage)
