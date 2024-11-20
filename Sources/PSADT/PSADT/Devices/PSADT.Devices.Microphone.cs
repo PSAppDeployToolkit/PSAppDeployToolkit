@@ -25,25 +25,28 @@ namespace PSADT.Devices
                 deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out device);
 
                 // Activate the session manager for the capture device
-                Guid IID_IAudioSessionManager2 = typeof(IAudioSessionManager2).GUID;
-                device.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out object objSessionManager);
-                sessionManager = (IAudioSessionManager2)objSessionManager;
-
-                // Enumerate audio sessions
-                sessionManager.GetSessionEnumerator(out IAudioSessionEnumerator sessionEnumerator);
-                sessionEnumerator.GetCount(out int sessionCount);
-
-                for (int i = 0; i < sessionCount; i++)
+                if (null != device)
                 {
-                    sessionEnumerator.GetSession(i, out IAudioSessionControl sessionControl);
-                    IAudioSessionControl2 sessionControl2 = (IAudioSessionControl2)sessionControl;
+                    Guid IID_IAudioSessionManager2 = typeof(IAudioSessionManager2).GUID;
+                    device.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out object objSessionManager);
+                    sessionManager = (IAudioSessionManager2)objSessionManager;
 
-                    // Check if session is active
-                    sessionControl2.GetState(out AudioSessionState state);
-                    if (state == AudioSessionState.AudioSessionStateActive)
+                    // Enumerate audio sessions
+                    sessionManager.GetSessionEnumerator(out IAudioSessionEnumerator sessionEnumerator);
+                    sessionEnumerator.GetCount(out int sessionCount);
+
+                    for (int i = 0; i < sessionCount; i++)
                     {
-                        micInUse = true;
-                        break;
+                        sessionEnumerator.GetSession(i, out IAudioSessionControl sessionControl);
+                        IAudioSessionControl2 sessionControl2 = (IAudioSessionControl2)sessionControl;
+
+                        // Check if session is active
+                        sessionControl2.GetState(out AudioSessionState state);
+                        if (state == AudioSessionState.AudioSessionStateActive)
+                        {
+                            micInUse = true;
+                            break;
+                        }
                     }
                 }
             }
