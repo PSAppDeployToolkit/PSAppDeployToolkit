@@ -323,6 +323,9 @@ Tests whether the local machine is running on AC power or not.
 ### [Test-ADTCallerIsAdmin](Test-ADTCallerIsAdmin.md)
 Checks if the current user has administrative privileges.
 
+### [Test-ADTMicrophoneInUse](Test-ADTMicrophoneInUse.md)
+Tests whether the device's microphone is in use.
+
 ### [Test-ADTModuleInitialized](Test-ADTModuleInitialized.md)
 Checks if the ADT (PSAppDeployToolkit) module is initialized.
 
@@ -349,6 +352,9 @@ Check to see if a service exists.
 
 ### [Test-ADTSessionActive](Test-ADTSessionActive.md)
 Checks if there is an active ADT session.
+
+### [Test-ADTUserIsBusy](Test-ADTUserIsBusy.md)
+Tests whether PowerPoint is running in either fullscreen slideshow mode or presentation mode, or the device's microphone is in use.
 
 ### [Unblock-ADTAppExecution](Unblock-ADTAppExecution.md)
 Unblocks the execution of applications performed by the Block-ADTAppExecution function.
