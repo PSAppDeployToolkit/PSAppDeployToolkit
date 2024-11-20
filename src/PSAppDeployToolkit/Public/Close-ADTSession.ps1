@@ -79,7 +79,7 @@ function Close-ADTSession
         $adtSession = Get-ADTSession
 
         # Change the install phase since we've finished initialising. This should get overwritten shortly.
-        $adtSession.SetPropertyValue('InstallPhase', 'Finalization')
+        $adtSession.InstallPhase = 'Finalization'
 
         # Update the session's exit code with the provided value.
         if ($PSBoundParameters.ContainsKey('ExitCode'))

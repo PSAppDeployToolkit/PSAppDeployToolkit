@@ -353,7 +353,7 @@ function Open-ADTSession
                 }
 
                 # Change the install phase since we've finished initialising. This should get overwritten shortly.
-                $adtSession.SetPropertyValue('InstallPhase', 'Execution')
+                $adtSession.InstallPhase = 'Execution'
             }
             catch
             {

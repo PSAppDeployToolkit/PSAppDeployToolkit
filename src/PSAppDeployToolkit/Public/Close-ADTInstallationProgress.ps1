@@ -65,7 +65,7 @@ function Close-ADTInstallationProgress
                 }
                 if ($adtSession -and $adtSession.IsSilent())
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]"
                     return
                 }
 

@@ -171,7 +171,7 @@ function Set-ADTActiveSetup
         # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
         $Description = if (!$PSBoundParameters.ContainsKey('Description'))
         {
-            $adtSession.GetPropertyValue('InstallName')
+            $adtSession.InstallName
         }
         else
         {
@@ -179,7 +179,7 @@ function Set-ADTActiveSetup
         }
         $Key = if (!$PSBoundParameters.ContainsKey('Key'))
         {
-            $adtSession.GetPropertyValue('InstallName')
+            $adtSession.InstallName
         }
         else
         {
@@ -426,7 +426,7 @@ function Set-ADTActiveSetup
                 $StubExePath = [System.Environment]::ExpandEnvironmentVariables($StubExePath)
                 if ($adtSession)
                 {
-                    $StubExeFile = Join-Path -Path $adtSession.GetPropertyValue('DirFiles') -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
+                    $StubExeFile = Join-Path -Path $adtSession.DirFiles -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
                     if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
                     {
                         # This will overwrite the StubPath file if $StubExePath already exists on target.

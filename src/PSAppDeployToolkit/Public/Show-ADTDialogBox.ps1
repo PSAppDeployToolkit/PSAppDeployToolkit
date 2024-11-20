@@ -119,7 +119,7 @@ function Show-ADTDialogBox
         # Set up defaults if not specified.
         $Title = if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $adtSession.GetPropertyValue('InstallTitle')
+            $adtSession.InstallTitle
         }
         else
         {
@@ -140,7 +140,7 @@ function Show-ADTDialogBox
         # Bypass if in silent mode.
         if ($adtSession -and $adtSession.IsSilent())
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('deployMode'))]. Text: $Text"
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.deployMode)]. Text: $Text"
             return
         }
 

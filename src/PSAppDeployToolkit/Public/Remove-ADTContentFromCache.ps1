@@ -48,7 +48,7 @@ function Remove-ADTContentFromCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).GetPropertyValue('installName'))"
+        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).installName)"
     )
 
     begin
@@ -56,7 +56,7 @@ function Remove-ADTContentFromCache
         try
         {
             $adtSession = Get-ADTSession
-            $parentPath = $adtSession.GetPropertyValue('ScriptDirectory')
+            $parentPath = $adtSession.ScriptDirectory
         }
         catch
         {
@@ -79,8 +79,8 @@ function Remove-ADTContentFromCache
             try
             {
                 Remove-Item -Path $Path -Recurse
-                $adtSession.SetPropertyValue('DirFiles', (Join-Path -Path $parentPath -ChildPath Files))
-                $adtSession.SetPropertyValue('DirSupportFiles', (Join-Path -Path $parentPath -ChildPath SupportFiles))
+                $adtSession.DirFiles = (Join-Path -Path $parentPath -ChildPath Files)
+                $adtSession.DirSupportFiles = (Join-Path -Path $parentPath -ChildPath SupportFiles)
             }
             catch
             {

@@ -43,8 +43,8 @@ namespace PSADT.Module
 
 
                 // Establish start date/time first so we can accurately mark the start of execution.
-                CurrentDate = CurrentDateTime.ToString("dd-MM-yyyy");
-                CurrentTime = CurrentDateTime.ToString("HH:mm:ss");
+                _currentDate = CurrentDateTime.ToString("dd-MM-yyyy");
+                _currentTime = CurrentDateTime.ToString("HH:mm:ss");
 
                 // Establish initial variable values.
                 ADTEnv = adtEnv;
@@ -67,119 +67,115 @@ namespace PSADT.Module
                 {
                     RunspaceOrigin = (bool)runspaceOrigin;
                 }
-                if (null != callerSessionState)
-                {
-                    CallerSessionState = callerSessionState;
-                }
                 if (null != parameters)
                 {
                     if (parameters.ContainsKey("DeploymentType"))
                     {
-                        DeploymentType = (string)parameters["DeploymentType"];
+                        _deploymentType = (string)parameters["DeploymentType"];
                     }
                     if (parameters.ContainsKey("DeployMode"))
                     {
-                        DeployMode = (string)parameters["DeployMode"];
+                        _deployMode = (string)parameters["DeployMode"];
                     }
                     if (parameters.ContainsKey("AllowRebootPassThru"))
                     {
-                        AllowRebootPassThru = (SwitchParameter)parameters["AllowRebootPassThru"];
+                        _allowRebootPassThru = (SwitchParameter)parameters["AllowRebootPassThru"];
                     }
                     if (parameters.ContainsKey("TerminalServerMode"))
                     {
-                        TerminalServerMode = (SwitchParameter)parameters["TerminalServerMode"];
+                        _terminalServerMode = (SwitchParameter)parameters["TerminalServerMode"];
                     }
                     if (parameters.ContainsKey("DisableLogging"))
                     {
-                        DisableLogging = (SwitchParameter)parameters["DisableLogging"];
+                        _disableLogging = (SwitchParameter)parameters["DisableLogging"];
                     }
                     if (parameters.ContainsKey("AppVendor"))
                     {
-                        AppVendor = (string)parameters["AppVendor"];
+                        _appVendor = (string)parameters["AppVendor"];
                     }
                     if (parameters.ContainsKey("AppName"))
                     {
-                        AppName = (string)parameters["AppName"];
+                        _appName = (string)parameters["AppName"];
                     }
                     if (parameters.ContainsKey("AppVersion"))
                     {
-                        AppVersion = (string)parameters["AppVersion"];
+                        _appVersion = (string)parameters["AppVersion"];
                     }
                     if (parameters.ContainsKey("AppArch"))
                     {
-                        AppArch = (string)parameters["AppArch"];
+                        _appArch = (string)parameters["AppArch"];
                     }
                     if (parameters.ContainsKey("AppLang"))
                     {
-                        AppLang = (string)parameters["AppLang"];
+                        _appLang = (string)parameters["AppLang"];
                     }
                     if (parameters.ContainsKey("AppRevision"))
                     {
-                        AppRevision = (string)parameters["AppRevision"];
+                        _appRevision = (string)parameters["AppRevision"];
                     }
                     if (parameters.ContainsKey("AppScriptVersion"))
                     {
-                        AppScriptVersion = (Version)parameters["AppScriptVersion"];
+                        _appScriptVersion = (Version)parameters["AppScriptVersion"];
                     }
                     if (parameters.ContainsKey("AppScriptDate"))
                     {
-                        AppScriptDate = (DateTime)parameters["AppScriptDate"];
+                        _appScriptDate = (DateTime)parameters["AppScriptDate"];
                     }
                     if (parameters.ContainsKey("AppScriptAuthor"))
                     {
-                        AppScriptAuthor = (string)parameters["AppScriptAuthor"];
+                        _appScriptAuthor = (string)parameters["AppScriptAuthor"];
                     }
                     if (parameters.ContainsKey("InstallName"))
                     {
-                        InstallName = (string)parameters["InstallName"];
+                        _installName = (string)parameters["InstallName"];
                     }
                     if (parameters.ContainsKey("InstallTitle"))
                     {
-                        InstallTitle = (string)parameters["InstallTitle"];
+                        _installTitle = (string)parameters["InstallTitle"];
                     }
                     if (parameters.ContainsKey("DeployAppScriptFriendlyName"))
                     {
-                        DeployAppScriptFriendlyName = (string)parameters["DeployAppScriptFriendlyName"];
+                        _deployAppScriptFriendlyName = (string)parameters["DeployAppScriptFriendlyName"];
                     }
                     if (parameters.ContainsKey("DeployAppScriptVersion"))
                     {
-                        DeployAppScriptVersion = (Version)parameters["DeployAppScriptVersion"];
+                        _deployAppScriptVersion = (Version)parameters["DeployAppScriptVersion"];
                     }
                     if (parameters.ContainsKey("DeployAppScriptParameters"))
                     {
-                        DeployAppScriptParameters = (IDictionary)parameters["DeployAppScriptParameters"];
+                        _deployAppScriptParameters = (IDictionary)parameters["DeployAppScriptParameters"];
                     }
                     if (parameters.ContainsKey("AppSuccessExitCodes"))
                     {
-                        AppSuccessExitCodes = new ReadOnlyCollection<int>((int[])parameters["AppSuccessExitCodes"]);
+                        _appSuccessExitCodes = new ReadOnlyCollection<int>((int[])parameters["AppSuccessExitCodes"]);
                     }
                     if (parameters.ContainsKey("AppRebootExitCodes"))
                     {
-                        AppRebootExitCodes = new ReadOnlyCollection<int>((int[])parameters["AppRebootExitCodes"]);
+                        _appRebootExitCodes = new ReadOnlyCollection<int>((int[])parameters["AppRebootExitCodes"]);
                     }
                     if (parameters.ContainsKey("ScriptDirectory"))
                     {
-                        ScriptDirectory = (string)parameters["ScriptDirectory"];
+                        _scriptDirectory = (string)parameters["ScriptDirectory"];
                     }
                     if (parameters.ContainsKey("DirFiles"))
                     {
-                        DirFiles = (string)parameters["DirFiles"];
+                        _dirFiles = (string)parameters["DirFiles"];
                     }
                     if (parameters.ContainsKey("DirSupportFiles"))
                     {
-                        DirSupportFiles = (string)parameters["DirSupportFiles"];
+                        _dirSupportFiles = (string)parameters["DirSupportFiles"];
                     }
                     if (parameters.ContainsKey("DefaultMsiFile"))
                     {
-                        DefaultMsiFile = (string)parameters["DefaultMsiFile"];
+                        _defaultMsiFile = (string)parameters["DefaultMsiFile"];
                     }
                     if (parameters.ContainsKey("DefaultMstFile"))
                     {
-                        DefaultMstFile = (string)parameters["DefaultMstFile"];
+                        _defaultMstFile = (string)parameters["DefaultMstFile"];
                     }
                     if (parameters.ContainsKey("DefaultMspFiles"))
                     {
-                        DefaultMspFiles = new ReadOnlyCollection<string>((string[])parameters["DefaultMspFiles"]);
+                        _defaultMspFiles = new ReadOnlyCollection<string>((string[])parameters["DefaultMspFiles"]);
                     }
                     if (parameters.ContainsKey("ForceWimDetection"))
                     {
@@ -188,19 +184,19 @@ namespace PSADT.Module
                 }
 
                 // Ensure DeploymentType is title cased for aesthetics.
-                DeploymentType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(DeploymentType.ToLower());
-                DeploymentTypeName = (string)((Hashtable)ADTStrings["DeploymentType"]!)[DeploymentType]!;
+                _deploymentType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(_deploymentType.ToLower());
+                _deploymentTypeName = (string)((Hashtable)ADTStrings["DeploymentType"]!)[_deploymentType]!;
 
                 // Establish script directories.
-                if (!string.IsNullOrWhiteSpace(ScriptDirectory))
+                if (!string.IsNullOrWhiteSpace(_scriptDirectory))
                 {
-                    if (string.IsNullOrWhiteSpace(DirFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "Files")))
+                    if (string.IsNullOrWhiteSpace(_dirFiles) && Directory.Exists(Path.Combine(_scriptDirectory, "Files")))
                     {
-                        DirFiles = Path.Combine(ScriptDirectory, "Files");
+                        _dirFiles = Path.Combine(_scriptDirectory, "Files");
                     }
-                    if (string.IsNullOrWhiteSpace(DirSupportFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "SupportFiles")))
+                    if (string.IsNullOrWhiteSpace(_dirSupportFiles) && Directory.Exists(Path.Combine(_scriptDirectory, "SupportFiles")))
                     {
-                        DirSupportFiles = Path.Combine(ScriptDirectory, "SupportFiles");
+                        _dirSupportFiles = Path.Combine(_scriptDirectory, "SupportFiles");
                     }
                 }
 
@@ -210,29 +206,28 @@ namespace PSADT.Module
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(AppName) || ForceWimDetection)
+                if (string.IsNullOrWhiteSpace(_appName) || ForceWimDetection)
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
-                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
+                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
                     {
                         // Mount the WIM file and reset DirFiles to the mount point.
                         WriteZeroConfigDivider(); ZeroConfigInitiated = true;
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
-                        string mountPath = Path.Combine(DirFiles, Path.GetRandomFileName());
+                        string mountPath = Path.Combine(_dirFiles, Path.GetRandomFileName());
                         ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("& $CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
-                        MountedWimFiles.Add(new FileInfo(wimFile));
-                        DirFiles = mountPath;
+                        AddMountedWimFile(new FileInfo(wimFile)); _dirFiles = mountPath;
                         WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
                         // Subst the new DirFiles path to eliminate any potential path length issues.
                         IEnumerable<string> usedLetters = DriveInfo.GetDrives().Select(static d => d.Name);
                         if ((new string[] {"Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"}).Where(l => !usedLetters.Contains(l)).FirstOrDefault() is string availLetter)
                         {
-                            availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
-                            ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("& $CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Path $args[1]"), availLetter, DirFiles);
-                            DirFiles = DirFilesSubstDrive = availLetter;
+                            availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{_dirFiles}].");
+                            ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("& $CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Path $args[1]"), availLetter, _dirFiles);
+                            _dirFiles = DirFilesSubstDrive = availLetter;
                         }
-                        WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
+                        WriteLogEntry($"Using [{_dirFiles}] as the base DirFiles directory.");
                     }
                 }
 
@@ -242,71 +237,71 @@ namespace PSADT.Module
 
 
                 // If the default frontend hasn't been modified, check for MSI / MST and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(AppName))
+                if (string.IsNullOrWhiteSpace(_appName))
                 {
                     // Find the first MSI file in the Files folder and use that as our install.
-                    if (string.IsNullOrWhiteSpace(DefaultMsiFile))
+                    if (string.IsNullOrWhiteSpace(_defaultMsiFile))
                     {
                         // Only proceed if the Files directory is set.
-                        if (!string.IsNullOrWhiteSpace(DirFiles))
+                        if (!string.IsNullOrWhiteSpace(_dirFiles))
                         {
                             // Get the first MSI file in the Files directory.
-                            string[] msiFiles = Directory.GetFiles(DirFiles, "*.msi", SearchOption.TopDirectoryOnly);
+                            string[] msiFiles = Directory.GetFiles(_dirFiles, "*.msi", SearchOption.TopDirectoryOnly);
                             var envOSArchitecture = (string)ADTEnv["envOSArchitecture"]!;
                             if (msiFiles.Where(f => !f.EndsWith($".{envOSArchitecture}.msi")).FirstOrDefault() is string msiFile)
                             {
-                                DefaultMsiFile = new FileInfo(msiFile).FullName;
+                                _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
                             else if (msiFiles.Length > 0)
                             {
-                                DefaultMsiFile = new FileInfo(msiFiles[0]).FullName;
+                                _defaultMsiFile = new FileInfo(msiFiles[0]).FullName;
                             }
                         }
                     }
-                    else if (!Path.IsPathRooted(DefaultMsiFile) && !string.IsNullOrWhiteSpace(DirFiles))
+                    else if (!Path.IsPathRooted(_defaultMsiFile) && !string.IsNullOrWhiteSpace(_dirFiles))
                     {
-                        DefaultMsiFile = Path.Combine(DirFiles, DefaultMsiFile);
+                        _defaultMsiFile = Path.Combine(_dirFiles, _defaultMsiFile);
                     }
 
                     // If we have a default MSI file, proceed further with the Zero-Config configuration.
-                    if (!string.IsNullOrWhiteSpace(DefaultMsiFile))
+                    if (!string.IsNullOrWhiteSpace(_defaultMsiFile))
                     {
                         WriteZeroConfigDivider(); ZeroConfigInitiated = true;
-                        WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
+                        WriteLogEntry($"Discovered Zero-Config MSI installation file [{_defaultMsiFile}].");
 
                         // Discover if there is a zero-config MST file.
-                        if (string.IsNullOrWhiteSpace(DefaultMstFile))
+                        if (string.IsNullOrWhiteSpace(_defaultMstFile))
                         {
-                            string mstFile = Path.ChangeExtension(DefaultMsiFile, "mst");
+                            string mstFile = Path.ChangeExtension(_defaultMsiFile, "mst");
                             if (File.Exists(mstFile))
                             {
-                                DefaultMstFile = mstFile;
+                                _defaultMstFile = mstFile;
                             }
                         }
-                        else if (!Path.IsPathRooted(DefaultMstFile) && !string.IsNullOrWhiteSpace(DirFiles))
+                        else if (!Path.IsPathRooted(_defaultMstFile) && !string.IsNullOrWhiteSpace(_dirFiles))
                         {
-                            DefaultMstFile = Path.Combine(DirFiles, DefaultMstFile);
+                            _defaultMstFile = Path.Combine(_dirFiles, _defaultMstFile);
                         }
-                        if (!string.IsNullOrWhiteSpace(DefaultMstFile))
+                        if (!string.IsNullOrWhiteSpace(_defaultMstFile))
                         {
-                            WriteLogEntry($"Discovered Zero-Config MST installation file [{DefaultMstFile}].");
+                            WriteLogEntry($"Discovered Zero-Config MST installation file [{_defaultMstFile}].");
                         }
 
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-                        if (DefaultMspFiles.Count == 0)
+                        if (_defaultMspFiles.Count == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.msp", SearchOption.TopDirectoryOnly) is var mspFiles) && (mspFiles.Length > 0))
+                            if (!string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.msp", SearchOption.TopDirectoryOnly) is var mspFiles) && (mspFiles.Length > 0))
                             {
-                                DefaultMspFiles = new ReadOnlyCollection<string>(mspFiles);
+                                _defaultMspFiles = new ReadOnlyCollection<string>(mspFiles);
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(DirFiles) && (null != DefaultMspFiles.Where(static f => !Path.IsPathRooted(f)).FirstOrDefault()))
+                        else if (!string.IsNullOrWhiteSpace(_dirFiles) && (null != _defaultMspFiles.Where(static f => !Path.IsPathRooted(f)).FirstOrDefault()))
                         {
-                            DefaultMspFiles = DefaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(DirFiles, f) : f).ToList().AsReadOnly();
+                            _defaultMspFiles = _defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f).ToList().AsReadOnly();
                         }
-                        if (DefaultMspFiles.Count > 0)
+                        if (_defaultMspFiles.Count > 0)
                         {
-                            WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", DefaultMspFiles)}].");
+                            WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", _defaultMspFiles)}].");
                         }
 
                         // Read the MSI and get the installation details.
@@ -322,12 +317,12 @@ namespace PSADT.Module
 
                         // Update our app variables with new values.
                         msiProps = (ReadOnlyDictionary<string, object>)ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile, DefaultMstFile)[0].BaseObject;
-                        AppName = (string)msiProps["ProductName"];
-                        AppVersion = (string)msiProps["ProductVersion"];
+                        _appName = (string)msiProps["ProductName"];
+                        _appVersion = (string)msiProps["ProductVersion"];
                         WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
-                        WriteLogEntry($"App Name [{AppName}].");
-                        WriteLogEntry($"App Version [{AppVersion}].");
-                        UseDefaultMsi = true;
+                        WriteLogEntry($"App Name [{_appName}].");
+                        WriteLogEntry($"App Version [{_appVersion}].");
+                        _useDefaultMsi = true;
                     }
                 }
 
@@ -337,57 +332,57 @@ namespace PSADT.Module
 
 
                 // Set up sample variables if Dot Sourcing the script, app details have not been specified.
-                if (string.IsNullOrWhiteSpace(AppName))
+                if (string.IsNullOrWhiteSpace(_appName))
                 {
-                    AppName = (string)ADTEnv["appDeployToolkitName"]!;
+                    _appName = (string)ADTEnv["appDeployToolkitName"]!;
 
-                    if (!string.IsNullOrWhiteSpace(AppVendor))
+                    if (!string.IsNullOrWhiteSpace(_appVendor))
                     {
-                        AppVendor = null;
+                        _appVendor = null;
                     }
-                    if (string.IsNullOrWhiteSpace(AppVersion))
+                    if (string.IsNullOrWhiteSpace(_appVersion))
                     {
-                        AppVersion = ADTEnv["appDeployMainScriptVersion"]!.ToString()!;
+                        _appVersion = ADTEnv["appDeployMainScriptVersion"]!.ToString()!;
                     }
-                    if (string.IsNullOrWhiteSpace(AppLang))
+                    if (string.IsNullOrWhiteSpace(_appLang))
                     {
-                        AppLang = (string)ADTEnv["currentLanguage"]!;
+                        _appLang = (string)ADTEnv["currentLanguage"]!;
                     }
-                    if (string.IsNullOrWhiteSpace(AppRevision))
+                    if (string.IsNullOrWhiteSpace(_appRevision))
                     {
-                        AppRevision = "01";
+                        _appRevision = "01";
                     }
                 }
 
                 // Sanitize the application details, as they can cause issues in the script.
                 string invalidChars = string.Join(null, Path.GetInvalidFileNameChars());
-                if (!string.IsNullOrWhiteSpace(AppVendor))
+                if (!string.IsNullOrWhiteSpace(_appVendor))
                 {
-                    AppVendor = Regex.Replace(AppVendor, invalidChars, string.Empty).Trim();
+                    _appVendor = Regex.Replace(_appVendor, invalidChars, string.Empty).Trim();
                 }
-                if (!string.IsNullOrWhiteSpace(AppName))
+                if (!string.IsNullOrWhiteSpace(_appName))
                 {
-                    AppName = Regex.Replace(AppName, invalidChars, string.Empty).Trim();
+                    _appName = Regex.Replace(_appName, invalidChars, string.Empty).Trim();
                 }
-                if (!string.IsNullOrWhiteSpace(AppVersion))
+                if (!string.IsNullOrWhiteSpace(_appVersion))
                 {
-                    AppVersion = Regex.Replace(AppVersion, invalidChars, string.Empty).Trim();
+                    _appVersion = Regex.Replace(_appVersion, invalidChars, string.Empty).Trim();
                 }
-                if (!string.IsNullOrWhiteSpace(AppArch))
+                if (!string.IsNullOrWhiteSpace(_appArch))
                 {
-                    AppArch = Regex.Replace(AppArch, invalidChars, string.Empty).Trim();
+                    _appArch = Regex.Replace(_appArch, invalidChars, string.Empty).Trim();
                 }
-                if (!string.IsNullOrWhiteSpace(AppLang))
+                if (!string.IsNullOrWhiteSpace(_appLang))
                 {
-                    AppLang = Regex.Replace(AppLang, invalidChars, string.Empty).Trim();
+                    _appLang = Regex.Replace(_appLang, invalidChars, string.Empty).Trim();
                 }
-                if (!string.IsNullOrWhiteSpace(AppRevision))
+                if (!string.IsNullOrWhiteSpace(_appRevision))
                 {
-                    AppRevision = Regex.Replace(AppRevision, invalidChars, string.Empty).Trim();
+                    _appRevision = Regex.Replace(_appRevision, invalidChars, string.Empty).Trim();
                 }
 
                 // If we're left with a blank AppName, throw a terminating error.
-                if (string.IsNullOrWhiteSpace(AppName))
+                if (string.IsNullOrWhiteSpace(_appName))
                 {
                     throw new ArgumentNullException("AppName", "The application name was not specified.");
                 }
@@ -398,22 +393,22 @@ namespace PSADT.Module
 
 
                 // Build the Installation Title.
-                if (string.IsNullOrWhiteSpace(InstallTitle))
+                if (string.IsNullOrWhiteSpace(_installTitle))
                 {
-                    InstallTitle = $"{AppVendor} {AppName} {AppVersion}".Trim();
+                    _installTitle = $"{_appVendor} {_appName} {_appVersion}".Trim();
                 }
-                InstallTitle = Regex.Replace(InstallTitle, "\\s{2,}", string.Empty);
+                _installTitle = Regex.Replace(_installTitle, "\\s{2,}", string.Empty);
 
                 // Build the Installation Name.
-                if (string.IsNullOrWhiteSpace(InstallName))
+                if (string.IsNullOrWhiteSpace(_installName))
                 {
-                    InstallName = $"{AppVendor}_{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
+                    _installName = $"{_appVendor}_{_appName}_{_appVersion}_{_appArch}_{_appLang}_{_appRevision}";
                 }
-                InstallName = Regex.Replace(Regex.Replace(InstallName, "\\s|^_|_$", string.Empty), "_+", "_");
+                _installName = Regex.Replace(Regex.Replace(_installName, "\\s|^_|_$", string.Empty), "_+", "_");
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $"{configToolkit["RegPath"]}\\{ADTEnv["appDeployToolkitName"]}\\DeferHistory";
-                RegKeyDeferHistory = $"{RegKeyDeferBase}\\{InstallName}";
+                RegKeyDeferHistory = $"{RegKeyDeferBase}\\{_installName}";
 
 
                 #endregion
@@ -421,15 +416,15 @@ namespace PSADT.Module
 
 
                 // Generate log paths from our installation properties.
-                LogTempFolder = Path.Combine((string)ADTEnv["envTemp"]!, $"{InstallName}_{DeploymentType}");
+                _logTempFolder = Path.Combine((string)ADTEnv["envTemp"]!, $"{_installName}_{_deploymentType}");
                 if ((bool)configToolkit["CompressLogs"]!)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                    if (Directory.Exists(LogTempFolder))
+                    if (Directory.Exists(_logTempFolder))
                     {
-                        Directory.Delete(LogTempFolder, true);
+                        Directory.Delete(_logTempFolder, true);
                     }
-                    LogPath = Directory.CreateDirectory(LogTempFolder).FullName;
+                    LogPath = Directory.CreateDirectory(_logTempFolder).FullName;
                 }
                 else
                 {
@@ -440,14 +435,14 @@ namespace PSADT.Module
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                 if ((bool)ADTEnv["IsAdmin"]!)
                 {
-                    LogName = $"{InstallName}_{ADTEnv["appDeployToolkitName"]}_{DeploymentType}.log";
+                    _logName = $"{_installName}_{ADTEnv["appDeployToolkitName"]}_{_deploymentType}.log";
                 }
                 else
                 {
-                    LogName = $"{InstallName}_{ADTEnv["appDeployToolkitName"]}_{DeploymentType}_{ADTEnv["envUserName"]}.log";
+                    _logName = $"{_installName}_{ADTEnv["appDeployToolkitName"]}_{_deploymentType}_{ADTEnv["envUserName"]}.log";
                 }
-                LogName = Regex.Replace(LogName, invalidChars, string.Empty);
-                string logFile = Path.Combine(LogPath, LogName);
+                _logName = Regex.Replace(_logName, invalidChars, string.Empty);
+                string logFile = Path.Combine(LogPath, _logName);
                 FileInfo logFileInfo = new FileInfo(logFile);
                 var logMaxSize = (int)configToolkit["LogMaxSize"]!;
                 bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
@@ -458,8 +453,8 @@ namespace PSADT.Module
                     try
                     {
                         // Get new log file path.
-                        string logFileNameOnly = Path.GetFileNameWithoutExtension(LogName);
-                        string logFileExtension = Path.GetExtension(LogName);
+                        string logFileNameOnly = Path.GetFileNameWithoutExtension(_logName);
+                        string logFileExtension = Path.GetExtension(_logName);
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
                         string archiveLogFilePath = Path.Combine(LogPath, archiveLogFileName);
@@ -501,7 +496,7 @@ namespace PSADT.Module
 
                 // Open log file with commencement message.
                 WriteLogDivider(2);
-                WriteLogEntry($"[{InstallName}] {DeploymentTypeName.ToLower()} started.");
+                WriteLogEntry($"[{_installName}] {_deploymentTypeName.ToLower()} started.");
 
 
                 #endregion
@@ -509,30 +504,30 @@ namespace PSADT.Module
 
 
                 // Announce provided deployment script info.
-                if (!UseDefaultMsi)
+                if (!_useDefaultMsi)
                 {
-                    if (null != AppScriptVersion)
+                    if (null != _appScriptVersion)
                     {
-                        WriteLogEntry($"[{InstallName}] script version is [{AppScriptVersion}].");
+                        WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
                     }
-                    if (null != AppScriptDate)
+                    if (null != _appScriptDate)
                     {
-                        WriteLogEntry($"[{InstallName}] script date is [{AppScriptDate?.ToString("O").Split('T')[0]}].");
+                        WriteLogEntry($"[{_installName}] script date is [{_appScriptDate?.ToString("O").Split('T')[0]}].");
                     }
-                    if (!string.IsNullOrWhiteSpace(AppScriptAuthor))
+                    if (!string.IsNullOrWhiteSpace(_appScriptAuthor))
                     {
-                        WriteLogEntry($"[{InstallName}] script author is [{AppScriptAuthor}].");
+                        WriteLogEntry($"[{_installName}] script author is [{_appScriptAuthor}].");
                     }
                 }
-                if (!string.IsNullOrWhiteSpace(DeployAppScriptFriendlyName))
+                if (!string.IsNullOrWhiteSpace(_deployAppScriptFriendlyName))
                 {
-                    if (null != DeployAppScriptVersion)
+                    if (null != _deployAppScriptVersion)
                     {
-                        WriteLogEntry($"[{DeployAppScriptFriendlyName}] script version is [{DeployAppScriptVersion}].");
+                        WriteLogEntry($"[{_deployAppScriptFriendlyName}] script version is [{_deployAppScriptVersion}].");
                     }
-                    if ((null != DeployAppScriptParameters) && (DeployAppScriptParameters.Count > 0))
+                    if ((null != _deployAppScriptParameters) && (_deployAppScriptParameters.Count > 0))
                     {
-                        WriteLogEntry($"The following parameters were passed to [${DeployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(DeployAppScriptParameters)}].");
+                        WriteLogEntry($"The following parameters were passed to [${_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters)}].");
                     }
                 }
                 var adtDirectories = (PSObject)ADTData.Properties["Directories"].Value;
@@ -545,7 +540,7 @@ namespace PSADT.Module
                 WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] string path is [{adtDirectories.Properties["Strings"].Value}].");
 
                 // Announce session instantiation mode.
-                if (null != CallerSessionState)
+                if (null != callerSessionState)
                 {
                     WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", 2);
                     WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2);
@@ -602,7 +597,7 @@ namespace PSADT.Module
                     if ((bool)configToolkit["OobeDetection"]! && (Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Utility.IsOOBEComplete())
                     {
                         WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
-                        DeployMode = "Silent";
+                        _deployMode = "Silent";
                     }
 
                     // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
@@ -660,22 +655,22 @@ namespace PSADT.Module
                 if ((bool)ADTEnv["SessionZero"]!)
                 {
                     // If the script was launched with deployment mode set to NonInteractive, then continue.
-                    if (DeployMode != "Interactive")
+                    if (_deployMode != "Interactive")
                     {
-                        WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{DeployMode}].");
+                        WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{_deployMode}].");
                     }
                     else if ((bool)configToolkit["SessionDetection"]!)
                     {
                         // If the process is not able to display a UI, enable NonInteractive mode.
                         if ((bool)ADTEnv["IsProcessUserInteractive"]!)
                         {
-                            DeployMode = "NonInteractive";
-                            WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{DeployMode}].");
+                            _deployMode = "NonInteractive";
+                            WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{_deployMode}].");
                         }
                         else if (null == ADTEnv["usersLoggedOn"])
                         {
-                            DeployMode = "NonInteractive";
-                            WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{DeployMode}].");
+                            _deployMode = "NonInteractive";
+                            WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{_deployMode}].");
                         }
                         else
                         {
@@ -698,8 +693,8 @@ namespace PSADT.Module
 
 
                 // Set Deploy Mode switches.
-                WriteLogEntry($"Installation is running in [{DeployMode}] mode.");
-                switch (DeployMode)
+                WriteLogEntry($"Installation is running in [{_deployMode}] mode.");
+                switch (_deployMode)
                 {
                     case "Silent":
                         DeployModeNonInteractive = true;
@@ -712,7 +707,7 @@ namespace PSADT.Module
 
 
                 // Check deployment type (install/uninstall).
-                WriteLogEntry($"Deployment type is [{DeploymentTypeName}].");
+                WriteLogEntry($"Deployment type is [{_deploymentTypeName}].");
 
 
                 #endregion
@@ -720,9 +715,9 @@ namespace PSADT.Module
 
 
                 // Advise the caller if a zero-config MSI was found.
-                if (UseDefaultMsi)
+                if (_useDefaultMsi)
                 {
-                    WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
+                    WriteLogEntry($"Discovered Zero-Config MSI installation file [{_defaultMsiFile}].");
                 }
 
 
@@ -742,18 +737,23 @@ namespace PSADT.Module
 
 
                 // If terminal server mode was specified, change the installation mode to support it.
-                if (TerminalServerMode)
+                if (_terminalServerMode)
                 {
                     ModuleSessionState.InvokeCommand.InvokeScript("& $CommandTable.'Enable-ADTTerminalServerInstallMode'");
                 }
 
                 // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-                if (null != CallerSessionState)
+                if (null != callerSessionState)
                 {
-                    foreach (PropertyInfo property in this.GetType().GetProperties(BindingFlags.Public))
+                    CallerSessionState = callerSessionState;
+                    foreach (PropertyInfo property in this.GetType().GetProperties())
                     {
-                        CallerSessionState.PSVariable.Set(property.Name, property.GetValue(this));
+                        CallerSessionState.PSVariable.Set(property.Name, this.GetType().GetProperty($"_{char.ToLower(property.Name[0])}{property.Name.Substring(1)}", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(this));
+                    }
+                    foreach (FieldInfo field in this.GetType().GetFields())
+                    {
+                        CallerSessionState.PSVariable.Set(field.Name, field.GetValue(this));
                     }
                 }
 
@@ -850,14 +850,7 @@ namespace PSADT.Module
             }
 
             // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
-            if ((GetPropertyValue(nameof(InstallName)) is string deployString) && !string.IsNullOrWhiteSpace(deployString))
-            {
-                deployString = $"[{GetPropertyValue(nameof(InstallName))}] {DeploymentTypeName.ToLower()}".Trim();
-            }
-            else
-            {
-                deployString = $"{ADTEnv["appDeployToolkitName"]} deployment";
-            }
+            string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentTypeName.ToLower()}".Trim() : $"{ADTEnv["appDeployToolkitName"]} deployment";
 
             // Process resulting exit code.
             string deploymentStatus = GetDeploymentStatus();
@@ -875,7 +868,7 @@ namespace PSADT.Module
                     ResetDeferHistory();
 
                     // Handle reboot prompts on successful script completion.
-                    if (deploymentStatus.Equals("RestartRequired") && (bool)GetPropertyValue(nameof(AllowRebootPassThru))!)
+                    if (deploymentStatus.Equals("RestartRequired") && AllowRebootPassThru)
                     {
                         WriteLogEntry("A restart has been flagged as required.");
                     }
@@ -917,7 +910,7 @@ namespace PSADT.Module
             if ((bool)configToolkit["CompressLogs"]!)
             {
                 // Archive the log files to zip format and then delete the temporary logs folder.
-                string destArchiveFileName = $"{GetPropertyValue(nameof(InstallName))}_{GetPropertyValue(nameof(DeploymentType))}_{0}.zip";
+                string destArchiveFileName = $"{InstallName}_{DeploymentType}_{0}.zip";
                 try
                 {
                     // Get all archive files sorted by last write time.
@@ -936,9 +929,8 @@ namespace PSADT.Module
                     }
 
                     // Compression of the log files.
-                    var logTempFolder = (string)this.GetPropertyValue(nameof(LogTempFolder));
-                    ZipFile.CreateFromDirectory(logTempFolder, destArchiveFileName, CompressionLevel.Optimal, false);
-                    Directory.Delete(logTempFolder, true);
+                    ZipFile.CreateFromDirectory(LogTempFolder, destArchiveFileName, CompressionLevel.Optimal, false);
+                    Directory.Delete(LogTempFolder, true);
                 }
                 catch (Exception ex)
                 {
@@ -948,38 +940,6 @@ namespace PSADT.Module
 
             // Return the exit code to the caller.
             return ExitCode;
-        }
-
-        /// <summary>
-        /// Gets the value of a property by name.
-        /// </summary>
-        /// <param name="propertyName">The name of the property.</param>
-        /// <returns>The value of the property.</returns>
-        public object GetPropertyValue(string propertyName)
-        {
-            // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
-            // We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-            if (null != CallerSessionState)
-            {
-                return CallerSessionState.PSVariable.Get(propertyName)!.Value;
-            }
-            return this.GetType().GetProperty(propertyName)!.GetValue(this)!;
-        }
-
-        /// <summary>
-        /// Sets the value of a property by name.
-        /// </summary>
-        /// <param name="propertyName">The name of the property.</param>
-        /// <param name="propertyValue">The value to set.</param>
-        public void SetPropertyValue(string propertyName, object propertyValue)
-        {
-            // This getter exists as once the object is opened, we need to read the variable from the caller's scope.
-            // We must get the variable every time as syntax like `$var = 'val'` always constructs a new PSVariable...
-            if (null != CallerSessionState)
-            {
-                CallerSessionState.PSVariable.Set(propertyName, propertyValue);
-            }
-            this.GetType().GetProperty(propertyName)!.SetValue(this, propertyValue);
         }
 
         /// <summary>
@@ -1006,7 +966,7 @@ namespace PSADT.Module
             }
 
             // Perform early return checks before wasting time.
-            if (((bool)GetPropertyValue(nameof(DisableLogging))! && (bool)!writeHost) || (debugMessage && !(bool)configToolkit["LogDebugMessage"]!))
+            if ((DisableLogging && (bool)!writeHost) || (debugMessage && !(bool)configToolkit["LogDebugMessage"]!))
             {
                 return;
             }
@@ -1030,7 +990,7 @@ namespace PSADT.Module
             }
             if (string.IsNullOrWhiteSpace(scriptSection))
             {
-                scriptSection = (string)GetPropertyValue(nameof(InstallPhase))!;
+                scriptSection = InstallPhase;
             }
             if (string.IsNullOrWhiteSpace(logType))
             {
@@ -1046,7 +1006,7 @@ namespace PSADT.Module
             }
             if (string.IsNullOrWhiteSpace(logFileName))
             {
-                logFileName = (string)GetPropertyValue(nameof(LogName))!;
+                logFileName = LogName;
             }
 
             // Store log string to format with message.
@@ -1063,7 +1023,7 @@ namespace PSADT.Module
             }
 
             // Write out all messages to disk if configured/permitted to do so.
-            if (!(bool)GetPropertyValue(nameof(DisableLogging))! && (Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty) is string outFile) && !string.IsNullOrWhiteSpace(outFile))
+            if (!DisableLogging && (Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty) is string outFile) && !string.IsNullOrWhiteSpace(outFile))
             {
                 using (StreamWriter logFileWriter = new StreamWriter(outFile, true, LogEncoding))
                 {
@@ -1299,11 +1259,11 @@ namespace PSADT.Module
             {
                 return "FastRetry";
             }
-            else if (((ReadOnlyCollection<int>)GetPropertyValue(nameof(AppRebootExitCodes))!).Contains(ExitCode))
+            else if (AppRebootExitCodes.Contains(ExitCode))
             {
                 return "RestartRequired";
             }
-            else if (((ReadOnlyCollection<int>)GetPropertyValue(nameof(AppSuccessExitCodes))!).Contains(ExitCode))
+            else if (AppSuccessExitCodes.Contains(ExitCode))
             {
                 return "Complete";
             }
@@ -1519,38 +1479,96 @@ namespace PSADT.Module
 
 
         #endregion
+        #region Private backing fields.
+
+
+        private string _deploymentType { get; } = "Install";
+        private string _deploymentTypeName { get; }
+        private string _deployMode { get; } = "Interactive";
+        private SwitchParameter _allowRebootPassThru { get; }
+        private SwitchParameter _terminalServerMode { get; }
+        private SwitchParameter _disableLogging { get; }
+        private string? _appVendor { get; }
+        private string? _appName { get; }
+        private string? _appVersion { get; }
+        private string? _appArch { get; }
+        private string? _appLang { get; }
+        private string? _appRevision { get; }
+        private ReadOnlyCollection<int> _appSuccessExitCodes { get; } = new ReadOnlyCollection<int>([0]);
+        private ReadOnlyCollection<int> _appRebootExitCodes { get; } = new ReadOnlyCollection<int>([1641, 3010]);
+        private Version? _appScriptVersion { get; }
+        private DateTime? _appScriptDate { get; }
+        private string? _appScriptAuthor { get; }
+        private string _installName { get; }
+        private string _installTitle { get; }
+        private string? _deployAppScriptFriendlyName { get; }
+        private Version? _deployAppScriptVersion { get; }
+        private IDictionary? _deployAppScriptParameters { get; }
+        private string _installPhase { get; set; } = "Initialization";
+        private string _currentDate { get; }
+        private string _currentTime { get; }
+        private string? _scriptDirectory { get; }
+        private string? _dirFiles { get; set; }
+        private string? _dirSupportFiles { get; set; }
+        private string? _defaultMsiFile { get; }
+        private string? _defaultMstFile { get; }
+        private ReadOnlyCollection<string> _defaultMspFiles { get; } = new ReadOnlyCollection<string>([]);
+        private bool _useDefaultMsi { get; }
+        private string _logTempFolder { get; }
+        private string _logName { get; }
+
+
+        #endregion
         #region Frontend parameters.
 
 
         /// <summary>
         /// Gets the deployment session's deployment type.
         /// </summary>
-        public string DeploymentType { get; } = "Install";
+        public string DeploymentType
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeploymentType)) : _deploymentType;
+        }
 
         /// <summary>
         /// Gets the deployment type name from the language string table for the given DeploymentType.
         /// </summary>
-        public string DeploymentTypeName { get; }
+        public string DeploymentTypeName
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeploymentTypeName)) : _deploymentTypeName;
+        }
 
         /// <summary>
         /// Gets the deployment session's deployment mode.
         /// </summary>
-        public string DeployMode { get; } = "Interactive";
+        public string DeployMode
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeployMode)) : _deployMode;
+        }
 
         /// <summary>
         /// Gets whether this deployment session is allowed to exit with a reboot exit code.
         /// </summary>
-        public bool AllowRebootPassThru { get; }
+        public bool AllowRebootPassThru
+        {
+            get => (null != CallerSessionState) ? (SwitchParameter)CallerSessionState.PSVariable.GetValue(nameof(AllowRebootPassThru)) : _allowRebootPassThru;
+        }
 
         /// <summary>
         /// Gets whether this deployment session should enable terminal services install mode.
         /// </summary>
-        public bool TerminalServerMode { get; }
+        public bool TerminalServerMode
+        {
+            get => (null != CallerSessionState) ? (SwitchParameter)CallerSessionState.PSVariable.GetValue(nameof(TerminalServerMode)) : _terminalServerMode;
+        }
 
         /// <summary>
         /// Gets whether this deployment session should disable logging for the operation.
         /// </summary>
-        public bool DisableLogging { get; }
+        public bool DisableLogging
+        {
+            get => (null != CallerSessionState) ? (SwitchParameter)CallerSessionState.PSVariable.GetValue(nameof(DisableLogging)) : _disableLogging;
+        }
 
 
         #endregion
@@ -1560,87 +1578,143 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's application vendor.
         /// </summary>
-        public string? AppVendor { get; }
+        public string? AppVendor
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppVendor)) : _appVendor;
+        }
 
         /// <summary>
         /// Gets the deployment session's application name.
         /// </summary>
-        public string? AppName { get; }
+        public string? AppName
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppName)) : _appName;
+        }
 
         /// <summary>
         /// Gets the deployment session's application version.
         /// </summary>
-        public string? AppVersion { get; }
+        public string? AppVersion
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppVersion)) : _appVersion;
+        }
 
         /// <summary>
         /// Gets the deployment session's application architecture.
         /// </summary>
-        public string? AppArch { get; }
+        public string? AppArch
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppArch)) : _appArch;
+        }
 
         /// <summary>
         /// Gets the deployment session's application language.
         /// </summary>
-        public string? AppLang { get; }
+        public string? AppLang
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppLang)) : _appLang;
+        }
 
         /// <summary>
         /// Gets the deployment session's application package revision.
         /// </summary>
-        public string? AppRevision { get; }
+        public string? AppRevision
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppRevision)) : _appRevision;
+        }
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a successful deployment.
         /// </summary>
-        public ReadOnlyCollection<int> AppSuccessExitCodes { get; } = new ReadOnlyCollection<int>([0]);
+        public ReadOnlyCollection<int> AppSuccessExitCodes
+        {
+            get => (null != CallerSessionState) ? (ReadOnlyCollection<int>)CallerSessionState.PSVariable.GetValue(nameof(AppSuccessExitCodes)) : _appSuccessExitCodes;
+        }
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a reboot is required.
         /// </summary>
-        public ReadOnlyCollection<int> AppRebootExitCodes { get; } = new ReadOnlyCollection<int>([1641, 3010]);
+        public ReadOnlyCollection<int> AppRebootExitCodes
+        {
+            get => (null != CallerSessionState) ? (ReadOnlyCollection<int>)CallerSessionState.PSVariable.GetValue(nameof(AppRebootExitCodes)) : _appRebootExitCodes;
+        }
 
         /// <summary>
         /// Gets the deployment session's application package version.
         /// </summary>
-        public Version? AppScriptVersion { get; }
+        public Version? AppScriptVersion
+        {
+            get => (null != CallerSessionState) ? new Version((string)CallerSessionState.PSVariable.GetValue(nameof(AppScriptVersion))) : _appScriptVersion;
+        }
 
         /// <summary>
         /// Gets the deployment session's application package date.
         /// </summary>
-        public DateTime? AppScriptDate { get; }
+        public DateTime? AppScriptDate
+        {
+            get => (null != CallerSessionState) ? DateTime.ParseExact((string)CallerSessionState.PSVariable.GetValue(nameof(AppScriptDate)), CultureInfo.InvariantCulture.DateTimeFormat.ShortDatePattern, CultureInfo.InvariantCulture) : _appScriptDate;
+        }
 
         /// <summary>
         /// Gets the deployment session's application package author.
         /// </summary>
-        public string? AppScriptAuthor { get; }
+        public string? AppScriptAuthor
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppScriptAuthor)) : _appScriptAuthor;
+        }
 
         /// <summary>
         /// Gets an override to the deployment session's installation name.
         /// </summary>
-        public string InstallName { get; }
+        public string InstallName
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(InstallName)) : _installName;
+        }
 
         /// <summary>
         /// Gets an override to the deployment session's installation title.
         /// </summary>
-        public string InstallTitle { get; }
+        public string InstallTitle
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(InstallTitle)) : _installTitle;
+        }
 
         /// <summary>
         /// Gets the deployment session's frontend script name.
         /// </summary>
-        public string? DeployAppScriptFriendlyName { get; }
+        public string? DeployAppScriptFriendlyName
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptFriendlyName)) : _deployAppScriptFriendlyName;
+        }
 
         /// <summary>
         /// Gets the deployment session's frontend script version.
         /// </summary>
-        public Version? DeployAppScriptVersion { get; }
+        public Version? DeployAppScriptVersion
+        {
+            get => (null != CallerSessionState) ? (Version?)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptVersion)) : _deployAppScriptVersion;
+        }
 
         /// <summary>
         /// Gets the deployment session's frontend script parameters.
         /// </summary>
-        public IDictionary? DeployAppScriptParameters { get; }
+        public IDictionary? DeployAppScriptParameters
+        {
+            get => (null != CallerSessionState) ? (IDictionary)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptParameters)) : _deployAppScriptParameters;
+        }
 
         /// <summary>
         /// Gets/sets the deployment session's installation phase'.
         /// </summary>
-        public string InstallPhase { get; set; } = "Initialization";
+        public string InstallPhase
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(InstallPhase)) : _installPhase;
+            set
+            {
+                _installPhase = value;
+                CallerSessionState?.PSVariable.Set(nameof(InstallPhase), value);
+            }
+        }
 
 
         #endregion
@@ -1655,62 +1729,105 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's starting date as a string.
         /// </summary>
-        public string CurrentDate { get; }
+        public string CurrentDate
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(CurrentDate)) : _currentDate;
+        }
 
         /// <summary>
         /// Gets the deployment session's starting time as a string.
         /// </summary>
-        public string CurrentTime { get; }
+        public string CurrentTime
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(CurrentTime)) : _currentTime;
+        }
 
         /// <summary>
         /// Gets the deployment session's UTC offset from GMT 0.
         /// </summary>
-        public readonly TimeSpan CurrentTimeZoneBias = TimeZoneInfo.Local.BaseUtcOffset;
+        public static readonly TimeSpan CurrentTimeZoneBias = TimeZoneInfo.Local.BaseUtcOffset;
 
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public string? ScriptDirectory { get; }
+        public string? ScriptDirectory
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(ScriptDirectory)) : _scriptDirectory;
+        }
 
         /// <summary>
         /// Gets the specified or determined path to the Files folder.
         /// </summary>
-        public string? DirFiles { get; set; }
+        public string? DirFiles
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DirFiles)) : _dirFiles;
+            set
+            {
+                _dirFiles = value;
+                CallerSessionState?.PSVariable.Set(nameof(DirFiles), value);
+            }
+        }
 
         /// <summary>
         /// Gets the specified or determined path to the SupportFiles folder.
         /// </summary>
-        public string? DirSupportFiles { get; set; }
+        public string? DirSupportFiles
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DirSupportFiles)) : _dirSupportFiles;
+            set
+            {
+                _dirSupportFiles = value;
+                CallerSessionState?.PSVariable.Set(nameof(DirSupportFiles), value);
+            }
+        }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSI file path.
         /// </summary>
-        public string? DefaultMsiFile { get; }
+        public string? DefaultMsiFile
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DefaultMsiFile)) : _defaultMsiFile;
+        }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MST file path.
         /// </summary>
-        public string? DefaultMstFile { get; }
+        public string? DefaultMstFile
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DefaultMstFile)) : _defaultMstFile;
+        }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public ReadOnlyCollection<string> DefaultMspFiles { get; } = new ReadOnlyCollection<string>([]);
+        public ReadOnlyCollection<string> DefaultMspFiles
+        {
+            get => (null != CallerSessionState) ? (ReadOnlyCollection<string>)CallerSessionState.PSVariable.GetValue(nameof(DefaultMspFiles)) : _defaultMspFiles;
+        }
 
         /// <summary>
         /// Gets whether this deployment session found a valid Zero-Config MSI file.
         /// </summary>
-        private bool UseDefaultMsi { get; }
+        public bool UseDefaultMsi
+        {
+            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(UseDefaultMsi)) : _useDefaultMsi;
+        }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public string LogTempFolder { get; }
+        public string LogTempFolder
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(LogTempFolder)) : _logTempFolder;
+        }
 
         /// <summary>
         /// Gets the deployment session's log filename.
         /// </summary>
-        public string LogName { get; }
+        public string LogName
+        {
+            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(LogName)) : _logName;
+        }
 
 
         #endregion

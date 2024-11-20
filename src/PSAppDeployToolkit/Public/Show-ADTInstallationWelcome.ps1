@@ -249,11 +249,11 @@ function Show-ADTInstallationWelcome
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
+            $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
         if (!$PSBoundParameters.ContainsKey('DeploymentType'))
         {
-            $PSBoundParameters.Add('DeploymentType', $adtSession.GetPropertyValue('DeploymentType'))
+            $PSBoundParameters.Add('DeploymentType', $adtSession.DeploymentType)
         }
 
         # Instantiate new object to hold all data needed within this call.
@@ -290,7 +290,7 @@ function Show-ADTInstallationWelcome
                         {
                             # Determine the size of the Files folder
                             $fso = New-Object -ComObject Scripting.FileSystemObject
-                            $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.GetPropertyValue('ScriptDirectory')).Size / 1MB)
+                            $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.ScriptDirectory).Size / 1MB)
                         }
                         catch
                         {

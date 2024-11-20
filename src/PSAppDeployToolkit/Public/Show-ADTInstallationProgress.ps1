@@ -138,15 +138,15 @@ function Show-ADTInstallationProgress
         {
             if (!$PSBoundParameters.ContainsKey('WindowTitle'))
             {
-                $PSBoundParameters.Add('WindowTitle', $adtSession.GetPropertyValue('InstallTitle'))
+                $PSBoundParameters.Add('WindowTitle', $adtSession.InstallTitle)
             }
             if (!$PSBoundParameters.ContainsKey('StatusMessage'))
             {
-                $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))")
+                $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.DeploymentType)")
             }
             if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
             {
-                $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.GetPropertyValue('DeploymentType'))Detail")
+                $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.DeploymentType)Detail")
             }
         }
     }
@@ -158,7 +158,7 @@ function Show-ADTInstallationProgress
         {
             if ($adtSession.IsSilent())
             {
-                Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Status message: $($PSBoundParameters.StatusMessage)"
+                Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Status message: $($PSBoundParameters.StatusMessage)"
                 return
             }
 

@@ -101,7 +101,7 @@ function Show-ADTBalloonTip
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
         {
-            $PSBoundParameters.Add('BalloonTipTitle', $adtSession.GetPropertyValue('InstallTitle'))
+            $PSBoundParameters.Add('BalloonTipTitle', $adtSession.InstallTitle)
         }
     }
 
@@ -125,7 +125,7 @@ function Show-ADTBalloonTip
                 }
                 if ($adtSession -and $adtSession.IsSilent())
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. BalloonTipText: $BalloonTipText"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. BalloonTipText: $BalloonTipText"
                     return
                 }
                 if (Test-ADTPowerPoint)
