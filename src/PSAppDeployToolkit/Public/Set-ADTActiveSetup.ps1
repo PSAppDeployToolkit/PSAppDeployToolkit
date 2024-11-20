@@ -574,11 +574,11 @@ function Set-ADTActiveSetup
                     Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
                     if ($CUArguments)
                     {
-                        Start-ADTProcess -FilePath $CUStubExePath -ArgumentList $CUArguments -NoExitOnProcessFailure
+                        Start-ADTProcess -FilePath $CUStubExePath -ArgumentList $CUArguments
                     }
                     else
                     {
-                        Start-ADTProcess -FilePath $CUStubExePath -NoExitOnProcessFailure
+                        Start-ADTProcess -FilePath $CUStubExePath
                     }
 
                     Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."

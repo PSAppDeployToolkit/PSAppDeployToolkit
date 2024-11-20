@@ -188,7 +188,6 @@ function Uninstall-ADTApplication
         # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
         $sapParams = @{
             SecureArgumentList = $SecureArgumentList
-            NoExitOnProcessFailure = $true
             WaitForMsiExec = $true
             CreateNoWindow = $true
             PassThru = $PassThru
