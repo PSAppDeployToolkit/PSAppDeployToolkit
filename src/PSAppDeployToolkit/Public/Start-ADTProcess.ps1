@@ -568,17 +568,9 @@ function Start-ADTProcess
                 $adtSession.SetExitCode($returnCode)
             }
 
-            if ($returnCode.Equals(60002))
-            {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Function failed, setting exit code to [$returnCode]."
-            }
-            else
-            {
-                Write-ADTLogEntry -Message $_.Exception.Message -Severity 3
-            }
-
             if (!$returnCode.Equals(60002))
             {
+                Write-ADTLogEntry -Message $_.Exception.Message -Severity 3
                 if ($PassThru)
                 {
                     $PSCmdlet.WriteObject($_.TargetObject)
@@ -587,6 +579,10 @@ function Start-ADTProcess
                 {
                     Close-ADTSession -ExitCode $returnCode
                 }
+            }
+            else
+            {
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Function failed, setting exit code to [$returnCode]."
             }
         }
     }
