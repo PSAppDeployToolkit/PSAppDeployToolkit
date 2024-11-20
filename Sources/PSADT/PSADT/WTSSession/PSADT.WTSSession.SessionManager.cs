@@ -7,9 +7,9 @@ using PSADT.OperatingSystem;
 using System.ComponentModel;
 using System.Security.Principal;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.Logging;
-using System.Net.Sockets;
 
 namespace PSADT.WTSSession
 {
@@ -696,6 +696,48 @@ namespace PSADT.WTSSession
             }
 
             return sessionInfo;
+        }
+
+        public static ReadOnlyCollection<CompatibilitySessionInfo> GetCompatibilitySessionInfo()
+        {
+            // Open collector for all compatibility session objects.
+            List<CompatibilitySessionInfo> compatibilitySessionInfos = [];
+
+            // Get all current sessions.
+            if (GetAllActiveUserSessions() is List<SessionInfo> activeUsers)
+            {
+                foreach (SessionInfo sessionInfo in activeUsers)
+                {
+                    // Get extended session information.
+                    ExtendedSessionInfo extendedSessionInfo = GetExtendedSessionInfo(sessionInfo.SessionId);
+
+                    // Create a new CompatibilitySessionInfo object.
+                    compatibilitySessionInfos.Add(new CompatibilitySessionInfo(
+                        extendedSessionInfo.NTAccount?.ToString(),
+                        extendedSessionInfo.Sid?.ToString(),
+                        extendedSessionInfo.UserName,
+                        extendedSessionInfo.DomainName,
+                        extendedSessionInfo.SessionId,
+                        extendedSessionInfo.SessionName,
+                        extendedSessionInfo.ConnectionState,
+                        sessionInfo.IsActiveSession,
+                        sessionInfo.IsConsoleSession,
+                        sessionInfo.IsActiveUserSession,
+                        sessionInfo.IsUserSession,
+                        sessionInfo.IsRemoteSession,
+                        sessionInfo.IsLocalAdminUserSession,
+                        extendedSessionInfo.LogonTimeLocal,
+                        extendedSessionInfo.IdleTime ?? TimeSpan.Zero,
+                        extendedSessionInfo.DisconnectTimeLocal,
+                        extendedSessionInfo.ClientComputerName,
+                        extendedSessionInfo.ClientProtocolType,
+                        extendedSessionInfo.ClientDirectory,
+                        extendedSessionInfo.ClientBuildNumber));
+                }
+            }
+
+            // Return the accumulated compatibility session objects as a read-only collection.
+            return compatibilitySessionInfos.AsReadOnly();
         }
 
         public static string GetWtsUsernameById(uint sessionId, string? hServerName = "")

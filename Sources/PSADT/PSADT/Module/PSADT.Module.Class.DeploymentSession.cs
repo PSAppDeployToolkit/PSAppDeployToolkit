@@ -16,6 +16,7 @@ using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using PSADT.Shared;
 using PSADT.Types;
+using PSADT.WTSSession;
 
 namespace PSADT.Module
 {
@@ -584,7 +585,7 @@ namespace PSADT.Module
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn)}].");
 
                     // Check if the current process is running in the context of one of the logged on users
-                    if (ADTEnv["CurrentLoggedOnUserSession"] is QueryUser.TerminalSessionInfo CurrentLoggedOnUserSession)
+                    if (ADTEnv["CurrentLoggedOnUserSession"] is CompatibilitySessionInfo CurrentLoggedOnUserSession)
                     {
                         WriteLogEntry($"Current process is running with user account [{ADTEnv["ProcessNTAccount"]}] under logged on user session for [{CurrentLoggedOnUserSession.NTAccount}].");
                     }
@@ -601,7 +602,7 @@ namespace PSADT.Module
                     }
 
                     // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-                    if (ADTEnv["CurrentConsoleUserSession"] is QueryUser.TerminalSessionInfo CurrentConsoleUserSession)
+                    if (ADTEnv["CurrentConsoleUserSession"] is CompatibilitySessionInfo CurrentConsoleUserSession)
                     {
                         WriteLogEntry($"The following user is the console user [{CurrentConsoleUserSession.NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
                     }
@@ -611,7 +612,7 @@ namespace PSADT.Module
                     }
 
                     // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-                    if (ADTEnv["RunAsActiveUser"] is QueryUser.TerminalSessionInfo RunAsActiveUser)
+                    if (ADTEnv["RunAsActiveUser"] is CompatibilitySessionInfo RunAsActiveUser)
                     {
                         WriteLogEntry($"The active logged on user is [{RunAsActiveUser.NTAccount}].");
                     }

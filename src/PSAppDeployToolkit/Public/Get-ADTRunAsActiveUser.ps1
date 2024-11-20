@@ -49,7 +49,7 @@ function Get-ADTRunAsActiveUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.QueryUser+TerminalSessionInfo[]]$UserSessionInfo = (Get-ADTLoggedOnUser)
+        [PSADT.WTSSession.CompatibilitySessionInfo[]]$UserSessionInfo = (Get-ADTLoggedOnUser)
     )
 
     # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account.
