@@ -76,9 +76,8 @@ function Import-ADTConfig
     $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
 
     # Place restrictions on non-ConsoleHost targets.
-    if (!$Host.Name.Equals('ConsoleHost'))
+    if ($Host.Name.Equals('Windows PowerShell ISE Host'))
     {
-        $config.Toolkit.LogHostOutputToStdStreams = $false
         $config.UI.DialogStyle = 'Classic'
     }
 
