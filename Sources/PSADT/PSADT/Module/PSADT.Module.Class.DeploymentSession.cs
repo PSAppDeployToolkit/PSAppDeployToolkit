@@ -1675,12 +1675,12 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the specified or determined path to the Files folder.
         /// </summary>
-        public string? DirFiles { get; }
+        public string? DirFiles { get; set; }
 
         /// <summary>
         /// Gets the specified or determined path to the SupportFiles folder.
         /// </summary>
-        public string? DirSupportFiles { get; }
+        public string? DirSupportFiles { get; set; }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSI file path.
