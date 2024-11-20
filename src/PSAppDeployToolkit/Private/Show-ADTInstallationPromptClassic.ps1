@@ -363,7 +363,10 @@ function Show-ADTInstallationPromptClassic
         Abort
         {
             # Restore minimized windows.
-            $null = $adtEnv.ShellApp.UndoMinimizeAll()
+            if ($MinimizeWindows)
+            {
+                $null = $adtEnv.ShellApp.UndoMinimizeAll()
+            }
             if (!$NoExitOnTimeout)
             {
                 if (Test-ADTSessionActive)
