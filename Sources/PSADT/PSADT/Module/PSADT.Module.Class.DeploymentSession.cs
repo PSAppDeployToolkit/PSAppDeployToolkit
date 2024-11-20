@@ -663,7 +663,7 @@ namespace PSADT.Module
                     else if ((bool)configToolkit["SessionDetection"]!)
                     {
                         // If the process is not able to display a UI, enable NonInteractive mode.
-                        if ((bool)ADTEnv["IsProcessUserInteractive"]!)
+                        if (!(bool)ADTEnv["IsProcessUserInteractive"]!)
                         {
                             _deployMode = "NonInteractive";
                             WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{_deployMode}].");
