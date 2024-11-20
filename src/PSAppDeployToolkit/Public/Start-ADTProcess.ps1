@@ -484,16 +484,8 @@ function Start-ADTProcess
 
                 if (!$NoWait)
                 {
-                    # If the passthru switch is specified, return the exit code and any output from process.
-                    if ($PassThru)
-                    {
-                        Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
-                        $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]::new(
-                                $returnCode,
-                                $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut }),
-                                $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
-                            ))
-                    }
+                    # Open variable to store the error message if we failed as we need it when we're determining whether we throw or not.
+                    $errorMessage = $null
 
                     # Check to see whether we should ignore exit codes.
                     if ($IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($returnCode)))
@@ -506,15 +498,15 @@ function Start-ADTProcess
                     }
                     elseif (($returnCode -eq 1605) -and ($FilePath -match 'msiexec'))
                     {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the product is not currently installed." -Severity 3
+                        $errorMessage = "Execution failed with exit code [$returnCode] because the product is not currently installed."
                     }
                     elseif (($returnCode -eq -2145124329) -and ($FilePath -match 'wusa'))
                     {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system." -Severity 3
+                        $errorMessage = "Execution failed with exit code [$returnCode] because the Windows Update is not applicable to this system."
                     }
                     elseif (($returnCode -eq 17025) -and ($FilePath -match 'fullfile'))
                     {
-                        Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system." -Severity 3
+                        $errorMessage = "Execution failed with exit code [$returnCode] because the Office Update is not applicable to this system."
                     }
                     elseif ($SuccessExitCodes.Contains($returnCode))
                     {
@@ -524,17 +516,39 @@ function Start-ADTProcess
                     {
                         if (($MsiExitCodeMessage = if ($FilePath -match 'msiexec') { Get-ADTMsiExitCodeMessage -MsiExitCode $returnCode }))
                         {
-                            Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage" -Severity 3
+                            $errorMessage = "Execution failed with exit code [$returnCode]: $MsiExitCodeMessage"
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "Execution failed with exit code [$returnCode]." -Severity 3
+                            $errorMessage = "Execution failed with exit code [$returnCode]."
                         }
+                    }
 
-                        if ($adtSession -and !$NoExitOnProcessFailure)
-                        {
-                            Close-ADTSession -ExitCode $returnCode
+                    # Generate and store the PassThru data.
+                    $passthruObj = [PSADT.Types.ProcessResult]::new(
+                            $returnCode,
+                            $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut }),
+                            $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
+                        )
+
+                    # If we have an error in our process, throw it and let the catch block handle it.
+                    if ($errorMessage)
+                    {
+                        $naerParams = @{
+                            Exception = [System.ApplicationException]::new($errorMessage)
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'ProcessExitCodeError'
+                            TargetObject = $passthruObj
+                            RecommendedAction = "Please review the exit code with the vendor's documentation and try again."
                         }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
+
+                    # If the passthru switch is specified, return the exit code and any output from process.
+                    if ($PassThru)
+                    {
+                        Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
+                        $PSCmdlet.WriteObject($passthruObj)
                     }
                 }
             }
@@ -560,21 +574,19 @@ function Start-ADTProcess
             }
             else
             {
-                Write-ADTLogEntry -Message "Execution completed with exit code [$returnCode]. Function failed.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                Write-ADTLogEntry -Message $_.Exception.Message -Severity 3
             }
 
-            if ($PassThru)
+            if (!$returnCode.Equals(60002))
             {
-                $PSCmdlet.WriteObject([PSADT.Types.ProcessResult]::new(
-                        $returnCode,
-                        $(if (![System.String]::IsNullOrWhiteSpace($stdOut)) { $stdOut }),
-                        $(if (![System.String]::IsNullOrWhiteSpace($stdErr)) { $stdErr })
-                    ))
-            }
-
-            if ($adtSession -and !$NoExitOnProcessFailure)
-            {
-                Close-ADTSession -ExitCode $returnCode
+                if ($PassThru)
+                {
+                    $PSCmdlet.WriteObject($_.TargetObject)
+                }
+                if ($adtSession -and !$NoExitOnProcessFailure)
+                {
+                    Close-ADTSession -ExitCode $returnCode
+                }
             }
         }
     }
