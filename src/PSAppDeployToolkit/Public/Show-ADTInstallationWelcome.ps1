@@ -567,7 +567,10 @@ function Show-ADTInstallationWelcome
                             }
 
                             # Restore minimized windows.
-                            $null = $adtEnv.ShellApp.UndoMinimizeAll()
+                            if (!$NoMinimizeWindows)
+                            {
+                                $null = $adtEnv.ShellApp.UndoMinimizeAll()
+                            }
                             if ($adtSession)
                             {
                                 Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
@@ -581,7 +584,10 @@ function Show-ADTInstallationWelcome
                             Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 
                             # Restore minimized windows.
-                            $null = $adtEnv.ShellApp.UndoMinimizeAll()
+                            if (!$NoMinimizeWindows)
+                            {
+                                $null = $adtEnv.ShellApp.UndoMinimizeAll()
+                            }
                             if ($adtSession)
                             {
                                 Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
