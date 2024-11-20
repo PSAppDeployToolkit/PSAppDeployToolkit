@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -123,6 +123,14 @@ namespace PSADT.PInvoke
         /// Specifies the logical pixels per inch (DPI) in the vertical (Y) direction for a display device.
         /// </summary>
         public const int LOGPIXELSY = 90;
+
+        #endregion
+
+        #region Fields: winsta.dll
+
+        public const int WINSTATIONNAME_LENGTH = 32;
+        public const int DOMAIN_LENGTH = 17;
+        public const int USERNAME_LENGTH = 20;
 
         #endregion
     }
