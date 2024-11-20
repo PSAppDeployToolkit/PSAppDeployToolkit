@@ -174,7 +174,7 @@ function Show-ADTInstallationPrompt
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
+            $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
@@ -191,7 +191,7 @@ function Show-ADTInstallationPrompt
                 # Bypass if in non-interactive mode.
                 if ($adtSession -and $adtSession.IsNonInteractive())
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.GetPropertyValue('DeployMode'))]. Message: $Message"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Message: $Message"
                     return
                 }
 

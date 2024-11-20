@@ -56,7 +56,7 @@ function Copy-ADTContentToCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).GetPropertyValue('installName'))"
+        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).installName)"
     )
 
     begin
@@ -106,9 +106,9 @@ function Copy-ADTContentToCache
         {
             try
             {
-                Copy-ADTFile -Path (Join-Path $adtSession.GetPropertyValue('ScriptDirectory') '*') -Destination $Path -Recurse
-                $adtSession.SetPropertyValue('DirFiles', "$Path\Files")
-                $adtSession.SetPropertyValue('DirSupportFiles', "$Path\SupportFiles")
+                Copy-ADTFile -Path (Join-Path $adtSession.ScriptDirectory '*') -Destination $Path -Recurse
+                $adtSession.DirFiles = "$Path\Files"
+                $adtSession.DirSupportFiles = "$Path\SupportFiles"
             }
             catch
             {

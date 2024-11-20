@@ -238,7 +238,7 @@ function Start-ADTMsiProcess
                 $pathIsProductCode = $FilePath -match $msiProductCodeRegexPattern
 
                 # If the MSI is in the Files directory, set the full path to the MSI.
-                $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $FilePath))))
+                $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath))))
                 {
                     $dirFilesPath
                 }
@@ -348,7 +348,7 @@ function Start-ADTMsiProcess
                 # Build the log file path.
                 $logPath = if ($adtSession -and $adtConfig.Toolkit.CompressLogs)
                 {
-                    Join-Path -Path $adtSession.GetPropertyValue('LogTempFolder') -ChildPath $LogFileName
+                    Join-Path -Path $adtSession.LogTempFolder -ChildPath $LogFileName
                 }
                 else
                 {

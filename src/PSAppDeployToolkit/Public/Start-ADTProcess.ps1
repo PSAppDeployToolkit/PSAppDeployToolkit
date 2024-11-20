@@ -196,7 +196,7 @@ function Start-ADTProcess
         {
             $SuccessExitCodes = if ($adtSession)
             {
-                $adtSession.GetPropertyValue('AppSuccessExitCodes')
+                $adtSession.AppSuccessExitCodes
             }
             else
             {
@@ -207,7 +207,7 @@ function Start-ADTProcess
         {
             $RebootExitCodes = if ($adtSession)
             {
-                $adtSession.GetPropertyValue('AppRebootExitCodes')
+                $adtSession.AppRebootExitCodes
             }
             else
             {
@@ -250,7 +250,7 @@ function Start-ADTProcess
                 else
                 {
                     # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                    if (!($fqPath = Get-Item -Path ("$(if ($adtSession) { "$($adtSession.GetPropertyValue('DirFiles'));" })$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                    if (!($fqPath = Get-Item -Path ("$(if ($adtSession) { "$($adtSession.DirFiles);" })$($PWD);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                     {
                         Write-ADTLogEntry -Message "[$FilePath] contains an invalid path or file name." -Severity 3
                         $naerParams = @{

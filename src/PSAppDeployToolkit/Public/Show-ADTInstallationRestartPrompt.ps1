@@ -121,7 +121,7 @@ function Show-ADTInstallationRestartPrompt
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('Title', $adtSession.GetPropertyValue('InstallTitle'))
+            $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
     }
 
@@ -136,12 +136,12 @@ function Show-ADTInstallationRestartPrompt
                 {
                     if ($SilentRestart)
                     {
-                        Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.GetPropertyValue('DeployMode'))] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
+                        Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.DeployMode)] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
                         Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($adtSession.GetPropertyValue('DeployMode'))] and [SilentRestart] is false."
+                        Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($adtSession.DeployMode)] and [SilentRestart] is false."
                     }
                     return
                 }
