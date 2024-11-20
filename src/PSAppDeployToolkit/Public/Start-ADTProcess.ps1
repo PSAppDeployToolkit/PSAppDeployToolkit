@@ -59,9 +59,6 @@ function Start-ADTProcess
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
 
-    .PARAMETER NoExitOnProcessFailure
-        Specifies whether the function shouldn't call Close-ADTSession when the process returns an exit code that is considered an error/failure. Default: $false
-
     .PARAMETER UseShellExecute
         Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
 
@@ -173,9 +170,6 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false)]
         [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseShellExecute
@@ -559,30 +553,25 @@ function Start-ADTProcess
         }
         catch
         {
-            if ($null -eq $returnCode)
+            # Set up parameters for Invoke-ADTFunctionErrorHandler.
+            if ($null -ne $returnCode)
             {
-                $returnCode = 60002
-            }
-            if ($adtSession -and $extInvoker)
-            {
-                $adtSession.SetExitCode($returnCode)
-            }
-
-            if (!$returnCode.Equals(60002))
-            {
-                Write-ADTLogEntry -Message $_.Exception.Message -Severity 3
-                if ($PassThru)
+                if ($adtSession -and $extInvoker)
                 {
-                    $PSCmdlet.WriteObject($_.TargetObject)
+                    $adtSession.SetExitCode($returnCode)
                 }
-                if ($adtSession -and !$NoExitOnProcessFailure)
-                {
-                    Close-ADTSession -ExitCode $returnCode
-                }
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage $_.Exception.Message -DisableErrorResolving
             }
             else
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Function failed, setting exit code to [$returnCode]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Error occurred while attempting to start the specified process."
+            }
+
+            # If the passthru switch is specified, return the exit code and any output from process.
+            if ($PassThru)
+            {
+                Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
+                $PSCmdlet.WriteObject($_.TargetObject)
             }
         }
     }

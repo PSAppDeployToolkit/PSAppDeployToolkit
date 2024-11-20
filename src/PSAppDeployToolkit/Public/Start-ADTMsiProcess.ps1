@@ -77,9 +77,6 @@ function Start-ADTMsiProcess
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
 
-    .PARAMETER NoExitOnProcessFailure
-        Specifies whether the function shouldn't call Close-ADTSession when the process returns an exit code that is considered an error/failure.
-
     .PARAMETER RepairFromSource
         Specifies whether we should repair from source. Also rewrites local cache. Default: $false
 
@@ -212,9 +209,6 @@ function Start-ADTMsiProcess
         [Parameter(Mandatory = $false)]
         [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RepairFromSource
@@ -524,7 +518,6 @@ function Start-ADTMsiProcess
                         FilePath = "$([System.Environment]::SystemDirectory)\msiexec.exe"
                         ArgumentList = $argsMSI
                         WindowStyle = 'Normal'
-                        NoExitOnProcessFailure = $NoExitOnProcessFailure
                     }
                     if ($WorkingDirectory)
                     {

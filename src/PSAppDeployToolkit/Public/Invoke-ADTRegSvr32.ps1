@@ -146,7 +146,7 @@ function Invoke-ADTRegSvr32
                 }
 
                 # Register the DLL file and measure the success.
-                if (($ExecuteResult = Start-ADTProcess -FilePath $RegSvr32Path -ArgumentList $ActionParameters -WindowStyle Hidden -PassThru -NoExitOnProcessFailure).ExitCode -ne 0)
+                if (($ExecuteResult = Start-ADTProcess -FilePath $RegSvr32Path -ArgumentList $ActionParameters -WindowStyle Hidden -PassThru).ExitCode -ne 0)
                 {
                     if ($ExecuteResult.ExitCode -eq 60002)
                     {

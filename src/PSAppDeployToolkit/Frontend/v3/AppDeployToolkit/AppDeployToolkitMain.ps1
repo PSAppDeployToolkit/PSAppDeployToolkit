@@ -2292,15 +2292,11 @@ function Execute-Process
     {
         $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
     }
-    if ($PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
+    if ($PSBoundParameters.ContainsKey('ContinueOnError') -or $PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
     {
-        $PSBoundParameters.Add('NoExitOnProcessFailure', !$PSBoundParameters.ExitOnProcessFailure)
-        $null = $PSBoundParameters.Remove('ExitOnProcessFailure')
-    }
-    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
-    {
-        $PSBoundParameters.ErrorAction = ([System.Management.Automation.ActionPreference]::Stop, [System.Management.Automation.ActionPreference]::SilentlyContinue)[$ContinueOnError]
         $null = $PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ExitOnProcessFailure')
+        $PSBoundParameters.ErrorAction = ([System.Management.Automation.ActionPreference]::Stop, [System.Management.Automation.ActionPreference]::SilentlyContinue)[$ContinueOnError -or !$ExitOnProcessFailure]
     }
 
     # Invoke function with amended parameters.
@@ -2415,15 +2411,11 @@ function Execute-MSI
     {
         $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
     }
-    if ($PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
+    if ($PSBoundParameters.ContainsKey('ContinueOnError') -or $PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
     {
-        $PSBoundParameters.Add('NoExitOnProcessFailure', !$PSBoundParameters.ExitOnProcessFailure)
-        $null = $PSBoundParameters.Remove('ExitOnProcessFailure')
-    }
-    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
-    {
-        $PSBoundParameters.ErrorAction = ([System.Management.Automation.ActionPreference]::Stop, [System.Management.Automation.ActionPreference]::SilentlyContinue)[$ContinueOnError]
         $null = $PSBoundParameters.Remove('ContinueOnError')
+        $null = $PSBoundParameters.Remove('ExitOnProcessFailure')
+        $PSBoundParameters.ErrorAction = ([System.Management.Automation.ActionPreference]::Stop, [System.Management.Automation.ActionPreference]::SilentlyContinue)[$ContinueOnError -or !$ExitOnProcessFailure]
     }
 
     # Invoke function with amended parameters.
