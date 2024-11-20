@@ -655,8 +655,9 @@ namespace PSADT.Logging
         {
             if (_fileDestinations.IsEmpty && _otherDestinations.IsEmpty)
             {
-                var defaultFileDestination = new FileLogDestination(_logOptions);
-                _fileDestinations.TryAdd(defaultFileDestination, defaultFileDestination);
+                // Return early to nuke any kind of log output.
+                //var defaultFileDestination = new FileLogDestination(_logOptions);
+                //_fileDestinations.TryAdd(defaultFileDestination, defaultFileDestination);
             }
         }
 

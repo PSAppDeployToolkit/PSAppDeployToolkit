@@ -55,7 +55,7 @@ namespace PSADT.Logging
 
                 // Add default destinations
                 //logger.AddLogDestination(new ConsoleLogDestination());
-                logger.AddLogDestination(new FileLogDestination(defaultLogOptions));
+                //logger.AddLogDestination(new FileLogDestination(defaultLogOptions));
 
                 return logger;
             });
