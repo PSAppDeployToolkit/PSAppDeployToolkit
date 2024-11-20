@@ -594,7 +594,7 @@ function Show-ADTInstallationWelcome
                 if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses))
                 {
                     Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
-                    $runningProcesses.ProcessName | Stop-Process -Force -ErrorAction Ignore
+                    $runningProcesses | Stop-Process -Force -ErrorAction Ignore
                     [System.Threading.Thread]::Sleep(2000)
                 }
 
