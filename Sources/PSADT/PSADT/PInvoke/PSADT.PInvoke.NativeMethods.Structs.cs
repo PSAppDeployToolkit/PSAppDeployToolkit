@@ -915,6 +915,16 @@ namespace PSADT.PInvoke
 
     #endregion
 
+    #region PInvoke: netapi32.dll
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct LOCALGROUP_USERS_INFO_0
+    {
+        public string lgrui0_name;
+    }
+
+    #endregion
+
     #region shared_pinvoke
 
     /// <summary>

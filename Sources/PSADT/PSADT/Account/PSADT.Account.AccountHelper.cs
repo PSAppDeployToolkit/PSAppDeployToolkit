@@ -1,4 +1,7 @@
-﻿using System;
+using PSADT.PInvoke;
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 
 namespace PSADT.Accounts
@@ -198,5 +201,86 @@ namespace PSADT.Accounts
             }
         }
 
+        public static string GetLocalAdministratorsGroupName()
+        {
+            try
+            {
+                // Get the SID for the built-in Administrators group
+                SecurityIdentifier sid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+
+                // Translate the SID to an NTAccount to get the localized group name
+                NTAccount ntAccount = (NTAccount)sid.Translate(typeof(NTAccount));
+
+                // Extract the group name without the domain or machine name
+                string[] parts = ntAccount.Value.Split('\\');
+                string groupName = parts.Length > 1 ? parts[1] : ntAccount.Value;
+
+                if (string.IsNullOrWhiteSpace(groupName))
+                    throw new InvalidOperationException("Failed to determine the Administrators group name.");
+
+                return groupName;
+            }
+            catch (Exception ex)
+            {
+                // Handle exception if needed
+                throw new InvalidOperationException("Failed to get the Administrators group name.", ex);
+            }
+        }
+
+        public static bool IsUserInLocalGroup(string username, string groupname)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentNullException(nameof(username), "Username cannot be null or empty.");
+
+            if (string.IsNullOrWhiteSpace(groupname))
+                throw new ArgumentNullException(nameof(groupname), "Group name cannot be null or empty.");
+
+            int res = NativeMethods.NetUserGetLocalGroups(
+                null!,
+                username,
+                0,
+                0,
+                out IntPtr bufptr,
+                out int entriesread,
+                out int totalentries
+            );
+
+            if (res == 0)
+            {
+                bool isMember = false;
+                try
+                {
+                    if (entriesread > 0 && bufptr != IntPtr.Zero)
+                    {
+                        IntPtr iter = bufptr;
+                        int increment = Marshal.SizeOf(typeof(LOCALGROUP_USERS_INFO_0));
+
+                        for (int i = 0; i < entriesread; i++)
+                        {
+                            LOCALGROUP_USERS_INFO_0 groupInfo = Marshal.PtrToStructure<LOCALGROUP_USERS_INFO_0>(iter);
+
+                            if (!string.IsNullOrWhiteSpace(groupInfo.lgrui0_name) &&
+                                string.Equals(groupInfo.lgrui0_name, groupname, StringComparison.OrdinalIgnoreCase))
+                            {
+                                isMember = true;
+                                break;
+                            }
+                            iter = IntPtr.Add(iter, increment);
+                        }
+                    }
+                }
+                finally
+                {
+                    // Free the buffer allocated by NetUserGetLocalGroups
+                    NativeMethods.NetApiBufferFree(bufptr);
+                }
+                return isMember;
+            }
+            else
+            {
+                // Handle error if needed
+                throw new Win32Exception(res);
+            }
+        }
     }
 }
