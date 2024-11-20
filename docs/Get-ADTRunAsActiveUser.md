@@ -13,7 +13,7 @@ Retrieves the active user session information.
 ## SYNTAX
 
 ```
-Get-ADTRunAsActiveUser [[-UserSessionInfo] <TerminalSessionInfo[]>] [<CommonParameters>]
+Get-ADTRunAsActiveUser [[-UserSessionInfo] <CompatibilitySessionInfo[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -37,7 +37,7 @@ An array of UserSessionInfo objects to enumerate through.
 If not supplied, a fresh query will be performed.
 
 ```yaml
-Type: TerminalSessionInfo[]
+Type: CompatibilitySessionInfo[]
 Parameter Sets: (All)
 Aliases:
 
