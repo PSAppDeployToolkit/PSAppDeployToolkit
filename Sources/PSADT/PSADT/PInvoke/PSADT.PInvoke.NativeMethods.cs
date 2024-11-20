@@ -1660,5 +1660,22 @@ namespace PSADT.PInvoke
 
         #endregion
 
+        #region PInvoke: netapi32.dll
+
+        [DllImport("Netapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern int NetUserGetLocalGroups(
+            string servername,
+            string username,
+            int level,
+            int flags,
+            out IntPtr bufptr,
+            out int entriesread,
+            out int totalentries
+        );
+
+        [DllImport("Netapi32.dll")]
+        public static extern int NetApiBufferFree(IntPtr Buffer);
+
+        #endregion
     }
 }
