@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Diagnostics.CodeAnalysis;
-using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 using Microsoft.Win32.SafeHandles;
 
 namespace PSADT.PInvoke
@@ -34,6 +33,13 @@ namespace PSADT.PInvoke
         /// The thread identifier.
         /// </summary>
         public uint dwThreadId;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct FILETIME
+    {
+        public uint dwLowDateTime;
+        public uint dwHighDateTime;
     }
 
     /// <summary>
@@ -306,7 +312,7 @@ namespace PSADT.PInvoke
     }
 
     /// <summary>Contains information about a Remote Desktop Services session.</summary>
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct WTSINFO
     {
         /// <summary>A value of the WTS_CONNECTSTATE_CLASS enumeration type that indicates the session's current connection state.</summary>
@@ -334,31 +340,46 @@ namespace PSADT.PInvoke
         public uint OutgoingCompressedBy;
 
         /// <summary>A null-terminated string that contains the name of the WinStation for the session.</summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NativeMethods.WINSTATIONNAME_LENGTH)]
         public string WinStationName;
 
         /// <summary>A null-terminated string that contains the name of the domain that the user belongs to.</summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 17)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NativeMethods.DOMAIN_LENGTH)]
         public string Domain;
 
         /// <summary>A null-terminated string that contains the name of the user who owns the session.</summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 21)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NativeMethods.USERNAME_LENGTH + 2)]
         public string UserName;
 
         /// <summary>The most recent client connection time.</summary>
-        public FILETIME ConnectTime;
+		public long ConnectTimeUTC;
+
+        /// <summary>The most recent client connection time.</summary>
+        public DateTime ConnectTime => DateTime.FromFileTimeUtc(ConnectTimeUTC);
 
         /// <summary>The last client disconnection time.</summary>
-        public FILETIME DisconnectTime;
+        public long DisconnectTimeUTC;
+
+        /// <summary>The last client disconnection time.</summary>
+        public DateTime DisconnectTime => DateTime.FromFileTimeUtc(DisconnectTimeUTC);
 
         /// <summary>The time of the last user input in the session.</summary>
-        public FILETIME LastInputTime;
+        public long LastInputTimeUTC;
+
+        /// <summary>The time of the last user input in the session.</summary>
+        public DateTime LastInputTime => DateTime.FromFileTimeUtc(LastInputTimeUTC);
 
         /// <summary>The time that the user logged on to the session.</summary>
-        public FILETIME LogonTime;
+        public long LogonTimeUTC;
+
+        /// <summary>The time that the user logged on to the session.</summary>
+        public DateTime LogonTime => DateTime.FromFileTimeUtc(LogonTimeUTC);
 
         /// <summary>The time that the <c>WTSINFO</c> data structure was called.</summary>
-        public FILETIME CurrentTime;
+        public long CurrentTimeUTC;
+
+        /// <summary>The time that the <c>WTSINFO</c> data structure was called.</summary>
+        public DateTime CurrentTime => DateTime.FromFileTimeUtc(CurrentTimeUTC);
     }
 
     #endregion
@@ -540,16 +561,46 @@ namespace PSADT.PInvoke
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 70)]
         private readonly byte[] Reserved1;
+
         public int SessionId;
+
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         private readonly byte[] Reserved2;
-        public FILETIME ConnectTime;
-        public FILETIME DisconnectTime;
-        public FILETIME LastInputTime;
-        public FILETIME LoginTime;
+
+        public FILETIME ConnectTimeFT;
+        public long ConnectTimeUTC => FileTimeToLong(ConnectTimeFT);
+        public DateTime ConnectTime => DateTime.FromFileTimeUtc(ConnectTimeUTC);
+
+        public FILETIME DisconnectTimeFT;
+        public long DisconnectTimeUTC => FileTimeToLong(DisconnectTimeFT);
+        public DateTime DisconnectTime => DateTime.FromFileTimeUtc(DisconnectTimeUTC);
+
+        public FILETIME LastInputTimeFT;
+        public long LastInputTimeUTC => FileTimeToLong(LastInputTimeFT);
+        public DateTime LastInputTime => DateTime.FromFileTimeUtc(LastInputTimeUTC);
+
+        public FILETIME LogonTimeFT;
+        public long LogonTimeUTC => FileTimeToLong(LogonTimeFT);
+        public DateTime LogonTime => DateTime.FromFileTimeUtc(LogonTimeUTC);
+
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1096)]
         private readonly byte[] Reserved3;
-        public FILETIME CurrentTime;
+
+        public FILETIME CurrentTimeFT;
+        public long CurrentTimeUTC => FileTimeToLong(CurrentTimeFT);
+        public DateTime CurrentTime => DateTime.FromFileTimeUtc(CurrentTimeUTC);
+
+        private static long FileTimeToLong(FILETIME fileTime)
+        {
+            // Combine the high and low parts into a ulong to avoid overflow
+            ulong fileTimeLong = ((ulong)fileTime.dwHighDateTime << 32) | (ulong)fileTime.dwLowDateTime;
+
+            // If the FILETIME is zero or invalid, return zero
+            if (fileTimeLong == 0 || fileTimeLong > (ulong)DateTime.MaxValue.ToFileTimeUtc())
+                return 0;
+
+            return (long)fileTimeLong;
+        }
     }
 
     #endregion

@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.Security.Principal;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 using PSADT.Logging;
 using System.Net.Sockets;
 
@@ -104,6 +103,37 @@ namespace PSADT.WTSSession
             }
         }
 
+        public static int GetBufferSize<T>()
+        {
+            int bufferSize = 0;
+
+            if (typeof(T) == typeof(string))
+            {
+                // Strings are handled differently; buffer size is managed by the API
+                // You may need to handle strings separately in your application
+                bufferSize = 0;
+            }
+            else if (typeof(T) == typeof(bool) || typeof(T).IsPrimitive)
+            {
+                bufferSize = Marshal.SizeOf(typeof(T));
+            }
+            else if (typeof(T).IsEnum)
+            {
+                // Use the underlying type for the enum
+                Type enumUnderlyingType = Enum.GetUnderlyingType(typeof(T));
+                bufferSize = Marshal.SizeOf(enumUnderlyingType);
+            }
+            else if (typeof(T).IsValueType || typeof(T).IsLayoutSequential || typeof(T).IsExplicitLayout)
+            {
+                bufferSize = Marshal.SizeOf(typeof(T));
+            }
+            else
+            {
+                throw new InvalidOperationException($"Type '{typeof(T)}' is not supported for buffer size calculation.");
+            }
+
+            return bufferSize;
+        }
 
         /// <summary>
         /// Retrieves a session property of the specified type from a remote session on the given server.
@@ -125,50 +155,24 @@ namespace PSADT.WTSSession
         {
             try
             {
-                // Determine buffer size conditionally
-                int bufferSize = 0;
-                if (typeof(T) == typeof(string))
-                {
-                    // Strings are handled differently; buffer size is managed by the API
-                }
-                else if (typeof(T) == typeof(bool) || typeof(T).IsPrimitive)
-                {
-                    bufferSize = Marshal.SizeOf(typeof(T));
-                }
-                else if (typeof(T).IsEnum)
-                {
-                    // Use underlying type for enum
-                    Type enumUnderlyingType = Enum.GetUnderlyingType(typeof(T));
-                    bufferSize = Marshal.SizeOf(enumUnderlyingType);
-                }
-                else if (typeof(T).IsValueType || typeof(T).IsLayoutSequential || typeof(T).IsExplicitLayout)
-                {
-                    bufferSize = Marshal.SizeOf(typeof(T));
-                }
-                else
-                {
-                    return default;
-                }
-
                 if (!NativeMethods.WTSQuerySessionInformation(hServer, sessionId, wtsInfoClass, out SafeWtsMemory? ppBuffer, out uint pBytesReturned))
                 {
                     int error = Marshal.GetLastWin32Error();
+                    UnifiedLogger.Create().Message($"WTSQuerySessionInformation failed with error code: {error} for session {sessionId}, info class {wtsInfoClass}").Severity(LogLevel.Debug);
                     return default;
                 }
 
                 using (ppBuffer)
                 {
-                    IntPtr bufferPtr = ppBuffer.DangerousGetHandle();
-
                     if (typeof(T) == typeof(string))
                     {
-                        string? result = Marshal.PtrToStringUni(bufferPtr, (int)pBytesReturned / sizeof(char));
+                        string? result = Marshal.PtrToStringUni(ppBuffer.DangerousGetHandle(), (int)pBytesReturned / sizeof(char));
                         
                         return (T?)(object?)result;
                     }
                     else if (typeof(T) == typeof(bool))
                     {
-                        bool result = Marshal.ReadInt32(bufferPtr) != 0;
+                        bool result = Marshal.ReadInt32(ppBuffer.DangerousGetHandle()) != 0;
                         
                         return (T?)(object)result;
                     }
@@ -179,32 +183,32 @@ namespace PSADT.WTSSession
 
                         if (enumUnderlyingType == typeof(int))
                         {
-                            int intValue = Marshal.ReadInt32(bufferPtr);
+                            int intValue = Marshal.ReadInt32(ppBuffer.DangerousGetHandle());
                             value = Enum.ToObject(typeof(T), intValue);
                         }
                         else if (enumUnderlyingType == typeof(uint))
                         {
-                            uint uintValue = (uint)Marshal.ReadInt32(bufferPtr);
+                            uint uintValue = (uint)Marshal.ReadInt32(ppBuffer.DangerousGetHandle());
                             value = Enum.ToObject(typeof(T), uintValue);
                         }
                         else if (enumUnderlyingType == typeof(short))
                         {
-                            short shortValue = Marshal.ReadInt16(bufferPtr);
+                            short shortValue = Marshal.ReadInt16(ppBuffer.DangerousGetHandle());
                             value = Enum.ToObject(typeof(T), shortValue);
                         }
                         else if (enumUnderlyingType == typeof(ushort))
                         {
-                            ushort ushortValue = (ushort)Marshal.ReadInt16(bufferPtr);
+                            ushort ushortValue = (ushort)Marshal.ReadInt16(ppBuffer.DangerousGetHandle());
                             value = Enum.ToObject(typeof(T), ushortValue);
                         }
                         else if (enumUnderlyingType == typeof(byte))
                         {
-                            byte byteValue = Marshal.ReadByte(bufferPtr);
+                            byte byteValue = Marshal.ReadByte(ppBuffer.DangerousGetHandle());
                             value = Enum.ToObject(typeof(T), byteValue);
                         }
                         else if (enumUnderlyingType == typeof(sbyte))
                         {
-                            sbyte sbyteValue = (sbyte)Marshal.ReadByte(bufferPtr);
+                            sbyte sbyteValue = (sbyte)Marshal.ReadByte(ppBuffer.DangerousGetHandle());
                             value = Enum.ToObject(typeof(T), sbyteValue);
                         }
                         else
@@ -217,7 +221,7 @@ namespace PSADT.WTSSession
                     else
                     {
                         // For structs and other value types
-                        object? result = Marshal.PtrToStructure(bufferPtr, typeof(T));
+                        object? result = Marshal.PtrToStructure(ppBuffer.DangerousGetHandle(), typeof(T));
                         if (result == null)
                         {
                             return default;
@@ -516,96 +520,182 @@ namespace PSADT.WTSSession
 
         public static ExtendedSessionInfo GetExtendedSessionInfo(uint sessionId, string? hServerName = "")
         {
+            using var hServer = GetWTSServer(hServerName);
+
+            var sessionInfo = new ExtendedSessionInfo
+            {
+                // Default to -3 because 0, -1, and -2 are reserved session IDs
+                SessionId = -3
+            };
+
+            // Basic session information
+            sessionInfo.SessionId = GetWTSInfoClassProperty<int>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionId);
+            sessionInfo.SessionName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSWinStationName)?.TrimEnd('\0')?.ToUpperInvariant() ?? string.Empty;
+            sessionInfo.DomainName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSDomainName)?.TrimEnd('\0') ?? string.Empty;
+            sessionInfo.UserName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName)?.TrimEnd('\0') ?? string.Empty;
+
+            // Handle user identity information
+            if (!string.IsNullOrEmpty(sessionInfo.UserName))
+            {
+                try
+                {
+                    if (string.Equals(sessionInfo.DomainName, "AzureAD", StringComparison.OrdinalIgnoreCase))
+                    {
+                        UnifiedLogger.Create().Message("AzureAD accounts do not have a local SID. Skipping SID resolution.").Severity(LogLevel.Debug);
+                    }
+                    else
+                    {
+                        sessionInfo.NTAccount = new NTAccount($@"{sessionInfo.DomainName}\{sessionInfo.UserName}");
+                        sessionInfo.Sid = (SecurityIdentifier)sessionInfo.NTAccount.Translate(typeof(SecurityIdentifier));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    UnifiedLogger.Create().Message($"Error creating NTAccount or SecurityIdentifier: {ex.Message}").Error(ex);
+                }
+            }
+            else
+            {
+                sessionInfo.Sid = new SecurityIdentifier(WellKnownSidType.NullSid, null);
+            }
+
+            // Connection state and client information
+            sessionInfo.ConnectionState = GetWTSInfoClassProperty<WTS_CONNECTSTATE_CLASS>(hServer, sessionId, WTS_INFO_CLASS.WTSConnectState).ToString();
+            sessionInfo.ClientBuildNumber = GetWTSInfoClassProperty<int>(hServer, sessionId, WTS_INFO_CLASS.WTSClientBuildNumber);
+            sessionInfo.ClientComputerName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientName) ?? string.Empty;
+            sessionInfo.ClientDirectory = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientDirectory) ?? string.Empty;
+            sessionInfo.ClientProtocolType = GetWTSInfoClassProperty<WTS_CLIENT_PROTOCOL_TYPE>(hServer, sessionId, WTS_INFO_CLASS.WTSClientProtocolType).ToString();
+
+            // Client address information
             try
             {
-                using var hServer = GetWTSServer(hServerName);
-
-                var sessionInfo = new ExtendedSessionInfo
-                {
-                    // Default to -3 because 0, -1, and -2 are reserved session IDs
-                    SessionId = -3
-                };
-
-                sessionInfo.SessionId = GetWTSInfoClassProperty<int>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionId);
-                sessionInfo.SessionName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSWinStationName)?.TrimEnd('\0')?.ToUpperInvariant() ?? string.Empty;
-                sessionInfo.DomainName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSDomainName)?.TrimEnd('\0') ?? string.Empty;
-                sessionInfo.UserName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName)?.TrimEnd('\0') ?? string.Empty;
-
-                if (!string.IsNullOrEmpty(sessionInfo.UserName))
-                {
-                    try
-                    {
-                        if (string.Equals(sessionInfo.DomainName, "AzureAD", StringComparison.OrdinalIgnoreCase))
-                        {
-                            UnifiedLogger.Create().Message("AzureAD accounts do not have a local SID. Skipping SID resolution.").Severity(LogLevel.Debug);
-                        }
-                        else
-                        {
-                            sessionInfo.NTAccount = new NTAccount($@"{sessionInfo.DomainName}\{sessionInfo.UserName}");
-                            sessionInfo.Sid = (SecurityIdentifier)sessionInfo.NTAccount.Translate(typeof(SecurityIdentifier));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        UnifiedLogger.Create().Message($"Error creating NTAccount or SecurityIdentifier: {ex.Message}").Error(ex);
-                    }
-                }
-                else
-                {
-                    sessionInfo.Sid = new SecurityIdentifier(WellKnownSidType.NullSid, null);
-                }
-
-                sessionInfo.ConnectionState = GetWTSInfoClassProperty<WTS_CONNECTSTATE_CLASS>(hServer, sessionId, WTS_INFO_CLASS.WTSConnectState).ToString();
-                sessionInfo.ClientBuildNumber = GetWTSInfoClassProperty<int>(hServer, sessionId, WTS_INFO_CLASS.WTSClientBuildNumber);
-                sessionInfo.ClientName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientName) ?? string.Empty;
-                sessionInfo.ClientDirectory = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSClientDirectory) ?? string.Empty;
-                sessionInfo.ClientProtocolType = GetWTSInfoClassProperty<WTS_CLIENT_PROTOCOL_TYPE>(hServer, sessionId, WTS_INFO_CLASS.WTSClientProtocolType).ToString();
-
                 WTS_CLIENT_ADDRESS clientAddress = GetWTSInfoClassProperty<WTS_CLIENT_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSClientAddress);
                 sessionInfo.ClientIPAddress = GetWtsIPAddress(clientAddress);
                 sessionInfo.ClientIPAddressFamily = clientAddress.AddressFamily.ToString();
 
-                WTS_SESSION_ADDRESS sessionAddress = GetWTSInfoClassProperty<WTS_SESSION_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionAddressV4);
-                if (!sessionAddress.Equals(default(WTS_SESSION_ADDRESS)))
+                try
                 {
-                    sessionInfo.SessionIPAddress = GetWtsIPAddress(sessionAddress);
+                    WTS_SESSION_ADDRESS sessionAddress = GetWTSInfoClassProperty<WTS_SESSION_ADDRESS>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionAddressV4);
+                    if (!sessionAddress.Equals(default(WTS_SESSION_ADDRESS)))
+                    {
+                        sessionInfo.SessionIPAddress = GetWtsIPAddress(sessionAddress);
+                    }
                 }
+                catch (Win32Exception ex) when (ex.NativeErrorCode == 1722) // RPC server unavailable
+                {
+                    UnifiedLogger.Create().Message("Session address information unavailable").Error(ex).Severity(LogLevel.Debug);
+                }
+            }
+            catch (Exception ex)
+            {
+                UnifiedLogger.Create().Message("Failed to retrieve address information").Error(ex).Severity(LogLevel.Warning);
+            }
 
+            // Display information
+            try
+            {
                 var clientDisplay = GetWTSInfoClassProperty<WTS_CLIENT_DISPLAY>(hServer, sessionId, WTS_INFO_CLASS.WTSClientDisplay);
                 sessionInfo.HorizontalResolution = clientDisplay.HorizontalResolution;
                 sessionInfo.VerticalResolution = clientDisplay.VerticalResolution;
                 sessionInfo.ColorDepth = clientDisplay.ColorDepth;
-
-                var osVersionInfo = new OSVersionInfo();
-                if (((osVersionInfo.IsWorkstation && OSHelper.GetIsWindows7OrGreater(osVersionInfo.OperatingSystem)) ||
-                    (osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem))) &&
-                    hServer.IsLocalServer)
-                {
-                    sessionInfo.IsRemoteSession = GetWTSInfoClassProperty<bool>(hServer, sessionId, WTS_INFO_CLASS.WTSIsRemoteSession);
-                }
-
-                if (OSHelper.GetIsWindowsVistaSP1OrGreater(osVersionInfo.OperatingSystem))
-                {
-                    var wtsInfo = GetWTSInfoClassProperty<WTSINFO>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionInfo);
-                    sessionInfo.LogonTime = FileTimeToDateTime(wtsInfo.LogonTime);
-                    sessionInfo.IdleTime = FileTimeToDateTime(wtsInfo.CurrentTime) - FileTimeToDateTime(wtsInfo.LastInputTime);
-                    sessionInfo.DisconnectTime = FileTimeToDateTime(wtsInfo.DisconnectTime);
-                }
-                else
-                {
-                    var winStationInfo = WinStationQueryInformation(hServer, sessionId);
-                    sessionInfo.LogonTime = FileTimeToDateTime(winStationInfo.LoginTime);
-                    sessionInfo.IdleTime = FileTimeToDateTime(winStationInfo.CurrentTime) - FileTimeToDateTime(winStationInfo.LastInputTime);
-                    sessionInfo.DisconnectTime = FileTimeToDateTime(winStationInfo.DisconnectTime);
-                }
-
-                return sessionInfo;
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Exception in GetExtendedSessionInfo: {ex}").Error(ex);
-                throw;
+                UnifiedLogger.Create().Message("Failed to retrieve display information").Error(ex).Severity(LogLevel.Warning);
             }
+
+            // OS version information
+            var osVersionInfo = new OSVersionInfo();
+
+            // Remote session status
+            try
+            {
+                if (((osVersionInfo.IsWorkstation && OSHelper.GetIsWindows7OrGreater(osVersionInfo.OperatingSystem)) ||
+                (osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem))) &&
+                hServer.IsLocalServer)
+                {
+                    sessionInfo.IsRemoteSession = GetWTSInfoClassProperty<bool>(hServer, sessionId, WTS_INFO_CLASS.WTSIsRemoteSession);
+                }
+                //else
+                //{
+                //    if (NativeMethods.GetSystemMetrics(SystemMetric.SM_REMOTESESSION) != 0)
+                //    {
+                //        sessionInfo.IsRemoteSession = true;
+                //    }
+                //}
+            }
+            catch (Exception ex)
+            {
+                UnifiedLogger.Create().Message("Failed to determine remote session status").Error(ex).Severity(LogLevel.Warning);
+            }
+
+            // Time-related information
+            try
+            {
+                if (OSHelper.GetIsWindowsVistaSP1OrGreater(osVersionInfo.OperatingSystem))
+                {
+                    try
+                    {
+                        WTSINFO wtsInfo = GetWTSInfoClassProperty<WTSINFO>(hServer, sessionId, WTS_INFO_CLASS.WTSSessionInfo);
+
+                        UpdateSessionDateTimeInfo(
+                            wtsInfo.LogonTimeUTC,
+                            wtsInfo.LogonTime,
+                            wtsInfo.DisconnectTimeUTC,
+                            wtsInfo.DisconnectTime,
+                            wtsInfo.CurrentTimeUTC,
+                            wtsInfo.CurrentTime,
+                            wtsInfo.LastInputTimeUTC,
+                            wtsInfo.LastInputTime,
+                            sessionInfo);
+                    }
+                    catch (Win32Exception ex) when (ex.NativeErrorCode == 1722) // RPC server unavailable
+                    {
+                        UnifiedLogger.Create().Message("Unable to retrieve session time information through WTS API").Error(ex).Severity(LogLevel.Warning);
+                    }
+                    catch (Exception ex)
+                    {
+                        UnifiedLogger.Create().Message("Failed to retrieve session time information through WTS API").Error(ex).Severity(LogLevel.Warning);
+                    }
+
+                    if (sessionInfo.LogonTimeUtc == null || sessionInfo.LogonTimeUtc == DateTime.MinValue)
+                    {
+                        WINSTATIONINFORMATIONW winStationInfo = WinStationQueryInformation(hServer, sessionId);
+
+                        UpdateSessionDateTimeInfo(
+                            winStationInfo.LogonTimeUTC,
+                            winStationInfo.LogonTime,
+                            winStationInfo.DisconnectTimeUTC,
+                            winStationInfo.DisconnectTime,
+                            winStationInfo.CurrentTimeUTC,
+                            winStationInfo.CurrentTime,
+                            winStationInfo.LastInputTimeUTC,
+                            winStationInfo.LastInputTime,
+                            sessionInfo);
+                    }
+                }
+                else
+                {
+                    WINSTATIONINFORMATIONW winStationInfo = WinStationQueryInformation(hServer, sessionId);
+
+                    UpdateSessionDateTimeInfo(
+                        winStationInfo.LogonTimeUTC,
+                        winStationInfo.LogonTime,
+                        winStationInfo.DisconnectTimeUTC,
+                        winStationInfo.DisconnectTime,
+                        winStationInfo.CurrentTimeUTC,
+                        winStationInfo.CurrentTime,
+                        winStationInfo.LastInputTimeUTC,
+                        winStationInfo.LastInputTime,
+                        sessionInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+                UnifiedLogger.Create().Message("Failed to retrieve all session time information").Error(ex).Severity(LogLevel.Warning);
+            }
+
+            return sessionInfo;
         }
 
         public static string GetWtsUsernameById(uint sessionId, string? hServerName = "")
@@ -678,19 +768,33 @@ namespace PSADT.WTSSession
             return parsedAddress;
         }
 
-        public static DateTime? FileTimeToDateTime(FILETIME fileTime)
+        private static void UpdateSessionDateTimeInfo(
+            long logonTimeUTC,
+            DateTime logonTime,
+            long disconnectTimeUTC,
+            DateTime disconnectTime,
+            long currentTimeUTC,
+            DateTime currentTime,
+            long lastInputTimeUTC,
+            DateTime lastInputTime,
+            ExtendedSessionInfo sessionInfo)
         {
-            if (!NativeMethods.FileTimeToSystemTime(in fileTime, out SYSTEMTIME systemTime))
+            if (logonTimeUTC != 0)
             {
-                return null;
-            }
-            if (systemTime.wYear < 1900)
-            {
-                // Got invalid date. Happens sometimes on Windows Server 2003.
-                return null;
+                sessionInfo.LogonTimeUtc = logonTime;
+                sessionInfo.LogonTimeLocal = DateTime.FromFileTime(logonTimeUTC);
             }
 
-            return systemTime.ToDateTime(DateTimeKind.Local);
+            if (currentTimeUTC != 0 && lastInputTimeUTC != 0)
+            {
+                sessionInfo.IdleTime = currentTime - lastInputTime;
+            }
+
+            if (disconnectTimeUTC != 0)
+            {
+                sessionInfo.DisconnectTimeUtc = disconnectTime;
+                sessionInfo.DisconnectTimeLocal = DateTime.FromFileTime(disconnectTimeUTC);
+            }
         }
 
         public static List<SessionInfo>? GetAllActiveUserSessions(string? hServerName = "")

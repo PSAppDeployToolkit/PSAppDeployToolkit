@@ -12,11 +12,13 @@ namespace PSADT.WTSSession
         public NTAccount? NTAccount { get; set; }
         public string DomainName { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
-        public SecurityIdentifier Sid { get; set; } = new SecurityIdentifier(WellKnownSidType.NullSid, null);
-        public DateTime? LogonTime { get; set; }
+        public SecurityIdentifier? Sid { get; set; }
+        public DateTime? LogonTimeUtc { get; set; }
+        public DateTime? LogonTimeLocal { get; set; }
         public TimeSpan? IdleTime { get; set; }
-        public DateTime? DisconnectTime { get; set; }
-        public string ClientName { get; set; } = string.Empty;
+        public DateTime? DisconnectTimeUtc { get; set; }
+        public DateTime? DisconnectTimeLocal { get; set; }
+        public string ClientComputerName { get; set; } = string.Empty;
         public string ClientProtocolType { get; set; } = string.Empty;
         public string ClientDirectory { get; set; } = string.Empty;
         public long? ClientBuildNumber { get; set; }
