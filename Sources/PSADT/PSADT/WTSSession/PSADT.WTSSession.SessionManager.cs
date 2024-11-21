@@ -539,15 +539,8 @@ namespace PSADT.WTSSession
             {
                 try
                 {
-                    if (string.Equals(sessionInfo.DomainName, "AzureAD", StringComparison.OrdinalIgnoreCase))
-                    {
-                        UnifiedLogger.Create().Message("AzureAD accounts do not have a local SID. Skipping SID resolution.").Severity(LogLevel.Debug);
-                    }
-                    else
-                    {
-                        sessionInfo.NTAccount = new NTAccount($@"{sessionInfo.DomainName}\{sessionInfo.UserName}");
-                        sessionInfo.Sid = (SecurityIdentifier)sessionInfo.NTAccount.Translate(typeof(SecurityIdentifier));
-                    }
+                    sessionInfo.NTAccount = new NTAccount($@"{sessionInfo.DomainName}\{sessionInfo.UserName}");
+                    sessionInfo.Sid = (SecurityIdentifier)sessionInfo.NTAccount.Translate(typeof(SecurityIdentifier));
                 }
                 catch (Exception ex)
                 {
