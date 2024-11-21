@@ -64,14 +64,26 @@ $Module = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName 'PSAppDepl
         Signed = (& $CommandTable.'Get-AuthenticodeSignature' -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
     }).AsReadOnly()
 
-# Throw hard if there's already a PSADT assembly loaded from a different location.
-if (($assembly = [System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1) -and !$assembly.Location.Equals($Module.Assembly))
+# Attempt to find the RuntimeAssembly object for PSADT.dll.
+& $CommandTable.'New-Variable' -Name RuntimeAssembly -Option Constant -Force -Value ([System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1)
+
+# Throw hard if PSADT.dll isn't loaded, or if it's loaded from a different location.
+if (!$RuntimeAssembly)
+{
+    & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+            [System.InvalidOperationException]::new("This module must be imported via it's .psd1 file, which is recommended for all modules that supply a .psd1 file."),
+            'ModuleImportError',
+            [System.Management.Automation.ErrorCategory]::InvalidOperation,
+            $MyInvocation.MyCommand.ScriptBlock.Module
+        ))
+}
+elseif (!$RuntimeAssembly.Location.Equals($Module.Assembly))
 {
     & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
             [System.InvalidOperationException]::new("A duplicate PSAppDeployToolkit module is already loaded. Please restart PowerShell and try again."),
             'ConflictingModuleLoaded',
             [System.Management.Automation.ErrorCategory]::InvalidOperation,
-            $assembly
+            $RuntimeAssembly
         ))
 }
 
