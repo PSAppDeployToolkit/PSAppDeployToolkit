@@ -930,6 +930,178 @@ namespace PSADT.PInvoke
         public string lgrui0_name;
     }
 
+    /// <summary>
+    /// The <c>LOCALGROUP_MEMBERS_INFO_0</c> structure contains the security identifier (SID) associated with a local group member. The
+    /// member can be a user account or a global group account.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct LOCALGROUP_MEMBERS_INFO_0
+    {
+        /// <summary>Pointer to a SID structure that contains the security identifier (SID) of the local group member.</summary>
+        public IntPtr lgrmi0_sid;
+    }
+
+    /// <summary>
+    /// The <c>LOCALGROUP_MEMBERS_INFO_1</c> structure contains the security identifier (SID) and account information associated with the
+    /// member of a local group.
+    /// </summary>
+    /// <remarks>
+    /// User account names are limited to 20 characters and group names are limited to 256 characters. In addition, account names cannot
+    /// be terminated by a period and they cannot include commas or any of the following printable characters: ", /, , [, ], :, |, &lt;,
+    /// &gt;, +, =, ;, ?, *. Names also cannot include characters in the range 1-31, which are non-printable.
+    /// </remarks>
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct LOCALGROUP_MEMBERS_INFO_1
+    {
+        /// <summary>
+        /// <para>Type: <c>PSID</c></para>
+        /// <para>
+        /// A pointer to a SID structure that contains the security identifier (SID) of an account that is a member of this local group
+        /// member. The account can be a user account or a global group account.
+        /// </para>
+        /// </summary>
+        public IntPtr lgrmi1_sid;
+
+        /// <summary>
+        /// <para>Type: <c>SID_NAME_USE</c></para>
+        /// <para>
+        /// The account type associated with the security identifier specified in the <c>lgrmi1_sid</c> member. The following values are valid.
+        /// </para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Value</term>
+        /// <term>Meaning</term>
+        /// </listheader>
+        /// <item>
+        /// <term>SidTypeUser</term>
+        /// <term>The account is a user account.</term>
+        /// </item>
+        /// <item>
+        /// <term>SidTypeGroup</term>
+        /// <term>The account is a global group account.</term>
+        /// </item>
+        /// <item>
+        /// <term>SidTypeWellKnownGroup</term>
+        /// <term>The account is a well-known group account (such as Everyone). For more information, see Well-Known SIDs.</term>
+        /// </item>
+        /// <item>
+        /// <term>SidTypeDeletedAccount</term>
+        /// <term>The account has been deleted.</term>
+        /// </item>
+        /// <item>
+        /// <term>SidTypeUnknown</term>
+        /// <term>The account type cannot be determined.</term>
+        /// </item>
+        /// </list>
+        /// </summary>
+        public int lgrmi1_sidusage;
+
+        /// <summary>
+        /// <para>Type: <c>LPWSTR</c></para>
+        /// <para>
+        /// A pointer to the account name of the local group member identified by the <c>lgrmi1_sid</c> member. The <c>lgrmi1_name</c>
+        /// member does not include the domain name. For more information, see the following Remarks section.
+        /// </para>
+        /// </summary>
+        public string lgrmi1_name;
+    }
+
+    /// <summary>
+    /// The <c>LOCALGROUP_MEMBERS_INFO_2</c> structure contains the security identifier (SID) and account information associated with a
+    /// local group member.
+    /// </summary>
+    /// <remarks>
+    /// User account names are limited to 20 characters and group names are limited to 256 characters. In addition, account names cannot
+    /// be terminated by a period and they cannot include commas or any of the following printable characters: ", /, , [, ], :, |, &lt;,
+    /// &gt;, +, =, ;, ?, *. Names also cannot include characters in the range 1-31, which are non-printable.
+    /// </remarks>
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct LOCALGROUP_MEMBERS_INFO_2
+    {
+        /// <summary>
+        /// <para>Type: <c>PSID</c></para>
+        /// <para>
+        /// A pointer to a SID structure that contains the security identifier (SID) of a local group member. The local group member can
+        /// be a user account or a global group account.
+        /// </para>
+        /// </summary>
+        public IntPtr lgrmi2_sid;
+
+        /// <summary>
+        /// <para>Type: <c>SID_NAME_USE</c></para>
+        /// <para>
+        /// The account type associated with the security identifier specified in the <c>lgrmi2_sid</c> member. The following values are valid.
+        /// </para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Value</term>
+        /// <term>Meaning</term>
+        /// </listheader>
+        /// <item>
+        /// <term>SidTypeUser</term>
+        /// <term>The account is a user account.</term>
+        /// </item>
+        /// <item>
+        /// <term>SidTypeGroup</term>
+        /// <term>The account is a global group account.</term>
+        /// </item>
+        /// <item>
+        /// <term>SidTypeWellKnownGroup</term>
+        /// <term>The account is a well-known group account (such as Everyone). For more information, see Well-Known SIDs.</term>
+        /// </item>
+        /// <item>
+        /// <term>SidTypeDeletedAccount</term>
+        /// <term>The account has been deleted.</term>
+        /// </item>
+        /// <item>
+        /// <term>SidTypeUnknown</term>
+        /// <term>The account type cannot be determined.</term>
+        /// </item>
+        /// </list>
+        /// </summary>
+        public int lgrmi2_sidusage;
+
+        /// <summary>
+        /// <para>Type: <c>LPWSTR</c></para>
+        /// <para>
+        /// A pointer to the account name of the local group member identified by <c>lgrmi2_sid</c>. The <c>lgrmi2_domainandname</c>
+        /// member includes the domain name and has the form:
+        /// </para>
+        /// <para>
+        /// <code>
+        /// &lt;DomainName&gt;\&lt;AccountName&gt;
+        /// </code>
+        /// </para>
+        /// </summary>
+        public string lgrmi2_domainandname;
+    }
+
+    /// <summary>
+    /// The <c>LOCALGROUP_MEMBERS_INFO_3</c> structure contains the account name and domain name associated with a local group member.
+    /// </summary>
+    /// <remarks>
+    /// User account names are limited to 20 characters and group names are limited to 256 characters. In addition, account names cannot
+    /// be terminated by a period and they cannot include commas or any of the following printable characters: ", /, , [, ], :, |, &lt;,
+    /// &gt;, +, =, ;, ?, *. Names also cannot include characters in the range 1-31, which are non-printable.
+    /// </remarks>
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct LOCALGROUP_MEMBERS_INFO_3
+    {
+        /// <summary>
+        /// <para>Type: <c>LPWSTR</c></para>
+        /// <para>
+        /// Pointer to a null-terminated Unicode string specifying the account name of the local group member prefixed by the domain name
+        /// and the "" separator character. For example:
+        /// </para>
+        /// <para>
+        /// <code>
+        /// &lt;DomainName&gt;\&lt;AccountName&gt;
+        /// </code>
+        /// </para>
+        /// </summary>
+        public string lgrmi3_domainandname;
+    }
+
     #endregion
 
     #region shared_pinvoke
