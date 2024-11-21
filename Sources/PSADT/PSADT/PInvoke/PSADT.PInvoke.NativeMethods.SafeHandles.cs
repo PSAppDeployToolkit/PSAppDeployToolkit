@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 
@@ -366,17 +366,45 @@ namespace PSADT.PInvoke
     /// </summary>
     public sealed class SafeHGlobalHandle : SafeHandle
     {
-        public SafeHGlobalHandle(IntPtr handle) : base(IntPtr.Zero, true)
+        public SafeHGlobalHandle(int size)
+            : base(IntPtr.Zero, true)
         {
-            SetHandle(handle);
+            if (size < 0)
+                throw new ArgumentOutOfRangeException(nameof(size), "Size must be non-negative.");
+
+            SetHandle(Marshal.AllocHGlobal(size));
+        }
+
+        public SafeHGlobalHandle(IntPtr existingHandle)
+            : base(IntPtr.Zero, true)
+        {
+            if (existingHandle == IntPtr.Zero)
+                throw new ArgumentNullException(nameof(existingHandle));
+
+            SetHandle(existingHandle);
         }
 
         public override bool IsInvalid => handle == IntPtr.Zero;
 
         protected override bool ReleaseHandle()
         {
-            Marshal.FreeHGlobal(handle);
+            if (!IsInvalid)
+            {
+                Marshal.FreeHGlobal(handle);
+                SetHandle(IntPtr.Zero);
+            }
             return true;
+        }
+
+        public int Size { get; private set; }
+
+        public void Allocate(int size)
+        {
+            if (!IsInvalid)
+                throw new InvalidOperationException("Memory is already allocated.");
+
+            SetHandle(Marshal.AllocHGlobal(size));
+            Size = size;
         }
     }
 

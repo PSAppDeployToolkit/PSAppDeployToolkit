@@ -1,12 +1,14 @@
+using PSADT.Logging;
 using PSADT.PInvoke;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
-namespace PSADT.Accounts
+namespace PSADT.Account
 {
-    public static class AccountHelper
+    public static class AccountUtilities
     {
         /// <summary>
         /// Parses the base SID from a given SID.
@@ -201,7 +203,7 @@ namespace PSADT.Accounts
             }
         }
 
-        public static string GetLocalAdministratorsGroupName()
+        public static string GetBuiltinAdministratorsGroupName()
         {
             try
             {
@@ -222,64 +224,138 @@ namespace PSADT.Accounts
             }
             catch (Exception ex)
             {
-                // Handle exception if needed
                 throw new InvalidOperationException("Failed to get the Administrators group name.", ex);
             }
         }
 
-        public static bool IsUserInLocalGroup(string username, string groupname)
+        public static SecurityIdentifier GetBuiltinAdministratorsGroupSid()
+        {
+            try
+            {
+                // Get the SID for the built-in Administrators group
+                SecurityIdentifier sid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+
+                return sid;
+            }
+            catch (Exception ex)
+            {
+                UnifiedLogger.Create().Message("Failed to get Administrators group SID.").Error(ex).Severity(LogLevel.Error);
+
+                throw;
+            }
+        }
+
+        private static int GetLevelFromStructure<T>()
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(typeof(T).Name, @"(\d+)$");
+            var i = 0;
+            if (m.Success)
+                int.TryParse(m.Value, out i);
+            return i;
+        }
+
+        public static bool IsUserInBuiltInAdministratorsGroup(string username)
+        {
+            return IsNetUserGetLocalGroups(username, GetBuiltinAdministratorsGroupName());
+        }
+
+        public static bool IsNetUserGetLocalGroups(string username, string groupname, uint level = uint.MaxValue)
+        {
+            return AccountUtilities.IsNetUserGetLocalGroups<LOCALGROUP_USERS_INFO_0>(null, username, groupname, 0x1, level);
+        }
+        
+        /// <summary>
+        /// Determines if a specified user is a member of a local group.
+        /// </summary>
+        /// <param name="username">The username to check.</param>
+        /// <param name="groupname">The local group name to check membership of.</param>
+        /// <returns><c>true</c> if the user is a member of the specified group; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when username or groupname is null or empty.</exception>
+        private static bool IsNetUserGetLocalGroups<T>([Optional] string? servername, string username, string groupname, uint? flags, uint level = uint.MaxValue) where T : struct
         {
             if (string.IsNullOrWhiteSpace(username))
                 throw new ArgumentNullException(nameof(username), "Username cannot be null or empty.");
-
             if (string.IsNullOrWhiteSpace(groupname))
                 throw new ArgumentNullException(nameof(groupname), "Group name cannot be null or empty.");
 
-            int res = NativeMethods.NetUserGetLocalGroups(
-                null!,
-                username,
-                0,
-                0,
-                out IntPtr bufptr,
-                out int entriesread,
-                out int totalentries
-            );
+            UnifiedLogger.Create().Message($"Checking if user [{username}] is a member of local group [{groupname}]").Severity(LogLevel.Debug);
 
-            if (res == 0)
+            IntPtr bufptr = IntPtr.Zero;
+            bool isMember = false;
+            const uint MAX_PREFERRED_LENGTH = unchecked((uint)-1);
+            const uint LG_INCLUDE_INDIRECT = 0x1;
+            uint setFlags = 0;
+
+            if (flags != null && !flags.HasValue)
             {
-                bool isMember = false;
-                try
-                {
-                    if (entriesread > 0 && bufptr != IntPtr.Zero)
-                    {
-                        IntPtr iter = bufptr;
-                        int increment = Marshal.SizeOf(typeof(LOCALGROUP_USERS_INFO_0));
-
-                        for (int i = 0; i < entriesread; i++)
-                        {
-                            LOCALGROUP_USERS_INFO_0 groupInfo = Marshal.PtrToStructure<LOCALGROUP_USERS_INFO_0>(iter);
-
-                            if (!string.IsNullOrWhiteSpace(groupInfo.lgrui0_name) &&
-                                string.Equals(groupInfo.lgrui0_name, groupname, StringComparison.OrdinalIgnoreCase))
-                            {
-                                isMember = true;
-                                break;
-                            }
-                            iter = IntPtr.Add(iter, increment);
-                        }
-                    }
-                }
-                finally
-                {
-                    // Free the buffer allocated by NetUserGetLocalGroups
-                    NativeMethods.NetApiBufferFree(bufptr);
-                }
-                return isMember;
+                setFlags = LG_INCLUDE_INDIRECT;
             }
             else
             {
-                // Handle error if needed
-                throw new Win32Exception(res);
+                setFlags = flags!.Value;
+            }
+            
+
+            if (level == uint.MaxValue) level = (uint)GetLevelFromStructure<T>();
+
+            try
+            {
+                int status = NativeMethods.NetUserGetLocalGroups(
+                    servername!,
+                    username,
+                    level,
+                    setFlags,
+                    out bufptr,
+                    MAX_PREFERRED_LENGTH,
+                    out uint entriesRead,
+                    out uint totalEntries);
+
+                if (status != 0)
+                {
+                    throw new Win32Exception(status, $"Failed to get group membership for user [{username}]. Error code [{status}].");
+                }
+
+                if (entriesRead > 0 && bufptr != IntPtr.Zero)
+                {
+                    var sizeOfStruct = Marshal.SizeOf<LOCALGROUP_USERS_INFO_0>();
+
+                    for (int i = 0; i < entriesRead; i++)
+                    {
+                        IntPtr current = IntPtr.Add(bufptr, i * sizeOfStruct);
+                        LOCALGROUP_USERS_INFO_0 groupInfo = Marshal.PtrToStructure<LOCALGROUP_USERS_INFO_0>(current);
+
+                        UnifiedLogger.Create().Message($"  - Group [{groupInfo.lgrui0_name}]").Severity(LogLevel.Debug);
+
+                        if (!string.IsNullOrWhiteSpace(groupInfo.lgrui0_name))
+                        {
+                            if (string.Equals(groupInfo.lgrui0_name, groupname, StringComparison.OrdinalIgnoreCase))
+                            {
+                                isMember = true;
+                                UnifiedLogger.Create().Message($"Match found! User [{username}] is a member of group [{groupname}]").Severity(LogLevel.Debug);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!isMember)
+                    {
+                        UnifiedLogger.Create().Message($"User [{username}] is not a member of group [{groupname}].").Severity(LogLevel.Debug);
+                    }
+                }
+
+                return isMember;
+            }
+            catch (Exception ex)
+            {
+                UnifiedLogger.Create().Message($"Failed to check if user [{username}] is member of group [{groupname}].").Error(ex);
+                throw;
+            }
+            finally
+            {
+                if (bufptr != IntPtr.Zero)
+                {
+                    NativeMethods.NetApiBufferFree(bufptr);
+                }
             }
         }
     }

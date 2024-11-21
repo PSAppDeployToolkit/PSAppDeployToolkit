@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.Logging;
+using PSADT.Account;
 
 namespace PSADT.WTSSession
 {
@@ -405,20 +406,11 @@ namespace PSADT.WTSSession
 
                     try
                     {
-                        TokenManager.GetSecurityIdentificationTokenForSessionId(session.SessionId, out SafeAccessToken userImpersonationToken);
-                        using (userImpersonationToken)
-                        {
-                            TokenManager.CreatePrimaryToken(userImpersonationToken, out SafeAccessToken userPrimaryToken);
-                            using (userPrimaryToken)
-                            {
-                                isLocalAdminUserSession = TokenManager.IsTokenLocalAdmin(in userPrimaryToken);
-                            }
-                        }
+                        isLocalAdminUserSession = AccountUtilities.IsUserInBuiltInAdministratorsGroup(GetWtsUsernameById(session.SessionId));
                     }
                     catch (Exception ex)
                     {
                         UnifiedLogger.Create().Message($"Failed to determine if the token belongs to a local admin.").Error(ex);
-                        throw new Win32Exception($"Failed to determine if the token belongs to a local admin.", ex);
                     }
 
                     if (isActiveSession)
@@ -734,6 +726,25 @@ namespace PSADT.WTSSession
         }
 
         public static string GetWtsUsernameById(uint sessionId, string? hServerName = "")
+        {
+            string userName;
+
+            using (var hServer = GetWTSServer(hServerName))
+            {
+                userName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName)?.TrimEnd('\0') ?? string.Empty;
+            }
+
+            UnifiedLogger.Create().Message($"Username: {userName}.").Severity(LogLevel.Debug);
+
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                throw new InvalidOperationException($"Failed to retrieve a valid username for session id [{sessionId}].");
+            }
+
+            return userName;
+        }
+
+        public static string GetWtsUsernameAndDomainById(uint sessionId, string? hServerName = "")
         {
             string domainName;
             string userName;

@@ -1662,18 +1662,136 @@ namespace PSADT.PInvoke
 
         #region PInvoke: netapi32.dll
 
-        [DllImport("Netapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern int NetUserGetLocalGroups(
-            string servername,
-            string username,
-            int level,
-            int flags,
-            out IntPtr bufptr,
-            out int entriesread,
-            out int totalentries
-        );
+        /// <summary>The <c>NetUserGetLocalGroups</c> function retrieves a list of local groups to which a specified user belongs.</summary>
+        /// <param name="servername">
+        /// A pointer to a constant string that specifies the DNS or NetBIOS name of the remote server on which the function is to execute.
+        /// If this parameter is <c>NULL</c>, the local computer is used.
+        /// </param>
+        /// <param name="username">
+        /// A pointer to a constant string that specifies the name of the user for which to return local group membership information. If the
+        /// string is of the form DomainName&lt;i&gt;UserName the user name is expected to be found on that domain. If the string is of the
+        /// form UserName, the user name is expected to be found on the server specified by the servername parameter. For more information,
+        /// see the Remarks section.
+        /// </param>
+        /// <param name="level">
+        /// <para>The information level of the data. This parameter can be the following value.</para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Value</term>
+        /// <term>Meaning</term>
+        /// </listheader>
+        /// <item>
+        /// <term>0</term>
+        /// <term>
+        /// Return the names of the local groups to which the user belongs. The bufptr parameter points to an array of
+        /// LOCALGROUP_USERS_INFO_0 structures.
+        /// </term>
+        /// </item>
+        /// </list>
+        /// </param>
+        /// <param name="flags">
+        /// A bitmask of flags that affect the operation. Currently, only the value defined is <c>LG_INCLUDE_INDIRECT</c>. If this bit is
+        /// set, the function also returns the names of the local groups in which the user is indirectly a member (that is, the user has
+        /// membership in a global group that is itself a member of one or more local groups).
+        /// </param>
+        /// <param name="bufptr">
+        /// A pointer to the buffer that receives the data. The format of this data depends on the value of the level parameter. This buffer
+        /// is allocated by the system and must be freed using the NetApiBufferFree function. Note that you must free the buffer even if the
+        /// function fails with <c>ERROR_MORE_DATA</c>.
+        /// </param>
+        /// <param name="prefmaxlen">
+        /// The preferred maximum length, in bytes, of the returned data. If <c>MAX_PREFERRED_LENGTH</c> is specified in this parameter, the
+        /// function allocates the amount of memory required for the data. If another value is specified in this parameter, it can restrict
+        /// the number of bytes that the function returns. If the buffer size is insufficient to hold all entries, the function returns
+        /// <c>ERROR_MORE_DATA</c>. For more information, see Network Management Function Buffers and Network Management Function Buffer Lengths.
+        /// </param>
+        /// <param name="entriesread">A pointer to a value that receives the count of elements actually enumerated.</param>
+        /// <param name="totalentries">A pointer to a value that receives the total number of entries that could have been enumerated.</param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is NERR_Success.</para>
+        /// <para>If the function fails, the return value can be one of the following error codes.</para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Return code</term>
+        /// <term>Description</term>
+        /// </listheader>
+        /// <item>
+        /// <term>ERROR_ACCESS_DENIED</term>
+        /// <term>
+        /// The user does not have access rights to the requested information. This error is also returned if the servername parameter has a
+        /// trailing blank.
+        /// </term>
+        /// </item>
+        /// <item>
+        /// <term>ERROR_INVALID_LEVEL</term>
+        /// <term>The system call level is not correct. This error is returned if the level parameter was not specified as 0.</term>
+        /// </item>
+        /// <item>
+        /// <term>ERROR_INVALID_PARAMETER</term>
+        /// <term>A parameter is incorrect. This error is returned if the flags parameter contains a value other than LG_INCLUDE_INDIRECT.</term>
+        /// </item>
+        /// <item>
+        /// <term>ERROR_MORE_DATA</term>
+        /// <term>More entries are available. Specify a large enough buffer to receive all entries.</term>
+        /// </item>
+        /// <item>
+        /// <term>ERROR_NOT_ENOUGH_MEMORY</term>
+        /// <term>Insufficient memory was available to complete the operation.</term>
+        /// </item>
+        /// <item>
+        /// <term>NERR_DCNotFound</term>
+        /// <term>The domain controller could not be found.</term>
+        /// </item>
+        /// <item>
+        /// <term>NERR_UserNotFound</term>
+        /// <term>The user could not be found. This error is returned if the username could not be found.</term>
+        /// </item>
+        /// <item>
+        /// <term>RPC_S_SERVER_UNAVAILABLE</term>
+        /// <term>The RPC server is unavailable. This error is returned if the servername parameter could not be found.</term>
+        /// </item>
+        /// </list>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// If you are programming for Active Directory, you may be able to call certain Active Directory Service Interface (ADSI) methods to
+        /// achieve the same functionality you can achieve by calling the network management user functions. For more information, see
+        /// IADsUser and IADsComputer.
+        /// </para>
+        /// <para>
+        /// If you call this function on a domain controller that is running Active Directory, access is allowed or denied based on the
+        /// access control list (ACL) for the securable object. The default ACL permits all authenticated users and members of the
+        /// "Pre-Windows 2000 compatible access" group to view the information. If you call this function on a member server or workstation,
+        /// all authenticated users can view the information. For information about anonymous access and restricting anonymous access on
+        /// these platforms, see Security Requirements for the Network Management Functions. For more information on ACLs, ACEs, and access
+        /// tokens, see Access Control Model.
+        /// </para>
+        /// <para>
+        /// The security descriptor of the Domain object is used to perform the access check for this function. The caller must have Read
+        /// Property permission on the Domain object.
+        /// </para>
+        /// <para>To retrieve a list of global groups to which a specified user belongs, you can call the NetUserGetGroups function.</para>
+        /// <para>
+        /// User account names are limited to 20 characters and group names are limited to 256 characters. In addition, account names cannot
+        /// be terminated by a period and they cannot include commas or any of the following printable characters: ", /, , [, ], :, |, &lt;,
+        /// &gt;, +, =, ;, ?, *. Names also cannot include characters in the range 1-31, which are non-printable.
+        /// </para>
+        /// <para>Examples</para>
+        /// <para>
+        /// The following code sample demonstrates how to retrieve a list of the local groups to which a user belongs with a call to the
+        /// <c>NetUserGetLocalGroups</c> function. The sample calls <c>NetUserGetLocalGroups</c>, specifying information level 0
+        /// (LOCALGROUP_USERS_INFO_0). The sample loops through the entries and prints the name of each local group in which the user has
+        /// membership. If all available entries are not enumerated, it also prints the number of entries actually enumerated and the total
+        /// number of entries available. Finally, the code sample frees the memory allocated for the information buffer.
+        /// </para>
+        /// </remarks>
+        // https://docs.microsoft.com/en-us/windows/desktop/api/lmaccess/nf-lmaccess-netusergetlocalgroups NET_API_STATUS NET_API_FUNCTION
+        // NetUserGetLocalGroups( LPCWSTR servername, LPCWSTR username, DWORD level, DWORD flags, LPBYTE *bufptr, DWORD prefmaxlen, LPDWORD
+        // entriesread, LPDWORD totalentries );
+        [DllImport("netapi32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        public static extern int NetUserGetLocalGroups(string servername, string username, uint level, uint flags, out IntPtr bufptr, uint prefmaxlen, out uint entriesread, out uint totalentries);
 
-        [DllImport("Netapi32.dll")]
+        [DllImport("netapi32.dll")]
         public static extern int NetApiBufferFree(IntPtr Buffer);
 
         #endregion

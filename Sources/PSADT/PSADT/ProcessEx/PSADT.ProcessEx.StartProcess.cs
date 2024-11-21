@@ -146,7 +146,7 @@ namespace PSADT.ProcessEx
                     options.SessionId = session.SessionId;
                     try
                     {
-                        options.UpdateUsername(SessionManager.GetWtsUsernameById(session.SessionId));
+                        options.UpdateUsername(SessionManager.GetWtsUsernameAndDomainById(session.SessionId));
                         await ExecuteProcessInSessionAsync(options);
                     }
                     catch (Exception ex)
@@ -176,7 +176,7 @@ namespace PSADT.ProcessEx
                 options.SessionId = session.SessionId;
                 try
                 {
-                    options.UpdateUsername(SessionManager.GetWtsUsernameById(session.SessionId));
+                    options.UpdateUsername(SessionManager.GetWtsUsernameAndDomainById(session.SessionId));
                     await ExecuteProcessInSessionAsync(options);
                 }
                 catch (Exception ex)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using PSADT.PInvoke;
 using System.Threading;
 using System.ComponentModel;
@@ -20,11 +20,13 @@ namespace PSADT.AccessToken
         private readonly ImpersonationOptions _options;
 
         /// <summary>
-        /// Initializes a new instance of the ImpersonationManager class using impersonation options and by
-        /// retrieving the WindowsIdentity for the specified session id.
+        /// Initializes a new instance of the <see cref="ImpersonationManager"/> class using impersonation options and by
+        /// retrieving the <see cref="WindowsIdentity"/> for the specified session ID.
         /// </summary>
         /// <param name="options">The options for impersonation.</param>
         /// <param name="sessionId">The session ID to query the user token for.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <c>null</c>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when failing to obtain the identity for the session ID.</exception>
         public ImpersonationManager(ImpersonationOptions options, uint sessionId)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -34,11 +36,13 @@ namespace PSADT.AccessToken
         }
 
         /// <summary>
-        /// Initializes a new instance of the ImpersonationManager class using impersonation options and by
-        /// retrieving the WindowsIdentity of the client connected to the specified named pipe.
+        /// Initializes a new instance of the <see cref="ImpersonationManager"/> class using impersonation options and by
+        /// retrieving the <see cref="WindowsIdentity"/> of the client connected to the specified named pipe.
         /// </summary>
         /// <param name="options">The options for impersonation.</param>
         /// <param name="pipeHandle">The handle to the named pipe.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <c>null</c>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when failing to obtain the identity from the named pipe client.</exception>
         public ImpersonationManager(ImpersonationOptions options, SafePipeHandle pipeHandle)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -48,32 +52,41 @@ namespace PSADT.AccessToken
         }
 
         /// <summary>
-        /// Retrieves the WindowsIdentity object for the specified session id.
+        /// Retrieves the <see cref="WindowsIdentity"/> object for the specified session ID and sets it as the impersonated identity.
         /// </summary>
         /// <param name="sessionId">The session ID to query the user token for.</param>
-        /// <exception cref="InvalidOperationException">Thrown when there is a failure to get the WindowsIdentity object.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when failing to obtain the security identification token, create an impersonation token, or get the Windows identity.
+        /// </exception>
         private void GetIdentityForSessionId(uint sessionId)
         {
             if (!TokenManager.GetSecurityIdentificationTokenForSessionId(sessionId, out SafeAccessToken securityIdentificationToken))
             {
-                throw new InvalidOperationException($"Failed to obtain the security identification token for session id [{sessionId}].");
+                throw new InvalidOperationException($"Failed to obtain the security identification token for session ID [{sessionId}].");
             }
 
-            SafeAccessToken impersonationToken = SafeAccessToken.Invalid;
-            using (securityIdentificationToken)
+            try
             {
-                if (!TokenManager.CreateImpersonationToken(securityIdentificationToken, out impersonationToken))
+                if (!TokenManager.CreateImpersonationToken(securityIdentificationToken, out SafeAccessToken impersonationToken))
                 {
-                    throw new InvalidOperationException("Failed to duplicate token as a primary token.");
+                    throw new InvalidOperationException("Failed to create an impersonation token.");
+                }
+
+                try
+                {
+                    if (!TokenManager.TryGetWindowsIdentity(impersonationToken, out _impersonatedIdentity, out _))
+                    {
+                        throw new InvalidOperationException("Failed to get a Windows identity.");
+                    }
+                }
+                finally
+                {
+                    impersonationToken.Dispose();
                 }
             }
-
-            using (impersonationToken)
+            finally
             {
-                if (!TokenManager.TryGetWindowsIdentity(impersonationToken, out _impersonatedIdentity, out _))
-                {
-                    throw new InvalidOperationException("Failed to get a windows identity.");
-                }
+                securityIdentificationToken.Dispose();
             }
 
             CheckImpersonationRestrictions();
@@ -81,12 +94,14 @@ namespace PSADT.AccessToken
         }
 
         /// <summary>
-        /// Impersonates the client connected to the specified named pipe and retrieves the client's WindowsIdentity object.
+        /// Impersonates the client connected to the specified named pipe and retrieves the client's <see cref="WindowsIdentity"/> object.
         /// </summary>
         /// <param name="pipeHandle">The handle to the named pipe.</param>
-        /// <exception cref="InvalidOperationException">Thrown when impersonation fails.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when impersonation fails or when failing to revert impersonation.</exception>
         private void GetIdentityForConnectedNamedPipeClient(SafePipeHandle pipeHandle)
         {
+            bool impersonated = false;
+
             try
             {
                 if (!NativeMethods.ImpersonateNamedPipeClient(pipeHandle))
@@ -95,13 +110,17 @@ namespace PSADT.AccessToken
                     throw new InvalidOperationException($"Failed to impersonate named pipe client. Error code [{error}].", new Win32Exception(error));
                 }
 
+                impersonated = true;
                 _impersonatedIdentity = WindowsIdentity.GetCurrent();
             }
             finally
             {
-                if (_impersonatedIdentity != null && !NativeMethods.RevertToSelf())
+                if (impersonated)
                 {
-                    throw new InvalidOperationException("Failed to revert impersonation.", new Win32Exception(Marshal.GetLastWin32Error()));
+                    if (!NativeMethods.RevertToSelf())
+                    {
+                        throw new InvalidOperationException("Failed to revert impersonation.", new Win32Exception(Marshal.GetLastWin32Error()));
+                    }
                 }
             }
 
@@ -110,9 +129,9 @@ namespace PSADT.AccessToken
         }
 
         /// <summary>
-        /// Validate that the impersonated identity does not violate any impersonation restrictions.
+        /// Validates that the impersonated identity does not violate any impersonation restrictions specified in the options.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when the impersonated user does not meet the specified criteria.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the impersonated identity is null or violates the restrictions.</exception>
         private void CheckImpersonationRestrictions()
         {
             if (_impersonatedIdentity == null)
@@ -120,9 +139,7 @@ namespace PSADT.AccessToken
                 throw new InvalidOperationException("Cannot validate impersonated user: No impersonated identity.");
             }
 
-            var isSystem = _impersonatedIdentity.IsSystem;
-            var isAdmin = new WindowsPrincipal(_impersonatedIdentity).IsInRole(WindowsBuiltInRole.Administrator);
-            var currentIsAdmin = new WindowsPrincipal(WindowsIdentity.GetCurrent(TokenAccessLevels.Query)).IsInRole(WindowsBuiltInRole.Administrator);
+            bool isSystem = _impersonatedIdentity.IsSystem;
 
             if (isSystem && !_options.AllowSystemImpersonation)
             {
@@ -133,7 +150,7 @@ namespace PSADT.AccessToken
         /// <summary>
         /// Adjusts the privileges of the impersonated identity based on the impersonation options.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when privilege adjustment fails.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the impersonated identity is null or when failing to adjust privileges.</exception>
         private void ApplyTokenImpersonationOptions()
         {
             if (_impersonatedIdentity == null)
@@ -148,41 +165,38 @@ namespace PSADT.AccessToken
 
             using (tokenHandle)
             {
-                SafeAccessToken adjustedTokenHandle = tokenHandle;
-
                 try
                 {
                     if (_options.ReduceAdminPrivileges && new WindowsPrincipal(_impersonatedIdentity).IsInRole(WindowsBuiltInRole.Administrator))
                     {
-                        PrivilegeManager.RemoveAllPrivileges(adjustedTokenHandle);
-                        
+                        PrivilegeManager.RemoveAllPrivileges(tokenHandle);
+
                         PrivilegeManager.SetStandardUserPrivileges(tokenHandle, true);
                     }
 
                     foreach (var privilege in _options.PrivilegesToEnable)
                     {
-                        PrivilegeManager.AdjustTokenPrivilegeInternal(adjustedTokenHandle.DangerousGetHandle(), privilege, true);
+                        PrivilegeManager.AdjustTokenPrivilegeInternal(tokenHandle, privilege, true);
                     }
 
                     foreach (var privilege in _options.PrivilegesToDisable)
                     {
-                        PrivilegeManager.AdjustTokenPrivilegeInternal(adjustedTokenHandle.DangerousGetHandle(), privilege, false);
+                        PrivilegeManager.AdjustTokenPrivilegeInternal(tokenHandle, privilege, false);
                     }
 
                     WindowsIdentity newIdentity = null!;
-                    WindowsIdentity.RunImpersonated(adjustedTokenHandle, () =>
+                    WindowsIdentity.RunImpersonated(tokenHandle, () =>
                     {
                         newIdentity = WindowsIdentity.GetCurrent();
                     });
 
+                    // Dispose the previous identity if it's not null
+                    _impersonatedIdentity?.Dispose();
                     _impersonatedIdentity = newIdentity ?? throw new InvalidOperationException("Failed to get the new, adjusted impersonated identity.");
                 }
-                finally
+                catch (Exception ex)
                 {
-                    if (adjustedTokenHandle != tokenHandle)
-                    {
-                        adjustedTokenHandle.Dispose();
-                    }
+                    throw new InvalidOperationException("Failed to apply token impersonation options.", ex);
                 }
             }
         }

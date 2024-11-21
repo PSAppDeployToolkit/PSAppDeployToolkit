@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using PSADT.Accounts;
+using PSADT.Account;
 using System.Security;
 using System.Collections.Generic;
 
@@ -56,9 +56,9 @@ namespace PSADT.UserProfile
 
                     try
                     {
-                        ntAccount = AccountHelper.GetNTAccountFromSidString(profileSid).ToString();
-                        ntDomain = AccountHelper.ParseNTDomainFromNTAccountString(ntAccount);
-                        userName = AccountHelper.ParseUserNameFromNTAccountString(ntAccount);
+                        ntAccount = AccountUtilities.GetNTAccountFromSidString(profileSid).ToString();
+                        ntDomain = AccountUtilities.ParseNTDomainFromNTAccountString(ntAccount);
+                        userName = AccountUtilities.ParseUserNameFromNTAccountString(ntAccount);
 
                         if (includeNtAccount != null && !includeNtAccount.Contains(ntAccount, StringComparer.OrdinalIgnoreCase) ||
                             excludeUserName != null && excludeUserName.Contains(userName, StringComparer.OrdinalIgnoreCase) ||
