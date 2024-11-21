@@ -1,6 +1,6 @@
 ﻿---
 Module Name: PSAppDeployToolkit
-Module Guid: d64dedeb-6c11-4251-911e-a62d7e031d0f
+Module Guid: 8c3c366b-8606-4576-9f2d-4051144f7ca2
 Download Help Link: NA
 Help Version: 3.93.0
 Locale: en-US
