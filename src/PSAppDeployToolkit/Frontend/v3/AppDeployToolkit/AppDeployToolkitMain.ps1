@@ -521,7 +521,7 @@ function Remove-MSIApplications
                 }
                 elseif ($_[2] -eq 'Exact')
                 {
-                    if ($_[1].GetType().Name -eq 'Boolean')
+                    if ($_[1] -is [System.Boolean])
                     {
                         "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
                     }
@@ -553,7 +553,7 @@ function Remove-MSIApplications
                 }
                 elseif ($_[2] -eq 'Exact')
                 {
-                    if ($_[1].GetType().Name -eq 'Boolean')
+                    if ($_[1] -is [System.Boolean])
                     {
                         "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
                     }
