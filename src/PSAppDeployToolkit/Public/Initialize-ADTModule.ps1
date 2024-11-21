@@ -125,8 +125,7 @@ function Initialize-ADTModule
                 $Script:ADT.TerminalServerMode = $false
                 $Script:ADT.LastExitCode = 0
 
-                # Mark the environment table as read-only before finishing.
-                $Script:ADT.Environment = $Script:ADT.Environment.AsReadOnly()
+                # Calculate how long this process took before finishing.
                 $Script:ADT.Durations.ModuleInit = [System.DateTime]::Now - $moduleInitStart
                 $Script:ADT.Initialized = $true
             }
