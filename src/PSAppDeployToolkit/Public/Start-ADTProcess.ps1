@@ -556,10 +556,6 @@ function Start-ADTProcess
             # Set up parameters for Invoke-ADTFunctionErrorHandler.
             if ($null -ne $returnCode)
             {
-                if ($adtSession -and $extInvoker)
-                {
-                    $adtSession.SetExitCode($returnCode)
-                }
                 Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage $_.Exception.Message -DisableErrorResolving
             }
             else
