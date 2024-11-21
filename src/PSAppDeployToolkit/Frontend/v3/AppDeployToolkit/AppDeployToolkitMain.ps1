@@ -379,10 +379,13 @@ function Get-InstalledApplication
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Exact,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$WildCard,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RegEx,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
     )
@@ -4703,7 +4706,7 @@ function Set-PinnedApplication
         [System.String]$Action,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$FilePath
     )
 
