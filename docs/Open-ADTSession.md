@@ -19,9 +19,9 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-D
  [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>] [[-AppScriptAuthor] <String>]
  [[-InstallName] <String>] [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>]
  [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <DateTime>]
- [[-DeployAppScriptParameters] <IDictionary>] [[-AppSuccessExitCodes] <Int32[]>]
- [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>] [[-DirFiles] <String>]
- [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
+ [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
+ [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>]
+ [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
  [[-DefaultMspFiles] <String[]>] [-ForceWimDetection] [-PassThru] [<CommonParameters>]
 ```
 
@@ -345,7 +345,7 @@ Accept wildcard characters: False
 Specifies the parameters for the deploy application script.
 
 ```yaml
-Type: IDictionary
+Type: System.Collections.Generic.Dictionary`2[System.String,System.Object]
 Parameter Sets: (All)
 Aliases:
 

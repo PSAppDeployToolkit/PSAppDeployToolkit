@@ -16,8 +16,8 @@ Execute a process with optional arguments, working directory, window style.
 Start-ADTProcess [-FilePath] <String> [[-ArgumentList] <String[]>] [-SecureArgumentList]
  [[-WindowStyle] <ProcessWindowStyle>] [-CreateNoWindow] [[-WorkingDirectory] <String>] [-NoWait] [-PassThru]
  [-WaitForMsiExec] [[-MsiExecWaitTime] <UInt32>] [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>]
- [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>] [-NoExitOnProcessFailure]
- [-UseShellExecute] [<CommonParameters>]
+ [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>] [-UseShellExecute]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -292,22 +292,6 @@ Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 Required: False
 Position: 9
 Default value: Normal
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoExitOnProcessFailure
-Specifies whether the function shouldn't call Close-ADTSession when the process returns an exit code that is considered an error/failure.
-Default: $false
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
