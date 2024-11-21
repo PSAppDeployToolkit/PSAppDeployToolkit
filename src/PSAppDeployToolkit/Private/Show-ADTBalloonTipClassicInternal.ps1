@@ -55,6 +55,6 @@ function Show-ADTBalloonTipClassicInternal
 
     # Show the dialog and sleep until done.
     $null = [PSADT.PInvoke.NativeMethods]::SetCurrentProcessExplicitAppUserModelID($BalloonTitle)
-    ([System.Windows.Forms.NotifyIcon]@{ BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = [PSADT.Shared.Utility]::ConvertImageToIcon([System.Drawing.Image]::FromFile($TrayIcon)); Visible = $true }).ShowBalloonTip($BalloonTipTime)
+    ([System.Windows.Forms.NotifyIcon]@{ BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::$BalloonTipIcon; BalloonTipText = $BalloonTipText; BalloonTipTitle = $BalloonTipTitle; Icon = [PSADT.Shared.Utility]::ConvertImageToIcon([System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($TrayIcon)))); Visible = $true }).ShowBalloonTip($BalloonTipTime)
     [System.Threading.Thread]::Sleep($BalloonTipTime)
 }
