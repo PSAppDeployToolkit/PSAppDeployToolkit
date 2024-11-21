@@ -1329,6 +1329,14 @@ namespace PSADT.Module
         }
 
         /// <summary>
+        /// Gets the exit code.
+        /// </summary>
+        public int GetExitCode()
+        {
+            return ExitCode;
+        }
+
+        /// <summary>
         /// Sets the exit code.
         /// </summary>
         /// <param name="exitCode">The exit code to set.</param>
