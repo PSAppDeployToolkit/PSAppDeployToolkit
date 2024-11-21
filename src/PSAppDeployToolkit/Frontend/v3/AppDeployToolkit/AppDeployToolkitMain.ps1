@@ -1,4 +1,4 @@
-<#
+﻿<#
 
 .SYNOPSIS
 PSAppDeployToolkit - This script contains PSAppDeployToolkit v3.x API wrappers to provide backwards compatibility for Deploy-Application.ps1 scripts against PSAppDeployToolkit v4.
@@ -509,19 +509,26 @@ function Remove-MSIApplications
                 if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
                 if ($_[2] -eq 'RegEx')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -match '$($_[1].Replace("'","''"))'"
+                    "`$_.$($_[0]) -match '$($_[1] -replace "'","''")'"
                 }
                 elseif ($_[2] -eq 'Contains')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -match '$([System.Text.RegularExpressions.Regex]::Escape($_[1].Replace("'","''")))'"
+                    "`$_.$($_[0]) -match '$([System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'","''")))'"
                 }
                 elseif ($_[2] -eq 'WildCard')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -like '$($_[1].Replace("'","''"))'"
+                    "`$_.$($_[0]) -like '$($_[1] -replace "'","''")'"
                 }
                 elseif ($_[2] -eq 'Exact')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -eq '$($_[1].Replace("'","''"))'"
+                    if ($_[1].GetType().Name -eq 'Boolean')
+                    {
+                        "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
+                    }
+                    else
+                    {
+                        "`$_.$($_[0]) -eq '$($_[1] -replace "'","''")'"
+                    }
                 }
             }
         }
@@ -534,19 +541,26 @@ function Remove-MSIApplications
                 if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
                 if ($_[2] -eq 'RegEx')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -match '$($_[1].Replace("'","''"))'"
+                    "`$_.$($_[0]) -match '$($_[1] -replace "'","''")'"
                 }
                 elseif ($_[2] -eq 'Contains')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -match '$([System.Text.RegularExpressions.Regex]::Escape($_[1].Replace("'","''")))'"
+                    "`$_.$($_[0]) -match '$([System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'","''")))'"
                 }
                 elseif ($_[2] -eq 'WildCard')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -like '$($_[1].Replace("'","''"))'"
+                    "`$_.$($_[0]) -like '$($_[1] -replace "'","''")'"
                 }
                 elseif ($_[2] -eq 'Exact')
                 {
-                    "`$_.'$($_[0].Replace("'","''"))' -eq '$($_[1].Replace("'","''"))'"
+                    if ($_[1].GetType().Name -eq 'Boolean')
+                    {
+                        "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
+                    }
+                    else
+                    {
+                        "`$_.$($_[0]) -eq '$($_[1] -replace "'","''")'"
+                    }
                 }
             }
         }
