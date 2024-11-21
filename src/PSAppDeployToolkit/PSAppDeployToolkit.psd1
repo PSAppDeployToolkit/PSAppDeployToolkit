@@ -224,19 +224,19 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = 'psappdeploytoolkit', 'adt', 'psadt', 'appdeployment', 'appdeploy', 'deployment', 'toolkit'
+            Tags = 'psappdeploytoolkit', 'adt', 'psadt', 'appdeployment', 'appdeploytoolkit', 'appdeploy', 'deployment', 'toolkit'
 
             # A URL to the license for this module.
-            LicenseUri = 'https://psappdeploytoolkit.com/docs/license'
+            LicenseUri = 'https://raw.githubusercontent.com/PSAppDeployToolkit/PSAppDeployToolkit/refs/heads/main/COPYING.Lesser'
 
             # A URL to the main website for this project.
             ProjectUri = 'https://psappdeploytoolkit.com'
 
             # A URL to an icon representing this module.
-            IconUri = 'https://psappdeploytoolkit.com/documentation/assets/logo.ico'
+            IconUri = 'https://raw.githubusercontent.com/PSAppDeployToolkit/PSAppDeployToolkit/refs/heads/main/src/PSAppDeployToolkit/Assets/AppIcon.png'
 
             # ReleaseNotes of this module
-            # ReleaseNotes = ''
+            ReleaseNotes = 'https://github.com/psappdeploytoolkit/psappdeploytoolkit/releases/latest'
 
         } # End of PSData hashtable
 
