@@ -26,7 +26,7 @@ function New-ADTFunction
             }
             catch
             {
-                # Re-writing the ErrorRecord with Write-Object ensures the correct PositionMessage is used.
+                # Re-writing the ErrorRecord with Write-Error ensures the correct PositionMessage is used.
                 Write-Error -ErrorRecord $_
             }
         }
