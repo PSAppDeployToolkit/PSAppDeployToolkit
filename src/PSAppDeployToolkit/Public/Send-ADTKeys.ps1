@@ -139,7 +139,7 @@ function Send-ADTKeys
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
-                    if (![PSADT.PInvoke.NativeMethods]::IsWindowEnabled($WindowHandle))
+                    if (![PSADT.LibraryInterfaces.User32]::IsWindowEnabled($WindowHandle))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new('Unable to send keys to window because it may be disabled due to a modal dialog being shown.')

@@ -5,7 +5,7 @@ namespace PSADT.PInvoke
     /// <summary>
     /// Contains native method delegate declarations for Win32 API calls.
     /// </summary>
-    public static partial class NativeMethods
+    internal static partial class NativeMethods
     {
         #region user32.dll
 
