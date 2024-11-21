@@ -4749,6 +4749,7 @@ else
 $sessionProps = @{ SessionState = $ExecutionContext.SessionState }
 Get-Variable -Name ($adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
 if ($sessionProps.ContainsKey('AppScriptDate') -and ($sessionProps.AppScriptDate -eq 'XX/XX/20XX')) { $null = $sessionProps.Remove('AppScriptDate') }
+if ($sessionProps.ContainsKey('DeployAppScriptParameters')) { $sessionProps.DeployAppScriptParameters = (Get-PSCallStack)[1].InvocationInfo.BoundParameters }
 Open-ADTSession @sessionProps
 
 # Finalize setup of AppDeployToolkitMain.ps1.
