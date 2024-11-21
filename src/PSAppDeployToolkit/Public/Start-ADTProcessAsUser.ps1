@@ -262,9 +262,7 @@ function Start-ADTProcessAsUser
         {
             $PSBoundParameters.Add('PrimaryActiveUserSession', [System.Management.Automation.SwitchParameter]$true)
         }
-
-        # Translate a provided username into a session Id.
-        if ($PSBoundParameters.ContainsKey('Username'))
+        elseif ($PSBoundParameters.ContainsKey('Username'))
         {
             $SessionId = Get-ADTLoggedOnUser | & { process { if ($_.NTAccount.EndsWith($Username, [System.StringComparison]::InvariantCultureIgnoreCase)) { return $_ } } } | Select-Object -First 1 -ExpandProperty SessionId
             $PSBoundParameters.Add('SessionId', $SessionId)
