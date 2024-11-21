@@ -289,7 +289,7 @@ Set-StrictMode -Version 1
 try
 {
     Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File
-    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = 'd64dedeb-6c11-4251-911e-a62d7e031d0f'; ModuleVersion = '3.93.0' } -Force
+    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '3.93.0' } -Force
     try
     {
         $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession -PassThru
