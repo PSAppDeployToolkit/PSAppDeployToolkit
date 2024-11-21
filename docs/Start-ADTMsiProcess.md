@@ -18,8 +18,7 @@ Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-Transforms <String[]
  [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>] [-LoggingOptions <String>]
  [-LogFileName <String>] [-WorkingDirectory <String>] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-NoExitOnProcessFailure]
- [-RepairFromSource] [<CommonParameters>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource] [<CommonParameters>]
 ```
 
 ### InstalledApplication
@@ -29,7 +28,7 @@ Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplicati
  [-LoggingOptions <String>] [-LogFileName <String>] [-WorkingDirectory <String>]
  [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru]
  [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-NoExitOnProcessFailure] [-RepairFromSource] [<CommonParameters>]
+ [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -381,21 +380,6 @@ Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 Required: False
 Position: Named
 Default value: Normal
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoExitOnProcessFailure
-Specifies whether the function shouldn't call Close-ADTSession when the process returns an exit code that is considered an error/failure.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
