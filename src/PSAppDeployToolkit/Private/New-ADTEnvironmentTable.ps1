@@ -292,9 +292,8 @@ function New-ADTEnvironmentTable
 
     ## Variables: User profile information.
     $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
-    $variables.Add('userProfileName', $variables.RunAsActiveUser.UserName)
-    $variables.Add('runasUserProfile', (Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore))
-    $variables.Add('loggedOnUserTempPath', $null)  # This will be set in Import-ADTConfig.
+    $variables.Add('userProfileName', $(if ($variables.RunAsActiveUser) { $variables.RunAsActiveUser.UserName }))
+    $variables.Add('runasUserProfile', $(if ($variables.userProfileName) { Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore }))
 
     ## Variables: Invalid FileName Characters
     $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
@@ -309,5 +308,5 @@ function New-ADTEnvironmentTable
     $variables.Add('ShellApp', [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('Shell.Application')))
 
     # Return variables for use within the module.
-    return $variables
+    return $variables.AsReadOnly()
 }
