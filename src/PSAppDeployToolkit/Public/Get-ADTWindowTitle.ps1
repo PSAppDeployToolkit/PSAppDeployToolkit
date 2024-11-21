@@ -119,7 +119,7 @@ function Get-ADTWindowTitle
                         }
 
                         # Return early if window isn't visible.
-                        if (![PSADT.PInvoke.NativeMethods]::IsWindowVisible($_))
+                        if (![PSADT.LibraryInterfaces.User32]::IsWindowVisible($_))
                         {
                             return
                         }

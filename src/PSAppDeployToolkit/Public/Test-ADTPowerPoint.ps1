@@ -97,7 +97,7 @@ function Test-ADTPowerPoint
                     }
                     QUNS_BUSY
                     {
-                        if ($PowerPointProcessIDs -contains [PSADT.GUI.UiAutomation]::GetWindowThreadProcessId([PSADT.PInvoke.NativeMethods]::GetForegroundWindow()))
+                        if ($PowerPointProcessIDs -contains [PSADT.GUI.UiAutomation]::GetWindowThreadProcessId([PSADT.LibraryInterfaces.User32]::GetForegroundWindow()))
                         {
                             Write-ADTLogEntry -Message 'Detected a fullscreen foreground window matches a PowerPoint process ID.'
                             return ($presenting = $true)
