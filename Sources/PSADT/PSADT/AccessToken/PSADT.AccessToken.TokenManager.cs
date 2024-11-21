@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using PSADT.PInvoke;
 using System.Security;
@@ -13,12 +13,11 @@ namespace PSADT.AccessToken
     public static class TokenManager
     {
         /// <summary>
-        /// Get's the token for a given session id. Returns a token with a SecurityIdentification level.
-        /// Can obtain the client's security information but cannot fully impersonate the client.
+        /// Retrieves the security identification token for the specified session ID.
         /// </summary>
         /// <param name="sessionId">The session ID to query the user token for.</param>
-        /// <returns><c>true</c> if we obtained the access token of the log-on user specified by the session ID.</returns>
-        /// <exception cref="Win32Exception">Thrown if we fail to obtain the access token.</exception>
+        /// <param name="securityIdentificationToken">When this method returns, contains the security identification token if the operation was successful.</param>
+        /// <returns><c>true</c> if the token was retrieved successfully; otherwise, <c>false</c>.</returns>
         [SecurityCritical]
         public static bool GetSecurityIdentificationTokenForSessionId(uint sessionId, out SafeAccessToken securityIdentificationToken)
         {
@@ -26,27 +25,27 @@ namespace PSADT.AccessToken
             {
                 if (!NativeMethods.WTSQueryUserToken(sessionId, out securityIdentificationToken))
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"'WTSQueryUserToken' failed to obtain the access token of the logged-on user specified by the session id [{sessionId}].");
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"'WTSQueryUserToken' failed to obtain the access token of the logged-on user specified by the session ID [{sessionId}].");
                 }
 
-                UnifiedLogger.Create().Message($"User token queried successfully for session id [{sessionId}].").Severity(LogLevel.Debug);
+                UnifiedLogger.Create().Message($"User token queried successfully for session ID [{sessionId}].").Severity(LogLevel.Debug);
                 return true;
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to query user token for session id [{sessionId}].").Error(ex);
+                UnifiedLogger.Create().Message($"Failed to query user token for session ID [{sessionId}].").Error(ex);
                 securityIdentificationToken = SafeAccessToken.Invalid;
                 return false;
             }
         }
 
+
         /// <summary>
-        /// Duplicates a given access token as an primary token. Primarily used to create new processes
-        /// in the user's context, allowing the process to run as if the user themselves launched it.
+        /// Duplicates a given access token as a primary token.
         /// </summary>
         /// <param name="token">The token to duplicate.</param>
-        /// <returns><c>true</c> if token duplication was successful.</returns>
-        /// <exception cref="Win32Exception">Thrown if the token duplication fails.</exception>
+        /// <param name="primaryToken">When this method returns, contains the duplicated primary token if the operation was successful.</param>
+        /// <returns><c>true</c> if token duplication was successful; otherwise, <c>false</c>.</returns>
         [SecurityCritical]
         public static bool CreatePrimaryToken(SafeAccessToken token, out SafeAccessToken primaryToken)
         {
@@ -54,7 +53,7 @@ namespace PSADT.AccessToken
             {
                 if (!NativeMethods.DuplicateTokenEx(
                     token,
-                    TokenAccess.TOKEN_ALL_ACCESS,
+                    TokenAccess.TOKEN_ALL_ACCESS | TokenAccess.TOKEN_QUERY | TokenAccess.TOKEN_DUPLICATE,
                     SECURITY_ATTRIBUTES.Create(),
                     SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
                     TOKEN_TYPE.TokenPrimary,
@@ -63,32 +62,26 @@ namespace PSADT.AccessToken
                     throw new Win32Exception(Marshal.GetLastWin32Error(), $"'DuplicateTokenEx' failed to create a primary access token from the existing token.");
                 }
 
-                UnifiedLogger.Create().Message($"Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
+                UnifiedLogger.Create().Message("Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
 
-                // This assumes that the caller had no further use for the token.
-                if (!token.IsInvalid)
-                {
-                    token.Dispose();
-                }
-
+                // Do not dispose of the input token; the caller manages its disposal.
                 return true;
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to duplicate token as primary token.").Error(ex);
+                UnifiedLogger.Create().Message("Failed to duplicate token as a primary token.").Error(ex);
                 primaryToken = SafeAccessToken.Invalid;
                 return false;
             }
         }
 
+
         /// <summary>
-        /// Duplicates a given access token as an impersonation token. The impersonation
-        /// token allows a process or thread to temporarily impersonate the user's
-        /// security contex but cannot be used to create a new process.
+        /// Duplicates a given access token as an impersonation token.
         /// </summary>
         /// <param name="token">The token to duplicate.</param>
-        /// <returns><c>true</c> if token duplication was successful.</returns>
-        /// <exception cref="Win32Exception">Thrown if the token duplication fails.</exception>
+        /// <param name="impersonationToken">When this method returns, contains the duplicated impersonation token if the operation was successful.</param>
+        /// <returns><c>true</c> if token duplication was successful; otherwise, <c>false</c>.</returns>
         [SecurityCritical]
         public static bool CreateImpersonationToken(SafeAccessToken token, out SafeAccessToken impersonationToken)
         {
@@ -96,7 +89,7 @@ namespace PSADT.AccessToken
             {
                 if (!NativeMethods.DuplicateTokenEx(
                     token,
-                    TokenAccess.TOKEN_ALL_ACCESS,
+                    TokenAccess.TOKEN_ALL_ACCESS | TokenAccess.TOKEN_QUERY | TokenAccess.TOKEN_DUPLICATE,
                     SECURITY_ATTRIBUTES.Create(),
                     SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
                     TOKEN_TYPE.TokenImpersonation,
@@ -105,25 +98,28 @@ namespace PSADT.AccessToken
                     throw new Win32Exception(Marshal.GetLastWin32Error(), $"'DuplicateTokenEx' failed to create an impersonation token from the existing token.");
                 }
 
-                UnifiedLogger.Create().Message($"Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
+                UnifiedLogger.Create().Message("Successfully duplicated token as an impersonation token.").Severity(LogLevel.Debug);
 
-                // This assumes that the caller had no further use for the token.
-                if (!token.IsInvalid)
-                {
-                    token.Dispose();
-                }
-
+                // Do not dispose of the input token; the caller manages its disposal.
                 return true;
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to duplicate token as an impersonation token.").Error(ex);
+                UnifiedLogger.Create().Message("Failed to duplicate token as an impersonation token.").Error(ex);
                 impersonationToken = SafeAccessToken.Invalid;
                 return false;
             }
         }
 
-        public static bool TryGetWindowsIdentity(in SafeAccessToken token, out WindowsIdentity? windowsIdentity, out WindowsPrincipal? windowsPrincipal)
+
+        /// <summary>
+        /// Attempts to create a <see cref="WindowsIdentity"/> and <see cref="WindowsPrincipal"/> from the specified token.
+        /// </summary>
+        /// <param name="token">The access token to create the identity and principal from.</param>
+        /// <param name="windowsIdentity">When this method returns, contains the <see cref="WindowsIdentity"/> if successful.</param>
+        /// <param name="windowsPrincipal">When this method returns, contains the <see cref="WindowsPrincipal"/> if successful.</param>
+        /// <returns><c>true</c> if the identity and principal were created successfully; otherwise, <c>false</c>.</returns>
+        public static bool TryGetWindowsIdentity(SafeAccessToken token, out WindowsIdentity? windowsIdentity, out WindowsPrincipal? windowsPrincipal)
         {
             windowsIdentity = null;
             windowsPrincipal = null;
@@ -131,19 +127,20 @@ namespace PSADT.AccessToken
             try
             {
                 windowsIdentity = new WindowsIdentity(token.DangerousGetHandle());
-                UnifiedLogger.Create().Message($"Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
+                UnifiedLogger.Create().Message("Successfully created WindowsIdentity from token.").Severity(LogLevel.Debug);
 
                 windowsPrincipal = new WindowsPrincipal(windowsIdentity);
-                UnifiedLogger.Create().Message($"Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
+                UnifiedLogger.Create().Message("Successfully created WindowsPrincipal from WindowsIdentity.").Severity(LogLevel.Debug);
 
                 return true;
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to get WindowsIdentity or WindowsPrincipal from token.").Error(ex);
+                UnifiedLogger.Create().Message("Failed to get WindowsIdentity or WindowsPrincipal from token.").Error(ex);
                 return false;
             }
         }
+
 
         /// <summary>Determines whether UAC is enabled on this system.</summary>
 		/// <returns><c>true</c> if UAC is enabled; otherwise, <c>false</c>.</returns>
@@ -171,60 +168,122 @@ namespace PSADT.AccessToken
             return false; // Default to false if we can't determine the UAC status
         }
 
-        public static T GetTokenInformation<T>(SafeAccessToken tokenHandle, TOKEN_INFORMATION_CLASS tokenInformationClass)
+        /// <summary>
+        /// Retrieves the specified type of information about an access token.
+        /// </summary>
+        /// <typeparam name="T">The type of token information to retrieve.</typeparam>
+        /// <param name="tokenHandle">The access token from which to retrieve information.</param>
+        /// <param name="tokenInformationClass">Specifies a value from the <see cref="TOKEN_INFORMATION_CLASS"/> enumeration to identify the type of information to retrieve.</param>
+        /// <returns>The requested token information of type <typeparamref name="T"/>.</returns>
+        /// <exception cref="Win32Exception">Thrown if the token information cannot be retrieved.</exception>
+        public static T? GetTokenInformation<T>(SafeAccessToken tokenHandle, TOKEN_INFORMATION_CLASS tokenInformationClass)
         {
-
-            // First, get the required buffer size
-            if (!NativeMethods.GetTokenInformation(tokenHandle, tokenInformationClass, IntPtr.Zero, 0, out int tokenInfoLength))
-            {
-                int error = Marshal.GetLastWin32Error();
-                if (error != 122) // ERROR_INSUFFICIENT_BUFFER
-                {
-                    throw new Win32Exception(error, $"Failed to get token information size for type [{typeof(T)}]. Error code [{error}].");
-                }
-            }
-
-            IntPtr tokenInfo = Marshal.AllocHGlobal(tokenInfoLength);
-
             try
             {
-                if (!NativeMethods.GetTokenInformation(tokenHandle, tokenInformationClass, tokenInfo, tokenInfoLength, out _))
+                // First call to get the buffer size
+                bool result = NativeMethods.GetTokenInformation(tokenHandle, tokenInformationClass, IntPtr.Zero, 0, out int tokenInfoLength);
+                int error = Marshal.GetLastWin32Error();
+
+                if (!result)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"Failed to retrieve token information of type [{typeof(T)}].");
+                    if (error == NativeMethods.ERROR_INSUFFICIENT_BUFFER)
+                    {
+                        // Proceed to allocate buffer of the required size
+                    }
+                    else if (error == NativeMethods.ERROR_BAD_LENGTH)
+                    {
+                        // For certain TOKEN_INFORMATION_CLASS values, we must provide a fixed buffer size
+                        tokenInfoLength = Marshal.SizeOf(typeof(T));
+                    }
+                    else
+                    {
+                        throw new Win32Exception(error);
+                    }
                 }
 
-                if (typeof(T).IsEnum)
+                if (tokenInfoLength == 0)
                 {
-                    int enumValue = Marshal.ReadInt32(tokenInfo);
-                    return (T)Enum.ToObject(typeof(T), enumValue);
+                    // If the required buffer size is still zero, set it to the size of T
+                    tokenInfoLength = Marshal.SizeOf(typeof(T));
+                }
+
+                using var buffer = new SafeHGlobalHandle(tokenInfoLength);
+
+                // Second call to get the actual token information
+                if (!NativeMethods.GetTokenInformation(
+                    tokenHandle,
+                    tokenInformationClass,
+                    buffer.DangerousGetHandle(),
+                    tokenInfoLength,
+                    out _))
+                {
+                    error = Marshal.GetLastWin32Error();
+                    throw new Win32Exception(error);
+                }
+
+                Type typeT = typeof(T);
+
+                if (typeT.IsEnum)
+                {
+                    int intValue = Marshal.ReadInt32(buffer.DangerousGetHandle());
+                    return (T)Enum.ToObject(typeT, intValue);
+                }
+                else if (typeT.IsValueType || typeT.IsLayoutSequential || typeT.IsExplicitLayout)
+                {
+                    return Marshal.PtrToStructure<T>(buffer.DangerousGetHandle());
                 }
                 else
                 {
-                    return Marshal.PtrToStructure<T>(tokenInfo) ?? throw new InvalidOperationException($"Failed to marshal token information to type [{typeof(T)}].");
+                    throw new NotSupportedException($"Type {typeT.FullName} is not supported.");
                 }
-            }
-            finally
-            {
-                if (tokenInfo != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(tokenInfo);
-                }
-            }
-        }
-
-        public static TOKEN_ELEVATION_TYPE GetTokenElevationType(SafeAccessToken tokenHandle)
-        {
-            try
-            {
-                return GetTokenInformation<TOKEN_ELEVATION_TYPE>(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevationType);
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to get token elevation type.").Error(ex);
+                UnifiedLogger.Create().Message($"Exception in GetTokenInformation:").Error(ex);
                 throw;
             }
         }
 
+        /// <summary>
+        /// Retrieves the elevation type of the specified access token.
+        /// </summary>
+        /// <param name="tokenHandle">The access token to retrieve the elevation type from.</param>
+        /// <returns>A <see cref="TOKEN_ELEVATION_TYPE"/> value indicating the elevation type of the token.</returns>
+        /// <exception cref="Exception">Thrown if the elevation type cannot be retrieved.</exception>
+        public static TOKEN_ELEVATION_TYPE GetTokenElevationType(SafeAccessToken tokenHandle)
+        {
+            try
+            {
+                // First try to get the elevation type directly
+                var elevationType = GetTokenInformation<TOKEN_ELEVATION_TYPE>(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevationType);
+
+                // If that succeeds, we can return it
+                if (elevationType != 0)
+                    return elevationType;
+
+                // If it fails with access denied, try to check if the token is elevated
+                var elevation = GetTokenInformation<TOKEN_ELEVATION>(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation);
+
+                // If the token is elevated, it must be full elevation type
+                if (elevation.TokenIsElevated)
+                    return TOKEN_ELEVATION_TYPE.TokenElevationTypeFull;
+
+                // Otherwise assume limited
+                return TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited;
+            }
+            catch (Exception ex)
+            {
+                UnifiedLogger.Create().Message("Failed to get token elevation type.").Error(ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified access token is elevated.
+        /// </summary>
+        /// <param name="tokenHandle">The access token to check.</param>
+        /// <returns><c>true</c> if the token is elevated; otherwise, <c>false</c>.</returns>
+        /// <exception cref="Exception">Thrown if the token elevation status cannot be determined.</exception>
         public static bool IsTokenElevated(SafeAccessToken tokenHandle)
         {
             try
@@ -234,39 +293,43 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to determine if the token is elevated.").Error(ex);
+                UnifiedLogger.Create().Message("Failed to determine if the token is elevated.").Error(ex);
                 throw;
             }
         }
 
-        public static bool GetLinkedElevatedToken(in SafeAccessToken hToken, out SafeAccessToken hElevatedLinkedToken)
+
+        /// <summary>
+        /// Retrieves the linked elevated token associated with the specified token, if available.
+        /// </summary>
+        /// <param name="token">The token to retrieve the linked elevated token from.</param>
+        /// <param name="elevatedLinkedToken">When this method returns, contains the linked elevated token if available.</param>
+        /// <returns><c>true</c> if the linked elevated token was retrieved; otherwise, <c>false</c>.</returns>
+        public static bool GetLinkedElevatedToken(SafeAccessToken token, out SafeAccessToken elevatedLinkedToken)
         {
-            hElevatedLinkedToken = SafeAccessToken.Invalid;
+            elevatedLinkedToken = SafeAccessToken.Invalid;
 
             try
             {
-                TOKEN_ELEVATION_TYPE elevationType = GetTokenElevationType(hToken);
+                TOKEN_ELEVATION_TYPE elevationType = GetTokenElevationType(token);
 
                 if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeFull)
                 {
-                    hElevatedLinkedToken = hToken;
+                    elevatedLinkedToken = token;
                     return true;
                 }
 
+                // If default elevation type, no linked token exists
                 if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
-                {
-                    // No linked token available
                     return false;
-                }
 
-                // Determine whether system is running Windows Vista or later operating systems (major version >= 6) because they support linked tokens, but
-                // previous versions (major version < 6) do not.
+                // Determine whether system supports linked tokens
                 if (Environment.OSVersion.Version.Major >= 6 && IsUACEnabled())
                 {
-                    // If limited, get the linked elevated token for further check.
+                    // If limited, get the linked elevated token
                     if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited)
                     {
-                        return GetLinkedToken(hToken, out hElevatedLinkedToken);
+                        return GetLinkedToken(token, out elevatedLinkedToken);
                     }
                 }
 
@@ -274,38 +337,43 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to get linked elevated token: {ex.Message}").Error(ex);
+                UnifiedLogger.Create().Message($"Failed to get linked elevated token:").Error(ex);
                 return false;
             }
         }
 
-        public static bool GetLinkedStandardToken(in SafeAccessToken hToken, out SafeAccessToken hStandardLinkedToken)
+
+        /// <summary>
+        /// Retrieves the linked standard token associated with the specified token, if available.
+        /// </summary>
+        /// <param name="token">The token to retrieve the linked standard token from.</param>
+        /// <param name="standardLinkedToken">When this method returns, contains the linked standard token if available.</param>
+        /// <returns><c>true</c> if the linked standard token was retrieved; otherwise, <c>false</c>.</returns>
+        public static bool GetLinkedStandardToken(SafeAccessToken token, out SafeAccessToken standardLinkedToken)
         {
-            hStandardLinkedToken = SafeAccessToken.Invalid;
+            standardLinkedToken = SafeAccessToken.Invalid;
 
             try
             {
-                TOKEN_ELEVATION_TYPE elevationType = GetTokenElevationType(hToken);
+                TOKEN_ELEVATION_TYPE elevationType = GetTokenElevationType(token);
 
                 if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited)
                 {
-                    hStandardLinkedToken = hToken;
+                    standardLinkedToken = token;
                     return true;
                 }
 
+                // If default elevation type, no linked token exists
                 if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
-                {
-                    // No linked token available
                     return false;
-                }
 
-                // Determine whether system is running Windows Vista or later operating systems (major version >= 6) because they support linked tokens
+                // Determine whether system supports linked tokens
                 if (Environment.OSVersion.Version.Major >= 6 && IsUACEnabled())
                 {
                     // If full, get the linked limited token
                     if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeFull)
                     {
-                        return GetLinkedToken(hToken, out hStandardLinkedToken);
+                        return GetLinkedToken(token, out standardLinkedToken);
                     }
                 }
 
@@ -313,43 +381,45 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to get linked standard token: {ex.Message}").Error(ex);
+                UnifiedLogger.Create().Message($"Failed to get linked standard token:").Error(ex);
                 return false;
             }
         }
 
+
         /// <summary>
-        /// The function checks whether a primary access token belongs to a user account that is a member of the local Administrators group.
+        /// Determines whether the specified access token belongs to a user who is a member of the local Administrators group.
         /// </summary>
-        /// <param name="hToken">The process to check.</param>
-        /// <returns>
-        /// Returns true if the primary access token belongs to a user account that is a member of the local Administrators group. Returns false
-        /// if the token does not.
-        /// </returns>
-        public static bool IsTokenLocalAdmin(in SafeAccessToken hToken)
+        /// <param name="token">The access token to check.</param>
+        /// <returns><c>true</c> if the token belongs to a local administrator; otherwise, <c>false</c>.</returns>
+        public static bool IsTokenLocalAdmin(SafeAccessToken token)
         {
             try
             {
-                if (!GetLinkedElevatedToken(in hToken, out SafeAccessToken hLinkedToken))
-                    return false;
-
-                if (hLinkedToken.IsInvalid)
-                    return false;
-
-                // Check if the token to be checked contains local admin SID.
-                using (hLinkedToken)
+                if (TryGetWindowsIdentity(token, out _, out WindowsPrincipal? userPrincipal))
                 {
-                    if (!TryGetWindowsIdentity(hLinkedToken, out _, out WindowsPrincipal? userPrincipal))
+                    if (userPrincipal!.IsInRole(WindowsBuiltInRole.Administrator))
                     {
-                        return false;
+                        return true;
                     }
-
-                    return userPrincipal!.IsInRole(WindowsBuiltInRole.Administrator);
                 }
+
+                if (GetLinkedElevatedToken(token, out SafeAccessToken linkedToken))
+                {
+                    using (linkedToken)
+                    {
+                        if (!linkedToken.IsInvalid && TryGetWindowsIdentity(linkedToken, out _, out WindowsPrincipal? linkedPrincipal))
+                        {
+                            return linkedPrincipal!.IsInRole(WindowsBuiltInRole.Administrator);
+                        }
+                    }
+                }
+
+                return false;
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to determine if token is local admin: {ex.Message}").Error(ex);
+                UnifiedLogger.Create().Message($"Failed to determine if token is local admin:").Error(ex);
                 return false;
             }
         }
@@ -358,17 +428,25 @@ namespace PSADT.AccessToken
         /// Retrieves the linked token associated with a given access token, if available.
         /// </summary>
         /// <param name="token">The token to retrieve the linked token for.</param>
-        /// <returns>A <see cref="SafeAccessToken"/> representing the linked token, or null if no linked token is available.</returns>
-        /// <exception cref="Win32Exception">Thrown if an error occurs while retrieving the linked token.</exception>
-        public static bool GetLinkedToken(SafeAccessToken token, out SafeAccessToken hLinkedToken)
+        /// <param name="linkedToken">When this method returns, contains the linked token if available.</param>
+        /// <returns><c>true</c> if the linked token was retrieved; otherwise, <c>false</c>.</returns>
+        public static bool GetLinkedToken(SafeAccessToken token, out SafeAccessToken linkedToken)
         {
-            hLinkedToken = SafeAccessToken.Invalid;
+            linkedToken = SafeAccessToken.Invalid;
 
             try
             {
                 TOKEN_LINKED_TOKEN tokenLinkedToken = GetTokenInformation<TOKEN_LINKED_TOKEN>(token, TOKEN_INFORMATION_CLASS.TokenLinkedToken);
 
-                hLinkedToken = new SafeAccessToken(tokenLinkedToken.LinkedToken);
+                if (tokenLinkedToken.LinkedToken == IntPtr.Zero)
+                {
+                    UnifiedLogger.Create().Message("No linked token found.").Severity(LogLevel.Debug).LogAsync();
+                    return false;
+                }
+
+                linkedToken = new SafeAccessToken(tokenLinkedToken.LinkedToken);
+                UnifiedLogger.Create().Message("Linked token retrieved successfully.").Severity(LogLevel.Debug).LogAsync();
+
                 return true;
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == NativeMethods.ERROR_NO_SUCH_LOGON_SESSION ||
@@ -380,29 +458,10 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to get linked token: {ex.Message}").Error(ex);
+                UnifiedLogger.Create().Message($"Failed to get linked token:").Error(ex);
                 return false;
             }
         }
-
-        /*/// <summary>
-        /// Creates a restricted token with the SANDBOX_INERT flag. If set, the system does not check
-        /// AppLocker rules or apply Software Restriction Policies.
-        /// </summary>
-        /// <param name="existingTokenHandle">The handle to the existing token.</param>
-        /// <returns>A SafeAccessTokenHandle representing the new restricted token.</returns>
-        /// <exception cref="SecureNamedPipeException">Thrown when the creation of the restricted token fails.</exception>
-        public static void CreateSandboxInertToken(SafeAccessToken existingTokenHandle, out SafeAccessToken newTokenHandle)
-        {
-            if (!NativeMethods.CreateRestrictedToken(
-                existingTokenHandle.DangerousGetHandle(),
-                NativeMethods.SANDBOX_INERT,
-                0, IntPtr.Zero, 0, IntPtr.Zero, 0, IntPtr.Zero,
-                out newTokenHandle))
-            {
-                throw new InvalidOperationException("Failed to create restricted token.", new Win32Exception(Marshal.GetLastWin32Error()));
-            }
-        }*/
 
         /// <summary>
         /// Creates an environment block for the specified user token, optionally inheriting the parent environment and adding additional variables.
@@ -411,7 +470,7 @@ namespace PSADT.AccessToken
         /// <param name="additionalVariables">Additional environment variables to include in the block.</param>
         /// <param name="inherit">Specifies whether to inherit the parent's environment variables.</param>
         /// <returns>A <see cref="SafeEnvironmentBlock"/> containing the created environment block.</returns>
-        /// <exception cref="Win32Exception">Thrown if the environment block creation fails.</exception>
+        /// <exception cref="Exception">Thrown if the environment block creation fails.</exception>
         public static SafeEnvironmentBlock CreateTokenEnvironmentBlock(SafeAccessToken token, IDictionary<string, string>? additionalVariables, bool inherit)
         {
             try
@@ -439,7 +498,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to create environment block.").Error(ex);
+                UnifiedLogger.Create().Message("Failed to create environment block.").Error(ex);
                 throw;
             }
         }
@@ -447,19 +506,22 @@ namespace PSADT.AccessToken
         /// <summary>
         /// Converts an environment block to a dictionary of key-value pairs.
         /// </summary>
-        /// <param name="pEnvBlock">A pointer to the environment block.</param>
+        /// <param name="envBlock">The environment block to convert.</param>
         /// <returns>A dictionary containing the environment variables and their values.</returns>
-        public static Dictionary<string, string> ConvertEnvironmentBlockToDictionary(SafeEnvironmentBlock pEnvBlock)
+        /// <exception cref="Exception">Thrown if the environment block cannot be converted.</exception>
+        public static Dictionary<string, string> ConvertEnvironmentBlockToDictionary(SafeEnvironmentBlock envBlock)
         {
             var result = new Dictionary<string, string>();
-            var offset = 0;
+            IntPtr ptr = envBlock.DangerousGetHandle();
+            int offset = 0;
 
             try
             {
                 while (true)
                 {
-                    string entry = Marshal.PtrToStringUni(pEnvBlock.DangerousGetHandle(), offset);
-                    if (string.IsNullOrWhiteSpace(entry)) break;
+                    string entry = Marshal.PtrToStringUni(IntPtr.Add(ptr, offset)) ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(entry))
+                        break;
 
                     int equalsIndex = entry.IndexOf('=');
                     if (equalsIndex > 0)
@@ -469,7 +531,7 @@ namespace PSADT.AccessToken
                         result[key] = value;
                     }
 
-                    offset += (entry.Length + 1) * 2;
+                    offset += (entry.Length + 1) * sizeof(char);
                 }
 
                 UnifiedLogger.Create().Message($"Converted environment block to dictionary with [{result.Count}] entries.").Severity(LogLevel.Debug);
@@ -477,7 +539,7 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to convert environment block to dictionary.").Error(ex);
+                UnifiedLogger.Create().Message("Failed to convert environment block to dictionary.").Error(ex);
                 throw;
             }
         }
@@ -487,13 +549,14 @@ namespace PSADT.AccessToken
         /// </summary>
         /// <param name="environmentVars">The dictionary containing environment variables and their values.</param>
         /// <returns>A <see cref="SafeEnvironmentBlock"/> containing the created environment block.</returns>
+        /// <exception cref="Exception">Thrown if the environment block cannot be created.</exception>
         public static SafeEnvironmentBlock CreateEnvironmentBlockFromDictionary(Dictionary<string, string> environmentVars)
         {
             try
             {
                 var environmentString = string.Join("\0", environmentVars.Select(kvp => $"{kvp.Key}={kvp.Value}")) + "\0\0";
                 var environmentBytes = System.Text.Encoding.Unicode.GetBytes(environmentString);
-                var envBlockPtr = Marshal.AllocHGlobal(environmentBytes.Length);
+                IntPtr envBlockPtr = Marshal.AllocHGlobal(environmentBytes.Length);
                 Marshal.Copy(environmentBytes, 0, envBlockPtr, environmentBytes.Length);
 
                 UnifiedLogger.Create().Message($"Created environment block from dictionary with [{environmentVars.Count}] entries.").Severity(LogLevel.Debug);
@@ -501,9 +564,10 @@ namespace PSADT.AccessToken
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to create environment block from dictionary.").Error(ex);
+                UnifiedLogger.Create().Message("Failed to create environment block from dictionary.").Error(ex);
                 throw;
             }
         }
+
     }
 }

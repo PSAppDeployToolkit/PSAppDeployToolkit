@@ -12,6 +12,16 @@ namespace PSADT.PInvoke
     /// </summary>
     public static partial class NativeMethods
     {
+        #region Fields: shared
+
+        /// <summary>The data area passed to a system call is too small.</summary>
+        public const int ERROR_INSUFFICIENT_BUFFER = 122;
+
+        /// <summary>The program issued a command but the command length is incorrect.</summary>
+        public const int ERROR_BAD_LENGTH = 24;
+
+        #endregion
+
         #region Fields: advapi32.dll
 
         /// <summary>
