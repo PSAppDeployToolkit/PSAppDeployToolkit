@@ -274,12 +274,12 @@ namespace PSADT.Account
             {
                 if (string.Equals(member, username, StringComparison.OrdinalIgnoreCase))
                 {
-                    UnifiedLogger.Create().Message($"User [{username}] is a member of group [{groupname}]").Severity(LogLevel.Debug).Log();
+                    UnifiedLogger.Create().Message($"User [{username}] is a member of group [{groupname}]").Severity(LogLevel.Debug);
                     return true;
                 }
             }
 
-            UnifiedLogger.Create().Message($"User [{username}] is not a member of group [{groupname}]").Severity(LogLevel.Debug).Log();
+            UnifiedLogger.Create().Message($"User [{username}] is not a member of group [{groupname}]").Severity(LogLevel.Debug);
             return false;
         }
 
@@ -300,7 +300,7 @@ namespace PSADT.Account
             if (string.IsNullOrWhiteSpace(groupname))
                 throw new ArgumentNullException(nameof(groupname), "Group name cannot be null or empty.");
 
-            UnifiedLogger.Create().Message($"Getting all members of local group [{groupname}]").Severity(LogLevel.Debug).Log();
+            UnifiedLogger.Create().Message($"Getting all members of local group [{groupname}]").Severity(LogLevel.Debug);
 
             IntPtr bufptr = IntPtr.Zero;
             const uint MAX_PREFERRED_LENGTH = unchecked((uint)-1);
@@ -358,19 +358,19 @@ namespace PSADT.Account
                             if (!string.IsNullOrEmpty(memberName))
                             {
                                 groupMembers.Add(memberName!);
-                                UnifiedLogger.Create().Message($"Group member: [{memberName}].").Severity(LogLevel.Debug).Log();
+                                UnifiedLogger.Create().Message($"Group member: [{memberName}].").Severity(LogLevel.Debug);
                             }
                         }
                         catch (Exception ex)
                         {
-                            UnifiedLogger.Create().Message($"Failed to process member at index [{i}]: {ex.Message}").Severity(LogLevel.Warning).Log();
+                            UnifiedLogger.Create().Message($"Failed to process member at index [{i}]: {ex.Message}").Severity(LogLevel.Warning);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to get members of group [{groupname}].").Error(ex).Log();
+                UnifiedLogger.Create().Message($"Failed to get members of group [{groupname}].").Error(ex);
                 throw;
             }
             finally
@@ -442,7 +442,7 @@ namespace PSADT.Account
                 }
                 catch (Exception ex)
                 {
-                    UnifiedLogger.Create().Message($"Failed to convert SID pointer to SecurityIdentifier: {ex.Message}").Severity(LogLevel.Error).Log();
+                    UnifiedLogger.Create().Message($"Failed to convert SID pointer to SecurityIdentifier: {ex.Message}").Severity(LogLevel.Error);
                     return null;
                 }
             }
