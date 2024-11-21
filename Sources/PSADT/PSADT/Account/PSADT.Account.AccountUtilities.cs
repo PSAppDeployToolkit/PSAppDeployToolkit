@@ -245,109 +245,132 @@ namespace PSADT.Account
             }
         }
 
-        private static int GetLevelFromStructure<T>()
-        {
-            var m = System.Text.RegularExpressions.Regex.Match(typeof(T).Name, @"(\d+)$");
-            var i = 0;
-            if (m.Success)
-                int.TryParse(m.Value, out i);
-            return i;
-        }
+        //private static int GetLevelFromStructure<T>()
+        //{
+        //    var m = System.Text.RegularExpressions.Regex.Match(typeof(T).Name, @"(\d+)$");
+        //    var i = 0;
+        //    if (m.Success)
+        //        int.TryParse(m.Value, out i);
+        //    return i;
+        //}
 
         public static bool IsUserInBuiltInAdministratorsGroup(string username)
         {
-            return IsNetUserGetLocalGroups(username, GetBuiltinAdministratorsGroupName());
+            return IsUserInLocalGroup(username, GetBuiltinAdministratorsGroupName());
         }
 
-        public static bool IsNetUserGetLocalGroups(string username, string groupname, uint level = uint.MaxValue)
-        {
-            return AccountUtilities.IsNetUserGetLocalGroups<LOCALGROUP_USERS_INFO_0>(null, username, groupname, 0x1, level);
-        }
-        
         /// <summary>
-        /// Determines if a specified user is a member of a local group.
+        /// Checks if a specified user is a member of a local group.
         /// </summary>
-        /// <param name="username">The username to check.</param>
-        /// <param name="groupname">The local group name to check membership of.</param>
-        /// <returns><c>true</c> if the user is a member of the specified group; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when username or groupname is null or empty.</exception>
-        private static bool IsNetUserGetLocalGroups<T>([Optional] string? servername, string username, string groupname, uint? flags, uint level = uint.MaxValue) where T : struct
+        /// <param name="username">The username to check (e.g., "AzureAD\\username").</param>
+        /// <param name="groupname">The name of the local group.</param>
+        /// <returns>True if the user is a member of the group; otherwise, false.</returns>
+        public static bool IsUserInLocalGroup(string username, string groupname)
         {
-            if (string.IsNullOrWhiteSpace(username))
-                throw new ArgumentNullException(nameof(username), "Username cannot be null or empty.");
+            uint level = 3;
+            var groupMembers = GetLocalGroupMembers<LOCALGROUP_MEMBERS_INFO_3>(null, groupname, level);
+
+            foreach (var member in groupMembers)
+            {
+                if (string.Equals(member, username, StringComparison.OrdinalIgnoreCase))
+                {
+                    UnifiedLogger.Create().Message($"User [{username}] is a member of group [{groupname}]").Severity(LogLevel.Debug).Log();
+                    return true;
+                }
+            }
+
+            UnifiedLogger.Create().Message($"User [{username}] is not a member of group [{groupname}]").Severity(LogLevel.Debug).Log();
+            return false;
+        }
+
+        /// <summary>
+        /// Retrieves the members of a specified local group using various different formats.
+        /// </summary>
+        /// <typeparam name="T">The structure type corresponding to the information level.</typeparam>
+        /// <param name="servername">The name of the server (null for local machine).</param>
+        /// <param name="groupname">The name of the local group.</param>
+        /// <param name="level">The information level (0, 1, 2, or 3).</param>
+        /// <returns>A list of group member identifiers (strings or SIDs) based on the information level.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when groupname is null or empty.</exception>
+        public static List<string> GetLocalGroupMembers<T>(
+            string? servername,
+            string groupname,
+            uint level = uint.MaxValue) where T : struct
+        {
             if (string.IsNullOrWhiteSpace(groupname))
                 throw new ArgumentNullException(nameof(groupname), "Group name cannot be null or empty.");
 
-            UnifiedLogger.Create().Message($"Checking if user [{username}] is a member of local group [{groupname}]").Severity(LogLevel.Debug);
+            UnifiedLogger.Create().Message($"Getting all members of local group [{groupname}]").Severity(LogLevel.Debug).Log();
 
             IntPtr bufptr = IntPtr.Zero;
-            bool isMember = false;
             const uint MAX_PREFERRED_LENGTH = unchecked((uint)-1);
-            const uint LG_INCLUDE_INDIRECT = 0x1;
-            uint setFlags = 0;
-
-            if (flags != null && !flags.HasValue)
-            {
-                setFlags = LG_INCLUDE_INDIRECT;
-            }
-            else
-            {
-                setFlags = flags!.Value;
-            }
-            
+            List<string> groupMembers = new List<string>();
+            IntPtr resumehandle = IntPtr.Zero;
 
             if (level == uint.MaxValue) level = (uint)GetLevelFromStructure<T>();
 
             try
             {
-                int status = NativeMethods.NetUserGetLocalGroups(
+                int status = NativeMethods.NetLocalGroupGetMembers(
                     servername!,
-                    username,
+                    groupname,
                     level,
-                    setFlags,
                     out bufptr,
                     MAX_PREFERRED_LENGTH,
                     out uint entriesRead,
-                    out uint totalEntries);
+                    out uint totalEntries,
+                    ref resumehandle);
 
                 if (status != 0)
                 {
-                    throw new Win32Exception(status, $"Failed to get group membership for user [{username}]. Error code [{status}].");
+                    var errorMessage = new Win32Exception(status).Message;
+                    UnifiedLogger.Create()
+                        .Message($"Failed to get group membership for group [{groupname}]. Error code [{status}]: {errorMessage}")
+                        .Severity(LogLevel.Error)
+                        .Log();
+                    throw new Win32Exception(status, $"Failed to get group membership for group [{groupname}]. Error code [{status}]: {errorMessage}");
                 }
 
                 if (entriesRead > 0 && bufptr != IntPtr.Zero)
                 {
-                    var sizeOfStruct = Marshal.SizeOf<LOCALGROUP_USERS_INFO_0>();
+                    var sizeOfStruct = Marshal.SizeOf<T>();
+                    string fieldName = GetMemberFieldName(level);
 
                     for (int i = 0; i < entriesRead; i++)
                     {
                         IntPtr current = IntPtr.Add(bufptr, i * sizeOfStruct);
-                        LOCALGROUP_USERS_INFO_0 groupInfo = Marshal.PtrToStructure<LOCALGROUP_USERS_INFO_0>(current);
 
-                        UnifiedLogger.Create().Message($"  - Group [{groupInfo.lgrui0_name}]").Severity(LogLevel.Debug);
-
-                        if (!string.IsNullOrWhiteSpace(groupInfo.lgrui0_name))
+                        try
                         {
-                            if (string.Equals(groupInfo.lgrui0_name, groupname, StringComparison.OrdinalIgnoreCase))
+                            T memberInfo = Marshal.PtrToStructure<T>(current);
+
+                            // Use reflection to get the value of the appropriate field
+                            var type = typeof(T);
+                            var field = type.GetField(fieldName);
+                            if (field == null)
                             {
-                                isMember = true;
-                                UnifiedLogger.Create().Message($"Match found! User [{username}] is a member of group [{groupname}]").Severity(LogLevel.Debug);
-                                break;
+                                throw new InvalidOperationException($"Field '{fieldName}' not found in type '{type.Name}'.");
+                            }
+
+                            var value = field.GetValue(memberInfo);
+                            string? memberName = ExtractMemberName(value, level);
+
+                            if (!string.IsNullOrEmpty(memberName))
+                            {
+                                groupMembers.Add(memberName!);
+                                UnifiedLogger.Create().Message($"Group member: [{memberName}].").Severity(LogLevel.Debug).Log();
                             }
                         }
-                    }
-
-                    if (!isMember)
-                    {
-                        UnifiedLogger.Create().Message($"User [{username}] is not a member of group [{groupname}].").Severity(LogLevel.Debug);
+                        catch (Exception ex)
+                        {
+                            UnifiedLogger.Create().Message($"Failed to process member at index [{i}]: {ex.Message}").Severity(LogLevel.Warning).Log();
+                        }
                     }
                 }
-
-                return isMember;
             }
             catch (Exception ex)
             {
-                UnifiedLogger.Create().Message($"Failed to check if user [{username}] is member of group [{groupname}].").Error(ex);
+                UnifiedLogger.Create().Message($"Failed to get members of group [{groupname}].").Error(ex).Log();
                 throw;
             }
             finally
@@ -355,7 +378,81 @@ namespace PSADT.Account
                 if (bufptr != IntPtr.Zero)
                 {
                     NativeMethods.NetApiBufferFree(bufptr);
+                    bufptr = IntPtr.Zero;
                 }
+            }
+
+            return groupMembers;
+        }
+
+        /// <summary>
+        /// Determines the information level based on the structure type name.
+        /// </summary>
+        /// <typeparam name="T">The structure type.</typeparam>
+        /// <returns>The information level as an integer.</returns>
+        private static int GetLevelFromStructure<T>() where T : struct
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(typeof(T).Name, @"(\d+)$");
+            return match.Success && int.TryParse(match.Value, out int level) ? level : throw new InvalidOperationException($"Cannot determine level from type {typeof(T).Name}");
+        }
+
+        /// <summary>
+        /// Gets the field name corresponding to the specified information level.
+        /// </summary>
+        /// <param name="level">The information level.</param>
+        /// <returns>The field name as a string.</returns>
+        /// <exception cref="ArgumentException">Thrown when an unsupported level is specified.</exception>
+        private static string GetMemberFieldName(uint level)
+        {
+            return level switch
+            {
+                0 => "lgrmi0_sid",
+                1 => "lgrmi1_name",
+                2 => "lgrmi2_domainandname",
+                3 => "lgrmi3_domainandname",
+                _ => throw new ArgumentException($"Unsupported level: {level}", nameof(level)),
+            };
+        }
+
+        /// <summary>
+        /// Extracts the member name or SID from the field value based on the information level.
+        /// </summary>
+        /// <param name="value">The field value.</param>
+        /// <param name="level">The information level.</param>
+        /// <returns>The member name or SID as a string, or null if unavailable.</returns>
+        private static string? ExtractMemberName(object? value, uint level)
+        {
+            if (value == null)
+                return null;
+
+            if (level == 0 && value is IntPtr ptrValue)
+            {
+                // Convert the SID pointer to a SecurityIdentifier
+                try
+                {
+                    if (ptrValue != IntPtr.Zero)
+                    {
+                        var sid = new SecurityIdentifier(ptrValue);
+                        return sid.Value;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    UnifiedLogger.Create().Message($"Failed to convert SID pointer to SecurityIdentifier: {ex.Message}").Severity(LogLevel.Error).Log();
+                    return null;
+                }
+            }
+            else if (value is string strValue)
+            {
+                return strValue;
+            }
+            else
+            {
+                return value.ToString();
             }
         }
     }

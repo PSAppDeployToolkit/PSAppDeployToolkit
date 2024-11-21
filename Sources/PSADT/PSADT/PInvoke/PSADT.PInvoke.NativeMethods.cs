@@ -1791,6 +1791,128 @@ namespace PSADT.PInvoke
         [DllImport("netapi32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
         public static extern int NetUserGetLocalGroups(string servername, string username, uint level, uint flags, out IntPtr bufptr, uint prefmaxlen, out uint entriesread, out uint totalentries);
 
+        /// <summary>
+        /// The <c>NetLocalGroupGetMembers</c> function retrieves a list of the members of a particular local group in the security database,
+        /// which is the security accounts manager (SAM) database or, in the case of domain controllers, the Active Directory. Local group
+        /// members can be users or global groups.
+        /// </summary>
+        /// <param name="servername">
+        /// Pointer to a constant string that specifies the DNS or NetBIOS name of the remote server on which the function is to execute. If
+        /// this parameter is <c>NULL</c>, the local computer is used.
+        /// </param>
+        /// <param name="localgroupname">
+        /// Pointer to a constant string that specifies the name of the local group whose members are to be listed. For more information, see
+        /// the following Remarks section.
+        /// </param>
+        /// <param name="level">
+        /// <para>Specifies the information level of the data. This parameter can be one of the following values.</para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Value</term>
+        /// <term>Meaning</term>
+        /// </listheader>
+        /// <item>
+        /// <term>0</term>
+        /// <term>
+        /// Return the security identifier (SID) associated with the local group member. The bufptr parameter points to an array of
+        /// LOCALGROUP_MEMBERS_INFO_0 structures.
+        /// </term>
+        /// </item>
+        /// <item>
+        /// <term>1</term>
+        /// <term>
+        /// Return the SID and account information associated with the local group member. The bufptr parameter points to an array of
+        /// LOCALGROUP_MEMBERS_INFO_1 structures.
+        /// </term>
+        /// </item>
+        /// <item>
+        /// <term>2</term>
+        /// <term>
+        /// Return the SID, account information, and the domain name associated with the local group member. The bufptr parameter points to
+        /// an array of LOCALGROUP_MEMBERS_INFO_2 structures.
+        /// </term>
+        /// </item>
+        /// <item>
+        /// <term>3</term>
+        /// <term>
+        /// Return the account and domain names of the local group member. The bufptr parameter points to an array of
+        /// LOCALGROUP_MEMBERS_INFO_3 structures.
+        /// </term>
+        /// </item>
+        /// </list>
+        /// </param>
+        /// <param name="bufptr">
+        /// Pointer to the address that receives the return information structure. The format of this data depends on the value of the level
+        /// parameter. This buffer is allocated by the system and must be freed using the NetApiBufferFree function. Note that you must free
+        /// the buffer even if the function fails with ERROR_MORE_DATA.
+        /// </param>
+        /// <param name="prefmaxlen">
+        /// Specifies the preferred maximum length of returned data, in bytes. If you specify MAX_PREFERRED_LENGTH, the function allocates
+        /// the amount of memory required for the data. If you specify another value in this parameter, it can restrict the number of bytes
+        /// that the function returns. If the buffer size is insufficient to hold all entries, the function returns ERROR_MORE_DATA. For more
+        /// information, see Network Management Function Buffers and Network Management Function Buffer Lengths.
+        /// </param>
+        /// <param name="entriesread">Pointer to a value that receives the count of elements actually enumerated.</param>
+        /// <param name="totalentries">
+        /// Pointer to a value that receives the total number of entries that could have been enumerated from the current resume position.
+        /// </param>
+        /// <param name="resumehandle">
+        /// Pointer to a value that contains a resume handle which is used to continue an existing group member search. The handle should be
+        /// zero on the first call and left unchanged for subsequent calls. If this parameter is <c>NULL</c>, then no resume handle is stored.
+        /// </param>
+        /// <returns>
+        /// <para>If the function succeeds, the return value is NERR_Success.</para>
+        /// <para>If the function fails, the return value can be one of the following error codes.</para>
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Return code</term>
+        /// <term>Description</term>
+        /// </listheader>
+        /// <item>
+        /// <term>ERROR_ACCESS_DENIED</term>
+        /// <term>The user does not have access to the requested information.</term>
+        /// </item>
+        /// <item>
+        /// <term>NERR_InvalidComputer</term>
+        /// <term>The computer name is invalid.</term>
+        /// </item>
+        /// <item>
+        /// <term>ERROR_MORE_DATA</term>
+        /// <term>More entries are available. Specify a large enough buffer to receive all entries.</term>
+        /// </item>
+        /// <item>
+        /// <term>ERROR_NO_SUCH_ALIAS</term>
+        /// <term>The specified local group does not exist.</term>
+        /// </item>
+        /// </list>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// If you call this function on a domain controller that is running Active Directory, access is allowed or denied based on the
+        /// access control list (ACL) for the securable object. The default ACL permits all authenticated users and members of the
+        /// "Pre-Windows 2000 compatible access" group to view the information. If you call this function on a member server or workstation,
+        /// all authenticated users can view the information. For information about anonymous access and restricting anonymous access on
+        /// these platforms, see Security Requirements for the Network Management Functions. For more information on ACLs, ACEs, and access
+        /// tokens, see Access Control Model.
+        /// </para>
+        /// <para>The security descriptor of the LocalGroup object is used to perform the access check for this function.</para>
+        /// <para>
+        /// User account names are limited to 20 characters and group names are limited to 256 characters. In addition, account names cannot
+        /// be terminated by a period and they cannot include commas or any of the following printable characters: ", /, , [, ], :, |, &lt;,
+        /// &gt;, +, =, ;, ?, *. Names also cannot include characters in the range 1-31, which are non-printable.
+        /// </para>
+        /// <para>
+        /// If you are programming for Active Directory, you may be able to call certain Active Directory Service Interface (ADSI) methods to
+        /// achieve the same functionality you can achieve by calling the network management local group functions. For more information, see IADsGroup.
+        /// </para>
+        /// <para>
+        /// If this function returns <c>ERROR_MORE_DATA</c>, then it must be repeatedly called until <c>ERROR_SUCCESS</c> or
+        /// <c>NERR_success</c> is returned. Failure to do so can result in an RPC connection leak.
+        /// </para>
+        /// </remarks>
+        [DllImport("netapi32.dll", SetLastError = false, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        public static extern int NetLocalGroupGetMembers(string servername, string localgroupname, uint level, out IntPtr bufptr, uint prefmaxlen, out uint entriesread, out uint totalentries, ref IntPtr resumehandle);
+
         [DllImport("netapi32.dll")]
         public static extern int NetApiBufferFree(IntPtr Buffer);
 

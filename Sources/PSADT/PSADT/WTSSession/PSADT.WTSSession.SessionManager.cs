@@ -406,7 +406,7 @@ namespace PSADT.WTSSession
 
                     try
                     {
-                        isLocalAdminUserSession = AccountUtilities.IsUserInBuiltInAdministratorsGroup(GetWtsUsernameById(session.SessionId));
+                        isLocalAdminUserSession = AccountUtilities.IsUserInBuiltInAdministratorsGroup(GetWtsUsernameAndDomainById(session.SessionId));
                     }
                     catch (Exception ex)
                     {
