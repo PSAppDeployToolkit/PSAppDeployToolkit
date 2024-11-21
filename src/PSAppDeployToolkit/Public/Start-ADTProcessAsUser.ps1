@@ -266,7 +266,7 @@ function Start-ADTProcessAsUser
         # Translate a provided username into a session Id.
         if ($PSBoundParameters.ContainsKey('Username'))
         {
-            $SessionId = Get-ADTLoggedOnUser | & { process { if ($_.NTAccount -eq $Username) { return $_ } } } | Select-Object -First 1 -ExpandProperty SessionId
+            $SessionId = Get-ADTLoggedOnUser | & { process { if ($_.NTAccount.EndsWith($Username, [System.StringComparison]::InvariantCultureIgnoreCase)) { return $_ } } } | Select-Object -First 1 -ExpandProperty SessionId
             $PSBoundParameters.Add('SessionId', $SessionId)
             $null = $PSBoundParameters.Remove('Username')
         }
