@@ -144,7 +144,7 @@ namespace PSADT.Module
                     }
                     if (parameters.ContainsKey("DeployAppScriptParameters"))
                     {
-                        _deployAppScriptParameters = (IDictionary)parameters["DeployAppScriptParameters"];
+                        _deployAppScriptParameters = (Dictionary<string, object>)parameters["DeployAppScriptParameters"];
                     }
                     if (parameters.ContainsKey("AppSuccessExitCodes"))
                     {
@@ -528,7 +528,7 @@ namespace PSADT.Module
                     }
                     if ((null != _deployAppScriptParameters) && (_deployAppScriptParameters.Count > 0))
                     {
-                        WriteLogEntry($"The following parameters were passed to [${_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters)}].");
+                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters)}].");
                     }
                 }
                 var adtDirectories = (PSObject)ADTData.Properties["Directories"].Value;
@@ -935,7 +935,7 @@ namespace PSADT.Module
                 }
                 catch (Exception ex)
                 {
-                    WriteLogEntry($"Failed to manage archive file [$DestinationArchiveFileName]: {ex.Message}", 3);
+                    WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex.Message}", 3);
                 }
             }
 
@@ -1512,7 +1512,7 @@ namespace PSADT.Module
         private string _installTitle { get; }
         private string? _deployAppScriptFriendlyName { get; }
         private Version? _deployAppScriptVersion { get; }
-        private IDictionary? _deployAppScriptParameters { get; }
+        private Dictionary<string, object>? _deployAppScriptParameters { get; }
         private string _installPhase { get; set; } = "Initialization";
         private string _currentDate { get; }
         private string _currentTime { get; }
@@ -1707,9 +1707,9 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's frontend script parameters.
         /// </summary>
-        public IDictionary? DeployAppScriptParameters
+        public Dictionary<string, object>? DeployAppScriptParameters
         {
-            get => (null != CallerSessionState) ? (IDictionary)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptParameters)) : _deployAppScriptParameters;
+            get => (null != CallerSessionState) ? (Dictionary<string, object>)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptParameters)) : _deployAppScriptParameters;
         }
 
         /// <summary>

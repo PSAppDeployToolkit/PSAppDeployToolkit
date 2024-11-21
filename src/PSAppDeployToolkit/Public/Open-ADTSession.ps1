@@ -215,7 +215,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [AllowEmptyCollection()]
-        [System.Collections.IDictionary]$DeployAppScriptParameters,
+        [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
