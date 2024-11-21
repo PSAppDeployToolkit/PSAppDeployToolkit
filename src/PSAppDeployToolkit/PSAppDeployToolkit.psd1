@@ -45,7 +45,7 @@
     CLRVersion = '4.0.30319.42000'
 
     # Processor architecture (None, X86, Amd64) required by this module
-    # ProcessorArchitecture = ''
+    ProcessorArchitecture = 'None'
 
     # Modules that must be imported into the global environment prior to importing this module
     # RequiredModules = @()
