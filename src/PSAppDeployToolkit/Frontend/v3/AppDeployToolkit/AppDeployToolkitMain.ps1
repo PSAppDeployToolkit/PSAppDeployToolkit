@@ -4748,6 +4748,7 @@ else
 # Open a new PSADT session, dynamically gathering the required parameters from the stack.
 $sessionProps = @{ SessionState = $ExecutionContext.SessionState }
 Get-Variable -Name ($adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
+if ($sessionProps.ContainsKey('AppScriptDate') -and ($sessionProps.AppScriptDate -eq 'XX/XX/20XX')) { $null = $sessionProps.Remove('AppScriptDate') }
 Open-ADTSession @sessionProps
 
 # Finalize setup of AppDeployToolkitMain.ps1.
