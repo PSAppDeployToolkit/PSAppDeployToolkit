@@ -750,11 +750,11 @@ namespace PSADT.Module
                     CallerSessionState = callerSessionState;
                     foreach (PropertyInfo property in this.GetType().GetProperties())
                     {
-                        CallerSessionState.PSVariable.Set(property.Name, this.GetType().GetProperty($"_{char.ToLower(property.Name[0])}{property.Name.Substring(1)}", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(this));
+                        CallerSessionState.PSVariable.Set(new PSVariable(property.Name, this.GetType().GetProperty($"_{char.ToLower(property.Name[0])}{property.Name.Substring(1)}", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(this)));
                     }
                     foreach (FieldInfo field in this.GetType().GetFields())
                     {
-                        CallerSessionState.PSVariable.Set(field.Name, field.GetValue(this));
+                        CallerSessionState.PSVariable.Set(new PSVariable(field.Name, field.GetValue(this)));
                     }
                 }
 
