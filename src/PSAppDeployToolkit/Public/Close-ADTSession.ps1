@@ -82,7 +82,7 @@ function Close-ADTSession
         $adtSession.InstallPhase = 'Finalization'
 
         # Update the session's exit code with the provided value.
-        if ($PSBoundParameters.ContainsKey('ExitCode'))
+        if ($PSBoundParameters.ContainsKey('ExitCode') -and (!$adtSession.GetExitCode() -or !$ExitCode.Equals(60001)))
         {
             $adtSession.SetExitCode($ExitCode)
         }
