@@ -107,7 +107,7 @@ FunctionsToExport = @(
     'Invoke-ADTAllUsersRegistryChange'
     'Invoke-RegisterOrUnregisterDLL'
     'Invoke-SCCMTask'
-    'New-Folder'
+    'New-ADTFolder'
     'New-MsiTransform'
     'New-Shortcut'
     'Remove-ADTContentFromCache'
