@@ -291,7 +291,7 @@ namespace PSADT.Module
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
                         if (_defaultMspFiles.Count == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.msp", SearchOption.TopDirectoryOnly) is var mspFiles) && (mspFiles.Length > 0))
+                            if (!string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.msp", SearchOption.TopDirectoryOnly) is string[] mspFiles) && (mspFiles.Length > 0))
                             {
                                 _defaultMspFiles = new ReadOnlyCollection<string>(mspFiles);
                             }
@@ -580,7 +580,7 @@ namespace PSADT.Module
                 WriteLogEntry($"Display session information for all logged on users:\n{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"])[0].BaseObject}", false);
 
                 // Provide detailed info about current process state.
-                if (ADTEnv["usersLoggedOn"] is var usersLoggedOn)
+                if ((ADTEnv["usersLoggedOn"] is var usersLoggedOn) && (null != usersLoggedOn))
                 {
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn)}].");
 

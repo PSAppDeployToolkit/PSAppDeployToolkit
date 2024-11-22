@@ -285,10 +285,10 @@ function New-ADTEnvironmentTable
 
     ## Variables: Logged on user information
     $variables.Add('LoggedOnUserSessions', (Get-ADTLoggedOnUser))
-    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & { process { $_.NTAccount } }))
-    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
-    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
-    $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser -UserSessionInfo $variables.LoggedOnUserSessions))
+    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & { process { if ($_) { $_.NTAccount } } }))
+    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_ -and $_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
+    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_ -and $_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
+    $variables.Add('RunAsActiveUser', $(if ($null -ne $variables.LoggedOnUserSessions) { Get-ADTRunAsActiveUser -UserSessionInfo $variables.LoggedOnUserSessions }))
 
     ## Variables: User profile information.
     $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
