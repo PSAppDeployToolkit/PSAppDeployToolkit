@@ -368,9 +368,16 @@ function Open-ADTSession
         finally
         {
             # Terminate early if we have an active session that failed to open properly.
-            if ($adtSession -and $errRecord)
+            if ($errRecord)
             {
-                Close-ADTSession -ExitCode 60008
+                if (!$adtSession)
+                {
+                    Exit-ADTInvocation -ExitCode 60008 -RunspaceOrigin:$runspaceOrigin
+                }
+                else
+                {
+                    Close-ADTSession -ExitCode 60008
+                }
             }
         }
 

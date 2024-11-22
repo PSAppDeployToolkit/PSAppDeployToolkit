@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
 using System.Management.Automation;
@@ -33,686 +34,696 @@ namespace PSADT.Types
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
         public SessionObject(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, SessionState moduleSessionState, bool? runspaceOrigin = null, SessionState? callerSessionState = null, Dictionary<string, object>? parameters = null)
         {
-            #region Initialization
-
-
-            // Establish start date/time first so we can accurately mark the start of execution.
-            CurrentDate = CurrentDateTime.ToString("dd-MM-yyyy");
-            CurrentTime = CurrentDateTime.ToString("HH:mm:ss");
-
-            // Establish initial variable values.
-            ADTEnv = adtEnv;
-            ADTData = adtData;
-            ADTConfig = adtConfig;
-            ADTStrings = adtStrings;
-            ModuleSessionState = moduleSessionState;
-
-            // Abort if the caller isn't coming in via our module's Open-ADTSession function.
-            if (!GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Open-ADTSession"))
+            try
             {
-                throw new InvalidOperationException("A session object must be instantiated via the Open-ADTSession function.");
-            }
-
-            // Extrapolate the Toolkit options from the config hashtable.
-            Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
-
-            // Set up other variable values based on incoming dictionary.
-            if (null != runspaceOrigin)
-            {
-                RunspaceOrigin = (bool)runspaceOrigin;
-            }
-            if (null != callerSessionState)
-            {
-                CallerSessionState = callerSessionState;
-            }
-            if (null != parameters)
-            {
-                if (parameters.ContainsKey("DeploymentType"))
-                {
-                    DeploymentType = (string)parameters["DeploymentType"];
-                }
-                if (parameters.ContainsKey("DeployMode"))
-                {
-                    DeployMode = (string)parameters["DeployMode"];
-                }
-                if (parameters.ContainsKey("AllowRebootPassThru"))
-                {
-                    AllowRebootPassThru = (SwitchParameter)parameters["AllowRebootPassThru"];
-                }
-                if (parameters.ContainsKey("TerminalServerMode"))
-                {
-                    TerminalServerMode = (SwitchParameter)parameters["TerminalServerMode"];
-                }
-                if (parameters.ContainsKey("DisableLogging"))
-                {
-                    DisableLogging = (SwitchParameter)parameters["DisableLogging"];
-                }
-                if (parameters.ContainsKey("AppVendor"))
-                {
-                    AppVendor = (string)parameters["AppVendor"];
-                }
-                if (parameters.ContainsKey("AppName"))
-                {
-                    AppName = (string)parameters["AppName"];
-                }
-                if (parameters.ContainsKey("AppVersion"))
-                {
-                    AppVersion = (string)parameters["AppVersion"];
-                }
-                if (parameters.ContainsKey("AppArch"))
-                {
-                    AppArch = (string)parameters["AppArch"];
-                }
-                if (parameters.ContainsKey("AppLang"))
-                {
-                    AppLang = (string)parameters["AppLang"];
-                }
-                if (parameters.ContainsKey("AppRevision"))
-                {
-                    AppRevision = (string)parameters["AppRevision"];
-                }
-                if (parameters.ContainsKey("AppScriptVersion"))
-                {
-                    AppScriptVersion = (Version)parameters["AppScriptVersion"];
-                }
-                if (parameters.ContainsKey("AppScriptDate"))
-                {
-                    AppScriptDate = (DateTime)parameters["AppScriptDate"];
-                }
-                if (parameters.ContainsKey("AppScriptAuthor"))
-                {
-                    AppScriptAuthor = (string)parameters["AppScriptAuthor"];
-                }
-                if (parameters.ContainsKey("InstallName"))
-                {
-                    InstallName = (string)parameters["InstallName"];
-                }
-                if (parameters.ContainsKey("InstallTitle"))
-                {
-                    InstallTitle = (string)parameters["InstallTitle"];
-                }
-                if (parameters.ContainsKey("DeployAppScriptFriendlyName"))
-                {
-                    DeployAppScriptFriendlyName = (string)parameters["DeployAppScriptFriendlyName"];
-                }
-                if (parameters.ContainsKey("DeployAppScriptVersion"))
-                {
-                    DeployAppScriptVersion = (Version)parameters["DeployAppScriptVersion"];
-                }
-                if (parameters.ContainsKey("DeployAppScriptParameters"))
-                {
-                    DeployAppScriptParameters = (IDictionary)parameters["DeployAppScriptParameters"];
-                }
-                if (parameters.ContainsKey("AppSuccessExitCodes"))
-                {
-                    AppSuccessExitCodes = (int[])parameters["AppSuccessExitCodes"];
-                }
-                if (parameters.ContainsKey("AppRebootExitCodes"))
-                {
-                    AppRebootExitCodes = (int[])parameters["AppRebootExitCodes"];
-                }
-                if (parameters.ContainsKey("ScriptDirectory"))
-                {
-                    ScriptDirectory = (string)parameters["ScriptDirectory"];
-                }
-                if (parameters.ContainsKey("DirFiles"))
-                {
-                    DirFiles = (string)parameters["DirFiles"];
-                }
-                if (parameters.ContainsKey("DirSupportFiles"))
-                {
-                    DirSupportFiles = (string)parameters["DirSupportFiles"];
-                }
-                if (parameters.ContainsKey("DefaultMsiFile"))
-                {
-                    DefaultMsiFile = (string)parameters["DefaultMsiFile"];
-                }
-                if (parameters.ContainsKey("DefaultMstFile"))
-                {
-                    DefaultMstFile = (string)parameters["DefaultMstFile"];
-                }
-                if (parameters.ContainsKey("DefaultMspFiles"))
-                {
-                    DefaultMspFiles = (string[])parameters["DefaultMspFiles"];
-                }
-                if (parameters.ContainsKey("ForceWimDetection"))
-                {
-                    ForceWimDetection = (SwitchParameter)parameters["ForceWimDetection"];
-                }
-            }
-
-            // Ensure DeploymentType is title cased for aesthetics.
-            DeploymentType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(DeploymentType.ToLower());
-            DeploymentTypeName = (string)((Hashtable)ADTStrings["DeploymentType"]!)[DeploymentType]!;
-
-            // Establish script directories.
-            if (null != ScriptDirectory)
-            {
-                if (string.IsNullOrWhiteSpace(DirFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "Files")))
-                {
-                    DirFiles = Path.Combine(ScriptDirectory, "Files");
-                }
-                if (string.IsNullOrWhiteSpace(DirSupportFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "SupportFiles")))
-                {
-                    DirSupportFiles = Path.Combine(ScriptDirectory, "SupportFiles");
-                }
-            }
+                #region Initialization
 
 
-            #endregion
-            #region DetectDefaultWimFile
-            #endregion
-            #region DetectDefaultMsi
+                // Establish start date/time first so we can accurately mark the start of execution.
+                CurrentDate = CurrentDateTime.ToString("dd-MM-yyyy");
+                CurrentTime = CurrentDateTime.ToString("HH:mm:ss");
 
+                // Establish initial variable values.
+                ADTEnv = adtEnv;
+                ADTData = adtData;
+                ADTConfig = adtConfig;
+                ADTStrings = adtStrings;
+                ModuleSessionState = moduleSessionState;
 
-            // If the default frontend hasn't been modified, check for MSI / MST and modify the install accordingly.
-            if (string.IsNullOrWhiteSpace(AppName))
-            {
-                // Find the first MSI file in the Files folder and use that as our install.
-                if (string.IsNullOrWhiteSpace(DefaultMsiFile))
+                // Abort if the caller isn't coming in via our module's Open-ADTSession function.
+                if (!GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Open-ADTSession"))
                 {
-                    // Only proceed if the Files directory is set.
-                    if (!string.IsNullOrWhiteSpace(DirFiles))
+                    throw new InvalidOperationException("A session object must be instantiated via the Open-ADTSession function.");
+                }
+
+                // Extrapolate the Toolkit options from the config hashtable.
+                Hashtable configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
+
+                // Set up other variable values based on incoming dictionary.
+                if (null != runspaceOrigin)
+                {
+                    RunspaceOrigin = (bool)runspaceOrigin;
+                }
+                if (null != callerSessionState)
+                {
+                    CallerSessionState = callerSessionState;
+                }
+                if (null != parameters)
+                {
+                    if (parameters.ContainsKey("DeploymentType"))
                     {
-                        // Get the first MSI file in the Files directory.
-                        string[] msiFiles = Directory.GetFiles(DirFiles, "*.msi", SearchOption.TopDirectoryOnly);
-                        if (msiFiles.Where(f => !f.EndsWith($".{ADTEnv["envOSArchitecture"]}.msi")).FirstOrDefault() is string msiFile)
-                        {
-                            DefaultMsiFile = msiFile;
-                        }
-                        else if (msiFiles.Length > 0)
-                        {
-                            DefaultMsiFile = msiFiles[0];
-                        }
+                        DeploymentType = (string)parameters["DeploymentType"];
+                    }
+                    if (parameters.ContainsKey("DeployMode"))
+                    {
+                        DeployMode = (string)parameters["DeployMode"];
+                    }
+                    if (parameters.ContainsKey("AllowRebootPassThru"))
+                    {
+                        AllowRebootPassThru = (SwitchParameter)parameters["AllowRebootPassThru"];
+                    }
+                    if (parameters.ContainsKey("TerminalServerMode"))
+                    {
+                        TerminalServerMode = (SwitchParameter)parameters["TerminalServerMode"];
+                    }
+                    if (parameters.ContainsKey("DisableLogging"))
+                    {
+                        DisableLogging = (SwitchParameter)parameters["DisableLogging"];
+                    }
+                    if (parameters.ContainsKey("AppVendor"))
+                    {
+                        AppVendor = (string)parameters["AppVendor"];
+                    }
+                    if (parameters.ContainsKey("AppName"))
+                    {
+                        AppName = (string)parameters["AppName"];
+                    }
+                    if (parameters.ContainsKey("AppVersion"))
+                    {
+                        AppVersion = (string)parameters["AppVersion"];
+                    }
+                    if (parameters.ContainsKey("AppArch"))
+                    {
+                        AppArch = (string)parameters["AppArch"];
+                    }
+                    if (parameters.ContainsKey("AppLang"))
+                    {
+                        AppLang = (string)parameters["AppLang"];
+                    }
+                    if (parameters.ContainsKey("AppRevision"))
+                    {
+                        AppRevision = (string)parameters["AppRevision"];
+                    }
+                    if (parameters.ContainsKey("AppScriptVersion"))
+                    {
+                        AppScriptVersion = (Version)parameters["AppScriptVersion"];
+                    }
+                    if (parameters.ContainsKey("AppScriptDate"))
+                    {
+                        AppScriptDate = (DateTime)parameters["AppScriptDate"];
+                    }
+                    if (parameters.ContainsKey("AppScriptAuthor"))
+                    {
+                        AppScriptAuthor = (string)parameters["AppScriptAuthor"];
+                    }
+                    if (parameters.ContainsKey("InstallName"))
+                    {
+                        InstallName = (string)parameters["InstallName"];
+                    }
+                    if (parameters.ContainsKey("InstallTitle"))
+                    {
+                        InstallTitle = (string)parameters["InstallTitle"];
+                    }
+                    if (parameters.ContainsKey("DeployAppScriptFriendlyName"))
+                    {
+                        DeployAppScriptFriendlyName = (string)parameters["DeployAppScriptFriendlyName"];
+                    }
+                    if (parameters.ContainsKey("DeployAppScriptVersion"))
+                    {
+                        DeployAppScriptVersion = (Version)parameters["DeployAppScriptVersion"];
+                    }
+                    if (parameters.ContainsKey("DeployAppScriptParameters"))
+                    {
+                        DeployAppScriptParameters = (IDictionary)parameters["DeployAppScriptParameters"];
+                    }
+                    if (parameters.ContainsKey("AppSuccessExitCodes"))
+                    {
+                        AppSuccessExitCodes = (int[])parameters["AppSuccessExitCodes"];
+                    }
+                    if (parameters.ContainsKey("AppRebootExitCodes"))
+                    {
+                        AppRebootExitCodes = (int[])parameters["AppRebootExitCodes"];
+                    }
+                    if (parameters.ContainsKey("ScriptDirectory"))
+                    {
+                        ScriptDirectory = (string)parameters["ScriptDirectory"];
+                    }
+                    if (parameters.ContainsKey("DirFiles"))
+                    {
+                        DirFiles = (string)parameters["DirFiles"];
+                    }
+                    if (parameters.ContainsKey("DirSupportFiles"))
+                    {
+                        DirSupportFiles = (string)parameters["DirSupportFiles"];
+                    }
+                    if (parameters.ContainsKey("DefaultMsiFile"))
+                    {
+                        DefaultMsiFile = (string)parameters["DefaultMsiFile"];
+                    }
+                    if (parameters.ContainsKey("DefaultMstFile"))
+                    {
+                        DefaultMstFile = (string)parameters["DefaultMstFile"];
+                    }
+                    if (parameters.ContainsKey("DefaultMspFiles"))
+                    {
+                        DefaultMspFiles = (string[])parameters["DefaultMspFiles"];
+                    }
+                    if (parameters.ContainsKey("ForceWimDetection"))
+                    {
+                        ForceWimDetection = (SwitchParameter)parameters["ForceWimDetection"];
                     }
                 }
-                else if (!Path.IsPathRooted(DefaultMsiFile) && !string.IsNullOrWhiteSpace(DirFiles))
+
+                // Ensure DeploymentType is title cased for aesthetics.
+                DeploymentType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(DeploymentType.ToLower());
+                DeploymentTypeName = (string)((Hashtable)ADTStrings["DeploymentType"]!)[DeploymentType]!;
+
+                // Establish script directories.
+                if (null != ScriptDirectory)
                 {
-                    DefaultMsiFile = Path.Combine(DirFiles, DefaultMsiFile);
+                    if (string.IsNullOrWhiteSpace(DirFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "Files")))
+                    {
+                        DirFiles = Path.Combine(ScriptDirectory, "Files");
+                    }
+                    if (string.IsNullOrWhiteSpace(DirSupportFiles) && Directory.Exists(Path.Combine(ScriptDirectory, "SupportFiles")))
+                    {
+                        DirSupportFiles = Path.Combine(ScriptDirectory, "SupportFiles");
+                    }
                 }
 
-                // If we have a default MSI file, proceed further with the Zero-Config configuration.
-                if (!string.IsNullOrWhiteSpace(DefaultMsiFile))
-                {
-                    WriteZeroConfigDivider(); ZeroConfigInitiated = true;
-                    WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
 
-                    // Discover if there is a zero-config MST file.
-                    if (string.IsNullOrWhiteSpace(DefaultMstFile))
+                #endregion
+                #region DetectDefaultWimFile
+                #endregion
+                #region DetectDefaultMsi
+
+
+                // If the default frontend hasn't been modified, check for MSI / MST and modify the install accordingly.
+                if (string.IsNullOrWhiteSpace(AppName))
+                {
+                    // Find the first MSI file in the Files folder and use that as our install.
+                    if (string.IsNullOrWhiteSpace(DefaultMsiFile))
                     {
-                        string mstFile = Path.ChangeExtension(DefaultMsiFile, "mst");
-                        if (File.Exists(mstFile))
+                        // Only proceed if the Files directory is set.
+                        if (!string.IsNullOrWhiteSpace(DirFiles))
                         {
-                            DefaultMstFile = mstFile;
+                            // Get the first MSI file in the Files directory.
+                            string[] msiFiles = Directory.GetFiles(DirFiles, "*.msi", SearchOption.TopDirectoryOnly);
+                            if (msiFiles.Where(f => !f.EndsWith($".{ADTEnv["envOSArchitecture"]}.msi")).FirstOrDefault() is string msiFile)
+                            {
+                                DefaultMsiFile = msiFile;
+                            }
+                            else if (msiFiles.Length > 0)
+                            {
+                                DefaultMsiFile = msiFiles[0];
+                            }
                         }
                     }
-                    else if (!Path.IsPathRooted(DefaultMstFile) && !string.IsNullOrWhiteSpace(DirFiles))
+                    else if (!Path.IsPathRooted(DefaultMsiFile) && !string.IsNullOrWhiteSpace(DirFiles))
                     {
-                        DefaultMstFile = Path.Combine(DirFiles, DefaultMstFile);
-                    }
-                    if (!string.IsNullOrWhiteSpace(DefaultMstFile))
-                    {
-                        WriteLogEntry($"Discovered Zero-Config MST installation file [{DefaultMstFile}].");
+                        DefaultMsiFile = Path.Combine(DirFiles, DefaultMsiFile);
                     }
 
-                    // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-                    if (null == DefaultMspFiles)
+                    // If we have a default MSI file, proceed further with the Zero-Config configuration.
+                    if (!string.IsNullOrWhiteSpace(DefaultMsiFile))
                     {
-                        if (!string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.msp", SearchOption.TopDirectoryOnly) is string[] mspFiles))
+                        WriteZeroConfigDivider(); ZeroConfigInitiated = true;
+                        WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
+
+                        // Discover if there is a zero-config MST file.
+                        if (string.IsNullOrWhiteSpace(DefaultMstFile))
                         {
-                            DefaultMspFiles = mspFiles;
+                            string mstFile = Path.ChangeExtension(DefaultMsiFile, "mst");
+                            if (File.Exists(mstFile))
+                            {
+                                DefaultMstFile = mstFile;
+                            }
                         }
+                        else if (!Path.IsPathRooted(DefaultMstFile) && !string.IsNullOrWhiteSpace(DirFiles))
+                        {
+                            DefaultMstFile = Path.Combine(DirFiles, DefaultMstFile);
+                        }
+                        if (!string.IsNullOrWhiteSpace(DefaultMstFile))
+                        {
+                            WriteLogEntry($"Discovered Zero-Config MST installation file [{DefaultMstFile}].");
+                        }
+
+                        // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
+                        if (null == DefaultMspFiles)
+                        {
+                            if (!string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*.msp", SearchOption.TopDirectoryOnly) is string[] mspFiles))
+                            {
+                                DefaultMspFiles = mspFiles;
+                            }
+                        }
+                        else if (DefaultMspFiles.Select(f => Path.IsPathRooted(f)).FirstOrDefault() && !string.IsNullOrWhiteSpace(DirFiles))
+                        {
+                            DefaultMspFiles = DefaultMspFiles.Where(f => !Path.IsPathRooted(f)).Select(f => Path.Combine(DirFiles, f)).ToArray();
+                        }
+                        if (DefaultMspFiles?.Length > 0)
+                        {
+                            WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", DefaultMspFiles)}].");
+                        }
+
+                        // Read the MSI and get the installation details.
+                        ReadOnlyDictionary<string, object> msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
+                        DefaultMsiExecutablesList = msiProps.Where(p => Path.GetExtension(p.Key).Equals(".exe")).Select(p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray();
+
+                        // Generate list of MSI executables for testing later on.
+                        if (null != DefaultMsiExecutablesList)
+                        {
+                            WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(p => p.Name))}].");
+                        }
+
+                        // Update our app variables with new values.
+                        msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
+                        AppName = (string)msiProps["ProductName"];
+                        AppVersion = (string)msiProps["ProductVersion"];
+                        WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
+                        WriteLogEntry($"App Name [{AppName}].");
+                        WriteLogEntry($"App Version [{AppVersion}].");
+                        UseDefaultMsi = true;
                     }
-                    else if (DefaultMspFiles.Select(f => Path.IsPathRooted(f)).FirstOrDefault() && !string.IsNullOrWhiteSpace(DirFiles))
+                }
+
+
+                #endregion
+                #region SetAppProperties
+
+
+                // Set up sample variables if Dot Sourcing the script, app details have not been specified.
+                if (string.IsNullOrWhiteSpace(AppName))
+                {
+                    AppName = (string)ADTEnv["appDeployToolkitName"]!;
+
+                    if (!string.IsNullOrWhiteSpace(AppVendor))
                     {
-                        DefaultMspFiles = DefaultMspFiles.Where(f => !Path.IsPathRooted(f)).Select(f => Path.Combine(DirFiles, f)).ToArray();
+                        AppVendor = null;
                     }
-                    if (DefaultMspFiles?.Length > 0)
+                    if (string.IsNullOrWhiteSpace(AppVersion))
                     {
-                        WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", DefaultMspFiles)}].");
+                        AppVersion = ADTEnv["appDeployMainScriptVersion"]!.ToString()!;
                     }
-
-                    // Read the MSI and get the installation details.
-                    ReadOnlyDictionary<string, object> msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
-                    DefaultMsiExecutablesList = msiProps.Where(p => Path.GetExtension(p.Key).Equals(".exe")).Select(p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToArray();
-
-                    // Generate list of MSI executables for testing later on.
-                    if (null != DefaultMsiExecutablesList)
+                    if (string.IsNullOrWhiteSpace(AppLang))
                     {
-                        WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(p => p.Name))}].");
+                        AppLang = (string)ADTEnv["currentLanguage"]!;
                     }
-
-                    // Update our app variables with new values.
-                    msiProps = ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile, DefaultMstFile).Select(d => (ReadOnlyDictionary<string, object>)d.BaseObject).First();
-                    AppName = (string)msiProps["ProductName"];
-                    AppVersion = (string)msiProps["ProductVersion"];
-                    WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
-                    WriteLogEntry($"App Name [{AppName}].");
-                    WriteLogEntry($"App Version [{AppVersion}].");
-                    UseDefaultMsi = true;
-                }
-            }
-
-
-            #endregion
-            #region SetAppProperties
-
-
-            // Set up sample variables if Dot Sourcing the script, app details have not been specified.
-            if (string.IsNullOrWhiteSpace(AppName))
-            {
-                AppName = (string)ADTEnv["appDeployToolkitName"]!;
-
-                if (!string.IsNullOrWhiteSpace(AppVendor))
-                {
-                    AppVendor = null;
-                }
-                if (string.IsNullOrWhiteSpace(AppVersion))
-                {
-                    AppVersion = ADTEnv["appDeployMainScriptVersion"]!.ToString()!;
-                }
-                if (string.IsNullOrWhiteSpace(AppLang))
-                {
-                    AppLang = (string)ADTEnv["currentLanguage"]!;
-                }
-                if (string.IsNullOrWhiteSpace(AppRevision))
-                {
-                    AppRevision = "01";
-                }
-            }
-
-            // Sanitize the application details, as they can cause issues in the script.
-            string invalidChars = string.Join(null, Path.GetInvalidFileNameChars());
-            if (null != AppVendor)
-            {
-                AppVendor = Regex.Replace(AppVendor, invalidChars, string.Empty);
-            }
-            if (null != AppName)
-            {
-                AppName = Regex.Replace(AppName, invalidChars, string.Empty);
-            }
-            if (null != AppVersion)
-            {
-                AppVersion = Regex.Replace(AppVersion, invalidChars, string.Empty);
-            }
-            if (null != AppArch)
-            {
-                AppArch = Regex.Replace(AppArch, invalidChars, string.Empty);
-            }
-            if (null != AppLang)
-            {
-                AppLang = Regex.Replace(AppLang, invalidChars, string.Empty);
-            }
-            if (null != AppRevision)
-            {
-                AppRevision = Regex.Replace(AppRevision, invalidChars, string.Empty);
-            }
-
-            // If we're left with a null AppName, throw a terminating error.
-            if (string.IsNullOrWhiteSpace(AppName))
-            {
-                throw new ArgumentNullException("AppName", "The application name was not specified.");
-            }
-
-
-            #endregion
-            #region SetInstallProperties
-
-
-            // Build the Installation Title.
-            if (string.IsNullOrWhiteSpace(InstallTitle))
-            {
-                InstallTitle = $"{AppVendor} {AppName} {AppVersion}".Trim();
-            }
-            InstallTitle = Regex.Replace(InstallTitle, "\\s{2,}", string.Empty);
-
-            // Build the Installation Name.
-            if (string.IsNullOrWhiteSpace(InstallName))
-            {
-                InstallName = $"{AppVendor}_{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
-            }
-            InstallName = Regex.Replace(Regex.Replace(InstallName, "\\s|^_|_$", string.Empty), "_+", "_");
-
-            // Set the Defer History registry path.
-            RegKeyDeferBase = $"{configToolkit["RegPath"]}\\{ADTEnv["appDeployToolkitName"]}\\DeferHistory";
-            RegKeyDeferHistory = $"{RegKeyDeferBase}\\{InstallName}";
-
-
-            #endregion
-            #region InitLogging
-
-
-            // Generate log paths from our installation properties.
-            LogTempFolder = Path.Combine((string)ADTEnv["envTemp"]!, $"{InstallName}_{DeploymentType}");
-            if ((bool)configToolkit["CompressLogs"]!)
-            {
-                // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                if (Directory.Exists(LogTempFolder))
-                {
-                    Directory.Delete(LogTempFolder, true);
-                }
-                LogPath = Directory.CreateDirectory(LogTempFolder).FullName;
-            }
-            else
-            {
-                LogPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
-            }
-
-            // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
-            // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-            if ((bool)ADTEnv["IsAdmin"]!)
-            {
-                LogName = $"{InstallName}_{ADTEnv["appDeployToolkitName"]}_{DeploymentType}.log";
-            }
-            else
-            {
-                LogName = $"{InstallName}_{ADTEnv["appDeployToolkitName"]}_{DeploymentType}_{ADTEnv["envUserName"]}.log";
-            }
-            LogName = Regex.Replace(LogName, invalidChars, string.Empty);
-            string logFile = Path.Combine(LogPath, LogName);
-            FileInfo logFileInfo = new FileInfo(logFile);
-            int logMaxSize = (int)configToolkit["LogMaxSize"]!;
-            bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
-
-            // Check if log file needs to be rotated.
-            if ((logFileInfo.Exists && !(bool)configToolkit["LogAppend"]!) || logFileSizeExceeded)
-            {
-                try
-                {
-                    // Get new log file path.
-                    string logFileNameOnly = Path.GetFileNameWithoutExtension(LogName);
-                    string logFileExtension = Path.GetExtension(LogName);
-                    string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
-                    string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
-                    string archiveLogFilePath = Path.Combine(LogPath, archiveLogFileName);
-                    int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
-
-                    // Log message about archiving the log file.
-                    if (logFileSizeExceeded)
+                    if (string.IsNullOrWhiteSpace(AppRevision))
                     {
-                        WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", 2);
+                        AppRevision = "01";
                     }
+                }
 
-                    // Rename the file.
-                    logFileInfo.MoveTo(archiveLogFilePath);
+                // Sanitize the application details, as they can cause issues in the script.
+                string invalidChars = string.Join(null, Path.GetInvalidFileNameChars());
+                if (null != AppVendor)
+                {
+                    AppVendor = Regex.Replace(AppVendor, invalidChars, string.Empty);
+                }
+                if (null != AppName)
+                {
+                    AppName = Regex.Replace(AppName, invalidChars, string.Empty);
+                }
+                if (null != AppVersion)
+                {
+                    AppVersion = Regex.Replace(AppVersion, invalidChars, string.Empty);
+                }
+                if (null != AppArch)
+                {
+                    AppArch = Regex.Replace(AppArch, invalidChars, string.Empty);
+                }
+                if (null != AppLang)
+                {
+                    AppLang = Regex.Replace(AppLang, invalidChars, string.Empty);
+                }
+                if (null != AppRevision)
+                {
+                    AppRevision = Regex.Replace(AppRevision, invalidChars, string.Empty);
+                }
 
-                    // Start new log file and log message about archiving the old log file.
-                    if (logFileSizeExceeded)
+                // If we're left with a null AppName, throw a terminating error.
+                if (string.IsNullOrWhiteSpace(AppName))
+                {
+                    throw new ArgumentNullException("AppName", "The application name was not specified.");
+                }
+
+
+                #endregion
+                #region SetInstallProperties
+
+
+                // Build the Installation Title.
+                if (string.IsNullOrWhiteSpace(InstallTitle))
+                {
+                    InstallTitle = $"{AppVendor} {AppName} {AppVersion}".Trim();
+                }
+                InstallTitle = Regex.Replace(InstallTitle, "\\s{2,}", string.Empty);
+
+                // Build the Installation Name.
+                if (string.IsNullOrWhiteSpace(InstallName))
+                {
+                    InstallName = $"{AppVendor}_{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
+                }
+                InstallName = Regex.Replace(Regex.Replace(InstallName, "\\s|^_|_$", string.Empty), "_+", "_");
+
+                // Set the Defer History registry path.
+                RegKeyDeferBase = $"{configToolkit["RegPath"]}\\{ADTEnv["appDeployToolkitName"]}\\DeferHistory";
+                RegKeyDeferHistory = $"{RegKeyDeferBase}\\{InstallName}";
+
+
+                #endregion
+                #region InitLogging
+
+
+                // Generate log paths from our installation properties.
+                LogTempFolder = Path.Combine((string)ADTEnv["envTemp"]!, $"{InstallName}_{DeploymentType}");
+                if ((bool)configToolkit["CompressLogs"]!)
+                {
+                    // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
+                    if (Directory.Exists(LogTempFolder))
                     {
-                        WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", 2);
+                        Directory.Delete(LogTempFolder, true);
                     }
-
-                    // Get all log files sorted by last write time.
-                    var logFiles = new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").OrderBy(f => f.LastWriteTime);
-
-                    // Keep only the max number of log files.
-                    if (logFiles.Count() > logMaxHistory)
-                    {
-                        logFiles.Take(logFiles.Count() - logMaxHistory).ToList().ForEach(f => f.Delete());
-                    }
-                }
-                catch (Exception ex)
-                {
-                    WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", 3);
-                }
-            }
-
-            // Open log file with commencement message.
-            WriteLogDivider(2);
-            WriteLogEntry($"[{InstallName}] {DeploymentTypeName.ToLower()} started.");
-
-
-            #endregion
-            #region LogScriptInfo
-
-
-            // Announce provided deployment script info.
-            if (!UseDefaultMsi)
-            {
-                if (null != AppScriptVersion)
-                {
-                    WriteLogEntry($"[{InstallName}] script version is [{AppScriptVersion}].");
-                }
-                if (null != AppScriptDate)
-                {
-                    WriteLogEntry($"[{InstallName}] script date is [{((DateTime)AppScriptDate).ToString("O").Split('T')[0]}].");
-                }
-                if (!string.IsNullOrWhiteSpace(AppScriptAuthor))
-                {
-                    WriteLogEntry($"[{InstallName}] script author is [{AppScriptAuthor}].");
-                }
-            }
-            if (!string.IsNullOrWhiteSpace(DeployAppScriptFriendlyName))
-            {
-                if (null != DeployAppScriptVersion)
-                {
-                    WriteLogEntry($"[{DeployAppScriptFriendlyName}] script version is [{DeployAppScriptVersion}].");
-                }
-                if ((null != DeployAppScriptParameters) && (DeployAppScriptParameters.Count > 0))
-                {
-                    WriteLogEntry($"The following parameters were passed to [${DeployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(DeployAppScriptParameters)}].");
-                }
-            }
-            PSObject adtDirectories = (PSObject)ADTData.Properties["Directories"].Value;
-            PSObject adtDurations = (PSObject)ADTData.Properties["Durations"].Value;
-            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module version is [{ADTEnv["appDeployMainScriptVersion"]}].");
-            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
-            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
-            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module path is [{ADTEnv["appDeployToolkitPath"]}].");
-            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] config path is [{adtDirectories.Properties["Config"].Value}].");
-            WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] string path is [{adtDirectories.Properties["Strings"].Value}].");
-
-            // Announce session instantiation mode.
-            if (null != CallerSessionState)
-            {
-                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", 2);
-                WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2);
-            }
-            else
-            {
-                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Native].");
-            }
-
-
-            #endregion
-            #region LogSystemInfo
-
-
-            // Report on all determined system info.
-            WriteLogEntry($"Computer Name is [{ADTEnv["envComputerNameFQDN"]}].");
-            WriteLogEntry($"Current User is [{ADTEnv["ProcessNTAccount"]}].");
-            WriteLogEntry($"OS Version is [{ADTEnv["envOSName"]}{((ADTEnv["envOSServicePack"] is string envOSServicePack) && !string.IsNullOrWhiteSpace(envOSServicePack) ? envOSServicePack : string.Empty)} {ADTEnv["envOSArchitecture"]} {ADTEnv["envOSVersion"]}].");
-            WriteLogEntry($"OS Type is [{ADTEnv["envOSProductTypeName"]}].");
-            WriteLogEntry($"Hardware Platform is [{ADTEnv["envHardwareType"]}].");
-            WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{ADTEnv["currentLanguage"]}] and UI language is [{ADTEnv["currentUILanguage"]}].");
-            WriteLogEntry($"PowerShell Host is [{((PSHost)ADTEnv["envHost"]!).Name}] with version [{((PSHost)ADTEnv["envHost"]!).Version}].");
-            WriteLogEntry($"PowerShell Version is [{ADTEnv["envPSVersion"]} {ADTEnv["psArchitecture"]}].");
-            if (null != ADTEnv["envCLRVersion"])
-            {
-                WriteLogEntry($"PowerShell CLR (.NET) version is [{ADTEnv["envCLRVersion"]}].");
-            }
-
-
-            #endregion
-            #region LogUserInfo
-
-
-            // Log details for all currently logged on users.
-            WriteLogEntry($"Display session information for all logged on users:{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"]).First().BaseObject}", false);
-
-            // Provide detailed info about current process state.
-            if (null != ADTEnv["usersLoggedOn"])
-            {
-                WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", ADTEnv["usersLoggedOn"])}].");
-
-                // Check if the current process is running in the context of one of the logged on users
-                if (null != ADTEnv["CurrentLoggedOnUserSession"])
-                {
-                    WriteLogEntry($"Current process is running with user account [{ADTEnv["ProcessNTAccount"]}] under logged on user session for [{((QueryUser.TerminalSessionInfo)ADTEnv["CurrentLoggedOnUserSession"]!).NTAccount}].");
+                    LogPath = Directory.CreateDirectory(LogTempFolder).FullName;
                 }
                 else
                 {
-                    WriteLogEntry($"Current process is running under a system account [{ADTEnv["ProcessNTAccount"]}].");
+                    LogPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
                 }
 
-                // Guard Intune detection code behind a variable.
-                if ((bool)configToolkit["OobeDetection"]! && (Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Utility.IsOOBEComplete())
+                // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
+                // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+                if ((bool)ADTEnv["IsAdmin"]!)
                 {
-                    WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
-                    DeployMode = "Silent";
-                }
-
-                // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-                if (null != ADTEnv["CurrentConsoleUserSession"])
-                {
-                    WriteLogEntry($"The following user is the console user [{((QueryUser.TerminalSessionInfo)ADTEnv["CurrentConsoleUserSession"]!).NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
+                    LogName = $"{InstallName}_{ADTEnv["appDeployToolkitName"]}_{DeploymentType}.log";
                 }
                 else
                 {
-                    WriteLogEntry("There is no console user logged on (user with control of physical monitor, keyboard, and mouse).");
+                    LogName = $"{InstallName}_{ADTEnv["appDeployToolkitName"]}_{DeploymentType}_{ADTEnv["envUserName"]}.log";
                 }
+                LogName = Regex.Replace(LogName, invalidChars, string.Empty);
+                string logFile = Path.Combine(LogPath, LogName);
+                FileInfo logFileInfo = new FileInfo(logFile);
+                int logMaxSize = (int)configToolkit["LogMaxSize"]!;
+                bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
 
-                // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-                if (null != ADTEnv["RunAsActiveUser"])
+                // Check if log file needs to be rotated.
+                if ((logFileInfo.Exists && !(bool)configToolkit["LogAppend"]!) || logFileSizeExceeded)
                 {
-                    WriteLogEntry($"The active logged on user is [{((QueryUser.TerminalSessionInfo)ADTEnv["RunAsActiveUser"]!).NTAccount}].");
-                }
-            }
-            else
-            {
-                WriteLogEntry("No users are logged on to the system.");
-            }
-
-            // Log which language's UI messages are loaded from the config file
-            WriteLogEntry($"The current execution context has a primary UI language of [{ADTEnv["currentLanguage"]}].");
-
-            // Advise whether the UI language was overridden.
-            if (((Hashtable)ADTConfig["UI"]!)["LanguageOverride"] is string languageOverride)
-            {
-                WriteLogEntry($"The config file was configured to override the detected primary UI language with the following UI language: [{languageOverride}].");
-            }
-            WriteLogEntry($"The following UI messages were imported from the config file: [{ADTData.Properties["Language"].Value}].");
-
-
-            #endregion
-            #region PerformConfigMgrTests
-
-
-            // Check if script is running from a SCCM Task Sequence.
-            if ((bool)ADTEnv["RunningTaskSequence"]!)
-            {
-                WriteLogEntry("Successfully found COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.");
-            }
-            else
-            {
-                WriteLogEntry("Unable to find COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.");
-            }
-
-
-            #endregion
-            #region PerformSystemAccountTests
-
-
-            // Return early if we're not in session 0.
-            if ((bool)ADTEnv["SessionZero"]!)
-            {
-                // If the script was launched with deployment mode set to NonInteractive, then continue.
-                if (DeployMode != "Interactive")
-                {
-                    WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{DeployMode}].");
-                }
-                else if ((bool)configToolkit["SessionDetection"]!)
-                {
-                    // If the process is not able to display a UI, enable NonInteractive mode.
-                    if ((bool)ADTEnv["IsProcessUserInteractive"]!)
+                    try
                     {
-                        DeployMode = "NonInteractive";
-                        WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{DeployMode}].");
+                        // Get new log file path.
+                        string logFileNameOnly = Path.GetFileNameWithoutExtension(LogName);
+                        string logFileExtension = Path.GetExtension(LogName);
+                        string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
+                        string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
+                        string archiveLogFilePath = Path.Combine(LogPath, archiveLogFileName);
+                        int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+
+                        // Log message about archiving the log file.
+                        if (logFileSizeExceeded)
+                        {
+                            WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", 2);
+                        }
+
+                        // Rename the file.
+                        logFileInfo.MoveTo(archiveLogFilePath);
+
+                        // Start new log file and log message about archiving the old log file.
+                        if (logFileSizeExceeded)
+                        {
+                            WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", 2);
+                        }
+
+                        // Get all log files sorted by last write time.
+                        var logFiles = new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").OrderBy(f => f.LastWriteTime);
+
+                        // Keep only the max number of log files.
+                        if (logFiles.Count() > logMaxHistory)
+                        {
+                            logFiles.Take(logFiles.Count() - logMaxHistory).ToList().ForEach(f => f.Delete());
+                        }
                     }
-                    else if (null == ADTEnv["usersLoggedOn"])
+                    catch (Exception ex)
                     {
-                        DeployMode = "NonInteractive";
-                        WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{DeployMode}].");
+                        WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", 3);
+                    }
+                }
+
+                // Open log file with commencement message.
+                WriteLogDivider(2);
+                WriteLogEntry($"[{InstallName}] {DeploymentTypeName.ToLower()} started.");
+
+
+                #endregion
+                #region LogScriptInfo
+
+
+                // Announce provided deployment script info.
+                if (!UseDefaultMsi)
+                {
+                    if (null != AppScriptVersion)
+                    {
+                        WriteLogEntry($"[{InstallName}] script version is [{AppScriptVersion}].");
+                    }
+                    if (null != AppScriptDate)
+                    {
+                        WriteLogEntry($"[{InstallName}] script date is [{((DateTime)AppScriptDate).ToString("O").Split('T')[0]}].");
+                    }
+                    if (!string.IsNullOrWhiteSpace(AppScriptAuthor))
+                    {
+                        WriteLogEntry($"[{InstallName}] script author is [{AppScriptAuthor}].");
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(DeployAppScriptFriendlyName))
+                {
+                    if (null != DeployAppScriptVersion)
+                    {
+                        WriteLogEntry($"[{DeployAppScriptFriendlyName}] script version is [{DeployAppScriptVersion}].");
+                    }
+                    if ((null != DeployAppScriptParameters) && (DeployAppScriptParameters.Count > 0))
+                    {
+                        WriteLogEntry($"The following parameters were passed to [${DeployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(DeployAppScriptParameters)}].");
+                    }
+                }
+                PSObject adtDirectories = (PSObject)ADTData.Properties["Directories"].Value;
+                PSObject adtDurations = (PSObject)ADTData.Properties["Durations"].Value;
+                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module version is [{ADTEnv["appDeployMainScriptVersion"]}].");
+                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
+                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
+                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] module path is [{ADTEnv["appDeployToolkitPath"]}].");
+                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] config path is [{adtDirectories.Properties["Config"].Value}].");
+                WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] string path is [{adtDirectories.Properties["Strings"].Value}].");
+
+                // Announce session instantiation mode.
+                if (null != CallerSessionState)
+                {
+                    WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", 2);
+                    WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2);
+                }
+                else
+                {
+                    WriteLogEntry($"[{ADTEnv["appDeployToolkitName"]}] session mode is [Native].");
+                }
+
+
+                #endregion
+                #region LogSystemInfo
+
+
+                // Report on all determined system info.
+                WriteLogEntry($"Computer Name is [{ADTEnv["envComputerNameFQDN"]}].");
+                WriteLogEntry($"Current User is [{ADTEnv["ProcessNTAccount"]}].");
+                WriteLogEntry($"OS Version is [{ADTEnv["envOSName"]}{((ADTEnv["envOSServicePack"] is string envOSServicePack) && !string.IsNullOrWhiteSpace(envOSServicePack) ? envOSServicePack : string.Empty)} {ADTEnv["envOSArchitecture"]} {ADTEnv["envOSVersion"]}].");
+                WriteLogEntry($"OS Type is [{ADTEnv["envOSProductTypeName"]}].");
+                WriteLogEntry($"Hardware Platform is [{ADTEnv["envHardwareType"]}].");
+                WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{ADTEnv["currentLanguage"]}] and UI language is [{ADTEnv["currentUILanguage"]}].");
+                WriteLogEntry($"PowerShell Host is [{((PSHost)ADTEnv["envHost"]!).Name}] with version [{((PSHost)ADTEnv["envHost"]!).Version}].");
+                WriteLogEntry($"PowerShell Version is [{ADTEnv["envPSVersion"]} {ADTEnv["psArchitecture"]}].");
+                if (null != ADTEnv["envCLRVersion"])
+                {
+                    WriteLogEntry($"PowerShell CLR (.NET) version is [{ADTEnv["envCLRVersion"]}].");
+                }
+
+
+                #endregion
+                #region LogUserInfo
+
+
+                // Log details for all currently logged on users.
+                WriteLogEntry($"Display session information for all logged on users:{ModuleSessionState.InvokeCommand.InvokeScript(ModuleSessionState, ScriptBlock.Create("$args[0] | & $CommandTable.'Format-List' | & $CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), ADTEnv["LoggedOnUserSessions"]).First().BaseObject}", false);
+
+                // Provide detailed info about current process state.
+                if (null != ADTEnv["usersLoggedOn"])
+                {
+                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", ADTEnv["usersLoggedOn"])}].");
+
+                    // Check if the current process is running in the context of one of the logged on users
+                    if (null != ADTEnv["CurrentLoggedOnUserSession"])
+                    {
+                        WriteLogEntry($"Current process is running with user account [{ADTEnv["ProcessNTAccount"]}] under logged on user session for [{((QueryUser.TerminalSessionInfo)ADTEnv["CurrentLoggedOnUserSession"]!).NTAccount}].");
                     }
                     else
                     {
-                        WriteLogEntry("Session 0 detected, process running in user interactive mode, user(s) logged on.");
+                        WriteLogEntry($"Current process is running under a system account [{ADTEnv["ProcessNTAccount"]}].");
+                    }
+
+                    // Guard Intune detection code behind a variable.
+                    if ((bool)configToolkit["OobeDetection"]! && (Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Utility.IsOOBEComplete())
+                    {
+                        WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
+                        DeployMode = "Silent";
+                    }
+
+                    // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
+                    if (null != ADTEnv["CurrentConsoleUserSession"])
+                    {
+                        WriteLogEntry($"The following user is the console user [{((QueryUser.TerminalSessionInfo)ADTEnv["CurrentConsoleUserSession"]!).NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
+                    }
+                    else
+                    {
+                        WriteLogEntry("There is no console user logged on (user with control of physical monitor, keyboard, and mouse).");
+                    }
+
+                    // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+                    if (null != ADTEnv["RunAsActiveUser"])
+                    {
+                        WriteLogEntry($"The active logged on user is [{((QueryUser.TerminalSessionInfo)ADTEnv["RunAsActiveUser"]!).NTAccount}].");
                     }
                 }
                 else
                 {
-                    WriteLogEntry("Session 0 detected but toolkit is configured to not adjust deployment mode.");
+                    WriteLogEntry("No users are logged on to the system.");
                 }
+
+                // Log which language's UI messages are loaded from the config file
+                WriteLogEntry($"The current execution context has a primary UI language of [{ADTEnv["currentLanguage"]}].");
+
+                // Advise whether the UI language was overridden.
+                if (((Hashtable)ADTConfig["UI"]!)["LanguageOverride"] is string languageOverride)
+                {
+                    WriteLogEntry($"The config file was configured to override the detected primary UI language with the following UI language: [{languageOverride}].");
+                }
+                WriteLogEntry($"The following UI messages were imported from the config file: [{ADTData.Properties["Language"].Value}].");
+
+
+                #endregion
+                #region PerformConfigMgrTests
+
+
+                // Check if script is running from a SCCM Task Sequence.
+                if ((bool)ADTEnv["RunningTaskSequence"]!)
+                {
+                    WriteLogEntry("Successfully found COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is currently running from a SCCM Task Sequence.");
+                }
+                else
+                {
+                    WriteLogEntry("Unable to find COM object [Microsoft.SMS.TSEnvironment]. Therefore, script is not currently running from a SCCM Task Sequence.");
+                }
+
+
+                #endregion
+                #region PerformSystemAccountTests
+
+
+                // Return early if we're not in session 0.
+                if ((bool)ADTEnv["SessionZero"]!)
+                {
+                    // If the script was launched with deployment mode set to NonInteractive, then continue.
+                    if (DeployMode != "Interactive")
+                    {
+                        WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{DeployMode}].");
+                    }
+                    else if ((bool)configToolkit["SessionDetection"]!)
+                    {
+                        // If the process is not able to display a UI, enable NonInteractive mode.
+                        if ((bool)ADTEnv["IsProcessUserInteractive"]!)
+                        {
+                            DeployMode = "NonInteractive";
+                            WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{DeployMode}].");
+                        }
+                        else if (null == ADTEnv["usersLoggedOn"])
+                        {
+                            DeployMode = "NonInteractive";
+                            WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{DeployMode}].");
+                        }
+                        else
+                        {
+                            WriteLogEntry("Session 0 detected, process running in user interactive mode, user(s) logged on.");
+                        }
+                    }
+                    else
+                    {
+                        WriteLogEntry("Session 0 detected but toolkit is configured to not adjust deployment mode.");
+                    }
+                }
+                else
+                {
+                    WriteLogEntry("Session 0 not detected.");
+                }
+
+
+                #endregion
+                #region SetDeploymentProperties
+
+
+                // Set Deploy Mode switches.
+                WriteLogEntry($"Installation is running in [{DeployMode}] mode.");
+                switch (DeployMode)
+                {
+                    case "Silent":
+                        DeployModeNonInteractive = true;
+                        DeployModeSilent = true;
+                        break;
+                    case "NonInteractive":
+                        DeployModeNonInteractive = true;
+                        break;
+                }
+
+
+                // Check deployment type (install/uninstall).
+                WriteLogEntry($"Deployment type is [{DeploymentTypeName}].");
+
+
+                #endregion
+                #region TestDefaultMsi
+
+
+                // Advise the caller if a zero-config MSI was found.
+                if (UseDefaultMsi)
+                {
+                    WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
+                }
+
+
+                #endregion
+                #region TestAdminRequired
+
+
+                // Check current permissions and exit if not running with Administrator rights.
+                if ((bool)configToolkit["RequireAdmin"]! && !(bool)ADTEnv["IsAdmin"]!)
+                {
+                    throw new UnauthorizedAccessException($"[{ADTEnv["appDeployToolkitName"]}] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.");
+                }
+
+
+                #endregion
+                #region Finalization
+
+
+                // If terminal server mode was specified, change the installation mode to support it.
+                if (TerminalServerMode)
+                {
+                    #warning "Terminal Server Mode not fully implemented."
+                }
+
+                // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
+                // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
+                if (null != CallerSessionState)
+                {
+                    this.GetType().GetProperties(BindingFlags.Public).ToList().ForEach(p => CallerSessionState.PSVariable.Set(p.Name, p.GetValue(this)));
+                }
+
+
+                #endregion
             }
-            else
+            catch (Exception ex)
             {
-                WriteLogEntry("Session 0 not detected.");
+                WriteLogEntry($"Failure occurred while opening new SessionObject: \"{ex.Message}\".", 3);
+                SetExitCode(60008);
+                Close();
+                throw;
             }
-
-
-            #endregion
-            #region SetDeploymentProperties
-
-
-            // Set Deploy Mode switches.
-            WriteLogEntry($"Installation is running in [{DeployMode}] mode.");
-            switch (DeployMode)
-            {
-                case "Silent":
-                    DeployModeNonInteractive = true;
-                    DeployModeSilent = true;
-                    break;
-                case "NonInteractive":
-                    DeployModeNonInteractive = true;
-                    break;
-            }
-
-
-            // Check deployment type (install/uninstall).
-            WriteLogEntry($"Deployment type is [{DeploymentTypeName}].");
-
-
-            #endregion
-            #region TestDefaultMsi
-
-
-            // Advise the caller if a zero-config MSI was found.
-            if (UseDefaultMsi)
-            {
-                WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
-            }
-
-
-            #endregion
-            #region TestAdminRequired
-
-
-            // Check current permissions and exit if not running with Administrator rights.
-            if ((bool)configToolkit["RequireAdmin"]! && !(bool)ADTEnv["IsAdmin"]!)
-            {
-                throw new UnauthorizedAccessException($"[{ADTEnv["appDeployToolkitName"]}] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.");
-            }
-
-
-            #endregion
-            #region Finalization
-
-
-            // If terminal server mode was specified, change the installation mode to support it.
-            if (TerminalServerMode)
-            {
-                #warning "Terminal Server Mode not fully implemented."
-            }
-
-            // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
-            // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-            if (null != CallerSessionState)
-            {
-                this.GetType().GetProperties(BindingFlags.Public).ToList().ForEach(p => CallerSessionState.PSVariable.Set(p.Name, p.GetValue(this)));
-            }
-
-
-            #endregion
         }
 
 
@@ -777,8 +788,8 @@ namespace PSADT.Types
         /// <returns>The exit code.</returns>
         public int Close()
         {
-            // Abort if the caller isn't coming in via our module's Open-ADTSession function.
-            if (!GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Close-ADTSession"))
+            // Abort if the caller isn't coming in via our module's Close-ADTSession function.
+            if (!(new StackFrame(1, false).GetMethod()!.Name.Equals(".ctor")) && !GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Close-ADTSession"))
             {
                 throw new InvalidOperationException("A session object must be closed via the Close-ADTSession function.");
             }
