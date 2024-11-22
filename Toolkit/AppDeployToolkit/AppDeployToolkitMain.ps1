@@ -1637,3 +1637,27 @@ function Execute-MSI
     # Invoke function with amended parameters.
     Start-ADTMsiProcess @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Start-ADTMspProcess
+#
+#---------------------------------------------------------------------------
+
+function Execute-MSP
+{
+    param (
+        [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
+        [ValidateScript({('.msp' -contains [System.IO.Path]::GetExtension($_))})]
+        [Alias('FilePath')]
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.String]$AddParameters
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Start-ADTMspProcess] instead." -Severity 2
+    Start-ADTMspProcess @PSBoundParameters
+}
