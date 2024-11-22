@@ -1974,14 +1974,9 @@ https://psappdeploytoolkit.com
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconUri' -Value $appDeployLogoImage -PropertyType 'ExpandString' -Force
                 $null = New-ItemProperty -Path "$regPathToastApp\$toastAppId" -Name 'IconBackgroundColor' -Value 0 -PropertyType 'ExpandString' -Force
 
-                # Handle PowerShell 7-specific setup.
+                # Handle PowerShell 7-specific setup. ## FIXME
                 If ($PSVersionTable.PSEdition.Equals('Core')) {
-                    If ($pkg = Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore) {
-                        Add-Type -AssemblyName (Get-ChildItem -Path "$([System.IO.Path]::GetDirectoryName($pkg.Source))\lib\*\*.dll").FullName
-                    }
-                    Else {
-                        exit 60003
-                    }
+                    Add-Type -AssemblyName (Get-ChildItem -Path "$Script:PSScriptRoot\lib\*\*.dll").FullName
                 }
                 else {
                     [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
