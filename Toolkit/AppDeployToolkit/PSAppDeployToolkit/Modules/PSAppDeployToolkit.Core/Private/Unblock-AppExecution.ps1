@@ -64,7 +64,7 @@ https://psappdeploytoolkit.com
         Try {
             If (Get-SchedulerTask -ContinueOnError $true | Select-Object -Property 'TaskName' | Where-Object { $_.TaskName -eq "\$schTaskBlockedAppsName" }) {
                 Write-ADTLogEntry -Message "Deleting Scheduled Task [$schTaskBlockedAppsName]."
-                Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
+                Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/Delete /TN $schTaskBlockedAppsName /F"
             }
         }
         Catch {

@@ -134,11 +134,11 @@ https://psappdeploytoolkit.com
                 }
             }
 
-            [PSObject]$ExecuteResult = Execute-Process -Path $RegSvr32Path -Parameters $DLLActionParameters -WindowStyle 'Hidden' -PassThru -ExitOnProcessFailure $false
+            [PSObject]$ExecuteResult = Start-ADTProcess -Path $RegSvr32Path -Parameters $DLLActionParameters -WindowStyle Hidden -PassThru -NoExitOnProcessFailure
 
             If ($ExecuteResult.ExitCode -ne 0) {
                 If ($ExecuteResult.ExitCode -eq 60002) {
-                    Throw "Execute-Process function failed with exit code [$($ExecuteResult.ExitCode)]."
+                    Throw "Start-ADTProcess function failed with exit code [$($ExecuteResult.ExitCode)]."
                 }
                 Else {
                     Throw "regsvr32.exe failed with exit code [$($ExecuteResult.ExitCode)]."

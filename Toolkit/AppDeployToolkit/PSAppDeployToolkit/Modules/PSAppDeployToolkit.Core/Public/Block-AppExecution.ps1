@@ -173,7 +173,7 @@ https://psappdeploytoolkit.com
             }
 
             ## Import the Scheduled Task XML file to create the Scheduled Task
-            [PSObject]$schTaskResult = Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
+            [PSObject]$schTaskResult = Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskBlockedAppsName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
             If ($schTaskResult.ExitCode -ne 0) {
                 Write-ADTLogEntry -Message "Failed to create the scheduled task [$schTaskBlockedAppsName] by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3
                 Return

@@ -437,13 +437,12 @@ https://psappdeploytoolkit.com
         }
         ElseIf (((-not $IsMsiInstalled) -and ($Action -eq 'Install')) -or ($IsMsiInstalled)) {
             Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
-            #  Build the hashtable with the options that will be passed to Execute-Process using splatting
+            #  Build the hashtable with the options that will be passed to Start-ADTProcess using splatting
             [Hashtable]$ExecuteProcessSplat = @{
                 Path                 = $adtEnv.exeMsiexec
                 Parameters           = $argsMSI
                 WindowStyle          = 'Normal'
-                ExitOnProcessFailure = $ExitOnProcessFailure
-                ContinueOnError      = $ContinueOnError
+                NoExitOnProcessFailure = !$ExitOnProcessFailure
             }
             If ($WorkingDirectory) {
                 $ExecuteProcessSplat.Add( 'WorkingDirectory', $WorkingDirectory)
@@ -464,12 +463,12 @@ https://psappdeploytoolkit.com
                 $ExecuteProcessSplat.Add( 'NoWait', $NoWait)
             }
 
-            #  Call the Execute-Process function
+            #  Call the Start-ADTProcess function
             If ($PassThru) {
-                [PSObject]$ExecuteResults = Execute-Process @ExecuteProcessSplat
+                [PSObject]$ExecuteResults = Start-ADTProcess @ExecuteProcessSplat
             }
             Else {
-                Execute-Process @ExecuteProcessSplat
+                Start-ADTProcess @ExecuteProcessSplat
             }
             #  Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs
             Update-ADTDesktop
