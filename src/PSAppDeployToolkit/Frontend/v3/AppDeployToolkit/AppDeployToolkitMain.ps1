@@ -110,6 +110,9 @@ function Write-Log
 
     begin
     {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
+
         # Announce overall deprecation.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity 2 -Source $MyInvocation.MyCommand.Name -DebugMessage:$noDepWarnings
 
@@ -184,6 +187,9 @@ function Exit-Script
         [System.Int32]$ExitCode
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTSession]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -218,6 +224,9 @@ function Invoke-HKCURegistrySettingsForAllUsers
         [PSADT.Types.UserProfile[]]$UserProfiles
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryAction]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     $PSBoundParameters.ScriptBlock = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.ScriptBlock
     try
@@ -246,6 +255,9 @@ function Get-HardwarePlatform
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [`$envHardwareType]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
@@ -281,6 +293,9 @@ function Get-FreeDiskSpace
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFreeDiskSpace]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -323,6 +338,9 @@ function Remove-InvalidFileNameChars
 
     begin
     {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
+
         # Announce deprecation of function and set up accumulator for all piped in names.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         $names = [System.Collections.Specialized.StringCollection]::new()
@@ -389,6 +407,9 @@ function Get-InstalledApplication
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -489,6 +510,9 @@ function Remove-MSIApplications
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Uninstall-ADTApplication]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -613,6 +637,9 @@ function Get-FileVersion
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFileVersion]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
@@ -662,6 +689,9 @@ function Get-UserProfiles
         [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Translate parameters.
     $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
             if (!$PSBoundParameters."Exclude$_")
@@ -700,6 +730,9 @@ function Update-Desktop
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTDesktop]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -735,6 +768,9 @@ function Update-SessionEnvironmentVariables
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTEnvironmentPsProvider]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
@@ -797,6 +833,9 @@ function Copy-File
         [Parameter(Mandatory = $false)]
         [System.String]$RobocopyAdditionalParams
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFile]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -866,6 +905,9 @@ function Remove-File
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFile]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -950,6 +992,9 @@ function Copy-FileToUserProfiles
 
     begin
     {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
+
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
@@ -1074,6 +1119,9 @@ function Show-InstallationPrompt
         [System.Boolean]$TopMost
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationPrompt]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -1134,6 +1182,9 @@ function Show-InstallationProgress
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoRelocation
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -1197,6 +1248,9 @@ function Show-DialogBox
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$TopMost
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTDialogBox]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -1292,6 +1346,9 @@ function Show-InstallationWelcome
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationWelcome]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -1366,6 +1423,9 @@ function Get-WindowTitle
         [System.Management.Automation.SwitchParameter]$DisableFunctionLogging
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
     {
@@ -1417,6 +1477,9 @@ function Show-InstallationRestartPrompt
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoCountdown
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationRestartPrompt]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -1472,6 +1535,9 @@ function Show-BalloonTip
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTBalloonTip]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($NoWait)
     {
@@ -1505,6 +1571,9 @@ function Copy-ContentToCache
         [System.String]$Path
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTContentToCache]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -1534,6 +1603,9 @@ function Remove-ContentFromCache
         [System.String]$Path
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTContentFromCache]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -1554,6 +1626,9 @@ function Remove-ContentFromCache
 
 function Test-NetworkConnection
 {
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTNetworkConnection]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -1574,6 +1649,9 @@ function Test-NetworkConnection
 
 function Get-LoggedOnUser
 {
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTLoggedOnUser]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -1619,6 +1697,9 @@ function Get-IniValue
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTIniValue]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -1679,6 +1760,9 @@ function Set-IniValue
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTIniValue]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
@@ -1720,6 +1804,9 @@ function New-Folder
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -1752,6 +1839,9 @@ function New-Folder
 
 function Test-PowerPoint
 {
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-PowerPoint]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -1780,6 +1870,9 @@ function Update-GroupPolicy
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTGroupPolicy]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -1824,6 +1917,9 @@ function Get-UniversalDate
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $false
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUniversalDate]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -1873,6 +1969,9 @@ function Test-ServiceExists
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTServiceExists]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($ComputerName)
     {
@@ -1914,6 +2013,9 @@ function Disable-TerminalServerInstallMode
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Disable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -1953,6 +2055,9 @@ function Enable-TerminalServerInstallMode
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Enable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -2014,6 +2119,9 @@ function Configure-EdgeExtension
         [System.String]$MinimumVersionRequired
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [$($PSCmdlet.ParameterSetName)-ADTEdgeExtension]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
     try
@@ -2062,6 +2170,9 @@ function Resolve-Error
 
     begin
     {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
+
         # Announce overall deprecation and translate bad switches before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({ $PSBoundParameters.ContainsKey($_) }).ForEach({
@@ -2146,6 +2257,9 @@ function Get-ServiceStartMode
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($ComputerName)
@@ -2201,6 +2315,9 @@ function Set-ServiceStartMode
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -2296,6 +2413,9 @@ function Execute-Process
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $false
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce deprecation of this function.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -2416,6 +2536,9 @@ function Execute-MSI
         [System.Boolean]$ContinueOnError = $false
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce deprecation of this function.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMsiProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -2468,6 +2591,9 @@ function Execute-MSP
         [System.String]$AddParameters
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMspProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -2488,6 +2614,9 @@ function Execute-MSP
 
 function Unblock-AppExecution
 {
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unblock-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -2515,6 +2644,9 @@ function Block-AppExecution
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ProcessName
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Block-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
@@ -2557,6 +2689,9 @@ function Test-RegistryValue
 
     begin
     {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
+
         # Announce deprecation of function and set up accumulator for all piped in keys.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         $keys = [System.Collections.Generic.List[System.Object]]::new()
@@ -2617,6 +2752,9 @@ function Convert-RegistryPath
         [System.Boolean]$DisableFunctionLogging = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Convert-ADTRegistryPath]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
     {
@@ -2658,6 +2796,9 @@ function Test-MSUpdates
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -2696,6 +2837,9 @@ function Test-Battery
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTBattery]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
@@ -2748,6 +2892,9 @@ function Start-ServiceAndDependencies
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and dead parameters.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -2823,6 +2970,9 @@ function Stop-ServiceAndDependencies
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and dead parameters.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     $null = ('ComputerName', 'SkipServiceExistsTest').ForEach({
@@ -2896,6 +3046,9 @@ function Set-RegistryKey
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -2951,6 +3104,9 @@ function Remove-RegistryKey
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3020,6 +3176,9 @@ function Remove-FileFromUserProfiles
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and dead parameters.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
@@ -3087,6 +3246,9 @@ function Get-RegistryKey
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -3128,6 +3290,9 @@ function Install-MSUpdates
         [System.String]$Directory
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -3159,6 +3324,9 @@ function Get-SchedulerTask
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTSchedulerTask]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3192,6 +3360,9 @@ function Get-SchedulerTask
 
 function Get-PendingReboot
 {
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPendingReboot]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -3228,6 +3399,9 @@ function Invoke-RegisterOrUnregisterDLL
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTRegSvr32]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3273,6 +3447,9 @@ function Register-DLL
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Register-ADTDll]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -3316,6 +3493,9 @@ function Unregister-DLL
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unregister-ADTDll]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3364,6 +3544,9 @@ function Remove-Folder
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3442,6 +3625,9 @@ function Set-ActiveSetup
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTActiveSetup]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3528,6 +3714,9 @@ function Set-ItemPermission
         [System.Management.Automation.SwitchParameter]$EnableInheritance
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTItemPermission]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('Method'))
@@ -3578,6 +3767,9 @@ function New-MsiTransform
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTMsiTransform]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -3621,6 +3813,9 @@ function Invoke-SCCMTask
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTSCCMTask]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3670,6 +3865,9 @@ function Install-SCCMSoftwareUpdates
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTSCCMSoftwareUpdates]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3729,6 +3927,9 @@ function Send-Keys
         [System.Int32]$WaitSeconds
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     try
     {
@@ -3760,6 +3961,9 @@ function Get-Shortcut
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -3847,6 +4051,9 @@ function Set-Shortcut
 
     begin
     {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
+
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -3956,6 +4163,9 @@ function New-Shortcut
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -4034,6 +4244,9 @@ function Execute-ProcessAsUser
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcessAsUser]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -4090,6 +4303,9 @@ function Close-InstallationProgress
         [System.Int32]$WaitingTime = 5
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('WaitingTime'))
@@ -4138,6 +4354,9 @@ function ConvertTo-NTAccountOrSID
 
     begin
     {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
+
         # Announce overall deprecation and any dead parameters before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [ConvertTo-ADTNTAccountOrSID]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -4188,6 +4407,9 @@ function Get-DeferHistory
     (
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -4223,6 +4445,9 @@ function Set-DeferHistory
         [AllowEmptyString()]
         [System.String]$DeferDeadline
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -4278,6 +4503,9 @@ function Get-MsiTableProperty
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiTableProperty]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -4331,6 +4559,9 @@ function Set-MsiProperty
         [System.Boolean]$ContinueOnError = $true
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTMsiProperty]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -4371,6 +4602,9 @@ function Get-MsiExitCodeMessage
         [System.Int32]$MsiExitCode
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiExitCodeMessage]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -4409,6 +4643,9 @@ function Get-ObjectProperty
         [ValidateNotNullOrEmpty()]
         [System.Object[]]$ArgumentList
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTObjectProperty]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -4453,6 +4690,9 @@ function Invoke-ObjectMethod
         [System.Collections.Hashtable]$Parameter
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTObjectMethod]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -4493,6 +4733,9 @@ function Get-PEFileArchitecture
 
     begin
     {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
+
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPEFileArchitecture]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -4601,6 +4844,9 @@ function Test-IsMutexAvailable
         [System.TimeSpan]$MutexWaitTime
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce overall deprecation and any dead parameters before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMutexAvailability]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
@@ -4654,6 +4900,9 @@ function New-ZipFile
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
     )
+
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTZipFile]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
@@ -4720,6 +4969,9 @@ function Set-PinnedApplication
         [System.String]$FilePath
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     # Announce that this function is no more and therefore does nothing within the deployment script.
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been removed from PSAppDeployToolkit as its functionality no longer works with Windows 10 1809 or higher targets." -Severity 2
 }
@@ -4734,7 +4986,7 @@ function Set-PinnedApplication
 # Set required variables to ensure module functionality.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-Set-StrictMode -Version 1
+Set-StrictMode -Version 3
 
 # Import our module backend.
 Remove-Module -Name PSAppDeployToolkit* -Force
@@ -4766,6 +5018,7 @@ Open-ADTSession @sessionProps
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
 New-Variable -Name noDepWarnings -Value (($adtConfig = Get-ADTConfig).Toolkit.ContainsKey('WrapperWarnings') -and !$adtConfig.Toolkit.WrapperWarnings) -Option ReadOnly -Force
 Remove-Variable -Name adtWrapperFuncs, sessionProps, adtModule, adtConfig -Force -Confirm:$false
+Set-StrictMode -Version 1
 
 
 #---------------------------------------------------------------------------
