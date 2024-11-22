@@ -1437,3 +1437,95 @@ function Set-ServiceStartMode
     }
     Set-ADTServiceStartMode @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Start-ADTProcess
+#
+#---------------------------------------------------------------------------
+
+function Execute-Process
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [Alias('FilePath')]
+        [ValidateNotNullorEmpty()]
+        [Systen.String]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [Alias('Arguments')]
+        [ValidateNotNullorEmpty()]
+        [Systen.String[]]$Parameters,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SecureParameters,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Normal', 'Hidden', 'Maximized', 'Minimized')]
+        [Systen.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.Management.Automation.SwitchParameter]$CreateNoWindow,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.Management.Automation.SwitchParameter]$WorkingDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoWait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Systen.Int32]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Systen.String]$IgnoreExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
+        [Systen.Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Systen.Boolean]$ExitOnProcessFailure = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Systen.Boolean]$UseShellExecute = $false,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [Systen.Boolean]$ContinueOnError = $false
+    )
+
+    # Announce deprecation of this function.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Start-ADTProcess] instead." -Severity 2
+
+    # Convert out changed parameters.
+    if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
+    {
+        $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
+    }
+    if ($PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
+    {
+        $PSBoundParameters.NoExitOnProcessFailure = !$PSBoundParameters.ExitOnProcessFailure
+        [System.Void]$PSBoundParameters.Remove('ExitOnProcessFailure')
+    }
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::Continue} else {[System.Management.Automation.ActionPreference]::Stop}
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
+    # Invoke function with amended parameters.
+    Start-ADTProcess @PSBoundParameters
+}

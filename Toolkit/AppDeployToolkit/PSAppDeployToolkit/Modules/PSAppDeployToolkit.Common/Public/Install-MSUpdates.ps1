@@ -60,10 +60,10 @@ https://psappdeploytoolkit.com
                 Write-ADTLogEntry -Message "Installing [$redistDescription $redistVersion]..."
                 #  Handle older redistributables (ie, VC++ 2005)
                 If ($redistDescription -match 'Win32 Cabinet Self-Extractor') {
-                    Execute-Process -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                    Start-ADTProcess -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                 }
                 Else {
-                    Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                    Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                 }
             }
             Else {
@@ -79,11 +79,11 @@ https://psappdeploytoolkit.com
                     Switch ($file.Extension) {
                         #  Installation type for executables (i.e., Microsoft Office Updates)
                         '.exe' {
-                            Execute-Process -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                            Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
                         #  Installation type for Windows updates using Windows Update Standalone Installer
                         '.msu' {
-                            Execute-Process -Path (Get-ADTEnvironment).exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
+                            Start-ADTProcess -Path (Get-ADTEnvironment).exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
                         #  Installation type for Windows Installer Patch
                         '.msp' {

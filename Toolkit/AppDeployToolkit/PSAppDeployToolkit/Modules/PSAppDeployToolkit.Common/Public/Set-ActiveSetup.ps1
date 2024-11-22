@@ -444,10 +444,10 @@ https://psappdeploytoolkit.com
                     If ($InstallNeeded) {
                         Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
                         If ($CUArguments) {
-                            Execute-Process -FilePath $CUStubExePath -Parameters $CUArguments -ExitOnProcessFailure $false
+                            Start-ADTProcess -FilePath $CUStubExePath -Parameters $CUArguments -NoExitOnProcessFailure
                         }
                         Else {
-                            Execute-Process -FilePath $CUStubExePath -ExitOnProcessFailure $false
+                            Start-ADTProcess -FilePath $CUStubExePath -NoExitOnProcessFailure
                         }
 
                         Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCUActiveSetupKey]."

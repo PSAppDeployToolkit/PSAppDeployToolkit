@@ -314,7 +314,7 @@ https://psappdeploytoolkit.com
             Else {
                 Write-ADTLogEntry -Message "Creating scheduled task to execute [$Path] as the logged-on user [$userName]..."
             }
-            [PSObject]$schTaskResult = Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle 'Hidden' -CreateNoWindow -PassThru -ExitOnProcessFailure $false
+            [PSObject]$schTaskResult = Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/create /f /tn $schTaskName /xml `"$xmlSchTaskFilePath`"" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
                 Write-ADTLogEntry -Message "Failed to create the scheduled task by importing the scheduled task XML file [$xmlSchTaskFilePath]." -Severity 3
@@ -336,13 +336,13 @@ https://psappdeploytoolkit.com
             Else {
                 Write-ADTLogEntry -Message "Triggering execution of scheduled task with command [$Path] as the logged-on user [$userName]..."
             }
-            [PSObject]$schTaskResult = Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle 'Hidden' -CreateNoWindow -Passthru -ExitOnProcessFailure $false
+            [PSObject]$schTaskResult = Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/run /i /tn $schTaskName" -WindowStyle Hidden -CreateNoWindow -PassThru -NoExitOnProcessFailure
             If ($schTaskResult.ExitCode -ne 0) {
                 [Int32]$executeProcessAsUserExitCode = $schTaskResult.ExitCode
                 Write-ADTLogEntry -Message "Failed to trigger scheduled task [$schTaskName]." -Severity 3
                 #  Delete Scheduled Task
                 Write-ADTLogEntry -Message 'Deleting the scheduled task which did not trigger.'
-                Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ExitOnProcessFailure $false
+                Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle Hidden -CreateNoWindow -NoExitOnProcessFailure
                 If (-not $ContinueOnError) {
                     Throw "Failed to trigger scheduled task [$schTaskName]."
                 }
@@ -396,7 +396,7 @@ https://psappdeploytoolkit.com
             ## Delete scheduled task
             Try {
                 Write-ADTLogEntry -Message "Deleting scheduled task [$schTaskName]."
-                Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
+                Start-ADTProcess -Path $adtEnv.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
             }
             Catch {
                 Write-ADTLogEntry -Message "Failed to delete scheduled task [$schTaskName].`n$(Resolve-ADTError)" -Severity 3
