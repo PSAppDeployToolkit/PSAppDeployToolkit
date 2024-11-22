@@ -134,13 +134,13 @@ https://psappdeploytoolkit.com
         }
         Catch {
             If (-not $Name) {
-                Write-ADTLogEntry -Message "Failed to delete registry key [$Key]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to delete registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to delete registry key [$Key]: $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Failed to delete registry value [$Key] [$Name]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to delete registry value [$Key] [$Name].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to delete registry value [$Key] [$Name]: $($_.Exception.Message)"
                 }

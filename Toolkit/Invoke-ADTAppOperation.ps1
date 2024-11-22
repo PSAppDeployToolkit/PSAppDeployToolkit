@@ -296,7 +296,7 @@ try
 }
 catch
 {
-    Write-ADTLogEntry -Message ($mainErrorMessage = "$(Resolve-Error)") -Severity 3
+    Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTError) -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
     Close-ADTSession -ExitCode ($mainExitCode = 60001)
 }

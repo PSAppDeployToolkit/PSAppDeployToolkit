@@ -51,7 +51,7 @@
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Failed to create cache folder [$Path].`n$(Resolve-Error)" -Severity 3
+                    Write-ADTLogEntry -Message "Failed to create cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
                     throw
                 }
             }
@@ -70,7 +70,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to copy toolkit content to cache folder [$Path].`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to copy toolkit content to cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
             throw
         }
     }

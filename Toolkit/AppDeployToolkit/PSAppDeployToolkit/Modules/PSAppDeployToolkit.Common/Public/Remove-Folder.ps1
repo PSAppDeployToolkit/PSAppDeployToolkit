@@ -113,7 +113,7 @@ https://psappdeploytoolkit.com
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to delete folder(s) and file(s) from path [$path]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to delete folder(s) and file(s) from path [$path].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to delete folder(s) and file(s) from path [$path]: $($_.Exception.Message)"
                 }

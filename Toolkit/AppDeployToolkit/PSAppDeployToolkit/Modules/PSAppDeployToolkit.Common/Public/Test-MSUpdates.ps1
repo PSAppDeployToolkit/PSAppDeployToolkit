@@ -110,7 +110,7 @@ https://psappdeploytoolkit.com
                         }
                     }
                     If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
-                        Write-ADTLogEntry -Message "Discovered the following Microsoft Update: `r`n$($LatestUpdateHistory | Format-List | Out-String)"
+                        Write-ADTLogEntry -Message "Discovered the following Microsoft Update:`n$($LatestUpdateHistory | Format-List | Out-String)"
                         $kbFound = $true
                     }
                     $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
@@ -132,7 +132,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed discovering Microsoft Update [$kbNumber]. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed discovering Microsoft Update [$kbNumber].`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed discovering Microsoft Update [$kbNumber]: $($_.Exception.Message)"
             }

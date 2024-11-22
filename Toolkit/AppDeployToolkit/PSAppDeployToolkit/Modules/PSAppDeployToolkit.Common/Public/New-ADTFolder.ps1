@@ -56,7 +56,7 @@
         {
             if ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$')
             {
-                Write-ADTLogEntry -Message "Failed to create folder [$Path].`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to create folder [$Path].`n$(Resolve-ADTError)" -Severity 3
                 if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
                 {
                     throw

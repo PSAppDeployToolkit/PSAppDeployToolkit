@@ -142,7 +142,7 @@ https://psappdeploytoolkit.com
             Write-Output -InputObject ($Output)
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to read the shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to read the shortcut [$Path].`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to read the shortcut [$Path]: $($_.Exception.Message)"
             }

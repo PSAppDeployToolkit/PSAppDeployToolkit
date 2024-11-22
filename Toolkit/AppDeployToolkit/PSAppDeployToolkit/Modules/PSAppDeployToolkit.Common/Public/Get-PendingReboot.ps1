@@ -85,7 +85,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[DateTime]]$LastBootUpTime = $null
             [String[]]$PendRebootErrorMsg += "Failed to get LastBootUpTime: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get LastBootUpTime. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to get LastBootUpTime.`n$(Resolve-ADTError)" -Severity 3
         }
 
         ## Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation
@@ -102,7 +102,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[Boolean]]$IsCBServicingRebootPending = $null
             [String[]]$PendRebootErrorMsg += "Failed to get IsCBServicingRebootPending: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get IsCBServicingRebootPending. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to get IsCBServicingRebootPending.`n$(Resolve-ADTError)" -Severity 3
         }
 
         ## Determine if there is a pending reboot from a Windows Update
@@ -117,7 +117,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[Boolean]]$IsWindowsUpdateRebootPending = $null
             [String[]]$PendRebootErrorMsg += "Failed to get IsWindowsUpdateRebootPending: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get IsWindowsUpdateRebootPending. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to get IsWindowsUpdateRebootPending.`n$(Resolve-ADTError)" -Severity 3
         }
 
         ## Determine if there is a pending reboot from a pending file rename operation
@@ -132,7 +132,7 @@ https://psappdeploytoolkit.com
             }
             Catch {
                 [String[]]$PendRebootErrorMsg += "Failed to get PendingFileRenameOperations: $($_.Exception.Message)"
-                Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations.`n$(Resolve-ADTError)" -Severity 3
             }
         }
 
@@ -164,7 +164,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[Boolean]]$IsSCCMClientRebootPending = $null
             [String[]]$PendRebootErrorMsg += "Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTError)" -Severity 3
         }
 
         ## Determine if there is a pending reboot from an App-V global Pending Task. (User profile based tasks will complete on logoff/logon)
@@ -179,7 +179,7 @@ https://psappdeploytoolkit.com
         Catch {
             [Nullable[Boolean]]$IsAppVRebootPending = $null
             [String[]]$PendRebootErrorMsg += "Failed to get IsAppVRebootPending: $($_.Exception.Message)"
-            Write-ADTLogEntry -Message "Failed to get IsAppVRebootPending. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to get IsAppVRebootPending.`n$(Resolve-ADTError)" -Severity 3
         }
 
         ## Determine if there is a pending reboot for the system
@@ -201,7 +201,7 @@ https://psappdeploytoolkit.com
             PendingFileRenameOperations  = $PendingFileRenameOperations
             ErrorMsg                     = $PendRebootErrorMsg
         }
-        Write-ADTLogEntry -Message "Pending reboot status on the local computer [$ComputerName]: `r`n$($PendingRebootInfo | Format-List | Out-String)"
+        Write-ADTLogEntry -Message "Pending reboot status on the local computer [$ComputerName]:`n$($PendingRebootInfo | Format-List | Out-String)"
     }
     End {
         Write-Output -InputObject ($PendingRebootInfo | Select-Object -Property 'ComputerName', 'LastBootUpTime', 'IsSystemRebootPending', 'IsCBServicingRebootPending', 'IsWindowsUpdateRebootPending', 'IsSCCMClientRebootPending', 'IsAppVRebootPending', 'IsFileRenameRebootPending', 'PendingFileRenameOperations', 'ErrorMsg')

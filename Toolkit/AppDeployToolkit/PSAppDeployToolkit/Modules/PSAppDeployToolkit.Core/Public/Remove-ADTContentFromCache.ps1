@@ -46,7 +46,7 @@
         }
         catch
         {
-            Write-ADTLogEntry -Message "Failed to remove cache folder [$Path].`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to remove cache folder [$Path].`n$(Resolve-ADTError)" -Severity 3
             throw
         }
     }

@@ -79,7 +79,7 @@ https://psappdeploytoolkit.com
             Write-Output -InputObject ($ServiceStartMode)
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to get the service [$Name] startup mode. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to get the service [$Name] startup mode.`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to get the service [$Name] startup mode: $($_.Exception.Message)"
             }

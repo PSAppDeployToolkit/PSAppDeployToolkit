@@ -94,7 +94,7 @@
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2
+                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError)" -Severity 2
                 }
             }
             'NTAccountToSID' {
@@ -107,7 +107,7 @@
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem. `r`n$(Resolve-Error)" -Severity 2
+                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError)" -Severity 2
                 }
             }
             'WellKnownName' {
@@ -144,7 +144,7 @@
                 }
                 catch
                 {
-                    Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-Error)" -Severity 3
+                    Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTError)" -Severity 3
                 }
             }
         }

@@ -493,13 +493,13 @@ https://psappdeploytoolkit.com
         Catch {
             If ([String]::IsNullOrEmpty([String]$returnCode)) {
                 [Int32]$returnCode = 60002
-                Write-ADTLogEntry -Message "Function failed, setting exit code to [$returnCode]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Function failed, setting exit code to [$returnCode].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Function failed, setting exit code to [$returnCode]. $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Execution completed with exit code [$returnCode]. Function failed. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Execution completed with exit code [$returnCode]. Function failed.`n$(Resolve-ADTError)" -Severity 3
             }
 
             If ($PassThru) {

@@ -99,7 +99,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to retrieve scheduled tasks. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to retrieve scheduled tasks.`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to retrieve scheduled tasks: $($_.Exception.Message)"
             }

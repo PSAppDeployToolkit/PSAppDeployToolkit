@@ -82,12 +82,12 @@ https://psappdeploytoolkit.com
                     Write-ADTLogEntry -Message "Installed SCCM Client Version Number [$SCCMClientVersion]."
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2
+                    Write-ADTLogEntry -Message "Failed to determine the SCCM client version number.`n$(Resolve-ADTError)" -Severity 2
                     Throw 'Failed to determine the SCCM client version number.'
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2
+                Write-ADTLogEntry -Message "Failed to determine the SCCM client version number.`n$(Resolve-ADTError)" -Severity 2
                 Throw 'Failed to determine the SCCM client version number.'
             }
             #  If SCCM 2007 Client or lower, exit function
@@ -109,7 +109,7 @@ https://psappdeploytoolkit.com
                 [Management.ManagementObject[]]$CMMissingUpdates = @(Get-WmiObject -Namespace 'ROOT\CCM\ClientSDK' -Query "SELECT * FROM CCM_SoftwareUpdate WHERE ComplianceState = '0'" -ErrorAction 'Stop')
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to find the number of missing software updates. `r`n$(Resolve-Error)" -Severity 2
+                Write-ADTLogEntry -Message "Failed to find the number of missing software updates.`n$(Resolve-ADTError)" -Severity 2
                 Throw 'Failed to find the number of missing software updates.'
             }
 
@@ -131,7 +131,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to trigger installation of missing software updates. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to trigger installation of missing software updates.`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to trigger installation of missing software updates: $($_.Exception.Message)"
             }
