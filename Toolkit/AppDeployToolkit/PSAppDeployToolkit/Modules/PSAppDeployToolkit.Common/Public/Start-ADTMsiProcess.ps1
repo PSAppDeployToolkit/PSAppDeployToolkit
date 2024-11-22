@@ -198,7 +198,7 @@
         {
             # Resolve the product code to a publisher, application name, and version.
             Write-ADTLogEntry -Message 'Resolving product code to a publisher, application name, and version.'
-            $productCodeNameVersion = Get-ADTInstalledApplication -ProductCode $path -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
+            $productCodeNameVersion = Get-ADTInstalledApplication -ProductCode $Path -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
 
             # Build the log file name.
             if (!$LogName)
@@ -313,8 +313,8 @@
         }
         else
         {
-            Write-ADTLogEntry -Message "Failed to find MSI file [$path]." -Severity 3
-            throw [System.IO.FileNotFoundException]::new("Failed to find MSI file [$path].")
+            Write-ADTLogEntry -Message "Failed to find MSI file [$Path]." -Severity 3
+            throw [System.IO.FileNotFoundException]::new("Failed to find MSI file [$Path].")
         }
 
         # Set the working directory of the MSI.
@@ -358,7 +358,7 @@
         # Get the ProductCode of the MSI.
         $MSIProductCode = If ($pathIsProductCode)
         {
-            $path
+            $Path
         }
         elseif ([System.IO.Path]::GetExtension($msiFile) -eq '.msi')
         {

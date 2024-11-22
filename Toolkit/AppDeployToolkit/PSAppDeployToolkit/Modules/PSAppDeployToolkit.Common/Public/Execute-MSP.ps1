@@ -1,126 +1,113 @@
-﻿Function Execute-MSP {
+﻿function Start-ADTMspProcess
+{
     <#
-.SYNOPSIS
 
-Executes an MSP file using the same logic as Start-ADTMsiProcess.
+    .SYNOPSIS
+    Executes an MSP file using the same logic as Start-ADTMsiProcess.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products. If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
 
-Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products
-If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
-Uses default config MSI parameters. You can use -AddParameters to add additional parameters.
+    Uses default config MSI parameters. You can use -AddParameters to add additional parameters.
 
-.PARAMETER Path
+    .PARAMETER Path
+    Path to the msp file
 
-Path to the msp file
+    .PARAMETER AddParameters
+    Additional parameters
 
-.PARAMETER AddParameters
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Additional parameters
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.INPUTS
+    .EXAMPLE
+    Start-ADTMspProcess -Path 'Adobe_Reader_11.0.3_EN.msp'
 
-None
+    .EXAMPLE
+    Start-ADTMspProcess -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AddParameters 'ALLUSERS=1'
 
-You cannot pipe objects to this function.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.OUTPUTS
+    #>
 
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Execute-MSP -Path 'Adobe_Reader_11.0.3_EN.msp'
-
-.EXAMPLE
-
-Execute-MSP -Path 'AcroRdr2017Upd1701130143_MUI.msp' -AddParameters 'ALLUSERS=1'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
-        [ValidateScript({ ('.msp' -contains [IO.Path]::GetExtension($_)) })]
+        [ValidateScript({('.msp' -contains [System.IO.Path]::GetExtension($_))})]
         [Alias('FilePath')]
-        [String]$Path,
+        [System.String]$Path,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [String]$AddParameters
+        [System.String]$AddParameters
     )
 
-    Begin {
+    begin {
         $adtSession = Get-ADTSession
         Write-ADTDebugHeader
     }
-    Process {
-        ## If the MSP is in the Files directory, set the full path to the MSP
-        If (Test-Path -LiteralPath (Join-Path -Path $adtSession.GetPropertyValue('dirFiles') -ChildPath $path -ErrorAction 'Ignore') -PathType 'Leaf' -ErrorAction 'Ignore') {
-            [String]$mspFile = Join-Path -Path $adtSession.GetPropertyValue('dirFiles') -ChildPath $path
+
+    process {
+        # If the MSP is in the Files directory, set the full path to the MSP.
+        $mspFile = if ([System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('DirFiles'), $Path))))
+        {
+            $dirFilesPath
         }
-        ElseIf (Test-Path -LiteralPath $Path -ErrorAction 'Ignore') {
-            [String]$mspFile = (Get-Item -LiteralPath $Path).FullName
+        elseif (Test-Path -LiteralPath $Path)
+        {
+            (Get-Item -LiteralPath $Path).FullName
         }
-        Else {
-            Write-ADTLogEntry -Message "Failed to find MSP file [$path]." -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to find MSP file [$path]."
-            }
-            Continue
+        else
+        {
+            Write-ADTLogEntry -Message "Failed to find MSP file [$Path]." -Severity 3
+            throw [System.IO.FileNotFoundException]::new("Failed to find MSP file [$Path].")
         }
+
+        # Create a Windows Installer object and open the database in read-only mode.
         Write-ADTLogEntry -Message 'Checking MSP file for valid product codes.'
+        [__ComObject]$Installer = New-Object -ComObject WindowsInstaller.Installer
+        [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
 
-        [Boolean]$IsMSPNeeded = $false
+        # Get the SummaryInformation from the windows installer database and store all product codes found.
+        [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
+        $AllTargetedProductCodes = Get-ADTInstalledApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
 
-        ## Create a Windows Installer object
-        [__ComObject]$Installer = New-Object -ComObject 'WindowsInstaller.Installer' -ErrorAction 'Stop'
+        # Free our COM objects.
+        $null = try
+        {
+            [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation)
+        }
+        catch
+        {
+            $null
+        }
+        $null = try
+        {
+            [Runtime.Interopservices.Marshal]::ReleaseComObject($Database)
+        }
+        catch
+        {
+            $null
+        }
+        $null = try
+        {
+            [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer)
+        }
+        catch
+        {
+            $null
+        }
 
-        ## Define properties for how the MSI database is opened
-        [Int32]$msiOpenDatabaseModePatchFile = 32
-        [Int32]$msiOpenDatabaseMode = $msiOpenDatabaseModePatchFile
-        ## Open database in read only mode
-        [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName 'OpenDatabase' -ArgumentList @($mspFile, $msiOpenDatabaseMode)
-        ## Get the SummaryInformation from the windows installer database
-        [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName 'SummaryInformation'
-        [Hashtable]$SummaryInfoProperty = @{}
-        $AllTargetedProductCodes = (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName 'Property' -ArgumentList @(7)).Split(';')
-        ForEach ($FormattedProductCode in $AllTargetedProductCodes) {
-            [PSObject]$MSIInstalled = Get-ADTInstalledApplication -ProductCode $FormattedProductCode
-            If ($MSIInstalled) {
-                [Boolean]$IsMSPNeeded = $true
-            }
-        }
-        Try {
-            $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($SummaryInformation)
-        }
-        Catch {
-        }
-        Try {
-            $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Database)
-        }
-        Catch {
-        }
-        Try {
-            $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($Installer)
-        }
-        Catch {
-        }
-        If ($IsMSPNeeded) {
-            If ($AddParameters) {
-                Start-ADTMsiProcess -Action 'Patch' -Path $Path -AddParameters $AddParameters
-            }
-            Else {
-                Start-ADTMsiProcess -Action 'Patch' -Path $Path
-            }
+        # If the application is installed, patch it.
+        if ($AllTargetedProductCodes)
+        {
+            Start-ADTMsiProcess -Action Patch @PSBoundParameters
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
