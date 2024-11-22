@@ -1286,3 +1286,42 @@ function Enable-TerminalServerInstallMode
     }
     Enable-ADTTerminalServerInstallMode @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Add-ADTEdgeExtension and Remove-ADTEdgeExtension
+#
+#---------------------------------------------------------------------------
+
+function Configure-EdgeExtension
+{
+    param (
+        [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
+        [System.Management.Automation.SwitchParameter]$Add,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Remove')]
+        [System.Management.Automation.SwitchParameter]$Remove,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Remove')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ExtensionID,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
+        [ValidateSet('blocked', 'allowed', 'removed', 'force_installed', 'normal_installed')]
+        [System.String]$InstallationMode,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$UpdateUrl,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Add')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$MinimumVersionRequired
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [$($PSCmdlet.ParameterSetName)-ADTEdgeExtension] instead." -Severity 2
+    [System.Void]$PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
+    & "$($PSCmdlet.ParameterSetName)-ADTEdgeExtension" @PSBoundParameters
+}
