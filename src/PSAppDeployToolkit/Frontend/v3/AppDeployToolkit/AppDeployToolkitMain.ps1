@@ -747,8 +747,6 @@ function Update-Desktop
     }
 }
 
-Set-Alias -Name Refresh-Desktop -Value Update-Desktop
-
 
 #---------------------------------------------------------------------------
 #
@@ -785,8 +783,6 @@ function Update-SessionEnvironmentVariables
         }
     }
 }
-
-Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironmentPsProvider
 
 
 #---------------------------------------------------------------------------
@@ -5013,6 +5009,10 @@ Get-Variable -Name ($adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Val
 if ($sessionProps.ContainsKey('AppScriptDate') -and ($sessionProps.AppScriptDate -eq 'XX/XX/20XX')) { $null = $sessionProps.Remove('AppScriptDate') }
 if ($sessionProps.ContainsKey('DeployAppScriptParameters')) { $sessionProps.DeployAppScriptParameters = (Get-PSCallStack)[1].InvocationInfo.BoundParameters }
 Open-ADTSession @sessionProps
+
+# Define aliases for some functions to maintain backwards compatibility.
+Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironmentPsProvider -Option ReadOnly -Force
+Set-Alias -Name Refresh-Desktop -Value Update-Desktop -Option ReadOnly -Force
 
 # Finalize setup of AppDeployToolkitMain.ps1.
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
