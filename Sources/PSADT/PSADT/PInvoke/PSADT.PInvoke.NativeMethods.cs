@@ -2,10 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Security;
-using Microsoft.Win32.SafeHandles;
-using System.Runtime.InteropServices;
-using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 /// Some Native Method Declarations from:
 /// https://github.com/dahall/Vanara

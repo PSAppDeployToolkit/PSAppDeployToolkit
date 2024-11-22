@@ -1,7 +1,7 @@
-﻿using System;
-using System.Management.Automation;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Management.Automation;
 
 namespace PSADT.Shared
 {

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Diagnostics;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Collections.Concurrent;
 
 namespace PSADT.Timer

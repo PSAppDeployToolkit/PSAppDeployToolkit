@@ -1,7 +1,7 @@
-﻿using System;
+using System;
+using System.Runtime.InteropServices;
 using PSADT.PInvoke;
 using Microsoft.Win32.SafeHandles;
-using System.Runtime.InteropServices;
 
 namespace PSADT.Trust
 {

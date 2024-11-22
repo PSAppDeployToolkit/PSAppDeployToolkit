@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Security;
-using Microsoft.Win32;
+using System.Security.AccessControl;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Security.AccessControl;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using PSADT.PInvoke;
 using PSADT.Logging;
 using PSADT.Diagnostics.Validation;

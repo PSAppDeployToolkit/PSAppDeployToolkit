@@ -7,16 +7,6 @@ using PSADT.CommandLine;
 using System.Threading.Tasks;
 using PSADT.Logging;
 
-using System.Net;
-using System.Collections;
-using System.ComponentModel;
-using System.DirectoryServices;
-using System.Security.Principal;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
-
 namespace PSADT
 {
     /// <summary>

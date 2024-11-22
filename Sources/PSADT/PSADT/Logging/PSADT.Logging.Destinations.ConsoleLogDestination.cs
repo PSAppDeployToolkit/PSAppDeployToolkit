@@ -1,8 +1,8 @@
-﻿using System;
-using PSADT.Logging.Models;
-using System.Threading.Tasks;
-using PSADT.Logging.Interfaces;
+using System;
 using System.Threading;
+using System.Threading.Tasks;
+using PSADT.Logging.Models;
+using PSADT.Logging.Interfaces;
 
 namespace PSADT.Logging.Destinations
 {

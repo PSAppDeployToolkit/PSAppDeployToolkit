@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Globalization;
+using System.Collections.Generic;
 
 namespace PSADT.Diagnostics.StackTraces
 {

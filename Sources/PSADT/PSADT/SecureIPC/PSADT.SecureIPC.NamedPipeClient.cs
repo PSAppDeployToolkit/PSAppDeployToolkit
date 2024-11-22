@@ -1,9 +1,8 @@
-﻿using PSADT.Shared;
 using System;
 using System.IO.Pipes;
-using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
+using PSADT.Shared;
 
 namespace PSADT.SecureIPC
 {

@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Collections.Generic;
-using System.Management.Automation;
 using System.Collections.Concurrent;
+using System.Management.Automation;
+using System.Runtime.CompilerServices;
 using PSADT.Logging.Models;
 using PSADT.Logging.Utilities;
 using PSADT.Logging.Interfaces;
 using PSADT.Logging.Destinations;
 using PSADT.Diagnostics.StackTraces;
-using System.Runtime.CompilerServices;
-using System.Diagnostics;
 
 namespace PSADT.Logging
 {

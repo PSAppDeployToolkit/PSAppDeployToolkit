@@ -1,10 +1,8 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
 using PSADT.Logging.Models;
 using PSADT.Logging.Interfaces;
-using PSADT.Logging.Destinations;
 using PSADT.Diagnostics.StackTraces;
 
 namespace PSADT.Logging

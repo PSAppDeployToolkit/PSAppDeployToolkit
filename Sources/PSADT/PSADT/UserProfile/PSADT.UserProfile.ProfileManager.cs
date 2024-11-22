@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
-using PSADT.Account;
 using System.Security;
 using System.Collections.Generic;
+using PSADT.Account;
 
 namespace PSADT.UserProfile
 {

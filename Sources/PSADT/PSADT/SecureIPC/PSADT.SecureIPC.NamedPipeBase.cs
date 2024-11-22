@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.IO.Pipes;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Diagnostics;
 using System.ComponentModel;
-using System.Threading.Tasks;
-using Microsoft.Win32.SafeHandles;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using PSADT.Trust;
 using PSADT.PathEx;
 using PSADT.PInvoke;

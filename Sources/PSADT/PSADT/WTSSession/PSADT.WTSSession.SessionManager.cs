@@ -1,9 +1,6 @@
 using System;
 using System.Net;
 using System.Linq;
-using PSADT.PInvoke;
-using PSADT.AccessToken;
-using PSADT.OperatingSystem;
 using System.ComponentModel;
 using System.Security.Principal;
 using System.Collections.Generic;
@@ -11,6 +8,8 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.Logging;
 using PSADT.Account;
+using PSADT.PInvoke;
+using PSADT.OperatingSystem;
 
 namespace PSADT.WTSSession
 {

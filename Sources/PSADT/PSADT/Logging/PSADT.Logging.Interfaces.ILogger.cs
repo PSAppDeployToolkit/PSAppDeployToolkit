@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Management.Automation;
 using PSADT.Diagnostics.StackTraces;
-using PSADT.Logging.Models;
 
 namespace PSADT.Logging.Interfaces
 {

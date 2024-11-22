@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Globalization;
-using Microsoft.PowerShell;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
+using Microsoft.PowerShell;
 
 
 namespace PSADT.PowerShellHost
