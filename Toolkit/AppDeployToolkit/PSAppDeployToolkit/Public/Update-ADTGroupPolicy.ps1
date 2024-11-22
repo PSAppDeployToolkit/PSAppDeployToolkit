@@ -39,7 +39,7 @@
     process {
         foreach ($target in ('Computer', 'User'))
         {
-            Write-ADTLogEntry -Message ($msg = "Updating Group Policies for the $target")
+            Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $target"))."
             [System.Void](cmd.exe /c "echo N | gpupdate.exe /Target:$target /Force")
             if ($LASTEXITCODE -and ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$'))
             {
