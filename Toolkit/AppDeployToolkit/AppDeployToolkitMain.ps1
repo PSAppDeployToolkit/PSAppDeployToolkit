@@ -1230,3 +1230,59 @@ function Test-ServiceExists
         }
     }
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Disable-ADTTerminalServerInstallMode
+#
+#---------------------------------------------------------------------------
+
+function Disable-TerminalServerInstallMode
+{
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Disable-ADTTerminalServerInstallMode] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Disable-ADTTerminalServerInstallMode @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Disable-ADTTerminalServerInstallMode
+#
+#---------------------------------------------------------------------------
+
+function Enable-TerminalServerInstallMode
+{
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Enable-ADTTerminalServerInstallMode] instead." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Enable-ADTTerminalServerInstallMode @PSBoundParameters
+}
