@@ -26,7 +26,7 @@ function Copy-ADTFile
         Flattens the files into the root destination directory.
 
     .PARAMETER ContinueFileCopyOnError
-        If Path is an array, continue copying files if an error is encountered.
+        Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied.
 
     .PARAMETER FileCopyMode
         Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.

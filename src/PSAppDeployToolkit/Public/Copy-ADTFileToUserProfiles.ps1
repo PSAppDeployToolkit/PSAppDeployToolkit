@@ -29,7 +29,7 @@ function Copy-ADTFileToUserProfiles
         Flattens the files into the root destination directory.
 
     .PARAMETER ContinueFileCopyOnError
-        Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied. Default is: $false.
+        Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied.
 
     .PARAMETER FileCopyMode
         Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.
