@@ -2,12 +2,12 @@
     <#
 .SYNOPSIS
 
-Executes an MSP file using the same logic as Execute-MSI.
+Executes an MSP file using the same logic as Start-ADTMsiProcess.
 
 .DESCRIPTION
 
 Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products
-If a valid installed product is found, triggers the Execute-MSI function to patch the installation.
+If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
 Uses default config MSI parameters. You can use -AddParameters to add additional parameters.
 
 .PARAMETER Path
@@ -113,10 +113,10 @@ https://psappdeploytoolkit.com
         }
         If ($IsMSPNeeded) {
             If ($AddParameters) {
-                Execute-MSI -Action 'Patch' -Path $Path -AddParameters $AddParameters
+                Start-ADTMsiProcess -Action 'Patch' -Path $Path -AddParameters $AddParameters
             }
             Else {
-                Execute-MSI -Action 'Patch' -Path $Path
+                Start-ADTMsiProcess -Action 'Patch' -Path $Path
             }
         }
     }

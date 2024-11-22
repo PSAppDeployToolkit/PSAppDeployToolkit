@@ -1451,19 +1451,19 @@ function Execute-Process
         [Parameter(Mandatory = $true)]
         [Alias('FilePath')]
         [ValidateNotNullorEmpty()]
-        [Systen.String]$Path,
+        [System.String]$Path,
 
         [Parameter(Mandatory = $false)]
         [Alias('Arguments')]
         [ValidateNotNullorEmpty()]
-        [Systen.String[]]$Parameters,
+        [System.String[]]$Parameters,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SecureParameters,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Hidden', 'Maximized', 'Minimized')]
-        [Systen.Diagnostics.ProcessWindowStyle]$WindowStyle = 'Normal',
+        [System.Diagnostics.ProcessWindowStyle]$WindowStyle,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
@@ -1484,27 +1484,27 @@ function Execute-Process
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Systen.Int32]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
+        [System.Int32]$MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Systen.String]$IgnoreExitCodes,
+        [System.String]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
-        [Systen.Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
+        [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Systen.Boolean]$ExitOnProcessFailure = $true,
+        [System.Boolean]$ExitOnProcessFailure = $true,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Systen.Boolean]$UseShellExecute = $false,
+        [System.Boolean]$UseShellExecute,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullorEmpty()]
-        [Systen.Boolean]$ContinueOnError = $false
+        [System.Boolean]$ContinueOnError
     )
 
     # Announce deprecation of this function.
@@ -1528,4 +1528,112 @@ function Execute-Process
 
     # Invoke function with amended parameters.
     Start-ADTProcess @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Start-ADTMsiProcess
+#
+#---------------------------------------------------------------------------
+
+function Execute-MSI
+{
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
+        [System.String]$Action,
+
+        [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
+        [ValidateScript({($_ -match (Get-ADTEnvironment).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_))})]
+        [Alias('FilePath')]
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Transform,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Alias('Arguments')]
+        [System.String]$Parameters,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AddParameters,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$SecureParameters,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Patch,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$LoggingOptions,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$LogName,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$WorkingDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SkipMSIAlreadyInstalledCheck,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoWait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$IgnoreExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
+        [Diagnostics.ProcessPriorityClass]$PriorityClass,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExitOnProcessFailure = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$RepairFromSource,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError
+    )
+
+    # Announce deprecation of this function.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Start-ADTMsiProcess] instead." -Severity 2
+
+    # Convert out changed parameters.
+    if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
+    {
+        $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
+    }
+    if ($PSBoundParameters.ContainsKey('ExitOnProcessFailure'))
+    {
+        $PSBoundParameters.NoExitOnProcessFailure = !$PSBoundParameters.ExitOnProcessFailure
+        [System.Void]$PSBoundParameters.Remove('ExitOnProcessFailure')
+    }
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        $PSBoundParameters.ErrorAction = if ($ContinueOnError) {[System.Management.Automation.ActionPreference]::Continue} else {[System.Management.Automation.ActionPreference]::Stop}
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
+    # Invoke function with amended parameters.
+    Start-ADTMsiProcess @PSBoundParameters
 }

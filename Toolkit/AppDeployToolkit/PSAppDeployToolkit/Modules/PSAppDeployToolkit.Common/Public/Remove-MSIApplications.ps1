@@ -290,7 +290,7 @@ https://psappdeploytoolkit.com
             }
         }
 
-        ## Build the hashtable with the options that will be passed to Execute-MSI using splatting
+        ## Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
         [Hashtable]$ExecuteMSISplat = @{
             Action          = 'Uninstall'
             Path            = ''
@@ -320,10 +320,10 @@ https://psappdeploytoolkit.com
                 Write-ADTLogEntry -Message "Removing application [$($removeMSIApplication.DisplayName) $($removeMSIApplication.Version)]."
                 $ExecuteMSISplat.Path = $removeMSIApplication.ProductCode
                 If ($PassThru) {
-                    [PSObject[]]$ExecuteResults += Execute-MSI @ExecuteMSISplat
+                    [PSObject[]]$ExecuteResults += Start-ADTMsiProcess @ExecuteMSISplat
                 }
                 Else {
-                    Execute-MSI @ExecuteMSISplat
+                    Start-ADTMsiProcess @ExecuteMSISplat
                 }
             }
         }

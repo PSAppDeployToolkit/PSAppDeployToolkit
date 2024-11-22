@@ -87,7 +87,7 @@ https://psappdeploytoolkit.com
                         }
                         #  Installation type for Windows Installer Patch
                         '.msp' {
-                            Execute-MSI -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
+                            Start-ADTMsiProcess -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
                         }
                     }
                 }
