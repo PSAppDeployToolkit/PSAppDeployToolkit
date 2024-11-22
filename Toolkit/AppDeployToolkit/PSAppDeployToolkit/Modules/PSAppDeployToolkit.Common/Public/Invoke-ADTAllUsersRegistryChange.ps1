@@ -46,7 +46,7 @@
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.ScriptBlock]$RegistrySettings,
+        [System.Management.Automation.ScriptBlock[]]$RegistrySettings,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -97,7 +97,7 @@
 
                 # Invoke changes against registry.
                 Write-ADTLogEntry -Message 'Executing scriptblock to modify HKCU registry settings for all users.'
-                ForEach-Object -InputObject $UserProfile -Process $RegistrySettings
+                ForEach-Object -InputObject $UserProfile -Begin $null -End $null -Process $RegistrySettings
             }
             catch
             {

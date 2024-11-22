@@ -250,14 +250,8 @@ function Invoke-HKCURegistrySettingsForAllUsers
     )
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use [Invoke-ADTAllUsersRegistryChange] instead." -Severity 2
-
-    if ($RegistrySettings -match '\$UserProfile\.SID') {
-        $RegistrySettings = [scriptblock]::Create("`$UserProfile = `$_`n$RegistrySettings")
-    }
-    $SplatParams = @{ RegistrySettings = $RegistrySettings }
-    if ($UserProfiles) { $SplatParams.UserProfiles = $UserProfiles }
-
-    Invoke-ADTAllUsersRegistryChange @SplatParams
+    $PSBoundParameters.RegistrySettings = {$UserProfile = $_}, $PSBoundParameters.RegistrySettings
+    Invoke-ADTAllUsersRegistryChange @PSBoundParameters
 }
 
 
