@@ -82,12 +82,12 @@ https://psappdeploytoolkit.com
                     Write-ADTLogEntry -Message "Installed SCCM Client Version Number [$SCCMClientVersion]."
                 }
                 Else {
-                    Write-ADTLogEntry -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2
+                    Write-ADTLogEntry -Message "Failed to determine the SCCM client version number.`n$(Resolve-ADTError)" -Severity 2
                     Throw 'Failed to determine the SCCM client version number.'
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to determine the SCCM client version number. `r`n$(Resolve-Error)" -Severity 2
+                Write-ADTLogEntry -Message "Failed to determine the SCCM client version number.`n$(Resolve-ADTError)" -Severity 2
                 Throw 'Failed to determine the SCCM client version number.'
             }
 
@@ -139,7 +139,7 @@ https://psappdeploytoolkit.com
             $null = $SmsClient.TriggerSchedule($ScheduleIds.$ScheduleID)
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)].`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to trigger SCCM Schedule Task ID [$($ScheduleIds.$ScheduleId)]: $($_.Exception.Message)"
             }

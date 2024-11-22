@@ -68,7 +68,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Error retrieving/deleting Scheduled Task.`r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Error retrieving/deleting Scheduled Task.`n$(Resolve-ADTError)" -Severity 3
         }
 
         ## Remove BlockAppExecution Schedule Task XML file

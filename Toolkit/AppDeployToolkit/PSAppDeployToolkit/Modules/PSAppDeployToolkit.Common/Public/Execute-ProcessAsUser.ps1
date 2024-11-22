@@ -295,7 +295,7 @@ https://psappdeploytoolkit.com
             }
             Catch {
                 [Int32]$executeProcessAsUserExitCode = 60007
-                Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]: $($_.Exception.Message)"
                 }
@@ -368,7 +368,7 @@ https://psappdeploytoolkit.com
                         [Int32]$executeProcessAsUserExitCode = $Task.LastTaskResult
                     }
                     Catch {
-                        Write-ADTLogEntry -Message "Failed to retrieve information from Task Scheduler. `r`n$(Resolve-Error)" -Severity 3
+                        Write-ADTLogEntry -Message "Failed to retrieve information from Task Scheduler.`n$(Resolve-ADTError)" -Severity 3
                     }
                     Finally {
                         Try {
@@ -399,7 +399,7 @@ https://psappdeploytoolkit.com
                 Execute-Process -Path $adtEnv.exeSchTasks -Parameters "/delete /tn $schTaskName /f" -WindowStyle 'Hidden' -CreateNoWindow -ErrorAction 'Stop'
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to delete scheduled task [$schTaskName]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to delete scheduled task [$schTaskName].`n$(Resolve-ADTError)" -Severity 3
             }
 
             ## Remove the XML scheduled task file

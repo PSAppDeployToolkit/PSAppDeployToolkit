@@ -139,7 +139,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to stop the service [$Name]. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to stop the service [$Name].`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to stop the service [$Name]: $($_.Exception.Message)"
             }

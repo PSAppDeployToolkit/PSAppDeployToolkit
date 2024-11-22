@@ -104,7 +104,7 @@ https://psappdeploytoolkit.com
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to perform action [$Verb] on [$FilePath]. `r`n$(Resolve-Error)" -Severity 2
+                Write-ADTLogEntry -Message "Failed to perform action [$Verb] on [$FilePath].`n$(Resolve-ADTError)" -Severity 2
             }
         }
         #endregion
@@ -200,7 +200,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to execute action [$Action]. `r`n$(Resolve-Error)" -Severity 2
+            Write-ADTLogEntry -Message "Failed to execute action [$Action].`n$(Resolve-ADTError)" -Severity 2
         }
         Finally {
             Try {

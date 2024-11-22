@@ -28,7 +28,7 @@
     }
     catch
     {
-        Write-ADTLogEntry -Message "There was an error in displaying the Installation Prompt.`n$(Resolve-Error)" -Severity 3
+        Write-ADTLogEntry -Message "There was an error in displaying the Installation Prompt.`n$(Resolve-ADTError)" -Severity 3
         exit 60005
     }
     finally

@@ -165,13 +165,13 @@ https://psappdeploytoolkit.com
         }
         Catch {
             If ($Name) {
-                Write-ADTLogEntry -Message "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]: $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Failed to set registry key [$key]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to set registry key [$key].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to set registry key [$key]: $($_.Exception.Message)"
                 }

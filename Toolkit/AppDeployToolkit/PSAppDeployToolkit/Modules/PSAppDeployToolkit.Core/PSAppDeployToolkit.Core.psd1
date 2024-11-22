@@ -86,7 +86,7 @@ FunctionsToExport = @(
     'Remove-ADTContentFromCache'
     'Remove-ADTInvalidFileNameChars'
     'Resolve-ADTBoundParameters'
-    'Resolve-Error'
+    'Resolve-ADTError'
     'Show-ADTDialogBox'
     'Show-ADTHelpConsole'
     'Update-ADTSessionInstallPhase'

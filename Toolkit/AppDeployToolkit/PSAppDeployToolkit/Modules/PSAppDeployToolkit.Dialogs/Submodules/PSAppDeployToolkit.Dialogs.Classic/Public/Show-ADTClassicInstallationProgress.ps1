@@ -223,7 +223,7 @@
             {
                 if ($Script:ProgressWindow.SyncHash.ContainsKey('Error') -and $Script:ProgressWindow.SyncHash.Error.Count)
                 {
-                    Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-Error -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3
+                    Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-ADTError -ErrorRecord $Script:ProgressWindow.SyncHash.Error)" -Severity 3
                     Close-ADTClassicInstallationProgress
                     break
                 }
@@ -235,7 +235,7 @@
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-Error -ErrorRecord $_)" -Severity 3
+                        Write-ADTLogEntry -Message "Failure while displaying progress dialog.`n$(Resolve-ADTError -ErrorRecord $_)" -Severity 3
                     }
                     finally
                     {

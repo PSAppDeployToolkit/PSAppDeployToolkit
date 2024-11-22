@@ -146,7 +146,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to $($DLLAction.ToLower()) DLL file. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to $($DLLAction.ToLower()) DLL file.`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to $($DLLAction.ToLower()) DLL file: $($_.Exception.Message)"
             }

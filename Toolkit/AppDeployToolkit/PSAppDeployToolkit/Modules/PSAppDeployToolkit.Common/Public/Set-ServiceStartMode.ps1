@@ -90,7 +90,7 @@ https://psappdeploytoolkit.com
             Write-ADTLogEntry -Message "Successfully set service [$Name] startup mode to [$StartMode]."
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to set service [$Name] startup mode to [$StartMode]. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to set service [$Name] startup mode to [$StartMode].`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to set service [$Name] startup mode to [$StartMode]: $($_.Exception.Message)"
             }

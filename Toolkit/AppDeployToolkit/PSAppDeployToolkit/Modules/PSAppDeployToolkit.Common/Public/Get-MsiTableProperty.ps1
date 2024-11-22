@@ -196,7 +196,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to get the MSI table [$Table]. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to get the MSI table [$Table].`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to get the MSI table [$Table]: $($_.Exception.Message)"
             }

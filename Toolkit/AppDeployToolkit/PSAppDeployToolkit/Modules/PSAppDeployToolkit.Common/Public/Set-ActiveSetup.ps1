@@ -460,7 +460,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to set Active Setup registry entry. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to set Active Setup registry entry.`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to set Active Setup registry entry: $($_.Exception.Message)"
             }

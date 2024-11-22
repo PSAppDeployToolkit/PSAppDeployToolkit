@@ -190,13 +190,13 @@ https://psappdeploytoolkit.com
         }
         Catch {
             If (-not $Value) {
-                Write-ADTLogEntry -Message "Failed to read registry key [$key]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to read registry key [$key].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to read registry key [$key]: $($_.Exception.Message)"
                 }
             }
             Else {
-                Write-ADTLogEntry -Message "Failed to read registry key [$key] value [$value]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to read registry key [$key] value [$value].`n$(Resolve-ADTError)" -Severity 3
                 If (-not $ContinueOnError) {
                     Throw "Failed to read registry key [$key] value [$value]: $($_.Exception.Message)"
                 }

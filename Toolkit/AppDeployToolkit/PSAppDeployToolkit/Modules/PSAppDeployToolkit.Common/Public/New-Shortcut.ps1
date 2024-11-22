@@ -156,7 +156,7 @@ https://psappdeploytoolkit.com
                 }
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory].`n$(Resolve-ADTError)" -Severity 3
                 Throw
             }
 
@@ -233,7 +233,7 @@ https://psappdeploytoolkit.com
             }
         }
         Catch {
-            Write-ADTLogEntry -Message "Failed to create shortcut [$Path]. `r`n$(Resolve-Error)" -Severity 3
+            Write-ADTLogEntry -Message "Failed to create shortcut [$Path].`n$(Resolve-ADTError)" -Severity 3
             If (-not $ContinueOnError) {
                 Throw "Failed to create shortcut [$Path]: $($_.Exception.Message)"
             }

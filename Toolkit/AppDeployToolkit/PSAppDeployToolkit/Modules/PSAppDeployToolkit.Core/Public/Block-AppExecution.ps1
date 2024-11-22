@@ -168,7 +168,7 @@ https://psappdeploytoolkit.com
                 [String]$xmlUnblockAppsSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
             }
             Catch {
-                Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath]. `r`n$(Resolve-Error)" -Severity 3
+                Write-ADTLogEntry -Message "Failed to export the scheduled task XML file [$xmlSchTaskFilePath].`n$(Resolve-ADTError)" -Severity 3
                 Return
             }
 

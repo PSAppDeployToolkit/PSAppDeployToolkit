@@ -217,7 +217,7 @@ https://psappdeploytoolkit.com
                                 }
                             }
                             default {
-                                Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3
+                                Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTError)" -Severity 3
                                 If (-not $ContinueOnError) {
                                     Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                                 }
@@ -226,7 +226,7 @@ https://psappdeploytoolkit.com
                     }
                 }
                 Catch {
-                    Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3
+                    Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTError)" -Severity 3
                     If (-not $ContinueOnError) {
                         Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                     }
@@ -278,14 +278,14 @@ https://psappdeploytoolkit.com
                     }
 
                     If ($FileCopyError) {
-                        Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination]. `r`n$FileCopyError" -Severity 2
+                        Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n$FileCopyError" -Severity 2
                     }
                     Else {
                         Write-ADTLogEntry -Message 'File copy completed successfully.'
                     }
                 }
                 Catch {
-                    Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination]. `r`n$(Resolve-Error)" -Severity 3
+                    Write-ADTLogEntry -Message "Failed to copy file(s) in path [$srcPath] to destination [$Destination].`n$(Resolve-ADTError)" -Severity 3
                     If (-not $ContinueOnError) {
                         Throw "Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $($_.Exception.Message)"
                     }
