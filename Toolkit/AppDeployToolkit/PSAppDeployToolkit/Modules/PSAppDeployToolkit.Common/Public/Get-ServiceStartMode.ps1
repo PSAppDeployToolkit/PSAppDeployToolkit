@@ -1,91 +1,81 @@
-﻿Function Get-ServiceStartMode {
+﻿function Get-ADTServiceStartMode
+{
     <#
-.SYNOPSIS
 
-Get the service startup mode.
+    .SYNOPSIS
+    Get the service startup mode.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Get the service startup mode.
 
-Get the service startup mode.
+    .PARAMETER Name
+    Specify the name of the service.
 
-.PARAMETER Name
+    .PARAMETER ComputerName
+    Specify the name of the computer. Default is: the local computer.
 
-Specify the name of the service.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER ComputerName
+    .OUTPUTS
+    System.ServiceProcess.ServiceController. Returns the service object.
 
-Specify the name of the computer. Default is: the local computer.
+    .EXAMPLE
+    Get-ADTServiceStartMode -Name 'wuauserv'
 
-.PARAMETER ContinueOnError
+    .LINK
+    https://psappdeploytoolkit.com
 
-Continue if an error is encountered. Default is: $true.
+    #>
 
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.ServiceProcess.ServiceController.
-
-Returns the service object.
-
-.EXAMPLE
-
-Get-ServiceStartMode -Name 'wuauserv'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
-    [CmdLetBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [String]$Name,
+        [System.String]$Name,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$ComputerName = $env:ComputerName,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.String]$ComputerName
     )
-    Begin {
+
+    begin {
+        # Make this function continue on error.
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+        if (!$PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Continue
+        }
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
+
+    process {
+        try
+        {
+            # Get the start mode and adjust it if the automatic type is delayed.
             Write-ADTLogEntry -Message "Getting the service [$Name] startup mode."
-            [String]$ServiceStartMode = (Get-WmiObject -ComputerName $ComputerName -Class 'Win32_Service' -Filter "Name='$Name'" -Property 'StartMode' -ErrorAction 'Stop').StartMode
-            ## If service start mode is set to 'Auto', change value to 'Automatic' to be consistent with 'Set-ServiceStartMode' function
-            If ($ServiceStartMode -eq 'Auto') {
-                $ServiceStartMode = 'Automatic'
+            if ((($serviceStartMode = (Get-Service @PSBoundParameters).StartType) -eq 'Automatic') -and (Get-ItemProperty -LiteralPath "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1)
+            {
+                $serviceStartMode = 'Automatic (Delayed Start)'
             }
 
-            ## If on Windows Vista or higher, check to see if service is set to Automatic (Delayed Start)
-            If (($ServiceStartMode -eq 'Automatic') -and ((Get-ADTEnvironment).envOSVersionMajor -gt 5)) {
-                [String]$ServiceRegistryPath = "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$Name"
-                [Int32]$DelayedAutoStart = Get-ItemProperty -LiteralPath $ServiceRegistryPath -ErrorAction Ignore | Select-Object -ExpandProperty 'DelayedAutoStart' -ErrorAction Ignore
-                If ($DelayedAutoStart -eq 1) {
-                    $ServiceStartMode = 'Automatic (Delayed Start)'
-                }
-            }
-
-            Write-ADTLogEntry -Message "Service [$Name] startup mode is set to [$ServiceStartMode]."
-            Write-Output -InputObject ($ServiceStartMode)
+            # Return startup type to the caller.
+            Write-ADTLogEntry -Message "Service [$Name] startup mode is set to [$serviceStartMode]."
+            return $serviceStartMode
         }
-        Catch {
-            Write-ADTLogEntry -Message "Failed to get the service [$Name] startup mode.`n$(Resolve-ADTError)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to get the service [$Name] startup mode: $($_.Exception.Message)"
+        catch
+        {
+            if ($PSBoundParameters.ErrorAction -notmatch '^(Ignore|SilentlyContinue)$')
+            {
+                Write-ADTLogEntry -Message "Failed to get the service [$Name] startup mode.`n$(Resolve-ADTError)" -Severity 3
+                if ($PSBoundParameters.ErrorAction.Equals([System.Management.Automation.ActionPreference]::Stop))
+                {
+                    throw
+                }
             }
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
