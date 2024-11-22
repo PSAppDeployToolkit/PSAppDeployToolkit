@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using PSADT.PInvoke;
 using PSADT.Shared;
+using PSADT.PInvoke;
 
 namespace PSADT.OperatingSystem
 {

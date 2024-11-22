@@ -1,5 +1,4 @@
 using System;
-using PSADT.WTSSession;
 
 namespace PSADT.WTSSession
 {

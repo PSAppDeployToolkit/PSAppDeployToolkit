@@ -1,13 +1,13 @@
 using System;
-using PSADT.PInvoke;
 using System.Threading;
-using System.ComponentModel;
 using System.Threading.Tasks;
+using System.ComponentModel;
 using System.Security.Principal;
-using Microsoft.Win32.SafeHandles;
-using System.Runtime.InteropServices;
-using PSADT.Shared;
 using System.Management.Automation;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+using PSADT.Shared;
+using PSADT.PInvoke;
 
 namespace PSADT.AccessToken
 {

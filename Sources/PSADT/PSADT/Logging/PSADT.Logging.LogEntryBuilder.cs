@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Management.Automation;
-using PSADT.Diagnostics.StackTraces;
 using System.Runtime.CompilerServices;
+using PSADT.Diagnostics.StackTraces;
 
 namespace PSADT.Logging
 {

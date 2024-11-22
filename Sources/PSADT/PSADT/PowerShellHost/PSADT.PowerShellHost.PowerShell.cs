@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using PSADT.PathEx;
 using PSADT.Logging;
 

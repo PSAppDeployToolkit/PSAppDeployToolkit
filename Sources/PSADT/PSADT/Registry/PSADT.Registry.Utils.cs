@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Text;
-using Microsoft.Win32;
 using System.Collections.Generic;
-using Microsoft.Win32.SafeHandles;
-using System.Management.Automation;
 using System.Collections.ObjectModel;
+using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 using PSADT.PInvoke;
 using PSADT.Diagnostics.Exceptions;
 

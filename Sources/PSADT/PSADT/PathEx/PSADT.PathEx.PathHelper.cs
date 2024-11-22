@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using PSADT.PInvoke;
-using PSADT.ConsoleEx;
-using System.Collections.Generic;
 using System.Reflection;
+using System.Collections.Generic;
+using PSADT.PInvoke;
 using PSADT.Logging;
 
 namespace PSADT.PathEx

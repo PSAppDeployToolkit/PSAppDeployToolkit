@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using PSADT.PInvoke;
-using PSADT.ProcessEx;
 using System.Reflection;
 using System.Collections.Generic;
 using PSADT.Logging;
+using PSADT.PInvoke;
+using PSADT.ProcessEx;
 
 namespace PSADT.CommandLine
 {

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Text;
-using Microsoft.Win32;
 using System.Threading;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using Microsoft.Win32;
 using PSADT.PInvoke;
 using PSADT.Logging;
 using PSADT.Diagnostics.Validation;

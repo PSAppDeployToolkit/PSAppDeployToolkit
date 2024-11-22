@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using Microsoft.Win32.SafeHandles;
+using System;
 using System.Runtime.InteropServices;
 using PSADT.PInvoke;
 using PSADT.Diagnostics.Exceptions;

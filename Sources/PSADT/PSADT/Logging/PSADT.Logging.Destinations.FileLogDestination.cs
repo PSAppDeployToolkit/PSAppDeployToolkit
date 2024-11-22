@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using PSADT.Logging.Interfaces;
 using PSADT.Logging.Models;
 using PSADT.Logging.Utilities;
+using PSADT.Logging.Interfaces;
 
 namespace PSADT.Logging.Destinations
 {

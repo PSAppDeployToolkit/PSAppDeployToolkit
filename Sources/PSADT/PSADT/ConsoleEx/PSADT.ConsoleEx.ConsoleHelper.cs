@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
-using PSADT.PathEx;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using PSADT.PathEx;
 
 namespace PSADT.ConsoleEx
 {

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
+using System;
 using System.Text;
 using System.Threading;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace PSADT.Logging.Utilities
 {

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Management.Automation;
+using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
 namespace PSADT.Diagnostics.StackTraces

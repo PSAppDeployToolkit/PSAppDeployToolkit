@@ -2,14 +2,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Text.RegularExpressions;
-using System.Runtime.CompilerServices;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
+using System.Drawing.Drawing2D;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Management.Automation;
 using PSADT.PInvoke;
 using PSADT.Diagnostics.Exceptions;
 

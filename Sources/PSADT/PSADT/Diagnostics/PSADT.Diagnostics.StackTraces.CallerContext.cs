@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Management.Automation;
-using System.Collections.ObjectModel;
 
 namespace PSADT.Diagnostics.StackTraces
 {
