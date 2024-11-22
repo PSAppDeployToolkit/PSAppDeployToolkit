@@ -335,23 +335,6 @@ class ADTSession
         }
     }
 
-    hidden [System.Void] InstallToastDependencies()
-    {
-        # Install required assemblies for toast notifications if conditions are right.
-        if (!$Script:ADT.Config.Toast.Disable -and $Script:PSVersionTable.PSEdition.Equals('Core') -and !(Get-Package -Name Microsoft.Windows.SDK.NET.Ref -ErrorAction Ignore))
-        {
-            try
-            {
-                Write-Log -Message "Installing WinRT assemblies for PowerShell 7 toast notification support. This will take at least 5 minutes, please wait..." -Source $this.GetLogSource()
-                Install-Package -Name Microsoft.Windows.SDK.NET.Ref -ProviderName NuGet -Force -Confirm:$false | Out-Null
-            }
-            catch
-            {
-                Write-Log -Message "An error occurred while preparing WinRT assemblies for usage. Toast notifications will not be available for this execution." -Severity 2 -Source $this.GetLogSource()
-            }
-        }
-    }
-
     hidden [System.Void] LogUserInfo()
     {
         # Log details for all currently logged in users.
@@ -632,7 +615,6 @@ class ADTSession
         $this.LogScriptInfo()
         $this.LogSystemInfo()
         $this.WriteLogDivider()
-        $this.InstallToastDependencies()
         $this.LogUserInfo()
         $this.PerformSCCMTests()
         $this.PerformSystemAccountTests()
