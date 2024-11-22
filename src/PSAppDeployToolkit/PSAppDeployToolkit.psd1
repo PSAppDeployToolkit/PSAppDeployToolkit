@@ -51,15 +51,22 @@
     # RequiredModules = @()
 
     # Assemblies that must be loaded prior to importing this module
-    RequiredAssemblies = @(
+    RequiredAssemblies = $(
         'System.ServiceProcess'
         'System.Drawing'
         'System.Windows.Forms'
         'PresentationCore'
         'PresentationFramework'
         'WindowsBase'
-        'lib\net462\PSADT.dll'
         'lib\net462\PSADT.UserInterface.dll'
+        if ($PSEdition -eq 'Desktop')
+        {
+            'lib\net462\PSADT.dll'
+        }
+        else
+        {
+            'lib\net6.0-windows\PSADT.dll'
+        }
     )
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.

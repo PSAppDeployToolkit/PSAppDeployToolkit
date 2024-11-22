@@ -55,8 +55,12 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 # Ensure module operates under the strictest of conditions.
 & $CommandTable.'Set-StrictMode' -Version 3
 
+# Import this module's manifest via the language parser. This allows us to test with potential extra variables that are permitted in manifests.
+# https://github.com/PowerShell/PowerShell/blob/7ca7aae1d13d19e38c7c26260758f474cb9bef7f/src/System.Management.Automation/engine/Modules/ModuleCmdletBase.cs#L509-L512
+$Module = [System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\PSAppDeployToolkit.psd1", [ref]$null, [ref]$null).GetScriptBlock()
+$Module.CheckRestrictedLanguage([System.String[]]$null, [System.String[]]('PSEdition'), $true); $Module = $Module.InvokeReturnAsIs()
+
 # Store build information pertaining to this module's state.
-$Module = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName 'PSAppDeployToolkit'
 & $CommandTable.'New-Variable' -Name Module -Option Constant -Force -Value ([ordered]@{
         Manifest = $Module
         Assembly = (& $CommandTable.'Get-Item' -LiteralPath "$($PSScriptRoot)\$($Module.RequiredAssemblies | & { process { if ($_.EndsWith('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1)").FullName
