@@ -169,7 +169,7 @@
             else
             {
                 # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
-                if (!($fqPath = Get-Item -Path ("$((Get-ADTSession).GetPropertyValue('DirFiles'));$($PWD);$($env:Path)".TrimEnd(';').Split(';') -replace '\\?$','\test.exe') -ErrorAction Ignore))
+                if (!($fqPath = Get-Item -Path ("$((Get-ADTSession).GetPropertyValue('DirFiles'));$($PWD);$($env:Path)".TrimEnd(';').Split(';').TrimEnd('\') -replace '$',"\$Path") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                 {
                     Write-ADTLogEntry -Message "[$Path] contains an invalid path or file name." -Severity 3
                     throw [System.IO.FileNotFoundException]::new("[$Path] contains an invalid path or file name.")
@@ -342,7 +342,7 @@
                         }
                         $stdOut = $stdOutBuilder.ToString() -replace $null
                         $stdErr = $stdErrBuilder.ToString() -replace $null
-                        if ($stdErr.Length -gt 0)
+                        if (![System.String]::IsNullOrWhiteSpace($stdErr))
                         {
                             Write-ADTLogEntry -Message "Standard error output from the process: $stdErr" -Severity 3
                         }
