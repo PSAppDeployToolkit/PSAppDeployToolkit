@@ -502,82 +502,75 @@ function Remove-MSIApplications
     }
 
     # Build out filterscript based on provided input.
-    $filterInclude = $(
-        $FilterApplication | & {
+    $filterArray = $(
+        $filterApplication | & {
             process
             {
-                if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
-                if ($_[2] -eq 'RegEx')
+                if ($null -ne $_)
                 {
-                    "`$_.$($_[0]) -match '$($_[1] -replace "'","''")'"
-                }
-                elseif ($_[2] -eq 'Contains')
-                {
-                    "`$_.$($_[0]) -match '$([System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'","''")))'"
-                }
-                elseif ($_[2] -eq 'WildCard')
-                {
-                    "`$_.$($_[0]) -like '$($_[1] -replace "'","''")'"
-                }
-                elseif ($_[2] -eq 'Exact')
-                {
-                    if ($_[1] -is [System.Boolean])
+                    if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
+                    if ($_[2] -eq 'RegEx')
                     {
-                        "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
+                        "`$_.$($_[0]) -match '$($_[1] -replace "'","''")'"
                     }
-                    else
+                    elseif ($_[2] -eq 'Contains')
                     {
-                        "`$_.$($_[0]) -eq '$($_[1] -replace "'","''")'"
+                        "`$_.$($_[0]) -match '$([System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'","''")))'"
+                    }
+                    elseif ($_[2] -eq 'WildCard')
+                    {
+                        "`$_.$($_[0]) -like '$($_[1] -replace "'","''")'"
+                    }
+                    elseif ($_[2] -eq 'Exact')
+                    {
+                        if ($_[1] -is [System.Boolean])
+                        {
+                            "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
+                        }
+                        else
+                        {
+                            "`$_.$($_[0]) -eq '$($_[1] -replace "'","''")'"
+                        }
+                    }
+                }
+            }
+        }
+        $excludeFromUninstall | & {
+            process
+            {
+                if ($null -ne $_)
+                {
+                    if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
+                    if ($_[2] -eq 'RegEx')
+                    {
+                        "`$_.$($_[0]) -notmatch '$($_[1] -replace "'","''")'"
+                    }
+                    elseif ($_[2] -eq 'Contains')
+                    {
+                        "`$_.$($_[0]) -notmatch '$([System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'","''")))'"
+                    }
+                    elseif ($_[2] -eq 'WildCard')
+                    {
+                        "`$_.$($_[0]) -notlike '$($_[1] -replace "'","''")'"
+                    }
+                    elseif ($_[2] -eq 'Exact')
+                    {
+                        if ($_[1] -is [System.Boolean])
+                        {
+                            "`$_.$($_[0]) -ne `$$($_[1].ToString().ToLower())"
+                        }
+                        else
+                        {
+                            "`$_.$($_[0]) -ne '$($_[1] -replace "'","''")'"
+                        }
                     }
                 }
             }
         }
     )
 
-    $filterExclude = $(
-        $ExcludeFromUninstall | & {
-            process
-            {
-                if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
-                if ($_[2] -eq 'RegEx')
-                {
-                    "`$_.$($_[0]) -match '$($_[1] -replace "'","''")'"
-                }
-                elseif ($_[2] -eq 'Contains')
-                {
-                    "`$_.$($_[0]) -match '$([System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'","''")))'"
-                }
-                elseif ($_[2] -eq 'WildCard')
-                {
-                    "`$_.$($_[0]) -like '$($_[1] -replace "'","''")'"
-                }
-                elseif ($_[2] -eq 'Exact')
-                {
-                    if ($_[1] -is [System.Boolean])
-                    {
-                        "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
-                    }
-                    else
-                    {
-                        "`$_.$($_[0]) -eq '$($_[1] -replace "'","''")'"
-                    }
-                }
-            }
-        }
-    )
+    $filterScript = $filterArray -join ' -and '
 
-    $filterScript = if ($filterInclude -and $filterExclude)
-    {
-        ($filterInclude -join ' -and ') + ' -and !(' + ($filterExclude -join ' -or ') + ')'
-    }
-    elseif ($filterInclude)
-    {
-        $filterInclude -join ' -and '
-    }
-    elseif ($filterExclude)
-    {
-        '!(' + ($filterExclude -join ' -or ') + ')'
-    }
     if ($filterScript)
     {
         $uaaParams.filterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
