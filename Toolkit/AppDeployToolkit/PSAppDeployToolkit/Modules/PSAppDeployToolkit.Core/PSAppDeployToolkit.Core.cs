@@ -76,6 +76,20 @@ namespace PSADT
             public bool IsUsingACPower;
             public bool IsLaptop;
         }
+
+        public struct RebootInfo
+        {
+            public string ComputerName;
+            public DateTime LastBootUpTime;
+            public bool IsSystemRebootPending;
+            public bool IsCBServicingRebootPending;
+            public bool IsWindowsUpdateRebootPending;
+            public bool? IsSCCMClientRebootPending;
+            public bool IsAppVRebootPending;
+            public bool? IsFileRenameRebootPending;
+            public string[] PendingFileRenameOperations;
+            public string[] ErrorMsg;
+        }
     }
 
     public static class Msi
