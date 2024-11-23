@@ -1812,6 +1812,18 @@ namespace PSADT.PInvoke
 
     #region ntdll.dll
 
+    public enum PEB_OFFSET
+    {
+        CurrentDirectory,
+        CommandLine
+    }
+
+    public enum PROCESSINFOCLASS : int
+    {
+        ProcessBasicInformation = 0,
+        ProcessWow64Information = 26
+    }
+
     /// <summary>
     /// Enum representing different Windows product types.
     /// </summary>
@@ -2706,6 +2718,12 @@ namespace PSADT.PInvoke
         /// <summary>Increase memory usage in an attempt to increase performance.</summary>
         COINIT_SPEED_OVER_MEMORY = 0x8
     }
+
+    #endregion
+
+    #region rstrtmgr.dll
+
+
 
     #endregion
 

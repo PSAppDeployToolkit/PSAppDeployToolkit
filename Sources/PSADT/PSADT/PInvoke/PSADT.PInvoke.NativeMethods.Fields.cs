@@ -15,6 +15,20 @@ namespace PSADT.PInvoke
         /// <summary>The program issued a command but the command length is incorrect.</summary>
         public const int ERROR_BAD_LENGTH = 24;
 
+        public const int STATUS_SUCCESS = 0;
+
+        public const int ERROR_MORE_DATA = 234;
+
+        #endregion
+
+        #region Fields: ntdll.dll
+
+        public const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+
+        public const uint PROCESS_QUERY_INFORMATION = 0x0400;
+
+        public const uint PROCESS_VM_READ = 0x0010;
+
         #endregion
 
         #region Fields: advapi32.dll
@@ -136,6 +150,12 @@ namespace PSADT.PInvoke
         public const int WINSTATIONNAME_LENGTH = 32;
         public const int DOMAIN_LENGTH = 17;
         public const int USERNAME_LENGTH = 20;
+
+        #endregion
+
+        #region Fields: rstrtmgr.dll
+
+
 
         #endregion
     }
