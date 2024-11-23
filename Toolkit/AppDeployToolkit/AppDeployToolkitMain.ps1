@@ -2043,3 +2043,63 @@ function Remove-RegistryKey
     }
     Remove-ADTRegistryKey @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Remove-ADTFileFromUserProfiles
+#
+#---------------------------------------------------------------------------
+
+function Remove-FileFromUserProfiles
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Path,
+
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$LiteralPath,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$ExcludeNTAccount,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExcludeSystemProfiles = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExcludeServiceProfiles = $true,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Translate parameters.
+    ('SystemProfiles', 'ServiceProfiles').Where({$PSBoundParameters.ContainsKey("Exclude$_")}).ForEach({
+        if (!$PSBoundParameters["Exclude$_"])
+        {
+            $PSBoundParameters.Add("Include$_", [System.Management.Automation.SwitchParameter]$true)
+        }
+        [System.Void]$PSBoundParameters.Remove("Exclude$_")
+    })
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        Write-ADTLogEntry -Message "The parameter '-ContinueOnError' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
+    Remove-ADTFileFromUserProfiles @PSBoundParameters
+}

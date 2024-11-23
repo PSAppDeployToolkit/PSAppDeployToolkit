@@ -103,7 +103,7 @@ FunctionsToExport = @(
     'New-Shortcut'
     'Remove-ADTEdgeExtension'
     'Remove-ADTFile'
-    'Remove-FileFromUserProfiles'
+    'Remove-ADTFileFromUserProfiles'
     'Remove-Folder'
     'Remove-MSIApplications'
     'Remove-ADTRegistryKey'

@@ -1,129 +1,112 @@
-﻿Function Remove-FileFromUserProfiles {
+﻿function Remove-ADTFileFromUserProfiles
+{
     <#
-.SYNOPSIS
 
-Removes one or more items from each user profile on the system.
+    .SYNOPSIS
+    Removes one or more items from each user profile on the system.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Removes one or more items from each user profile on the system.
 
-Removes one or more items from each user profile on the system.
+    .PARAMETER Path
+    Specifies the path to append to the root of the user profile to be resolved. The value of Path will accept wildcards. Will accept an array of values.
 
-.PARAMETER Path
+    .PARAMETER LiteralPath
+    Specifies the path to append to the root of the user profile to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
 
-Specifies the path to append to the root of the user profile to be resolved. The value of Path will accept wildcards. Will accept an array of values.
+    .PARAMETER Recurse
+    Deletes the files in the specified location(s) and in all child items of the location(s).
 
-.PARAMETER LiteralPath
+    .PARAMETER ExcludeNTAccount
+    Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
-Specifies the path to append to the root of the user profile to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
+    .PARAMETER ExcludeSystemProfiles
+    Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
 
-.PARAMETER Recurse
+    .PARAMETER ExcludeServiceProfiles
+    Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
 
-Deletes the files in the specified location(s) and in all child items of the location(s).
+    .PARAMETER ExcludeDefaultUser
+    Exclude the Default User. Default is: $false.
 
-.PARAMETER ExcludeNTAccount
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Specify NT account names in Domain\Username format to exclude from the list of user profiles.
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.PARAMETER ExcludeSystemProfiles
+    .EXAMPLE
+    Remove-ADTFileFromUserProfiles -Path "AppData\Roaming\MyApp\config.txt"
 
-Exclude system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $true.
+    .EXAMPLE
+    Remove-ADTFileFromUserProfiles -Path "AppData\Local\MyApp" -Recurse
 
-.PARAMETER ExcludeServiceProfiles
+    .LINK
+    https://psappdeploytoolkit.com
 
-Exclude service profiles where NTAccount begins with NT SERVICE. Default is: $true.
+    #>
 
-.PARAMETER ExcludeDefaultUser
-
-Exclude the Default User. Default is: $false.
-
-.PARAMETER ContinueOnError
-
-Continue if an error is encountered. Default is: $true.
-
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Remove-FileFromUserProfiles -Path "AppData\Roaming\MyApp\config.txt"
-
-.EXAMPLE
-
-Remove-FileFromUserProfiles -Path "AppData\Local\MyApp" -Recurse
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
-        [ValidateNotNullorEmpty()]
-        [String[]]$Path,
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Path,
+
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
-        [ValidateNotNullorEmpty()]
-        [String[]]$LiteralPath,
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$LiteralPath,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Recurse = $false,
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String[]]$ExcludeNTAccount,
+        [System.String[]]$ExcludeNTAccount,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ExcludeSystemProfiles = $true,
+        [System.Management.Automation.SwitchParameter]$ExcludeDefaultUser,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ExcludeServiceProfiles = $true,
+        [System.Management.Automation.SwitchParameter]$IncludeSystemProfiles,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Switch]$ExcludeDefaultUser = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.Management.Automation.SwitchParameter]$IncludeServiceProfiles
     )
 
-    Begin {
-        Write-ADTDebugHeader
-    }
-    Process {
-        [Hashtable]$RemoveFileSplat = @{
+    begin {
+        $RemoveFileSplat = @{
             Recurse = $Recurse
             ContinueOnError = $ContinueOnError
         }
-
-        [Hashtable]$GetUserProfileSplat = @{
-            ExcludeSystemProfiles = $ExcludeSystemProfiles
-            ExcludeServiceProfiles = $ExcludeServiceProfiles
+        $GetUserProfileSplat = @{
+            IncludeSystemProfiles = $IncludeSystemProfiles
+            IncludeServiceProfiles = $IncludeServiceProfiles
             ExcludeDefaultUser = $ExcludeDefaultUser
         }
         if ($ExcludeNTAccount) {
             $GetUserProfileSplat.ExcludeNTAccount = $ExcludeNTAccount
         }
+        Write-ADTDebugHeader
+    }
 
-        ForEach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath) {
-            If ($PSCmdlet.ParameterSetName -eq 'Path') {
-                $RemoveFileSplat.Path = $Path | ForEach-Object { Join-Path $UserProfilePath $_ }
+    process {
+        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
+        {
+            if ($PSCmdlet.ParameterSetName -eq 'Path')
+            {
+                $RemoveFileSplat.Path = $Path.ForEach({[System.IO.Path]::Combine($UserProfilePath, $_)})
                 Write-ADTLogEntry -Message "Removing path [$Path] from $UserProfilePath`:"
             }
-            ElseIf ($PSCmdlet.ParameterSetName -eq 'LiteralPath') {
-                $RemoveFileSplat.LiteralPath = $LiteralPath | ForEach-Object { Join-Path $UserProfilePath $_ }
+            elseif ($PSCmdlet.ParameterSetName -eq 'LiteralPath')
+            {
+                $RemoveFileSplat.LiteralPath = $LiteralPath.ForEach({[System.IO.Path]::Combine($UserProfilePath, $_)})
                 Write-ADTLogEntry -Message "Removing literal path [$LiteralPath] from $UserProfilePath`:"
             }
             Remove-ADTFile @RemoveFileSplat
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
