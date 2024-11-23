@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
@@ -15,7 +16,8 @@ namespace PSADT
     {
         private static readonly string assemblyName = AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Name;
         private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
-        private static readonly string timeStamp = DateTime.Now.ToString("O").Split(".".ToCharArray())[0].Replace(":", null);
+        private static readonly string timeStamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
+        private static readonly Encoding LogEncoding = new UTF8Encoding(true);
 
         public static void Main()
         {
@@ -27,11 +29,13 @@ namespace PSADT
                 // Set up variables.
                 string currentPath = AppDomain.CurrentDomain.BaseDirectory;
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-                string adtToolkitPath = Directory.Exists(Path.Combine(currentPath, "PSAppDeployToolkit")) ? Path.Combine(currentPath, "PSAppDeployToolkit") : (Directory.Exists(Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit")) ? Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit") : String.Empty);
+                string adtTkv4Path = Path.Combine(currentPath, "PSAppDeployToolkit");
+                string adtTkv3Path = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
+                string adtToolkitPath = Directory.Exists(adtTkv4Path) ? adtTkv4Path : (Directory.Exists(adtTkv3Path) ? adtTkv3Path : null);
                 string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string pwshArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
-                List<string> cliArguments = new List<string>(Environment.GetCommandLineArgs());
+                var cliArguments = new List<string>(Environment.GetCommandLineArgs());
                 bool is64BitOS = nameof(RuntimeInformation.OSArchitecture).EndsWith("64");
                 bool isForceX86Mode = false;
                 bool isRequireAdmin = false;
@@ -71,8 +75,7 @@ namespace PSADT
                 }
 
                 // Determine whether we require admin rights or not.
-                Hashtable configTable = (Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue();
-                Hashtable toolkitConfig = (Hashtable)configTable["Toolkit"];
+                Hashtable toolkitConfig = (Hashtable)((Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue())["Toolkit"];
                 if (isRequireAdmin = (bool)toolkitConfig["RequireAdmin"])
                 {
                     WriteDebugMessage("Administrator rights are required. The verb 'RunAs' will be used with the invocation.");
@@ -100,7 +103,7 @@ namespace PSADT
 
                 if (cliArguments.Exists(x => x.StartsWith("-File ")))
                 {
-                    adtFrontendPath = cliArguments.Find(x => x.StartsWith("-File ")).Replace("-File ", string.Empty).Replace("\"", string.Empty);
+                    adtFrontendPath = cliArguments.Find(x => x.StartsWith("-File ")).Replace("-File ", null).Replace("\"", null);
                     if (!Path.IsPathRooted(adtFrontendPath))
                     {
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
@@ -110,7 +113,7 @@ namespace PSADT
                 }
                 else if (cliArguments.Exists(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")))
                 {
-                    adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")).Replace("\"", string.Empty);
+                    adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")).Replace("\"", null);
                     if (!Path.IsPathRooted(adtFrontendPath))
                     {
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
@@ -127,7 +130,7 @@ namespace PSADT
                 pwshArguments = $"-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File \"{adtFrontendPath}\"";
                 if (cliArguments.Count > 0)
                 {
-                    pwshArguments += " " + string.Join(" ", cliArguments.ToArray());
+                    pwshArguments += $" {string.Join(" ", cliArguments.ToArray())}";
                 }
 
                 // Switch to x86 PowerShell if requested.
@@ -137,9 +140,9 @@ namespace PSADT
                 }
 
                 // Define PowerShell process.
-                WriteDebugMessage("Executable Path: " + pwshExecutablePath);
-                WriteDebugMessage("Arguments: " + pwshArguments);
-                WriteDebugMessage("Working Directory: " + currentPath);
+                WriteDebugMessage($"Executable Path: {pwshExecutablePath}");
+                WriteDebugMessage($"Arguments: {pwshArguments}");
+                WriteDebugMessage($"Working Directory: {currentPath}");
 
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -180,7 +183,7 @@ namespace PSADT
                 }
 
                 // Exit with the script's code.
-                WriteDebugMessage("Exit Code: " + exitCode);
+                WriteDebugMessage($"Exit Code: {exitCode}");
                 Environment.Exit(exitCode);
             }
             catch (Exception ex)
@@ -198,7 +201,7 @@ namespace PSADT
             {
                 Directory.CreateDirectory(logPath);
             }
-            using (StreamWriter sw = File.AppendText(Path.Combine(logPath, $"{assemblyName}.exe_{timeStamp}.log")))
+            using (StreamWriter sw = new StreamWriter(Path.Combine(logPath, $"{assemblyName}.exe_{timeStamp}.log"), true, LogEncoding))
             {
                 sw.WriteLine(debugMessage);
             }
@@ -209,7 +212,7 @@ namespace PSADT
                 MessageBox.Show(
                     new WindowWrapper(Process.GetCurrentProcess().MainWindowHandle),
                     debugMessage,
-                    Application.ProductName + " " + Application.ProductVersion,
+                    $"{Application.ProductName} {Application.ProductVersion}",
                     MessageBoxButtons.OK,
                     MsgBoxStyle,
                     MessageBoxDefaultButton.Button1);
