@@ -154,12 +154,12 @@ https://psappdeploytoolkit.com
             ## Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system
             If ($PurgeActiveSetupKey) {
                 Write-ADTLogEntry -Message "Removing Active Setup entry [$ActiveSetupKey]."
-                Remove-RegistryKey -Key $ActiveSetupKey -Recurse
+                Remove-ADTRegistryKey -Key $ActiveSetupKey -Recurse
 
                 Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system."
                 [ScriptBlock]$RemoveHKCUActiveSetupKey = {
                     If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID) {
-                        Remove-RegistryKey -Key $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID -Recurse
+                        Remove-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID -Recurse
                     }
                 }
                 Invoke-ADTAllUsersRegistryChange -RegistrySettings $RemoveHKCUActiveSetupKey -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser)

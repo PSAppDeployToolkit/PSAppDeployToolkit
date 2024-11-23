@@ -784,7 +784,7 @@
             if (Test-Path -LiteralPath $this.RegKeyDeferHistory)
             {
                 $this.WriteLogEntry('Removing deferral history...')
-                Remove-RegistryKey -Key $this.RegKeyDeferHistory -Recurse
+                Remove-ADTRegistryKey -Key $this.RegKeyDeferHistory -Recurse
             }
 
             # Handle reboot prompts on successful script completion.
