@@ -529,10 +529,10 @@
         }
 
         # If block execution switch is true, call the function to block execution of these processes.
-        if ($BlockExecution)
+        if ($BlockExecution -and $ProcessObjects)
         {
             Write-ADTLogEntry -Message '[-BlockExecution] parameter specified.'
-            Block-AppExecution -ProcessName ($ProcessObjects | Select-Object -ExpandProperty Name)
+            Block-ADTAppExecution -ProcessName $ProcessObjects.Name
         }
     }
 
