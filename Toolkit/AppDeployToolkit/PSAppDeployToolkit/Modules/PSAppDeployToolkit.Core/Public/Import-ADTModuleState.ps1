@@ -1,7 +1,10 @@
 ﻿function Import-ADTModuleState
 {
+    # Get the root module's info.
+    $adtModule = Get-ADTModuleInfo
+
     # Restore the previously exported session and prepare it for asynchronous operation. The serialised state may be on-disk during BlockExecution operations.
-    if ([System.IO.File]::Exists(($onDiskClixml = "$((Get-ADTModuleInfo).Name).xml")))
+    if ([System.IO.File]::Exists(($onDiskClixml = "$($adtModule.ModuleBase)\$($adtModule.Name).xml")))
     {
         $adtData = (Set-Variable -Name ADT -Scope Script -Option ReadOnly -Force -PassThru -Value (Import-Clixml -LiteralPath $onDiskClixml)).Value
     }

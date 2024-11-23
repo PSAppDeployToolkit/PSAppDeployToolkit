@@ -1670,3 +1670,23 @@ function Unblock-AppExecution
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unblock-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2
     Unblock-ADTAppExecution
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Block-ADTAppExecution
+#
+#---------------------------------------------------------------------------
+
+function Block-AppExecution
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$ProcessName
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Block-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2
+    Block-ADTAppExecution @PSBoundParameters
+}

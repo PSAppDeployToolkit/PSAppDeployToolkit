@@ -3,7 +3,7 @@
     <#
 
     .SYNOPSIS
-    Unblocks the execution of applications performed by the Block-AppExecution function
+    Unblocks the execution of applications performed by the Block-ADTAppExecution function
 
     .DESCRIPTION
     This function is called by the Close-ADTSession function or when the script itself is called with the parameters -CleanupBlockedApps
@@ -18,7 +18,7 @@
     Unblock-ADTAppExecution
 
     .NOTES
-    It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to undo the actions performed by Block-AppExecution.
+    It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to undo the actions performed by Block-ADTAppExecution.
 
     .LINK
     https://psappdeploytoolkit.com
@@ -57,9 +57,6 @@
         {
             Write-ADTLogEntry -Message "Error retrieving/deleting Scheduled Task.`n$(Resolve-ADTError)" -Severity 3
         }
-
-        # Remove BlockAppExecution Schedule Task XML file.
-        Remove-Item -LiteralPath "$adtSession.GetPropertyValue('dirAppDeployTemp')\SchTaskUnBlockApps.xml" -Force -ErrorAction Ignore
 
         # Remove BlockAppExection temporary directory.
         if ([System.IO.Directory]::Exists(($tempPath = [System.IO.Path]::Combine($adtSession.GetPropertyValue('dirAppDeployTemp'), 'BlockExecution'))))

@@ -367,6 +367,7 @@
     ## Variables: RegEx Patterns
     $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
     $variables.Add('InvalidFileNameCharsRegExPattern', "($([System.String]::Join('|', $variables.invalidFileNameChars.ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
+    $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "($([System.String]::Join('|', ('$', '!', "'", '"', '(', ')', ';', '\', '`', '*', '?', '{', '}', '[', ']', '<', '>', '|', '&', '%', '#', '~', '@', ' ').ForEach({[System.Text.RegularExpressions.Regex]::Escape($_)}))))")
 
     ## Variables: Registry Keys
     # Registry keys for native and WOW64 applications
