@@ -1,118 +1,119 @@
-﻿Function Set-MsiProperty {
+﻿function Set-ADTMsiProperty
+{
     <#
-.SYNOPSIS
 
-Set a property in the MSI property table.
+    .SYNOPSIS
+    Set a property in the MSI property table.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Set a property in the MSI property table.
 
-Set a property in the MSI property table.
+    .PARAMETER DataBase
+    Specify a ComObject representing an MSI database opened in view/modify/update mode.
 
-.PARAMETER DataBase
+    .PARAMETER PropertyName
+    The name of the property to be set/modified.
 
-Specify a ComObject representing an MSI database opened in view/modify/update mode.
+    .PARAMETER PropertyValue
+    The value of the property to be set/modified.
 
-.PARAMETER PropertyName
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-The name of the property to be set/modified.
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.PARAMETER PropertyValue
+    .EXAMPLE
+    Set-ADTMsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
 
-The value of the property to be set/modified.
+    .NOTES
+    This is an internal script function and should typically not be called directly.
 
-.PARAMETER ContinueOnError
+    .LINK
+    https://psappdeploytoolkit.com
 
-Continue if an error is encountered. Default is: $true.
+    #>
 
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
-
-.NOTES
-
-This is an internal script function and should typically not be called directly.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [__ComObject]$DataBase,
+        [ValidateNotNullOrEmpty()]
+        [System.__ComObject]$DataBase,
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$PropertyName,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$PropertyName,
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$PropertyValue,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [ValidateNotNullOrEmpty()]
+        [System.String]$PropertyValue
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction
+        }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
+
+    process {
+        try
+        {
+            # Open the requested table view from the database
             Write-ADTLogEntry -Message "Setting the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]."
+            $View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
+            [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
 
-            ## Open the requested table view from the database
-            [__ComObject]$View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("SELECT * FROM Property WHERE Property='$PropertyName'")
-            $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Execute'
+            # Retrieve the requested property from the requested table and close off the view.
+            # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
+            $Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
+            [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @())
+            [System.Void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($View)
 
-            ## Retrieve the requested property from the requested table.
-            #  https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
-            [__ComObject]$Record = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Fetch'
-
-            ## Close the previous view on the MSI database
-            $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
-            $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View)
-
-            ## Set the MSI property
-            If ($Record) {
-                #  If the property already exists, then create the view for updating the property
-                [__ComObject]$View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
+            # Set the MSI property.
+            [__ComObject]$View = if ($Record)
+            {
+                # If the property already exists, then create the view for updating the property.
+                Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("UPDATE Property SET Value='$PropertyValue' WHERE Property='$PropertyName'")
             }
-            Else {
-                #  If property does not exist, then create view for inserting the property
-                [__ComObject]$View = Invoke-ADTObjectMethod -InputObject $DataBase -MethodName 'OpenView' -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
+            else
+            {
+                # If property does not exist, then create view for inserting the property.
+                Invoke-ADTObjectMethod -InputObject $DataBase -MethodName OpenView -ArgumentList @("INSERT INTO Property (Property, Value) VALUES ('$PropertyName','$PropertyValue')")
             }
-            #  Execute the view to set the MSI property
-            $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Execute'
+            [System.Void](Invoke-ADTObjectMethod -InputObject $View -MethodName Execute)
         }
-        Catch {
+        catch
+        {
             Write-ADTLogEntry -Message "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue].`n$(Resolve-ADTError)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to set the MSI Property Name [$PropertyName] with Property Value [$PropertyValue]: $($_.Exception.Message)"
-            }
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
-        Finally {
-            Try {
-                If ($View) {
-                    $null = Invoke-ADTObjectMethod -InputObject $View -MethodName 'Close' -ArgumentList @()
-                    $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($View)
+        finally
+        {
+            $null = try
+            {
+                if (Test-Item -LiteralPath Variable:View)
+                {
+                    Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @()
+                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($View)
                 }
             }
-            Catch {
+            catch
+            {
+                $null
             }
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
