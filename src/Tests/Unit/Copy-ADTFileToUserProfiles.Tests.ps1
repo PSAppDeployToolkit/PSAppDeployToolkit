@@ -5,6 +5,10 @@
 
 Describe 'Copy-ADTFileToUserProfiles' {
 	BeforeAll {
+		$SourcePath = (New-Item -Path "$TestDrive\Source" -ItemType Directory).FullName
+		New-Item -ItemType File -Force -Path @(
+			"$SourcePath\test.txt"
+		) | Out-Null
 		Mock -ModuleName PSAppDeployToolkit Copy-ADTFile {
 		}
 		Mock -ModuleName PSAppDeployToolkit Get-ADTUserProfiles {
