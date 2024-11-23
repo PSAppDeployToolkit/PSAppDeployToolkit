@@ -106,7 +106,7 @@ FunctionsToExport = @(
     'Remove-FileFromUserProfiles'
     'Remove-Folder'
     'Remove-MSIApplications'
-    'Remove-RegistryKey'
+    'Remove-ADTRegistryKey'
     'Send-Keys'
     'Set-ActiveSetup'
     'Set-ADTIniValue'

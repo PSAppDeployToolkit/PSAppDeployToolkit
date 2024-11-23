@@ -1,153 +1,165 @@
-﻿Function Remove-RegistryKey {
+﻿function Remove-ADTRegistryKey
+{
     <#
-.SYNOPSIS
 
-Deletes the specified registry key or value.
+    .SYNOPSIS
+    Deletes the specified registry key or value.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Deletes the specified registry key or value.
 
-Deletes the specified registry key or value.
+    .PARAMETER Key
+    Path of the registry key to delete.
 
-.PARAMETER Key
+    .PARAMETER Name
+    Name of the registry value to delete.
 
-Path of the registry key to delete.
+    .PARAMETER Recurse
+    Delete registry key recursively.
 
-.PARAMETER Name
+    .PARAMETER SID
+    The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-Name of the registry value to delete.
+    Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-.PARAMETER Recurse
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Delete registry key recursively.
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.PARAMETER SID
+    .EXAMPLE
+    Remove-ADTRegistryKey -Key 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce'
 
-The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+    .EXAMPLE
+    Remove-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RunAppInstall'
 
-Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+    .EXAMPLE
+    Remove-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
 
-.PARAMETER ContinueOnError
+    .LINK
+    https://psappdeploytoolkit.com
 
-Continue if an error is encountered. Default is: $true.
+    #>
 
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Remove-RegistryKey -Key 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce'
-
-.EXAMPLE
-
-Remove-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RunAppInstall'
-
-.EXAMPLE
-
-Remove-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Key,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$Name,
+        [System.String]$Name,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Recurse,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$SID,
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.String]$SID
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction
+        }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
-            If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$Key = Convert-ADTRegistryPath -Key $Key -SID $SID
+
+    process {
+        try
+        {
+            # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
+            $Key = if ($PSBoundParameters.ContainsKey('SID'))
+            {
+                Convert-ADTRegistryPath -Key $Key -SID $SID
             }
-            Else {
-                [String]$Key = Convert-ADTRegistryPath -Key $Key
+            else
+            {
+                Convert-ADTRegistryPath -Key $Key
             }
 
-            If (-not $Name) {
-                If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
-                    If ($Recurse) {
+            if (!$Name)
+            {
+                if (Test-Path -LiteralPath $Key)
+                {
+                    if ($Recurse)
+                    {
                         Write-ADTLogEntry -Message "Deleting registry key recursively [$Key]."
-                        $null = Remove-Item -LiteralPath $Key -Force -Recurse -ErrorAction 'Stop'
+                        [System.Void](Remove-Item -LiteralPath $Key -Force -Recurse)
                     }
-                    Else {
-                        If ($null -eq (Get-ChildItem -LiteralPath $Key -ErrorAction 'Stop')) {
-                            ## Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
-                            Write-ADTLogEntry -Message "Deleting registry key [$Key]."
-                            $null = Remove-Item -LiteralPath $Key -Force -ErrorAction 'Stop'
+                    elseif (!(Get-ChildItem -LiteralPath $Key))
+                    {
+                        # Check if there are subkeys of $Key, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
+                        Write-ADTLogEntry -Message "Deleting registry key [$Key]."
+                        [System.Void](Remove-Item -LiteralPath $Key -Force)
+                    }
+                    else
+                    {
+                        $naerParams = @{
+                            Exception = [System.InvalidOperationException]::new("Unable to delete child key(s) of [$Key] without [-Recurse] switch.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                            ErrorId = 'SubkeyRecursionError'
+                            TargetObject = $Key
+                            RecommendedAction = "Please run this command again with [-Recurse]."
                         }
-                        Else {
-                            Throw "Unable to delete child key(s) of [$Key] without [-Recurse] switch."
-                        }
+                        throw (New-ADTErrorRecord @naerParams)
                     }
                 }
-                Else {
+                else
+                {
                     Write-ADTLogEntry -Message "Unable to delete registry key [$Key] because it does not exist." -Severity 2
                 }
             }
-            Else {
-                If (Test-Path -LiteralPath $Key -ErrorAction 'Stop') {
+            else
+            {
+                if (Test-Path -LiteralPath $Key)
+                {
                     Write-ADTLogEntry -Message "Deleting registry value [$Key] [$Name]."
-
-                    If ($Name -eq '(Default)') {
-                        ## Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value
-                        $null = (Get-Item -LiteralPath $Key -ErrorAction 'Stop').OpenSubKey('', 'ReadWriteSubTree').DeleteValue('')
+                    if ($Name -eq '(Default)')
+                    {
+                        # Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value.
+                        [System.Void]((Get-Item -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').DeleteValue(''))
                     }
-                    Else {
-                        $null = Remove-ItemProperty -LiteralPath $Key -Name $Name -Force -ErrorAction 'Stop'
+                    else
+                    {
+                        [System.Void](Remove-ItemProperty -LiteralPath $Key -Name $Name -Force)
                     }
                 }
-                Else {
+                else
+                {
                     Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because registry key does not exist." -Severity 2
                 }
             }
         }
-        Catch [System.Management.Automation.PSArgumentException] {
+        catch [System.Management.Automation.PSArgumentException]
+        {
             Write-ADTLogEntry -Message "Unable to delete registry value [$Key] [$Name] because it does not exist." -Severity 2
         }
-        Catch {
-            If (-not $Name) {
-                Write-ADTLogEntry -Message "Failed to delete registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to delete registry key [$Key]: $($_.Exception.Message)"
-                }
-            }
-            Else {
+        catch
+        {
+            if ($Name)
+            {
                 Write-ADTLogEntry -Message "Failed to delete registry value [$Key] [$Name].`n$(Resolve-ADTError)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to delete registry value [$Key] [$Name]: $($_.Exception.Message)"
-                }
             }
+            else
+            {
+                Write-ADTLogEntry -Message "Failed to delete registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
+            }
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
