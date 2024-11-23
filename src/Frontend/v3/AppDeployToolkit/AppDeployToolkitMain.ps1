@@ -3957,6 +3957,108 @@ function New-Shortcut
 
 #---------------------------------------------------------------------------
 #
+# MARK: Wrapper around Start-ADTProcessAsUser
+#
+#---------------------------------------------------------------------------
+
+function Execute-ProcessAsUser
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification = "Silenced to get the module build system going. This function is yet to be refactored.")]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$UserName = (& $Script:CommandTable.'Get-ADTRunAsActiveUser').NTAccount,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$TempPath,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Parameters,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SecureParameters,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('HighestAvailable', 'LeastPrivilege')]
+        [System.String]$RunLevel = 'HighestAvailable',
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$Wait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$WorkingDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcessAsUser]. Please migrate your scripts to use the new function." -Severity 2
+
+    # Announce dead parameters.
+    if ($TempPath)
+    {
+        Write-ADTLogEntry -Message "The parameter '-TempPath' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        $null = $PSBoundParameters.Remove('TempPath')
+    }
+    if ($RunLevel)
+    {
+        Write-ADTLogEntry -Message "The parameter '-RunLevel' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        $null = $PSBoundParameters.Remove('RunLevel')
+    }
+
+    # Translate the ContinueOnError state.
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        $null = $PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+
+    # Translate Parameters to ArgumentList.
+    if ($PSBoundParameters.ContainsKey('Parameters'))
+    {
+        $PSBoundParameters.ArgumentList = $Parameters
+        $null = $PSBoundParameters.Remove('Parameters')
+    }
+
+    # Translate Path to FilePath.
+    $PSBoundParameters.FilePath = $Path
+    $null = $PSBoundParameters.Remove('Path')
+
+    # Invoke underlying function.
+    try
+    {
+        Start-ADTProcessAsUser @PSBoundParameters
+    }
+    catch
+    {
+        if (!$ContinueOnError)
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------

@@ -329,7 +329,7 @@ function Start-ADTProcessAsUser
         {
             try
             {
-                if (($result = ($process = [PSADT.ProcessEx.StartProcess]::new()).ExecuteAndMonitorAsync($PSBoundParameters)))
+                if (($result = ($process = [PSADT.ProcessEx.StartProcess]::new()).ExecuteAndMonitorAsync($PSBoundParameters)) -and $PassThru)
                 {
                     return $result
                 }

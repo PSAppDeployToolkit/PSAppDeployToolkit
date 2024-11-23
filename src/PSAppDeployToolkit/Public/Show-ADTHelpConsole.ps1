@@ -45,11 +45,10 @@ function Show-ADTHelpConsole
         # Ensure job runs in strict mode since its in a new scope.
         $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        $WarningPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
         Set-StrictMode -Version 3
 
         # Import the module and store its passthru data so we can access it later.
-        $module = Import-Module -Name $ModulePath -DisableNameChecking -PassThru
+        $module = Import-Module -Name $ModulePath -PassThru
 
         # Build out the form's listbox.
         $helpListBox = [System.Windows.Forms.ListBox]::new()
