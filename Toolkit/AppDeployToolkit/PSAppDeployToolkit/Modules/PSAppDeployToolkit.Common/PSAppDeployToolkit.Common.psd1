@@ -93,7 +93,7 @@ FunctionsToExport = @(
     'Get-ADTSchedulerTask'
     'Get-Shortcut'
     'Install-ADTMSUpdates'
-    'Install-SCCMSoftwareUpdates'
+    'Install-ADTSCCMSoftwareUpdates'
     'Invoke-ADTAllUsersRegistryChange'
     'Invoke-ADTObjectMethod'
     'Invoke-ADTDllFileAction'
