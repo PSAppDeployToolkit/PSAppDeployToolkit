@@ -2155,3 +2155,23 @@ function Get-RegistryKey
     }
     Get-ADTRegistryKey @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Install-ADTMSUpdates
+#
+#---------------------------------------------------------------------------
+
+function Install-MSUpdates
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Directory
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity 2
+    Install-ADTMSUpdates @PSBoundParameters
+}

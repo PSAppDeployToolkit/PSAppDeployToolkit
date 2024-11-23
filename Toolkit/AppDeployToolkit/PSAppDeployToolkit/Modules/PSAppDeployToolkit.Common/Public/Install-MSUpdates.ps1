@@ -1,103 +1,94 @@
-﻿Function Install-MSUpdates {
+﻿function Install-ADTMSUpdates
+{
     <#
-.SYNOPSIS
 
-Install all Microsoft Updates in a given directory.
+    .SYNOPSIS
+    Install all Microsoft Updates in a given directory.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Install all Microsoft Updates of type ".exe", ".msu", or ".msp" in a given directory (recursively search directory).
 
-Install all Microsoft Updates of type ".exe", ".msu", or ".msp" in a given directory (recursively search directory).
+    .PARAMETER Directory
+    Directory containing the updates.
 
-.PARAMETER Directory
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Directory containing the updates.
+    .OUTPUTS
+    None. This function does not return any objects.
 
-.INPUTS
+    .EXAMPLE
+    Install-ADTMSUpdates -Directory "$dirFiles\MSUpdates"
 
-None
+    .LINK
+    https://psappdeploytoolkit.com
 
-You cannot pipe objects to this function.
+    #>
 
-.OUTPUTS
-
-None
-
-This function does not return any objects.
-
-.EXAMPLE
-
-Install-MSUpdates -Directory "$dirFiles\MSUpdates"
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Directory
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Directory
     )
 
-    Begin {
+    begin {
+        # KB Number pattern match.
+        $kbPattern = '(?i)kb\d{6,8}'
         Write-ADTDebugHeader
     }
-    Process {
+
+    process {
+        # Get all hotfixes and install if required.
         Write-ADTLogEntry -Message "Recursively installing all Microsoft Updates in directory [$Directory]."
-
-        ## KB Number pattern match
-        $kbPattern = '(?i)kb\d{6,8}'
-
-        ## Get all hotfixes and install if required
-        [IO.FileInfo[]]$files = Get-ChildItem -LiteralPath $Directory -Recurse -Include ('*.exe', '*.msu', '*.msp')
-        ForEach ($file in $files) {
-            If ($file.Name -match 'redist') {
-                [Version]$redistVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($file.FullName).ProductVersion
-                [String]$redistDescription = [Diagnostics.FileVersionInfo]::GetVersionInfo($file.FullName).FileDescription
-
+        foreach ($file in (Get-ChildItem -LiteralPath $Directory -Recurse -Include ('*.exe', '*.msu', '*.msp')))
+        {
+            if ($file.Name -match 'redist')
+            {
+                # Handle older redistributables (ie, VC++ 2005)
+                [System.Version]$redistVersion = $file.VersionInfo.ProductVersion
+                [System.String]$redistDescription = $file.VersionInfo.FileDescription
                 Write-ADTLogEntry -Message "Installing [$redistDescription $redistVersion]..."
-                #  Handle older redistributables (ie, VC++ 2005)
-                If ($redistDescription -match 'Win32 Cabinet Self-Extractor') {
+                if ($redistDescription -match 'Win32 Cabinet Self-Extractor')
+                {
                     Start-ADTProcess -Path $file.FullName -Parameters '/q' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                 }
-                Else {
+                else
+                {
                     Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                 }
             }
-            Else {
-                #  Get the KB number of the file
-                [String]$kbNumber = [RegEx]::Match($file.Name, $kbPattern).ToString()
-                If (-not $kbNumber) {
-                    Continue
-                }
-
-                #  Check to see whether the KB is already installed
-                If (-not (Test-ADTMSUpdates -KBNumber $kbNumber)) {
+            elseif ($kbNumber = [System.Text.RegularExpressions.Regex]::Match($file.Name, $kbPattern).ToString())
+            {
+                # Check to see whether the KB is already installed
+                if (!(Test-ADTMSUpdates -KBNumber $kbNumber))
+                {
                     Write-ADTLogEntry -Message "KB Number [$KBNumber] was not detected and will be installed."
-                    Switch ($file.Extension) {
-                        #  Installation type for executables (i.e., Microsoft Office Updates)
+                    switch ($file.Extension)
+                    {
                         '.exe' {
+                            # Installation type for executables (i.e., Microsoft Office Updates).
                             Start-ADTProcess -Path $file.FullName -Parameters '/quiet /norestart' -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
-                        #  Installation type for Windows updates using Windows Update Standalone Installer
                         '.msu' {
+                            # Installation type for Windows updates using Windows Update Standalone Installer.
                             Start-ADTProcess -Path (Get-ADTEnvironment).exeWusa -Parameters "`"$($file.FullName)`" /quiet /norestart" -WindowStyle 'Hidden' -IgnoreExitCodes '*'
                         }
-                        #  Installation type for Windows Installer Patch
                         '.msp' {
+                            # Installation type for Windows Installer Patch
                             Start-ADTMsiProcess -Action 'Patch' -Path $file.FullName -IgnoreExitCodes '*'
                         }
                     }
                 }
-                Else {
+                else
+                {
                     Write-ADTLogEntry -Message "KB Number [$kbNumber] is already installed. Continue..."
                 }
             }
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
