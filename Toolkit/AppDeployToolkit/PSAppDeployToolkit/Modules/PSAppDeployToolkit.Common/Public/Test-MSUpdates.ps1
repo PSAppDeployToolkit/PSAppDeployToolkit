@@ -1,144 +1,90 @@
-﻿Function Test-MSUpdates {
+﻿function Test-ADTMSUpdates
+{
     <#
-.SYNOPSIS
 
-Test whether a Microsoft Windows update is installed.
+    .SYNOPSIS
+    Test whether a Microsoft Windows update is installed.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Test whether a Microsoft Windows update is installed.
 
-Test whether a Microsoft Windows update is installed.
+    .PARAMETER KbNumber
+    KBNumber of the update.
 
-.PARAMETER KBNumber
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-KBNumber of the update.
+    .OUTPUTS
+    System.Boolean. Returns $true if the update is installed, otherwise returns $false.
 
-.PARAMETER ContinueOnError
+    .EXAMPLE
+    Test-ADTMSUpdates -KBNumber 'KB2549864'
 
-Suppress writing log message to console on failure to write message to log file. Default is: $true.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.INPUTS
+    #>
 
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.Boolean
-
-Returns $true if the update is installed, otherwise returns $false.
-
-.EXAMPLE
-
-Test-MSUpdates -KBNumber 'KB2549864'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter the KB Number for the Microsoft Update')]
-        [ValidateNotNullorEmpty()]
-        [String]$KBNumber,
-        [Parameter(Mandatory = $false, Position = 1)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [ValidateNotNullOrEmpty()]
+        [System.String]$KbNumber
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction
+        }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            Write-ADTLogEntry -Message "Checking if Microsoft Update [$kbNumber] is installed."
 
-            ## Default is not found
-            [Boolean]$kbFound = $false
-
-            ## Check for update using built in PS cmdlet which uses WMI in the background to gather details
-            Get-HotFix -Id $kbNumber -ErrorAction 'Ignore' | ForEach-Object { $kbFound = $true }
-
-            If (-not $kbFound) {
+    process {
+        try
+        {
+            # Attempt to get the update via Get-HotFix first as it's cheaper.
+            Write-ADTLogEntry -Message "Checking if Microsoft Update [$KbNumber] is installed."
+            if (!($kbFound = !!(Get-HotFix -Id $KbNumber -ErrorAction Ignore)))
+            {
                 Write-ADTLogEntry -Message 'Unable to detect Windows update history via Get-Hotfix cmdlet. Trying via COM object.'
-
-                ## Check for update using ComObject method (to catch Office updates)
-                [__ComObject]$UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
-                [__ComObject]$UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
-                #  Indicates whether the search results include updates that are superseded by other updates in the search results
-                $UpdateSearcher.IncludePotentiallySupersededUpdates = $false
-                #  Indicates whether the UpdateSearcher goes online to search for updates.
-                $UpdateSearcher.Online = $false
-                [Int32]$UpdateHistoryCount = $UpdateSearcher.GetTotalHistoryCount()
-                If ($UpdateHistoryCount -gt 0) {
-                    [PSObject]$UpdateHistory = $UpdateSearcher.QueryHistory(0, $UpdateHistoryCount) |
-                        Select-Object -Property 'Title', 'Date',
-                        @{Name = 'Operation'; Expression = { Switch ($_.Operation) {
-                                    1 {
-                                        'Installation'
-                                    }; 2 {
-                                        'Uninstallation'
-                                    }; 3 {
-                                        'Other'
-                                    }
-                                } }
-                        },
-                        @{Name = 'Status'; Expression = { Switch ($_.ResultCode) {
-                                    0 {
-                                        'Not Started'
-                                    }; 1 {
-                                        'In Progress'
-                                    }; 2 {
-                                        'Successful'
-                                    }; 3 {
-                                        'Incomplete'
-                                    }; 4 {
-                                        'Failed'
-                                    }; 5 {
-                                        'Aborted'
-                                    }
-                                } }
-                        },
-                        'Description' |
-                        Sort-Object -Property 'Date' -Descending
-                    ForEach ($Update in $UpdateHistory) {
-                        If (($Update.Operation -ne 'Other') -and ($Update.Title -match "\($KBNumber\)")) {
-                            $LatestUpdateHistory = $Update
-                            Break
-                        }
-                    }
-                    If (($LatestUpdateHistory.Operation -eq 'Installation') -and ($LatestUpdateHistory.Status -eq 'Successful')) {
-                        Write-ADTLogEntry -Message "Discovered the following Microsoft Update:`n$($LatestUpdateHistory | Format-List | Out-String)"
-                        $kbFound = $true
-                    }
-                    $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSession)
-                    $null = [Runtime.Interopservices.Marshal]::ReleaseComObject($UpdateSearcher)
+                $updateSearcher = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher()
+                $updateSearcher.IncludePotentiallySupersededUpdates = $false
+                $updateSearcher.Online = $false
+                if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -gt 0)
+                {
+                    $kbFound = !!($updateSearcher.QueryHistory(0, $updateHistoryCount) | Where-Object {($_.Operation -ne 'Other') -and ($_.Title -match "\($KBNumber\)") -and ($_.Operation -eq 1) -and ($_.ResultCode -eq 2)})
                 }
-                Else {
+                else
+                {
                     Write-ADTLogEntry -Message 'Unable to detect Windows update history via COM object.'
                 }
             }
 
-            ## Return Result
-            If (-not $kbFound) {
-                Write-ADTLogEntry -Message "Microsoft Update [$kbNumber] is not installed."
-                Write-Output -InputObject ($false)
+            # Return result.
+            if ($kbFound)
+            {
+                Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is installed."
+                return $true
             }
-            Else {
-                Write-ADTLogEntry -Message "Microsoft Update [$kbNumber] is installed."
-                Write-Output -InputObject ($true)
-            }
+            Write-ADTLogEntry -Message "Microsoft Update [$KbNumber] is not installed."
+            return $false
         }
-        Catch {
+        catch
+        {
             Write-ADTLogEntry -Message "Failed discovering Microsoft Update [$kbNumber].`n$(Resolve-ADTError)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed discovering Microsoft Update [$kbNumber]: $($_.Exception.Message)"
-            }
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }

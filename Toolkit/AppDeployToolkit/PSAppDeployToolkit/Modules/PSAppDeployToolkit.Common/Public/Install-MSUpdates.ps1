@@ -74,7 +74,7 @@ https://psappdeploytoolkit.com
                 }
 
                 #  Check to see whether the KB is already installed
-                If (-not (Test-MSUpdates -KBNumber $kbNumber)) {
+                If (-not (Test-ADTMSUpdates -KBNumber $kbNumber)) {
                     Write-ADTLogEntry -Message "KB Number [$KBNumber] was not detected and will be installed."
                     Switch ($file.Extension) {
                         #  Installation type for executables (i.e., Microsoft Office Updates)
