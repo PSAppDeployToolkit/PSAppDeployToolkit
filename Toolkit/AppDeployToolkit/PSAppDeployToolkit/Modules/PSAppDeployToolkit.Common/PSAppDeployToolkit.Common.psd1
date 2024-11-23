@@ -115,7 +115,7 @@ FunctionsToExport = @(
     'Set-ADTItemPermission'
     'Set-ADTMsiProperty'
     'Set-ADTRegistryKey'
-    'Set-Shortcut'
+    'Set-ADTShortcut'
     'Start-ADTMsiProcess'
     'Start-ADTMspProcess'
     'Start-ADTProcess'

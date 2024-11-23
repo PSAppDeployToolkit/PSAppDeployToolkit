@@ -2740,6 +2740,83 @@ function Get-Shortcut
 
 #---------------------------------------------------------------------------
 #
+# Wrapper around Set-ADTShortcut
+#
+#---------------------------------------------------------------------------
+
+function Set-Shortcut
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Default')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Pipeline')]
+        [ValidateNotNullOrEmpty()]
+        [System.Object]$PathHash,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$TargetPath,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Arguments,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$IconLocation,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$IconIndex,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Description,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$WorkingDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Normal', 'Maximized', 'Minimized', 'DontChange')]
+        [System.String]$WindowStyle,
+
+        [Parameter(Mandatory = $false)]
+        [System.Nullable[System.Boolean]]$RunAsAdmin,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Hotkey,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('PathHash'))
+    {
+        $PSBoundParameters.Path = $PSBoundParameters.PathHash
+        [System.Void]$PSBoundParameters.Remove('PathHash')
+    }
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Set-ADTShortcut @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
 # Compatibility extension support.
 #
 #---------------------------------------------------------------------------
