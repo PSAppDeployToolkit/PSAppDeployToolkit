@@ -416,12 +416,6 @@ function Start-ADTProcess
                         # Get the exit code for the process.
                         $returnCode = $process.ExitCode
 
-                        # Update the session's last exit code with the value if externally called.
-                        if ($adtSession -and $extInvoker)
-                        {
-                            $adtSession.SetExitCode($returnCode)
-                        }
-
                         # Process all streams.
                         if (!$process.StartInfo.UseShellExecute)
                         {
@@ -538,6 +532,12 @@ function Start-ADTProcess
                         throw (New-ADTErrorRecord @naerParams)
                     }
 
+                    # Update the session's last exit code with the value if externally called.
+                    if ($adtSession -and $extInvoker)
+                    {
+                        $adtSession.SetExitCode($returnCode)
+                    }
+
                     # If the passthru switch is specified, return the exit code and any output from process.
                     if ($PassThru)
                     {
@@ -556,6 +556,11 @@ function Start-ADTProcess
             # Set up parameters for Invoke-ADTFunctionErrorHandler.
             if ($null -ne $returnCode)
             {
+                # Update the session's last exit code with the value if externally called.
+                if ($adtSession -and $extInvoker -and ($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$'))
+                {
+                    $adtSession.SetExitCode($returnCode)
+                }
                 Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage $_.Exception.Message -DisableErrorResolving
             }
             else
