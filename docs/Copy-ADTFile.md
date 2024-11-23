@@ -108,7 +108,8 @@ Accept wildcard characters: False
 ```
 
 ### -ContinueFileCopyOnError
-If Path is an array, continue copying files if an error is encountered.
+Continue copying files if an error is encountered.
+This will continue the deployment script and will warn about files that failed to be copied.
 
 ```yaml
 Type: SwitchParameter

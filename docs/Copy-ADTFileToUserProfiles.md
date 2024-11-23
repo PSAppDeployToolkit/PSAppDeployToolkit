@@ -247,7 +247,6 @@ Accept wildcard characters: False
 ### -ContinueFileCopyOnError
 Continue copying files if an error is encountered.
 This will continue the deployment script and will warn about files that failed to be copied.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter
