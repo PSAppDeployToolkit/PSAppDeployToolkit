@@ -21,7 +21,7 @@
                 b) If only -MsiPath was specified, then <MsiPath>.mst
 
     .PARAMETER TransformProperties
-    Hashtable which contains calls to Set-MsiProperty for configuring the desired properties which should be included in new transform file.
+    Hashtable which contains calls to Set-ADTMsiProperty for configuring the desired properties which should be included in new transform file.
 
     Example hashtable: [Hashtable]$TransformProperties = @{ 'ALLUSERS' = '1' }
 
@@ -143,7 +143,7 @@
             # Set the MSI properties in the temporary copy of the MSI database.
             foreach ($property in $TransformProperties.GetEnumerator())
             {
-                Set-MsiProperty -DataBase $TempMsiPathDatabase -PropertyName $property.Key -PropertyValue $property.Value
+                Set-ADTMsiProperty -DataBase $TempMsiPathDatabase -PropertyName $property.Key -PropertyValue $property.Value
             }
 
             # Commit the new properties to the temporary copy of the MSI database
