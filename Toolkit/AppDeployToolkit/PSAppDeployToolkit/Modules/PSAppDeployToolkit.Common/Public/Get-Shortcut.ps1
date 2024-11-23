@@ -1,154 +1,126 @@
-﻿Function Get-Shortcut {
+﻿function Get-ADTShortcut
+{
     <#
-.SYNOPSIS
 
-Get information from a new .lnk or .url type shortcut
+    .SYNOPSIS
+    Get information from a new .lnk or .url type shortcut
 
-.DESCRIPTION
+    .DESCRIPTION
+    Get information from a new .lnk or .url type shortcut. Returns a hashtable.
 
-Get information from a new .lnk or .url type shortcut. Returns a hashtable.
+    .PARAMETER Path
+    Path to the shortcut to get information from.
 
-.PARAMETER Path
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-Path to the shortcut to get information from
+    .OUTPUTS
+    System.Collections.Hashtable. Returns a hashtable with the following keys:
+    - TargetPath
+    - Arguments
+    - Description
+    - WorkingDirectory
+    - WindowStyle
+    - Hotkey
+    - IconLocation
+    - IconIndex
+    - RunAsAdmin
 
-.PARAMETER ContinueOnError
+    .EXAMPLE
+    Get-ADTShortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
 
-Continue if an error is encountered. Default is: $true.
+    .NOTES
+    Url shortcuts only support TargetPath, IconLocation and IconIndex.
 
-.INPUTS
+    .LINK
+    https://psappdeploytoolkit.com
 
-None
+    #>
 
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.Collections.Hashtable.
-
-Returns a hashtable with the following keys
-- TargetPath
-- Arguments
-- Description
-- WorkingDirectory
-- WindowStyle
-- Hotkey
-- IconLocation
-- IconIndex
-- RunAsAdmin
-
-.EXAMPLE
-
-Get-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
-
-.NOTES
-
-Url shortcuts only support TargetPath, IconLocation and IconIndex.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullorEmpty()]
-        [String]$Path,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [ValidateScript({
+            if (![System.IO.File]::Exists($_) -or (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url')))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
+            }
+            return !!$_
+        })]
+        [System.String]$Path
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction
+        }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            $extension = [IO.Path]::GetExtension($Path).ToLower()
-            If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
-                Write-ADTLogEntry -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw
-                }
-                Return
+
+    process {
+        try
+        {
+            # Make sure .NET's current directory is synced with PowerShell's.
+            try
+            {
+                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+                $Output = @{Path = [System.IO.Path]::GetFullPath($Path)}
             }
-            Try {
-                # Make sure Net framework current dir is synced with powershell cwd
-                [IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider 'FileSystem').ProviderPath)
-                # Get full path
-                [String]$FullPath = [IO.Path]::GetFullPath($Path)
-            }
-            Catch {
+            catch
+            {
                 Write-ADTLogEntry -Message "Specified path [$Path] is not valid." -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw
-                }
-                Return
+                throw
             }
 
-            $Output = @{ Path = $FullPath }
-            If ($extension -eq '.url') {
-                [String[]]$URLFile = [IO.File]::ReadAllLines($Path)
-                For ($i = 0; $i -lt $URLFile.Length; $i++) {
-                    $URLFile[$i] = $URLFile[$i].TrimStart()
-                    If ($URLFile[$i].StartsWith('URL=')) {
-                        $Output.TargetPath = $URLFile[$i].Replace('URL=', '')
+            # Build out remainder of object.
+            if ($Path -match '\.url$')
+            {
+                [System.IO.File]::ReadAllLines($Path).ForEach({
+                    switch ($_)
+                    {
+                        {$_.StartsWith('URL=')} {$Output.TargetPath = $_.Replace('URL=', $null)}
+                        {$_.StartsWith('IconIndex=')} {$Output.IconIndex = $_.Replace('IconIndex=', $null)}
+                        {$_.StartsWith('IconFile=')} {$Output.IconLocation = $_.Replace('URIconFileL=', $null)}
                     }
-                    ElseIf ($URLFile[$i].StartsWith('IconIndex=')) {
-                        $Output.IconIndex = $URLFile[$i].Replace('IconIndex=', '')
-                    }
-                    ElseIf ($URLFile[$i].StartsWith('IconFile=')) {
-                        $Output.IconLocation = $URLFile[$i].Replace('IconFile=', '')
-                    }
-                }
+                })
+                return [PSADT.Types.ShortcutUrl]$Output
             }
-            Else {
+            else
+            {
                 $shortcut = (Get-ADTEnvironment).Shell.CreateShortcut($FullPath)
-                ## TargetPath
                 $Output.TargetPath = $shortcut.TargetPath
-                ## Arguments
                 $Output.Arguments = $shortcut.Arguments
-                ## Description
                 $Output.Description = $shortcut.Description
-                ## Working directory
                 $Output.WorkingDirectory = $shortcut.WorkingDirectory
-                ## Window Style
-                Switch ($shortcut.WindowStyle) {
-                    1 {
-                        $Output.WindowStyle = 'Normal'
-                    }
-                    3 {
-                        $Output.WindowStyle = 'Maximized'
-                    }
-                    7 {
-                        $Output.WindowStyle = 'Minimized'
-                    }
-                    Default {
-                        $Output.WindowStyle = 'Normal'
-                    }
-                }
-                ## Hotkey
                 $Output.Hotkey = $shortcut.Hotkey
-                ## Icon
-                [String[]]$Split = $shortcut.IconLocation.Split(',')
-                $Output.IconLocation = $Split[0]
-                $Output.IconIndex = $Split[1]
-                ## Remove the variable
-                $shortcut = $null
-                ## Run as admin
-                [Byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
-                $Output.RunAsAdmin = [Boolean]($filebytes[21] -band 32)
+                $Output.IconLocation, $Output.IconIndex = $shortcut.IconLocation.Split(',')
+                $Output.RunAsAdmin = !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
+                $Output.WindowStyle = switch ($shortcut.WindowStyle)
+                {
+                    1 {'Normal'}
+                    3 {'Maximized'}
+                    7 {'Minimized'}
+                    default {'Normal'}
+                }
+                return [PSADT.Types.ShortcutLnk]$Output
             }
-            Write-Output -InputObject ($Output)
         }
-        Catch {
+        catch
+        {
             Write-ADTLogEntry -Message "Failed to read the shortcut [$Path].`n$(Resolve-ADTError)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to read the shortcut [$Path]: $($_.Exception.Message)"
-            }
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
