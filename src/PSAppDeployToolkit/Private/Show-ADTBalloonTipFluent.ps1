@@ -106,11 +106,11 @@ function Show-ADTBalloonTipFluent
         ToastText = $BalloonTipText
     }
 
-    # If we're running as the active user, display directly; otherwise, run via & $Script:CommandTable.'Execute-ProcessAsUser'.
+    # If we're running as the active user, display directly; otherwise, run via Start-ADTProcessAsUser.
     if ($adtEnv.ProcessNTAccount -ne $adtEnv.runAsActiveUser.NTAccount)
     {
         & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying toast notification with message [$BalloonTipText] using & $Script:CommandTable.'Execute-ProcessAsUser'."
-        & $Script:CommandTable.'Execute-ProcessAsUser' -Path $adtEnv.envPSProcessPath -Parameters "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "& {${Function:New-ADTToastNotification}} $(($natnParams | & $Script:CommandTable.'Resolve-ADTBoundParameters').Replace('"', '\"'))")" -Wait -RunLevel LeastPrivilege
+        & $Script:CommandTable.'Start-ADTProcessAsUser' -FilePath $adtEnv.envPSProcessPath -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(& $Script:CommandTable.'Out-ADTPowerShellEncodedCommand' -Command "& {${Function:New-ADTToastNotification}} $(($natnParams | & $Script:CommandTable.'Resolve-ADTBoundParameters').Replace('"', '\"'))")" -Wait -PrimaryActiveUserSession -HideWindow
         return
     }
     & $Script:CommandTable.'Write-ADTLogEntry' -Message "Displaying toast notification with message [$BalloonTipText]."

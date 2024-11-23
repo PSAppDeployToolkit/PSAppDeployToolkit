@@ -314,23 +314,7 @@ namespace PSADT.ProcessEx
                 {
                     startInfo.EnvironmentVariables[kvp.Key] = kvp.Value;
                 }
-
-                if (options.FilePath.EndsWith("powershell.exe", StringComparison.OrdinalIgnoreCase))
-                {
-                    var psArgs = new List<string>
-                    {
-                        "-NoLogo",
-                        "-NoProfile",
-                        "-NonInteractive",
-                        $"-ExecutionPolicy {(options.BypassPsExecutionPolicy ? "Bypass" : options.PsExecutionPolicy)}",
-                        "-Command"
-                    };
-                    psArgs.AddRange(options.ArgumentList);
-                    startInfo.Arguments = string.Join(" ", psArgs);
-                }
-
                 UnifiedLogger.Create().Message($"Created ProcessStartInfo: FileName={startInfo.FileName}, Arguments={startInfo.Arguments}").Severity(LogLevel.Information);
-
                 return startInfo;
             }
             catch (Exception ex)
