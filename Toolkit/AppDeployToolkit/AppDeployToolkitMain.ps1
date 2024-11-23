@@ -1842,3 +1842,109 @@ function Test-Battery
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTBattery]. Please migrate your scripts to use the new function." -Severity 2
     Test-ADTBattery @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Start-ADTServiceAndDependencies
+#
+#---------------------------------------------------------------------------
+
+function Start-ServiceAndDependencies
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SkipServiceExistsTest,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SkipDependentServices,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.TimeSpan]$PendingStatusWait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2
+    $PSBoundParameters.Service = $Name
+    [System.Void]$PSBoundParameters.Remove('Name')
+    if ($SkipServiceExistsTest)
+    {
+        Write-ADTLogEntry -Message "The parameter '-SkipServiceExistsTest' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        [System.Void]$PSBoundParameters.Remove('SkipServiceExistsTest')
+    }
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Start-ADTServiceAndDependencies @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Stop-ADTServiceAndDependencies
+#
+#---------------------------------------------------------------------------
+
+function Stop-ServiceAndDependencies
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SkipServiceExistsTest,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SkipDependentServices,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.TimeSpan]$PendingStatusWait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity 2
+    $PSBoundParameters.Service = $Name
+    [System.Void]$PSBoundParameters.Remove('Name')
+    if ($SkipServiceExistsTest)
+    {
+        Write-ADTLogEntry -Message "The parameter '-SkipServiceExistsTest' is discontinued and no longer has any effect." -Severity 2 -Source $MyInvocation.MyCommand.Name
+        [System.Void]$PSBoundParameters.Remove('SkipServiceExistsTest')
+    }
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Stop-ADTServiceAndDependencies @PSBoundParameters
+}
