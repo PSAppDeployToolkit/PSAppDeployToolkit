@@ -325,7 +325,6 @@ function Show-ADTInstallationPromptClassic
     $formInstallationPrompt.AcceptButton = $buttonDefault
     $formInstallationPrompt.ActiveControl = $buttonDefault
     $formInstallationPrompt.ResumeLayout()
-    Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig)]."
 
     # Start the timer.
     $installPromptTimer.Start()

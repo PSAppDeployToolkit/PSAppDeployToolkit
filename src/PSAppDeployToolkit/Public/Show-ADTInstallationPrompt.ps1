@@ -209,6 +209,7 @@ function Show-ADTInstallationPrompt
                 }
 
                 # Call the underlying function to open the message prompt.
+                Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig)]."
                 return & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters -ADTConfig $adtConfig
             }
             catch

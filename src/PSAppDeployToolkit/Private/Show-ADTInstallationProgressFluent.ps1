@@ -41,7 +41,6 @@ function Show-ADTInstallationProgressFluent
     if (!$Script:Dialogs.Fluent.ProgressWindow.Running)
     {
         # Instantiate a new progress window object and start it up.
-        Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
         [PSADT.UserInterface.UnifiedADTApplication]::ShowProgressDialog(
             $WindowTitle,
             $WindowSubtitle,
