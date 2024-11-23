@@ -13,7 +13,7 @@ function Get-ADTProcessHandles
 
     # Get CSV data from the binary and confirm success.
     $exeHandle = "$Script:PSScriptRoot\bin\$([PSADT.OperatingSystem.OSHelper]::GetArchitecture())\handle\handle.exe"
-    $exeHandleResults = & $exeHandle -nobanner -v 2>&1
+    $exeHandleResults = & $exeHandle -accepteula -nobanner -v 2>&1
     if ($Global:LASTEXITCODE -ne 0)
     {
         $naerParams = @{
