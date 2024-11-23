@@ -2313,3 +2313,39 @@ function Unregister-DLL
     }
     Unregister-ADTDllFile @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Remove-ADTFolder
+#
+#---------------------------------------------------------------------------
+
+function Remove-Folder
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$DisableRecursion,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFolder]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Remove-ADTFolder @PSBoundParameters
+}

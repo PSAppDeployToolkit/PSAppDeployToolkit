@@ -105,7 +105,7 @@ FunctionsToExport = @(
     'Remove-ADTEdgeExtension'
     'Remove-ADTFile'
     'Remove-ADTFileFromUserProfiles'
-    'Remove-Folder'
+    'Remove-ADTFolder'
     'Remove-MSIApplications'
     'Remove-ADTRegistryKey'
     'Send-Keys'
