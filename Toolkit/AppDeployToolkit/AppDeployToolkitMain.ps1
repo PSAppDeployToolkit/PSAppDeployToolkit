@@ -63,16 +63,6 @@ if (Test-Path -LiteralPath Variable:PSCmdlet)
 
 #---------------------------------------------------------------------------
 #
-# Legacy aliases that need to be refactored.
-#
-#---------------------------------------------------------------------------
-
-Set-Alias -Name 'Register-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
-Set-Alias -Name 'Unregister-DLL' -Value 'Invoke-RegisterOrUnregisterDLL'
-
-
-#---------------------------------------------------------------------------
-#
 # Wrapper around Write-ADTLogEntry
 #
 #---------------------------------------------------------------------------
@@ -2219,4 +2209,107 @@ function Get-PendingReboot
 {
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPendingReboot]. Please migrate your scripts to use the new function." -Severity 2
     Get-ADTPendingReboot
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Invoke-ADTDllFileAction
+#
+#---------------------------------------------------------------------------
+
+function Invoke-RegisterOrUnregisterDLL
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$FilePath,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Register', 'Unregister')]
+        [System.String]$DLLAction,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTDllFileAction]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Invoke-ADTDllFileAction @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Register-ADTDllFile
+#
+#---------------------------------------------------------------------------
+
+function Register-DLL
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$FilePath,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Register-ADTDllFile]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Register-ADTDllFile @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Unregister-ADTDllFile
+#
+#---------------------------------------------------------------------------
+
+function Unregister-DLL
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$FilePath,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unregister-ADTDllFile]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Unregister-ADTDllFile @PSBoundParameters
 }
