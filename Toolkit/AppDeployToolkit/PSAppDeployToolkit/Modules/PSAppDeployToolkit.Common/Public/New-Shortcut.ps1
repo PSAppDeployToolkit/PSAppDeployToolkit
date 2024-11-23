@@ -1,245 +1,244 @@
-﻿Function New-Shortcut {
+﻿function New-ADTShortcut
+{
     <#
-.SYNOPSIS
 
-Creates a new .lnk or .url type shortcut
+    .SYNOPSIS
+    Creates a new .lnk or .url type shortcut
 
-.DESCRIPTION
+    .DESCRIPTION
+    Creates a new shortcut .lnk or .url file, with configurable options
 
-Creates a new shortcut .lnk or .url file, with configurable options
+    .PARAMETER Path
+    Path to save the shortcut
 
-.PARAMETER Path
+    .PARAMETER TargetPath
+    Target path or URL that the shortcut launches
 
-Path to save the shortcut
+    .PARAMETER Arguments
+    Arguments to be passed to the target path
 
-.PARAMETER TargetPath
+    .PARAMETER IconLocation
+    Location of the icon used for the shortcut
 
-Target path or URL that the shortcut launches
+    .PARAMETER IconIndex
+    The index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
 
-.PARAMETER Arguments
+    .PARAMETER Description
+    Description of the shortcut
 
-Arguments to be passed to the target path
+    .PARAMETER WorkingDirectory
+    Working Directory to be used for the target path
 
-.PARAMETER IconLocation
+    .PARAMETER WindowStyle
+    Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
 
-Location of the icon used for the shortcut
+    .PARAMETER RunAsAdmin
+    Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
 
-.PARAMETER IconIndex
+    .PARAMETER Hotkey
+    Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
 
-The index of the icon. Executables, DLLs, ICO files with multiple icons need the icon index to be specified. This parameter is an Integer. The first index is 0.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER Description
+    .OUTPUTS
+    None. This function does not return any output.
 
-Description of the shortcut
+    .EXAMPLE
+    New-ADTShortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\System32\notepad.exe" -IconLocation "$envWinDir\System32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
 
-.PARAMETER WorkingDirectory
+    .NOTES
+    Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 
-Working Directory to be used for the target path
+    .LINK
+    https://psappdeploytoolkit.com
 
-.PARAMETER WindowStyle
+    #>
 
-Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
-
-.PARAMETER RunAsAdmin
-
-Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
-
-.PARAMETER Hotkey
-
-Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F"
-
-.PARAMETER ContinueOnError
-
-Continue if an error is encountered. Default is: $true.
-
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None. This function does not return any output.
-
-.EXAMPLE
-
-New-Shortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$envWinDir\System32\notepad.exe" -IconLocation "$envWinDir\System32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$envHomeDrive\$envHomePath"
-
-.NOTES
-
-Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullorEmpty()]
-        [String]$Path,
+        [ValidateScript({
+            if (![System.IO.Path]::GetExtension($Path).ToLower().Equals('.lnk') -and ![System.IO.Path]::GetExtension($Path).ToLower().Equals('.url'))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not have the correct extension.'))
+            }
+            return !!$_
+        })]
+        [System.String]$Path,
+
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$TargetPath,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$TargetPath,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$Arguments,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$IconLocation,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Int32]$IconIndex,
+        [System.String]$Arguments,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$Description,
+        [System.String]$IconLocation,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$WorkingDirectory,
+        [System.Int32]$IconIndex,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Description,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$WorkingDirectory,
+
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized')]
-        [String]$WindowStyle,
+        [System.String]$WindowStyle,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$RunAsAdmin,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$Hotkey,
+        [System.Management.Automation.SwitchParameter]$RunAsAdmin,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.String]$Hotkey
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction
+        }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            $extension = [IO.Path]::GetExtension($Path).ToLower()
-            If ((-not $extension) -or (($extension -ne '.lnk') -and ($extension -ne '.url'))) {
-                Write-ADTLogEntry -Message "Specified file [$Path] does not have a valid shortcut extension: .url .lnk" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw
-                }
-                Return
+
+    process {
+        try
+        {
+            # Make sure .NET's current directory is synced with PowerShell's.
+            try
+            {
+                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+                $FullPath = [System.IO.Path]::GetFullPath($Path)
             }
-            Try {
-                # Make sure Net framework current dir is synced with powershell cwd
-                [IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider 'FileSystem').ProviderPath)
-                # Get full path
-                [String]$FullPath = [IO.Path]::GetFullPath($Path)
-            }
-            Catch {
+            catch
+            {
                 Write-ADTLogEntry -Message "Specified path [$Path] is not valid." -Severity 3
-                If (-not $ContinueOnError) {
+                throw
+            }
+
+            # Make sure directory is present before continuing.
+            if (!($PathDirectory = [System.IO.Path]::GetDirectoryName($FullPath)))
+            {
+                # The path is root or no filename supplied.
+                if (![System.IO.Path]::GetFileNameWithoutExtension($FullPath))
+                {
+                    # No filename supplied.
+                    $naerParams = @{
+                        Exception = [System.ArgumentException]::new("Specified path [$FullPath] is a directory and not a file.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                        ErrorId = 'ShortcutPathInvalid'
+                        TargetObject = $FullPath
+                        RecommendedAction = "Please confirm the provided value and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+            }
+            elseif (!(Test-Path -LiteralPath $PathDirectory -PathType Container))
+            {
+                try
+                {
+                    Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]."
+                    [System.Void](New-Item -LiteralPath $PathDirectory -ItemType Directory -Force)
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory].`n$(Resolve-ADTError)" -Severity 3
                     Throw
                 }
-                Return
             }
 
-            Try {
-                [String]$PathDirectory = [IO.Path]::GetDirectoryName($FullPath)
-                If (-not $PathDirectory) {
-                    # The path is root or no filename supplied
-                    If (-not [IO.Path]::GetFileNameWithoutExtension($FullPath)) {
-                        # No filename supplied
-                        If (-not $ContinueOnError) {
-                            Throw
-                        }
-                        Return
-                    }
-                    # Continue without creating a folder because the path is root
-                }
-                ElseIf (-not (Test-Path -LiteralPath $PathDirectory -PathType 'Container' -ErrorAction 'Stop')) {
-                    Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]."
-                    $null = New-Item -Path $PathDirectory -ItemType 'Directory' -Force -ErrorAction 'Stop'
-                }
-            }
-            Catch {
-                Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory].`n$(Resolve-ADTError)" -Severity 3
-                Throw
-            }
-
-            If (Test-Path -Path $FullPath -PathType 'Leaf') {
+            # Remove any pre-existing shortcut first.
+            if (Test-Path -LiteralPath $FullPath -PathType Leaf)
+            {
                 Write-ADTLogEntry -Message "The shortcut [$FullPath] already exists. Deleting the file..."
-                Remove-ADTFile -Path $FullPath
+                Remove-ADTFile -LiteralPath $FullPath
             }
 
+            # Build out the shortcut.
             Write-ADTLogEntry -Message "Creating shortcut [$FullPath]."
-            If ($extension -eq '.url') {
-                [String[]]$URLFile = '[InternetShortcut]'
-                $URLFile += "URL=$targetPath"
-                If ($null -ne $IconIndex) {
+            if ($Path -match '\.url$')
+            {
+                [String[]]$URLFile = '[InternetShortcut]', "URL=$TargetPath"
+                if ($null -ne $IconIndex)
+                {
                     $URLFile += "IconIndex=$IconIndex"
                 }
-                If ($IconLocation) {
+                if ($IconLocation)
+                {
                     $URLFile += "IconFile=$IconLocation"
                 }
-                [IO.File]::WriteAllLines($FullPath, $URLFile, (New-Object -TypeName 'Text.UTF8Encoding' -ArgumentList ($false)))
+                [System.IO.File]::WriteAllLines($FullPath, $URLFile, [System.Text.UTF8Encoding]::new($false))
             }
-            Else {
+            else
+            {
                 $shortcut = (Get-ADTEnvironment).Shell.CreateShortcut($FullPath)
-                ## TargetPath
-                $shortcut.TargetPath = $targetPath
-                ## Arguments
-                If ($arguments) {
-                    $shortcut.Arguments = $arguments
+                $shortcut.TargetPath = $TargetPath
+                if ($Arguments)
+                {
+                    $shortcut.Arguments = $Arguments
                 }
-                ## Description
-                If ($description) {
-                    $shortcut.Description = $description
+                if ($Description)
+                {
+                    $shortcut.Description = $Description
                 }
-                ## Working directory
-                If ($workingDirectory) {
-                    $shortcut.WorkingDirectory = $workingDirectory
+                if ($WorkingDirectory)
+                {
+                    $shortcut.WorkingDirectory = $WorkingDirectory
                 }
-                ## Window Style
-                Switch ($windowStyle) {
-                    'Normal' {
-                        $windowStyleInt = 1
-                    }
-                    'Maximized' {
-                        $windowStyleInt = 3
-                    }
-                    'Minimized' {
-                        $windowStyleInt = 7
-                    }
-                    Default {
-                        $windowStyleInt = 1
-                    }
-                }
-                $shortcut.WindowStyle = $windowStyleInt
-                ## Hotkey
-                If ($Hotkey) {
+                if ($Hotkey)
+                {
                     $shortcut.Hotkey = $Hotkey
                 }
-                ## Icon
-                If ($null -eq $IconIndex) {
-                    $IconIndex = 0
+                if ($IconLocation)
+                {
+                    $shortcut.IconLocation = $IconLocation + ",$(if ($null -eq $IconIndex) {0} else {$IconIndex})"
                 }
-                If ($IconLocation) {
-                    $shortcut.IconLocation = $IconLocation + ",$IconIndex"
+                $shortcut.WindowStyle = switch ($WindowStyle)
+                {
+                    Normal {1}
+                    Maximized {3}
+                    Minimized {7}
+                    default {1}
                 }
-                ## Save the changes
+
+                # Save the changes.
                 $shortcut.Save()
 
-                ## Set shortcut to run program as administrator
-                If ($RunAsAdmin) {
+                # Set shortcut to run program as administrator.
+                if ($RunAsAdmin)
+                {
                     Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
-                    [Byte[]]$filebytes = [IO.FIle]::ReadAllBytes($FullPath)
-                    $filebytes[21] = $filebytes[21] -bor 32
-                    [IO.FIle]::WriteAllBytes($FullPath, $filebytes)
+                    $fileBytes = [System.IO.FIle]::ReadAllBytes($FullPath)
+                    $fileBytes[21] = $filebytes[21] -bor 32
+                    [System.IO.FIle]::WriteAllBytes($FullPath, $fileBytes)
                 }
             }
         }
-        Catch {
+        catch
+        {
             Write-ADTLogEntry -Message "Failed to create shortcut [$Path].`n$(Resolve-ADTError)" -Severity 3
-            If (-not $ContinueOnError) {
-                Throw "Failed to create shortcut [$Path]: $($_.Exception.Message)"
-            }
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
