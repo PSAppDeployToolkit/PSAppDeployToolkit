@@ -36,6 +36,65 @@ namespace PSADT.PInvoke
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct UNICODE_STRING
+    {
+        public ushort Length;
+        public ushort MaximumLength;
+        public IntPtr Buffer;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct UNICODE_STRING_32
+    {
+        public ushort Length;
+        public ushort MaximumLength;
+        public int Buffer;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct UNICODE_STRING_WOW64
+    {
+        public ushort Length;
+        public ushort MaximumLength;
+        public long Buffer;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PROCESS_BASIC_INFORMATION
+    {
+        public IntPtr ExitStatus;
+        public IntPtr PebBaseAddress;
+        public IntPtr AffinityMask;
+        public IntPtr BasePriority;
+        public UIntPtr UniqueProcessId;
+        public IntPtr InheritedFromUniqueProcessId;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PROCESS_BASIC_INFORMATION_WOW64
+    {
+        public long ExitStatus;
+        public long PebBaseAddress;
+        public long AffinityMask;
+        public long BasePriority;
+        public long UniqueProcessId;
+        public long InheritedFromUniqueProcessId;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TOKEN_USER
+    {
+        public SID_AND_ATTRIBUTES User;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SID_AND_ATTRIBUTES
+    {
+        public IntPtr Sid;
+        public uint Attributes;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct FILETIME
     {
         public uint dwLowDateTime;
@@ -1100,6 +1159,32 @@ namespace PSADT.PInvoke
         /// </para>
         /// </summary>
         public string lgrmi3_domainandname;
+    }
+
+    #endregion
+
+    #region PInvoke: rstrtmgr.dll
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RM_UNIQUE_PROCESS
+    {
+        public int dwProcessId;
+        public System.Runtime.InteropServices.ComTypes.FILETIME ProcessStartTime;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct RM_PROCESS_INFO
+    {
+        public RM_UNIQUE_PROCESS Process;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string strAppName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string strServiceShortName;
+        public int ApplicationType;
+        public uint AppStatus;
+        public uint TSSessionId;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool bRestartable;
     }
 
     #endregion
