@@ -109,7 +109,7 @@ FunctionsToExport = @(
     'Remove-MSIApplications'
     'Remove-ADTRegistryKey'
     'Send-Keys'
-    'Set-ActiveSetup'
+    'Set-ADTActiveSetup'
     'Set-ADTIniValue'
     'Set-ADTServiceStartMode'
     'Set-ItemPermission'
