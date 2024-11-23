@@ -90,6 +90,28 @@ namespace PSADT
             public string[] PendingFileRenameOperations;
             public string[] ErrorMsg;
         }
+
+        public abstract class ShortcutBase
+        {
+            public string Path;
+            public string TargetPath;
+            public string IconIndex;
+            public string IconLocation;
+        }
+
+        public class ShortcutUrl : ShortcutBase
+        {
+        }
+
+        public class ShortcutLnk : ShortcutBase
+        {
+            public string Arguments;
+            public string Description;
+            public string WorkingDirectory;
+            public string WindowStyle;
+            public string Hotkey;
+            public bool RunAsAdmin;
+        }
     }
 
     public static class Msi

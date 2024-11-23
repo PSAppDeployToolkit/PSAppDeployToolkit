@@ -2707,6 +2707,39 @@ function Send-Keys
 
 #---------------------------------------------------------------------------
 #
+# Wrapper around Get-ADTShortcut
+#
+#---------------------------------------------------------------------------
+
+function Get-Shortcut
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTShortcut]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Get-ADTShortcut @PSBoundParameters
+}
+
+
+#---------------------------------------------------------------------------
+#
 # Compatibility extension support.
 #
 #---------------------------------------------------------------------------

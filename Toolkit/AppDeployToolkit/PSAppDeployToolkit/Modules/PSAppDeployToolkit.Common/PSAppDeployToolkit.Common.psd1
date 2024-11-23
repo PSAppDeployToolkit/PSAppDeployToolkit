@@ -91,7 +91,7 @@ FunctionsToExport = @(
     'Get-ADTPendingReboot'
     'Get-ADTRegistryKey'
     'Get-ADTSchedulerTask'
-    'Get-Shortcut'
+    'Get-ADTShortcut'
     'Install-ADTMSUpdates'
     'Install-ADTSCCMSoftwareUpdates'
     'Invoke-ADTAllUsersRegistryChange'
