@@ -2690,3 +2690,16 @@ function Set-MsiProperty
     }
     Set-ADTMsiProperty @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Send-ADTKeys
+#
+#---------------------------------------------------------------------------
+
+function Send-Keys
+{
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2
+    Send-ADTKeys
+}
