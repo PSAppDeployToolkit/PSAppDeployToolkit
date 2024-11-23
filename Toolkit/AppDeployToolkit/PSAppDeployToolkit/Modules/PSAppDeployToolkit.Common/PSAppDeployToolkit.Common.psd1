@@ -90,7 +90,7 @@ FunctionsToExport = @(
     'Get-MsiTableProperty'
     'Get-PendingReboot'
     'Get-ADTRegistryKey'
-    'Get-SchedulerTask'
+    'Get-ADTSchedulerTask'
     'Get-Shortcut'
     'Install-ADTMSUpdates'
     'Install-SCCMSoftwareUpdates'
