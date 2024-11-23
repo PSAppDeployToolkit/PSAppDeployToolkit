@@ -11,7 +11,7 @@
     }
     else
     {
-        $extensionSettings = Get-RegistryKey -Key $adtEnv.regKeyEdgeExtensions -Value ExtensionSettings
+        $extensionSettings = Get-ADTRegistryKey -Key $adtEnv.regKeyEdgeExtensions -Value ExtensionSettings
         Write-ADTLogEntry -Message "Configured extensions: [$($extensionSettings)]." -Severity 1
         return $extensionSettings | ConvertFrom-Json
     }

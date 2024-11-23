@@ -89,7 +89,7 @@ FunctionsToExport = @(
     'Get-ADTWindowTitle'
     'Get-MsiTableProperty'
     'Get-PendingReboot'
-    'Get-RegistryKey'
+    'Get-ADTRegistryKey'
     'Get-SchedulerTask'
     'Get-Shortcut'
     'Install-MSUpdates'

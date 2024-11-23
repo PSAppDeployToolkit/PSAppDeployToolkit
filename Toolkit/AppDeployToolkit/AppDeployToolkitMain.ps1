@@ -2103,3 +2103,55 @@ function Remove-FileFromUserProfiles
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity 2
     Remove-ADTFileFromUserProfiles @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTRegistryKey
+#
+#---------------------------------------------------------------------------
+
+function Get-RegistryKey
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Wow6432Node,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$SID,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$ReturnEmptyKeyIfExists,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$DoNotExpandEnvironmentNames,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Get-ADTRegistryKey @PSBoundParameters
+}
