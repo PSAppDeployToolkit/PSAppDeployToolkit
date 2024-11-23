@@ -1,16 +1,10 @@
 ﻿@{
     Assets = @{
-        Classic = @{
-            # Fluent Banner (Classic)
-            Banner = '..\Assets\Banner.Classic.png'
+        # Specify filename of the logo.
+        Logo = '..\Assets\AppIcon.png'
 
-            # Specify filename of the logo.
-            Logo = '..\Assets\AppIcon.png'
-        }
-        Fluent = @{
-            # Specify filename of the logo.
-            Logo = '..\Assets\AppIcon.png'
-        }
+        # Specify filename of the banner (Classic-only).
+        Banner = '..\Assets\Banner.Classic.png'
     }
 
     MSI = @{

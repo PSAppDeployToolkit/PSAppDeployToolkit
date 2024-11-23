@@ -56,7 +56,7 @@ function Show-ADTWelcomePromptFluent
         !$NotTopMost,
         $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes + 1 }),
         (Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue),
-        $adtConfig.Assets.Fluent.Logo,
+        $adtConfig.Assets.Logo,
         $adtStrings.WelcomePrompt.Fluent.DialogMessage,
         $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses,
         $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,

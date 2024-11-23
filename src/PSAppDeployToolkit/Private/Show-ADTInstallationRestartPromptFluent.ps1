@@ -38,7 +38,7 @@ function Show-ADTInstallationRestartPromptFluent
         $Title,
         $null,
         !$NotTopMost,
-        $adtConfig.Assets.Fluent.Logo,
+        $adtConfig.Assets.Logo,
         $adtConfig.RestartPrompt.TimeRemaining,
         $CountdownSeconds / 60,
         $adtStrings.RestartPrompt.MessageRestart,
