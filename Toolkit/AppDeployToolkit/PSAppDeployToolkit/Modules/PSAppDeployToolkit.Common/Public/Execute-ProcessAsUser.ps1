@@ -187,7 +187,7 @@ https://psappdeploytoolkit.com
             }
             #  Set user permissions on RunHidden.vbs
             Try {
-                Set-ItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
+                Set-ADTItemPermission -Path "$($executeAsUserTempPath)\RunHidden.vbs" -User $UserName -Permission 'Read' -ErrorAction 'Stop'
             }
             Catch {
                 Write-ADTLogEntry -Message "Failed to set read permissions on path [$($executeAsUserTempPath)\RunHidden.vbs]. The function might not be able to work correctly." -Severity 2
@@ -287,7 +287,7 @@ https://psappdeploytoolkit.com
                 #  Export the XML file
                 [String]$xmlSchTask | Out-File -FilePath $xmlSchTaskFilePath -Force -ErrorAction 'Stop'
                 Try {
-                    Set-ItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
+                    Set-ADTItemPermission -Path $xmlSchTaskFilePath -User $UserName -Permission 'Read'
                 }
                 Catch {
                     Write-ADTLogEntry -Message "Failed to set read permissions on path [$xmlSchTaskFilePath]. The function might not be able to work correctly." -Severity 2

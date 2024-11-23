@@ -95,7 +95,7 @@
         # Set contents to be readable for all users (BUILTIN\USERS).
         try
         {
-            Set-ItemPermission -Path $tempPath -User (ConvertTo-ADTNTAccountOrSID -SID S-1-5-32-545) -Permission Read -Inheritance ObjectInherit, ContainerInherit
+            Set-ADTItemPermission -Path $tempPath -User (ConvertTo-ADTNTAccountOrSID -SID S-1-5-32-545) -Permission Read -Inheritance ObjectInherit, ContainerInherit
         }
         catch
         {

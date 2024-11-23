@@ -112,7 +112,7 @@ FunctionsToExport = @(
     'Set-ADTActiveSetup'
     'Set-ADTIniValue'
     'Set-ADTServiceStartMode'
-    'Set-ItemPermission'
+    'Set-ADTItemPermission'
     'Set-MsiProperty'
     'Set-ADTRegistryKey'
     'Set-Shortcut'
