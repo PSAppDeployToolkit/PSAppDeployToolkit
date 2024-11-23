@@ -1,141 +1,145 @@
-﻿Function Convert-RegistryPath {
+﻿function Convert-ADTRegistryPath
+{
     <#
-.SYNOPSIS
 
-Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
+    .SYNOPSIS
+    Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 
-Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
+    Converts registry key hives to their full paths. Example: HKLM is converted to "Registry::HKEY_LOCAL_MACHINE".
 
-Converts registry key hives to their full paths. Example: HKLM is converted to "Registry::HKEY_LOCAL_MACHINE".
+    .PARAMETER Key
+    Path to the registry key to convert (can be a registry hive or fully qualified path)
 
-.PARAMETER Key
+    .PARAMETER Wow6432Node
+    Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit system.
 
-Path to the registry key to convert (can be a registry hive or fully qualified path)
+    .PARAMETER SID
+    The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-.PARAMETER Wow6432Node
+    Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit system.
+    .PARAMETER DisableFunctionLogging
+    Disables logging of this function. Default: $true
 
-.PARAMETER SID
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+    .OUTPUTS
+    System.String. Returns the converted registry key path.
 
-Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+    .EXAMPLE
+    Convert-ADTRegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
-.PARAMETER DisableFunctionLogging
+    .EXAMPLE
+    Convert-ADTRegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
-Disables logging of this function. Default: $true
+    .LINK
+    https://psappdeploytoolkit.com
 
-.INPUTS
+    #>
 
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.String
-
-Returns the converted registry key path.
-
-.EXAMPLE
-
-Convert-RegistryPath -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
-
-.EXAMPLE
-
-Convert-RegistryPath -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Key,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Wow6432Node = $false,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$SID,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$SID,
+        [System.Management.Automation.SwitchParameter]$Wow6432Node,
+
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$DisableFunctionLogging = $true
+        [System.Management.Automation.SwitchParameter]$Logging
     )
 
-    Begin {
+    begin {
+        # Define replacements.
+        $pathMatches = @(
+            ':\\'
+            ':'
+            '\\'
+        )
+        $pathReplacements = @{
+            '^HKLM' = 'HKEY_LOCAL_MACHINE\'
+            '^HKCR' = 'HKEY_CLASSES_ROOT\'
+            '^HKCU' = 'HKEY_CURRENT_USER\'
+            '^HKU' = 'HKEY_USERS\'
+            '^HKCC' = 'HKEY_CURRENT_CONFIG\'
+            '^HKPD' = 'HKEY_PERFORMANCE_DATA\'
+        }
+        $wow64Replacements = @{
+            '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)' = '$1Wow6432Node\$2'
+            '^HKEY_LOCAL_MACHINE\\SOFTWARE\\' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'
+            '^HKEY_LOCAL_MACHINE\\SOFTWARE$' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
+            '^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\' = 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\'
+        }
         Write-ADTDebugHeader
     }
-    Process {
-        ## Convert the registry key hive to the full path, only match if at the beginning of the line
-        If ($Key -match '^HKLM') {
-            $Key = $Key -replace '^HKLM:\\', 'HKEY_LOCAL_MACHINE\' -replace '^HKLM:', 'HKEY_LOCAL_MACHINE\' -replace '^HKLM\\', 'HKEY_LOCAL_MACHINE\'
-        }
-        ElseIf ($Key -match '^HKCR') {
-            $Key = $Key -replace '^HKCR:\\', 'HKEY_CLASSES_ROOT\' -replace '^HKCR:', 'HKEY_CLASSES_ROOT\' -replace '^HKCR\\', 'HKEY_CLASSES_ROOT\'
-        }
-        ElseIf ($Key -match '^HKCU') {
-            $Key = $Key -replace '^HKCU:\\', 'HKEY_CURRENT_USER\' -replace '^HKCU:', 'HKEY_CURRENT_USER\' -replace '^HKCU\\', 'HKEY_CURRENT_USER\'
-        }
-        ElseIf ($Key -match '^HKU') {
-            $Key = $Key -replace '^HKU:\\', 'HKEY_USERS\' -replace '^HKU:', 'HKEY_USERS\' -replace '^HKU\\', 'HKEY_USERS\'
-        }
-        ElseIf ($Key -match '^HKCC') {
-            $Key = $Key -replace '^HKCC:\\', 'HKEY_CURRENT_CONFIG\' -replace '^HKCC:', 'HKEY_CURRENT_CONFIG\' -replace '^HKCC\\', 'HKEY_CURRENT_CONFIG\'
-        }
-        ElseIf ($Key -match '^HKPD') {
-            $Key = $Key -replace '^HKPD:\\', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD:', 'HKEY_PERFORMANCE_DATA\' -replace '^HKPD\\', 'HKEY_PERFORMANCE_DATA\'
-        }
 
-        If ($Wow6432Node -and (Get-ADTEnvironment).Is64BitProcess) {
-            If ($Key -match '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)') {
-                $Key = $Key -replace '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)', '$1Wow6432Node\$2'
-            }
-            ElseIf ($Key -match '^HKEY_LOCAL_MACHINE\\SOFTWARE\\') {
-                $Key = $Key -replace '^HKEY_LOCAL_MACHINE\\SOFTWARE\\', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'
-            }
-            ElseIf ($Key -match '^HKEY_LOCAL_MACHINE\\SOFTWARE$') {
-                $Key = $Key -replace '^HKEY_LOCAL_MACHINE\\SOFTWARE$', 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
-            }
-            ElseIf ($Key -match '^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\') {
-                $Key = $Key -replace '^HKEY_CURRENT_USER\\Software\\Wow6432Node\\Microsoft\\Active Setup\\Installed Components\\', 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\'
+    process {
+        # Convert the registry key hive to the full path, only match if at the beginning of the line.
+        foreach ($hive in $pathReplacements.GetEnumerator().Where({$Key -match $_.Key}))
+        {
+            foreach ($regexMatch in ($pathMatches -replace '^',$hive.Key))
+            {
+                $Key = $Key -replace $regexMatch,$hive.Value
             }
         }
 
-        ## Append the PowerShell provider to the registry key path
-        If ($key -notmatch '^Registry::') {
-            [String]$key = "Registry::$key"
+        # Process the WOW6432Node values if applicable.
+        if ($Wow6432Node -and (Get-ADTEnvironment).Is64BitProcess)
+        {
+            foreach ($path in $wow64Replacements.GetEnumerator().Where({$Key -match $_.Key}))
+            {
+                $Key = $Key -replace $path.Key,$path.Value
+            }
         }
 
-        If ($PSBoundParameters.ContainsKey('SID')) {
-            ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
-            If ($key -match '^Registry::HKEY_CURRENT_USER\\') {
-                $key = $key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\"
+        # Append the PowerShell provider to the registry key path.
+        if ($Key -notmatch '^Registry::')
+        {
+            $Key = "Registry::$key"
+        }
+
+        # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
+        if ($PSBoundParameters.ContainsKey('SID'))
+        {
+            if ($Key -match '^Registry::HKEY_CURRENT_USER\\')
+            {
+                $Key = $Key -replace '^Registry::HKEY_CURRENT_USER\\', "Registry::HKEY_USERS\$SID\"
             }
-            ElseIf (-not $DisableFunctionLogging) {
+            elseif ($Logging)
+            {
                 Write-ADTLogEntry -Message 'SID parameter specified but the registry hive of the key is not HKEY_CURRENT_USER.' -Severity 2
             }
         }
 
-        If ($Key -match '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA') {
-            ## Check for expected key string format
-            If (-not $DisableFunctionLogging) {
-                Write-ADTLogEntry -Message "Return fully qualified registry key path [$key]."
+        # Check for expected key string format.
+        if ($Key -notmatch '^Registry::HKEY_LOCAL_MACHINE|^Registry::HKEY_CLASSES_ROOT|^Registry::HKEY_CURRENT_USER|^Registry::HKEY_USERS|^Registry::HKEY_CURRENT_CONFIG|^Registry::HKEY_PERFORMANCE_DATA')
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentException]::new("Unable to detect target registry hive in string [$Key].")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId = 'RegistryKeyValueInvalid'
+                TargetObject = $Key
+                RecommendedAction = "Please confirm the supplied value is correct and try again."
             }
-            Write-Output -InputObject ($key)
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        Else {
-            #  If key string is not properly formatted, throw an error
-            Throw "Unable to detect target registry hive in string [$key]."
+        elseif ($Logging)
+        {
+            Write-ADTLogEntry -Message "Return fully qualified registry key path [$Key]."
         }
+        return $Key
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }

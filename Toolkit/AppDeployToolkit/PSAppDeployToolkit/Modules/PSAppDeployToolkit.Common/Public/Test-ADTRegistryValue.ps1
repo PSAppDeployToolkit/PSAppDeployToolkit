@@ -67,11 +67,11 @@
         # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
         $Key = if ($PSBoundParameters.ContainsKey('SID'))
         {
-            Convert-RegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
+            Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
         }
         else
         {
-            Convert-RegistryPath -Key $Key -Wow6432Node:$Wow6432Node
+            Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
         }
 
         # Test whether value exists or not.

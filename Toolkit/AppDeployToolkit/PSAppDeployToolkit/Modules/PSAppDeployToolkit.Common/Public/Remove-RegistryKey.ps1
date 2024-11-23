@@ -85,10 +85,10 @@ https://psappdeploytoolkit.com
         Try {
             ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
             If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$Key = Convert-RegistryPath -Key $Key -SID $SID
+                [String]$Key = Convert-ADTRegistryPath -Key $Key -SID $SID
             }
             Else {
-                [String]$Key = Convert-RegistryPath -Key $Key
+                [String]$Key = Convert-ADTRegistryPath -Key $Key
             }
 
             If (-not $Name) {

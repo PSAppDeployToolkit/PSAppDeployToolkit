@@ -1755,3 +1755,38 @@ function Test-RegistryValue
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
     Test-ADTRegistryValue @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Convert-ADTRegistryPath
+#
+#---------------------------------------------------------------------------
+
+function Convert-RegistryPath
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Wow6432Node,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$SID,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullorEmpty()]
+        [System.Boolean]$DisableFunctionLogging = $true
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Convert-ADTRegistryPath]. Please migrate your scripts to use the new function." -Severity 2
+    if (!$DisableFunctionLogging)
+    {
+        $PSBoundParameters.Logging = [System.Management.Automation.SwitchParameter]$true
+    }
+    Convert-ADTRegistryPath @PSBoundParameters
+}
