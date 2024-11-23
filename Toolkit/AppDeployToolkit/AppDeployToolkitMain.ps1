@@ -2349,3 +2349,75 @@ function Remove-Folder
     }
     Remove-ADTFolder @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Set-ADTActiveSetup
+#
+#---------------------------------------------------------------------------
+
+function Set-ActiveSetup
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$StubExePath,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Arguments,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Description,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Wow6432Node,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Version,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Locale,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$DisableActiveSetup,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Purge')]
+        [System.Management.Automation.SwitchParameter]$PurgeActiveSetupKey,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ExecuteForCurrentUser = $true,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTActiveSetup]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ExecuteForCurrentUser'))
+    {
+        $PSBoundParameters.NoExecuteForCurrentUser = !$PSBoundParameters.ExecuteForCurrentUser
+        [System.Void]$PSBoundParameters.Remove('ExecuteForCurrentUser')
+    }
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Set-ADTActiveSetup @PSBoundParameters
+}
