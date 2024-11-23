@@ -2207,3 +2207,16 @@ function Get-SchedulerTask
     }
     Get-ADTSchedulerTask @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Get-ADTPendingReboot
+#
+#---------------------------------------------------------------------------
+
+function Get-PendingReboot
+{
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPendingReboot]. Please migrate your scripts to use the new function." -Severity 2
+    Get-ADTPendingReboot
+}
