@@ -1948,3 +1948,54 @@ function Stop-ServiceAndDependencies
     }
     Stop-ADTServiceAndDependencies @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Set-ADTRegistryKey
+#
+#---------------------------------------------------------------------------
+
+function Set-RegistryKey
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [System.Object]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Binary', 'DWord', 'ExpandString', 'MultiString', 'None', 'QWord', 'String', 'Unknown')]
+        [Microsoft.Win32.RegistryValueKind]$Type,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Wow6432Node,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$SID,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Boolean]$ContinueOnError = $true
+    )
+
+    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity 2
+    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
+    {
+        [System.Void]$PSBoundParameters.Remove('ContinueOnError')
+    }
+    if (!$ContinueOnError)
+    {
+        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
+    }
+    Set-ADTRegistryKey @PSBoundParameters
+}

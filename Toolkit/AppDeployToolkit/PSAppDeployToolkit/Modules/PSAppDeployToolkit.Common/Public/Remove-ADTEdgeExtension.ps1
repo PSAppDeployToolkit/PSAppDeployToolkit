@@ -43,5 +43,5 @@
 
     # If the deploymentmode is Remove, remove the extension from the list
     $installedExtensions.PSObject.Properties.Remove($ExtensionID)
-    [System.Void](Set-RegistryKey -Key (Get-ADTEnvironment).regKeyEdgeExtensions -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress))
+    [System.Void](Set-ADTRegistryKey -Key (Get-ADTEnvironment).regKeyEdgeExtensions -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress))
 }

@@ -6,7 +6,7 @@
     # Check if the ExtensionSettings registry key exists if not create it.
     if (!(Test-ADTRegistryValue -Key $adtEnv.regKeyEdgeExtensions -Value ExtensionSettings))
     {
-        Set-RegistryKey -Key $adtEnv.regKeyEdgeExtensions -Name ExtensionSettings -Value "" | Out-Null
+        Set-ADTRegistryKey -Key $adtEnv.regKeyEdgeExtensions -Name ExtensionSettings -Value "" | Out-Null
         return [pscustomobject]@{}
     }
     else

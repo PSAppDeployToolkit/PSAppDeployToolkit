@@ -1,184 +1,190 @@
-﻿Function Set-RegistryKey {
+﻿function Set-ADTRegistryKey
+{
     <#
-.SYNOPSIS
 
-Creates a registry key name, value, and value data; it sets the same if it already exists.
+    .SYNOPSIS
+    Creates a registry key name, value, and value data; it sets the same if it already exists.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Creates a registry key name, value, and value data; it sets the same if it already exists.
 
-Creates a registry key name, value, and value data; it sets the same if it already exists.
+    .PARAMETER Key
+    The registry key path.
 
-.PARAMETER Key
+    .PARAMETER Name
+    The value name.
 
-The registry key path.
+    .PARAMETER Value
+    The value data.
 
-.PARAMETER Name
+    .PARAMETER Type
+    The type of registry value to create or set. Options: 'Binary','DWord','ExpandString','MultiString','None','QWord','String','Unknown'. Default: String.
 
-The value name.
+    DWord should be specified as a decimal.
 
-.PARAMETER Value
+    .PARAMETER Wow6432Node
+    Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
 
-The value data.
+    .PARAMETER SID
+    The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-.PARAMETER Type
+    Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-The type of registry value to create or set. Options: 'Binary','DWord','ExpandString','MultiString','None','QWord','String','Unknown'. Default: String.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-DWord should be specified as a decimal.
+    .OUTPUTS
+    None. This function does not generate any output.
 
-.PARAMETER Wow6432Node
+    .EXAMPLE
+    Set-ADTRegistryKey -Key $blockedAppPath -Name 'Debugger' -Value $blockedAppDebuggerValue
 
-Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
+    .EXAMPLE
+    Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -Name 'Application' -Type 'DWord' -Value '1'
 
-.PARAMETER SID
+    .EXAMPLE
+    Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'Debugger' -Value $blockedAppDebuggerValue -Type String
 
-The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+    .EXAMPLE
+    Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Example' -Name 'Data' -Value (0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x01,0x01,0x01,0x02,0x02,0x02) -Type 'Binary'
 
-Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+    .EXAMPLE
+    Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)' -Value "Text"
 
-.PARAMETER ContinueOnError
+    .LINK
+    https://psappdeploytoolkit.com
 
-Continue if an error is encountered. Default is: $true.
+    #>
 
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Set-RegistryKey -Key $blockedAppPath -Name 'Debugger' -Value $blockedAppDebuggerValue
-
-.EXAMPLE
-
-Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -Name 'Application' -Type 'DWord' -Value '1'
-
-.EXAMPLE
-
-Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'Debugger' -Value $blockedAppDebuggerValue -Type String
-
-.EXAMPLE
-
-Set-RegistryKey -Key 'HKCU\Software\Microsoft\Example' -Name 'Data' -Value (0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x01,0x01,0x01,0x02,0x02,0x02) -Type 'Binary'
-
-.EXAMPLE
-
-Set-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)' -Value "Text"
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Key,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$Name,
+        [System.String]$Name,
+
         [Parameter(Mandatory = $false)]
-        $Value,
+        [System.Object]$Value,
+
         [Parameter(Mandatory = $false)]
         [ValidateSet('Binary', 'DWord', 'ExpandString', 'MultiString', 'None', 'QWord', 'String', 'Unknown')]
         [Microsoft.Win32.RegistryValueKind]$Type = 'String',
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Wow6432Node = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$SID,
+        [System.Management.Automation.SwitchParameter]$Wow6432Node,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.String]$SID
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction
+        }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+        $RegistryValueWriteAction = 'set'
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            [String]$RegistryValueWriteAction = 'set'
 
-            ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
-            If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$key = Convert-ADTRegistryPath -Key $key -Wow6432Node:$Wow6432Node -SID $SID
+    process {
+        try
+        {
+            # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
+            $Key = if ($PSBoundParameters.ContainsKey('SID'))
+            {
+                Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
             }
-            Else {
-                [String]$key = Convert-ADTRegistryPath -Key $key -Wow6432Node:$Wow6432Node
+            else
+            {
+                Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
             }
 
-            ## Create registry key if it doesn't exist
-            If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
-                Try {
-                    Write-ADTLogEntry -Message "Creating registry key [$key]."
-                    # No forward slash found in Key. Use New-Item cmdlet to create registry key
-                    If ((($Key -split '/').Count - 1) -eq 0) {
-                        $null = New-Item -Path $key -ItemType 'Registry' -Force -ErrorAction 'Stop'
-                    }
+            # Create registry key if it doesn't exist.
+            if (!(Test-Path -LiteralPath $Key))
+            {
+                Write-ADTLogEntry -Message "Creating registry key [$Key]."
+                if (($Key.Split('/').Count - 1) -eq 0)
+                {
+                    # No forward slash found in Key. Use New-Item cmdlet to create registry key.
+                    [System.Void](New-Item -Path $Key -ItemType Registry -Force)
+                }
+                else
+                {
                     # Forward slash was found in Key. Use REG.exe ADD to create registry key
-                    Else {
-                        If ((Get-ADTEnvironment).Is64BitProcess -and -not $Wow6432Node) {
-                            $RegMode = '/reg:64'
-                        }
-                        Else {
-                            $RegMode = '/reg:32'
-                        }
-                        [String]$CreateRegkeyResult = & "$env:WinDir\System32\reg.exe" Add "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode
-                        If ($global:LastExitCode -ne 0) {
-                            Throw "Failed to create registry key [$Key]"
-                        }
+                    $RegMode = if ((Get-ADTEnvironment).Is64BitProcess -and !$Wow6432Node)
+                    {
+                        '/reg:64'
                     }
-                }
-                Catch {
-                    Throw
+                    else
+                    {
+                        '/reg:32'
+                    }
+                    $CreateRegkeyResult = & "$env:WinDir\System32\reg.exe" ADD "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode 2>&1
+                    if ($Global:LastExitCode -ne 0)
+                    {
+                        $naerParams = @{
+                            Exception = [System.ApplicationException]::new("Failed to create registry key [$Key]")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'RegKeyCreationFailure'
+                            TargetObject = $CreateRegKeyResult
+                            RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
                 }
             }
 
-            If ($Name) {
-                ## Set registry value if it doesn't exist
-                If (-not (Get-ItemProperty -LiteralPath $key -Name $Name -ErrorAction 'Ignore')) {
-                    Write-ADTLogEntry -Message "Setting registry key value: [$key] [$name = $value]."
-                    $null = New-ItemProperty -LiteralPath $key -Name $name -Value $value -PropertyType $Type -ErrorAction 'Stop'
+            if ($Name)
+            {
+                if (!(Get-ItemProperty -LiteralPath $Key -Name $Name -ErrorAction Ignore))
+                {
+                    # Set registry value if it doesn't exist.
+                    Write-ADTLogEntry -Message "Setting registry key value: [$Key] [$Name = $Value]."
+                    [System.Void](New-ItemProperty -LiteralPath $Key -Name $Name -Value $Value -PropertyType $Type)
                 }
-                ## Update registry value if it does exist
-                Else {
-                    [String]$RegistryValueWriteAction = 'update'
-                    If ($Name -eq '(Default)') {
-                        ## Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value
-                        $null = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $value)
+                else
+                {
+                    # Update registry value if it does exist.
+                    $RegistryValueWriteAction = 'update'
+                    if ($Name -eq '(Default)')
+                    {
+                        # Set Default registry key value with the following workaround, because Set-ItemProperty contains a bug and cannot set Default registry key value.
+                        [System.Void]((Get-Item -LiteralPath $Key).OpenSubKey('', 'ReadWriteSubTree').SetValue($null, $Value))
                     }
-                    Else {
-                        Write-ADTLogEntry -Message "Updating registry key value: [$key] [$name = $value]."
-                        $null = Set-ItemProperty -LiteralPath $key -Name $name -Value $value -ErrorAction 'Stop'
+                    else
+                    {
+                        Write-ADTLogEntry -Message "Updating registry key value: [$Key] [$Name = $Value]."
+                        [System.Void](Set-ItemProperty -LiteralPath $Key -Name $Name -Value $Value)
                     }
                 }
             }
         }
-        Catch {
-            If ($Name) {
-                Write-ADTLogEntry -Message "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name].`n$(Resolve-ADTError)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to $RegistryValueWriteAction value [$value] for registry key [$key] [$name]: $($_.Exception.Message)"
-                }
+        catch
+        {
+            if ($Name)
+            {
+                Write-ADTLogEntry -Message "Failed to $RegistryValueWriteAction value [$Value] for registry key [$Key] [$Name].`n$(Resolve-ADTError)" -Severity 3
             }
-            Else {
-                Write-ADTLogEntry -Message "Failed to set registry key [$key].`n$(Resolve-ADTError)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to set registry key [$key]: $($_.Exception.Message)"
-                }
+            else
+            {
+                Write-ADTLogEntry -Message "Failed to set registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
             }
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }

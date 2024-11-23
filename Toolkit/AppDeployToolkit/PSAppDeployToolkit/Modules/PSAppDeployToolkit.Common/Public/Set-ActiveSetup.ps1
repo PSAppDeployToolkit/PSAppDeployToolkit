@@ -374,36 +374,36 @@ https://psappdeploytoolkit.com
                     [String]$SID
                 )
                 If ($SID) {
-                    Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -SID $SID -ContinueOnError $false
-                    Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -SID $SID -ContinueOnError $false
-                    Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID -ContinueOnError $false
+                    Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -SID $SID
+                    Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -SID $SID
+                    Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -SID $SID
                     If ($Locale) {
-                        Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -SID $SID -ContinueOnError $false
+                        Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -SID $SID
                     }
                     # Only Add IsInstalled to HKLM
                     If ($ActiveSetupRegKey.Contains('HKEY_LOCAL_MACHINE')) {
                         If ($DisableActiveSetup) {
-                            Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID -ContinueOnError $false
+                            Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -SID $SID
                         }
                         Else {
-                            Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -SID $SID -ContinueOnError $false
+                            Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -SID $SID
                         }
                     }
                 }
                 Else {
-                    Set-RegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description -ContinueOnError $false
-                    Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version -ContinueOnError $false
-                    Set-RegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String' -ContinueOnError $false
+                    Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name '(Default)' -Value $Description
+                    Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'Version' -Value $Version
+                    Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'StubPath' -Value $StubPath -Type 'String'
                     If ($Locale) {
-                        Set-RegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale -ContinueOnError $false
+                        Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'Locale' -Value $Locale
                     }
                     # Only Add IsInstalled to HKLM
                     If ($ActiveSetupRegKey.Contains('HKEY_LOCAL_MACHINE')) {
                         If ($DisableActiveSetup) {
-                            Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord' -ContinueOnError $false
+                            Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 0 -Type 'DWord'
                         }
                         Else {
-                            Set-RegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord' -ContinueOnError $false
+                            Set-ADTRegistryKey -Key $ActiveSetupRegKey -Name 'IsInstalled' -Value 1 -Type 'DWord'
                         }
                     }
                 }
