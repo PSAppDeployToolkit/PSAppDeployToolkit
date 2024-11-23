@@ -65,6 +65,17 @@ namespace PSADT
             public IntPtr ParentProcessMainWindowHandle;
             public int ParentProcessId;
         }
+
+        public struct BatteryInfo
+        {
+            public string ACPowerLineStatus;
+            public string BatteryChargeStatus;
+            public float BatteryLifePercent;
+            public int BatteryLifeRemaining;
+            public int BatteryFullLifetime;
+            public bool IsUsingACPower;
+            public bool IsLaptop;
+        }
     }
 
     public static class Msi

@@ -124,7 +124,7 @@ FunctionsToExport = @(
     'Test-ADTNetworkConnection'
     'Test-ADTPowerPoint'
     'Test-ADTServiceExists'
-    'Test-Battery'
+    'Test-ADTBattery'
     'Test-ADTMSUpdates'
     'Test-ADTRegistryValue'
     'Update-ADTDesktop'

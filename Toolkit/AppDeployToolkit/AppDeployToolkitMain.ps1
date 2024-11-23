@@ -1823,3 +1823,22 @@ function Test-MSUpdates
     }
     Test-ADTMSUpdates @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Test-ADTBattery
+#
+#---------------------------------------------------------------------------
+
+function Test-Battery
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTBattery]. Please migrate your scripts to use the new function." -Severity 2
+    Test-ADTBattery @PSBoundParameters
+}
