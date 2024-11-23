@@ -32,7 +32,7 @@ function Show-ADTBalloonTipFluent
         ToolkitName = $adtEnv.appDeployToolkitName
         ModuleBase = $Script:PSScriptRoot
         ToastName = $adtConfig.UI.BalloonTitle
-        ToastLogo = $adtConfig.Assets.Fluent.Logo
+        ToastLogo = $adtConfig.Assets.Logo
         ToastTitle = $BalloonTipTitle
         ToastText = $BalloonTipText
     }

@@ -53,7 +53,7 @@ function Show-ADTInstallationPromptFluent
         $Title,
         $null,
         !$NotTopMost,
-        $ADTConfig.Assets.Fluent.Logo,
+        $ADTConfig.Assets.Logo,
         $Message,
         $ButtonLeftText,
         $ButtonMiddleText,

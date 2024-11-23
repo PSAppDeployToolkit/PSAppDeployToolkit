@@ -45,7 +45,7 @@ function Show-ADTInstallationProgressFluent
             $WindowTitle,
             $WindowSubtitle,
             !$NotTopMost,
-            $adtConfig.Assets.Fluent.Logo,
+            $adtConfig.Assets.Logo,
             $StatusMessage,
             $StatusMessageDetail
         )
