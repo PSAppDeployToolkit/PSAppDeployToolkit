@@ -379,7 +379,7 @@
             {
                 [Hashtable]$GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property'; ContinueOnError = $false }
                 if ($Transforms) {$GetMsiTablePropertySplat.Add('TransformPath', $transforms)}
-                Get-MsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty ProductCode
+                Get-ADTMsiTableProperty @GetMsiTablePropertySplat | Select-Object -ExpandProperty ProductCode
             }
             catch
             {

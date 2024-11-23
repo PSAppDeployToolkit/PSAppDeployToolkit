@@ -87,7 +87,7 @@ FunctionsToExport = @(
     'Get-ADTUniversalDate'
     'Get-ADTUserProfiles'
     'Get-ADTWindowTitle'
-    'Get-MsiTableProperty'
+    'Get-ADTMsiTableProperty'
     'Get-ADTPendingReboot'
     'Get-ADTRegistryKey'
     'Get-ADTSchedulerTask'

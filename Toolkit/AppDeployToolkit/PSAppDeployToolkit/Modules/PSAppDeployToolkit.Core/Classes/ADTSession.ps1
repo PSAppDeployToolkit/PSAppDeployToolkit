@@ -235,7 +235,7 @@
 
             # Read the MSI and get the installation details.
             $gmtpParams = @{Path = $this.DefaultMsiFile; Table = 'File'; ContinueOnError = $false}; if ($this.DefaultMstFile) {$gmtpParams.Add('TransformPath', $this.DefaultMstFile)}
-            $msiProps = Get-MsiTableProperty @gmtpParams
+            $msiProps = Get-ADTMsiTableProperty @gmtpParams
 
             # Generate list of MSI executables for testing later on.
             if ($this.DefaultMsiExecutablesList = Get-Member -InputObject $msiProps | Where-Object {[System.IO.Path]::GetExtension($_.Name) -eq '.exe'} | ForEach-Object {@{Name = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)}})
@@ -245,7 +245,7 @@
 
             # Change table and get properties from it.
             $gmtpParams.set_Item('Table', 'Property')
-            $msiProps = Get-MsiTableProperty @gmtpParams
+            $msiProps = Get-ADTMsiTableProperty @gmtpParams
 
             # Update our app variables with new values.
             $this.WriteLogEntry("App Vendor [$(($this.AppVendor = $msiProps.Manufacturer))].")
