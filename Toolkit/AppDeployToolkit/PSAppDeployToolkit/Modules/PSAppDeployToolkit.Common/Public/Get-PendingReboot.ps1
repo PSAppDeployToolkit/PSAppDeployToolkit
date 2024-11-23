@@ -123,7 +123,7 @@ https://psappdeploytoolkit.com
         ## Determine if there is a pending reboot from a pending file rename operation
         [Boolean]$IsFileRenameRebootPending = $false
         $PendingFileRenameOperations = $null
-        If (Test-RegistryValue -Key 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations') {
+        If (Test-ADTRegistryValue -Key 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Value 'PendingFileRenameOperations') {
             #  If PendingFileRenameOperations value exists, set $IsFileRenameRebootPending variable to $true
             [Boolean]$IsFileRenameRebootPending = $true
             #  Get the value of PendingFileRenameOperations

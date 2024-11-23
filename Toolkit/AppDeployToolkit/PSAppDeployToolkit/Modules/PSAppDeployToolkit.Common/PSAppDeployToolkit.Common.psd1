@@ -126,7 +126,7 @@ FunctionsToExport = @(
     'Test-ADTServiceExists'
     'Test-Battery'
     'Test-MSUpdates'
-    'Test-RegistryValue'
+    'Test-ADTRegistryValue'
     'Update-ADTDesktop'
     'Update-ADTGroupPolicy'
     'Update-ADTSessionEnvironmentVariables'
