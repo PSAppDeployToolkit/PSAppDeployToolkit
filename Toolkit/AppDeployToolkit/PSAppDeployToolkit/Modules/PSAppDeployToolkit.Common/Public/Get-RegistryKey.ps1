@@ -1,209 +1,197 @@
-﻿Function Get-RegistryKey {
+﻿function Get-ADTRegistryKey
+{
     <#
-.SYNOPSIS
 
-Retrieves value names and value data for a specified registry key or optionally, a specific value.
+    .SYNOPSIS
+    Retrieves value names and value data for a specified registry key or optionally, a specific value.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Retrieves value names and value data for a specified registry key or optionally, a specific value.
 
-Retrieves value names and value data for a specified registry key or optionally, a specific value.
+    If the registry key does not exist or contain any values, the function will return $null by default. To test for existence of a registry key path, use built-in Test-Path cmdlet.
 
-If the registry key does not exist or contain any values, the function will return $null by default. To test for existence of a registry key path, use built-in Test-Path cmdlet.
+    .PARAMETER Key
+    Path of the registry key.
 
-.PARAMETER Key
+    .PARAMETER Value
+    Value to retrieve (optional).
 
-Path of the registry key.
+    .PARAMETER Wow6432Node
+    Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
 
-.PARAMETER Value
+    .PARAMETER SID
+    The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-Value to retrieve (optional).
+    Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
 
-.PARAMETER Wow6432Node
+    .PARAMETER ReturnEmptyKeyIfExists
+    Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.
 
-Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
+    .PARAMETER DoNotExpandEnvironmentNames
+    Return unexpanded REG_EXPAND_SZ values. Default is: $false.
 
-.PARAMETER SID
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+    .OUTPUTS
+    System.String. Returns the value of the registry key or value.
 
-Specify this parameter from the Invoke-ADTAllUsersRegistryChange function to read/edit HKCU registry settings for all users on the system.
+    .EXAMPLE
+    Get-ADTRegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
 
-.PARAMETER ReturnEmptyKeyIfExists
+    .EXAMPLE
+    Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe'
 
-Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.
+    .EXAMPLE
+    Get-ADTRegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
 
-.PARAMETER DoNotExpandEnvironmentNames
+    .EXAMPLE
+    # Return %ProgramFiles%\Java instead of C:\Program Files\Java
+    Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames
 
-Return unexpanded REG_EXPAND_SZ values. Default is: $false.
+    .EXAMPLE
+    Get-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
 
-.PARAMETER ContinueOnError
+    .LINK
+    https://psappdeploytoolkit.com
 
-Continue if an error is encountered. Default is: $true.
+    #>
 
-.INPUTS
-
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-System.String
-
-Returns the value of the registry key or value.
-
-.EXAMPLE
-
-Get-RegistryKey -Key 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1AD147D0-BE0E-3D6C-AC11-64F6DC4163F1}'
-
-.EXAMPLE
-
-Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\iexplore.exe'
-
-.EXAMPLE
-
-Get-RegistryKey -Key 'HKLM:Software\Wow6432Node\Microsoft\Microsoft SQL Server Compact Edition\v3.5' -Value 'Version'
-
-.EXAMPLE
-
-Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Value 'Path' -DoNotExpandEnvironmentNames
-
-Returns %ProgramFiles%\Java instead of C:\Program Files\Java
-
-.EXAMPLE
-
-Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Value '(Default)'
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Key,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Key,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [String]$Value,
+        [System.String]$Value,
+
         [Parameter(Mandatory = $false)]
-        [Switch]$Wow6432Node = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [String]$SID,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Switch]$ReturnEmptyKeyIfExists = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullorEmpty()]
-        [Switch]$DoNotExpandEnvironmentNames = $false,
+        [System.Management.Automation.SwitchParameter]$Wow6432Node,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.String]$SID,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$ReturnEmptyKeyIfExists,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$DoNotExpandEnvironmentNames
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction
+        }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
-    Process {
-        Try {
-            ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
-            If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$key = Convert-ADTRegistryPath -Key $key -Wow6432Node:$Wow6432Node -SID $SID
+
+    process {
+        try
+        {
+            # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
+            [String]$Key = if ($PSBoundParameters.ContainsKey('SID'))
+            {
+                Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
             }
-            Else {
-                [String]$key = Convert-ADTRegistryPath -Key $key -Wow6432Node:$Wow6432Node
+            else
+            {
+                Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
             }
 
-            ## Check if the registry key exists
-            If (-not (Test-Path -LiteralPath $key -ErrorAction 'Stop')) {
-                Write-ADTLogEntry -Message "Registry key [$key] does not exist. Return `$null." -Severity 2
-                $regKeyValue = $null
+            # Check if the registry key exists before continuing.
+            if (!(Test-Path -LiteralPath $Key))
+            {
+                Write-ADTLogEntry -Message "Registry key [$Key] does not exist. Return `$null." -Severity 2
+                return
             }
-            Else {
-                If ($PSBoundParameters.ContainsKey('Value')) {
-                    Write-ADTLogEntry -Message "Getting registry key [$key] value [$value]."
-                }
-                Else {
-                    Write-ADTLogEntry -Message "Getting registry key [$key] and all property values."
-                }
 
-                ## Get all property values for registry key
-                $regKeyValue = Get-ItemProperty -LiteralPath $key -ErrorAction 'Stop'
-                [Int32]$regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty 'Count'
+            if ($PSBoundParameters.ContainsKey('Value'))
+            {
+                Write-ADTLogEntry -Message "Getting registry key [$Key] value [$Value]."
+            }
+            else
+            {
+                Write-ADTLogEntry -Message "Getting registry key [$Key] and all property values."
+            }
 
-                ## Select requested property
-                If ($PSBoundParameters.ContainsKey('Value')) {
-                    #  Check if registry value exists
-                    [Boolean]$IsRegistryValueExists = $false
-                    If ($regKeyValuePropertyCount -gt 0) {
-                        Try {
-                            [string[]]$PathProperties = Get-Item -LiteralPath $Key -ErrorAction 'Stop' | Select-Object -ExpandProperty 'Property' -ErrorAction 'Stop'
-                            If ($PathProperties -contains $Value) {
-                                $IsRegistryValueExists = $true
-                            }
+            # Get all property values for registry key.
+            $regKeyValue = Get-ItemProperty -LiteralPath $Key
+            $regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty Count
+
+            # Select requested property.
+            if ($PSBoundParameters.ContainsKey('Value'))
+            {
+                # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
+                if ((Get-Item -LiteralPath $Key | Select-Object -ExpandProperty Property -ErrorAction Ignore) -contains $Value)
+                {
+                    if ($DoNotExpandEnvironmentNames)
+                    {
+                        # Only useful on 'ExpandString' values.
+                        if ($Value -like '(Default)')
+                        {
+                            return (Get-Item -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                         }
-                        Catch {
+                        else
+                        {
+                            return (Get-Item -LiteralPath $Key).GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                         }
                     }
-
-                    #  Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-                    If ($IsRegistryValueExists) {
-                        If ($DoNotExpandEnvironmentNames) {
-                            #Only useful on 'ExpandString' values
-                            If ($Value -like '(Default)') {
-                                $regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
-                            }
-                            Else {
-                                $regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($Value, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
-                            }
-                        }
-                        ElseIf ($Value -like '(Default)') {
-                            $regKeyValue = $(Get-Item -LiteralPath $key -ErrorAction 'Stop').GetValue($null)
-                        }
-                        Else {
-                            $regKeyValue = $regKeyValue | Select-Object -ExpandProperty $Value -ErrorAction 'Ignore'
-                        }
+                    elseif ($Value -like '(Default)')
+                    {
+                        return (Get-Item -LiteralPath $Key).GetValue($null)
                     }
-                    Else {
-                        Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
-                        $regKeyValue = $null
+                    else
+                    {
+                        return $regKeyValue | Select-Object -ExpandProperty $Value
                     }
                 }
-                ## Select all properties or return empty key object
-                Else {
-                    If ($regKeyValuePropertyCount -eq 0) {
-                        If ($ReturnEmptyKeyIfExists) {
-                            Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$key]."
-                            $regKeyValue = Get-Item -LiteralPath $key -Force -ErrorAction 'Stop'
-                        }
-                        Else {
-                            Write-ADTLogEntry -Message "No property values found for registry key. Return `$null."
-                            $regKeyValue = $null
-                        }
-                    }
+                else
+                {
+                    Write-ADTLogEntry -Message "Registry key value [$Key] [$Value] does not exist. Return `$null."
                 }
             }
-            Write-Output -InputObject ($regKeyValue)
+            elseif ($regKeyValuePropertyCount -eq 0)
+            {
+                # Select all properties or return empty key object.
+                if ($ReturnEmptyKeyIfExists)
+                {
+                    Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$Key]."
+                    return (Get-Item -LiteralPath $Key -Force)
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "No property values found for registry key. Return `$null."
+                }
+            }
         }
-        Catch {
-            If (-not $Value) {
-                Write-ADTLogEntry -Message "Failed to read registry key [$key].`n$(Resolve-ADTError)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to read registry key [$key]: $($_.Exception.Message)"
-                }
+        catch
+        {
+            if ($Value)
+            {
+                Write-ADTLogEntry -Message "Failed to read registry key [$Key] value [$Value].`n$(Resolve-ADTError)" -Severity 3
             }
-            Else {
-                Write-ADTLogEntry -Message "Failed to read registry key [$key] value [$value].`n$(Resolve-ADTError)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to read registry key [$key] value [$value]: $($_.Exception.Message)"
-                }
+            else
+            {
+                Write-ADTLogEntry -Message "Failed to read registry key [$Key].`n$(Resolve-ADTError)" -Severity 3
             }
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }

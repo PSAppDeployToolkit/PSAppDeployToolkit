@@ -158,7 +158,7 @@ https://psappdeploytoolkit.com
 
                 Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCUActiveSetupKey] for all log on user registry hives on the system."
                 [ScriptBlock]$RemoveHKCUActiveSetupKey = {
-                    If (Get-RegistryKey -Key $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID) {
+                    If (Get-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID) {
                         Remove-ADTRegistryKey -Key $HKCUActiveSetupKey -SID $adtEnv.RunAsActiveUser.SID -Recurse
                     }
                 }
@@ -235,13 +235,13 @@ https://psappdeploytoolkit.com
                     [String]$UserSID
                 )
                 If ($UserSID) {
-                    $HKCUProps = (Get-RegistryKey -Key $HKCUKey -SID $UserSID -ContinueOnError $true)
+                    $HKCUProps = (Get-ADTRegistryKey -Key $HKCUKey -SID $UserSID)
                 }
                 Else {
-                    $HKCUProps = (Get-RegistryKey -Key $HKCUKey -ContinueOnError $true)
+                    $HKCUProps = (Get-ADTRegistryKey -Key $HKCUKey)
                 }
 
-                $HKLMProps = (Get-RegistryKey -Key $HKLMKey -ContinueOnError $true)
+                $HKLMProps = (Get-ADTRegistryKey -Key $HKLMKey)
                 [String]$HKCUVer = $HKCUProps.Version
                 [String]$HKLMVer = $HKLMProps.Version
                 [Int32]$HKLMInst = $HKLMProps.IsInstalled
