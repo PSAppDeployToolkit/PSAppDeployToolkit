@@ -110,10 +110,10 @@ https://psappdeploytoolkit.com
 
             ## If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID
             If ($PSBoundParameters.ContainsKey('SID')) {
-                [String]$key = Convert-RegistryPath -Key $key -Wow6432Node:$Wow6432Node -SID $SID
+                [String]$key = Convert-ADTRegistryPath -Key $key -Wow6432Node:$Wow6432Node -SID $SID
             }
             Else {
-                [String]$key = Convert-RegistryPath -Key $key -Wow6432Node:$Wow6432Node
+                [String]$key = Convert-ADTRegistryPath -Key $key -Wow6432Node:$Wow6432Node
             }
 
             ## Create registry key if it doesn't exist
