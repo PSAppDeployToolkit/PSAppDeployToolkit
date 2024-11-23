@@ -92,7 +92,7 @@ FunctionsToExport = @(
     'Get-ADTRegistryKey'
     'Get-SchedulerTask'
     'Get-Shortcut'
-    'Install-MSUpdates'
+    'Install-ADTMSUpdates'
     'Install-SCCMSoftwareUpdates'
     'Invoke-ADTAllUsersRegistryChange'
     'Invoke-ADTObjectMethod'
