@@ -99,7 +99,7 @@ FunctionsToExport = @(
     'Invoke-ADTDllFileAction'
     'Invoke-SCCMTask'
     'New-ADTFolder'
-    'New-MsiTransform'
+    'New-ADTMsiTransform'
     'New-Shortcut'
     'Register-ADTDllFile'
     'Remove-ADTEdgeExtension'
