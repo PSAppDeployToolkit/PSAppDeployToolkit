@@ -1231,6 +1231,10 @@ namespace PSADT.Module
             if (!string.IsNullOrWhiteSpace(deferDeadline))
             {
                 WriteLogEntry($"Setting deferral history: [DeferDeadline = {deferDeadline}].");
+                if (!TestDeferHistoryPath())
+                {
+                    CreateDeferHistoryPath();
+                }
                 ModuleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", "String", deferDeadline, true, true);
             }
         }
