@@ -80,6 +80,7 @@ if (!(Get-Command -Name 'Get-ScheduledTask')) {New-Alias -Name 'Get-ScheduledTas
 
 function Write-Log
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyCollection()]
@@ -217,6 +218,7 @@ function Write-Log
 
 function Exit-Script
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.Int32]$ExitCode
@@ -235,6 +237,7 @@ function Exit-Script
 
 function Invoke-HKCURegistrySettingsForAllUsers
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateScript({ if ($_ -match '\$UserProfile\.SID') { Write-ADTLogEntry -Message "The base function [Invoke-ADTAllUsersRegistryChange] no longer supports the use of [`$UserProfile]. Please use [`$_] or [`$PSItem] instead." -Severity 2 }; ![System.String]::IsNullOrWhiteSpace($_) })]
@@ -259,6 +262,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
 
 function Get-HardwarePlatform
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
@@ -277,6 +281,7 @@ function Get-HardwarePlatform
 
 function Get-FreeDiskSpace
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.String]$Drive,
@@ -314,6 +319,7 @@ function Get-FreeDiskSpace
 
 function Remove-InvalidFileNameChars
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyString()]
@@ -338,6 +344,7 @@ function Remove-InvalidFileNameChars
 
 function Get-InstalledApplication
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.String[]]$Name,
@@ -364,6 +371,7 @@ function Get-InstalledApplication
 
 function Get-FileVersion
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -406,6 +414,7 @@ function Get-FileVersion
 
 function Get-UserProfiles
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ExcludeNTAccount,
@@ -441,6 +450,7 @@ function Get-UserProfiles
 
 function Update-Desktop
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.Boolean]$ContinueOnError = $true
@@ -472,6 +482,7 @@ Set-Alias -Name Refresh-Desktop -Value Update-Desktop
 
 function Update-SessionEnvironmentVariables
 {
+    [CmdletBinding()]
     param (
         [System.Management.Automation.SwitchParameter]$LoadLoggedOnUserEnvironmentVariables,
 
@@ -505,6 +516,7 @@ Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTSessionEnvi
 
 function Remove-File
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
@@ -544,6 +556,7 @@ function Remove-File
 
 function Show-InstallationPrompt
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -631,6 +644,7 @@ function Show-InstallationPrompt
 
 function Show-InstallationProgress
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.String]$StatusMessage,
@@ -664,6 +678,7 @@ function Show-InstallationProgress
 
 function Show-DialogBox
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
         [ValidateNotNullOrEmpty()]
@@ -713,7 +728,7 @@ function Show-DialogBox
 
 function Show-InstallationWelcome
 {
-    [CmdletBinding(DefaultParameterSetName = 'None')]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -816,6 +831,7 @@ function Show-InstallationWelcome
 
 function Get-WindowTitle
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
         [AllowEmptyString()]
@@ -841,6 +857,7 @@ function Get-WindowTitle
 
 function Show-InstallationRestartPrompt
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.Int32]$CountdownSeconds,
@@ -884,6 +901,7 @@ function Show-InstallationRestartPrompt
 
 function Show-BalloonTip
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
@@ -918,6 +936,7 @@ function Show-BalloonTip
 
 function Copy-ContentToCache
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
         [ValidateNotNullOrEmpty()]
@@ -937,6 +956,7 @@ function Copy-ContentToCache
 
 function Remove-ContentFromCache
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false, Position = 0, HelpMessage = 'The path to the software cache folder')]
         [ValidateNotNullOrEmpty()]
@@ -982,6 +1002,7 @@ function Get-LoggedOnUser
 
 function Get-IniValue
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
@@ -1029,6 +1050,7 @@ function Get-IniValue
 
 function Set-IniValue
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateScript({if (![System.IO.File]::Exists($_)) {throw "The specified file does not exist."}; $_})]
@@ -1080,6 +1102,7 @@ function Set-IniValue
 
 function New-Folder
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -1125,6 +1148,7 @@ function Test-PowerPoint
 
 function Update-GroupPolicy
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1153,6 +1177,7 @@ function Update-GroupPolicy
 
 function Get-UniversalDate
 {
+    [CmdletBinding()]
     param (
         [ValidateNotNullOrEmpty()]
         [System.String]$DateTime,
@@ -1190,6 +1215,7 @@ function Get-UniversalDate
 
 function Test-ServiceExists
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -1236,6 +1262,7 @@ function Test-ServiceExists
 
 function Disable-TerminalServerInstallMode
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1264,6 +1291,7 @@ function Disable-TerminalServerInstallMode
 
 function Enable-TerminalServerInstallMode
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1292,6 +1320,7 @@ function Enable-TerminalServerInstallMode
 
 function Configure-EdgeExtension
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'Add')]
         [System.Management.Automation.SwitchParameter]$Add,
@@ -1331,6 +1360,7 @@ function Configure-EdgeExtension
 
 function Resolve-Error
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyCollection()]
@@ -1371,6 +1401,7 @@ function Resolve-Error
 
 function Get-ServiceStartMode
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -1407,6 +1438,7 @@ function Get-ServiceStartMode
 
 function Set-ServiceStartMode
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -1443,6 +1475,7 @@ function Set-ServiceStartMode
 
 function Execute-Process
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [Alias('FilePath')]
@@ -1535,6 +1568,7 @@ function Execute-Process
 
 function Execute-MSI
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
@@ -1643,6 +1677,7 @@ function Execute-MSI
 
 function Execute-MSP
 {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the path to the MSP file')]
         [ValidateScript({('.msp' -contains [System.IO.Path]::GetExtension($_))})]
