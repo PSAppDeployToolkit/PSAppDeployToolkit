@@ -1690,3 +1690,33 @@ function Block-AppExecution
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Block-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2
     Block-ADTAppExecution @PSBoundParameters
 }
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Test-ADTRegistryValue
+#
+#---------------------------------------------------------------------------
+
+function Test-RegistryValue
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        $Key,
+
+        [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        $Value,
+
+        [Parameter(Mandatory = $false, Position = 2)]
+        [ValidateNotNullorEmpty()]
+        [System.String]$SID,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Wow6432Node
+    )
+
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity 2
+    Test-ADTRegistryValue @PSBoundParameters
+}
