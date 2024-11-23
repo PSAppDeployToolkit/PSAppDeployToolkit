@@ -98,7 +98,7 @@ https://psappdeploytoolkit.com
             $StartTime = Get-Date
             ## Trigger SCCM client scan for Software Updates
             Write-ADTLogEntry -Message 'Triggering SCCM client scan for Software Updates...'
-            Invoke-SCCMTask -ScheduleId 'SoftwareUpdatesScan'
+            Invoke-ADTSCCMTask -ScheduleId 'SoftwareUpdatesScan'
 
             Write-ADTLogEntry -Message "The SCCM client scan for Software Updates has been triggered. The script is suspended for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish."
             Start-Sleep -Seconds $SoftwareUpdatesScanWaitInSeconds
