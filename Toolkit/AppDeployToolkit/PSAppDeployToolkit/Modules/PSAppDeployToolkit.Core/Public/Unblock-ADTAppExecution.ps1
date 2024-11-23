@@ -61,7 +61,7 @@
         # Remove BlockAppExection temporary directory.
         if ([System.IO.Directory]::Exists(($tempPath = $adtSession.GetPropertyValue('dirAppDeployTemp'))))
         {
-            Remove-Folder -Path $tempPath
+            Remove-ADTFolder -Path $tempPath
         }
     }
 

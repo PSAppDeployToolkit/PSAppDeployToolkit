@@ -167,7 +167,7 @@ https://psappdeploytoolkit.com
             ##  Remove the temporary folder
             If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
                 Write-ADTLogEntry -Message "Previous [$executeAsUserTempPath] found. Attempting removal."
-                Remove-Folder -Path $executeAsUserTempPath
+                Remove-ADTFolder -Path $executeAsUserTempPath
             }
             #  Recreate the temporary folder
             Try {
@@ -409,7 +409,7 @@ https://psappdeploytoolkit.com
 
             ##  Remove the temporary folder
             If (Test-Path -LiteralPath $executeAsUserTempPath -PathType 'Container') {
-                Remove-Folder -Path $executeAsUserTempPath
+                Remove-ADTFolder -Path $executeAsUserTempPath
             }
         }
     }

@@ -77,7 +77,7 @@
         # Reset any previous instance of the temp folder.
         if ([System.IO.Directory]::Exists($tempPath))
         {
-            Remove-Folder -Path $tempPath
+            Remove-ADTFolder -Path $tempPath
         }
         try
         {

@@ -1,129 +1,133 @@
-﻿Function Remove-Folder {
+﻿function Remove-ADTFolder
+{
     <#
-.SYNOPSIS
 
-Remove folder and files if they exist.
+    .SYNOPSIS
+    Remove folder and files if they exist.
 
-.DESCRIPTION
+    .DESCRIPTION
+    Remove folder and all files with or without recursion in a given path.
 
-Remove folder and all files with or without recursion in a given path.
+    .PARAMETER Path
+    Path to the folder to remove.
 
-.PARAMETER Path
+    .PARAMETER DisableRecursion
+    Disables recursion while deleting.
 
-Path to the folder to remove.
+    .INPUTS
+    None. You cannot pipe objects to this function.
 
-.PARAMETER DisableRecursion
+    .OUTPUTS
+    None. This function does not generate any output.
 
-Disables recursion while deleting.
+    .EXAMPLE
+    # Delete all files and subfolders in the Windows\Downloads Program Files folder.
+    Remove-ADTFolder -Path "$envWinDir\Downloaded Program Files"
 
-.PARAMETER ContinueOnError
+    .EXAMPLE
+    # Delete all files in the Temp\MyAppCache folder but does not delete any subfolders.
+    Remove-ADTFolder -Path "$envTemp\MyAppCache" -DisableRecursion
 
-Continue if an error is encountered. Default is: $true.
+    .LINK
+    https://psappdeploytoolkit.com
 
-.INPUTS
+    #>
 
-None
-
-You cannot pipe objects to this function.
-
-.OUTPUTS
-
-None
-
-This function does not generate any output.
-
-.EXAMPLE
-
-Remove-Folder -Path "$envWinDir\Downloaded Program Files"
-
-Deletes all files and subfolders in the Windows\Downloads Program Files folder
-
-.EXAMPLE
-
-Remove-Folder -Path "$envTemp\MyAppCache" -DisableRecursion
-
-Deletes all files in the Temp\MyAppCache folder but does not delete any subfolders.
-
-.NOTES
-
-.LINK
-
-https://psappdeploytoolkit.com
-#>
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullorEmpty()]
-        [String]$Path,
-        [Parameter(Mandatory = $false)]
-        [Switch]$DisableRecursion,
-        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [Boolean]$ContinueOnError = $true
+        [System.IO.DirectoryInfo]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$DisableRecursion
     )
 
-    Begin {
+    begin {
+        # Make this function continue on error.
+        $OriginalErrorAction = if ($PSBoundParameters.ContainsKey('ErrorAction'))
+        {
+            $PSBoundParameters.ErrorAction
+        }
+        else
+        {
+            [System.Management.Automation.ActionPreference]::Continue
+        }
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
         Write-ADTDebugHeader
     }
-    Process {
-        If (Test-Path -LiteralPath $Path -PathType 'Container' -ErrorAction 'Ignore') {
-            Try {
-                If ($DisableRecursion) {
-                    Write-ADTLogEntry -Message "Deleting folder [$path] without recursion..."
-                    # Without recursion we have to go through the subfolder ourselves because Remove-Item asks for confirmation if we are trying to delete a non-empty folder without -Recurse
-                    [Array]$ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force
-                    If ($ListOfChildItems) {
-                        $SubfoldersSkipped = 0
-                        ForEach ($item in $ListOfChildItems) {
-                            # Check whether this item is a folder
-                            If (Test-Path -LiteralPath $item.FullName -PathType Container) {
-                                # Item is a folder. Check if its empty
-                                # Get list of child items in the folder
-                                [Array]$ItemChildItems = Get-ChildItem -LiteralPath $item.FullName -Force -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
-                                If ($ItemChildItems.Count -eq 0) {
-                                    # The folder is empty, delete it
-                                    Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
-                                }
-                                Else {
-                                    # Folder is not empty, skip it
-                                    $SubfoldersSkipped++
-                                    Continue
-                                }
-                            }
-                            Else {
-                                # Item is a file. Delete it
-                                Remove-Item -LiteralPath $item.FullName -Force -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
-                            }
-                        }
-                        If ($SubfoldersSkipped -gt 0) {
-                            Throw "[$SubfoldersSkipped] subfolders are not empty!"
-                        }
-                    }
-                    Else {
-                        Remove-Item -LiteralPath $Path -Force -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
-                    }
-                }
-                Else {
-                    Write-ADTLogEntry -Message "Deleting folder [$path] recursively..."
-                    Remove-Item -LiteralPath $Path -Force -Recurse -ErrorAction 'Ignore' -ErrorVariable '+ErrorRemoveFolder'
-                }
 
-                If ($ErrorRemoveFolder) {
-                    Throw $ErrorRemoveFolder
+    process {
+        # Return early if the folder doesn't exist.
+        if (!($Path | Test-Path -PathType Container))
+        {
+            Write-ADTLogEntry -Message "Folder [$Path] does not exist."
+            return
+        }
+
+        try
+        {
+            # With -Recurse, we can just send it and return early.
+            if (!$DisableRecursion)
+            {
+                Write-ADTLogEntry -Message "Deleting folder [$Path] recursively..."
+                Remove-Item -LiteralPath $Path -Force -Recurse
+                return
+            }
+
+            # Without recursion, we can only send it if the folder has no items as Remove-Item will ask for confirmation without recursion.
+            Write-ADTLogEntry -Message "Deleting folder [$Path] without recursion..."
+            if (!($ListOfChildItems = Get-ChildItem -LiteralPath $Path -Force))
+            {
+                Remove-Item -LiteralPath $Path -Force
+                return
+            }
+
+            # We must have some subfolders, let's see what we can do.
+            $SubfoldersSkipped = foreach ($item in $ListOfChildItems)
+            {
+                # Check whether this item is a folder
+                if ($item -is [System.IO.DirectoryInfo])
+                {
+                    # Item is a folder. Check if its empty.
+                    if (($item | Get-ChildItem -Force | Measure-Object).Count -eq 0)
+                    {
+                        # The folder is empty, delete it
+                        $item | Remove-Item -Force
+                    }
+                    else
+                    {
+                        # Folder is not empty, skip it.
+                        $item
+                    }
+                }
+                else
+                {
+                    # Item is a file. Delete it.
+                    $item | Remove-Item -Force
                 }
             }
-            Catch {
-                Write-ADTLogEntry -Message "Failed to delete folder(s) and file(s) from path [$path].`n$(Resolve-ADTError)" -Severity 3
-                If (-not $ContinueOnError) {
-                    Throw "Failed to delete folder(s) and file(s) from path [$path]: $($_.Exception.Message)"
+            if ($SubfoldersSkipped)
+            {
+                $naerParams = @{
+                    Exception = [System.IO.IOException]::new("The following folders are not empty ['$($SubfoldersSkipped.FullName.Replace($Path.FullName, $null) -join "'; '")'].")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                    ErrorId = 'NonEmptySubfolderError'
+                    TargetObject = $SubfoldersSkipped
+                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                 }
+                throw (New-ADTErrorRecord @naerParams)
             }
         }
-        Else {
-            Write-ADTLogEntry -Message "Folder [$Path] does not exist."
+        catch
+        {
+            Write-ADTLogEntry -Message "Failed to delete folder(s) and file(s) from path [$Path].`n$(Resolve-ADTError)" -Severity 3
+            $ErrorActionPreference = $OriginalErrorAction
+            $PSCmdlet.WriteError($_)
         }
     }
-    End {
+
+    end {
         Write-ADTDebugFooter
     }
 }
