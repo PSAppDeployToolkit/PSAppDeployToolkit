@@ -27,7 +27,7 @@ Describe 'Add-ADTEdgeExtension' {
 			$Extensions.$extensionId.update_url | Should -Be $updateUrl
 			$Extensions.$extensionId.installation_mode | Should -Be $installationMode
 			$Extensions.$extensionId.minimum_version_required | Should -Be $minimumVersionRequired
-			$Extensions.PSObject.Properties.Name.Count | Should -Be 1
+			($Extensions.PSObject.Properties.Name | Measure-Object).Count | Should -Be 1
 		}
 
 		It 'Should update an existing extension registration, removing minimum version required' {
@@ -44,8 +44,8 @@ Describe 'Add-ADTEdgeExtension' {
 			$Extensions = Get-ItemPropertyValue -Path $RedirectedEdgeKey -Name 'ExtensionSettings' | ConvertFrom-Json
 			$Extensions.$extensionId.update_url | Should -Be $updateUrl
 			$Extensions.$extensionId.installation_mode | Should -Be $installationMode
-			$Extensions.$extensionId.minimum_version_required | Should -BeNullOrEmpty
-			$Extensions.PSObject.Properties.Name.Count | Should -Be 1
+			$Extensions.$extensionId | Select-Object -ExpandProperty minimum_version_required -ErrorAction Ignore | Should -BeNullOrEmpty
+			($Extensions.PSObject.Properties.Name | Measure-Object).Count | Should -Be 1
 		}
 
 		It 'Should preserve existing extensions' {
@@ -66,7 +66,7 @@ Describe 'Add-ADTEdgeExtension' {
 			$Extensions.xyz789.update_url | Should -Be 'https://edge.microsoft.com/old'
 			$Extensions.xyz789.installation_mode | Should -Be 'blocked'
 
-			$Extensions.PSObject.Properties.Name.Count | Should -Be 2
+			($Extensions.PSObject.Properties.Name | Measure-Object).Count | Should -Be 2
 		}
 	}
 
