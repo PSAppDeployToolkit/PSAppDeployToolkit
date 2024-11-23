@@ -130,7 +130,7 @@
         # Enumerate each process and set the debugger value to block application execution.
         $ProcessName -replace '$', '.exe' | ForEach-Object {
             Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$_]."
-            Set-RegistryKey -Key (Join-Path -Path $adtEnv.regKeyAppExecution -ChildPath $_) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog; #"
+            Set-ADTRegistryKey -Key (Join-Path -Path $adtEnv.regKeyAppExecution -ChildPath $_) -Name Debugger -Value "$([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $pwshArgs; Show-ADTBlockedAppDialog; #"
         }
     }
 

@@ -51,12 +51,12 @@
         if ($null -ne $DeferTimesRemaining)
         {
             Write-ADTLogEntry -Message "Setting deferral history: [DeferTimesRemaining = $DeferTimesRemaining]."
-            Set-RegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ContinueOnError $true
+            Set-ADTRegistryKey -Key $regKeyDeferHistory -Name 'DeferTimesRemaining' -Value $DeferTimesRemaining -ErrorAction Ignore
         }
         if (![System.String]::IsNullOrWhiteSpace($DeferDeadline))
         {
             Write-ADTLogEntry -Message "Setting deferral history: [DeferDeadline = $DeferDeadline]."
-            Set-RegistryKey -Key $regKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline -ContinueOnError $true
+            Set-ADTRegistryKey -Key $regKeyDeferHistory -Name 'DeferDeadline' -Value $DeferDeadline -ErrorAction Ignore
         }
     }
 
