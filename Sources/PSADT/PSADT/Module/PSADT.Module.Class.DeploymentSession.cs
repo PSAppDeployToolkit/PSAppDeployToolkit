@@ -1195,7 +1195,7 @@ namespace PSADT.Module
         /// </summary>
         private void CreateDeferHistoryPath()
         {
-            ModuleSessionState.InvokeProvider.Item.New(RegKeyDeferBase, InstallName, "None", null);
+            ModuleSessionState.InvokeProvider.Item.New([RegKeyDeferBase], InstallName, "None", null, true);
         }
 
         /// <summary>
