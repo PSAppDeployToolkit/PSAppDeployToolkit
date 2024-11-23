@@ -9,7 +9,7 @@ Block the execution of an application(s)
 This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function. It does the following:
 
 1.  Makes a copy of this script in a temporary directory on the local machine.
-2.  Checks for an existing scheduled task from previous failed installation attempt where apps were blocked and if found, calls the Unblock-AppExecution function to restore the original IFEO registry keys.
+2.  Checks for an existing scheduled task from previous failed installation attempt where apps were blocked and if found, calls the Unblock-ADTAppExecution function to restore the original IFEO registry keys.
         This is to prevent the function from overriding the backup of the original IFEO options.
 3.  Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling the local temporary copy of this script with the parameter -CleanupBlockedApps.
 4.  Modifies the "Image File Execution Options" registry key for the specified process(s) to call this script with the parameter -ShowBlockedAppDialog.
@@ -66,7 +66,7 @@ https://psappdeploytoolkit.com
             [string]$SchInstallName = $SchInstallName -replace [regex]::Escape($invalidChar),''
         }
         [string]$blockExecutionTempPath = Join-Path -Path $adtSession.GetPropertyValue('dirAppDeployTemp') -ChildPath 'BlockExecution'
-        [string]$schTaskUnblockAppsCommand = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$blockExecutionTempPath'; Import-ADTModuleState; Unblock-AppExecution"
+        [string]$schTaskUnblockAppsCommand = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Import-Module -Name '$blockExecutionTempPath'; Import-ADTModuleState; Unblock-ADTAppExecution"
         ## Specify the scheduled task configuration in XML format
         [string]$xmlUnblockAppsSchTask = @"
 <?xml version="1.0" encoding="UTF-16"?>

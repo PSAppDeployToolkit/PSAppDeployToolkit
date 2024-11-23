@@ -1657,3 +1657,16 @@ function Execute-MSP
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMspProcess]. Please migrate your scripts to use the new function." -Severity 2
     Start-ADTMspProcess @PSBoundParameters
 }
+
+
+#---------------------------------------------------------------------------
+#
+# Wrapper around Unblock-ADTAppExecution
+#
+#---------------------------------------------------------------------------
+
+function Unblock-AppExecution
+{
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unblock-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity 2
+    Unblock-ADTAppExecution
+}

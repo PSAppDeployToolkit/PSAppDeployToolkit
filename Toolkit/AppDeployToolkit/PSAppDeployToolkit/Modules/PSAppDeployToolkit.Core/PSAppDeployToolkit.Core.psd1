@@ -90,6 +90,7 @@ FunctionsToExport = @(
     'Set-ADTDeferHistory'
     'Show-ADTDialogBox'
     'Show-ADTHelpConsole'
+    'Unblock-ADTAppExecution'
     'Write-ADTDebugFooter'
     'Write-ADTDebugHeader'
     'Write-ADTLogEntry'
