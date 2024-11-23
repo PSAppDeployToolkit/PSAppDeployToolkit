@@ -693,7 +693,7 @@
         # If block execution variable is true, call the function to unblock execution.
         if ($this.BlockExecution)
         {
-            Unblock-AppExecution
+            Unblock-ADTAppExecution
         }
 
         # If Terminal Server mode was set, turn it off.
