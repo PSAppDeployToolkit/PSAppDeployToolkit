@@ -109,7 +109,7 @@ function Dismount-ADTWimFile
                         {
                             # Close handle using handle.exe. An exit code of 0 is considered successful.
                             Write-ADTLogEntry -Message "$(($msg = "Closing handle [$($handle.Handle)] for process [$($handle.Process) ($($handle.PID))]"))."
-                            $handleResult = & $exeHandle -nobanner -c $handle.Handle -p $handle.PID -y
+                            $handleResult = & $exeHandle -accepteula -nobanner -c $handle.Handle -p $handle.PID -y
                             if ($Global:LASTEXITCODE.Equals(0))
                             {
                                 continue
