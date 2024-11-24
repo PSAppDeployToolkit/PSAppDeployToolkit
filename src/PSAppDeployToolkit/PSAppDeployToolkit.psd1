@@ -58,14 +58,15 @@
         'PresentationCore'
         'PresentationFramework'
         'WindowsBase'
-        'lib\net462\PSADT.UserInterface.dll'
         if ($PSEdition -eq 'Desktop')
         {
             'lib\net462\PSADT.dll'
+            'lib\net462\PSADT.UserInterface.dll'
         }
         else
         {
             'lib\net6.0-windows\PSADT.dll'
+            'lib\net6.0-windows\PSADT.UserInterface.dll'
         }
     )
 

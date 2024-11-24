@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -150,7 +150,7 @@ namespace PSADT.UserInterface.Utilities
         /// <summary>
         /// Determines whether the specified object is equal to this Screen.
         /// </summary>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is WPFScreen other)
             {
