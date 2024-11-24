@@ -40,6 +40,47 @@
             AppVeyor  - actions_bootstrap.ps1
 #>
 
+# Function to get GitHub release URLs.
+function Get-GitHubReleaseAssetUri
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FilePattern', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [CmdletBinding()]
+    [OutputType([System.Uri])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Account,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Repository,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$FilePattern,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Regex
+    )
+
+    # Get the list of URLs from GitHub's API.
+    $links = (Invoke-RestMethod -UseBasicParsing -Uri "https://api.github.com/repos/$Account/$Repository/releases/latest").assets.browser_download_url
+    $match = if ($Regex) { { $_ -match $FilePattern } } else { { $_ -like $FilePattern } }
+
+    # Find the one that matches the pattern and confirm we have a singular result.
+    if (!(($link = $links | Where-Object { $_.Split('/').Where($match) }) | Measure-Object).Count.Equals(1))
+    {
+        $PSCmdlet.ThrowTerminatingError([System.Management.Automation.ErrorRecord]::new(
+                [System.InvalidOperationException]::new("The match against the provided file pattern returned an invalid result."),
+                'UriPatternMatchInvalidResult',
+                [System.Management.Automation.ErrorCategory]::InvalidResult,
+                $link
+            ))
+    }
+    return [System.Uri]$link
+}
+
 # Default variables.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
@@ -154,14 +195,18 @@ Add-BuildTask ValidateRequirements {
 
 # Synopsis: Compile our defined C# solutions.
 Add-BuildTask DotNetBuild -Before TestModuleManifest {
-    # Can't build without dotnet.
+    # Find Visual Studio on the current device.
     Write-Build White '      Compiling C# projects...'
-    if (!(Get-Command -Name dotnet -ErrorAction Ignore))
+    Write-Build Gray '        Downloading vswhere.exe to find devenv.exe...'
+    $vswhereUri = Get-GitHubReleaseAssetUri -Account Microsoft -Repository vswhere -FilePattern ($vswhereExe = 'vswhere.exe')
+    Invoke-WebRequest -UseBasicParsing -Uri $vswhereUri -OutFile ($vswhereExe = "$([System.IO.Path]::GetTempPath())$vswhereExe")
+    if (!($devenvPath = & $vswhereExe | ForEach-Object { if ($_.StartsWith('productPath')) { $_ -replace '(^\w+:\s)(.+)(\.exe)', '$2.com' } }))
     {
-        throw 'dotnet command not found. Ensure it is installed and available in the PATH.'
+        throw 'devenv.com command not found. Ensure Visual Studio is installed on this system.'
     }
 
     # Process each build item.
+    Write-Build Gray '        Determining C# solutions requiring compilation...'
     foreach ($buildItem in $Script:buildItems)
     {
         if ($env:GITHUB_ACTIONS -ne 'true')
@@ -178,29 +223,29 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
                     # Get the list of source files modified since the last commit date of the file we're comparing against
                     if (!(git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SourcePath) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique))
                     {
-                        Write-Build White "      No files have been modified in $($buildItem.SourcePath), nothing to build."
+                        Write-Build Gray "          No files have been modified in $($buildItem.SourcePath), nothing to build."
                         continue
                     }
-                    Write-Build Blue "      Files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($lastCommitDate), build required."
+                    Write-Build Blue "          Files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($lastCommitDate), build required."
                 }
             }
             else
             {
-                Write-Build Blue "      Uncommitted file changes found under $($buildItem.SourcePath), build required."
+                Write-Build Blue "          Uncommitted file changes found under $($buildItem.SourcePath), build required."
             }
         }
 
         # Build a debug and release config of each project.
-        Write-Build White "      Building $(($solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)))..."
-        & dotnet build $solutionPath --configuration Release --verbosity minimal
+        Write-Build Gray "            Building $(($solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)))..."
+        & $devenvPath $solutionPath /Rebuild "Release|AnyCPU"
         if ($LASTEXITCODE) { throw "Failed to solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
-        & dotnet build $solutionPath --configuration Debug --verbosity minimal
+        & $devenvPath $solutionPath /Rebuild "Debug|AnyCPU"
         if ($LASTEXITCODE) { throw "Failed to solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
 
         # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
         $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $(if ($buildItem.SolutionPath.EndsWith('.sln')) { $buildItem.SolutionPath.Replace('.sln', '') } else { "$($buildItem.SolutionPath.Replace('.csproj', ''))\.." }), 'bin\Debug\*')
         $buildItem.OutputPath | ForEach-Object {
-            Write-Build White "      Copying from  $sourcePath to $(($destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)))..."
+            Write-Build Gray "          Copying from  $sourcePath to $(($destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)))..."
             Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
         }
     }
