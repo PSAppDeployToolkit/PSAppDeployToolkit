@@ -7,13 +7,15 @@
 		<NoWarn>$(NoWarn);CA1416;CS4014</NoWarn>
 		<UseWindowsForms>true</UseWindowsForms>
 
-		<AssemblyVersion>3.93.0.0</AssemblyVersion>
+		<AssemblyVersion>3.93.0</AssemblyVersion>
 		<FileVersion>3.93.0</FileVersion>
-		<InformationalVersion>3.93.0-beta0</InformationalVersion>
-		<Authors>PSADT</Authors>
-		<Company>PSADT</Company>
-		<Description>A utility for launching and managing processes across multiple user sessions in Windows environments.</Description>
-		<Copyright>Copyright PSADT © 2024</Copyright>
+		<InformationalVersion>3.93.0</InformationalVersion>
+		<ApplicationVersion>3.93.0</ApplicationVersion>
+		<Authors>PSAppDeployToolkit Team</Authors>
+		<Company>PSAppDeployToolkit Team</Company>
+		<Description>PSAppDeployToolkit Support Library</Description>
+		<Title>PSAppDeployToolkit Support Libray</Title>
+		<Copyright>Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.</Copyright>
 		<PackageProjectUrl>https://psappdeploytoolkit.com/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
 		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
@@ -36,11 +38,17 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <DebugType>none</DebugType>
+	  <DebugSymbols>true</DebugSymbols>
+	  <DebugType>full</DebugType>
+	  <WarningLevel>3</WarningLevel>
+	  <Optimize>false</Optimize>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DebugSymbols>false</DebugSymbols>
 	  <DebugType>none</DebugType>
+	  <WarningLevel>3</WarningLevel>
+	  <Optimize>true</Optimize>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-windows'">
@@ -52,21 +60,31 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
-	  <DebugType>portable</DebugType>
-	  <WarningLevel>2</WarningLevel>
+	  <DebugSymbols>true</DebugSymbols>
+	  <DebugType>full</DebugType>
+	  <WarningLevel>3</WarningLevel>
+	  <Optimize>false</Optimize>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-windows|AnyCPU'">
-	  <DebugType>portable</DebugType>
+	  <DebugSymbols>true</DebugSymbols>
+	  <DebugType>full</DebugType>
+	  <WarningLevel>3</WarningLevel>
+	  <Optimize>false</Optimize>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
-	  <DebugType>portable</DebugType>
-	  <WarningLevel>2</WarningLevel>
+	  <DebugSymbols>false</DebugSymbols>
+	  <DebugType>none</DebugType>
+	  <WarningLevel>3</WarningLevel>
+	  <Optimize>true</Optimize>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0-windows|AnyCPU'">
-	  <DebugType>portable</DebugType>
+	  <DebugSymbols>false</DebugSymbols>
+	  <DebugType>none</DebugType>
+	  <WarningLevel>3</WarningLevel>
+	  <Optimize>true</Optimize>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -89,7 +107,6 @@
 			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="System.DirectoryServices" Condition="'$(TargetFramework)' == 'net462'" />
 	</ItemGroup>
 
 </Project>

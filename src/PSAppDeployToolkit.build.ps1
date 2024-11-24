@@ -639,7 +639,7 @@ Add-BuildTask Build {
     if (Test-Path "$Script:ArtifactsPath\docs")
     {
         Write-Build Gray '        Overwriting docs output...'
-        if (-not (Test-Path '..\docs\'))
+        if (!(Test-Path '..\docs\'))
         {
             New-Item -Path '..\docs\' -ItemType Directory -Force | Out-Null
         }
