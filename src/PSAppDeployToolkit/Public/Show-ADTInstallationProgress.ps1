@@ -153,6 +153,9 @@ function Show-ADTInstallationProgress
 
     process
     {
+        # Determine if progress window is open before proceeding.
+        $progressOpen = Test-ADTInstallationProgressRunning
+
         # Return early in silent mode.
         if ($adtSession)
         {
@@ -163,7 +166,7 @@ function Show-ADTInstallationProgress
             }
 
             # Notify user that the software installation has started.
-            if (!(Test-ADTInstallationProgressRunning))
+            if (!$progressOpen)
             {
                 try
                 {
@@ -181,8 +184,22 @@ function Show-ADTInstallationProgress
         {
             try
             {
+                # Perform the dialog action.
+                if (!$progressOpen)
+                {
+                    Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$($PSBoundParameters.StatusMessage)]."
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "Updating the progress dialog with message: [$($PSBoundParameters.StatusMessage)]."
+                }
                 & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
-                Add-ADTSessionFinishingCallback -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
+
+                # Add a callback to close it if we've opened for the first time.
+                if (!(Test-ADTInstallationProgressRunning).Equals($progressOpen))
+                {
+                    Add-ADTSessionFinishingCallback -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
+                }
             }
             catch
             {

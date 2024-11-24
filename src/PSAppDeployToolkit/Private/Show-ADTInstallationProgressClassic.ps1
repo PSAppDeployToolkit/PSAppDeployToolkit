@@ -127,7 +127,6 @@ function Show-ADTInstallationProgressClassic
         $xaml.Window.Grid.TextBlock.TextAlignment = $MessageAlignment.ToString()
 
         # Set up the PowerShell instance and commence invocation.
-        Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$StatusMessage]."
         $Script:Dialogs.Classic.ProgressWindow.PowerShell = [System.Management.Automation.PowerShell]::Create().AddScript($Script:CommandTable.'Show-ADTInstallationProgressClassicInternal'.ScriptBlock).AddArgument($Xaml).AddArgument($adtConfig.Assets.Logo).AddArgument($adtConfig.Assets.Banner).AddArgument($WindowLocation).AddArgument(${Function:Update-WindowLocation}.Ast.Body.GetScriptBlock()).AddArgument($Script:CommandTable.'Disable-ADTWindowCloseButton'.ScriptBlock.Ast.Body.GetScriptBlock())
         $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
         $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.ApartmentState = [System.Threading.ApartmentState]::STA
@@ -174,6 +173,5 @@ function Show-ADTInstallationProgressClassic
             },
             [System.Windows.Threading.DispatcherPriority]::Send
         )
-        Write-ADTLogEntry -Message "Updated the progress message: [$StatusMessage]."
     }
 }
