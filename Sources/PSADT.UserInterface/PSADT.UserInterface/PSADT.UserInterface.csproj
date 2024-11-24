@@ -19,7 +19,7 @@
 	  <Company>PSAppDeployToolkit Team</Company>
 		<Description>PSAppDeployToolkit User Interface Library</Description>
 		<Copyright>Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.</Copyright>
-		<AssemblyVersion>3.93.0</AssemblyVersion>
+		<AssemblyVersion>3.93.0.0</AssemblyVersion>
 		<FileVersion>3.93.0</FileVersion>
 		<InformationalVersion>3.93.0</InformationalVersion>
 		<ApplicationVersion>3.93.0</ApplicationVersion>
