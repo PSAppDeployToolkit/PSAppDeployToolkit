@@ -15,7 +15,7 @@ Displays a restart prompt with a countdown to a forced restart.
 ```
 Show-ADTInstallationRestartPrompt [[-CountdownSeconds] <UInt32>] [[-CountdownNoHideSeconds] <UInt32>]
  [[-SilentCountdownSeconds] <UInt32>] [-SilentRestart] [-NoCountdown] [-NotTopMost] -Title <String>
- [<CommonParameters>]
+ -Subtitle <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -137,6 +137,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Subtitle
+Subtitle of the prompt.
+Default: the application deployment type.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
