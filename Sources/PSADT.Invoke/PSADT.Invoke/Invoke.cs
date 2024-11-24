@@ -14,18 +14,59 @@ namespace PSADT
 {
     internal static class Invoke
     {
+        private enum ProcessorArchitecture : ushort
+        {
+            PROCESSOR_ARCHITECTURE_INTEL = 0,
+            PROCESSOR_ARCHITECTURE_MIPS = 1,
+            PROCESSOR_ARCHITECTURE_ALPHA = 2,
+            PROCESSOR_ARCHITECTURE_PPC = 3,
+            PROCESSOR_ARCHITECTURE_SHX = 4,
+            PROCESSOR_ARCHITECTURE_ARM = 5,
+            PROCESSOR_ARCHITECTURE_IA64 = 6,
+            PROCESSOR_ARCHITECTURE_ALPHA64 = 7,
+            PROCESSOR_ARCHITECTURE_MSIL = 8,
+            PROCESSOR_ARCHITECTURE_AMD64 = 9,
+            PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 = 10,
+            PROCESSOR_ARCHITECTURE_NEUTRAL = 11,
+            PROCESSOR_ARCHITECTURE_ARM64 = 12,
+            PROCESSOR_ARCHITECTURE_ARM32_ON_WIN64 = 13,
+            PROCESSOR_ARCHITECTURE_UNKNOWN = 0xFFFF
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 2)]
+        private struct SYSTEM_INFO
+        {
+            public ProcessorArchitecture wProcessorArchitecture;
+            public ushort wReserved;
+            public uint dwPageSize;
+            public IntPtr lpMinimumApplicationAddress;
+            public IntPtr lpMaximumApplicationAddress;
+            public UIntPtr dwActiveProcessorMask;
+            public uint dwNumberOfProcessors;
+            public uint dwProcessorType;
+            public uint dwAllocationGranularity;
+            public ushort wProcessorLevel;
+            public ushort wProcessorRevision;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
+        private static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
+
         private static readonly string assemblyName = AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Name;
         private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
         private static readonly string timeStamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
         private static readonly Encoding LogEncoding = new UTF8Encoding(true);
 
-        public static void Main()
+        private static void Main()
         {
             // Set up exit code.
             int exitCode = 60010;
 
             try
             {
+                // Get system information so we can determine bitness.
+                GetNativeSystemInfo(out SYSTEM_INFO sysInfo);
+
                 // Set up variables.
                 string currentPath = AppDomain.CurrentDomain.BaseDirectory;
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
@@ -36,7 +77,7 @@ namespace PSADT
                 string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string pwshArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
                 var cliArguments = new List<string>(Environment.GetCommandLineArgs());
-                bool is64BitOS = nameof(RuntimeInformation.OSArchitecture).EndsWith("64");
+                bool is64BitOS = nameof(sysInfo.wProcessorArchitecture).EndsWith("64");
                 bool isForceX86Mode = false;
                 bool isRequireAdmin = false;
 
@@ -193,7 +234,7 @@ namespace PSADT
             }
         }
 
-        public static void WriteDebugMessage(string debugMessage = null, bool IsDisplayError = false, MessageBoxIcon MsgBoxStyle = MessageBoxIcon.Information)
+        private static void WriteDebugMessage(string debugMessage = null, bool IsDisplayError = false, MessageBoxIcon MsgBoxStyle = MessageBoxIcon.Information)
         {
             // Output to the log file.
             var logPath = Path.Combine(loggingPath, $"{assemblyName}.exe");
@@ -219,7 +260,7 @@ namespace PSADT
             }
         }
 
-        public class WindowWrapper : IWin32Window
+        private class WindowWrapper : IWin32Window
         {
             public WindowWrapper(IntPtr handle)
             {
