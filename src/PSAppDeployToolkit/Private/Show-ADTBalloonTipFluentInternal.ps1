@@ -48,7 +48,7 @@ function Show-ADTBalloonTipFluentInternal
     }
     else
     {
-        Add-Type -LiteralPath $ModuleBase\lib\net6.0\Microsoft.Windows.SDK.NET.dll, $ModuleBase\lib\net6.0\WinRT.Runtime.dll
+        Add-Type -LiteralPath $ModuleBase\lib\net8.0\Microsoft.Windows.SDK.NET.dll, $ModuleBase\lib\net8.0\WinRT.Runtime.dll
     }
 
     # Configure the notification centre.
