@@ -264,8 +264,11 @@ function Start-ADTProcessAsUser
         }
         elseif ($PSBoundParameters.ContainsKey('Username'))
         {
-            $SessionId = Get-ADTLoggedOnUser | & { process { if ($_.NTAccount.EndsWith($Username, [System.StringComparison]::InvariantCultureIgnoreCase)) { return $_ } } } | Select-Object -First 1 -ExpandProperty SessionId
-            $PSBoundParameters.Add('SessionId', $SessionId)
+            if (!($userSessionId = Get-ADTLoggedOnUser | & { process { if ($_ -and $_.NTAccount.EndsWith($Username, [System.StringComparison]::InvariantCultureIgnoreCase)) { return $_ } } } | Select-Object -First 1 -ExpandProperty SessionId))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Username -ProvidedValue $Username -ExceptionMessage 'An active session could not be found for the specified user.'))
+            }
+            $PSBoundParameters.Add('SessionId', ($SessionId = $userSessionId))
             $null = $PSBoundParameters.Remove('Username')
         }
 
