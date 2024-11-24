@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFrameworks>net462</TargetFrameworks>
+	  <TargetFrameworks>net462;net6.0-windows</TargetFrameworks>
 	  <PlatformTarget>AnyCPU</PlatformTarget>
 	  <UseWPF>true</UseWPF>
 	  <LangVersion>latest</LangVersion>
@@ -38,6 +38,7 @@
 		<Platforms>AnyCPU</Platforms>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<PackageIcon>Assets\appIcon.png</PackageIcon>
 		<RepositoryType>git</RepositoryType>
 
@@ -68,13 +69,14 @@
 
 
   <ItemGroup>
+	<PackageReference Include="System.Management" Version="8.0.0" Condition="'$(TargetFramework)' == 'net6.0-windows'" />
 	<PackageReference Include="System.ValueTuple" Version="4.5.0" />
 	<PackageReference Include="WPF-UI" Version="4.0.0-rc.2" />
 	<PackageReference Include="WPF-UI.Tray" Version="4.0.0-rc.2" />
   </ItemGroup>
 
   <ItemGroup>
-	<Reference Include="System.Management" />
+	<Reference Include="System.Management" Condition="'$(TargetFramework)' == 'net462'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -82,10 +84,6 @@
 	  <Pack>True</Pack>
 	  <PackagePath>\</PackagePath>
 	</None>
-  </ItemGroup>
-  
-    <ItemGroup>
-	<Folder Include="Classes\" />
   </ItemGroup>
 
 </Project>
