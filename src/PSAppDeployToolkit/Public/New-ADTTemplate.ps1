@@ -144,7 +144,7 @@ function New-ADTTemplate
 
                 if (!$PSCore)
                 {
-                    $folderToRemove = "$templateModulePath\lib\net6.0"
+                    $folderToRemove = "$templateModulePath\lib\net8.0"
                     $filesToRemove = @(
                         "$folderToRemove\Microsoft.Windows.SDK.NET.dll"
                         "$folderToRemove\Microsoft.Windows.SDK.NET.xml"
