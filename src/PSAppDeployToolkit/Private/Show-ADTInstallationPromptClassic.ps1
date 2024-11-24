@@ -53,11 +53,7 @@ function Show-ADTInstallationPromptClassic
         [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NotTopMost,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Collections.Hashtable]$ADTConfig
+        [System.Management.Automation.SwitchParameter]$NotTopMost
     )
 
     # Set up some default values.
@@ -65,6 +61,7 @@ function Show-ADTInstallationPromptClassic
     $paddingNone = [System.Windows.Forms.Padding]::new(0, 0, 0, 0)
     $buttonSize = [System.Drawing.Size]::new(130, 24)
     $adtEnv = Get-ADTEnvironment
+    $adtConfig = Get-ADTConfig
 
     # Define events for form windows.
     $installPromptTimer_Tick = {
@@ -118,7 +115,7 @@ function Show-ADTInstallationPromptClassic
 
     # Built out timer for Persist Prompt mode.
     $installPromptTimerPersist = [System.Windows.Forms.Timer]::new()
-    $installPromptTimerPersist.Interval = $ADTConfig.UI.DefaultPromptPersistInterval * 1000
+    $installPromptTimerPersist.Interval = $adtConfig.UI.DefaultPromptPersistInterval * 1000
     $installPromptTimerPersist.add_Tick($installPromptTimerPersist_Tick)
 
     # Picture Banner.
@@ -370,7 +367,7 @@ function Show-ADTInstallationPromptClassic
             {
                 if (Test-ADTSessionActive)
                 {
-                    Close-ADTSession -ExitCode $ADTConfig.UI.DefaultExitCode
+                    Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                 }
             }
             else
