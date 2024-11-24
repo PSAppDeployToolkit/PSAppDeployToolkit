@@ -197,17 +197,13 @@ Add-BuildTask ValidateRequirements {
 Add-BuildTask DotNetBuild -Before TestModuleManifest {
     # Find Visual Studio on the current device.
     Write-Build White '      Compiling C# projects...'
-    Write-Build Gray '        Downloading vswhere.exe to find devenv.exe...'
+    Write-Build Gray '        Downloading vswhere.exe to find msbuild.exe...'
     $vswhereUri = Get-GitHubReleaseAssetUri -Account Microsoft -Repository vswhere -FilePattern ($vswhereExe = 'vswhere.exe')
     Invoke-WebRequest -UseBasicParsing -Uri $vswhereUri -OutFile ($vswhereExe = "$([System.IO.Path]::GetTempPath())$vswhereExe")
-    if (!($devenvPath = & $vswhereExe | ForEach-Object { if ($_.StartsWith('productPath')) { $_ -replace '(^\w+:\s)(.+)(\.exe)', '$2.com' } }))
+    if (!($msbuildPath = & $vswhereExe -requires Microsoft.Component.MSBuild -find MSBuild\Current\Bin\MSBuild.exe))
     {
-        throw 'devenv.com command not found. Ensure Visual Studio is installed on this system.'
+        throw 'msbuild.exe command not found. Ensure Visual Studio is installed on this system.'
     }
-
-    # Download nuget so we can restore packages if required.
-    Write-Build Gray '        Downloading nuget.exe for package restoration...'
-    Invoke-WebRequest -UseBasicParsing -Uri 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile ($nugetExe = "$([System.IO.Path]::GetTempPath())nuget.exe")
 
     # Process each build item.
     Write-Build Gray '        Determining C# solutions requiring compilation...'
@@ -239,21 +235,15 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
             }
         }
 
-        # Restore packages before attempting a build. This is important for clean environments.
-        $solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)
-        Write-Build Gray "            Restoring NuGet packages for $solutionPath..."
-        & $nugetExe restore $solutionPath
-        if ($LASTEXITCODE) { throw "Failed to restore NuGet packages for `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
-
         # Build a debug and release config of each project.
-        Write-Build Gray "            Building $solutionPath..."
-        & $devenvPath $solutionPath /Rebuild "Release|AnyCPU"
+        Write-Build Gray "            Building $(($solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)))..."
+        & $msbuildPath $solutionPath -target:Rebuild -restore -p:configuration=Release -p:platform="Any CPU" -nodeReuse:false -m
         if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
-        & $devenvPath $solutionPath /Rebuild "Debug|AnyCPU"
+        & $msbuildPath $solutionPath -target:Rebuild -restore -p:configuration=Debug -p:platform="Any CPU" -nodeReuse:false -m
         if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
 
         # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
-        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $(if ($buildItem.SolutionPath.EndsWith('.sln')) { $buildItem.SolutionPath.Replace('.sln', '') } else { "$($buildItem.SolutionPath.Replace('.csproj', ''))\.." }), 'bin\Debug\*')
+        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Debug\*')
         $buildItem.OutputPath | ForEach-Object {
             Write-Build Gray "          Copying from  $sourcePath to $(($destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)))..."
             Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
@@ -540,7 +530,7 @@ Add-BuildTask AssetCopy -Before Build {
     Copy-Item -Path "$Script:ModuleSourcePath\*" -Destination $Script:BuildModuleRoot -Exclude "$($Script:ModuleName).ps*1" -Recurse
     foreach ($buildItem in $Script:buildItems)
     {
-        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $(if ($buildItem.SolutionPath.EndsWith('.sln')) { $buildItem.SolutionPath.Replace('.sln', '') } else { "$($buildItem.SolutionPath.Replace('.csproj', ''))\.." }), 'bin\Release\*')
+        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\*')
         $buildItem.OutputPath.Replace("src\PSAppDeployToolkit\", $null) | ForEach-Object {
             $destPath = [System.IO.Path]::Combine($Script:BuildModuleRoot, $_)
             Write-Build Gray "        Copying from  $sourcePath to $destPath..."
