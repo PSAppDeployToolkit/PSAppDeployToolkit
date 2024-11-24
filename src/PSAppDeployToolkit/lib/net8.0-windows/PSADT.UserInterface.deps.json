@@ -1,0 +1,129 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "PSADT.UserInterface/1.0.0": {
+        "dependencies": {
+          "System.Management": "8.0.0",
+          "System.ValueTuple": "4.5.0",
+          "WPF-UI": "4.0.0-rc.2",
+          "WPF-UI.Tray": "4.0.0-rc.2"
+        },
+        "runtime": {
+          "PSADT.UserInterface.dll": {}
+        }
+      },
+      "Microsoft.Win32.SystemEvents/8.0.0": {},
+      "System.CodeDom/8.0.0": {},
+      "System.Drawing.Common/8.0.0": {
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "8.0.0"
+        }
+      },
+      "System.Management/8.0.0": {
+        "dependencies": {
+          "System.CodeDom": "8.0.0"
+        }
+      },
+      "System.ValueTuple/4.5.0": {},
+      "WPF-UI/4.0.0-rc.2": {
+        "dependencies": {
+          "WPF-UI.Abstractions": "4.0.0-rc.2"
+        },
+        "runtime": {
+          "lib/net8.0-windows7.0/Wpf.Ui.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.0.0"
+          }
+        }
+      },
+      "WPF-UI.Abstractions/4.0.0-rc.2": {
+        "runtime": {
+          "lib/net8.0/Wpf.Ui.Abstractions.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.0.0"
+          }
+        }
+      },
+      "WPF-UI.Tray/4.0.0-rc.2": {
+        "dependencies": {
+          "System.Drawing.Common": "8.0.0",
+          "WPF-UI": "4.0.0-rc.2"
+        },
+        "runtime": {
+          "lib/net8.0-windows7.0/Wpf.Ui.Tray.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "PSADT.UserInterface/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Win32.SystemEvents/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9opKRyOKMCi2xJ7Bj7kxtZ1r9vbzosMvRrdEhVhDz8j8MoBGgB+WmC94yH839NPH+BclAjtQ/pyagvi/8gDLkw==",
+      "path": "microsoft.win32.systemevents/8.0.0",
+      "hashPath": "microsoft.win32.systemevents.8.0.0.nupkg.sha512"
+    },
+    "System.CodeDom/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WTlRjL6KWIMr/pAaq3rYqh0TJlzpouaQ/W1eelssHgtlwHAH25jXTkUphTYx9HaIIf7XA6qs/0+YhtLEQRkJ+Q==",
+      "path": "system.codedom/8.0.0",
+      "hashPath": "system.codedom.8.0.0.nupkg.sha512"
+    },
+    "System.Drawing.Common/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JkbHJjtI/dWc5dfmEdJlbe3VwgZqCkZRtfuWFh5GOv0f+gGCfBtzMpIVkmdkj2AObO9y+oiOi81UGwH3aBYuqA==",
+      "path": "system.drawing.common/8.0.0",
+      "hashPath": "system.drawing.common.8.0.0.nupkg.sha512"
+    },
+    "System.Management/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jrK22i5LRzxZCfGb+tGmke2VH7oE0DvcDlJ1HAKYU8cPmD8XnpUT0bYn2Gy98GEhGjtfbR/sxKTVb+dE770pfA==",
+      "path": "system.management/8.0.0",
+      "hashPath": "system.management.8.0.0.nupkg.sha512"
+    },
+    "System.ValueTuple/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ==",
+      "path": "system.valuetuple/4.5.0",
+      "hashPath": "system.valuetuple.4.5.0.nupkg.sha512"
+    },
+    "WPF-UI/4.0.0-rc.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WatvS4V9a+hN6ydJMALXDzbbZuTBmsauFevF7flamRIGCI74sgr0jdKCgglngZnZ7PiV3WSWuAt1GZTCIG8ucA==",
+      "path": "wpf-ui/4.0.0-rc.2",
+      "hashPath": "wpf-ui.4.0.0-rc.2.nupkg.sha512"
+    },
+    "WPF-UI.Abstractions/4.0.0-rc.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UDssA959Z35AKyhpCpt/ph/eN+Tz5Ypgl3NVY6QYcSWbV79M5443aK6aw3y/TeF7X3GMiZR+9kk+bqnCmHG1vw==",
+      "path": "wpf-ui.abstractions/4.0.0-rc.2",
+      "hashPath": "wpf-ui.abstractions.4.0.0-rc.2.nupkg.sha512"
+    },
+    "WPF-UI.Tray/4.0.0-rc.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-mYsBevh8+BE+fKP0vHRyuLPpuAIyKhL6ZFrxCiz8DnEog/0xRSjjgGaq/pyN8+j1+z60Wm8n3ERN9T6D+WDEHA==",
+      "path": "wpf-ui.tray/4.0.0-rc.2",
+      "hashPath": "wpf-ui.tray.4.0.0-rc.2.nupkg.sha512"
+    }
+  }
+}

@@ -233,8 +233,9 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
         }
 
         # Manually clean out old build and obj folders for good measure.
-        Write-Build Gray "            Removing previous bin and obj folders from $($buildItem.SourcePath)..."
+        Write-Build Gray "            Removing previous .vs, bin, and obj folders from $($buildItem.SourcePath)..."
         $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SourcePath)
+        Get-ChildItem -LiteralPath $sourcePath -Directory -Filter '.vs' -Attributes Hidden -Recurse | Remove-Item -Recurse -Force
         'bin', 'obj' | ForEach-Object { Get-ChildItem -LiteralPath $sourcePath -Directory -Filter $_ -Recurse } | Remove-Item -Recurse -Force
 
         # Build a debug and release config of each project.

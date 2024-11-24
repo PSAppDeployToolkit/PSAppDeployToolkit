@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFrameworks>net462;net6.0-windows</TargetFrameworks>
+	  <TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
 	  <PlatformTarget>AnyCPU</PlatformTarget>
 	  <UseWPF>true</UseWPF>
 	  <LangVersion>latest</LangVersion>
@@ -69,7 +69,7 @@
 
 
   <ItemGroup>
-	<PackageReference Include="System.Management" Version="8.0.0" Condition="'$(TargetFramework)' == 'net6.0-windows'" />
+	<PackageReference Include="System.Management" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0-windows'" PrivateAssets="all" ExcludeAssets="runtime" />
 	<PackageReference Include="System.ValueTuple" Version="4.5.0" />
 	<PackageReference Include="WPF-UI" Version="4.0.0-rc.2" />
 	<PackageReference Include="WPF-UI.Tray" Version="4.0.0-rc.2" />

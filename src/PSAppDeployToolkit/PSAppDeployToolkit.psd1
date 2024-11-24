@@ -65,8 +65,8 @@
         }
         else
         {
-            'lib\net6.0-windows\PSADT.dll'
-            'lib\net6.0-windows\PSADT.UserInterface.dll'
+            'lib\net8.0-windows\PSADT.dll'
+            'lib\net8.0-windows\PSADT.UserInterface.dll'
         }
     )
 
