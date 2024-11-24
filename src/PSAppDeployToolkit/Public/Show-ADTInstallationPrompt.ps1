@@ -136,6 +136,12 @@ function Show-ADTInstallationPrompt
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
+        $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'Subtitle', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Subtitle of the prompt. Default: the application deployment type.' }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Timeout', [System.UInt32], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long, in seconds, to show the message prompt before aborting.' }
@@ -175,6 +181,10 @@ function Show-ADTInstallationPrompt
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
+        }
+        if (!$PSBoundParameters.ContainsKey('Subtitle'))
+        {
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format((Get-ADTStringTable).WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
         }
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {

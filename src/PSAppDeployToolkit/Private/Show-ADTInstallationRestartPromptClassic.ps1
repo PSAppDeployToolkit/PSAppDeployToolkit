@@ -27,7 +27,11 @@ function Show-ADTInstallationRestartPromptClassic
         [System.Management.Automation.SwitchParameter]$NoCountdown,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NotTopMost
+        [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
     # Initialize variables.

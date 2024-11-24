@@ -217,6 +217,7 @@ function Show-ADTInstallationWelcome
         # Initialize variables.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtStrings = Get-ADTStringTable
+        $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -228,9 +229,15 @@ function Show-ADTInstallationWelcome
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
+        $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'Subtitle', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = "Subtitle of the prompt. Default: the application deployment type." }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
         $paramDictionary.Add('DeploymentType', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'DeploymentType', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Classic'); HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
                     [System.Management.Automation.ValidateSetAttribute]::new($adtStrings.DeploymentType.Keys)
                 )
             ))
@@ -244,12 +251,15 @@ function Show-ADTInstallationWelcome
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtEnv = Get-ADTEnvironment
-        $adtConfig = Get-ADTConfig
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
+        }
+        if (!$PSBoundParameters.ContainsKey('Subtitle'))
+        {
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
         }
         if (!$PSBoundParameters.ContainsKey('DeploymentType'))
         {
@@ -424,6 +434,7 @@ function Show-ADTInstallationWelcome
                         $promptParams = @{
                             WelcomeState = $welcomeState
                             Title = $PSBoundParameters.Title
+                            Subtitle = $PSBoundParameters.Subtitle
                             DeploymentType = $PSBoundParameters.DeploymentType
                             CloseProcessesCountdown = $welcomeState.CloseProcessesCountdown
                             ForceCloseProcessesCountdown = !!$ForceCloseProcessesCountdown

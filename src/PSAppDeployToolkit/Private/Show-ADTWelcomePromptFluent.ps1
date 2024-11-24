@@ -17,7 +17,7 @@ function Show-ADTWelcomePromptFluent
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeploymentType,
+        [System.String]$Subtitle,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -52,7 +52,7 @@ function Show-ADTWelcomePromptFluent
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowWelcomeDialog(
         [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout),
         $Title,
-        [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $DeploymentType),
+        $Subtitle,
         !$NotTopMost,
         $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes + 1 }),
         (Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue),
