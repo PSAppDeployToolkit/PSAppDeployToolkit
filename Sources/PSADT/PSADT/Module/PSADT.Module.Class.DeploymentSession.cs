@@ -1745,7 +1745,7 @@ namespace PSADT.Module
             set
             {
                 _installPhase = value;
-                CallerSessionState?.PSVariable.Set(nameof(InstallPhase), value);
+                CallerSessionState?.PSVariable.Set(new PSVariable(nameof(InstallPhase), value));
             }
         }
 
@@ -1797,7 +1797,7 @@ namespace PSADT.Module
             set
             {
                 _dirFiles = value;
-                CallerSessionState?.PSVariable.Set(nameof(DirFiles), value);
+                CallerSessionState?.PSVariable.Set(new PSVariable(nameof(DirFiles), value));
             }
         }
 
@@ -1810,7 +1810,7 @@ namespace PSADT.Module
             set
             {
                 _dirSupportFiles = value;
-                CallerSessionState?.PSVariable.Set(nameof(DirSupportFiles), value);
+                CallerSessionState?.PSVariable.Set(new PSVariable(nameof(DirSupportFiles), value));
             }
         }
 
