@@ -147,7 +147,6 @@ function New-ADTTemplate
                     $folderToRemove = "$templateModulePath\lib\net8.0"
                     $filesToRemove = @(
                         "$folderToRemove\Microsoft.Windows.SDK.NET.dll"
-                        "$folderToRemove\Microsoft.Windows.SDK.NET.xml"
                         "$folderToRemove\WinRT.Runtime.dll"
                     )
                     foreach ($file in $filesToRemove)
