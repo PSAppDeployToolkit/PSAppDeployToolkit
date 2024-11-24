@@ -205,6 +205,10 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
         throw 'devenv.com command not found. Ensure Visual Studio is installed on this system.'
     }
 
+    # Download nuget so we can restore packages if required.
+    Write-Build Gray '        Downloading nuget.exe for package restoration...'
+    Invoke-WebRequest -UseBasicParsing -Uri 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile ($nugetExe = "$([System.IO.Path]::GetTempPath())nuget.exe")
+
     # Process each build item.
     Write-Build Gray '        Determining C# solutions requiring compilation...'
     foreach ($buildItem in $Script:buildItems)
@@ -235,12 +239,18 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
             }
         }
 
+        # Restore packages before attempting a build. This is important for clean environments.
+        $solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)
+        Write-Build Gray "            Restoring NuGet packages for $solutionPath..."
+        & $nugetExe restore $solutionPath
+        if ($LASTEXITCODE) { throw "Failed to restore NuGet packages for `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
+
         # Build a debug and release config of each project.
-        Write-Build Gray "            Building $(($solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)))..."
+        Write-Build Gray "            Building $solutionPath..."
         & $devenvPath $solutionPath /Rebuild "Release|AnyCPU"
-        if ($LASTEXITCODE) { throw "Failed to solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
+        if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
         & $devenvPath $solutionPath /Rebuild "Debug|AnyCPU"
-        if ($LASTEXITCODE) { throw "Failed to solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
+        if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
 
         # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
         $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $(if ($buildItem.SolutionPath.EndsWith('.sln')) { $buildItem.SolutionPath.Replace('.sln', '') } else { "$($buildItem.SolutionPath.Replace('.csproj', ''))\.." }), 'bin\Debug\*')
