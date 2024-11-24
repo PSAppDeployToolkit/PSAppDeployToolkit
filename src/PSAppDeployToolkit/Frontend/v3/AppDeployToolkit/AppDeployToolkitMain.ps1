@@ -4985,39 +4985,95 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Import our module backend.
-Remove-Module -Name PSAppDeployToolkit* -Force
 $adtModule = if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
 {
     # Expected directory when running from a template.
     Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File
-    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '3.93.0' } -Force -PassThru
+    Remove-Module -Name PSAppDeployToolkit* -Force
+    Import-Module -Force -PassThru -FullyQualifiedName @{
+        ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
+        Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'
+        ModuleVersion = '3.93.0'
+    }
 }
 elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
 {
     # Expected directory if executing directly from inside the module.
     Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File
-    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '3.93.0' } -Force -PassThru
+    Remove-Module -Name PSAppDeployToolkit* -Force
+    Import-Module -Force -PassThru -FullyQualifiedName @{
+        ModuleName = "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
+        Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'
+        ModuleVersion = '3.93.0'
+    }
 }
 else
 {
-    Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new([System.IO.FileNotFoundException]::new("PSAppDeployToolkit module folder cannot be found."), 'ModuleNotFoundError', [System.Management.Automation.ErrorCategory]::InvalidOperation, $null))
+    # The module couldn't be found along-side this script.
+    Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+            [System.IO.FileNotFoundException]::new("PSAppDeployToolkit module folder cannot be found."),
+            'ModuleNotFoundError',
+            [System.Management.Automation.ErrorCategory]::InvalidOperation,
+            $null
+        ))
 }
 
-# Open a new PSADT session, dynamically gathering the required parameters from the stack.
-$sessionProps = @{ SessionState = $ExecutionContext.SessionState }
-Get-Variable -Name ($adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & { process { if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$') { $_.Name } } }) -ErrorAction Ignore | & { process { if ($_.Value -and ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value))) { $sessionProps.Add($_.Name, $_.Value) } } }
-if ($sessionProps.ContainsKey('AppScriptDate') -and ($sessionProps.AppScriptDate -eq 'XX/XX/20XX')) { $null = $sessionProps.Remove('AppScriptDate') }
-if ($sessionProps.ContainsKey('DeployAppScriptParameters')) { $sessionProps.DeployAppScriptParameters = (Get-PSCallStack)[1].InvocationInfo.BoundParameters }
-Open-ADTSession @sessionProps
+# Get all parameters from Open-ADTSession that are considered frontend params/variables.
+$sessionVars = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
+    process
+    {
+        if ($_.ParameterSets.Values.HelpMessage -match '^Frontend (Parameter|Variable)$')
+        {
+            return $_.Name
+        }
+    }
+}
+
+# Build out parameter hashtable and open a new deployment session.
+$sessionParams = Get-Variable -Name $sessionVars -ErrorAction Ignore | & {
+    begin
+    {
+        # Open collector to hold valid parameters.
+        $sessionParams = @{}
+    }
+
+    process
+    {
+        # Add the parameter if it's not null.
+        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)))
+        {
+            $sessionParams.Add($_.Name, $_.Value)
+        }
+    }
+
+    end
+    {
+        # Remove AppScriptDate if it's Deploy-Application.ps1's default value.
+        if ($sessionParams.ContainsKey('AppScriptDate') -and ($sessionParams.AppScriptDate -eq 'XX/XX/20XX'))
+        {
+            $null = $sessionParams.Remove('AppScriptDate')
+        }
+
+        # Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
+        if ($sessionParams.ContainsKey('DeployAppScriptParameters'))
+        {
+            $sessionParams.DeployAppScriptParameters = (Get-PSCallStack)[1].InvocationInfo.BoundParameters
+        }
+
+        # Return the dictionary to the caller.
+        return $sessionParams
+    }
+}
+Open-ADTSession -SessionState $ExecutionContext.SessionState @sessionParams
 
 # Define aliases for some functions to maintain backwards compatibility.
-Set-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironmentPsProvider -Option ReadOnly -Force
-Set-Alias -Name Refresh-Desktop -Value Update-Desktop -Option ReadOnly -Force
+New-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-ADTEnvironmentPsProvider -Option ReadOnly -Force
+New-Alias -Name Refresh-Desktop -Value Update-Desktop -Option ReadOnly -Force
 
 # Finalize setup of AppDeployToolkitMain.ps1.
 Set-Item -LiteralPath $adtWrapperFuncs -Options ReadOnly
 New-Variable -Name noDepWarnings -Value (($adtConfig = Get-ADTConfig).Toolkit.ContainsKey('WrapperWarnings') -and !$adtConfig.Toolkit.WrapperWarnings) -Option ReadOnly -Force
-Remove-Variable -Name adtWrapperFuncs, sessionProps, adtModule, adtConfig -Force -Confirm:$false
+Remove-Variable -Name adtConfig, adtModule, adtWrapperFuncs, sessionParams, sessionVars -Force -Confirm:$false
 Set-StrictMode -Version 1
 
 
@@ -5027,7 +5083,7 @@ Set-StrictMode -Version 1
 #
 #---------------------------------------------------------------------------
 
-if ((Test-Path -LiteralPath ($adtExtensions = "$PSScriptRoot\AppDeployToolkitExtensions.ps1") -PathType Leaf))
+if ((Test-Path -LiteralPath "$PSScriptRoot\AppDeployToolkitExtensions.ps1" -PathType Leaf))
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'scriptParentPath', Justification = "This variable is used within a dot-sourced script that PSScriptAnalyzer has no visibility of.")]
     $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
@@ -5040,5 +5096,5 @@ if ((Test-Path -LiteralPath ($adtExtensions = "$PSScriptRoot\AppDeployToolkitExt
         # If this script was not invoked by another script, fall back to the directory one level above this script.
         (Get-Item -LiteralPath (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent)).Parent.FullName
     }
-    . $adtExtensions
+    . "$PSScriptRoot\AppDeployToolkitExtensions.ps1"
 }
