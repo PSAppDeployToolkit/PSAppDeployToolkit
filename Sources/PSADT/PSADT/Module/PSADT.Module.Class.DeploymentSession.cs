@@ -511,9 +511,9 @@ namespace PSADT.Module
                     {
                         WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
                     }
-                    if (null != _appScriptDate)
+                    if ((_appScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && !appScriptDate.Equals("2000-12-31"))
                     {
-                        WriteLogEntry($"[{_installName}] script date is [{_appScriptDate?.ToString("O").Split('T')[0]}].");
+                        WriteLogEntry($"[{_installName}] script date is [{appScriptDate}].");
                     }
                     if (!string.IsNullOrWhiteSpace(_appScriptAuthor) && !_appScriptAuthor.Equals("<author name>"))
                     {
