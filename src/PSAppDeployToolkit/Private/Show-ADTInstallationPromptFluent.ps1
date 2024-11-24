@@ -37,10 +37,6 @@ function Show-ADTInstallationPromptFluent
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Collections.Hashtable]$ADTConfig,
-
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Collections.Generic.List[System.Object]]$UnboundArguments
@@ -52,7 +48,7 @@ function Show-ADTInstallationPromptFluent
         $Title,
         $null,
         !$NotTopMost,
-        $ADTConfig.Assets.Logo,
+        (Get-ADTConfig).Assets.Logo,
         $Message,
         $ButtonLeftText,
         $ButtonMiddleText,
