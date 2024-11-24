@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	  <TargetFrameworks>net462</TargetFrameworks>
@@ -48,19 +48,10 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<Resource Include="Resources\appIcon.ico">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
 		<Resource Include="Resources\appIcon.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
 		<Resource Include="Resources\Banner.Classic.png">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Resources\Banner.Fluent.Dark.png">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Resources\Banner.Fluent.Light.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
 	</ItemGroup>
@@ -81,6 +72,10 @@
 	  <Pack>True</Pack>
 	  <PackagePath>\</PackagePath>
 	</None>
+  </ItemGroup>
+  
+    <ItemGroup>
+	<Folder Include="Classes\" />
   </ItemGroup>
 
 </Project>

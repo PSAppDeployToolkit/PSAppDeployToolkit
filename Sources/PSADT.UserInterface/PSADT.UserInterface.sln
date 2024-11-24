@@ -4,13 +4,9 @@ VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface", "PSADT.UserInterface\PSADT.UserInterface.csproj", "{5C650CD5-0AAC-410B-992B-68C690F885CA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.Exe", "PSADT.Exe\PSADT.Exe.csproj", "{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface.TestHarness", "PSADT.Exe\PSADT.UserInterface.TestHarness.csproj", "{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FE355DF2-335E-4CF2-9EE1-1276393AEF33}"
-	ProjectSection(SolutionItems) = preProject
-		PSADT.UserInterface\Properties\AssemblyInfo.cs = PSADT.UserInterface\Properties\AssemblyInfo.cs
-		Start.ps1 = Start.ps1
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

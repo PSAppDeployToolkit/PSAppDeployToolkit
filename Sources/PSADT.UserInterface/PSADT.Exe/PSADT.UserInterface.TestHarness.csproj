@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <OutputType>Exe</OutputType>
+	  <TargetFramework>net462</TargetFramework>
+	  <PlatformTarget>AnyCPU</PlatformTarget>
+	  <UseWPF>true</UseWPF>
+	  <ApplicationManifest>app.manifest</ApplicationManifest>
+      <Deterministic>true</Deterministic>
+      <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+      <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+      <LangVersion>latest</LangVersion>
+	  <Nullable>enable</Nullable>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <StartupObject>PSADT.UserInterface.Program</StartupObject>
+      <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
+      <RootNamespace>PSADT</RootNamespace>
+      <Authors>PSAppDeployToolkit Team</Authors>
+      <Company>PSAppDeployToolkit Team</Company>
+      <Description>PSAppDeployToolkit User Interface Test Harness</Description>
+      <Copyright>Copyright © 2024 PSAppDeployToolkit Team</Copyright>
+      <ApplicationIcon>..\PSADT.UserInterface\Resources\appIcon.ico</ApplicationIcon>
+      <GenerateDocumentationFile>False</GenerateDocumentationFile>
+      <SignAssembly>False</SignAssembly>
+      <Title>PSAppDeployToolkit User Interface Test Harness</Title>
+      <PackageProjectUrl>https://psappdeploytoolkit.com</PackageProjectUrl>
+      <RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
+      <SelfContained>false</SelfContained>
+      <PublishSingleFile>false</PublishSingleFile>
+      <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+      <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+      <PublishTrimmed>false</PublishTrimmed>
+      <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+      <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+      <PackageIcon>..\PSADT.UserInterface\Resources\appIcon.png</PackageIcon>
+      <RepositoryType>git</RepositoryType>
+
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	<Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	<Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<Content Include="appIcon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
+  </ItemGroup>
+
+</Project>

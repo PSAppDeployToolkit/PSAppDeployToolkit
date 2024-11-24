@@ -1,4 +1,5 @@
-﻿using System.Windows.Media;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 
 namespace PSADT.UserInterface
@@ -10,15 +11,14 @@ namespace PSADT.UserInterface
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string? progressMessage,
             string? progressMessageDetail)
-            : base()
+            : base(null)
         {
             DataContext = this;
 
-            SystemThemeWatcher.Watch(this);
+            // Set up Mica backdrop and watch for theme changes
+            SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
 
             InitializeComponent();
 
@@ -28,21 +28,13 @@ namespace PSADT.UserInterface
             ProgressMessageTextBlock.Text = progressMessage ?? "Installation in progress. Please wait ...";
             ProgressMessageDetailTextBlock.Text = progressMessageDetail ?? "This message will close automatically when the installation is complete.";
 
-            if (bannerImageLight != null)
-            {
-                BannerImageLight = bannerImageLight;
-            }
-
-            if (bannerImageDark != null)
-            {
-                BannerImageDark = bannerImageDark;
-            }
-
+            // Set App Icon Image
             appIconImage ??= "pack://application:,,,/PSADT.UserInterface;component/Resources/appIcon.png";
-            if (appIconImage != null)
+            if (!string.IsNullOrWhiteSpace(appIconImage))
             {
-                AppIconImage.Source = new ImageSourceConverter().ConvertFromString(appIconImage) as ImageSource;
+                AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
             }
+
 
             ProgressBar.IsIndeterminate = true;
         }

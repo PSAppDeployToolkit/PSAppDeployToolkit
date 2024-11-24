@@ -123,6 +123,14 @@ function Show-ADTInstallationRestartPrompt
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
+        if (!$PSBoundParameters.ContainsKey('CountdownSeconds'))
+        {
+            $PSBoundParameters.Add('CountdownSeconds', $CountdownSeconds)
+        }
+        if (!$PSBoundParameters.ContainsKey('CountdownNoHideSeconds'))
+        {
+            $PSBoundParameters.Add('CountdownNoHideSeconds', $CountdownNoHideSeconds)
+        }
     }
 
     process
@@ -172,7 +180,7 @@ function Show-ADTInstallationRestartPrompt
                 }
 
                 # Call the underlying function to open the restart prompt.
-                & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
+                return & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
             }
             catch
             {

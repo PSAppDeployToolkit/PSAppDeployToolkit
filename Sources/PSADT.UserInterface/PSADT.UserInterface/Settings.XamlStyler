@@ -7,7 +7,7 @@
 		RadialGradientBrush,
 		GradientStop,
 		LinearGradientBrush,
-		ScaleTransfom,
+		ScaleTransform,
 		SkewTransform,
 		RotateTransform,
 		TranslateTransform,

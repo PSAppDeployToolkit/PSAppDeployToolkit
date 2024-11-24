@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 
@@ -10,22 +10,22 @@ namespace PSADT.UserInterface
 
 
         public CustomDialog(
+            TimeSpan dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string customMessage,
             string? button1Text,
             string? button2Text,
             string? button3Text)
-            : base()
+            : base(dialogExpiryDuration)
 
         {
             DataContext = this;
 
-            SystemThemeWatcher.Watch(this);
+            // Set up Mica backdrop and watch for theme changes
+            SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
 
             InitializeComponent();
 
@@ -34,6 +34,9 @@ namespace PSADT.UserInterface
             AppTitleTextBlock.Text = appTitle ?? "Application";
             SubtitleTextBlock.Text = subtitle ?? "";
             Topmost = topMost ?? false;
+
+            // TODO - Implement. Ran out of time
+            //CustomMessageHeadingTextBlock.Text = customMessageHeading ?? "Please select from the options below."
             CustomMessageTextBlock.Text = customMessage ?? "Your custom message goes here.";
 
             Button1.Content = button1Text ?? "Ok";
@@ -44,36 +47,14 @@ namespace PSADT.UserInterface
             Button2.Visibility = string.IsNullOrWhiteSpace(button2Text) ? Visibility.Collapsed : Visibility.Visible;
             Button3.Visibility = string.IsNullOrWhiteSpace(button3Text) ? Visibility.Collapsed : Visibility.Visible;
 
-            // Set Banner Image based on theme
-            if (ApplicationThemeManager.IsMatchedDark())
-            {
-                if (!string.IsNullOrWhiteSpace(bannerImageDark))
-                {
-                    BannerImage.Source = new BitmapImage(new Uri(bannerImageDark, UriKind.Absolute));
-                }
-                else
-                {
-                    BannerImage.Source = new BitmapImage(new Uri("pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Dark.png", UriKind.Absolute));
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(bannerImageLight))
-                {
-                    BannerImage.Source = new BitmapImage(new Uri(bannerImageLight, UriKind.Absolute));
-                }
-                else
-                {
-                    BannerImage.Source = new BitmapImage(new Uri("pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Light.png", UriKind.Absolute));
-                }
-            }
-
-            // Set App Icon Image
+           // Set App Icon Image
             appIconImage ??= "pack://application:,,,/PSADT.UserInterface;component/Resources/appIcon.png";
             if (!string.IsNullOrWhiteSpace(appIconImage))
             {
                 AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
             }
+
+
         }
 
         private void CustomWindow_Loaded(object sender, RoutedEventArgs e)
@@ -82,14 +63,17 @@ namespace PSADT.UserInterface
 
         }
 
-        private void NotifyIcon_LeftClick(object sender, RoutedEventArgs e)
+        private void ShowItem_Click(object sender, RoutedEventArgs e)
         {
-            Show();
-            WindowState = WindowState.Normal;
-            Activate();
+            ShowWindow();
         }
 
-        private void ShowItem_Click(object sender, RoutedEventArgs e)
+        private void NotifyIcon_LeftClick(object sender, RoutedEventArgs e)
+        {
+            ShowWindow();
+        }
+
+        private void ShowWindow()
         {
             Show();
             WindowState = WindowState.Normal;
@@ -111,7 +95,8 @@ namespace PSADT.UserInterface
         private void Button1_Click(object sender, RoutedEventArgs e)
         {
             Result = Button1.Content.ToString();
-            CloseDialog();
+            // Instead of closing, minimize to tray
+            Hide();
         }
 
         private void Button2_Click(object sender, RoutedEventArgs e)
