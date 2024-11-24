@@ -108,6 +108,12 @@ function Show-ADTInstallationRestartPrompt
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
+        $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'Subtitle', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Subtitle of the prompt. Default: the application deployment type.' }
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                )
+            ))
 
         # Return the populated dictionary.
         return $paramDictionary
@@ -117,11 +123,16 @@ function Show-ADTInstallationRestartPrompt
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtStrings = Get-ADTStringTable
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
+        }
+        if (!$PSBoundParameters.ContainsKey('Subtitle'))
+        {
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
         }
         if (!$PSBoundParameters.ContainsKey('CountdownSeconds'))
         {
@@ -155,7 +166,7 @@ function Show-ADTInstallationRestartPrompt
                 }
 
                 # Check if we are already displaying a restart prompt.
-                $restartPromptTitle = (Get-ADTStringTable).RestartPrompt.Title
+                $restartPromptTitle = $adtStrings.RestartPrompt.Title
                 if (Get-Process | & { process { if ($_.MainWindowTitle -match $restartPromptTitle) { return $_ } } } | Select-Object -First 1)
                 {
                     Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2

@@ -16,6 +16,10 @@ function Show-ADTInstallationPromptFluent
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [System.String]$Subtitle,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Message,
 
         [Parameter(Mandatory = $false)]
@@ -46,7 +50,7 @@ function Show-ADTInstallationPromptFluent
     return [PSADT.UserInterface.UnifiedADTApplication]::ShowCustomDialog(
         [System.TimeSpan]::FromSeconds($Timeout),
         $Title,
-        $null,
+        $Subtitle,
         !$NotTopMost,
         (Get-ADTConfig).Assets.Logo,
         $Message,

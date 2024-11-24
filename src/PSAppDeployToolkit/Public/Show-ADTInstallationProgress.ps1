@@ -105,7 +105,7 @@ function Show-ADTInstallationProgress
             ))
         $paramDictionary.Add('WindowSubtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'WindowSubtitle', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'The subtitle of the window to be displayed with a fluent progress window. The default is null.' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'The subtitle of the window to be displayed with a fluent progress window. The default is the derived value from $DeploymentType.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
@@ -134,20 +134,21 @@ function Show-ADTInstallationProgress
         $errRecord = $null
 
         # Set up defaults if not specified.
-        if ($adtSession)
+        if (!$PSBoundParameters.ContainsKey('WindowTitle'))
         {
-            if (!$PSBoundParameters.ContainsKey('WindowTitle'))
-            {
-                $PSBoundParameters.Add('WindowTitle', $adtSession.InstallTitle)
-            }
-            if (!$PSBoundParameters.ContainsKey('StatusMessage'))
-            {
-                $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.DeploymentType)")
-            }
-            if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
-            {
-                $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.DeploymentType)Detail")
-            }
+            $PSBoundParameters.Add('WindowTitle', $adtSession.InstallTitle)
+        }
+        if (!$PSBoundParameters.ContainsKey('WindowSubtitle'))
+        {
+            $PSBoundParameters.Add('WindowSubtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
+        }
+        if (!$PSBoundParameters.ContainsKey('StatusMessage'))
+        {
+            $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.DeploymentType)")
+        }
+        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
+        {
+            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.DeploymentType)Detail")
         }
     }
 
