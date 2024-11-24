@@ -17,12 +17,16 @@
 	  <RootNamespace>PSADT</RootNamespace>
 	  <Authors>PSAppDeployToolkit Team</Authors>
 	  <Company>PSAppDeployToolkit Team</Company>
-		<Description>PSAppDeployToolkit Support Library</Description>
-		<Copyright>Copyright © 2024 PSAppDeployToolkit Team</Copyright>
+		<Description>PSAppDeployToolkit User Interface Library</Description>
+		<Copyright>Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.</Copyright>
+		<AssemblyVersion>3.93.0</AssemblyVersion>
+		<FileVersion>3.93.0</FileVersion>
+		<InformationalVersion>3.93.0</InformationalVersion>
+		<ApplicationVersion>3.93.0</ApplicationVersion>
 		<ApplicationIcon>Resources\appIcon.ico</ApplicationIcon>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
-		<Title>PSAppDeployToolkit Support Libray</Title>
+		<Title>PSAppDeployToolkit User Interface Libray</Title>
 		<PackageProjectUrl>https://psappdeploytoolkit.com</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
 		<!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
@@ -40,11 +44,17 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
-	<Optimize>False</Optimize>
+	  <DebugSymbols>true</DebugSymbols>
+	  <DebugType>full</DebugType>
+	  <WarningLevel>3</WarningLevel>
+	  <Optimize>false</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
-	<Optimize>False</Optimize>
+	  <DebugSymbols>false</DebugSymbols>
+	  <DebugType>none</DebugType>
+	  <WarningLevel>3</WarningLevel>
+	  <Optimize>true</Optimize>
   </PropertyGroup>
 
 	<ItemGroup>

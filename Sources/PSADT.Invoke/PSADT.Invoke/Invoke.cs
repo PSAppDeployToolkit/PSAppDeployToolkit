@@ -1,10 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
-using System.Collections.Generic;
 using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Management.Automation.Language;
@@ -52,10 +52,20 @@ namespace PSADT
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
         private static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
 
+        private static bool Is64BitOS()
+        {
+            GetNativeSystemInfo(out SYSTEM_INFO sysInfo);
+            return nameof(sysInfo.wProcessorArchitecture).EndsWith("64");
+        }
+
+        private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string assemblyName = AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Name;
+        private static readonly string v3ToolkitPath = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
+        private static readonly string v4ToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit");
         private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
         private static readonly string timeStamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
         private static readonly Encoding LogEncoding = new UTF8Encoding(true);
+        private static readonly bool is64BitOS = Is64BitOS();
 
         private static void Main()
         {
@@ -64,20 +74,13 @@ namespace PSADT
 
             try
             {
-                // Get system information so we can determine bitness.
-                GetNativeSystemInfo(out SYSTEM_INFO sysInfo);
-
                 // Set up variables.
-                string currentPath = AppDomain.CurrentDomain.BaseDirectory;
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-                string adtTkv4Path = Path.Combine(currentPath, "PSAppDeployToolkit");
-                string adtTkv3Path = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
-                string adtToolkitPath = Directory.Exists(adtTkv4Path) ? adtTkv4Path : (Directory.Exists(adtTkv3Path) ? adtTkv3Path : null);
+                string adtToolkitPath = Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : (Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : null);
                 string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string pwshArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
-                var cliArguments = new List<string>(Environment.GetCommandLineArgs());
-                bool is64BitOS = nameof(sysInfo.wProcessorArchitecture).EndsWith("64");
+                var cliArguments = Environment.GetCommandLineArgs().ToList().ConvertAll(x => x.Trim());
                 bool isForceX86Mode = false;
                 bool isRequireAdmin = false;
 
@@ -122,8 +125,6 @@ namespace PSADT
                     WriteDebugMessage("Administrator rights are required. The verb 'RunAs' will be used with the invocation.");
                 }
 
-                // Trim ending & starting empty space from each element in the command-line.
-                cliArguments = cliArguments.ConvertAll(s => s.Trim());
                 // Remove first command-line argument as this is always the executable name.
                 cliArguments.RemoveAt(0);
 
@@ -167,11 +168,11 @@ namespace PSADT
                     WriteDebugMessage($"No '-File' parameter specified on command-line. Adding parameter '-File \"{adtFrontendPath}\"'...");
                 }
 
-                // Define the command line arguments to pass to PowerShell.
-                pwshArguments = $"-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden -File \"{adtFrontendPath}\"";
+                // Add the frontend script file to the arguments.
+                pwshArguments += $" -File \"{adtFrontendPath}\"";
                 if (cliArguments.Count > 0)
                 {
-                    pwshArguments += $" {string.Join(" ", cliArguments.ToArray())}";
+                    pwshArguments += $" {string.Join(" ", cliArguments)}";
                 }
 
                 // Switch to x86 PowerShell if requested.

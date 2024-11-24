@@ -4,9 +4,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Invoke-AppDeployToolkit Executable")]
 [assembly: AssemblyDescription("Launch executable to start a PSADT Invoke-AppDeployToolkit.ps1 script without a PowerShell console window being visible")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("PSAppDeployToolkit")]
+[assembly: AssemblyCompany("PSAppDeployToolkit Team")]
 [assembly: AssemblyProduct("Invoke-AppDeployToolkit")]
-[assembly: AssemblyCopyright("Copyright © 2024 PSAppDeployToolkit Team. All Rights Reserved.")]
+[assembly: AssemblyCopyright("Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -25,5 +25,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("4.0.0.0")]
-[assembly: AssemblyFileVersion("4.0.0.0")]
+[assembly: AssemblyVersion("3.93.0")]
+[assembly: AssemblyFileVersion("3.93.0")]
