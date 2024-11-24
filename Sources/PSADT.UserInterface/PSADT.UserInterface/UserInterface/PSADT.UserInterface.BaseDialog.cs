@@ -1,80 +1,54 @@
-﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using PSADT.UserInterface.Utilities;
+using System.Windows.Interop;
 using Wpf.Ui.Controls;
 
 namespace PSADT.UserInterface
 {
+
     public abstract class BaseDialog : FluentWindow, IDisposable
     {
+        private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly Timer? _timer;
         private bool _disposed = false;
 
-        private string _bannerImageLight = "pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Light.png";
-        public string BannerImageLight
+        protected BaseDialog(TimeSpan? dialogExpiryDuration)
         {
-            get => _bannerImageLight;
-            set
+            DataContext = this;
+
+            // Set up Cancellation Token and Timer
+            _cancellationTokenSource = new CancellationTokenSource();
+            if (null != dialogExpiryDuration)
             {
-                if (_bannerImageLight != value)
-                {
-                    _bannerImageLight = value;
-                }
+                _timer = new Timer(CloseDialog, null, (TimeSpan)dialogExpiryDuration, Timeout.InfiniteTimeSpan);
             }
-        }
 
-        private string _bannerImageDark = "pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Dark.png";
-        public string BannerImageDark
-        {
-            get => _bannerImageDark;
-            set
-            {
-                if (_bannerImageDark != value)
-                {
-                    _bannerImageDark = value;
-                }
-            }
-        }
-
-        private bool _isDarkTheme;
-        public bool IsDarkTheme
-        {
-            get => _isDarkTheme;
-            protected set
-            {
-                if (_isDarkTheme != value)
-                {
-                    _isDarkTheme = value;
-                }
-            }
-        }
-
-        private readonly UserPreferenceChangedEventHandler _userPreferenceChangedEventHandler;
-
-        protected BaseDialog(UserPreferenceChangedEventHandler userPreferenceChangedEventHandler)
-        {
-            _userPreferenceChangedEventHandler = userPreferenceChangedEventHandler;
-        }
-
-        protected BaseDialog()
-        {
             // Ensure WindowStartupLocation is Manual
             WindowStartupLocation = WindowStartupLocation.Manual;
 
-            SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
             Loaded += BaseDialog_Loaded;
 
-            // Subscribe to theme change events
-            _userPreferenceChangedEventHandler = new UserPreferenceChangedEventHandler(SystemEvents_UserPreferenceChanged);
-            SystemEvents.UserPreferenceChanged += _userPreferenceChangedEventHandler;
-
             SizeChanged += BaseDialog_SizeChanged;
+
+        }
+
+        protected CancellationToken CancellationToken => _cancellationTokenSource.Token;
+
+        private void CloseDialog(object? state)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _cancellationTokenSource.Cancel();
+                Close();
+            });
         }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
+            
             base.OnSourceInitialized(e);
 
             // Force layout update
@@ -86,77 +60,38 @@ namespace PSADT.UserInterface
 
         private void BaseDialog_Loaded(object sender, RoutedEventArgs e)
         {
-            // Apply the initial theme
-            IsDarkTheme = WPFScreen.IsDarkTheme();
-            UpdateBanner();
+
+
         }
 
         private void BaseDialog_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             PositionWindow();
+
+            WindowInteropHelper helper = new WindowInteropHelper(this);
+            HwndSource source = HwndSource.FromHwnd(helper.Handle);
+            source.AddHook(new HwndSourceHook(WndProc));
         }
 
-        private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        const int WM_SYSCOMMAND = 0x0112;
+        const int SC_MOVE = 0xF010;
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            if (e.Category == UserPreferenceCategory.Color ||
-            e.Category == UserPreferenceCategory.General ||
-            e.Category == UserPreferenceCategory.VisualStyle)
-            {
-                // Theme or color settings changed
-                HandleThemeChange();
-            }
-        }
 
-        private void SystemParameters_StaticPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(SystemParameters.HighContrast))
+            switch (msg)
             {
-                // High Contrast mode changed
-                HandleThemeChange();
+                case WM_SYSCOMMAND:
+                    int command = wParam.ToInt32() & 0xfff0;
+                    if (command == SC_MOVE)
+                    {
+                        handled = true;
+                    }
+                    break;
+                default:
+                    break;
             }
-            else if (e.PropertyName == nameof(SystemParameters.WindowGlassBrush))
-            {
-                // Theme color changed
-                HandleThemeChange();
-            }
-            else if (e.PropertyName == nameof(SystemParameters.WindowGlassColor))
-            {
-                // Theme color changed
-                HandleThemeChange();
-            }
-            else if (e.PropertyName == "WindowTheme")
-            {
-                // Windows theme changed (available in newer versions of WPF)
-                HandleThemeChange();
-            }
-        }
-
-        private void HandleThemeChange()
-        {
-            // Marshal to the UI thread if necessary
-            if (!Dispatcher.CheckAccess())
-            {
-                Dispatcher.Invoke(HandleThemeChange);
-                return;
-            }
-
-            bool oldTheme = IsDarkTheme;
-            IsDarkTheme = WPFScreen.IsDarkTheme();
-
-            if (oldTheme != IsDarkTheme)
-            {
-                UpdateBanner();
-            }
-
-            /*// Update application resources based on the theme
-            if (IsDarkTheme)
-            {
-                ApplyDarkTheme();
-            }
-            else
-            {
-                ApplyLightTheme();
-            }*/
+            return IntPtr.Zero;
         }
 
         protected virtual void PositionWindow()
@@ -176,7 +111,7 @@ namespace PSADT.UserInterface
             double top = workingArea.Top + (workingArea.Height - windowHeight);
 
             // Apply a margin to prevent overlap
-            const double margin = 8; // Adjust as needed
+            const double margin = 4; // Adjust as needed
             left -= margin;
             top -= margin;
 
@@ -216,67 +151,6 @@ namespace PSADT.UserInterface
             Top = top;
         }
 
-        protected virtual void UpdateBanner()
-
-        {
-            if (!Dispatcher.CheckAccess())
-            {
-                Dispatcher.Invoke(UpdateBanner);
-                return;
-            }
-
-            try
-            {
-                string bannerUri = IsDarkTheme ? BannerImageDark : BannerImageLight;
-
-                if (FindName("BannerImage") is System.Windows.Controls.Image bannerImageControl)
-                {
-                    bannerImageControl.Source = new BitmapImage(new Uri(bannerUri, UriKind.Absolute));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error updating banner image: {ex.Message}");
-            }
-        }
-
-        //private void ApplyDarkTheme()
-        //{
-        //    // Remove existing theme dictionaries
-        //    RemoveThemeDictionaries();
-
-        //    // Add dark theme resource dictionary
-        //    Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
-        //    {
-        //        Source = new Uri("pack://application:,,,/YourAssembly;component/Themes/DarkTheme.xaml")
-        //    });
-        //}
-
-        //private void ApplyLightTheme()
-        //{
-        //    // Remove existing theme dictionaries
-        //    RemoveThemeDictionaries();
-
-        //    // Add light theme resource dictionary
-        //    Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
-        //    {
-        //        Source = new Uri("pack://application:,,,/YourAssembly;component/Themes/LightTheme.xaml")
-        //    });
-        //}
-
-        //private void RemoveThemeDictionaries()
-        //{
-        //    // Remove existing theme dictionaries
-        //    var dictionariesToRemove = Application.Current.Resources.MergedDictionaries
-        //        .Where(d => d.Source != null && d.Source.OriginalString.Contains("Themes/"))
-        //        .ToList();
-
-        //    foreach (var dictionary in dictionariesToRemove)
-        //    {
-        //        Application.Current.Resources.MergedDictionaries.Remove(dictionary);
-        //    }
-        //}
-
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -284,9 +158,7 @@ namespace PSADT.UserInterface
 
             if (disposing)
             {
-                SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
                 Loaded -= BaseDialog_Loaded;
-                SystemEvents.UserPreferenceChanged -= _userPreferenceChangedEventHandler;
                 SizeChanged -= BaseDialog_SizeChanged;
             }
 

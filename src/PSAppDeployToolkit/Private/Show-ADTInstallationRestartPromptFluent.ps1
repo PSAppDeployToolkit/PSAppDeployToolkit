@@ -15,9 +15,9 @@ function Show-ADTInstallationRestartPromptFluent
         [ValidateNotNullOrEmpty()]
         [System.String]$Title,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$CountdownSeconds = 60,
+        [System.UInt32]$CountdownSeconds,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
@@ -34,12 +34,12 @@ function Show-ADTInstallationRestartPromptFluent
     # Send this straight out to the C# backend.
     Write-ADTLogEntry -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."
     return [PSADT.UserInterface.UnifiedADTApplication]::ShowRestartDialog(
+        $null,
         $Title,
         $null,
         !$NotTopMost,
         $adtConfig.Assets.Fluent.Logo,
-        $adtConfig.Assets.Fluent.Banner.Light,
-        $adtConfig.Assets.Fluent.Banner.Dark,
+        $adtConfig.RestartPrompt.TimeRemaining,
         $CountdownSeconds / 60,
         $adtStrings.RestartPrompt.MessageRestart,
         $adtStrings.RestartPrompt.ButtonRestartLater,

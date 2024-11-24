@@ -57,8 +57,8 @@ namespace PSADT.UserInterface
                     ShutdownMode = ShutdownMode.OnExplicitShutdown
                 };
 
-                _app.Resources.MergedDictionaries.Add(new ControlsDictionary());
-                _app.Resources.MergedDictionaries.Add(new ThemesDictionary());
+               _app.Resources.MergedDictionaries.Add(new ControlsDictionary());
+               _app.Resources.MergedDictionaries.Add(new ThemesDictionary());
 
                 // Signal that the application is ready
                 _initEvent.Set();
@@ -76,14 +76,13 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Shows the WelcomeDialog synchronously and returns the user's response.
         /// </summary>
+        /// <param name="dialogExpiryDuration">Duration of the dialog.</param>
         /// <param name="appTitle">Title of the application.</param>
         /// <param name="subtitle">Subtitle of the application.</param>
         /// <param name="topMost">Whether the dialog should be topmost.</param>
         /// <param name="defersRemaining">Number of defers remaining.</param>
         /// <param name="appsToClose">List of applications to close.</param>
         /// <param name="appIconImage">URI of the application icon.</param>
-        /// <param name="bannerImageLight">URI of the light banner image.</param>
-        /// <param name="bannerImageDark">URI of the dark banner image.</param>
         /// <param name="closeAppMessage">Message prompting users to close apps.</param>
         /// <param name="altCloseAppMessage">Alternative message when no apps need to be closed.</param> <!-- New Parameter -->
         /// <param name="deferRemainText">Text for the word remain in, deferrals remaining.</param>
@@ -93,14 +92,13 @@ namespace PSADT.UserInterface
         /// <param name="processEvaluationService">Optional process evaluation service.</param>
         /// <returns>User's response as a string.</returns>
         public string ShowWelcomeDialog(
+            TimeSpan? dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
             bool? topMost,
             int? defersRemaining,
             List<AppProcessInfo>? appsToClose,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string closeAppMessage,
             string altCloseAppMessage,
             string? deferRemainText,
@@ -119,14 +117,13 @@ namespace PSADT.UserInterface
             _app!.Dispatcher.Invoke(() =>
             {
                 var welcomeDialog = new WelcomeDialog(
+                    dialogExpiryDuration,
                     appTitle,
                     subtitle,
                     topMost,
                     defersRemaining,
                     appsToClose,
                     appIconImage,
-                    bannerImageLight,
-                    bannerImageDark,
                     closeAppMessage,
                     altCloseAppMessage,
                     deferRemainText,
@@ -136,7 +133,7 @@ namespace PSADT.UserInterface
                     processEvaluationService);
 
                 // Show the dialog modally
-                bool? dialogResult = welcomeDialog.ShowDialog();
+                welcomeDialog.ShowDialog();
                 result = welcomeDialog.Result ?? "Cancel";
             });
 
@@ -147,12 +144,11 @@ namespace PSADT.UserInterface
         /// _currentWindow = welcomeDialog;
         /// Shows the ProgressDialog synchronously.
         /// </summary>
+        /// <param name="dialogExpiryDuration">How long before the dialog should expire.</param>
         /// <param name="appTitle">Title of the application.</param>
         /// <param name="subtitle">Subtitle of the application.</param>
         /// <param name="topMost">Whether the dialog should be topmost.</param>
         /// <param name="appIconImage">URI of the application icon.</param>
-        /// <param name="bannerImageLight">URI of the light banner image.</param>
-        /// <param name="bannerImageDark">URI of the dark banner image.</param>
         /// <param name="progressMessage">Main progress message.</param>
         /// <param name="progressMessageDetail">Detailed progress message.</param>
         public void ShowProgressDialog(
@@ -160,8 +156,6 @@ namespace PSADT.UserInterface
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string? progressMessage,
             string? progressMessageDetail)
         {
@@ -177,8 +171,6 @@ namespace PSADT.UserInterface
                     subtitle,
                     topMost,
                     appIconImage,
-                    bannerImageLight,
-                    bannerImageDark,
                     progressMessage,
                     progressMessageDetail);
 
@@ -192,24 +184,22 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Shows the RestartDialog synchronously and returns the user's response.
         /// </summary>
+        /// <param name="dialogExpiryDuration">How long before the dialog should expire.</param>
         /// <param name="appTitle">Title of the application.</param>
         /// <param name="subtitle">Subtitle of the application.</param>
         /// <param name="topMost">Whether the dialog should be topmost.</param>
         /// <param name="appIconImage">URI of the application icon.</param>
-        /// <param name="bannerImageLight">URI of the light banner image.</param>
-        /// <param name="bannerImageDark">URI of the dark banner image.</param>
         /// <param name="customMessage">Message prompting users to close apps.</param>
         /// <param name="button1Text">Text for the word remain in, deferrals remaining.</param>
         /// <param name="button2Text">Text for the word remain in, deferrals remaining.</param>
         /// <param name="button3Text">Text for the word remain in, deferrals remaining.</param>
         /// <returns>User's response as a string.</returns>
         public string ShowCustomDialog(
+            TimeSpan dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string customMessage,
             string? button1Text,
             string? button2Text,
@@ -225,12 +215,11 @@ namespace PSADT.UserInterface
             _app!.Dispatcher.Invoke(() =>
             {
                 var customDialog = new CustomDialog(
+                    dialogExpiryDuration,
                     appTitle,
                     subtitle,
                     topMost,
                     appIconImage,
-                    bannerImageLight,
-                    bannerImageDark,
                     customMessage,
                     button1Text,
                     button2Text,
@@ -249,12 +238,11 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Shows the RestartDialog synchronously and returns the user's response.
         /// </summary>
+        /// <param name="dialogExpiryDuration">How long before the dialog should expire.</param>
         /// <param name="appTitle">Title of the application.</param>
         /// <param name="subtitle">Subtitle of the application.</param>
         /// <param name="topMost">Whether the dialog should be topmost.</param>
         /// <param name="appIconImage">URI of the application icon.</param>
-        /// <param name="bannerImageLight">URI of the light banner image.</param>
-        /// <param name="bannerImageDark">URI of the dark banner image.</param>
         /// <param name="restartCountdownMins">Message prompting users to close apps.</param>
         /// <param name="restartMessage">Text for the word remain in, deferrals remaining.</param>
         /// <param name="dismissButtonText">Text for the defer button.</param>
@@ -265,10 +253,9 @@ namespace PSADT.UserInterface
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
+            string? timeRemainingText,
             double restartCountdownMins,
-            string restartMessage,
+            string restartMessageText,
             string? dismissButtonText,
             string? restartButtonText)
         {
@@ -286,17 +273,16 @@ namespace PSADT.UserInterface
                     subtitle,
                     topMost,
                     appIconImage,
-                    bannerImageLight,
-                    bannerImageDark,
+                    timeRemainingText,
                     restartCountdownMins,
-                    restartMessage,
+                    restartMessageText,
                     dismissButtonText,
                     restartButtonText);
 
                 _currentWindow = restartDialog;
 
                 // Show the dialog modally
-                bool? dialogResult = restartDialog.ShowDialog();
+                restartDialog.ShowDialog();
                 result = restartDialog.Result ?? "Cancel";
             });
 
@@ -359,6 +345,7 @@ namespace PSADT.UserInterface
             _app!.Dispatcher.Invoke(() =>
             {
                 if (_currentWindow is ProgressDialog progressDialog)
+
                 {
                     progressDialog.UpdateProgress(value, message, detailMessage);
                 }
@@ -379,7 +366,7 @@ namespace PSADT.UserInterface
             {
                 if (_currentWindow is ProgressDialog progressDialog)
                 {
-                    _currentWindow?.Close();
+                    _currentWindow.Close();
                     _currentWindow = null;
                 }
             });

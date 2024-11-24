@@ -9,8 +9,9 @@ namespace PSADT.UserInterface
     public static class UnifiedAdtApplication
     {
         private static AdtApplication? _instance;
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
 
+        
         /// <summary>
         /// Ensures that the AdtApplication instance is initialized and not disposed.
         /// If disposed or null, creates a new instance.
@@ -35,14 +36,13 @@ namespace PSADT.UserInterface
         /// Shows the WelcomeDialog synchronously and returns the user's response.
         /// </summary>
         public static string ShowWelcomeDialog(
+            TimeSpan? dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
             bool? topMost,
             int? defersRemaining,
             List<AppProcessInfo>? appsToClose,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string closeAppMessage,
             string altCloseAppMessage,
             string? deferRemainText,
@@ -52,14 +52,13 @@ namespace PSADT.UserInterface
             IProcessEvaluationService? processEvaluationService = null)
         {
             return Instance.ShowWelcomeDialog(
+                dialogExpiryDuration,
                 appTitle,
                 subtitle,
                 topMost,
                 defersRemaining,
                 appsToClose,
                 appIconImage,
-                bannerImageLight,
-                bannerImageDark,
                 closeAppMessage,
                 altCloseAppMessage,
                 deferRemainText,
@@ -77,8 +76,6 @@ namespace PSADT.UserInterface
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string? progressMessage,
             string? progressMessageDetail)
         {
@@ -87,8 +84,6 @@ namespace PSADT.UserInterface
                 subtitle,
                 topMost,
                 appIconImage,
-                bannerImageLight,
-                bannerImageDark,
                 progressMessage,
                 progressMessageDetail);
         }
@@ -97,24 +92,22 @@ namespace PSADT.UserInterface
         /// Shows the CustomDialog synchronously and returns the user's response.
         /// </summary>
         public static string ShowCustomDialog(
+            TimeSpan dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string customMessage,
             string? button1Text,
             string? button2Text,
             string? button3Text)
         {
             return Instance.ShowCustomDialog(
+                dialogExpiryDuration,
                 appTitle,
                 subtitle,
                 topMost,
                 appIconImage,
-                bannerImageLight,
-                bannerImageDark,
                 customMessage,
                 button1Text,
                 button2Text,
@@ -129,10 +122,9 @@ namespace PSADT.UserInterface
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
+            string? timeRemainingText,
             double restartCountdownMins,
-            string restartMessage,
+            string restartMessageText,
             string? dismissButtonText,
             string? restartButtonText)
         {
@@ -141,10 +133,9 @@ namespace PSADT.UserInterface
                 subtitle,
                 topMost,
                 appIconImage,
-                bannerImageLight,
-                bannerImageDark,
+                timeRemainingText,
                 restartCountdownMins,
-                restartMessage,
+                restartMessageText,
                 dismissButtonText,
                 restartButtonText);
         }

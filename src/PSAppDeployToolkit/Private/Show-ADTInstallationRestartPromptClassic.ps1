@@ -15,13 +15,13 @@ function Show-ADTInstallationRestartPromptClassic
         [ValidateNotNullOrEmpty()]
         [System.String]$Title,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$CountdownSeconds = 60,
+        [System.UInt32]$CountdownSeconds,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$CountdownNoHideSeconds = 30,
+        [System.UInt32]$CountdownNoHideSeconds,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoCountdown,

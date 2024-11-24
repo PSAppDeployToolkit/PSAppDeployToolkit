@@ -1,4 +1,5 @@
-﻿using System.Windows;
+
+using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Wpf.Ui.Appearance;
@@ -17,18 +18,18 @@ namespace PSADT.UserInterface
             string? subtitle,
             bool? topMost,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
+            string? timeRemainingText,
             double restartCountdownMins,
-            string? restartMessage,
+            string? restartMessageText,
             string? dismissButtonText,
             string? restartButtonText)
-            : base()
+            : base(null)
 
         {
             DataContext = this;
 
-            SystemThemeWatcher.Watch(this);
+            // Set up Mica backdrop and watch for theme changes
+            SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
 
             InitializeComponent();
 
@@ -42,33 +43,10 @@ namespace PSADT.UserInterface
             _remainingTime = TimeSpan.FromMinutes(restartCountdownMins);
             UpdateCountdownDisplay();
 
-            RestartMessageTextBlock.Text = restartMessage;
+            TimeRemainingTextBlock.Text = timeRemainingText;
+            RestartMessageTextBlock.Text = restartMessageText;
             DismissButton.Content = dismissButtonText ?? "Dismiss";
             RestartButton.Content = restartButtonText ?? "Restart";
-
-            // Set Banner Image based on theme
-            if (ApplicationThemeManager.IsMatchedDark())
-            {
-                if (!string.IsNullOrWhiteSpace(bannerImageDark))
-                {
-                    BannerImage.Source = new BitmapImage(new Uri(bannerImageDark, UriKind.Absolute));
-                }
-                else
-                {
-                    BannerImage.Source = new BitmapImage(new Uri("pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Dark.png", UriKind.Absolute));
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(bannerImageLight))
-                {
-                    BannerImage.Source = new BitmapImage(new Uri(bannerImageLight, UriKind.Absolute));
-                }
-                else
-                {
-                    BannerImage.Source = new BitmapImage(new Uri("pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Light.png", UriKind.Absolute));
-                }
-            }
 
             // Set App Icon Image
             appIconImage ??= "pack://application:,,,/PSADT.UserInterface;component/Resources/appIcon.png";

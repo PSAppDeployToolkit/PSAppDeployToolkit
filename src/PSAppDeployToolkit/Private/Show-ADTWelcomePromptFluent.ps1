@@ -50,14 +50,13 @@ function Show-ADTWelcomePromptFluent
 
     # Send this out to the C# code.
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowWelcomeDialog(
+        [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout),
         $Title,
         [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $DeploymentType),
         !$NotTopMost,
         $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes + 1 }),
         (Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue),
         $adtConfig.Assets.Fluent.Logo,
-        $adtConfig.Assets.Fluent.Banner.Light,
-        $adtConfig.Assets.Fluent.Banner.Dark,
         $adtStrings.WelcomePrompt.Fluent.DialogMessage,
         $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses,
         $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,
@@ -78,6 +77,11 @@ function Show-ADTWelcomePromptFluent
         Defer
         {
             return 'Defer'
+            break
+        }
+        Cancel
+        {
+            return 'Timeout'
             break
         }
         default

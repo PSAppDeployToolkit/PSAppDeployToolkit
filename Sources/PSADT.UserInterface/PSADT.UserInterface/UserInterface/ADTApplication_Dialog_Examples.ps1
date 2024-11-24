@@ -9,6 +9,7 @@ $processEvaluationService = New-Object PSADT.UserInterface.Services.ProcessEvalu
 # Example 1: Show Welcome Dialog
 function Show-WelcomeDialogExample {
     $params = @{
+        DialogExpiryDuration = [System.TimeSpan]::FromMinutes(55)
         AppTitle           = "Welcome Dialog Example"
         Subtitle           = "PSADT User Interface"
         TopMost            = $true
@@ -24,8 +25,6 @@ function Show-WelcomeDialogExample {
             }
         )
         AppIconImage       = "C:\Path\To\Icon.ico"
-        BannerImageLight   = "C:\Path\To\BannerLight.png"
-        BannerImageDark    = "C:\Path\To\BannerDark.png"
         CloseAppMessage    = "Please close the following applications:"
         AltCloseAppMessage = "Please select ""Install"" to continue with the installation. If you have any ""Defers"" remaining, you may also choose to delay the installation."
         DeferRemainText    = "remain"
@@ -37,14 +36,13 @@ function Show-WelcomeDialogExample {
     try {
         # Show Welcome Dialog using UnifiedAdtApplication with alternative texts
         $result = [PSADT.UserInterface.UnifiedAdtApplication]::ShowWelcomeDialog(
+            $params.DialogExpiryDuration,
             $params.AppTitle,
             $params.Subtitle,
             $params.TopMost,
             $params.DefersRemaining,
             $params.AppsToClose,
             $params.AppIconImage,
-            $params.BannerImageLight,
-            $params.BannerImageDark,
             $params.CloseAppMessage,
             $params.AltCloseAppMessage,        # **New Parameter**
             $params.DeferRemainText,
@@ -64,12 +62,11 @@ function Show-WelcomeDialogExample {
 # Example 2: Show Progress Dialog with updates
 function Show-ProgressDialogExample {
     $params = @{
+        DialogExpiryDuration  = [System.TimeSpan]::FromMinutes(55)
         AppTitle              = "Progress Dialog Example"
         Subtitle              = "PSADT User Interface"
         TopMost               = $true
         AppIconImage          = "C:\Path\To\Icon.ico"
-        BannerImageLight      = "C:\Path\To\BannerLight.png"
-        BannerImageDark       = "C:\Path\To\BannerDark.png"
         ProgressMessage       = "Starting installation..."
         ProgressMessageDetail = "Preparing for installation."
     }
@@ -77,12 +74,11 @@ function Show-ProgressDialogExample {
     try {
         # Show the Progress Dialog using UnifiedAdtApplication
         [PSADT.UserInterface.UnifiedAdtApplication]::ShowProgressDialog(
+            $params.DialogExpiryDuration,
             $params.AppTitle,
             $params.Subtitle,
             $params.TopMost,
             $params.AppIconImage,
-            $params.BannerImageLight,
-            $params.BannerImageDark,
             $params.ProgressMessage,
             $params.ProgressMessageDetail
         )
@@ -120,12 +116,11 @@ function Show-ProgressDialogExample {
 # Example 3: Show Custom Dialog
 function Show-CustomDialogExample {
     $params = @{
+        DialogExpiryDuration = [System.TimeSpan]::FromMinutes(55)
         AppTitle         = "Custom Dialog Example"
         Subtitle         = "PSADT User Interface"
         TopMost          = $true
         AppIconImage     = "C:\Path\To\Icon.ico"
-        BannerImageLight = "C:\Path\To\BannerLight.png"
-        BannerImageDark  = "C:\Path\To\BannerDark.png"
         CustomMessage    = "Do you want to proceed with the installation?"
         Button1Text      = "Yes"
         Button2Text      = "No"
@@ -135,12 +130,11 @@ function Show-CustomDialogExample {
     try {
         # Show Custom Dialog using UnifiedAdtApplication
         $result = [PSADT.UserInterface.UnifiedAdtApplication]::ShowCustomDialog(
+            $params.DialogExpiryDuration,
             $params.AppTitle,
             $params.Subtitle,
             $params.TopMost,
             $params.AppIconImage,
-            $params.BannerImageLight,
-            $params.BannerImageDark,
             $params.CustomMessage,
             $params.Button1Text,
             $params.Button2Text,
@@ -152,12 +146,11 @@ function Show-CustomDialogExample {
         if ($result -eq "More Info") {
             $additionalInfo = "This installation will update your software to the latest version. It may take up to 10 minutes."
             [PSADT.UserInterface.UnifiedAdtApplication]::ShowCustomDialog(
+                $params.DialogExpiryDuration,
                 "Additional Information",
                 $params.Subtitle,
                 $params.TopMost,
                 $params.AppIconImage,
-                $params.BannerImageLight,
-                $params.BannerImageDark,
                 $additionalInfo,
                 "OK", "", ""
             )
@@ -175,8 +168,6 @@ function Show-RestartDialogExample {
         Subtitle             = "PSADT User Interface"
         TopMost              = $true
         AppIconImage         = "C:\Path\To\Icon.ico"
-        BannerImageLight     = "C:\Path\To\BannerLight.png"
-        BannerImageDark      = "C:\Path\To\BannerDark.png"
         RestartCountdownMins = 5
         RestartMessage       = "The installation will begin in 5 minutes. You can restart your computer now or wait for the countdown to complete."
         DismissButtonText    = "Dismiss"
@@ -190,8 +181,6 @@ function Show-RestartDialogExample {
             $params.Subtitle,
             $params.TopMost,
             $params.AppIconImage,
-            $params.BannerImageLight,
-            $params.BannerImageDark,
             $params.RestartCountdownMins,
             $params.RestartMessage,
             $params.DismissButtonText,
@@ -220,6 +209,7 @@ function Show-ComplexScenario {
     try {
         # Show Welcome Dialog
         $welcomeResult = [PSADT.UserInterface.UnifiedAdtApplication]::ShowWelcomeDialog(
+            55,
             "Complex Installation Scenario",
             "Multiple Dialog Example",
             $true,
@@ -235,8 +225,6 @@ function Show-ComplexScenario {
                 }
             ),
             "C:\Path\To\Icon.ico",
-            "C:\Path\To\BannerLight.png",
-            "C:\Path\To\BannerDark.png",
             "Please close any open applications before proceeding.",
             "Please select ""Install"" to continue with the installation. If you have any ""Defers"" remaining, you may also choose to delay the installation.",
             "remain",
@@ -253,12 +241,11 @@ function Show-ComplexScenario {
 
         # Show Custom Dialog for installation options
         $customResult = [PSADT.UserInterface.UnifiedAdtApplication]::ShowCustomDialog(
+            55,
             "Installation Options",
             "PSADT User Interface",
             $true,
             "C:\Path\To\Icon.ico",
-            "C:\Path\To\BannerLight.png",
-            "C:\Path\To\BannerDark.png",
             "Choose your installation type:",
             "Full",
             "Minimal",
@@ -267,25 +254,24 @@ function Show-ComplexScenario {
 
         # Show Progress Dialog
         [PSADT.UserInterface.UnifiedAdtApplication]::ShowProgressDialog(
+            55,
             "Installing...",
             "Please wait while we install the software",
             $true,
             "C:\Path\To\Icon.ico",
-            "C:\Path\To\BannerLight.png",
-            "C:\Path\To\BannerDark.png",
             "Preparing for installation...",
             "This may take several minutes."
         )
 
         switch ($customResult) {
             "Full" {
-                Perform-Installation -TotalSteps 100 -StepSize 1 -Prefix "Full"
+                Invoke-Installation -TotalSteps 100 -StepSize 1 -Prefix "Full"
             }
             "Minimal" {
-                Perform-Installation -TotalSteps 50 -StepSize 2 -Prefix "Minimal"
+                Invoke-Installation -TotalSteps 50 -StepSize 2 -Prefix "Minimal"
             }
             "Custom" {
-                Perform-Installation -TotalSteps 20 -StepSize 5 -Prefix "Custom"
+                Invoke-Installation -TotalSteps 20 -StepSize 5 -Prefix "Custom"
             }
         }
 
@@ -298,8 +284,6 @@ function Show-ComplexScenario {
             "PSADT User Interface",
             $true,
             "C:\Path\To\Icon.ico",
-            "C:\Path\To\BannerLight.png",
-            "C:\Path\To\BannerDark.png",
             "The $customResult installation has finished successfully.",
             "OK", "", ""
         )
@@ -309,7 +293,7 @@ function Show-ComplexScenario {
     }
 }
 
-function Perform-Installation {
+function Invoke-Installation {
     param (
         [int]$TotalSteps,
         [int]$StepSize,

@@ -8,14 +8,6 @@
             Logo = '..\Assets\AppIcon.png'
         }
         Fluent = @{
-            Banner = @{
-                # Fluent Banner (Light)
-                Light = '..\Assets\Banner.Fluent.Light.png'
-
-                # Fluent Banner (Dark)
-                Dark = '..\Assets\Banner.Fluent.Dark.png'
-            }
-
             # Specify filename of the logo.
             Logo = '..\Assets\AppIcon.png'
         }
@@ -121,7 +113,7 @@
         DefaultPromptPersistInterval = 60
 
         # Time in seconds to automatically timeout installation dialogs. Default is 1 hour and 55 minutes so that dialogs timeout before SCCM times out.
-        DefaultTimeout = 6900
+        DefaultTimeout = 3300
 
         # Exit code used when a user opts to defer.
         DeferExitCode = 60012

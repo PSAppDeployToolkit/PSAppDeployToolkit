@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
 using System.Collections.ObjectModel;
@@ -42,14 +42,13 @@ namespace PSADT.UserInterface
         private readonly string _altContinueButtonContent;
 
         public WelcomeDialog(
+            TimeSpan? dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
             bool? topMost,
             int? defersRemaining,
             List<AppProcessInfo>? appsToClose,
             string? appIconImage,
-            string? bannerImageLight,
-            string? bannerImageDark,
             string closeAppMessage,
             string altCloseAppMessage,
             string? deferRemainText,
@@ -57,27 +56,27 @@ namespace PSADT.UserInterface
             string? continueButtonText,
             string? altContinueButtonText,
             IProcessEvaluationService? processEvaluationService = null)
-            : base()
+            : base(dialogExpiryDuration)
 
         {
             DataContext = this;
 
-            SystemThemeWatcher.Watch(this);
-
             InitializeComponent();
 
+            // Set up Mica backdrop and watch for theme changes
+            SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
+
+            // Set up Process Evaluation
             if (appsToClose?.Count > 0)
             {
                 _isAppsToClose = true;
                 _appsToClose = appsToClose;
             }
 
+            // Set up window events and controlsProcess Evaluation
             Loaded += WelcomeWindow_Loaded;
-
             AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
-
             AppsToCloseListView.Loaded += AppsToCloseListView_Loaded;
-
             _processEvaluationService = processEvaluationService;
             _defersRemaining = defersRemaining;
             _deferRemainText = deferRemainText;
@@ -95,30 +94,6 @@ namespace PSADT.UserInterface
 
             CloseAppMessageTextBlock.Text = closeAppMessage;
             ContinueButton.Content = continueButtonText ?? "Continue";
-
-            // Set Banner Image based on theme
-            if (ApplicationThemeManager.IsMatchedDark())
-            {
-                if (!string.IsNullOrWhiteSpace(bannerImageDark))
-                {
-                    BannerImage.Source = new BitmapImage(new Uri(bannerImageDark, UriKind.Absolute));
-                }
-                else
-                {
-                    BannerImage.Source = new BitmapImage(new Uri("pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Dark.png", UriKind.Absolute));
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(bannerImageLight))
-                {
-                    BannerImage.Source = new BitmapImage(new Uri(bannerImageLight, UriKind.Absolute));
-                }
-                else
-                {
-                    BannerImage.Source = new BitmapImage(new Uri("pack://application:,,,/PSADT.UserInterface;component/Resources/Banner.Fluent.Light.png", UriKind.Absolute));
-                }
-            }
 
             // Set App Icon Image
             appIconImage ??= "pack://application:,,,/PSADT.UserInterface;component/Resources/appIcon.png";
@@ -236,12 +211,12 @@ namespace PSADT.UserInterface
             if (AppsToCloseCollection.Count <= 5)
             {
                 // Set Row Height to Auto when items are 5 or fewer
-                ListViewRow.Height = new GridLength(1, GridUnitType.Auto);
+                CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
             }
             else
             {
                 // Set Row Height to * when items exceed 5
-                ListViewRow.Height = new GridLength(1, GridUnitType.Star);
+                CenterPanelRow.Height = new GridLength(1, GridUnitType.Star);
             }
         }
 
@@ -331,7 +306,7 @@ namespace PSADT.UserInterface
                     if (!AreProcessListsEqual(_previousProcessInfo, updatedApps))
                     {
                         // Update the collection on the UI thread
-                        Application.Current.Dispatcher.Invoke(() =>
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
                             AppsToCloseCollection.Clear();
                             foreach (var app in updatedApps)
@@ -488,5 +463,6 @@ namespace PSADT.UserInterface
             // Animate window height
             AnimateWindowHeight(desiredWindowHeight);
         }
+
     }
 }

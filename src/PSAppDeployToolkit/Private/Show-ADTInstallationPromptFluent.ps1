@@ -30,6 +30,10 @@ function Show-ADTInstallationPromptFluent
         [ValidateNotNullOrEmpty()]
         [System.String]$ButtonMiddleText,
 
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$Timeout,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
@@ -45,12 +49,11 @@ function Show-ADTInstallationPromptFluent
     # Send this straight out to the C# backend.
     Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig)]."
     return [PSADT.UserInterface.UnifiedADTApplication]::ShowCustomDialog(
+        [System.TimeSpan]::FromSeconds($Timeout),
         $Title,
         $null,
         !$NotTopMost,
         $ADTConfig.Assets.Fluent.Logo,
-        $ADTConfig.Assets.Fluent.Banner.Light,
-        $ADTConfig.Assets.Fluent.Banner.Dark,
         $Message,
         $ButtonLeftText,
         $ButtonMiddleText,
