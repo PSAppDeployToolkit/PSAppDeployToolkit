@@ -47,7 +47,6 @@ function Show-ADTInstallationPromptFluent
     )
 
     # Send this straight out to the C# backend.
-    Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($PSBoundParameters | Resolve-ADTBoundParameters -Exclude ADTConfig)]."
     return [PSADT.UserInterface.UnifiedADTApplication]::ShowCustomDialog(
         [System.TimeSpan]::FromSeconds($Timeout),
         $Title,

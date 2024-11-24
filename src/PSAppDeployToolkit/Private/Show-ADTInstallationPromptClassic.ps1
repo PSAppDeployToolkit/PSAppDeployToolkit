@@ -375,7 +375,7 @@ function Show-ADTInstallationPromptClassic
             }
             else
             {
-                Write-ADTLogEntry -Message 'UI timed out but $NoExitOnTimeout specified. Continue...'
+                Write-ADTLogEntry -Message 'UI timed out but -NoExitOnTimeout specified. Continue...'
             }
             break
         }
