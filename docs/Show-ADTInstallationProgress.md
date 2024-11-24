@@ -14,7 +14,7 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 
 ```
 Show-ADTInstallationProgress [[-WindowLocation] <String>] [[-MessageAlignment] <TextAlignment>] [-NotTopMost]
- [-NoRelocation] -WindowTitle <String> [-WindowSubtitle <String>] -StatusMessage <String>
+ [-NoRelocation] -WindowTitle <String> -WindowSubtitle <String> -StatusMessage <String>
  -StatusMessageDetail <String> [<CommonParameters>]
 ```
 
@@ -155,14 +155,14 @@ Accept wildcard characters: False
 
 ### -WindowSubtitle
 The subtitle of the window to be displayed with a fluent progress window.
-The default is null.
+The default is the derived value from $DeploymentType.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False

@@ -17,8 +17,8 @@ Show a welcome dialog prompting the user with information about the installation
 Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseProcessesCountdown <Double>]
  [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
- [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String>
- -DeploymentType <String> [<CommonParameters>]
+ [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String> -Subtitle <String>
+ [-DeploymentType <String>] [<CommonParameters>]
 ```
 
 ### CheckDiskSpace
@@ -27,7 +27,7 @@ Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-Clos
  [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>]
- [-CustomText] -Title <String> -DeploymentType <String> [<CommonParameters>]
+ [-CustomText] -Title <String> -Subtitle <String> [-DeploymentType <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -387,6 +387,22 @@ Accept wildcard characters: False
 ### -DeploymentType
 The deployment type.
 Default: the session's DeploymentType value.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Subtitle
+Subtitle of the prompt.
+Default: the application deployment type.
 
 ```yaml
 Type: String
