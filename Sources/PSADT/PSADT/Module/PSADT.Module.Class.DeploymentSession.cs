@@ -248,8 +248,28 @@ namespace PSADT.Module
                         {
                             // Get the first MSI file in the Files directory.
                             string[] msiFiles = Directory.GetFiles(_dirFiles, "*.msi", SearchOption.TopDirectoryOnly);
-                            var envOSArchitecture = (string)ADTEnv["envOSArchitecture"]!;
-                            if (msiFiles.Where(f => !f.EndsWith($".{envOSArchitecture}.msi")).FirstOrDefault() is string msiFile)
+                            var envOSArchitecture = ADTEnv["envOSArchitecture"]!.ToString();
+                            var formattedOSArch = string.Empty;
+
+                            // Build out the OS architecture string.
+                            switch (envOSArchitecture)
+                            {
+                                case "X86":
+                                    formattedOSArch = "x86";
+                                    break;
+                                case "AMD64":
+                                    formattedOSArch = "x64";
+                                    break;
+                                case "ARM64":
+                                    formattedOSArch = "arm64";
+                                    break;
+                                default:
+                                    formattedOSArch = envOSArchitecture;
+                                    break;
+                            }
+
+                            // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
+                            if (msiFiles.Where(f => !f.EndsWith($".{formattedOSArch}.msi", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() is string msiFile)
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
