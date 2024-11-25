@@ -515,7 +515,7 @@ Add-BuildTask CreateDocusaurusHelp -After CreateMarkdownHelp {
     $repoBranch = 'buildFix'
     $repoPath = "$([System.IO.Path]::GetTempPath())$repoName"
     Write-Build Gray "             Cloning our $moduleName fork..."
-    Remove-Item -LiteralPath $repoPath -Recurse -Force -Confirm:$false
+    Remove-Item -LiteralPath $repoPath -Recurse -Force -Confirm:$false -ErrorAction Ignore
     git clone -b $repoBranch $repoUri $repoPath
 
     Write-Build Gray "             Compile the $moduleName module..."
