@@ -29,6 +29,12 @@ $modulesToInstall = New-Object System.Collections.Generic.List[object]
             ModuleName    = 'platyPS'
             ModuleVersion = '0.12.0'
         }))
+# https://github.com/PoshCode/ModuleBuilder
+# Needed to build our fork of Alt3.Docusaurus.Powershell
+[void]$modulesToInstall.Add(([PSCustomObject]@{
+            ModuleName    = 'ModuleBuilder'
+            ModuleVersion = '3.1.0'
+        }))
 
 
 

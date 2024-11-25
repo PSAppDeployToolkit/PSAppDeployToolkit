@@ -143,6 +143,7 @@ Enter-Build {
     $Script:IntegrationTestsPath = Join-Path -Path $Script:TestsPath -ChildPath 'Integration'
     $Script:ArtifactsPath = Join-Path -Path $BuildRoot -ChildPath 'Artifacts'
     $Script:ArchivePath = Join-Path -Path $BuildRoot -ChildPath 'Archive'
+    $Script:MarkdownExportPath = "$Script:ArtifactsPath\docs\"
     $Script:BuildModuleRoot = Join-Path -Path $Script:ArtifactsPath -ChildPath "Module\$Script:ModuleName"
     $Script:BuildModuleRootFile = Join-Path -Path $Script:BuildModuleRoot -ChildPath "$($Script:ModuleName).psm1"
 
@@ -351,7 +352,7 @@ Add-BuildTask Test {
         $pesterConfiguration.Run.PassThru = $true
         $pesterConfiguration.Run.Exit = $false
         $pesterConfiguration.CodeCoverage.Enabled = $true
-        $pesterConfiguration.CodeCoverage.Path = "..\..\..\src\$ModuleName\*\*.ps1"
+        $pesterConfiguration.CodeCoverage.Path = "..\..\..\src\$Script:ModuleName\*\*.ps1"
         $pesterConfiguration.CodeCoverage.CoveragePercentTarget = $Script:coverageThreshold
         $pesterConfiguration.CodeCoverage.OutputPath = "$codeCovPath\CodeCoverage.xml"
         $pesterConfiguration.CodeCoverage.OutputFormat = 'JaCoCo'
@@ -400,7 +401,7 @@ Add-BuildTask DevCC {
     $pesterConfiguration = New-PesterConfiguration
     $pesterConfiguration.run.Path = $Script:UnitTestsPath
     $pesterConfiguration.CodeCoverage.Enabled = $true
-    $pesterConfiguration.CodeCoverage.Path = "$PSScriptRoot\$ModuleName\*\*.ps1"
+    $pesterConfiguration.CodeCoverage.Path = "$PSScriptRoot\$Script:ModuleName\*\*.ps1"
     $pesterConfiguration.CodeCoverage.CoveragePercentTarget = $Script:coverageThreshold
     $pesterConfiguration.CodeCoverage.OutputPath = '..\..\..\cov.xml'
     $pesterConfiguration.CodeCoverage.OutputFormat = 'CoverageGutters'
@@ -420,12 +421,12 @@ Add-BuildTask CreateHelpStart {
 Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
     # Generate markdown files.
     Write-Build Gray '           Generating markdown files...'
-    $null = New-MarkdownHelp -Module $ModuleName -OutputFolder "$Script:ArtifactsPath\docs\" -Locale en-US -FwLink NA -HelpVersion $Script:ModuleVersion -WithModulePage -Force
+    $null = New-MarkdownHelp -Module $Script:ModuleName -OutputFolder $Script:MarkdownExportPath -Locale en-US -FwLink NA -HelpVersion $Script:ModuleVersion -WithModulePage -Force
     Write-Build Gray '           ...Markdown generation completed.'
 
     # Post-process the exported markdown files.
     Write-Build Gray '           Replacing markdown elements...'
-    ($OutputDir = "$Script:ArtifactsPath\docs\") | Get-ChildItem -File | ForEach-Object {
+    $Script:MarkdownExportPath | Get-ChildItem -File | ForEach-Object {
         # Read the file as a string, not an array.
         $content = [System.IO.File]::ReadAllText($_.FullName)
 
@@ -438,7 +439,7 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
     }
 
     # Replace each missing element we need for a proper generic module page .md file
-    $ModulePageFileContent = Get-Content -Raw ($ModulePage = "$Script:ArtifactsPath\docs\$($ModuleName).md")
+    $ModulePageFileContent = Get-Content -Raw ($ModulePage = "$($Script:MarkdownExportPath)$($Script:ModuleName).md")
     $ModulePageFileContent = $ModulePageFileContent -replace '{{Manually Enter Description Here}}', $Script:ModuleDescription
     $Script:FunctionsToExport | ForEach-Object {
         Write-Build DarkGray "             Updating definition for the following function: $($_)"
@@ -451,7 +452,7 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
 
     # Validate Guid of export is correct.
     Write-Build Gray '           Verifying GUID...'
-    if (Select-String -Path "$Script:ArtifactsPath\docs\*.md" -Pattern "(00000000-0000-0000-0000-000000000000)")
+    if (Select-String -Path "$Script:MarkdownExportPath*.md" -Pattern "(00000000-0000-0000-0000-000000000000)")
     {
         Write-Build Yellow '             The documentation that got generated resulted in a generic GUID. Check the GUID entry of your module manifest.'
         throw 'Missing GUID. Please review and rebuild.'
@@ -464,26 +465,26 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
     {
         Write-Build Gray '               Performing Markdown repair'
         . $BuildRoot\MarkdownRepair.ps1
-        $OutputDir | Get-ChildItem -File | ForEach-Object {
+        $Script:MarkdownExportPath | Get-ChildItem -File | ForEach-Object {
             Repair-PlatyPSMarkdown -Path $_.FullName
         }
     }
 
     # Validate nothing is missing.
     Write-Build Gray '           Checking for missing documentation in md files...'
-    if ((($MissingDocumentation = Select-String -Path "$Script:ArtifactsPath\docs\*.md" -Pattern "({{.*}})") | Measure-Object).Count -gt 0)
+    if ((($MissingDocumentation = Select-String -Path "$Script:MarkdownExportPath*.md" -Pattern "({{.*}})") | Measure-Object).Count -gt 0)
     {
         Write-Build Yellow '             The documentation that got generated resulted in missing sections which should be filled out.'
         Write-Build Yellow '             Please review the following sections in your comment based help, fill out missing information and rerun this build:'
         Write-Build Yellow '             (Note: This can happen if the .EXTERNALHELP CBH is defined for a function before running this build.)'
-        Write-Build Yellow "             Path of files with issues: $Script:ArtifactsPath\docs\"
+        Write-Build Yellow "             Path of files with issues: $Script:MarkdownExportPath"
         $MissingDocumentation | Select-Object FileName, LineNumber, Line | Format-Table -AutoSize
         throw 'Missing documentation. Please review and rebuild.'
     }
 
     # Validate all exports have a synopsis.
     Write-Build Gray '           Checking for missing SYNOPSIS in md files...'
-    $fSynopsisOutput = Select-String -Path "$Script:ArtifactsPath\docs\*.md" -Pattern "^## SYNOPSIS$" -Context 0, 1 | ForEach-Object {
+    $fSynopsisOutput = Select-String -Path "$Script:MarkdownExportPath*.md" -Pattern "^## SYNOPSIS$" -Context 0, 1 | ForEach-Object {
         if ($null -eq $_.Context.DisplayPostContext.ToCharArray())
         {
             $_.FileName
@@ -501,8 +502,31 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
 # Synopsis: Build the external xml help file from markdown help files with PlatyPS.
 Add-BuildTask CreateExternalHelp -After CreateMarkdownHelp $null; $null = {
     Write-Build Gray '           Creating external xml help file...'
-    $null = New-ExternalHelp "$Script:ArtifactsPath\docs" -OutputPath "$Script:ArtifactsPath\en-US\" -Force
+    $null = New-ExternalHelp $Script:MarkdownExportPath -OutputPath "$Script:ArtifactsPath\en-US\" -Force
     Write-Build Gray '           ...External xml help file created!'
+}
+
+# Synopsis: Build docusaurus help files from our markdown exports.
+Add-BuildTask CreateDocusaurusHelp -After CreateMarkdownHelp {
+    Write-Build Gray '           Generating docusaurus files...'
+    $repoName = 'Docusaurus.Powershell'
+    $moduleName = "Alt3.$repoName"
+    $repoUri = "https://github.com/PSAppDeployToolkit/$($repoName).git"
+    $repoBranch = 'buildFix'
+    $repoPath = "$([System.IO.Path]::GetTempPath())$repoName"
+    Write-Build Gray "             Cloning our $moduleName fork..."
+    Remove-Item -LiteralPath $repoPath -Recurse -Force -Confirm:$false
+    git clone -b $repoBranch $repoUri $repoPath
+
+    Write-Build Gray "             Compile the $moduleName module..."
+    & "$repoPath\build-module.ps1"
+
+    Write-Build Gray "             Import our compiled $moduleName module..."
+    Import-Module -Name (Get-Item -Path "$repoPath\Output\$moduleName\*\$moduleName.psd1").FullName
+
+    Write-Build Gray '             Generate Docusaurus help files...'
+    New-DocusaurusHelp -Module $Script:ModuleName -MarkdownCachePath $Script:MarkdownExportPath -DocsFolder "$Script:ArtifactsPath\Docusaurus" -NoPlaceHolderExamples
+    Write-Build Gray '           ...Docusaurus generation complete.'
 }
 
 Add-BuildTask CreateHelpComplete -After CreateExternalHelp {
@@ -515,7 +539,7 @@ Add-BuildTask UpdateCBH -After AssetCopy $null; $null = {
     $CBHPattern = "(?ms)(\<#.*\.SYNOPSIS.*?#>)"
     $ExternalHelp = @"
 <#
-    .EXTERNALHELP $($ModuleName)-help.xml
+    .EXTERNALHELP $($Script:ModuleName)-help.xml
     #>
 "@
 
@@ -639,15 +663,15 @@ Add-BuildTask Build {
     }
 
     # Update the parent level docs.
-    if (Test-Path "$Script:ArtifactsPath\docs")
+    if (Test-Path $Script:MarkdownExportPath)
     {
         Write-Build Gray '        Overwriting docs output...'
         if (!(Test-Path '..\docs\'))
         {
             New-Item -Path '..\docs\' -ItemType Directory -Force | Out-Null
         }
-        Move-Item "$Script:ArtifactsPath\docs\*.md" -Destination '..\docs\' -Force
-        Remove-Item "$Script:ArtifactsPath\docs" -Recurse -Force
+        Move-Item "$Script:MarkdownExportPath*.md" -Destination '..\docs\' -Force
+        Remove-Item $Script:MarkdownExportPath -Recurse -Force
         Write-Build Gray '        ...Docs output completed.'
     }
 
