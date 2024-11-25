@@ -27,6 +27,14 @@ function New-ADTEnvironmentTable
 
     ## Variables: Environment Variables
     $variables.Add('envHost', $Host)
+    $variables.Add('envHostVersion', [System.Version]$Host.Version)
+    $variables.Add('envHostVersionSemantic', $(if ($Host.Version.PSObject.Properties.Name -match '^PSSemVer') { [System.Management.Automation.SemanticVersion]$Host.Version }))
+    $variables.Add('envHostVersionMajor', $variables.envHostVersion.Major)
+    $variables.Add('envHostVersionMinor', $variables.envHostVersion.Minor)
+    $variables.Add('envHostVersionBuild', $(if ($variables.envHostVersion.Build -ge 0) { $variables.envHostVersion.Build }))
+    $variables.Add('envHostVersionRevision', $(if ($variables.envHostVersion.Revision -ge 0) { $variables.envHostVersion.Revision }))
+    $variables.Add('envHostVersionPreReleaseLabel', $(if ($variables.envHostVersionSemantic -and $variables.envHostVersionSemantic.PreReleaseLabel) { $variables.envHostVersionSemantic.PreReleaseLabel }))
+    $variables.Add('envHostVersionBuildLabel', $(if ($variables.envHostVersionSemantic -and $variables.envHostVersionSemantic.BuildLabel) { $variables.envHostVersionSemantic.BuildLabel }))
     $variables.Add('envAllUsersProfile', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
     $variables.Add('envAppData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::ApplicationData))
     $variables.Add('envArchitecture', [System.Environment]::GetEnvironmentVariable('PROCESSOR_ARCHITECTURE'))
@@ -166,8 +174,8 @@ function New-ADTEnvironmentTable
     $variables.Add('envOSVersion', [version][System.Diagnostics.FileVersionInfo]::GetVersionInfo([System.IO.Path]::Combine($variables.envSysNativeDirectory, 'ntoskrnl.exe')).ProductVersion)
     $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
     $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
-    $variables.Add('envOSVersionBuild', $variables.envOSVersion.Build)
-    $variables.Add('envOSVersionRevision', $variables.envOSVersion.Revision)
+    $variables.Add('envOSVersionBuild', $(if ($variables.envOSVersion.Build -ge 0) { $variables.envOSVersion.Build }))
+    $variables.Add('envOSVersionRevision', $(if ($variables.envOSVersion.Revision -ge 0) { $variables.envOSVersion.Revision }))
 
     # Get the operating system type.
     $variables.Add('envOSProductType', $variables.envOS.ProductType)
@@ -243,11 +251,14 @@ function New-ADTEnvironmentTable
     $variables.Add('envPSProcessPath', (Get-ADTPowerShellProcessPath))
 
     # PowerShell Version
-    $variables.Add('envPSVersion', $variables.envPSVersionTable.PSVersion)
+    $variables.Add('envPSVersion', [System.Version]$variables.envPSVersionTable.PSVersion)
+    $variables.Add('envPSVersionSemantic', $(if ($variables.envPSVersionTable.PSVersion.GetType().FullName.Equals('System.Management.Automation.SemanticVersion')) { $variables.envPSVersionTable.PSVersion }))
     $variables.Add('envPSVersionMajor', $variables.envPSVersion.Major)
     $variables.Add('envPSVersionMinor', $variables.envPSVersion.Minor)
-    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersion.PSObject.Properties.Name.Contains('Build')) { $variables.envPSVersionTable.PSVersion.Build }))
-    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersion.PSObject.Properties.Name.Contains('Revision')) { $variables.envPSVersionTable.PSVersion.Revision }))
+    $variables.Add('envPSVersionBuild', $(if ($variables.envPSVersion.Build -ge 0) { $variables.envPSVersion.Build }))
+    $variables.Add('envPSVersionRevision', $(if ($variables.envPSVersion.Revision -ge 0) { $variables.envPSVersion.Revision }))
+    $variables.Add('envPSVersionPreReleaseLabel', $(if ($variables.envPSVersionSemantic -and $variables.envPSVersionSemantic.PreReleaseLabel) { $variables.envPSVersionSemantic.PreReleaseLabel }))
+    $variables.Add('envPSVersionBuildLabel', $(if ($variables.envPSVersionSemantic -and $variables.envPSVersionSemantic.BuildLabel) { $variables.envPSVersionSemantic.BuildLabel }))
 
     # CLR (.NET) Version used by Windows PowerShell
     if ($variables.envPSVersionTable.ContainsKey('CLRVersion'))
@@ -255,8 +266,8 @@ function New-ADTEnvironmentTable
         $variables.Add('envCLRVersion', $variables.envPSVersionTable.CLRVersion)
         $variables.Add('envCLRVersionMajor', $variables.envCLRVersion.Major)
         $variables.Add('envCLRVersionMinor', $variables.envCLRVersion.Minor)
-        $variables.Add('envCLRVersionBuild', $variables.envCLRVersion.Build)
-        $variables.Add('envCLRVersionRevision', $variables.envCLRVersion.Revision)
+        $variables.Add('envCLRVersionBuild', $(if ($variables.envCLRVersion.Build -ge 0) { $variables.envCLRVersion.Build }))
+        $variables.Add('envCLRVersionRevision', $(if ($variables.envCLRVersion.Revision -ge 0) { $variables.envCLRVersion.Revision }))
     }
     else
     {
