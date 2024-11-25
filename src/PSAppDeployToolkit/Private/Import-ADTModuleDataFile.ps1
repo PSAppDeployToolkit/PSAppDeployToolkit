@@ -33,7 +33,7 @@ function Import-ADTModuleDataFile
         [System.String]$UICulture,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoAdmxParsing
+        [System.Management.Automation.SwitchParameter]$IgnorePolicy
     )
 
     # Internal function to process the imported data.
@@ -72,7 +72,7 @@ function Import-ADTModuleDataFile
     }
 
     # Remove parameters not compatible with Import-LocalizedData from $PSBoundParameters.
-    $null = $PSBoundParameters.Remove('NoAdmxParsing')
+    $null = $PSBoundParameters.Remove('IgnorePolicy')
 
     # Establish directory paths for the specified input.
     $moduleDirectory = $Script:ADT.Directories.Defaults.([regex]::Replace($BaseDirectory, '^.+\\', [System.String]::Empty))
@@ -103,7 +103,7 @@ function Import-ADTModuleDataFile
     }
 
     # Super-impose registry values if they exist.
-    if (!$NoAdmxParsing -and ($admxSettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$([System.IO.Path]::GetFileNameWithoutExtension($FileName))" -ErrorAction Ignore | Convert-RegistryKeyToHashtable))
+    if (!$IgnorePolicy -and ($admxSettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$([System.IO.Path]::GetFileNameWithoutExtension($FileName))" -ErrorAction Ignore | Convert-RegistryKeyToHashtable))
     {
         Update-ImportedDataValues -DataFile $importedData -NewData $admxSettings
     }
