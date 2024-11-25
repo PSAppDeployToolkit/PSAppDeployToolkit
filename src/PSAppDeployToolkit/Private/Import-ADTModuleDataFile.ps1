@@ -103,7 +103,7 @@ function Import-ADTModuleDataFile
     }
 
     # Super-impose registry values if they exist.
-    if (!$NoAdmxParsing -and ($admxSettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\PSAppDeployToolkit\$([System.IO.Path]::GetFileNameWithoutExtension($FileName))" -ErrorAction Ignore | Convert-RegistryKeyToHashtable))
+    if (!$NoAdmxParsing -and ($admxSettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$([System.IO.Path]::GetFileNameWithoutExtension($FileName))" -ErrorAction Ignore | Convert-RegistryKeyToHashtable))
     {
         Update-ImportedDataValues -DataFile $importedData -NewData $admxSettings
     }
