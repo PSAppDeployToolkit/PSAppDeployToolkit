@@ -583,8 +583,8 @@ namespace PSADT.Module
                 WriteLogEntry($"OS Type is [{ADTEnv["envOSProductTypeName"]}].");
                 WriteLogEntry($"Hardware Platform is [{ADTEnv["envHardwareType"]}].");
                 WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{ADTEnv["currentLanguage"]}] and UI language is [{ADTEnv["currentUILanguage"]}].");
-                WriteLogEntry($"PowerShell Host is [{((PSHost)ADTEnv["envHost"]!).Name}] with version [{((PSHost)ADTEnv["envHost"]!).Version}].");
-                WriteLogEntry($"PowerShell Version is [{ADTEnv["envPSVersion"]} {ADTEnv["psArchitecture"]}].");
+                WriteLogEntry($"PowerShell Host is [{((PSHost)ADTEnv["envHost"]!).Name}] with version [{ADTEnv["envHostVersionSemantic"] ?? ADTEnv["envHostVersion"]}].");
+                WriteLogEntry($"PowerShell Version is [{ADTEnv["envPSVersionSemantic"] ?? ADTEnv["envPSVersion"]} {ADTEnv["psArchitecture"]}].");
                 if (ADTEnv["envCLRVersion"] is Version envCLRVersion)
                 {
                     WriteLogEntry($"PowerShell CLR (.NET) version is [{envCLRVersion}].");
