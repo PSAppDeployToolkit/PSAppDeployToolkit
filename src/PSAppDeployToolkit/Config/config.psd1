@@ -37,7 +37,7 @@
         # Specify if the log files should be bundled together in a compressed zip file.
         CompressLogs = $false
 
-        # Choose from either 'Native' for native PowerShell file copy via Copy-Item, or 'Robocopy' to use robocopy.exe.
+        # Choose from either 'Native' for native PowerShell file copy via Copy-ADTItem, or 'Robocopy' to use robocopy.exe.
         FileCopyMode = 'Native'
 
         # Specify if an existing log file should be appended to.
@@ -77,7 +77,7 @@
         # Same as RegPath but used when RequireAdmin is False. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.
         RegPathNoAdminRights = 'HKCU:\SOFTWARE'
 
-        # Specify if Administrator Rights are required. NB: Some functions won't work if this is set to false, such as deferral, blockexecution, file & registry RW access and potentially logging.
+        # Specify if Administrator Rights are required. Note: Some functions won't work if this is set to false, such as deferral, block execution, file & registry RW access and potentially logging.
         RequireAdmin = $true
 
         # Automatically changes DeployMode for session zero (SYSTEM) operations.
@@ -100,7 +100,7 @@
         # Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.
         DialogStyle = 'Fluent'
 
-        # Exit code used when a UI prompt times out or the user opts to defer.
+        # Exit code used when a UI prompt times out.
         DefaultExitCode = 1618
 
         # Time in seconds after which the prompt should be repositioned centre screen when the -PersistPrompt parameter is used. Default is 60 seconds.
