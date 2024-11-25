@@ -243,7 +243,7 @@ Removes a callback function from the ADT session starting event.
 Reset the history of deferrals in the registry for the current application.
 
 ### [Resolve-ADTErrorRecord](Resolve-ADTErrorRecord.md)
-Enumerates error record details.
+Enumerates ErrorRecord details.
 
 ### [Send-ADTKeys](Send-ADTKeys.md)
 Send a sequence of keys to one or more application windows.
