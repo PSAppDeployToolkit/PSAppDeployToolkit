@@ -1044,9 +1044,9 @@ namespace PSADT.Module
             }
 
             // Write out all messages to disk if configured/permitted to do so.
-            if (!DisableLogging && (Path.Combine(logFileDirectory ?? string.Empty, logFileName ?? string.Empty) is string outFile) && !string.IsNullOrWhiteSpace(outFile))
+            if (!DisableLogging && !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName))
             {
-                using (StreamWriter logFileWriter = new StreamWriter(outFile, true, LogEncoding))
+                using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(logFileDirectory, logFileName), true, LogEncoding))
                 {
                     string logLine = logFormats[logType]!;
                     switch (logType)
