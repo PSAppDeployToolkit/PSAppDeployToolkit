@@ -30,52 +30,84 @@ function Import-ADTModuleDataFile
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$UICulture
+        [System.String]$UICulture,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoAdmxParsing
     )
 
     # Internal function to process the imported data.
-    function Add-ModuleDefaultsToImportedData
+    function Update-ImportedDataValues
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
         [CmdletBinding()]
         param
         (
             [Parameter(Mandatory = $true)]
-            [ValidateNotNullOrEmpty()]
+            [AllowEmptyCollection()]
             [System.Collections.Hashtable]$DataFile,
 
             [Parameter(Mandatory = $true)]
             [ValidateNotNullOrEmpty()]
-            [System.Collections.Hashtable]$DefaultData
+            [System.Collections.Hashtable]$NewData
         )
 
         # Process the provided default data so we can add missing data to the data file.
-        foreach ($section in $DefaultData.GetEnumerator())
+        foreach ($section in $NewData.GetEnumerator())
         {
-            # Add the section in wholesale if it doesn't exist, otherwise process it again if its a hashtable.
-            if (!$DataFile.ContainsKey($section.Key))
+            # Recursively process hashtables, otherwise just update the value.
+            if ($section.Value -is [System.Collections.Hashtable])
             {
-                $DataFile.Add($section.Key, $section.Value)
+                if (!$DataFile.ContainsKey($section.Key) -or ($DataFile.($section.Key) -isnot [System.Collections.Hashtable]))
+                {
+                    $DataFile.($section.Key) = @{}
+                }
+                & $MyInvocation.MyCommand -DataFile $DataFile.($section.Key) -NewData $section.Value
             }
-            elseif ($section.Value -is [System.Collections.Hashtable])
+            else
             {
-                & $MyInvocation.MyCommand -DataFile $DataFile.($section.Key) -DefaultData $section.Value
+                $DataFile.($section.Key) = $section.Value
             }
         }
     }
 
-    # Import the requested data file as-is.
+    # Remove parameters not compatible with Import-LocalizedData from $PSBoundParameters.
+    $null = $PSBoundParameters.Remove('NoAdmxParsing')
+
+    # Establish directory paths for the specified input.
+    $moduleDirectory = $Script:ADT.Directories.Defaults.([regex]::Replace($BaseDirectory, '^.+\\', [System.String]::Empty))
+    $callerDirectory = $BaseDirectory
+
+    # Import the default data first and foremost.
+    $PSBoundParameters.BaseDirectory = $moduleDirectory
     $importedData = Import-LocalizedData @PSBoundParameters
 
-    # Return early if the BaseDirectory is that of the module.
-    if ($BaseDirectory.Equals($Script:ADT.Directories.Defaults.([regex]::Replace($BaseDirectory, '^.+\\', [System.String]::Empty))))
+    # Validate we imported something from our default location.
+    if (!$importedData.Count)
     {
-        return $importedData
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new("The importation of the module's default $FileName file returned a null or empty result.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+            ErrorId = 'ADTDataFileImportFailure'
+            TargetObject = [System.IO.Path]::Combine($PSBoundParameters.BaseDirectory, $FileName)
+            RecommendedAction = "Please ensure that this module is not corrupt or missing files, then try again."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
-    # The base directory isn't the module's, therefore bring in the module's config so we can fill in any blanks.
-    $PSBoundParameters.BaseDirectory = $PSBoundParameters.BaseDirectory -replace '^.+\\', "$Script:PSScriptRoot\"
-    Add-ModuleDefaultsToImportedData -DataFile $importedData -DefaultData (Import-LocalizedData @PSBoundParameters)
+    # Super-impose the caller's data if it's different from default.
+    if (!$callerDirectory.Equals($moduleDirectory))
+    {
+        $PSBoundParameters.BaseDirectory = $callerDirectory
+        Update-ImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
+    }
 
-    # Return the amended caller data to the caller.
+    # Super-impose registry values if they exist.
+    if (!$NoAdmxParsing -and ($admxSettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\PSAppDeployToolkit\$([System.IO.Path]::GetFileNameWithoutExtension($FileName))" -ErrorAction Ignore | Convert-RegistryKeyToHashtable))
+    {
+        Update-ImportedDataValues -DataFile $importedData -NewData $admxSettings
+    }
+
+    # Return the built out data to the caller.
     return $importedData
 }
