@@ -8,30 +8,30 @@ function Resolve-ADTErrorRecord
 {
     <#
     .SYNOPSIS
-        Enumerates error record details.
+        Enumerates ErrorRecord details.
 
     .DESCRIPTION
-        Enumerates an error record, or a collection of error record properties. By default, the details for the last error will be enumerated. This function can filter and display specific properties of the error record, and can exclude certain parts of the error details.
+        Enumerates an ErrorRecord, or a collection of ErrorRecord properties. This function can filter and display specific properties of the ErrorRecord, and can exclude certain parts of the error details.
 
     .PARAMETER ErrorRecord
-        The error record to resolve. The default error record is the latest one: $global:Error[0]. This parameter will also accept an array of error records.
+        The ErrorRecord to resolve. For usage in a catch block, you'd use the automatic variable $_. For usage out of a catch block, you can access the global $Error array's first error (on index 0).
 
     .PARAMETER Property
-        The list of properties to display from the error record. Use "*" to display all properties.
+        The list of properties to display from the ErrorRecord. Use "*" to display all properties.
 
         Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
 
     .PARAMETER ExcludeErrorRecord
-        Exclude error record details as represented by $_.
+        Exclude ErrorRecord details as represented by $_.
 
     .PARAMETER ExcludeErrorInvocation
-        Exclude error record invocation information as represented by $_.InvocationInfo.
+        Exclude ErrorRecord invocation information as represented by $_.InvocationInfo.
 
     .PARAMETER ExcludeErrorException
-        Exclude error record exception details as represented by $_.Exception.
+        Exclude ErrorRecord exception details as represented by $_.Exception.
 
     .PARAMETER ExcludeErrorInnerException
-        Exclude error record inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
+        Exclude ErrorRecord inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
 
     .INPUTS
         System.Management.Automation.ErrorRecord
@@ -41,27 +41,27 @@ function Resolve-ADTErrorRecord
     .OUTPUTS
         System.String
 
-        Displays the error record details.
+        Displays the ErrorRecord details.
 
     .EXAMPLE
         Resolve-ADTErrorRecord
 
-        Enumerates the details of the last error record.
+        Enumerates the details of the last ErrorRecord.
 
     .EXAMPLE
         Resolve-ADTErrorRecord -Property *
 
-        Enumerates all properties of the last error record.
+        Enumerates all properties of the last ErrorRecord.
 
     .EXAMPLE
         Resolve-ADTErrorRecord -Property InnerException
 
-        Enumerates only the InnerException property of the last error record.
+        Enumerates only the InnerException property of the last ErrorRecord.
 
     .EXAMPLE
         Resolve-ADTErrorRecord -ExcludeErrorInvocation
 
-        Enumerates the details of the last error record, excluding the invocation information.
+        Enumerates the details of the last ErrorRecord, excluding the invocation information.
 
     .NOTES
         An active ADT session is NOT required to use this function.
