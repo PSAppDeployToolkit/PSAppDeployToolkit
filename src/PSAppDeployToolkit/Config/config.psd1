@@ -106,7 +106,7 @@
         # Time in seconds after which the prompt should be repositioned centre screen when the -PersistPrompt parameter is used. Default is 60 seconds.
         DefaultPromptPersistInterval = 60
 
-        # Time in seconds to automatically timeout installation dialogs. Default is 1 hour and 55 minutes so that dialogs timeout before SCCM times out.
+        # Time in seconds to automatically timeout installation dialogs. Default is 55 minutes so that dialogs timeout before Intune times out.
         DefaultTimeout = 3300
 
         # Exit code used when a user opts to defer.
