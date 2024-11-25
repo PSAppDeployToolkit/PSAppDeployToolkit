@@ -423,11 +423,14 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
     $null = New-MarkdownHelp -Module $ModuleName -OutputFolder "$Script:ArtifactsPath\docs\" -Locale en-US -FwLink NA -HelpVersion $Script:ModuleVersion -WithModulePage -Force
     Write-Build Gray '           ...Markdown generation completed.'
 
-    # Replace multi-line EXAMPLES.
+    # Post-process the exported markdown files.
     Write-Build Gray '           Replacing markdown elements...'
     ($OutputDir = "$Script:ArtifactsPath\docs\") | Get-ChildItem -File | ForEach-Object {
+        # Read the file as a string, not an array.
         $content = [System.IO.File]::ReadAllText($_.FullName)
-        $newContent = $content.Trim() -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6'
+
+        # Trim the file, fix multi-line EXAMPLES, and unescape tilde characters.
+        $newContent = ($content.Trim() -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6').Replace('PS C:\\\>', $null).Replace('\`', '`')
         if ($newContent -ne $content)
         {
             [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").TrimEnd())

@@ -27,8 +27,8 @@ It allows for detailed error information to be captured and returned to the call
 ### EXAMPLE 1
 ```
 $exception = [System.Exception]::new("An error occurred.")
-PS C:\\\>$category = \[System.Management.Automation.ErrorCategory\]::NotSpecified
-PS C:\\\>New-ADTErrorRecord -Exception $exception -Category $category -ErrorId "CustomErrorId" -TargetObject $null -TargetName "TargetName" -TargetType "TargetType" -Activity "Activity" -Reason "Reason" -RecommendedAction "RecommendedAction"
+$category = \[System.Management.Automation.ErrorCategory\]::NotSpecified
+New-ADTErrorRecord -Exception $exception -Category $category -ErrorId "CustomErrorId" -TargetObject $null -TargetName "TargetName" -TargetType "TargetType" -Activity "Activity" -Reason "Reason" -RecommendedAction "RecommendedAction"
 ```
 
 

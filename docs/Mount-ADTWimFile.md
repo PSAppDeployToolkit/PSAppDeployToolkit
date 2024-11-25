@@ -131,7 +131,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-If specified, the function will return the results from \`Mount-WindowsImage\`.
+If specified, the function will return the results from `Mount-WindowsImage`.
 
 ```yaml
 Type: SwitchParameter

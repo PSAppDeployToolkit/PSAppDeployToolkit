@@ -14,7 +14,7 @@ function Resolve-ADTErrorRecord
         Enumerates an ErrorRecord, or a collection of ErrorRecord properties. This function can filter and display specific properties of the ErrorRecord, and can exclude certain parts of the error details.
 
     .PARAMETER ErrorRecord
-        The ErrorRecord to resolve. For usage in a catch block, you'd use the automatic variable $_. For usage out of a catch block, you can access the global $Error array's first error (on index 0).
+        The ErrorRecord to resolve. For usage in a catch block, you'd use the automatic variable `$PSItem`. For usage out of a catch block, you can access the global $Error array's first error (on index 0).
 
     .PARAMETER Property
         The list of properties to display from the ErrorRecord. Use "*" to display all properties.
@@ -22,16 +22,16 @@ function Resolve-ADTErrorRecord
         Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
 
     .PARAMETER ExcludeErrorRecord
-        Exclude ErrorRecord details as represented by $_.
+        Exclude ErrorRecord details as represented by $ErrorRecord.
 
     .PARAMETER ExcludeErrorInvocation
-        Exclude ErrorRecord invocation information as represented by $_.InvocationInfo.
+        Exclude ErrorRecord invocation information as represented by $ErrorRecord.InvocationInfo.
 
     .PARAMETER ExcludeErrorException
-        Exclude ErrorRecord exception details as represented by $_.Exception.
+        Exclude ErrorRecord exception details as represented by $ErrorRecord.Exception.
 
     .PARAMETER ExcludeErrorInnerException
-        Exclude ErrorRecord inner exception details as represented by $_.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
+        Exclude ErrorRecord inner exception details as represented by $ErrorRecord.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
 
     .INPUTS
         System.Management.Automation.ErrorRecord

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Resolve-ADTErrorRecord
 
 ## SYNOPSIS
-Enumerates error record details.
+Enumerates ErrorRecord details.
 
 ## SYNTAX
 
@@ -18,9 +18,8 @@ Resolve-ADTErrorRecord [-ErrorRecord] <ErrorRecord> [[-Property] <String[]>] [-E
 ```
 
 ## DESCRIPTION
-Enumerates an error record, or a collection of error record properties.
-By default, the details for the last error will be enumerated.
-This function can filter and display specific properties of the error record, and can exclude certain parts of the error details.
+Enumerates an ErrorRecord, or a collection of ErrorRecord properties.
+This function can filter and display specific properties of the ErrorRecord, and can exclude certain parts of the error details.
 
 ## EXAMPLES
 
@@ -29,35 +28,35 @@ This function can filter and display specific properties of the error record, an
 Resolve-ADTErrorRecord
 ```
 
-Enumerates the details of the last error record.
+Enumerates the details of the last ErrorRecord.
 
 ### EXAMPLE 2
 ```
 Resolve-ADTErrorRecord -Property *
 ```
 
-Enumerates all properties of the last error record.
+Enumerates all properties of the last ErrorRecord.
 
 ### EXAMPLE 3
 ```
 Resolve-ADTErrorRecord -Property InnerException
 ```
 
-Enumerates only the InnerException property of the last error record.
+Enumerates only the InnerException property of the last ErrorRecord.
 
 ### EXAMPLE 4
 ```
 Resolve-ADTErrorRecord -ExcludeErrorInvocation
 ```
 
-Enumerates the details of the last error record, excluding the invocation information.
+Enumerates the details of the last ErrorRecord, excluding the invocation information.
 
 ## PARAMETERS
 
 ### -ErrorRecord
-The error record to resolve.
-The default error record is the latest one: $global:Error\[0\].
-This parameter will also accept an array of error records.
+The ErrorRecord to resolve.
+For usage in a catch block, you'd use the automatic variable `$PSItem`.
+For usage out of a catch block, you can access the global $Error array's first error (on index 0).
 
 ```yaml
 Type: ErrorRecord
@@ -72,7 +71,7 @@ Accept wildcard characters: False
 ```
 
 ### -Property
-The list of properties to display from the error record.
+The list of properties to display from the ErrorRecord.
 Use "*" to display all properties.
 
 Default list of error properties is: Message, FullyQualifiedErrorId, ScriptStackTrace, PositionMessage, InnerException
@@ -90,7 +89,7 @@ Accept wildcard characters: True
 ```
 
 ### -ExcludeErrorRecord
-Exclude error record details as represented by $_.
+Exclude ErrorRecord details as represented by $ErrorRecord.
 
 ```yaml
 Type: SwitchParameter
@@ -105,7 +104,7 @@ Accept wildcard characters: False
 ```
 
 ### -ExcludeErrorInvocation
-Exclude error record invocation information as represented by $_.InvocationInfo.
+Exclude ErrorRecord invocation information as represented by $ErrorRecord.InvocationInfo.
 
 ```yaml
 Type: SwitchParameter
@@ -120,7 +119,7 @@ Accept wildcard characters: False
 ```
 
 ### -ExcludeErrorException
-Exclude error record exception details as represented by $_.Exception.
+Exclude ErrorRecord exception details as represented by $ErrorRecord.Exception.
 
 ```yaml
 Type: SwitchParameter
@@ -135,7 +134,7 @@ Accept wildcard characters: False
 ```
 
 ### -ExcludeErrorInnerException
-Exclude error record inner exception details as represented by $_.Exception.InnerException.
+Exclude ErrorRecord inner exception details as represented by $ErrorRecord.Exception.InnerException.
 Will retrieve all inner exceptions if there is more than one.
 
 ```yaml
@@ -160,7 +159,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### System.String
-### Displays the error record details.
+### Displays the ErrorRecord details.
 ## NOTES
 An active ADT session is NOT required to use this function.
 
