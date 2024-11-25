@@ -31,11 +31,13 @@ The advantage of using this function over ActiveSetup is that a user does not ha
 ### EXAMPLE 1
 ```
 Invoke-ADTAllUsersRegistryAction -ScriptBlock {
-```
-
 Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID
     Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
 }
+```
+
+
+Example demonstrating the setting of two values within each user's HKEY_CURRENT_USER hive.
 
 ### EXAMPLE 2
 ```

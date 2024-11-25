@@ -32,7 +32,7 @@ Invoke method on any object with or without using named parameters.
 ### EXAMPLE 1
 ```
 $ShellApp = New-Object -ComObject 'Shell.Application'
-PS C:\\\>$null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
+$null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'MinimizeAll'
 ```
 
 
@@ -41,7 +41,7 @@ Minimizes all windows.
 ### EXAMPLE 2
 ```
 $ShellApp = New-Object -ComObject 'Shell.Application'
-PS C:\\\>$null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
+$null = Invoke-ADTObjectMethod -InputObject $ShellApp -MethodName 'Explore' -Parameter @{'vDir'='C:\Windows'}
 ```
 
 

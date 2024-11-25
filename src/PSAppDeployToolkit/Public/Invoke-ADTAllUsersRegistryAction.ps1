@@ -41,6 +41,8 @@ function Invoke-ADTAllUsersRegistryAction
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'updatereliabilitydata' -Value 1 -Type DWord -SID $_.SID
         }
 
+        Example demonstrating the setting of two values within each user's HKEY_CURRENT_USER hive.
+
     .EXAMPLE
         Invoke-ADTAllUsersRegistryAction {
             Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Office\14.0\Common' -Name 'qmenable' -Value 0 -Type DWord -SID $_.SID

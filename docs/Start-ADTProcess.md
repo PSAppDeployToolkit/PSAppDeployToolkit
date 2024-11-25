@@ -53,7 +53,7 @@ Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log 
 
 ### EXAMPLE 5
 ```
-Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "/s /v`"ALLUSERS=1 /qn /L* \`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
+Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "/s /v`"ALLUSERS=1 /qn /L* `"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
 ```
 
 Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
