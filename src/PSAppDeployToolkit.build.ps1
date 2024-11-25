@@ -649,7 +649,7 @@ Add-BuildTask Build {
     }
 
     # Sign our files if we're running on main.
-    if ($env:GITHUB_ACTIONS -eq 'true' -and $env:GITHUB_REF -eq 'refs/heads/main')
+    if ($env:GITHUB_ACTIONS -eq 'true' -and $env:GITHUB_REF -in 'refs/heads/main', 'refs/heads/develop')
     {
         if (!(Get-Command -Name 'azuresigntool' -ErrorAction Ignore))
         {
@@ -663,7 +663,7 @@ Add-BuildTask Build {
     }
     else
     {
-        Write-Build Yellow '        Not running main branch in GitHub Actions, skipping code signing...'
+        Write-Build Yellow '        Not running main or develop branch in GitHub Actions, skipping code signing...'
     }
 
     # Create our templates.
