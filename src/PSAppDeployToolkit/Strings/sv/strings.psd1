@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Installation pågår. Var god vänta..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Detta fönster stängs automatiskt när installationen är klar."
         MessageRepair = "Reparation pågår. Var god vänta..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Detta fönster stängs automatiskt när reparationen är klar."
         MessageUninstall = "Avinstallation pågår. Var god vänta..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Detta fönster stängs automatiskt när avinstallationen är klar."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimera"
@@ -50,7 +50,18 @@
         Title = "Omstart Krävs"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0} kommer att fortsätta automatiskt i:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0} kommer att fortsätta automatiskt i:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - App {0}'
+            DialogMessage = 'Spara ditt arbete innan du fortsätter eftersom följande applikationer kommer att stängas automatiskt.'
+            DialogMessageNoProcesses = 'Välj Install för att fortsätta med installationen. Om du har några uppskjutna betalningar kvar kan du också välja att skjuta upp installationen.'
+            ButtonDeferRemaining = 'kvarstå'
+            ButtonLeftText = 'Skjut upp'
+            ButtonRightText = 'Stäng appar och installera'
+            ButtonRightTextNoProcesses = 'Installera'
+        }
     }
 }

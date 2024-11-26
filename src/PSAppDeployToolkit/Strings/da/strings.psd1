@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Installation i gang. Vent venligst..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Dette vindue lukker automatisk, når installationen er færdig."
         MessageRepair = "Reparere i gang. Vent venligst..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Dette vindue lukkes automatisk, når reparationen er færdig."
         MessageUninstall = "Afinstallation i gang. Vent venligst..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Dette vindue lukkes automatisk, når afinstallationen er færdig."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimere"
@@ -50,7 +50,18 @@
         Title = "Genstart Nødvendig"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0} vil automatisk fortsætte i:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0} vil automatisk fortsætte i:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - App {0}'
+            DialogMessage = 'Gem venligst dit arbejde, før du fortsætter, da de følgende applikationer lukkes automatisk.'
+            DialogMessageNoProcesses = 'Vælg Installer for at fortsætte med installationen. Hvis du har udsættelser tilbage, kan du også vælge at udskyde installationen.'
+            ButtonDeferRemaining = 'forblive'
+            ButtonLeftText = 'Udskyde'
+            ButtonRightText = 'Luk apps og installer'
+            ButtonRightTextNoProcesses = 'Installer'
+        }
     }
 }

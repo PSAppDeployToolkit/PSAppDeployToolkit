@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Installatie bezig. Even geduld..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Dette vinduet lukkes automatisk når installasjonen er fullført."
         MessageRepair = "Reparatie bezig. Even geduld..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Dette vinduet lukkes automatisk når reparasjonen er fullført."
         MessageUninstall = "Verwijderen bezig. Even geduld..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Dette vinduet lukkes automatisk når avinstallasjonen er fullført."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimaliseren"
@@ -50,7 +50,18 @@
         Title = "Herstart nodig"
     }
     WelcomePrompt = @{
-        CountdownMessage = "De {0} gaat automatisch door over:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "De {0} gaat automatisch door over:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - App {0}'
+            DialogMessage = 'Lagre arbeidet ditt før du fortsetter, da de følgende programmene lukkes automatisk.'
+            DialogMessageNoProcesses = 'Velg Installer for å fortsette med installasjonen. Hvis du har noen utsettelser igjen, kan du også velge å utsette installasjonen.'
+            ButtonDeferRemaining = 'forbli'
+            ButtonLeftText = 'Utsette'
+            ButtonRightText = 'Lukk apper og installer'
+            ButtonRightTextNoProcesses = 'Installere'
+        }
     }
 }
