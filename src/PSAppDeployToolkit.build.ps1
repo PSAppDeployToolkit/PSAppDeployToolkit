@@ -198,10 +198,7 @@ Add-BuildTask ValidateRequirements {
 Add-BuildTask DotNetBuild -Before TestModuleManifest {
     # Find Visual Studio on the current device.
     Write-Build White '      Compiling C# projects...'
-    Write-Build Gray '        Downloading vswhere.exe to find msbuild.exe...'
-    $vswhereUri = Get-GitHubReleaseAssetUri -Account Microsoft -Repository vswhere -FilePattern ($vswhereExe = 'vswhere.exe')
-    Invoke-WebRequest -UseBasicParsing -Uri $vswhereUri -OutFile ($vswhereExe = "$([System.IO.Path]::GetTempPath())$vswhereExe")
-    if (!($msbuildPath = & $vswhereExe -requires Microsoft.Component.MSBuild -find MSBuild\Current\Bin\MSBuild.exe))
+    if (!($msbuildPath = & "$([System.Environment]::GetFolderPath('ProgramFilesX86'))\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.Component.MSBuild -find MSBuild\Current\Bin\MSBuild.exe))
     {
         throw 'msbuild.exe command not found. Ensure Visual Studio is installed on this system.'
     }
