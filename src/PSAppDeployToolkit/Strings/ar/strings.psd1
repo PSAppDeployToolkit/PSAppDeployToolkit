@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "جاري التثبيت. يرجى الانتظار..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "سيتم إغلاق هذه النافذة تلقائياً عند اكتمال التثبيت."
         MessageRepair = "جارٍ إصلاح. يرجى الانتظار..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "سيتم إغلاق هذه النافذة تلقائياً عند اكتمال الإصلاح."
         MessageUninstall = "جارٍ إزالة التثبيت. يرجى الانتظار..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "سيتم إغلاق هذه النافذة تلقائياً عند اكتمال إلغاء التثبيت."
     }
     RestartPrompt = @{
         ButtonRestartLater = "تقليل"
@@ -50,7 +50,18 @@
         Title = "مطلوب إعادة التشغيل"
     }
     WelcomePrompt = @{
-        CountdownMessage = "سيستمر {0} تلقائيا في:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "سيستمر {0} تلقائيا في:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployDeployToolkit - التطبيق {0}'
+            DialogMessage = 'يرجى حفظ عملك قبل المتابعة حيث سيتم إغلاق التطبيقات التالية تلقائيًا.'
+            DialogMessageNoProcesses = 'الرجاء تحديد تثبيت لمتابعة التثبيت. إذا كان لديك أي تأجيلات متبقية، يمكنك أيضاً اختيار تأخير التثبيت.'
+            ButtonDeferRemaining = 'تبقى'
+            ButtonLeftText = 'التأجيل'
+            ButtonRightText = 'إغلاق التطبيقات وتثبيتها'
+            ButtonRightTextNoProcesses = 'التثبيت'
+        }
     }
 }

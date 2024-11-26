@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "מבצע התקנה. נא להמתין."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "חלון זה ייסגר אוטומטית עם השלמת ההתקנה."
         MessageRepair = "מבצע תיקון. נא להמתין."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "חלון זה ייסגר אוטומטית עם השלמת התיקון."
         MessageUninstall = "מבצע הסרה. נא להמתין."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "חלון זה ייסגר אוטומטית עם השלמת הסרת ההתקנה."
     }
     RestartPrompt = @{
         ButtonRestartLater = "מזער את"
@@ -50,7 +50,18 @@
         Title = "נדרש אתחול המחשב"
     }
     WelcomePrompt = @{
-        CountdownMessage = "ה {0} ימשיך באופן אוטומטי:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "ה {0} ימשיך באופן אוטומטי:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - אפליקציה {0}'
+            DialogMessage = 'אנא שמור את עבודתך לפני שתמשיך שכן היישומים הבאים ייסגרו אוטומטית.'
+            DialogMessageNoProcesses = 'אנא בחר התקן כדי להמשיך בהתקנה. אם נותרו לך דחיות, תוכל גם לבחור לדחות את ההתקנה.'
+            ButtonDeferRemaining = 'לְהִשָׁאֵר'
+            ButtonLeftText = 'לִדחוֹת'
+            ButtonRightText = 'סגור אפליקציות והתקן'
+            ButtonRightTextNoProcesses = 'לְהַתְקִין'
+        }
     }
 }

@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Asentaa. Odota..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Tämä ikkuna sulkeutuu automaattisesti, kun asennus on valmis."
         MessageRepair = "Korjaus käynnissä. Odota..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Tämä ikkuna sulkeutuu automaattisesti, kun korjaus on valmis."
         MessageUninstall = "Ohjelmistoa poistetaan. Odota..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Tämä ikkuna sulkeutuu automaattisesti, kun asennuksen poisto on valmis."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Käynnistä uudelleen myöhemmin"
@@ -50,7 +50,18 @@
         Title = "Tietokone on käynnistettävä uudelleen"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0} jatkaa automaattisesti:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0} jatkaa automaattisesti:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - Sovellus {0}'
+            DialogMessage = 'Tallenna työsi ennen kuin jatkat, sillä seuraavat sovellukset suljetaan automaattisesti.'
+            DialogMessageNoProcesses = 'Jatka asennusta valitsemalla Asenna. Jos sinulla on vielä lykkäyksiä jäljellä, voit myös lykätä asennusta.'
+            ButtonDeferRemaining = 'pysyä'
+            ButtonLeftText = 'Siirrä'
+            ButtonRightText = 'Sulje sovellukset & asenna'
+            ButtonRightTextNoProcesses = 'Asenna'
+        }
     }
 }

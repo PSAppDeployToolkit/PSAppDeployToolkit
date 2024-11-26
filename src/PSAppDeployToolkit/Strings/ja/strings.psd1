@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "インストール中です。 少々お待ちください。"
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "インストールが完了すると、このウィンドウは自動的に閉じます。"
         MessageRepair = "修復中です。 少々お待ちください。"
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "修復が完了すると、このウィンドウは自動的に閉じます。"
         MessageUninstall = "アンインストール中です。 少々お待ちください。"
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "アンインストールが完了すると、このウィンドウは自動的に閉じます。"
     }
     RestartPrompt = @{
         ButtonRestartLater = "最小 化"
@@ -50,7 +50,18 @@
         Title = "再起動が必要です"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0} は自動的に続きます:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0} は自動的に続きます:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - アプリ {0}'
+            DialogMessage = '次のアプリケーションは自動的に終了しますので、作業を続ける前に保存してください。'
+            DialogMessageNoProcesses = 'インストールを選択してインストールを続行してください。延期分が残っている場合は、インストールを延期することもできます。'
+            ButtonDeferRemaining = '残る'
+            ButtonLeftText = '延期'
+            ButtonRightText = 'アプリを閉じる＆インストール'
+            ButtonRightTextNoProcesses = 'インストール'
+        }
     }
 }

@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Εγκατάσταση σε εξέλιξη. Παρακαλούμε περιμένετε..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Αυτό το παράθυρο θα κλείσει αυτόματα όταν ολοκληρωθεί η εγκατάσταση."
         MessageRepair = "Επιδιόρθωση σε εξέλιξη. Παρακαλούμε περιμένετε..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Αυτό το παράθυρο θα κλείσει αυτόματα όταν ολοκληρωθεί η επισκευή."
         MessageUninstall = "Απεγκατάσταση σε εξέλιξη. Παρακαλούμε περιμένετε..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Αυτό το παράθυρο θα κλείσει αυτόματα όταν ολοκληρωθεί η απεγκατάσταση."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Ελαχιστοποίηση"
@@ -50,7 +50,18 @@
         Title = "Απαιτείται επανεκκίνηση"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0} θα συνεχίσει αυτόματα σε:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0} θα συνεχίσει αυτόματα σε:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - Εφαρμογή {0}'
+            DialogMessage = 'Αποθηκεύστε την εργασία σας πριν συνεχίσετε, καθώς οι ακόλουθες εφαρμογές θα κλείσουν αυτόματα.'
+            DialogMessageNoProcesses = 'Επιλέξτε Εγκατάσταση για να συνεχίσετε την εγκατάσταση. Εάν σας έχουν απομείνει αναβολές, μπορείτε επίσης να επιλέξετε να καθυστερήσετε την εγκατάσταση.'
+            ButtonDeferRemaining = 'παραμένουν'
+            ButtonLeftText = 'Αναβολή'
+            ButtonRightText = 'Κλείσιμο εφαρμογών & εγκατάσταση'
+            ButtonRightTextNoProcesses = 'Εγκαταστήστε το'
+        }
     }
 }

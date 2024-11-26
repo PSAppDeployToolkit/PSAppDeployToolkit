@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "설치 중입니다. 기다리세요..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "이 창은 설치가 완료되면 자동으로 닫힙니다."
         MessageRepair = "수리 중입니다. 기다리세요..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "이 창은 수리가 완료되면 자동으로 닫힙니다."
         MessageUninstall = "제거 중입니다. 기다리세요..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "이 창은 제거가 완료되면 자동으로 닫힙니다."
     }
     RestartPrompt = @{
         ButtonRestartLater = "최소화"
@@ -50,7 +50,18 @@
         Title = "다시 시작해야 합니다"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0}는 자동으로 계속됩니다:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0}는 자동으로 계속됩니다:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - 앱 {0}'
+            DialogMessage = '다음 애플리케이션은 자동으로 종료되므로 계속하기 전에 작업을 저장해 주세요.'
+            DialogMessageNoProcesses = '설치를 계속하려면 설치를 선택하세요. 연기할 항목이 남아 있는 경우 설치를 연기하도록 선택할 수도 있습니다.'
+            ButtonDeferRemaining = '남아있음'
+            ButtonLeftText = '연기하다'
+            ButtonRightText = '앱 닫기 및 설치'
+            ButtonRightTextNoProcesses = '설치'
+        }
     }
 }

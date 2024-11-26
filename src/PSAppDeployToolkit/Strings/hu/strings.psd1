@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Telepítés folyamatban. Kérem várjon..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Ez az ablak automatikusan bezáródik, amikor a telepítés befejeződik."
         MessageRepair = "Javítás folyamatban. Kérem várjon..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Ez az ablak automatikusan bezáródik, ha a javítás befejeződött."
         MessageUninstall = "Eltávolítás folyamatban. Kérem várjon..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Ez az ablak automatikusan bezáródik, amikor az eltávolítás befejeződik."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimalizál"
@@ -50,7 +50,18 @@
         Title = "Újraindítás szükséges"
     }
     WelcomePrompt = @{
-        CountdownMessage = "A(z) {0} automatikusan folytatódik:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "A(z) {0} automatikusan folytatódik:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - Alkalmazás {0}'
+            DialogMessage = 'Kérjük, mentse el a munkáját, mielőtt folytatná, mivel a következő alkalmazások automatikusan lezárulnak.'
+            DialogMessageNoProcesses = 'Please select Install to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.'
+            ButtonDeferRemaining = 'maradjon'
+            ButtonLeftText = 'Elhalasztás'
+            ButtonRightText = 'Alkalmazások bezárása és telepítése'
+            ButtonRightTextNoProcesses = 'Telepítse a'
+        }
     }
 }

@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Идет установка. Пожалуйста, подождите..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Это окно закроется автоматически после завершения установки."
         MessageRepair = "Идет исправление. Пожалуйста, подождите..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Это окно автоматически закроется по завершении ремонта."
         MessageUninstall = "Идет удаление. Пожалуйста, подождите..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Это окно закроется автоматически после завершения удаления."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Минимизировать"
@@ -50,7 +50,18 @@
         Title = "Требуется перезагрузка"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0} автоматически продолжится через:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0} автоматически продолжится через:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - приложение {0}'
+            DialogMessage = 'Пожалуйста, сохраните свою работу, прежде чем продолжить, так как следующие приложения будут закрыты автоматически.'
+            DialogMessageNoProcesses = 'Чтобы продолжить установку, выберите Install (Установить). Если у вас остались отсрочки, вы также можете отложить установку.'
+            ButtonDeferRemaining = 'оставаться'
+            ButtonLeftText = 'Отложить'
+            ButtonRightText = 'Закрыть приложения и установить'
+            ButtonRightTextNoProcesses = 'Установите'
+        }
     }
 }

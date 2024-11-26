@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "安裝中。請稍等。。。"
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "安裝完成後，此視窗會自動關閉。。。"
         MessageRepair = "修復中。請稍等。。。"
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "修復完成後，此視窗會自動關閉。。。"
         MessageUninstall = "卸載中。請稍等。。。"
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "卸載完成後，此視窗將自動關閉。。。"
     }
     RestartPrompt = @{
         ButtonRestartLater = "最小化"
@@ -50,7 +50,18 @@
         Title = "需重啟"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0}會自動繼續:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0}會自動繼續:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - 應用程式 {0}'
+            DialogMessage = '由於下列應用程式將自動關閉，請先保存您的工作再繼續。'
+            DialogMessageNoProcesses = '請選擇「安裝」繼續安裝。如果您有任何延遲安裝的剩餘時間，您也可以選擇延遲安裝。'
+            ButtonDeferRemaining = '留下'
+            ButtonLeftText = '延遲'
+            ButtonRightText = '關閉應用程式並安裝'
+            ButtonRightTextNoProcesses = '安裝'
+        }
     }
 }

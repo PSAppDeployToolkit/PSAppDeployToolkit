@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Kurulum devam ediyor. Lütfen bekleyiniz..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Kurulum tamamlandığında bu pencere otomatik olarak kapanacaktır."
         MessageRepair = "Onarım devam ediyor. Lütfen bekleyiniz..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Onarım tamamlandığında bu pencere otomatik olarak kapanacaktır."
         MessageUninstall = "Kaldırma işlemi devam ediyor. Lütfen bekleyiniz..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Kaldırma işlemi tamamlandığında bu pencere otomatik olarak kapanacaktır."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Simge durumuna küçült"
@@ -50,7 +50,18 @@
         Title = "Yeniden başlatma gerekmektedir"
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0} otomatik olarak devam edecektir:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0} otomatik olarak devam edecektir:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - Uygulama {0}'
+            DialogMessage = 'Aşağıdaki uygulamalar otomatik olarak kapatılacağından devam etmeden önce lütfen çalışmanızı kaydedin.'
+            DialogMessageNoProcesses = "Kuruluma devam etmek için lütfen Yükle'yi seçin. Kalan ertelemeleriniz varsa, kurulumu ertelemeyi de seçebilirsiniz."
+            ButtonDeferRemaining = 'kalır'
+            ButtonLeftText = 'Erteleme'
+            ButtonRightText = 'Uygulamaları Kapat ve Yükle'
+            ButtonRightTextNoProcesses = 'Kurulum'
+        }
     }
 }
