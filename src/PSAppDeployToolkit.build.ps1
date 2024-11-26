@@ -700,7 +700,6 @@ Add-BuildTask Build {
     Write-Build Gray '        Creating templates...'
     New-ADTTemplate -Destination $Script:ArtifactsPath -Name 'Template_v3' -Version 3 -ModulePath $Script:BuildModuleRoot
     New-ADTTemplate -Destination $Script:ArtifactsPath -Name 'Template_v4' -Version 4 -ModulePath $Script:BuildModuleRoot
-    New-ADTTemplate -Destination $Script:ArtifactsPath -Name 'Template_v4_PSCore' -Version 4 -PSCore -ModulePath $Script:BuildModuleRoot
     Write-Build Green '      ...Build Complete!'
 }
 
