@@ -115,6 +115,12 @@ function Import-ADTConfig
     $Script:Dialogs.Classic.Assets.Banner = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Banner)))
     $Script:Dialogs.Classic.BannerHeight = [System.Math]::Ceiling($Script:Dialogs.Classic.Width * ($Script:Dialogs.Classic.Assets.Banner.Height / $Script:Dialogs.Classic.Assets.Banner.Width))
 
+    # Set the app's AUMID so it doesn't just say "Windows PowerShell".
+    if ($config.UI.BalloonNotifications)
+    {
+        $null = [PSADT.LibraryInterfaces.Shell32]::SetCurrentProcessExplicitAppUserModelID($config.UI.BalloonTitle)
+    }
+
     # Change paths to user accessible ones if user isn't an admin.
     if (!$adtEnv.IsAdmin)
     {
