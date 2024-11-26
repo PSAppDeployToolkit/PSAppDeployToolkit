@@ -56,6 +56,7 @@ function Show-ADTBalloonTip
         https://psappdeploytoolkit.com
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'BalloonTipIcon', Justification = "This parameter is used via the function's PSBoundParameters dictionary, which is not something PSScriptAnalyzer understands. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -97,12 +98,6 @@ function Show-ADTBalloonTip
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-        # Set up defaults if not specified.
-        if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
-        {
-            $PSBoundParameters.Add('BalloonTipTitle', $adtSession.InstallTitle)
-        }
     }
 
     process
@@ -134,8 +129,19 @@ function Show-ADTBalloonTip
                     return
                 }
 
-                # Call the underlying function to show the balloon tip.
-                & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
+                # Build out parameters for Show-ADTBalloonTipInternal.
+                $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
+                if (!$nabtParams.ContainsKey('BalloonTipTitle'))
+                {
+                    $nabtParams.Add('BalloonTipTitle', $adtSession.InstallTitle)
+                }
+                $nabtParams.Add('ModuleAssembly', $Script:Module.Assembly)
+                $nabtParams.Add('BalloonTitle', $adtConfig.UI.BalloonTitle)
+                $nabtParams.Add('TrayIcon', $adtConfig.Assets.Logo)
+
+                # Create in an asynchronous process so that disposal is managed for us.
+                Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
+                Start-ADTProcess -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Show-ADTBalloonTipInternal'.ScriptBlock)} $(($nabtParams | Resolve-ADTBoundParameters).Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
             }
             catch
             {

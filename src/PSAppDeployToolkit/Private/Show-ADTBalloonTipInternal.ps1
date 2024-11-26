@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Show-ADTBalloonTipClassicInternal
+# MARK: Show-ADTBalloonTipInternal
 #
 #-----------------------------------------------------------------------------
 
-function Show-ADTBalloonTipClassicInternal
+function Show-ADTBalloonTipInternal
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
     [CmdletBinding(SupportsShouldProcess = $false)]

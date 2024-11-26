@@ -25,9 +25,6 @@ function New-ADTTemplate
     .PARAMETER Version
         Defaults to 4 for the standard v4 template. Use 3 for the v3 compatibility mode template.
 
-    .PARAMETER PSCore
-        Include additional dlls needed for operation under PowerShell Core (v7+).
-
     .PARAMETER Force
         If the destination folder already exists, this switch will force the creation of the new folder.
 
@@ -86,9 +83,6 @@ function New-ADTTemplate
         [System.Int32]$Version = 4,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$PSCore,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force,
 
         [Parameter(Mandatory = $false)]
@@ -141,26 +135,6 @@ function New-ADTTemplate
                 $null = New-Item -Path $templateModulePath -ItemType Directory -Force
                 Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
                 Copy-Item -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
-
-                if (!$PSCore)
-                {
-                    $folderToRemove = "$templateModulePath\lib\net8.0"
-                    $filesToRemove = @(
-                        "$folderToRemove\Microsoft.Windows.SDK.NET.dll"
-                        "$folderToRemove\WinRT.Runtime.dll"
-                    )
-                    foreach ($file in $filesToRemove)
-                    {
-                        if ([System.IO.File]::Exists($file))
-                        {
-                            Remove-Item -LiteralPath $file -Force
-                        }
-                    }
-                    if ([System.IO.Directory]::Exists($folderToRemove) -and !([System.IO.Directory]::GetFileSystemEntries($folderToRemove)))
-                    {
-                        Remove-Item -LiteralPath $folderToRemove -Recurse -Force
-                    }
-                }
 
                 # Process the generated script to ensure the Import-Module is correct.
                 if ($Version.Equals(4))
