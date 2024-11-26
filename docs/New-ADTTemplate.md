@@ -14,7 +14,7 @@ Creates a new folder containing a template front end and module folder, ready to
 
 ```
 New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-ModulePath] <String>] [[-Version] <Int32>]
- [-PSCore] [-Force] [-PassThru] [<CommonParameters>]
+ [-Force] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -98,21 +98,6 @@ Aliases:
 Required: False
 Position: 4
 Default value: 4
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PSCore
-Include additional dlls needed for operation under PowerShell Core (v7+).
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
