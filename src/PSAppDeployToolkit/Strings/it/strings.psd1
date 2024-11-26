@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Installazione in corso. Attendere prego..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Questa finestra si chiude automaticamente al termine dell'installazione."
         MessageRepair = "Riparazione in corso. Attendere prego..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Questa finestra si chiuderà automaticamente al termine della riparazione."
         MessageUninstall = "Disinstallazione in corso. Attendere prego..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Questa finestra si chiuderà automaticamente al termine della disinstallazione."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimizzare"
@@ -50,7 +50,18 @@
         Title = "Riavvio Richiesto"
     }
     WelcomePrompt = @{
-        CountdownMessage = "Il {0} continuerà automaticamente in:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "Il {0} continuerà automaticamente in:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - App {0}'
+            DialogMessage = 'Salvate il vostro lavoro prima di continuare, perché le applicazioni seguenti verranno chiuse automaticamente.'
+            DialogMessageNoProcesses = "Selezionare Installa per continuare l'installazione. Se sono rimasti dei rinvii, si può anche scegliere di ritardare l'installazione."
+            ButtonDeferRemaining = 'rimanere'
+            ButtonLeftText = 'Rinviare'
+            ButtonRightText = 'Chiudere le applicazioni e installare'
+            ButtonRightTextNoProcesses = 'Installare'
+        }
     }
 }

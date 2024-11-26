@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Inštalácia sa vykonáva. Prosím čakajte..."
-        MessageInstallDetail = "This window will close automatically when the installation is complete."
+        MessageInstallDetail = "Toto okno sa po dokončení inštalácie automaticky zatvorí."
         MessageRepair = "Vykonáva sa oprava. Prosím čakajte..."
-        MessageRepairDetail = "This window will close automatically when the repair is complete."
+        MessageRepairDetail = "Toto okno sa po dokončení opravy automaticky zatvorí."
         MessageUninstall = "Prebieha odinštalácia. Prosím čakajte..."
-        MessageUninstallDetail = "This window will close automatically when the uninstallation is complete."
+        MessageUninstallDetail = "Toto okno sa po dokončení odinštalovania automaticky zatvorí."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimalizovať"
@@ -50,7 +50,18 @@
         Title = "Je nutný reštart."
     }
     WelcomePrompt = @{
-        CountdownMessage = "{0} bude automaticky pokračovať za:"
-        CustomMessage = ""
+        Classic = @{
+            CountdownMessage = "{0} bude automaticky pokračovať za:"
+            CustomMessage = ""
+        }
+        Fluent = @{
+            Subtitle = 'PSAppDeployToolkit - Aplikácia {0}'
+            DialogMessage = 'Pred pokračovaním uložte svoju prácu, pretože nasledujúce aplikácie sa automaticky zatvoria.'
+            DialogMessageNoProcesses = 'Ak chcete pokračovať v inštalácii, vyberte možnosť Inštalovať. Ak máte ešte nejaké odklady, môžete tiež zvoliť odloženie inštalácie.'
+            ButtonDeferRemaining = 'zostať'
+            ButtonLeftText = 'Odloženie'
+            ButtonRightText = 'Zatvoriť aplikácie a nainštalovať'
+            ButtonRightTextNoProcesses = 'Inštalácia stránky'
+        }
     }
 }
