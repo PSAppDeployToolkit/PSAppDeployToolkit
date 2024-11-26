@@ -210,6 +210,10 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
     Write-Build Gray '        Determining C# solutions requiring compilation...'
     foreach ($buildItem in $Script:buildItems)
     {
+        # Define default build actions. We always need to do a release build.
+        $buildConfigs = [System.Collections.Specialized.StringCollection]'Release'
+
+        # Only build a debug version if files have been modified.
         if ($env:GITHUB_ACTIONS -ne 'true')
         {
             if (!((git status --porcelain) -match "^.{3}$([regex]::Escape($buildItem.SourcePath.Replace('\','/')))/"))
@@ -222,17 +226,21 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
                     $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
 
                     # Get the list of source files modified since the last commit date of the file we're comparing against
-                    if (!(git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SourcePath) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique))
+                    if (git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SourcePath) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique)
+                    {
+                        Write-Build Blue "          Files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($lastCommitDate), build required."
+                        $null = $buildConfigs.Add('Debug')
+                    }
+                    else
                     {
                         Write-Build Gray "          No files have been modified in $($buildItem.SourcePath), nothing to build."
-                        continue
                     }
-                    Write-Build Blue "          Files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($lastCommitDate), build required."
                 }
             }
             else
             {
                 Write-Build Blue "          Uncommitted file changes found under $($buildItem.SourcePath), build required."
+                $null = $buildConfigs.Add('Debug')
             }
         }
 
@@ -243,16 +251,20 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
 
         # Build a debug and release config of each project.
         Write-Build Gray "            Building $(($solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)))..."
-        & $msbuildPath $solutionPath -target:Rebuild -restore -p:configuration=Release -p:platform="Any CPU" -nodeReuse:false -m
-        if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
-        & $msbuildPath $solutionPath -target:Rebuild -restore -p:configuration=Debug -p:platform="Any CPU" -nodeReuse:false -m
-        if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
+        foreach ($buildType in $buildConfigs)
+        {
+            & $msbuildPath $solutionPath -target:Rebuild -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m
+            if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
 
-        # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
-        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Debug\*')
-        $buildItem.OutputPath | ForEach-Object {
-            Write-Build Gray "          Copying from  $sourcePath to $(($destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)))..."
-            Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
+            # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
+            if ($buildType.Equals('Debug'))
+            {
+                $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Debug\*')
+                $buildItem.OutputPath | ForEach-Object {
+                    Write-Build Gray "          Copying from  $sourcePath to $(($destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)))..."
+                    Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
+                }
+            }
         }
     }
 
