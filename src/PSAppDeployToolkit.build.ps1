@@ -14,7 +14,6 @@
         - CreateHelpStart
         - Build
         - IntegrationTest
-        - Archive
 
 .EXAMPLE
     Invoke-Build
@@ -118,8 +117,8 @@ $str += 'FormattingCheck'
 $str += 'Analyze', 'Test'
 $str += 'CreateHelpStart'
 $str2 = $str
-$str2 += 'Build', 'Archive'
-$str += 'Build', 'IntegrationTest', 'Archive'
+$str2 += 'Build'
+$str += 'Build', 'IntegrationTest'
 Add-BuildTask -Name . -Jobs $str
 
 # Local testing build process.
@@ -142,7 +141,6 @@ Enter-Build {
     $Script:UnitTestsPath = Join-Path -Path $Script:TestsPath -ChildPath 'Unit'
     $Script:IntegrationTestsPath = Join-Path -Path $Script:TestsPath -ChildPath 'Integration'
     $Script:ArtifactsPath = Join-Path -Path $BuildRoot -ChildPath 'Artifacts'
-    $Script:ArchivePath = Join-Path -Path $BuildRoot -ChildPath 'Archive'
     $Script:MarkdownExportPath = "$Script:ArtifactsPath\docs\"
     $Script:BuildModuleRoot = Join-Path -Path $Script:ArtifactsPath -ChildPath "Module\$Script:ModuleName"
     $Script:BuildModuleRootFile = Join-Path -Path $Script:BuildModuleRoot -ChildPath "$($Script:ModuleName).psm1"
@@ -289,13 +287,11 @@ Add-BuildTask ImportModuleManifest {
     Write-Build Green "      ...$Script:ModuleName imported successfully"
 }
 
-# Synopsis: Clean and reset Artifacts and Archive directories.
+# Synopsis: Clean and reset Artifacts directory.
 Add-BuildTask Clean {
-    Write-Build White '      Clean up our Artifacts/Archive directory...'
+    Write-Build White '      Clean up our Artifacts directory...'
     $null = Remove-Item $Script:ArtifactsPath -Force -Recurse -ErrorAction Ignore
     $null = New-Item $Script:ArtifactsPath -ItemType Directory
-    $null = Remove-Item $Script:ArchivePath -Force -Recurse -ErrorAction Ignore
-    $null = New-Item $Script:ArchivePath -ItemType Directory
     Write-Build Green '      ...Clean Complete!'
 }
 
@@ -748,29 +744,4 @@ Add-BuildTask IntegrationTest {
         Assert-Build($numberFails -eq 0) ('Failed "{0}" unit tests.' -f $numberFails)
         Write-Build Green '      ...Pester Integration Tests Complete!'
     }
-}
-
-# Synopsis: Creates an archive of the built module.
-Add-BuildTask Archive {
-    # Set up required paths.
-    Write-Build White '        Performing Archive...'
-    if (Test-Path -Path ($archivePath = Join-Path -Path $BuildRoot -ChildPath Archive))
-    {
-        $null = Remove-Item -Path $archivePath -Recurse -Force
-    }
-    $null = New-Item -Path $archivePath -ItemType Directory -Force
-
-    # Add in required assemblies for Windows PowerShell.
-    if ($PSEdition -eq 'Desktop')
-    {
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-    }
-
-    # Perform archive process.
-    Get-ChildItem -Path $Script:ArtifactsPath -Directory -Exclude ccReport, testOutput | ForEach-Object {
-        $zipFileName = '{0}_{1}_{2}.zip' -f $Script:ModuleName, $Script:ModuleVersion, $_.Name
-        $zipFilePath = Join-Path -Path $archivePath -ChildPath $zipFileName
-        [System.IO.Compression.ZipFile]::CreateFromDirectory($_.FullName, $zipFilePath)
-    }
-    Write-Build Green '        ...Archive Complete!'
 }

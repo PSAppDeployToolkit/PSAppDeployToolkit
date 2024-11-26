@@ -63,12 +63,40 @@ jobs:
       with:
         name: pester-results
         path: .\src\Artifacts\testOutput
-        if-no-files-found: warn
+        if-no-files-found: error
         overwrite: true
-    - name: Upload Module
+    - name: Upload code coverage results
       uses: actions/upload-artifact@v4
       with:
-        name: zip-archive
-        path: .\src\Archive
-        if-no-files-found: warn
+        name: cc-results
+        path: .\src\Artifacts\ccReport
+        if-no-files-found: error
+        overwrite: true
+    - name: Upload module
+      uses: actions/upload-artifact@v4
+      with:
+        name: PSAppDeployToolkit
+        path: .\src\Artifacts\Module
+        if-no-files-found: error
+        overwrite: true
+    - name: Upload v3 module template
+      uses: actions/upload-artifact@v4
+      with:
+        name: PSAppDeployToolkit_Template_v3
+        path: .\src\Artifacts\Template_v3
+        if-no-files-found: error
+        overwrite: true
+    - name: Upload v4 module template
+      uses: actions/upload-artifact@v4
+      with:
+        name: PSAppDeployToolkit_Template_v4
+        path: .\src\Artifacts\Template_v4
+        if-no-files-found: error
+        overwrite: true
+    - name: Upload Docusaurus files
+      uses: actions/upload-artifact@v4
+      with:
+        name: Docusaurus_Documents
+        path: .\src\Artifacts\Docusaurus
+        if-no-files-found: error
         overwrite: true
