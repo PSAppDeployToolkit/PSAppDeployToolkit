@@ -130,18 +130,17 @@ function Show-ADTBalloonTip
                 }
 
                 # Build out parameters for Show-ADTBalloonTipInternal.
-                $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
+                $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude BalloonTipTime
                 if (!$nabtParams.ContainsKey('BalloonTipTitle'))
                 {
                     $nabtParams.Add('BalloonTipTitle', $adtSession.InstallTitle)
                 }
-                $nabtParams.Add('ModuleAssembly', $Script:Module.Assembly)
-                $nabtParams.Add('BalloonTitle', $adtConfig.UI.BalloonTitle)
-                $nabtParams.Add('TrayIcon', $adtConfig.Assets.Logo)
+                $nabtParams.Add('Icon', [PSADT.Shared.Utility]::ConvertImageToIcon([System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($adtConfig.Assets.Logo)))))
+                $nabtParams.Add('Visible', $true)
 
                 # Create in an asynchronous process so that disposal is managed for us.
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                Start-ADTProcess -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Show-ADTBalloonTipInternal'.ScriptBlock)} $(($nabtParams | Resolve-ADTBoundParameters).Replace('"', '\"'))")" -NoWait -WindowStyle Hidden -CreateNoWindow
+                ([System.Windows.Forms.NotifyIcon]$nabtParams).ShowBalloonTip($BalloonTipTime)
             }
             catch
             {
