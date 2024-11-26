@@ -579,7 +579,7 @@ namespace PSADT.Module
                 // Report on all determined system info.
                 WriteLogEntry($"Computer Name is [{ADTEnv["envComputerNameFQDN"]}].");
                 WriteLogEntry($"Current User is [{ADTEnv["ProcessNTAccount"]}].");
-                WriteLogEntry($"OS Version is [{ADTEnv["envOSName"]}{((ADTEnv["envOSServicePack"] is string envOSServicePack) && !string.IsNullOrWhiteSpace(envOSServicePack) ? $" {envOSServicePack}" : string.Empty)} {ADTEnv["envOSArchitecture"]} {ADTEnv["envOSVersion"]}].");
+                WriteLogEntry($"OS Version is [{ADTEnv["envOSName"]}{$" {ADTEnv["envOSServicePack"]}".Trim()} {ADTEnv["envOSArchitecture"]} {ADTEnv["envOSVersion"]}].");
                 WriteLogEntry($"OS Type is [{ADTEnv["envOSProductTypeName"]}].");
                 WriteLogEntry($"Hardware Platform is [{ADTEnv["envHardwareType"]}].");
                 WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{ADTEnv["currentLanguage"]}] and UI language is [{ADTEnv["currentUILanguage"]}].");
@@ -871,7 +871,7 @@ namespace PSADT.Module
             }
 
             // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
-            string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentTypeName.ToLower()}".Trim() : $"{ADTEnv["appDeployToolkitName"]} deployment";
+            string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentTypeName.ToLower()}" : $"{ADTEnv["appDeployToolkitName"]} deployment";
 
             // Process resulting exit code.
             string deploymentStatus = GetDeploymentStatus();
@@ -1057,7 +1057,7 @@ namespace PSADT.Module
                             // spaces. As such, replace all spaces and empty lines with a punctuation space.
                             // C# identifies this character as whitespace but OneTrace does not so it works.
                             // The empty line feed at the end is required by OneTrace to format correctly.
-                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Contains("\n") ? (string.Join("\n", msg.Replace("\r", null).Trim().Replace(' ', (char)0x2008).Split((char)10).Select(static m => Regex.Replace(m, "^$", $"{(char)0x2008}"))).Replace("\n", "\r\n") + "\r\n") : msg))));
+                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Contains((char)10) ? (string.Join("\n", msg.Replace("\r", null).Trim().Replace(' ', (char)0x2008).Split((char)10).Select(static m => Regex.Replace(m, "^$", $"{(char)0x2008}"))).Replace("\n", "\r\n") + "\r\n") : msg))));
                             break;
                         case "Legacy":
                             logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg))));
