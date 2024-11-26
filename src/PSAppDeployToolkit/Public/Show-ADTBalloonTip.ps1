@@ -102,8 +102,8 @@ function Show-ADTBalloonTip
 
     process
     {
-        # Don't allow toast notifications with fluent dialogs at this time.
-        if ($adtConfig.UI.DialogStyle -eq 'Fluent')
+        # Don't allow toast notifications with fluent dialogs unless this function was explicitly requested by the caller.
+        if (($adtConfig.UI.DialogStyle -eq 'Fluent') -and ((Get-PSCallStack)[1].Command -match '^(Show|Close)-ADTInstallationProgress$'))
         {
             return
         }
