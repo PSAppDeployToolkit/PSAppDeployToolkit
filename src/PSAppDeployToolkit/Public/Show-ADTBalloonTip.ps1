@@ -135,7 +135,7 @@ function Show-ADTBalloonTip
                 {
                     $nabtParams.Add('BalloonTipTitle', $adtSession.InstallTitle)
                 }
-                $nabtParams.Add('Icon', [PSADT.Shared.Utility]::ConvertImageToIcon([System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($adtConfig.Assets.Logo)))))
+                $nabtParams.Add('Icon', $Script:Dialogs.Classic.Assets.Icon)
                 $nabtParams.Add('Visible', $true)
 
                 # Create in an asynchronous process so that disposal is managed for us.
