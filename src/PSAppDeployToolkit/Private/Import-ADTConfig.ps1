@@ -118,8 +118,9 @@ function Import-ADTConfig
     # Set the app's AUMID so it doesn't just say "Windows PowerShell".
     if ($config.UI.BalloonNotifications -and ![PSADT.LibraryInterfaces.Shell32]::SetCurrentProcessExplicitAppUserModelID($config.UI.BalloonTitle))
     {
-        [Microsoft.Win32.Registry]::SetValue("HKEY_CLASSES_ROOT\AppUserModelId\$($config.UI.BalloonTitle)", 'DisplayName', $config.UI.BalloonTitle, [Microsoft.Win32.RegistryValueKind]::String)
-        [Microsoft.Win32.Registry]::SetValue("HKEY_CLASSES_ROOT\AppUserModelId\$($config.UI.BalloonTitle)", 'IconUri', $config.Assets.Logo, [Microsoft.Win32.RegistryValueKind]::ExpandString)
+        $regKey = "$(if ($adtEnv.IsAdmin) { 'HKEY_CLASSES_ROOT' } else { 'HKEY_CURRENT_USER\Software\Classes' })\AppUserModelId\$($config.UI.BalloonTitle)"
+        [Microsoft.Win32.Registry]::SetValue($regKey, 'DisplayName', $config.UI.BalloonTitle, [Microsoft.Win32.RegistryValueKind]::String)
+        [Microsoft.Win32.Registry]::SetValue($regKey, 'IconUri', $config.Assets.Logo, [Microsoft.Win32.RegistryValueKind]::ExpandString)
     }
 
     # Change paths to user accessible ones if user isn't an admin.
