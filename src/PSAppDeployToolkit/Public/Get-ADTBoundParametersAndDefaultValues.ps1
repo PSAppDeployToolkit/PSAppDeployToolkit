@@ -160,10 +160,35 @@ function Get-ADTBoundParametersAndDefaultValues
                 # Open dictionary to store all params and their values to return.
                 $obj = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
 
+                # Inject our already bound parameters into above object.
+                $Invocation.BoundParameters.GetEnumerator() | & {
+                    process
+                    {
+                        # Filter out excluded values.
+                        if ($Exclude -and $Exclude.Contains($_.Key))
+                        {
+                            return
+                        }
+                        $obj.Add($_.Key, $_.Value)
+                    }
+                }
+
                 # Build out the dictionary for returning.
                 $parameters | & {
                     process
                     {
+                        # Filter out parameters without a default value.
+                        if ($null -eq $_.DefaultValue)
+                        {
+                            return
+                        }
+
+                        # Filter out parameters already bound.
+                        if ($obj.ContainsKey($_.Name.VariablePath.UserPath))
+                        {
+                            return
+                        }
+
                         # Filter out excluded values.
                         if ($Exclude -and $Exclude.Contains($_.Name.VariablePath.UserPath))
                         {
@@ -182,23 +207,16 @@ function Get-ADTBoundParametersAndDefaultValues
                             return
                         }
 
-                        # Add the parameter and its value, favouring a bound parameter over a default value.
-                        if ($Invocation.BoundParameters.ContainsKey($_.Name.VariablePath.UserPath))
+                        # Add the parameter and its value.
+                        switch ($_)
                         {
-                            $obj.Add($_.Name.VariablePath.UserPath, $Invocation.BoundParameters.($_.Name.VariablePath.UserPath))
-                        }
-                        elseif ($_.DefaultValue)
-                        {
-                            switch ($_)
+                            { $_.DefaultValue -is [System.Management.Automation.Language.HashtableAst] }
                             {
-                                { $_.DefaultValue -is [System.Management.Automation.Language.HashtableAst] }
-                                {
-                                    $obj.Add($_.Name.VariablePath.UserPath, $_.DefaultValue.SafeGetValue())
-                                }
-                                default
-                                {
-                                    $obj.Add($_.Name.VariablePath.UserPath, $_.DefaultValue.Value)
-                                }
+                                $obj.Add($_.Name.VariablePath.UserPath, $_.DefaultValue.SafeGetValue())
+                            }
+                            default
+                            {
+                                $obj.Add($_.Name.VariablePath.UserPath, $_.DefaultValue.Value)
                             }
                         }
                     }

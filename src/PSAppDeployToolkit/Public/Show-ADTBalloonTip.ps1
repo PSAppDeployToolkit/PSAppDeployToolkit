@@ -98,6 +98,12 @@ function Show-ADTBalloonTip
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
+        {
+            $PSBoundParameters.Add('BalloonTipTitle', $adtSession.InstallTitle)
+        }
     }
 
     process
@@ -131,10 +137,6 @@ function Show-ADTBalloonTip
 
                 # Build out parameters for Show-ADTBalloonTipInternal.
                 $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude BalloonTipTime
-                if (!$nabtParams.ContainsKey('BalloonTipTitle'))
-                {
-                    $nabtParams.Add('BalloonTipTitle', $adtSession.InstallTitle)
-                }
                 $nabtParams.Add('Icon', $Script:Dialogs.Classic.Assets.Icon)
                 $nabtParams.Add('Visible', $true)
 
