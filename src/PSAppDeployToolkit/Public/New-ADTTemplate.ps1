@@ -110,10 +110,7 @@ function New-ADTTemplate
         {
             try
             {
-                if (![System.IO.Directory]::Exists($Destination))
-                {
-                    $null = New-Item -Path $Destination -ItemType Directory -Force
-                }
+                # Create directories.
                 if ([System.IO.Directory]::Exists($templatePath) -and [System.IO.Directory]::GetFileSystemEntries($templatePath))
                 {
                     if (!$Force)
@@ -129,24 +126,26 @@ function New-ADTTemplate
                     }
                     $null = Remove-Item -LiteralPath $templatePath -Recurse -Force
                 }
-
                 $null = New-Item -Path "$templatePath\Files" -ItemType Directory -Force
                 $null = New-Item -Path "$templatePath\SupportFiles" -ItemType Directory -Force
                 $null = New-Item -Path $templateModulePath -ItemType Directory -Force
+
+                # Copy in the module and the frontend files.
                 Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
                 Copy-Item -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
 
                 # Process the generated script to ensure the Import-Module is correct.
                 if ($Version.Equals(4))
                 {
-                    $scriptText = [System.IO.File]::ReadAllText(($scriptFile = "$templateModulePath\..\Invoke-AppDeployToolkit.ps1"))
+                    $scriptText = [System.IO.File]::ReadAllText(($scriptFile = "$templatePath\Invoke-AppDeployToolkit.ps1"))
                     $scriptText = $scriptText.Replace("`$PSScriptRoot\..\..\..\$moduleName", "`$PSScriptRoot\$moduleName")
                     [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
                 }
 
+                # Return a DirectoryInfo object if passing through.
                 if ($PassThru)
                 {
-                    Get-Item -LiteralPath $templatePath
+                    return (Get-Item -LiteralPath $templatePath)
                 }
             }
             catch
