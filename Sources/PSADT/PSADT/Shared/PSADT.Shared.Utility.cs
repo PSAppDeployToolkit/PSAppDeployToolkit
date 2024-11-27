@@ -199,22 +199,13 @@ namespace PSADT.Shared
                 }
                 else if (entry.Value is IEnumerable enumerable)
                 {
-                    foreach (object itemOuter in enumerable)
+                    if (enumerable.OfType<string>().ToArray() is string[] strings)
                     {
-                        if (itemOuter is string strItem)
-                        {
-                            List<string> listItems = [];
-                            foreach (string itemInner in enumerable)
-                            {
-                                listItems.Add(itemInner.Replace("'", "''"));
-                            }
-                            val = $"'{string.Join("','", listItems)}'";
-                        }
-                        else
-                        {
-                            val = $"'{string.Join("','", enumerable)}'";
-                        }
-                        break;
+                        val = $"'{string.Join("','", strings.Select(s => s.Replace("'", "''")))}'";
+                    }
+                    else
+                    {
+                        val = string.Join(",", enumerable);
                     }
                 }
                 else if (entry.Value is not SwitchParameter)
