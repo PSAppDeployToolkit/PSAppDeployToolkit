@@ -128,14 +128,11 @@ function Close-ADTSession
             $null = $Script:ADT.Sessions.Remove($adtSession)
         }
 
-        # Return early if this wasn't the last session.
+        # Hand over to our backend closure routine if this was the last session.
         if ($Script:ADT.Sessions.Count)
         {
-            return
+            Exit-ADTInvocation -ExitCode $ExitCode -BypassShellExit:($adtSession.IsRunspaceOrigin()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
         }
-
-        # Hand over to our backend closure routine. This is split as we might need to call it before a session is instantiated.
-        Exit-ADTInvocation -ExitCode $ExitCode -BypassShellExit:($adtSession.IsRunspaceOrigin()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
     }
 
     end
