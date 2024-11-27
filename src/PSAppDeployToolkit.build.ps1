@@ -517,23 +517,7 @@ Add-BuildTask CreateExternalHelp -After CreateMarkdownHelp $null; $null = {
 # Synopsis: Build docusaurus help files from our markdown exports.
 Add-BuildTask CreateDocusaurusHelp -After CreateMarkdownHelp {
     Write-Build Gray '           Generating docusaurus files...'
-    $repoName = 'Docusaurus.Powershell'
-    $moduleName = "Alt3.$repoName"
-    $repoUri = "https://github.com/PSAppDeployToolkit/$($repoName).git"
-    $repoBranch = 'buildFix'
-    $repoPath = "$([System.IO.Path]::GetTempPath())$repoName"
-    Write-Build Gray "             Cloning our $moduleName fork..."
-    Remove-Item -LiteralPath $repoPath -Recurse -Force -Confirm:$false -ErrorAction Ignore
-    git clone -b $repoBranch $repoUri $repoPath
-
-    Write-Build Gray "             Compile the $moduleName module..."
-    & "$repoPath\build-module.ps1"
-
-    Write-Build Gray "             Import our compiled $moduleName module..."
-    Import-Module -Name (Get-Item -Path "$repoPath\Output\$moduleName\*\$moduleName.psd1").FullName
-
-    Write-Build Gray '             Generate Docusaurus help files...'
-    New-DocusaurusHelp -Module $Script:ModuleName -MarkdownCachePath $Script:MarkdownExportPath -DocsFolder "$Script:ArtifactsPath\Docusaurus" -NoPlaceHolderExamples
+    New-DocusaurusHelp -PlatyPSMarkdownPath $Script:MarkdownExportPath -DocsFolder "$Script:ArtifactsPath\Docusaurus" -NoPlaceHolderExamples
     Write-Build Gray '           ...Docusaurus generation complete.'
 }
 

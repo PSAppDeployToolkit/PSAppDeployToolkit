@@ -96,7 +96,7 @@ jobs:
     - name: Upload Docusaurus files
       uses: actions/upload-artifact@v4
       with:
-        name: Docusaurus_Documents
+        name: docusaurus-docs
         path: .\src\Artifacts\Docusaurus
         if-no-files-found: error
         overwrite: true
