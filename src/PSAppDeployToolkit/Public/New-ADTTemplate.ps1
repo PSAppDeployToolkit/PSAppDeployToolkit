@@ -137,6 +137,14 @@ function New-ADTTemplate
                 Copy-Item -LiteralPath "$ModulePath\Config" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$ModulePath\Strings" -Destination $templatePath -Recurse -Force
 
+                # Make the shipped module and its files read-only.
+                $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
+                    process
+                    {
+                        $_.Attributes = 'ReadOnly'
+                    }
+                }
+
                 # Process the generated script to ensure the Import-Module is correct.
                 if ($Version.Equals(4))
                 {
