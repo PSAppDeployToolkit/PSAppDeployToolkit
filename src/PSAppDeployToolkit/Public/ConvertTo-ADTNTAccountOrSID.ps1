@@ -110,9 +110,7 @@ function ConvertTo-ADTNTAccountOrSID
         {
             SIDToNTAccount
             {
-                $msg = "the SID [$SID] to an NT Account name"
-                Write-ADTLogEntry -Message "Converting $msg."
-
+                Write-ADTLogEntry -Message "Converting $(($msg = "the SID [$SID] to an NT Account name"))."
                 try
                 {
                     return [System.Security.Principal.SecurityIdentifier]::new($SID).Translate([System.Security.Principal.NTAccount])
@@ -125,9 +123,7 @@ function ConvertTo-ADTNTAccountOrSID
             }
             NTAccountToSID
             {
-                $msg = "the NT Account [$AccountName] to a SID"
-                Write-ADTLogEntry -Message "Converting $msg."
-
+                Write-ADTLogEntry -Message "Converting $(($msg = "the NT Account [$AccountName] to a SID"))."
                 try
                 {
                     return [System.Security.Principal.NTAccount]::new($AccountName).Translate([System.Security.Principal.SecurityIdentifier])
@@ -140,10 +136,8 @@ function ConvertTo-ADTNTAccountOrSID
             }
             WellKnownName
             {
-                $msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"
-                Write-ADTLogEntry -Message "Converting $msg."
-
                 # Get the SID for the root domain.
+                Write-ADTLogEntry -Message "Converting $(($msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"))."
                 $DomainSid = if (!$LocalHost)
                 {
                     try

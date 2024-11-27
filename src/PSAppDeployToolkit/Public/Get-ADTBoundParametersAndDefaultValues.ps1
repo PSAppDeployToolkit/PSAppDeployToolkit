@@ -165,11 +165,10 @@ function Get-ADTBoundParametersAndDefaultValues
                     process
                     {
                         # Filter out excluded values.
-                        if ($Exclude -and $Exclude.Contains($_.Key))
+                        if (!$Exclude -or !$Exclude.Contains($_.Key))
                         {
-                            return
+                            $obj.Add($_.Key, $_.Value)
                         }
-                        $obj.Add($_.Key, $_.Value)
                     }
                 }
 
