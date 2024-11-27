@@ -22,6 +22,7 @@ Fixes: <https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/12345>
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
 - [ ] I have tested my changes to prove my fix is effective
+- [ ] I have tested that the module can build following my changes
 - [ ] I have made sure that any script file-encoding is set to UTF8 with BOM, i.e. unchanged.
 
 ## How Has This Been Tested?
