@@ -11,7 +11,9 @@ function Show-ADTBalloonTip
         Displays a balloon tip notification in the system tray.
 
     .DESCRIPTION
-        Displays a balloon tip notification in the system tray. This function can be used to show notifications to the user with customizable text, title, icon, and display duration. For Windows 10 OS and above, a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
+        Displays a balloon tip notification in the system tray. This function can be used to show notifications to the user with customizable text, title, icon, and display duration.
+
+        For Windows 10 and above, balloon tips automatically get translated by the system into toast notifications.
 
     .PARAMETER BalloonTipText
         Text of the balloon tip.
@@ -44,8 +46,6 @@ function Show-ADTBalloonTip
 
     .NOTES
         An active ADT session is NOT required to use this function.
-
-        For Windows 10 OS and above, a Toast notification is displayed in place of a balloon tip if toast notifications are enabled in the XML config file.
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com
