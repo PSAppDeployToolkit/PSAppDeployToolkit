@@ -211,7 +211,7 @@ function Show-ADTInstallationPrompt
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
-                    Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously with the parameters: [$paramsString]."
+                    Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously with the parameters: [$($paramsString.Replace("''", "'"))]."
                     Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "$(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & (Import-Module -FullyQualifiedName @{ ModuleName = '$("$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1".Replace("'", "''"))'; Guid = '$($MyInvocation.MyCommand.Module.Guid)'; ModuleVersion = '$($MyInvocation.MyCommand.Module.Version)' } -PassThru) { & `$CommandTable.'Initialize-ADTModule' -ScriptDirectory '$($Script:ADT.Directories.Script.Replace("'", "''"))'; `$null = & `$CommandTable.'$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)' $($paramsString.Replace('"', '\"')) }" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
@@ -223,7 +223,7 @@ function Show-ADTInstallationPrompt
                 }
 
                 # Call the underlying function to open the message prompt.
-                Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$paramsString]."
+                Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($paramsString.Replace("''", "'"))]."
                 return & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
             }
             catch
