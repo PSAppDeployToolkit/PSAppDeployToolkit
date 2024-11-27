@@ -71,14 +71,12 @@ function Import-ADTModuleDataFile
         }
     }
 
-    # Remove parameters not compatible with Import-LocalizedData from $PSBoundParameters.
-    $null = $PSBoundParameters.Remove('IgnorePolicy')
-
     # Establish directory paths for the specified input.
     $moduleDirectory = $Script:ADT.Directories.Defaults.([regex]::Replace($BaseDirectory, '^.+\\', [System.String]::Empty))
     $callerDirectory = $BaseDirectory
 
     # Import the default data first and foremost.
+    $null = $PSBoundParameters.Remove('IgnorePolicy')
     $PSBoundParameters.BaseDirectory = $moduleDirectory
     $importedData = Import-LocalizedData @PSBoundParameters
 
