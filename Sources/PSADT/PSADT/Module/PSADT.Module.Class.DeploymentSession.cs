@@ -631,8 +631,8 @@ namespace PSADT.Module
                             if (!string.IsNullOrWhiteSpace((string)ModuleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
                             {
                                 WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account Setup phase.");
-                                var regKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync";
-                                if (null == ModuleSessionState.InvokeProvider.Property.Get([regKey], null, false).Where(obj => (obj.Properties["IsSyncDone"] is PSPropertyInfo syncDone) && syncDone.Value.Equals(1)).FirstOrDefault())
+                                var fsRegKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync";
+                                if (null == ModuleSessionState.InvokeProvider.Property.Get([fsRegKey], null, false).Where(obj => (obj.Properties["IsSyncDone"] is PSPropertyInfo syncDone) && syncDone.Value.Equals(1)).FirstOrDefault())
                                 {
                                     WriteLogEntry("The ESP User Account Setup phase is still in progress as IsSyncDone was not found, changing deployment mode to silent.");
                                     _deployMode = "Silent";
