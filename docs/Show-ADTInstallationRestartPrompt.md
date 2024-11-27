@@ -27,14 +27,14 @@ It also supports silent mode where the restart can be triggered without user int
 
 ### EXAMPLE 1
 ```
-Show-ADTInstallationRestartPromptClassic -NoCountdown
+Show-ADTInstallationRestartPrompt -NoCountdown
 ```
 
 Displays a restart prompt without a countdown.
 
 ### EXAMPLE 2
 ```
-Show-ADTInstallationRestartPromptClassic -Countdownseconds 300
+Show-ADTInstallationRestartPrompt -Countdownseconds 300
 ```
 
 Displays a restart prompt with a 300-second countdown.

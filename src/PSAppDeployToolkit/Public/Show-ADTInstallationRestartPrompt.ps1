@@ -42,12 +42,12 @@ function Show-ADTInstallationRestartPrompt
         This function does not generate any output.
 
     .EXAMPLE
-        Show-ADTInstallationRestartPromptClassic -NoCountdown
+        Show-ADTInstallationRestartPrompt -NoCountdown
 
         Displays a restart prompt without a countdown.
 
     .EXAMPLE
-        Show-ADTInstallationRestartPromptClassic -Countdownseconds 300
+        Show-ADTInstallationRestartPrompt -Countdownseconds 300
 
         Displays a restart prompt with a 300-second countdown.
 
