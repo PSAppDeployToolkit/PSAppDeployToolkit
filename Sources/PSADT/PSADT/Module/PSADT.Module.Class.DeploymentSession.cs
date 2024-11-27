@@ -548,7 +548,7 @@ namespace PSADT.Module
                     }
                     if ((null != _deployAppScriptParameters) && (_deployAppScriptParameters.Count > 0))
                     {
-                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters)}].");
+                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters).Replace("''", "'")}].");
                     }
                 }
                 var adtDirectories = (PSObject)ADTData.Properties["Directories"].Value;
