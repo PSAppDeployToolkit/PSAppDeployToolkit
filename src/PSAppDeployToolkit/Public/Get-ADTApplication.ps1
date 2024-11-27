@@ -121,6 +121,7 @@ function Get-ADTApplication
     {
         # Announce start.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $msiProductCodeRegex = Get-ADTMsiProductCodeRegexPattern
         $updatesSkippedCounter = 0
         $uninstallKeyPaths = $(
             'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
@@ -177,12 +178,6 @@ function Get-ADTApplication
                             return
                         }
 
-                        # Apply name filter if specified.
-                        if ($nameFilterScript -and !(& $nameFilterScript))
-                        {
-                            return
-                        }
-
                         # Bypass any updates or hotfixes.
                         if (!$IncludeUpdatesAndHotfixes -and ($_.DisplayName -match '((?i)kb\d+|(Cumulative|Security) Update|Hotfix)'))
                         {
@@ -190,8 +185,14 @@ function Get-ADTApplication
                             return
                         }
 
+                        # Apply name filter if specified.
+                        if ($nameFilterScript -and !(& $nameFilterScript))
+                        {
+                            return
+                        }
+
                         # Apply ProductCode filter if specified.
-                        $appMsiGuid = if ($_.PSChildName -match '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$') { $_.PSChildName }
+                        $appMsiGuid = if ($_.PSChildName -match $msiProductCodeRegex) { $_.PSChildName }
                         if ($appMsiGuid -and $ProductCode -and ($ProductCode -notcontains $appMsiGuid))
                         {
                             return
