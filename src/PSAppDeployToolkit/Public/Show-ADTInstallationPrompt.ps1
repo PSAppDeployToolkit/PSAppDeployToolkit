@@ -206,7 +206,7 @@ function Show-ADTInstallationPrompt
                 }
 
                 # Resolve the bound parameters to a string.
-                $paramsString = $PSBoundParameters | Resolve-ADTBoundParameters
+                $paramsString = [PSADT.Shared.Utility]::ConvertDictToPowerShellArgs($PSBoundParameters)
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
