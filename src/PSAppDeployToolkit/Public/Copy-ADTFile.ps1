@@ -181,12 +181,7 @@ function Copy-ADTFile
                 {
                     if (!(Test-Path -Path $srcPath))
                     {
-                        if ($ContinueFileCopyOnError)
-                        {
-                            Write-ADTLogEntry -Message "Source path [$srcPath] not found. Will continue due to ContinueFileCopyOnError = `$true." -Severity 2
-                            continue
-                        }
-                        else
+                        if (!$ContinueFileCopyOnError)
                         {
                             Write-ADTLogEntry -Message "Source path [$srcPath] not found." -Severity 2
                             $naerParams = @{
@@ -198,6 +193,8 @@ function Copy-ADTFile
                             }
                             Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
                         }
+                        Write-ADTLogEntry -Message "Source path [$srcPath] not found. Will continue due to ContinueFileCopyOnError = `$true." -Severity 2
+                        continue
                     }
 
                     # Pre-create destination folder if it does not exist; Robocopy will auto-create non-existent destination folders, but pre-creating ensures we can use Resolve-Path.
