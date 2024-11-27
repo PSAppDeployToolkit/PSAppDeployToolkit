@@ -137,6 +137,9 @@ function New-ADTTemplate
                 Copy-Item -LiteralPath "$ModulePath\Config" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$ModulePath\Strings" -Destination $templatePath -Recurse -Force
 
+                # Remove any PDB files that might have snuck in.
+                Get-ChildItem -LiteralPath $templatePath -Filter *.pdb -Recurse | Remove-Item -Force
+
                 # Make the shipped module and its files read-only.
                 $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
                     process
