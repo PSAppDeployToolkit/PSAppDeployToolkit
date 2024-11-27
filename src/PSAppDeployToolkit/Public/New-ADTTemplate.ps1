@@ -128,17 +128,29 @@ function New-ADTTemplate
                 }
                 $null = New-Item -Path "$templatePath\Files" -ItemType Directory -Force
                 $null = New-Item -Path "$templatePath\SupportFiles" -ItemType Directory -Force
-                $null = New-Item -Path $templateModulePath -ItemType Directory -Force
 
-                # Copy in the module, the frontend files, and the config/assets/strings.
-                Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
+                # Copy in the frontend files and the config/assets/strings.
                 Copy-Item -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$ModulePath\Assets" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$ModulePath\Config" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$ModulePath\Strings" -Destination $templatePath -Recurse -Force
 
-                # Remove any PDB files that might have snuck in.
-                Get-ChildItem -LiteralPath $templatePath -Filter *.pdb -Recurse | Remove-Item -Force
+                # Remove any digital signatures from the ps*1 files.
+                if (Test-ADTModuleIsReleaseBuild)
+                {
+                    Get-ChildItem -Path "$templatePath\*.ps*1" -Recurse | & {
+                        process
+                        {
+                            $fileLines = [System.IO.File]::ReadAllLines($_.FullName)
+                            $lastLine = $($fileLines -match '^# SIG # Begin signature block$') - 2
+                            [System.IO.File]::WriteAllLines($_.FullName, $fileLines[0..$lastLine])
+                        }
+                    }
+                }
+
+                # Copy in the module files.
+                $null = New-Item -Path $templateModulePath -ItemType Directory -Force
+                Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
 
                 # Make the shipped module and its files read-only.
                 $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
@@ -147,6 +159,9 @@ function New-ADTTemplate
                         $_.Attributes = 'ReadOnly'
                     }
                 }
+
+                # Remove any PDB files that might have snuck in.
+                Get-ChildItem -LiteralPath $templatePath -Filter *.pdb -Recurse | Remove-Item -Force
 
                 # Process the generated script to ensure the Import-Module is correct.
                 if ($Version.Equals(4))

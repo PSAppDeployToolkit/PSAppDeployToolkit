@@ -75,6 +75,19 @@ function Import-ADTModuleDataFile
     $moduleDirectory = $Script:ADT.Directories.Defaults.([regex]::Replace($BaseDirectory, '^.+\\', [System.String]::Empty))
     $callerDirectory = $BaseDirectory
 
+    # If we're running a release module, ensure the psd1 files haven't been tampered with.
+    if ((Test-ADTModuleIsReleaseBuild) -and ($badFiles = Get-ChildItem -LiteralPath $moduleDirectory -Filter *.psd1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.Status.Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
+    {
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new("The module's default $FileName file has been modified from its released state.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            ErrorId = 'ADTDataFileSignatureError'
+            TargetObject = $badFiles
+            RecommendedAction = "Please re-download $($MyInvocation.MyCommand.Module.Name) and try again."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+
     # Import the default data first and foremost.
     $null = $PSBoundParameters.Remove('IgnorePolicy')
     $PSBoundParameters.BaseDirectory = $moduleDirectory
