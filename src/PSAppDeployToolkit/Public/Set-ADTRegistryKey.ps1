@@ -150,18 +150,7 @@ function Set-ADTRegistryKey
                         {
                             '/reg:32'
                         }
-                        $CreateRegKeyResult = & "$([System.Environment]::SystemDirectory)\reg.exe" ADD "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode 2>&1
-                        if ($Global:LASTEXITCODE -ne 0)
-                        {
-                            $naerParams = @{
-                                Exception = [System.ApplicationException]::new("Failed to create registry key [$Key]")
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                ErrorId = 'RegKeyCreationFailure'
-                                TargetObject = $CreateRegKeyResult
-                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                            }
-                            throw (New-ADTErrorRecord @naerParams)
-                        }
+                        $null = & "$([System.Environment]::SystemDirectory)\reg.exe" ADD "$($Key.Substring($Key.IndexOf('::') + 2))" /f $RegMode 2>&1
                     }
                 }
 
