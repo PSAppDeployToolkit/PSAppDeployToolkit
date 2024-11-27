@@ -130,9 +130,12 @@ function New-ADTTemplate
                 $null = New-Item -Path "$templatePath\SupportFiles" -ItemType Directory -Force
                 $null = New-Item -Path $templateModulePath -ItemType Directory -Force
 
-                # Copy in the module and the frontend files.
+                # Copy in the module, the frontend files, and the config/assets/strings.
                 Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
                 Copy-Item -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
+                Copy-Item -LiteralPath "$ModulePath\Assets" -Destination $templatePath -Recurse -Force
+                Copy-Item -LiteralPath "$ModulePath\Config" -Destination $templatePath -Recurse -Force
+                Copy-Item -LiteralPath "$ModulePath\Strings" -Destination $templatePath -Recurse -Force
 
                 # Process the generated script to ensure the Import-Module is correct.
                 if ($Version.Equals(4))
