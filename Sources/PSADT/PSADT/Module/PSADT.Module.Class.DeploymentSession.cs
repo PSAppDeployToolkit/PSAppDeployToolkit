@@ -615,10 +615,38 @@ namespace PSADT.Module
                     }
 
                     // Guard Intune detection code behind a variable.
-                    if ((bool)configToolkit["OobeDetection"]! && (Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Utility.IsOOBEComplete())
+                    if ((bool)configToolkit["OobeDetection"]!)
                     {
-                        WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
-                        _deployMode = "Silent";
+                        // Check if the device has completed the OOBE or not.
+                        if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Utility.IsOOBEComplete())
+                        {
+                            WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
+                            _deployMode = "Silent";
+                        }
+                        else if (null != Process.GetProcessesByName("WWAHost"))
+                        {
+                            // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
+                            WriteLogEntry("The WWAHost process is running, confirming the device Autopilot-enrolled.");
+                            var apRegKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Provisioning\\Diagnostics\\AutoPilot";
+                            if (!string.IsNullOrWhiteSpace((string)ModuleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
+                            {
+                                WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account Setup phase.");
+                                var regKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync";
+                                if (null == ModuleSessionState.InvokeProvider.Property.Get([regKey], null, false).Where(obj => (obj.Properties["IsSyncDone"] is PSPropertyInfo syncDone) && syncDone.Value.Equals(1)).FirstOrDefault())
+                                {
+                                    WriteLogEntry("The ESP User Account Setup phase is still in progress as IsSyncDone was not found, changing deployment mode to silent.");
+                                    _deployMode = "Silent";
+                                }
+                                else
+                                {
+                                    WriteLogEntry("The ESP User Account Setup phase is already complete.");
+                                }
+                            }
+                            else
+                            {
+                                WriteLogEntry("The device is not Autopilot-enrolled.");
+                            }
+                        }
                     }
 
                     // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
