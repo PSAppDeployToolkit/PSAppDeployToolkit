@@ -26,14 +26,14 @@ namespace PSADT.Types
             string ntAccount,
             string sid,
             string profilePath,
-            string appDataPath,
-            string localAppDataPath,
-            string desktopPath,
-            string documentsPath,
-            string startMenuPath,
-            string tempPath,
-            string oneDrivePath,
-            string oneDriveCommercialPath)
+            string? appDataPath = null,
+            string? localAppDataPath = null,
+            string? desktopPath = null,
+            string? documentsPath = null,
+            string? startMenuPath = null,
+            string? tempPath = null,
+            string? oneDrivePath = null,
+            string? oneDriveCommercialPath = null)
         {
             NTAccount = !string.IsNullOrWhiteSpace(ntAccount) ? ntAccount : throw new ArgumentNullException(nameof(ntAccount), "NT account cannot be null or empty.");
             SID = !string.IsNullOrWhiteSpace(sid) ? sid : throw new ArgumentNullException(nameof(sid), "SID cannot be null or empty.");
@@ -66,42 +66,42 @@ namespace PSADT.Types
         /// Gets the path to the user's AppData directory.
         /// </summary>
 
-        public string AppDataPath { get; }
+        public string? AppDataPath { get; }
 
         /// <summary>
         /// Gets the path to the user's LocalAppData directory.
         /// </summary>
-        public string LocalAppDataPath { get; }
+        public string? LocalAppDataPath { get; }
 
         /// <summary>
         /// Gets the path to the user's Desktop directory.
         /// </summary>
-        public string DesktopPath { get; }
+        public string? DesktopPath { get; }
 
         /// <summary>
         /// Gets the path to the user's Documents directory.
         /// </summary>
-        public string DocumentsPath { get; }
+        public string? DocumentsPath { get; }
 
         /// <summary>
         /// Gets the path to the user's Start Menu directory.
         /// </summary>
-        public string StartMenuPath { get; }
+        public string? StartMenuPath { get; }
 
         /// <summary>
         /// Gets the path to the user's Temp directory.
         /// </summary>
-        public string TempPath { get; }
+        public string? TempPath { get; }
 
         /// <summary>
         /// Gets the path to the user's OneDrive directory.
         /// </summary>
-        public string OneDrivePath { get; }
+        public string? OneDrivePath { get; }
 
         /// <summary>
         /// Gets the path to the user's OneDrive for Business directory.
         /// </summary>
-        public string OneDriveCommercialPath { get; }
+        public string? OneDriveCommercialPath { get; }
 
         /// <summary>
         /// Returns a string that represents the current <see cref="UserProfile"/> object.

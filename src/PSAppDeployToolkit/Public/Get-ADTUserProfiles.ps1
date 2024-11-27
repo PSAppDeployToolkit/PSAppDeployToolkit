@@ -149,20 +149,14 @@ function Get-ADTUserProfiles
                             return
                         }
 
+                        # Establish base profile.
                         $userProfile = [PSADT.Types.UserProfile]::new(
                             $ntAccount,
                             $_.PSChildName,
-                            $_.ProfileImagePath,
-                            $null,
-                            $null,
-                            $null,
-                            $null,
-                            $null,
-                            $null,
-                            $null,
-                            $null
+                            $_.ProfileImagePath
                         )
 
+                        # Append additional info if requested.
                         if ($LoadProfilePaths)
                         {
                             $userProfile = Invoke-ADTAllUsersRegistryAction -UserProfiles $userProfile -ScriptBlock {
@@ -191,7 +185,10 @@ function Get-ADTUserProfiles
                 # We will make up a SID and add it to the custom object so that we have a location to load the default registry hive into later on.
                 if (!$ExcludeDefaultUser)
                 {
+                    # The path to the default profile is stored in the default string value for the key.
                     $defaultUserProfilePath = (Get-ItemProperty -LiteralPath $userProfileListRegKey).Default
+
+                    # Retrieve additional information if requested.
                     if ($LoadProfilePaths)
                     {
                         return [PSADT.Types.UserProfile]::new(
@@ -208,22 +205,11 @@ function Get-ADTUserProfiles
                             ((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Environment' -Name 'OneDriveCommercial' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath)
                         )
                     }
-                    else
-                    {
-                        return [PSADT.Types.UserProfile]::new(
-                            'Default User',
-                            'S-1-5-21-Default-User',
-                            $defaultUserProfilePath,
-                            $null,
-                            $null,
-                            $null,
-                            $null,
-                            $null,
-                            $null,
-                            $null,
-                            $null
-                        )
-                    }
+                    return [PSADT.Types.UserProfile]::new(
+                        'Default User',
+                        'S-1-5-21-Default-User',
+                        $defaultUserProfilePath
+                    )
                 }
             }
             catch
