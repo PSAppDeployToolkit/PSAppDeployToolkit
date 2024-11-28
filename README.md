@@ -1,4 +1,4 @@
-# ![PowerShell App Deployment Toolkit Logo](AppDeployToolkitLogo.png)
+# ![AppDeployToolkitLogo](https://github.com/user-attachments/assets/7766bcb3-fa87-496e-9b19-7a8e194dcd97)
 
 ## Enterprise App Deployment, Simplified.
 

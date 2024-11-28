@@ -91,20 +91,20 @@ $BuildScriptPath = $MyInvocation.MyCommand.Path
 # Define our C# solutions to compile.
 $buildItems = @(
     @{
-        SourcePath = 'Sources\PSADT'
-        SolutionPath = 'Sources\PSADT\PSADT.sln'
+        SourcePath = 'src\PSADT'
+        SolutionPath = 'src\PSADT\PSADT.sln'
         OutputPath = 'src\PSAppDeployToolkit\lib'
         OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.dll'
     },
     @{
-        SourcePath = 'Sources\PSADT.Invoke'
-        SolutionPath = 'Sources\PSADT.Invoke\PSADT.Invoke.sln'
+        SourcePath = 'src\PSADT.Invoke'
+        SolutionPath = 'src\PSADT.Invoke\PSADT.Invoke.sln'
         OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
         OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
     },
     @{
-        SourcePath = 'Sources\PSADT.UserInterface'
-        SolutionPath = 'Sources\PSADT.UserInterface\PSADT.UserInterface.sln'
+        SourcePath = 'src\PSADT.UserInterface'
+        SolutionPath = 'src\PSADT.UserInterface\PSADT.UserInterface.sln'
         OutputPath = 'src\PSAppDeployToolkit\lib'
         OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.UserInterface.dll'
     }
@@ -257,7 +257,7 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
             {
                 $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Debug\*')
                 $buildItem.OutputPath | ForEach-Object {
-                    Write-Build Gray "          Copying from  $sourcePath to $(($destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)))..."
+                    Write-Build Gray "          Copying from $sourcePath to $(($destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)))..."
                     Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
                 }
             }
@@ -462,7 +462,7 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
     if ($PSVersionTable.PSVersion -ge [version]'7.4.0')
     {
         Write-Build Gray '               Performing Markdown repair'
-        . $BuildRoot\MarkdownRepair.ps1
+        . $BuildRoot\Tools\MarkdownRepair.ps1
         $Script:MarkdownExportPath | Get-ChildItem -File | ForEach-Object {
             Repair-PlatyPSMarkdown -Path $_.FullName
         }
@@ -544,7 +544,7 @@ Add-BuildTask AssetCopy -Before Build {
         $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\*')
         $buildItem.OutputPath.Replace("src\PSAppDeployToolkit\", $null) | ForEach-Object {
             $destPath = [System.IO.Path]::Combine($Script:BuildModuleRoot, $_)
-            Write-Build Gray "        Copying from  $sourcePath to $destPath..."
+            Write-Build Gray "        Copying from $sourcePath to $destPath..."
             Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
         }
     }
