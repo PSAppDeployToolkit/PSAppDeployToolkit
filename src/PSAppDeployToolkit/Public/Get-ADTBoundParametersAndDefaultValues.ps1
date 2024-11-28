@@ -207,17 +207,7 @@ function Get-ADTBoundParametersAndDefaultValues
                         }
 
                         # Add the parameter and its value.
-                        switch ($_)
-                        {
-                            { $_.DefaultValue -is [System.Management.Automation.Language.HashtableAst] }
-                            {
-                                $obj.Add($_.Name.VariablePath.UserPath, $_.DefaultValue.SafeGetValue())
-                            }
-                            default
-                            {
-                                $obj.Add($_.Name.VariablePath.UserPath, $_.DefaultValue.Value)
-                            }
-                        }
+                        $obj.Add($_.Name.VariablePath.UserPath, $_.DefaultValue.SafeGetValue())
                     }
                 }
 
