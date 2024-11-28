@@ -644,6 +644,11 @@ Add-BuildTask Build {
         Remove-Item "$Script:BuildModuleRoot\ImportsLast.ps1" -Force -ErrorAction Ignore
     }
 
+    # Remove any PDB files that might have snuck in.
+    Write-Build Gray '        Removing PDB files from output...'
+    Get-ChildItem -LiteralPath $Script:BuildModuleRoot -Filter *.pdb -Recurse | Remove-Item -Force
+    Write-Build Gray '        ...PDB removal completed.'
+
     # Update the parent level docs.
     if (Test-Path $Script:MarkdownExportPath)
     {
