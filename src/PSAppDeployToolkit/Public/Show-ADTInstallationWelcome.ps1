@@ -92,7 +92,7 @@ function Show-ADTInstallationWelcome
         This function does not return any output.
 
     .EXAMPLE
-        Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
+        Show-ADTInstallationWelcome -CloseProcesses iexplore, winword, excel
 
         Prompt the user to close Internet Explorer, Word and Excel.
 
