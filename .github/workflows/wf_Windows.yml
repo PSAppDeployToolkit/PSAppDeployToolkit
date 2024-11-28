@@ -93,10 +93,3 @@ jobs:
         path: .\src\Artifacts\Template_v4
         if-no-files-found: error
         overwrite: true
-    - name: Upload Docusaurus files
-      uses: actions/upload-artifact@v4
-      with:
-        name: docusaurus-docs
-        path: .\src\Artifacts\Docusaurus
-        if-no-files-found: error
-        overwrite: true
