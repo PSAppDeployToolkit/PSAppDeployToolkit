@@ -164,9 +164,6 @@ function New-ADTTemplate
                     }
                 }
 
-                # Remove any PDB files that might have snuck in.
-                Get-ChildItem -LiteralPath $templatePath -Filter *.pdb -Recurse | Remove-Item -Force
-
                 # Process the generated script to ensure the Import-Module is correct.
                 if ($Version.Equals(4))
                 {
