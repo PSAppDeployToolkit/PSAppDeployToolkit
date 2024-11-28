@@ -623,7 +623,7 @@ namespace PSADT.Module
                             WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
                             _deployMode = "Silent";
                         }
-                        else if (null != Process.GetProcessesByName("WWAHost"))
+                        else if (Process.GetProcessesByName("WWAHost").Length > 0)
                         {
                             // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
                             WriteLogEntry("The WWAHost process is running, confirming the device Autopilot-enrolled.");
