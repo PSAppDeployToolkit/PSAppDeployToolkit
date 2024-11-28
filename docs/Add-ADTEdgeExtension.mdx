@@ -1,0 +1,129 @@
+---
+id: Add-ADTEdgeExtension
+title: Add-ADTEdgeExtension
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Adds an extension for Microsoft Edge using the ExtensionSettings policy.
+
+## SYNTAX
+
+```powershell
+Add-ADTEdgeExtension [-ExtensionID] <String> [-UpdateUrl] <String> [-InstallationMode] <String>
+ [[-MinimumVersionRequired] <String>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function adds an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide.
+
+This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies.
+
+This should not be used in conjunction with Edge Management Service which leverages the same registry key to configure Edge extensions.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Add-ADTEdgeExtension -ExtensionID "extensionID" -InstallationMode "force_installed" -UpdateUrl "https://edge.microsoft.com/extensionwebstorebase/v1/crx"
+```
+
+This example adds the specified extension to be force installed in Microsoft Edge.
+
+## PARAMETERS
+
+### -ExtensionID
+
+The ID of the extension to add.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UpdateUrl
+
+The update URL of the extension.
+This is the URL where the extension will check for updates.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InstallationMode
+
+The installation mode of the extension.
+Allowed values: blocked, allowed, removed, force_installed, normal_installed.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MinimumVersionRequired
+
+The minimum version of the extension required for installation.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### None
+
+### This function does not return any output.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)

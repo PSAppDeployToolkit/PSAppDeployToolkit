@@ -141,7 +141,8 @@ Enter-Build {
     $Script:UnitTestsPath = Join-Path -Path $Script:TestsPath -ChildPath 'Unit'
     $Script:IntegrationTestsPath = Join-Path -Path $Script:TestsPath -ChildPath 'Integration'
     $Script:ArtifactsPath = Join-Path -Path $BuildRoot -ChildPath 'Artifacts'
-    $Script:MarkdownExportPath = "$Script:ArtifactsPath\docs\"
+    $Script:MarkdownExportPath = "$Script:ArtifactsPath\platyPS\"
+    $Script:DocusaurusExportPath = "$Script:ArtifactsPath\Docusaurus\"
     $Script:BuildModuleRoot = Join-Path -Path $Script:ArtifactsPath -ChildPath "Module\$Script:ModuleName"
     $Script:BuildModuleRootFile = Join-Path -Path $Script:BuildModuleRoot -ChildPath "$($Script:ModuleName).psm1"
 
@@ -429,7 +430,7 @@ Add-BuildTask CreateHelpStart {
 Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
     # Generate markdown files.
     Write-Build Gray '           Generating markdown files...'
-    $null = New-MarkdownHelp -Module $Script:ModuleName -OutputFolder $Script:MarkdownExportPath -Locale en-US -FwLink NA -HelpVersion $Script:ModuleVersion -WithModulePage -Force
+    $null = New-MarkdownHelp -Module $Script:ModuleName -OutputFolder $Script:MarkdownExportPath -Locale en-US -FwLink NA -HelpVersion $Script:ModuleVersion -Force
     Write-Build Gray '           ...Markdown generation completed.'
 
     # Post-process the exported markdown files.
@@ -445,17 +446,6 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
             [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").TrimEnd())
         }
     }
-
-    # Replace each missing element we need for a proper generic module page .md file
-    $ModulePageFileContent = Get-Content -Raw ($ModulePage = "$($Script:MarkdownExportPath)$($Script:ModuleName).md")
-    $ModulePageFileContent = $ModulePageFileContent -replace '{{Manually Enter Description Here}}', $Script:ModuleDescription
-    $Script:FunctionsToExport | ForEach-Object {
-        Write-Build DarkGray "             Updating definition for the following function: $($_)"
-        $TextToReplace = "{{Manually Enter $($_) Description Here}}"
-        $ReplacementText = (Get-Help -Detailed $_).Synopsis
-        $ModulePageFileContent = $ModulePageFileContent -replace $TextToReplace, $ReplacementText
-    }
-    $ModulePageFileContent | Out-File $ModulePage -Force -Encoding:utf8
     Write-Build Gray '           ...Markdown replacements complete.'
 
     # Validate Guid of export is correct.
@@ -517,7 +507,7 @@ Add-BuildTask CreateExternalHelp -After CreateMarkdownHelp $null; $null = {
 # Synopsis: Build docusaurus help files from our markdown exports.
 Add-BuildTask CreateDocusaurusHelp -After CreateMarkdownHelp {
     Write-Build Gray '           Generating docusaurus files...'
-    New-DocusaurusHelp -PlatyPSMarkdownPath $Script:MarkdownExportPath -DocsFolder "$Script:ArtifactsPath\Docusaurus" -NoPlaceHolderExamples
+    New-DocusaurusHelp -PlatyPSMarkdownPath $Script:MarkdownExportPath -DocsFolder $Script:DocusaurusExportPath -NoPlaceHolderExamples | Where-Object { $_ -isnot [System.IO.DirectoryInfo] }
     Write-Build Gray '           ...Docusaurus generation complete.'
 }
 
@@ -662,7 +652,9 @@ Add-BuildTask Build {
         {
             New-Item -Path '..\docs\' -ItemType Directory -Force | Out-Null
         }
-        Move-Item "$Script:MarkdownExportPath*.md" -Destination '..\docs\' -Force
+        Get-ChildItem -LiteralPath '..\docs\' -File | Remove-Item -Force -Confirm:$false
+        Move-Item "$($Script:DocusaurusExportPath)Commands\*.mdx" -Destination '..\docs\' -Force
+        Remove-Item $Script:DocusaurusExportPath -Recurse -Force
         Remove-Item $Script:MarkdownExportPath -Recurse -Force
         Write-Build Gray '        ...Docs output completed.'
     }

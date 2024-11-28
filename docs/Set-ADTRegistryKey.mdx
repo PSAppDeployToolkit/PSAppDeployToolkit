@@ -1,0 +1,196 @@
+---
+id: Set-ADTRegistryKey
+title: Set-ADTRegistryKey
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Creates or sets a registry key name, value, and value data.
+
+## SYNTAX
+
+```powershell
+Set-ADTRegistryKey [-Key] <String> [[-Name] <String>] [[-Value] <Object>] [[-Type] <RegistryValueKind>]
+ [-Wow6432Node] [[-SID] <String>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Creates a registry key name, value, and value data; it sets the same if it already exists.
+This function can also handle registry keys for specific user SIDs and 32-bit registry on 64-bit systems.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Set-ADTRegistryKey -Key $blockedAppPath -Name 'Debugger' -Value $blockedAppDebuggerValue
+```
+
+Creates or sets the 'Debugger' value in the specified registry key.
+
+### EXAMPLE 2
+
+```powershell
+Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE' -Name 'Application' -Type 'DWord' -Value '1'
+```
+
+Creates or sets a DWord value in the specified registry key.
+
+### EXAMPLE 3
+
+```powershell
+Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -Name 'Debugger' -Value $blockedAppDebuggerValue -Type String
+```
+
+Creates or sets a String value in the specified registry key.
+
+### EXAMPLE 4
+
+```powershell
+Set-ADTRegistryKey -Key 'HKCU\Software\Microsoft\Example' -Name 'Data' -Value (0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x01,0x01,0x01,0x02,0x02,0x02) -Type 'Binary'
+```
+
+Creates or sets a Binary value in the specified registry key.
+
+### EXAMPLE 5
+
+```powershell
+Set-ADTRegistryKey -Key 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Example' -Name '(Default)' -Value "Text"
+```
+
+Creates or sets the default value in the specified registry key.
+
+## PARAMETERS
+
+### -Key
+
+The registry key path.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Name
+
+The value name.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Value
+
+The value data.
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Type
+
+The type of registry value to create or set.
+Options: 'Binary','DWord','ExpandString','MultiString','None','QWord','String','Unknown'.
+Default: String.
+
+DWord should be specified as a decimal.
+
+```yaml
+Type: RegistryValueKind
+Parameter Sets: (All)
+Aliases:
+Accepted values: Unknown, String, ExpandString, Binary, DWord, MultiString, QWord, None
+
+Required: False
+Position: 4
+Default value: String
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Wow6432Node
+
+Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SID
+
+The security identifier (SID) for a user.
+Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+
+Specify this parameter from the Invoke-ADTAllUsersRegistryAction function to read/edit HKCU registry settings for all users on the system.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### None
+
+### This function does not return any output.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)

@@ -1,0 +1,105 @@
+---
+id: Get-ADTObjectProperty
+title: Get-ADTObjectProperty
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Get a property from any object.
+
+## SYNTAX
+
+```powershell
+Get-ADTObjectProperty [-InputObject] <Object> [-PropertyName] <String> [[-ArgumentList] <Object[]>]
+ [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Get a property from any object.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ADTObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @(1)
+```
+
+## PARAMETERS
+
+### -InputObject
+
+Specifies an object which has properties that can be retrieved.
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PropertyName
+
+Specifies the name of a property to retrieve.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ArgumentList
+
+Argument to pass to the property being retrieved.
+
+```yaml
+Type: Object[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### System.Object
+
+### Returns the value of the property being retrieved.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)

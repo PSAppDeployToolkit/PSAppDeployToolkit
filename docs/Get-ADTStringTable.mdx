@@ -1,0 +1,61 @@
+---
+id: Get-ADTStringTable
+title: Get-ADTStringTable
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Retrieves the string database from the ADT module.
+
+## SYNTAX
+
+```powershell
+Get-ADTStringTable [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+The Get-ADTStringTable function returns the string database if it has been initialized.
+If the string database is not initialized, it throws an error indicating that Initialize-ADTModule should be called before using this function.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ADTStringTable
+```
+
+This example retrieves the string database from the ADT module.
+
+## PARAMETERS
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### This function does not take any pipeline input.
+## OUTPUTS
+
+### System.Collections.Hashtable
+
+### Returns a hashtable containing the string database.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Requires: The module should be initialized using Initialize-ADTModule
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
