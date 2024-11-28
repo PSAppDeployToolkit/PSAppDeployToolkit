@@ -26,5 +26,53 @@
     "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
     "powershell.powerShellDefaultVersion": "Windows PowerShell (x64)",
     "powershell.scriptAnalysis.settingsPath": ".\\.vscode\\PSScriptAnalyzerSettings.psd1",
-    "dotnet.preferCSharpExtension": true
+    "dotnet.preferCSharpExtension": true,
+    "files.exclude": {
+        "LICENSE": true,
+        "Examples": true,
+        "material": true,
+        "mkdocs.yml": true,
+        "CHANGELOG.txt": true,
+        "Sources": true,
+        "AppDeployToolkitLogo.png": true,
+        "docs": true,
+        "README.cmd": true,
+        "Testing": true,
+        "TODO.txt": true,
+        "wiki": true,
+        "PSAppDeployToolkit.pdf": true,
+        "COPYING.Lesser": true,
+        ".editorconfig": true,
+        ".gitattributes": true,
+        ".github":true,
+        "**/README.md": true,
+        ".exe": true
+    },
+
+    "terminal.integrated.profiles.windows": {
+        "PowerShell Devops": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell",
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+                "-ExecutionPolicy",
+                "RemoteSigned"
+            ]
+        },
+        "Command Prompt": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [],
+            "icon": "terminal-cmd"
+        },
+        "Git Bash": {
+            "source": "Git Bash"
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell Devops"
+
+
 }
