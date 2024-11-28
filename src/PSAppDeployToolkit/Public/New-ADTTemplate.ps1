@@ -136,14 +136,12 @@ function New-ADTTemplate
                 Copy-Item -LiteralPath "$ModulePath\Strings" -Destination $templatePath -Recurse -Force
 
                 # Remove any digital signatures from the ps*1 files.
-                if (Test-ADTModuleIsReleaseBuild)
-                {
-                    Get-ChildItem -Path "$templatePath\*.ps*1" -Recurse | & {
-                        process
+                Get-ChildItem -Path "$templatePath\*.ps*1" -Recurse | & {
+                    process
+                    {
+                        if (($sigLine = $(($fileLines = [System.IO.File]::ReadAllLines($_.FullName)) -match '^# SIG # Begin signature block$')))
                         {
-                            $fileLines = [System.IO.File]::ReadAllLines($_.FullName)
-                            $lastLine = $($fileLines -match '^# SIG # Begin signature block$') - 2
-                            [System.IO.File]::WriteAllLines($_.FullName, $fileLines[0..$lastLine])
+                            [System.IO.File]::WriteAllLines($_.FullName, $fileLines[0..($fileLines.IndexOf($sigLine) - 2)])
                         }
                     }
                 }
