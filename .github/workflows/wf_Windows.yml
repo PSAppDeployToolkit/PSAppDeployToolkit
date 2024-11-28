@@ -93,3 +93,75 @@ jobs:
         path: .\src\Artifacts\Template_v4
         if-no-files-found: error
         overwrite: true
+    - name: Update Website Docs
+      if: github.ref == 'refs/heads/develop'
+      shell: powershell
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      run: |
+        # Perform initial setup.
+        $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+        Set-StrictMode -Version 3
+
+        # Clone the source repo.
+        $srcBnch = $env:GITHUB_REF_NAME
+        $srcRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/PSAppDeployToolkit.git"
+        $srcPath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
+        Write-Host -Object "Cloning source repository, please wait..."
+        git clone -b $srcBnch $srcRepo $srcPath
+        if ($Global:LASTEXITCODE)
+        {
+          throw "The cloning of the source repository failed."
+        }
+
+        # Clone the destination repo.
+        $dstBnch = 'main'
+        $dstRepo = "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git"
+        $dstPath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
+        Write-Host -Object "Cloning destination repository, please wait..."
+        git clone -b $dstBnch $dstRepo $dstPath
+        if ($Global:LASTEXITCODE)
+        {
+          throw "The cloning of the destination repository failed."
+        }
+
+        # Update the docs from the source repo to the destination.
+        Write-Host -Object "Updating the markdown files in destination repository."
+        Remove-Item -Path "$dstPath\docs\reference\functions\*" -Force -Confirm:$false
+        Copy-Item -Path "$srcPath\docs\*.mdx" -Destination "$dstPath\docs\reference\functions"
+
+        # Change into the repository's directory.
+        Push-Location -LiteralPath $dstPath
+
+        # Commit any changes if found.
+        if (git diff-index HEAD)
+        {
+          # Set up author details.
+          git config user.email "$env:USERNAME@psappdeploytoolkit.com"
+          git config user.name "PSAppDeployToolkit Action Workflow"
+
+          # Do the commit.
+          $commitMsg = "Commit of document changes from https://github.com/$env:GITHUB_REPOSITORY/commit/$env:GITHUB_SHA"
+          Write-Host -Object "Documents changed, committing as `"$commitMsg`""
+          git commit -a -m $commitMsg
+          if ($Global:LASTEXITCODE)
+          {
+            throw "The committing of destination repo changes failed."
+          }
+
+          # Push it to the website.
+          Write-Host -Object "Pushing committed changes to origin."
+          git push origin
+          if ($Global:LASTEXITCODE)
+          {
+            throw "The pushing of commits from destination repo failed."
+          }
+          Write-Host -Object "Successfully completed operation."
+        }
+        else
+        {
+          Write-Host -Object "Found no document changes to commit."
+        }
+
+        # Pop back to the original $PWD.
+        Pop-Location
