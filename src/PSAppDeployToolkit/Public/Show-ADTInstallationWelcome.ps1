@@ -425,7 +425,7 @@ function Show-ADTInstallationWelcome
                     }
                     $welcomeState.CloseProcessesCountdown = $CloseProcessesCountdown
 
-                    while (($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
                         $welcomeState.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
@@ -497,7 +497,7 @@ function Show-ADTInstallationWelcome
                             $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -InformationAction SilentlyContinue
                             $PromptToSaveTimeout = [System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)
                             $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
-                            foreach ($runningProcess in ($runningProcesses = Get-ADTRunningProcesses -ProcessObject $CloseProcesses))
+                            foreach ($runningProcess in ($runningProcesses = Get-ADTRunningProcesses -ProcessObject $CloseProcesses -InformationAction SilentlyContinue))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
                                 if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & { process { if ($_.ParentProcess -eq $runningProcess.ProcessName) { return $_ } } } | Select-Object -First 1) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
@@ -608,7 +608,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Force the processes to close silently, without prompting the user.
-                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses))
+                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
                 {
                     Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
                     $runningProcesses | Stop-Process -Force -ErrorAction Ignore
