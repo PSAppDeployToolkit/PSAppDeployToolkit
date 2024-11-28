@@ -19,9 +19,6 @@ function New-ADTTemplate
     .PARAMETER Name
         Name of the newly created folder. Default is PSAppDeployToolkit.
 
-    .PARAMETER ModulePath
-        Override the default module path to include with the template.
-
     .PARAMETER Version
         Defaults to 4 for the standard v4 template. Use 3 for the v3 compatibility mode template.
 
@@ -75,10 +72,6 @@ function New-ADTTemplate
         [System.String]$Name = $MyInvocation.MyCommand.Module.Name,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$ModulePath = $MyInvocation.MyCommand.Module.ModuleBase,
-
-        [Parameter(Mandatory = $false)]
         [ValidateSet(3, 4)]
         [System.Int32]$Version = 4,
 
@@ -110,6 +103,19 @@ function New-ADTTemplate
         {
             try
             {
+                # If we're running a release module, ensure the psd1 files haven't been tampered with.
+                if (($badFiles = Test-ADTReleaseBuildFileValidity -LiteralPath $Script:PSScriptRoot))
+                {
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("One or more files within this module have invalid digital signatures.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                        ErrorId = 'ADTDataFileSignatureError'
+                        TargetObject = $badFiles
+                        RecommendedAction = "Please re-download $($MyInvocation.MyCommand.Module.Name) and try again."
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                }
+
                 # Create directories.
                 if ([System.IO.Directory]::Exists($templatePath) -and [System.IO.Directory]::GetFileSystemEntries($templatePath))
                 {
@@ -130,10 +136,10 @@ function New-ADTTemplate
                 $null = New-Item -Path "$templatePath\SupportFiles" -ItemType Directory -Force
 
                 # Copy in the frontend files and the config/assets/strings.
-                Copy-Item -Path "$ModulePath\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
-                Copy-Item -LiteralPath "$ModulePath\Assets" -Destination $templatePath -Recurse -Force
-                Copy-Item -LiteralPath "$ModulePath\Config" -Destination $templatePath -Recurse -Force
-                Copy-Item -LiteralPath "$ModulePath\Strings" -Destination $templatePath -Recurse -Force
+                Copy-Item -Path "$Script:PSScriptRoot\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
+                Copy-Item -LiteralPath "$Script:PSScriptRoot\Assets" -Destination $templatePath -Recurse -Force
+                Copy-Item -LiteralPath "$Script:PSScriptRoot\Config" -Destination $templatePath -Recurse -Force
+                Copy-Item -LiteralPath "$Script:PSScriptRoot\Strings" -Destination $templatePath -Recurse -Force
 
                 # Remove any digital signatures from the ps*1 files.
                 Get-ChildItem -Path "$templatePath\*.ps*1" -Recurse | & {
@@ -148,7 +154,7 @@ function New-ADTTemplate
 
                 # Copy in the module files.
                 $null = New-Item -Path $templateModulePath -ItemType Directory -Force
-                Copy-Item -Path "$ModulePath\*" -Destination $templateModulePath -Recurse -Force
+                Copy-Item -Path "$Script:PSScriptRoot\*" -Destination $templateModulePath -Recurse -Force
 
                 # Make the shipped module and its files read-only.
                 $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
@@ -157,9 +163,6 @@ function New-ADTTemplate
                         $_.Attributes = 'ReadOnly'
                     }
                 }
-
-                # Remove any PDB files that might have snuck in.
-                Get-ChildItem -LiteralPath $templatePath -Filter *.pdb -Recurse | Remove-Item -Force
 
                 # Process the generated script to ensure the Import-Module is correct.
                 if ($Version.Equals(4))

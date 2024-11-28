@@ -76,7 +76,7 @@ function Import-ADTModuleDataFile
     $callerDirectory = $BaseDirectory
 
     # If we're running a release module, ensure the psd1 files haven't been tampered with.
-    if ((Test-ADTModuleIsReleaseBuild) -and ($badFiles = Get-ChildItem -LiteralPath $moduleDirectory -Filter *.psd1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.Status.Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
+    if (($badFiles = Test-ADTReleaseBuildFileValidity -LiteralPath $moduleDirectory))
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("The module's default $FileName file has been modified from its released state.")

@@ -310,7 +310,7 @@ Add-BuildTask FormattingCheck {
 # Synopsis: Invokes PSScriptAnalyzer against the Module source path.
 Add-BuildTask Analyze {
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    if (($scriptAnalyzerResults = $Script:BuildScriptPath, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -Setting PSScriptAnalyzerSettings.psd1 -Recurse -Verbose:$false))
+    if (($scriptAnalyzerResults = $Script:BuildScriptPath, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      One or more PSScriptAnalyzer errors/warnings where found.'
@@ -323,7 +323,7 @@ Add-BuildTask AnalyzeTests -After Analyze {
     if (Test-Path -Path $Script:TestsPath)
     {
         Write-Build White '      Performing Test ScriptAnalyzer checks...'
-        if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:TestsPath -Setting PSScriptAnalyzerSettings.psd1 -ExcludeRule PSUseDeclaredVarsMoreThanAssignments -Recurse -Verbose:$false))
+        if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:TestsPath -ExcludeRule PSUseDeclaredVarsMoreThanAssignments -Recurse -Verbose:$false))
         {
             $scriptAnalyzerResults | Format-Table
             throw '      One or more PSScriptAnalyzer errors/warnings where found.'
@@ -644,6 +644,11 @@ Add-BuildTask Build {
         Remove-Item "$Script:BuildModuleRoot\ImportsLast.ps1" -Force -ErrorAction Ignore
     }
 
+    # Remove any PDB files that might have snuck in.
+    Write-Build Gray '        Removing PDB files from output...'
+    Get-ChildItem -LiteralPath $Script:BuildModuleRoot -Filter *.pdb -Recurse | Remove-Item -Force
+    Write-Build Gray '        ...PDB removal completed.'
+
     # Update the parent level docs.
     if (Test-Path $Script:MarkdownExportPath)
     {
@@ -660,7 +665,7 @@ Add-BuildTask Build {
     }
 
     # Sign our files if we're running on main.
-    if ($env:GITHUB_ACTIONS -eq 'true' -and $env:GITHUB_REF -in 'refs/heads/main', 'refs/heads/develop')
+    if (($canSign = ($env:GITHUB_ACTIONS -eq 'true') -and ($env:GITHUB_REF_NAME -match '^(main|develop)$')))
     {
         if (!(Get-Command -Name 'azuresigntool' -ErrorAction Ignore))
         {
@@ -679,8 +684,16 @@ Add-BuildTask Build {
 
     # Create our templates.
     Write-Build Gray '        Creating templates...'
-    New-ADTTemplate -Destination $Script:ArtifactsPath -Name 'Template_v3' -Version 3 -ModulePath $Script:BuildModuleRoot
-    New-ADTTemplate -Destination $Script:ArtifactsPath -Name 'Template_v4' -Version 4 -ModulePath $Script:BuildModuleRoot
+    $spParams = @{
+        FilePath = [System.Diagnostics.Process]::GetCurrentProcess().Path
+        ArgumentList = "$(if (!$canSign) {"-ExecutionPolicy Bypass "})-NonInteractive -NoProfile -NoLogo -Command `$ErrorActionPreference = 'Stop'; Import-Module -Name '$Script:BuildModuleRoot'; $([System.String]::Join('; ', (3, 4).ForEach({"New-ADTTemplate -Destination '$Script:ArtifactsPath' -Name 'Template_v$_' -Version $_"})))"
+        NoNewWindow = $true
+        Wait = $true
+    }
+    if ((Start-Process @spParams -PassThru).ExitCode -ne 0)
+    {
+        throw "Failed to generate frontend templates."
+    }
     Write-Build Green '      ...Build Complete!'
 }
 
