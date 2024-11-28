@@ -12,8 +12,8 @@ Creates a new folder containing a template front end and module folder, ready to
 ## SYNTAX
 
 ```powershell
-New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-ModulePath] <String>] [[-Version] <Int32>]
- [-Force] [-PassThru] [<CommonParameters>]
+New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-Version] <Int32>] [-Force] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -75,22 +75,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ModulePath
-
-Override the default module path to include with the template.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: $MyInvocation.MyCommand.Module.ModuleBase
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Version
 
 Defaults to 4 for the standard v4 template.
@@ -102,7 +86,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: 3
 Default value: 4
 Accept pipeline input: False
 Accept wildcard characters: False
