@@ -140,6 +140,12 @@ jobs:
           git config user.email "$env:USERNAME@psappdeploytoolkit.com"
           git config user.name "PSAppDeployToolkit Action Workflow"
 
+          # Add any untracked files that may exist.
+          if (git ls-files --exclude-standard --others)
+          {
+            git add --all
+          }
+
           # Do the commit.
           $commitMsg = "Commit of document changes from https://github.com/$env:GITHUB_REPOSITORY/commit/$env:GITHUB_SHA"
           Write-Host -Object "Documents changed, committing as `"$commitMsg`""
