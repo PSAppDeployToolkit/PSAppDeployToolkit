@@ -44,7 +44,7 @@ The following prompts can be included in the welcome dialog:
 ### EXAMPLE 1
 
 ```powershell
-Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'iexplore' }, @{ Name = 'winword' }, @{ Name = 'excel' }
+Show-ADTInstallationWelcome -CloseProcesses iexplore, winword, excel
 ```
 
 Prompt the user to close Internet Explorer, Word and Excel.
