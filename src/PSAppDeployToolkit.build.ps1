@@ -310,7 +310,7 @@ Add-BuildTask FormattingCheck {
 # Synopsis: Invokes PSScriptAnalyzer against the Module source path.
 Add-BuildTask Analyze {
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    if (($scriptAnalyzerResults = $Script:BuildScriptPath, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -Setting PSScriptAnalyzerSettings.psd1 -Recurse -Verbose:$false))
+    if (($scriptAnalyzerResults = $Script:BuildScriptPath, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      One or more PSScriptAnalyzer errors/warnings where found.'
@@ -323,7 +323,7 @@ Add-BuildTask AnalyzeTests -After Analyze {
     if (Test-Path -Path $Script:TestsPath)
     {
         Write-Build White '      Performing Test ScriptAnalyzer checks...'
-        if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:TestsPath -Setting PSScriptAnalyzerSettings.psd1 -ExcludeRule PSUseDeclaredVarsMoreThanAssignments -Recurse -Verbose:$false))
+        if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:TestsPath -ExcludeRule PSUseDeclaredVarsMoreThanAssignments -Recurse -Verbose:$false))
         {
             $scriptAnalyzerResults | Format-Table
             throw '      One or more PSScriptAnalyzer errors/warnings where found.'
