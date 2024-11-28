@@ -1,0 +1,179 @@
+---
+id: New-ADTZipFile
+title: New-ADTZipFile
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Create a new zip archive or add content to an existing archive.
+
+## SYNTAX
+
+### Path
+
+```powershell
+New-ADTZipFile -Path <String[]> -DestinationPath <String> [-CompressionLevel <String>] [-Update] [-Force]
+ [-RemoveSourceAfterArchiving] [<CommonParameters>]
+```
+
+### LiteralPath
+
+```powershell
+New-ADTZipFile -LiteralPath <String[]> -DestinationPath <String> [-CompressionLevel <String>] [-Update]
+ [-Force] [-RemoveSourceAfterArchiving] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Create a new zip archive or add content to an existing archive by using PowerShell's Compress-Archive.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+New-ADTZipFile -SourceDirectory 'E:\Testing\Logs' -DestinationPath 'E:\Testing\TestingLogs.zip'
+```
+
+## PARAMETERS
+
+### -Path
+
+One or more paths to compress.
+Supports wildcards.
+
+```yaml
+Type: String[]
+Parameter Sets: Path
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LiteralPath
+
+One or more literal paths to compress.
+
+```yaml
+Type: String[]
+Parameter Sets: LiteralPath
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DestinationPath
+
+The file path for where the zip file should be created.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CompressionLevel
+
+The level of compression to apply to the zip file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Update
+
+Specifies whether to update an existing zip file or not.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+
+Specifies whether an existing zip file should be overwritten.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RemoveSourceAfterArchiving
+
+Remove the source path after successfully archiving the content.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### None
+
+### This function does not generate any output.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)

@@ -1,0 +1,86 @@
+---
+id: Get-ADTShortcut
+title: Get-ADTShortcut
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Get information from a .lnk or .url type shortcut.
+
+## SYNTAX
+
+```powershell
+Get-ADTShortcut [-Path] <String> [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Get information from a .lnk or .url type shortcut.
+Returns a hashtable with details about the shortcut such as TargetPath, Arguments, Description, and more.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ADTShortcut -Path "$envProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk"
+```
+
+Retrieves information from the specified .lnk shortcut.
+
+## PARAMETERS
+
+### -Path
+
+Path to the shortcut to get information from.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### System.Collections.Hashtable
+
+### Returns a hashtable with the following keys:
+### - TargetPath
+### - Arguments
+### - Description
+### - WorkingDirectory
+### - WindowStyle
+### - Hotkey
+### - IconLocation
+### - IconIndex
+### - RunAsAdmin
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Url shortcuts only support TargetPath, IconLocation, and IconIndex.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)

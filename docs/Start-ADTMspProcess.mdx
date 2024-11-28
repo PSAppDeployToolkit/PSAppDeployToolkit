@@ -1,0 +1,102 @@
+---
+id: Start-ADTMspProcess
+title: Start-ADTMspProcess
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Executes an MSP file using the same logic as Start-ADTMsiProcess.
+
+## SYNTAX
+
+```powershell
+Start-ADTMspProcess [-FilePath] <String> [[-AdditionalArgumentList] <String[]>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products.
+If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
+
+Uses default config MSI parameters.
+You can use -AdditionalArgumentList to add additional parameters.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Start-ADTMspProcess -FilePath 'Adobe_Reader_11.0.3_EN.msp'
+```
+
+Executes the specified MSP file for Adobe Reader 11.0.3.
+
+### EXAMPLE 2
+
+```powershell
+Start-ADTMspProcess -FilePath 'AcroRdr2017Upd1701130143_MUI.msp' -AdditionalArgumentList 'ALLUSERS=1'
+```
+
+Executes the specified MSP file for Acrobat Reader 2017 with additional parameters.
+
+## PARAMETERS
+
+### -FilePath
+
+Path to the MSP file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AdditionalArgumentList
+
+Additional parameters.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### None
+
+### This function does not generate any output.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)

@@ -1,0 +1,76 @@
+---
+id: Remove-ADTSessionStartingCallback
+title: Remove-ADTSessionStartingCallback
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Removes a callback function from the ADT session starting event.
+
+## SYNTAX
+
+```powershell
+Remove-ADTSessionStartingCallback [-Callback] <CommandInfo[]> [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function removes a specified callback function from the ADT session starting event.
+The callback function must be provided as a parameter.
+If the operation fails, it throws a terminating error.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Remove-ADTSessionStartingCallback -Callback (Get-Command -Name 'MyCallbackFunction')
+```
+
+Removes the specified callback function from the ADT session starting event.
+
+## PARAMETERS
+
+### -Callback
+
+The callback function to remove from the ADT session starting event.
+
+```yaml
+Type: CommandInfo[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### None
+
+### This function does not generate any output.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
