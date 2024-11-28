@@ -110,6 +110,19 @@ function New-ADTTemplate
         {
             try
             {
+                # If we're running a release module, ensure the psd1 files haven't been tampered with.
+                if (($badFiles = Test-ADTReleaseBuildFileValidity -LiteralPath $ModulePath))
+                {
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("One or more files within this module have invalid digital signatures.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                        ErrorId = 'ADTDataFileSignatureError'
+                        TargetObject = $badFiles
+                        RecommendedAction = "Please re-download $($MyInvocation.MyCommand.Module.Name) and try again."
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                }
+
                 # Create directories.
                 if ([System.IO.Directory]::Exists($templatePath) -and [System.IO.Directory]::GetFileSystemEntries($templatePath))
                 {
