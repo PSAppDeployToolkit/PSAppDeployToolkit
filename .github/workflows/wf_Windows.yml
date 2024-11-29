@@ -133,18 +133,15 @@ jobs:
         # Change into the repository's directory.
         Push-Location -LiteralPath $dstPath
 
+        # Add any changes that may exist.
+        git add --all
+
         # Commit any changes if found.
-        if (git diff-index HEAD)
+        if (git diff --cached)
         {
           # Set up author details.
           git config user.email "$env:USERNAME@psappdeploytoolkit.com"
           git config user.name "PSAppDeployToolkit Action Workflow"
-
-          # Add any untracked files that may exist.
-          if (git ls-files --exclude-standard --others)
-          {
-            git add --all
-          }
 
           # Do the commit.
           $commitMsg = "Commit of document changes from https://github.com/$env:GITHUB_REPOSITORY/commit/$env:GITHUB_SHA"
