@@ -124,6 +124,7 @@ function Show-ADTInstallationRestartPrompt
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtStrings = Get-ADTStringTable
+        $adtConfig = Get-ADTConfig
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
