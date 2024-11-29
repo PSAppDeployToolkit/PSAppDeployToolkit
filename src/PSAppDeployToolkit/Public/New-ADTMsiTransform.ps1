@@ -159,7 +159,7 @@ function New-ADTMsiTransform
                 # Set the MSI properties in the temporary copy of the MSI database.
                 foreach ($property in $TransformProperties.GetEnumerator())
                 {
-                    Set-ADTMsiProperty -DataBase $TempMsiPathDatabase -PropertyName $property.Key -PropertyValue $property.Value
+                    Set-ADTMsiProperty -Database $TempMsiPathDatabase -PropertyName $property.Key -PropertyValue $property.Value
                 }
 
                 # Commit the new properties to the temporary copy of the MSI database
