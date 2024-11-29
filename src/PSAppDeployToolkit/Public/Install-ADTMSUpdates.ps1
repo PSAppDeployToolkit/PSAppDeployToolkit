@@ -86,7 +86,7 @@ function Install-ADTMSUpdates
                     elseif ($kbNumber = [System.Text.RegularExpressions.Regex]::Match($file.Name, $kbPattern).ToString())
                     {
                         # Check to see whether the KB is already installed
-                        if (Test-ADTMSUpdates -KBNumber $kbNumber)
+                        if (Test-ADTMSUpdates -KbNumber $kbNumber)
                         {
                             Write-ADTLogEntry -Message "KB Number [$kbNumber] is already installed. Continue..."
                             continue
