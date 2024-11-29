@@ -302,7 +302,7 @@ Add-BuildTask FormattingCheck {
     if (($scriptAnalyzerResults = $Script:BuildScriptPath, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -Setting CodeFormattingAllman -ExcludeRule PSAlignAssignmentStatement -Recurse -Fix:($env:GITHUB_ACTIONS -ne 'true') -Verbose:$false))
     {
         $scriptAnalyzerResults | Format-Table
-        throw '      PSScriptAnalyzer code formatting check did not adhere to {0} standards' -f $scriptAnalyzerParams.Setting
+        throw '      PSScriptAnalyzer code formatting check did not adhere to defined standards'
     }
     Write-Build Green '      ...Formatting Analyze Complete!'
 }
