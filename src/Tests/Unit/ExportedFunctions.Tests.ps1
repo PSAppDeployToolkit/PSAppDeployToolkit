@@ -23,7 +23,7 @@ Describe $ModuleName {
         Context 'Number of commands' -Fixture {
 
             It 'Exports the same number of public functions as what is listed in the Module Manifest' {
-                $manifestExported.Count | Should -BeExactly $moduleExported.Count
+                ($manifestExported | Measure-Object).Count | Should -BeExactly ($moduleExported | Measure-Object).Count
             }
 
         }
