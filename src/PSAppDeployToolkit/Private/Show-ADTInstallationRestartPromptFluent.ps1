@@ -42,7 +42,7 @@ function Show-ADTInstallationRestartPromptFluent
         $Subtitle,
         !$NotTopMost,
         $adtConfig.Assets.Logo,
-        $adtConfig.RestartPrompt.TimeRemaining,
+        $adtStrings.RestartPrompt.TimeRemaining,
         $CountdownSeconds / 60,
         $adtStrings.RestartPrompt.MessageRestart,
         $adtStrings.RestartPrompt.ButtonRestartLater,
