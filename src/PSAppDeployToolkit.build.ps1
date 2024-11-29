@@ -658,7 +658,7 @@ Add-BuildTask Build {
             New-Item -Path '..\docs\' -ItemType Directory -Force | Out-Null
         }
         Get-ChildItem -LiteralPath '..\docs\' -File | Remove-Item -Force -Confirm:$false
-        Move-Item "$($Script:DocusaurusExportPath)Commands\*.mdx" -Destination '..\docs\' -Force
+        Move-Item "$($Script:DocusaurusExportPath)Commands\*" -Destination '..\docs\' -Force
         Remove-Item $Script:DocusaurusExportPath -Recurse -Force
         Remove-Item $Script:MarkdownExportPath -Recurse -Force
         Write-Build Gray '        ...Docs output completed.'

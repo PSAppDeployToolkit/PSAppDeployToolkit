@@ -128,7 +128,7 @@ jobs:
         # Update the docs from the source repo to the destination.
         Write-Host -Object "Updating the markdown files in destination repository."
         Remove-Item -Path "$dstPath\docs\reference\functions\*" -Force -Confirm:$false
-        Copy-Item -Path "$srcPath\docs\*.mdx" -Destination "$dstPath\docs\reference\functions"
+        Get-ChildItem -Path "$srcPath\docs\*" -File | Copy-Item -Destination "$dstPath\docs\reference\functions"
 
         # Change into the repository's directory.
         Push-Location -LiteralPath $dstPath
