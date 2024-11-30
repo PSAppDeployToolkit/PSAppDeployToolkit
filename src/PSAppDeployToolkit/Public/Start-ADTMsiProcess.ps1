@@ -149,6 +149,7 @@ function Start-ADTMsiProcess
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
+        [ValidateNotNullOrEmpty()]
         [PSADT.Types.InstalledApplication]$InstalledApplication,
 
         [Parameter(Mandatory = $false)]

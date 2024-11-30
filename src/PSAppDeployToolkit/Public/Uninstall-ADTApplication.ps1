@@ -109,6 +109,7 @@ function Uninstall-ADTApplication
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true)]
+        [ValidateNotNullOrEmpty()]
         [PSADT.Types.InstalledApplication[]]$InstalledApplication,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
