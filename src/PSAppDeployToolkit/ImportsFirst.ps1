@@ -75,7 +75,7 @@ $Module.CheckRestrictedLanguage([System.String[]]$null, [System.String[]]('PSEdi
 if (!$RuntimeAssembly)
 {
     & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
-            [System.InvalidOperationException]::new("This module must be imported via it's .psd1 file, which is recommended for all modules that supply a .psd1 file."),
+            [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for all modules that supply a .psd1 file."),
             'ModuleImportError',
             [System.Management.Automation.ErrorCategory]::InvalidOperation,
             $MyInvocation.MyCommand.ScriptBlock.Module
