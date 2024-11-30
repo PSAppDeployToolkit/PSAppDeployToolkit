@@ -65,7 +65,7 @@ function Show-ADTBalloonTip
         [System.String]$BalloonTipText,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Error', 'Info', 'None', 'Warning')]
+        [ValidateNotNullOrEmpty()]
         [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
 
         [Parameter(Mandatory = $false)]

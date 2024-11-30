@@ -208,8 +208,8 @@ function Start-ADTMsiProcess
         [System.String[]]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
-        [System.Diagnostics.ProcessPriorityClass]$PriorityClass = 'Normal',
+        [ValidateNotNullOrEmpty()]
+        [System.Diagnostics.ProcessPriorityClass]$PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RepairFromSource
