@@ -286,7 +286,11 @@ function Start-ADTMsiProcess
                 # Get the InstalledApplication object if one wasn't supplied.
                 if (!$InstalledApplication -and $MSIProductCode)
                 {
-                    $InstalledApplication = Get-ADTApplication -FilterScript { $_.ProductCode -eq $MSIProductCode } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes
+                    [PSADT.Types.InstalledApplication[]]$installedApps = Get-ADTApplication -FilterScript { $_.ProductCode -eq $MSIProductCode } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes
+                    if ($installedApps)
+                    {
+                        $InstalledApplication = $installedApps
+                    }
                 }
 
                 # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
