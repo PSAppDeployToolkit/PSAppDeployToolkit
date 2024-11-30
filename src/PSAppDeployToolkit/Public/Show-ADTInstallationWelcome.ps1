@@ -69,8 +69,8 @@ function Show-ADTInstallationWelcome
     .PARAMETER RequiredDiskSpace
         Specify required disk space in MB, used in combination with CheckDiskSpace.
 
-    .PARAMETER MinimizeWindows
-        Specifies whether to minimize other windows when displaying prompt. Default: $true.
+    .PARAMETER NoMinimizeWindows
+        Specifies whether to minimize other windows when displaying prompt. Default: $false.
 
     .PARAMETER TopMost
         Specifies whether the windows is the topmost window. Default: $true.
