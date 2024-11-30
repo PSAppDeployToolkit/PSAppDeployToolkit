@@ -131,7 +131,7 @@ function Start-ADTProcess
         [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Normal', 'Hidden', 'Maximized', 'Minimized')]
+        [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessWindowStyle]$WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Normal,
 
         [Parameter(Mandatory = $false)]
@@ -168,7 +168,7 @@ function Start-ADTProcess
         [System.String[]]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
+        [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal,
 
         [Parameter(Mandatory = $false)]
