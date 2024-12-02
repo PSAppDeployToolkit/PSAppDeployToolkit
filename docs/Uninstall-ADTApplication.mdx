@@ -22,7 +22,7 @@ Uninstall-ADTApplication -InstalledApplication <InstalledApplication[]> [-Argume
 ### Search
 
 ```powershell
-Uninstall-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <String[]>]
+Uninstall-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <Guid[]>]
  [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>]
  [-ArgumentList <String>] [-AdditionalArgumentList <String>] [-SecureArgumentList] [-LoggingOptions <String>]
  [-LogFileName <String>] [-PassThru] [<CommonParameters>]
@@ -119,7 +119,7 @@ Accept wildcard characters: False
 The product code of the application to retrieve information for.
 
 ```yaml
-Type: String[]
+Type: Guid[]
 Parameter Sets: Search
 Aliases:
 

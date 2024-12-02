@@ -112,7 +112,6 @@
         'Get-ADTApplication'
         'Get-ADTLoggedOnUser'
         'Get-ADTMsiExitCodeMessage'
-        'Get-ADTMsiProductCodeRegexPattern'
         'Get-ADTMsiTableProperty'
         'Get-ADTObjectProperty'
         'Get-ADTPEFileArchitecture'

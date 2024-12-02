@@ -31,7 +31,7 @@ namespace PSADT.Types
             string uninstallKey,
             string uninstallParentKey,
             string uninstallSubKey,
-            string productCode,
+            Guid? productCode,
             string displayName,
             string displayVersion,
             string uninstallString,
@@ -44,17 +44,17 @@ namespace PSADT.Types
             bool? windowsInstaller,
             bool is64BitApplication)
         {
-            UninstallKey = uninstallKey ?? string.Empty;
-            UninstallParentKey = uninstallParentKey ?? string.Empty;
-            UninstallSubKey = uninstallSubKey ?? string.Empty;
-            ProductCode = productCode ?? string.Empty;
-            DisplayName = displayName ?? string.Empty;
-            DisplayVersion = displayVersion ?? string.Empty;
-            UninstallString = uninstallString ?? string.Empty;
-            QuietUninstallString = quietUninstallString ?? string.Empty;
-            InstallSource = installSource ?? string.Empty;
-            InstallLocation = installLocation ?? string.Empty;
-            Publisher = publisher ?? string.Empty;
+            UninstallKey = uninstallKey;
+            UninstallParentKey = uninstallParentKey;
+            UninstallSubKey = uninstallSubKey;
+            ProductCode = productCode;
+            DisplayName = displayName;
+            DisplayVersion = displayVersion;
+            UninstallString = uninstallString;
+            QuietUninstallString = quietUninstallString;
+            InstallSource = installSource;
+            InstallLocation = installLocation;
+            Publisher = publisher;
             SystemComponent = systemComponent ?? false;
             WindowsInstaller = windowsInstaller ?? false;
             Is64BitApplication = is64BitApplication;
@@ -91,7 +91,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the product code for the application.
         /// </summary>
-        public string ProductCode { get; }
+        public Guid? ProductCode { get; }
 
         /// <summary>
         /// Gets the display name of the application.
@@ -185,7 +185,7 @@ namespace PSADT.Types
         /// <returns>True if the product code is a valid GUID; otherwise, false.</returns>
         public bool IsValidProductCode()
         {
-            return Guid.TryParse(ProductCode, out _);
+            return (null != ProductCode);
         }
 
         /// <summary>

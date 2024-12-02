@@ -103,7 +103,7 @@ function Get-ADTApplication
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$ProductCode,
+        [System.Guid[]]$ProductCode,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('All', 'MSI', 'EXE')]
@@ -121,7 +121,6 @@ function Get-ADTApplication
     {
         # Announce start.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $msiProductCodeRegex = Get-ADTMsiProductCodeRegexPattern
         $updatesSkippedCounter = 0
         $uninstallKeyPaths = $(
             'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
@@ -185,22 +184,26 @@ function Get-ADTApplication
                             return
                         }
 
-                        # Apply name filter if specified.
-                        if ($nameFilterScript -and !(& $nameFilterScript))
+                        # Apply application type filter if specified.
+                        $windowsInstaller = !!($_ | Select-Object -ExpandProperty WindowsInstaller -ErrorAction Ignore)
+                        if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
                         {
                             return
                         }
 
                         # Apply ProductCode filter if specified.
-                        $appMsiGuid = if ($_.PSChildName -match $msiProductCodeRegex) { $_.PSChildName }
-                        if ($appMsiGuid -and $ProductCode -and ($ProductCode -notcontains $appMsiGuid))
+                        $defaultGuid = [System.Guid]::Empty
+                        $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($_.PSChildName, [ref]$defaultGuid))
                         {
-                            return
+                            if ($ProductCode -and ($ProductCode -notcontains $appMsiGuid))
+                            {
+                                return
+                            }
+                            $defaultGuid
                         }
 
-                        # Apply application type filter if specified.
-                        $windowsInstaller = !!($_ | Select-Object -ExpandProperty WindowsInstaller -ErrorAction Ignore)
-                        if (($ApplicationType -ne 'All') -and (($ApplicationType -eq 'MSI') -ne $windowsInstaller))
+                        # Apply name filter if specified.
+                        if ($nameFilterScript -and !(& $nameFilterScript))
                         {
                             return
                         }
