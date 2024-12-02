@@ -21,6 +21,16 @@ Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-Transforms <String[]
  [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource] [<CommonParameters>]
 ```
 
+### ProductCode
+
+```powershell
+Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-Transforms <String[]>] [-ArgumentList <String[]>]
+ [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>] [-LoggingOptions <String>]
+ [-LogFileName <String>] [-WorkingDirectory <String>] [-SkipMSIAlreadyInstalledCheck]
+ [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource] [<CommonParameters>]
+```
+
 ### InstalledApplication
 
 ```powershell
@@ -107,7 +117,7 @@ Accept wildcard characters: False
 
 ### -FilePath
 
-The file path to the MSI/MSP or the product code of the installed MSI.
+The file path to the MSI/MSP file.
 
 ```yaml
 Type: String
@@ -121,9 +131,25 @@ Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
+### -ProductCode
+
+The product code of the installed MSI.
+
+```yaml
+Type: Guid
+Parameter Sets: ProductCode
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
 ### -InstalledApplication
 
-Please supply the InstalledApplication object to process.
+The InstalledApplication object of the installed MSI.
 
 ```yaml
 Type: InstalledApplication

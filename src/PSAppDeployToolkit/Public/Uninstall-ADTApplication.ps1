@@ -122,7 +122,7 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$ProductCode,
+        [System.Guid[]]$ProductCode,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [ValidateSet('All', 'MSI', 'EXE')]
@@ -209,7 +209,7 @@ function Uninstall-ADTApplication
             {
                 if ($removeApplication.WindowsInstaller)
                 {
-                    if ([string]::IsNullOrWhiteSpace($removeApplication.ProductCode))
+                    if ($removeApplication.ProductCode)
                     {
                         Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue

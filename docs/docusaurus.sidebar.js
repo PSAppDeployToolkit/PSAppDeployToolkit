@@ -37,7 +37,6 @@ module.exports = [
     'commands/Get-ADTIniValue',
     'commands/Get-ADTLoggedOnUser',
     'commands/Get-ADTMsiExitCodeMessage',
-    'commands/Get-ADTMsiProductCodeRegexPattern',
     'commands/Get-ADTMsiTableProperty',
     'commands/Get-ADTObjectProperty',
     'commands/Get-ADTPEFileArchitecture',

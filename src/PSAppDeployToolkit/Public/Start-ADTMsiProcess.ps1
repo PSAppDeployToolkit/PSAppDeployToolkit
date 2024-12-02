@@ -25,7 +25,13 @@ function Start-ADTMsiProcess
         Specifies the action to be performed. Available options: Install, Uninstall, Patch, Repair, ActiveSetup.
 
     .PARAMETER FilePath
-        The file path to the MSI/MSP or the product code of the installed MSI.
+        The file path to the MSI/MSP file.
+
+    .PARAMETER ProductCode
+        The product code of the installed MSI.
+
+    .PARAMETER InstalledApplication
+        The InstalledApplication object of the installed MSI.
 
     .PARAMETER Transforms
         The name(s) of the transform file(s) to be applied to the MSI. The transform files should be in the same directory as the MSI file.
@@ -138,15 +144,19 @@ function Start-ADTMsiProcess
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
         [System.String]$Action = 'Install',
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'FilePath', ValueFromPipeline = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'FilePath', ValueFromPipeline = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file.')]
         [ValidateScript({
-                if (($_ -notmatch (Get-ADTMsiProductCodeRegexPattern)) -and (('.msi', '.msp') -notcontains [System.IO.Path]::GetExtension($_)))
+                if ([System.IO.Path]::GetExtension($_) -notmatch '^\.ms[ip]$')
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input either has an invalid file extension or is not an MSI UUID.'))
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
         [System.String]$FilePath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
+        [ValidateNotNullOrEmpty()]
+        [System.Guid]$ProductCode,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true, HelpMessage = 'Please supply the InstalledApplication object to process.')]
         [ValidateNotNullOrEmpty()]
@@ -219,7 +229,6 @@ function Start-ADTMsiProcess
     {
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet; $adtConfig = Get-ADTConfig
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $msiProductCodeRegexPattern = (Get-ADTEnvironment).MSIProductCodeRegExPattern
     }
 
     process
@@ -230,20 +239,19 @@ function Start-ADTMsiProcess
             {
                 # Determine whether the input is a ProductCode or not.
                 Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
-                $pathIsProductCode = $FilePath -match $msiProductCodeRegexPattern
 
                 # If the MSI is in the Files directory, set the full path to the MSI.
                 $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath))))
                 {
                     $dirFilesPath
                 }
-                elseif ($pathIsProductCode)
+                elseif ($ProductCode)
                 {
-                    $FilePath
+                    $ProductCode.ToString()
                 }
                 elseif ($InstalledApplication)
                 {
-                    $InstalledApplication.ProductCode
+                    $InstalledApplication.ProductCode.ToString()
                 }
                 elseif (Test-Path -LiteralPath $FilePath)
                 {
@@ -263,9 +271,9 @@ function Start-ADTMsiProcess
                 }
 
                 # Get the ProductCode of the MSI.
-                $MSIProductCode = if ($pathIsProductCode)
+                $MSIProductCode = if ($ProductCode)
                 {
-                    $FilePath
+                    $ProductCode
                 }
                 elseif ($InstalledApplication)
                 {
@@ -276,7 +284,7 @@ function Start-ADTMsiProcess
                     try
                     {
                         $GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }; if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
-                        (Get-ADTMsiTableProperty @GetMsiTablePropertySplat).ProductCode
+                        [System.Guid]::new((Get-ADTMsiTableProperty @GetMsiTablePropertySplat).ProductCode)
                     }
                     catch
                     {
@@ -420,7 +428,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Set the working directory of the MSI.
-                if ($PSCmdlet.ParameterSetName.Equals('FilePath') -and !$pathIsProductCode -and !$workingDirectory)
+                if ($PSCmdlet.ParameterSetName.Equals('FilePath') -and !$workingDirectory)
                 {
                     $WorkingDirectory = [System.IO.Path]::GetDirectoryName($msiFile)
                 }

@@ -311,7 +311,7 @@ function New-ADTEnvironmentTable
     $variables.Add('invalidFileNameCharsRegExPattern', [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, $variables.invalidFileNameChars)))
 
     ## Variables: RegEx Patterns
-    $variables.Add('MSIProductCodeRegExPattern', (Get-ADTMsiProductCodeRegexPattern))
+    $variables.Add('MSIProductCodeRegExPattern', '^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$')
     $variables.Add('InvalidScheduledTaskNameCharsRegExPattern', "[$([System.Text.RegularExpressions.Regex]::Escape('\/:*?"<>|'))]")
 
     # Add in WScript shell variables.

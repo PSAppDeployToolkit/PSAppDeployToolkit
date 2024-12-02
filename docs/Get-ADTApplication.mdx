@@ -12,8 +12,8 @@ Retrieves information about installed applications.
 ## SYNTAX
 
 ```powershell
-Get-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <String[]>]
- [-ApplicationType <String>] [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>] [<CommonParameters>]
+Get-ADTApplication [-Name <String[]>] [-NameMatch <String>] [-ProductCode <Guid[]>] [-ApplicationType <String>]
+ [-IncludeUpdatesAndHotfixes] [[-FilterScript] <ScriptBlock>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -106,7 +106,7 @@ Accept wildcard characters: False
 The product code of the application to retrieve information for.
 
 ```yaml
-Type: String[]
+Type: Guid[]
 Parameter Sets: (All)
 Aliases:
 
