@@ -40,8 +40,8 @@ namespace PSADT.Types
             string installLocation,
             string installDate,
             string publisher,
-            bool? systemComponent,
-            bool? windowsInstaller,
+            bool systemComponent,
+            bool windowsInstaller,
             bool is64BitApplication)
         {
             UninstallKey = uninstallKey;
@@ -55,8 +55,8 @@ namespace PSADT.Types
             InstallSource = installSource;
             InstallLocation = installLocation;
             Publisher = publisher;
-            SystemComponent = systemComponent ?? false;
-            WindowsInstaller = windowsInstaller ?? false;
+            SystemComponent = systemComponent;
+            WindowsInstaller = windowsInstaller;
             Is64BitApplication = is64BitApplication;
 
             DateTime parsedDate;
