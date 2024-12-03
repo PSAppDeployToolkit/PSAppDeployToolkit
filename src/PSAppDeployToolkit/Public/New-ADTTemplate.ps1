@@ -22,6 +22,9 @@ function New-ADTTemplate
     .PARAMETER Version
         Defaults to 4 for the standard v4 template. Use 3 for the v3 compatibility mode template.
 
+    .PARAMETER Show
+        Opens the newly created folder in Windows Explorer.
+
     .PARAMETER Force
         If the destination folder already exists, this switch will force the creation of the new folder.
 
@@ -77,6 +80,9 @@ function New-ADTTemplate
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Show,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
@@ -170,6 +176,12 @@ function New-ADTTemplate
                     $scriptText = [System.IO.File]::ReadAllText(($scriptFile = "$templatePath\Invoke-AppDeployToolkit.ps1"))
                     $scriptText = $scriptText.Replace("`$PSScriptRoot\..\..\..\$moduleName", "`$PSScriptRoot\$moduleName")
                     [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
+                }
+
+                # Display the newly created folder in Windows Explorer.
+                if ($Show)
+                {
+                    & $env:SystemRoot\explorer.exe $templatePath
                 }
 
                 # Return a DirectoryInfo object if passing through.
