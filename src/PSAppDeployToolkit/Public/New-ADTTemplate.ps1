@@ -17,7 +17,7 @@ function New-ADTTemplate
         Path where the new folder should be created. Default is the current working directory.
 
     .PARAMETER Name
-        Name of the newly created folder. Default is PSAppDeployToolkit.
+        Name of the newly created folder. Default is PSAppDeployToolkit_Version.
 
     .PARAMETER Version
         Defaults to 4 for the standard v4 template. Use 3 for the v3 compatibility mode template.
@@ -69,7 +69,7 @@ function New-ADTTemplate
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Name = $MyInvocation.MyCommand.Module.Name,
+        [System.String]$Name = "$($MyInvocation.MyCommand.Module.Name)_$($MyInvocation.MyCommand.Module.Version)",
 
         [Parameter(Mandatory = $false)]
         [ValidateSet(3, 4)]
