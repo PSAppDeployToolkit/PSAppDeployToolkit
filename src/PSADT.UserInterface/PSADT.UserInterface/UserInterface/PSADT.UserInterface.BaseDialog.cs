@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
@@ -8,13 +8,19 @@ using Wpf.Ui.Controls;
 
 namespace PSADT.UserInterface
 {
-
+    /// <summary>
+    /// Interaction logic for BaseDialog.xaml
+    /// </summary>
     public abstract class BaseDialog : FluentWindow, IDisposable
     {
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Timer? _timer;
         private bool _disposed = false;
 
+        /// <summary>
+        /// Constructor for BaseDialog
+        /// </summary>
+        /// <param name="dialogExpiryDuration"></param>
         protected BaseDialog(TimeSpan? dialogExpiryDuration)
         {
             DataContext = this;
@@ -35,6 +41,9 @@ namespace PSADT.UserInterface
 
         }
 
+        /// <summary>
+        /// CancellationToken for the dialog
+        /// </summary>
         protected CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         private void CloseDialog(object? state)
@@ -46,6 +55,10 @@ namespace PSADT.UserInterface
             });
         }
 
+        /// <summary>
+        /// Override OnSourceInitialized to position the window
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnSourceInitialized(EventArgs e)
         {
             
@@ -94,6 +107,9 @@ namespace PSADT.UserInterface
             return IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Positions the window on the screen
+        /// </summary>
         protected virtual void PositionWindow()
         {
             IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
@@ -134,6 +150,9 @@ namespace PSADT.UserInterface
             Top = top;
         }
 
+        /// <summary>
+        /// Center the window on the screen
+        /// </summary>
         protected virtual void CenterWindowOnScreen()
         {
             var windowHandle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
@@ -151,6 +170,10 @@ namespace PSADT.UserInterface
             Top = top;
         }
 
+        /// <summary>
+        /// Dispose of managed resources
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -165,12 +188,18 @@ namespace PSADT.UserInterface
             _disposed = true;
         }
 
+        /// <summary>
+        /// Dispose of managed resources
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Destructor for BaseDialog
+        /// </summary>
         ~BaseDialog()
         {
             Dispose(false);

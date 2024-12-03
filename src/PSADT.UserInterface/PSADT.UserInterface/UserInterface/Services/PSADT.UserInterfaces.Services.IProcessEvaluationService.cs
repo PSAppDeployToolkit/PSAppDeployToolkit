@@ -5,6 +5,10 @@
     /// </summary>
     public interface IProcessEvaluationService : IDisposable
     {
+        /// <summary>
+        /// Evaluates running processes synchronously.
+        /// Returns only processes that are in appsToClose and are currently running.
+        /// </summary>
         List<AppProcessInfo> EvaluateRunningProcesses(List<AppProcessInfo> appsToClose);
 
         /// <summary>

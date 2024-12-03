@@ -7,6 +7,9 @@ using PSADT.UserInterface.Utilities;
 
 namespace PSADT.UserInterface.Services
 {
+    /// <summary>
+    /// Process evaluation service to track running processes
+    /// </summary>
     public class ProcessEvaluationService : IProcessEvaluationService, IDisposable
     {
         private readonly ManagementEventWatcher? _processStartWatcher;
@@ -17,9 +20,19 @@ namespace PSADT.UserInterface.Services
         private readonly ConcurrentDictionary<string, byte> _processesToTrack;
         private readonly object _lock = new();
 
+        /// <summary>
+        /// Event handler for when a tracked process starts
+        /// </summary>
         public event EventHandler<AppProcessInfo>? ProcessStarted;
+
+        /// <summary>
+        /// Event handler for when a tracked process exits
+        /// </summary>
         public event EventHandler<AppProcessInfo>? ProcessExited;
 
+        /// <summary>
+        /// Constructor for real-time process evaluation
+        /// </summary>
         public ProcessEvaluationService()
         {
             _trackedProcesses = new ConcurrentDictionary<string, AppProcessInfo>(StringComparer.OrdinalIgnoreCase);
@@ -351,6 +364,12 @@ namespace PSADT.UserInterface.Services
             }
         }
 
+        /// <summary>
+        /// Checks if a process is running
+        /// </summary>
+        /// <param name="processName"></param>
+        /// <returns></returns>
+        /// <exception cref="ObjectDisposedException"></exception>
         public bool IsProcessRunning(string processName)
         {
             if (_disposed)
@@ -368,6 +387,13 @@ namespace PSADT.UserInterface.Services
             return Process.GetProcessesByName(processName).Length > 0;
         }
 
+        /// <summary>
+        /// Closes a process
+        /// </summary>
+        /// <param name="processName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ObjectDisposedException"></exception>
         public async Task<bool> CloseProcessAsync(string processName, CancellationToken cancellationToken)
         {
             if (_disposed)
@@ -419,6 +445,10 @@ namespace PSADT.UserInterface.Services
             return allClosed;
         }
 
+        /// <summary>
+        /// Disposes the service
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -456,6 +486,9 @@ namespace PSADT.UserInterface.Services
             }
         }
 
+        /// <summary>
+        /// Disposes the service
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);

@@ -8,10 +8,16 @@ using static PSADT.UserInterface.Utilities.NativeMethods;
 
 namespace PSADT.UserInterface.Utilities
 {
+    /// <summary>
+    /// Utility class for process extensions
+    /// </summary>
     public static class ProcessExtensions
     {
         private const int BufferSize = 1024;
 
+        /// <summary>
+        /// Gets the file name of the given process
+        /// </summary>
         public static string? GetMainModuleFileName(this Process process)
         {
             if (process == null) throw new ArgumentNullException(nameof(process));
@@ -23,6 +29,13 @@ namespace PSADT.UserInterface.Utilities
                 null;
         }
 
+        /// <summary>
+        /// Get the icon of a process
+        /// </summary>
+        /// <param name="process"></param>
+        /// <param name="largeIcon"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public static Icon? GetIcon(this Process process, bool largeIcon = true)
         {
             if (process == null) throw new ArgumentNullException(nameof(process));

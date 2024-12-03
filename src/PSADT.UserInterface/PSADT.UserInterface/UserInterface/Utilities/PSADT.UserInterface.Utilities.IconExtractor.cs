@@ -4,8 +4,14 @@ using static PSADT.UserInterface.Utilities.NativeMethods;
 
 namespace PSADT.UserInterface.Utilities
 {
+    /// <summary>
+    /// Icon extractor utility
+    /// </summary>
     public static class IconExtractor
     {
+        /// <summary>
+        /// Extracts an icon from a file
+        /// </summary>
         public static Icon? GetIconFromFile(string filePath, bool largeIcon = true)
         {
             if (string.IsNullOrWhiteSpace(filePath))

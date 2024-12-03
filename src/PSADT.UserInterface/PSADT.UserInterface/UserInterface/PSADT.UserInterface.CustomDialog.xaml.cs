@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 
@@ -6,9 +6,23 @@ namespace PSADT.UserInterface
 {
     public partial class CustomDialog : BaseDialog
     {
+        /// <summary>
+        /// Result of the dialog
+        /// </summary>
         public string? Result { get; private set; }
 
-
+        /// <summary>
+        /// Constructor for CustomDialog
+        /// </summary>
+        /// <param name="dialogExpiryDuration"></param>
+        /// <param name="appTitle"></param>
+        /// <param name="subtitle"></param>
+        /// <param name="topMost"></param>
+        /// <param name="appIconImage"></param>
+        /// <param name="customMessage"></param>
+        /// <param name="button1Text"></param>
+        /// <param name="button2Text"></param>
+        /// <param name="button3Text"></param>
         public CustomDialog(
             TimeSpan dialogExpiryDuration,
             string? appTitle,
@@ -59,8 +73,6 @@ namespace PSADT.UserInterface
 
         private void CustomWindow_Loaded(object sender, RoutedEventArgs e)
         {
-
-
         }
 
         private void ShowItem_Click(object sender, RoutedEventArgs e)
@@ -85,6 +97,11 @@ namespace PSADT.UserInterface
             Application.Current.Shutdown();
         }
 
+
+        /// <summary>
+        /// Override the OnClosing event to prevent the window from closing
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             // Instead of closing, minimize to tray
@@ -118,6 +135,10 @@ namespace PSADT.UserInterface
             Dispose();
         }
 
+        /// <summary>
+        /// Dispose of managed resources
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
 using System.Collections.ObjectModel;
@@ -20,9 +20,14 @@ namespace PSADT.UserInterface
         private CancellationTokenSource? _cts;
         private List<AppProcessInfo> _previousProcessInfo = [];
 
+        /// <summary>
+        /// The result of the dialog
+        /// </summary>
         public string? Result { get; private set; }
 
-        // ObservableCollection bound to the ListView
+        /// <summary>
+        /// ObservableCollection bound to the ListView
+        /// </summary>
         public ObservableCollection<AppProcessInfo> AppsToCloseCollection { get; } = [];
 
         /// <summary>
@@ -41,6 +46,23 @@ namespace PSADT.UserInterface
         private readonly string _altCloseAppMessage;
         private readonly string _altContinueButtonContent;
 
+        /// <summary>
+        /// Constructor for WelcomeDialog
+        /// </summary>
+        /// <param name="dialogExpiryDuration"></param>
+        /// <param name="appTitle"></param>
+        /// <param name="subtitle"></param>
+        /// <param name="topMost"></param>
+        /// <param name="defersRemaining"></param>
+        /// <param name="appsToClose"></param>
+        /// <param name="appIconImage"></param>
+        /// <param name="closeAppMessage"></param>
+        /// <param name="altCloseAppMessage"></param>
+        /// <param name="deferRemainText"></param>
+        /// <param name="deferButtonText"></param>
+        /// <param name="continueButtonText"></param>
+        /// <param name="altContinueButtonText"></param>
+        /// <param name="processEvaluationService"></param>
         public WelcomeDialog(
             TimeSpan? dialogExpiryDuration,
             string? appTitle,
@@ -377,6 +399,10 @@ namespace PSADT.UserInterface
             });
         }
 
+        /// <summary>
+        /// Clean up resources when the window is closed.
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
