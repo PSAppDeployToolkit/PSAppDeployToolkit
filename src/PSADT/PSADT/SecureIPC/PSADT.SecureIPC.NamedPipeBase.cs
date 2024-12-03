@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.IO.Pipes;
@@ -57,7 +57,8 @@ namespace PSADT.SecureIPC
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeBase"/> class.
         /// </summary>
-        /// <param name="encoding">The encoding to use for string communication.</param>
+        /// <param name="options">The options used to configure the named pipe.</param>
+        /// <param name="asyncReader">The action to execute when a message is received.</param>
         protected NamedPipeBase(NamedPipeOptions options, [PowerShellScriptBlock] Action<NamedPipeBase> asyncReader)
         {
             _options = options;
@@ -272,7 +273,6 @@ namespace PSADT.SecureIPC
         /// Writes a large byte array to the pipe stream asynchronously in smaller chunks.
         /// </summary>
         /// <param name="bytes">The byte array to send.</param>
-        /// <param name="chunkSize">The size of each chunk in bytes.</param>
         /// <param name="cancellationToken">The cancellation token to observe for canceling the operation.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         /// <remarks>
@@ -399,7 +399,7 @@ namespace PSADT.SecureIPC
         /// Asynchronously flushes the pipe stream, ensuring that any buffered data is immediately sent to the connected client or server.
         /// </summary>
         /// <remarks>
-        /// In most asynchronous I/O scenarios, calling <see cref="FlushAsync"/> is not typically required because asynchronous write operations (such as <see cref="WriteAsync"/>) handle data transmission efficiently.
+        /// In most asynchronous I/O scenarios, calling <see cref="FlushAsync"/> is not typically required because asynchronous write operations (such as <see cref="NamedPipeBase"/>) WriteAsync()  handle data transmission efficiently.
         /// However, there are certain situations where calling <see cref="FlushAsync"/> can be beneficial:
         /// <list type="bullet">
         /// <item>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Security;
 using System.Security.AccessControl;
@@ -29,7 +29,6 @@ namespace PSADT.Registry
         /// Initializes a new instance of the <see cref="CompositeRegistryKeyWrapper"/> class.
         /// </summary>
         /// <param name="hiveLoader">The loader object for a registry hive file.</param>
-        /// <param name="logMessageDelegate">The delegate for logging messages and reporting errors.</param>
         public CompositeRegistryKeyWrapper(RegistryHiveLoader? hiveLoader = null)
         {
             _hiveLoader = hiveLoader;
@@ -60,7 +59,6 @@ namespace PSADT.Registry
         /// <summary>
         /// Retrieves a value from the registry.
         /// </summary>
-        /// <typeparam name="T">The type of the value to retrieve.</typeparam>
         /// <param name="valueName">The name of the value to retrieve. If null, retrieves the default value of the subkey.</param>
         /// <param name="valueOptions">Options for getting the value.</param>
         /// <param name="binaryValueOptions">Options for handling binary values.</param>
@@ -197,7 +195,6 @@ namespace PSADT.Registry
         /// <summary>
         /// Sets a value in the registry.
         /// </summary>
-        /// <typeparam name="T">The type of the value to set.</typeparam>
         /// <param name="valueName">The name of the value to set. If null, sets the default value of the subkey.</param>
         /// <param name="valueData">The data to set.</param>
         /// <param name="valueKind">The registry value kind.</param>

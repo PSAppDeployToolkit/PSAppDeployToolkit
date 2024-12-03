@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
 using System.Security;
@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-/// Some Native Method Declarations from:
-/// https://github.com/dahall/Vanara
+// Some Native Method Declarations from:
+// https://github.com/dahall/Vanara
 
 namespace PSADT.PInvoke
 {
@@ -282,7 +282,7 @@ namespace PSADT.PInvoke
         /// <param name="Msg">The message to be sent.</param>
         /// <param name="wParam">Additional message-specific information.</param>
         /// <param name="lParam">The message string to send, or <c>null</c> for no string.</param>
-        /// <param name="fuFlags">The behavior of this function. This parameter can be one or more of the following values: <see cref="SMTO_NORMAL"/>, <see cref="SMTO_BLOCK"/>, <see cref="SMTO_ABORTIFHUNG"/>, or <see cref="SMTO_NOTIMEOUTIFNOTHUNG"/>.</param>
+        /// <param name="fuFlags">The behavior of this function.</param>
         /// <param name="uTimeout">The duration, in milliseconds, of the time-out period.</param>
         /// <param name="lpdwResult">Receives the result of the message processing.</param>
         /// <returns>The return value is the result of the message processing, which depends on the message sent.</returns>
@@ -292,8 +292,8 @@ namespace PSADT.PInvoke
         /// <summary>
         /// Notifies the system of an event that an application has performed.
         /// </summary>
-        /// <param name="eventId">Describes the event that has occurred. This parameter can be one of the values from the <see cref="SHCNE"/> enumeration.</param>
-        /// <param name="flags">Flags that indicate the meaning of the <paramref name="item1"/> and <paramref name="item2"/> parameters. This parameter can be one or more of the values from the <see cref="SHCNF"/> enumeration.</param>
+        /// <param name="eventId">Describes the event that has occurred.</param>
+        /// <param name="flags">Flags that indicate the meaning of the <paramref name="item1"/> and <paramref name="item2"/> parameters.</param>
         /// <param name="item1">A handle to the first item involved in the event.</param>
         /// <param name="item2">A handle to the second item involved in the event. This parameter is optional and may be <see cref="IntPtr.Zero"/>.</param>
         [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -563,7 +563,7 @@ namespace PSADT.PInvoke
         /// <summary>
         /// Creates a handle for the specified file with read-only access.
         /// </summary>
-        /// <param name="filePath">The file path of the file to open.</param>
+        /// <param name="lpFileName">The file path of the file to open.</param>
         /// <returns>A <see cref="SafeFileHandle"/> for the opened file.</returns>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern SafeFileHandle CreateFile(
@@ -638,7 +638,7 @@ namespace PSADT.PInvoke
         /// <param name="hFile">Reserved; must be <see cref="SafeLibraryHandle.Null"/> or <see cref="IntPtr.Zero"/>.</param>
         /// <param name="dwFlags">The action to be taken when loading the module. This parameter can include one or more of the <see cref="LoadLibraryExFlags"/>.</param>
         /// <returns>
-        /// If the function succeeds, the return value is a handle to the loaded module. If the function fails, the return value is <see cref="SafeLibraryHandle.InvalidHandle"/>.
+        /// If the function succeeds, the return value is a handle to the loaded module. If the function fails, the return value is the InvalidHandle value from <see cref="SafeLibraryHandle"/>.
         /// To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
         /// </returns>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -927,8 +927,7 @@ namespace PSADT.PInvoke
         /// Retrieves a list of sessions on a Remote Desktop Session Host (RD Session Host) server.
         /// </summary>
         /// <param name="hServer">A handle to the RD Session Host server.
-        /// You can use the <see cref="WTSOpenServer"/> function to retrieve a handle to a specific
-        /// server, or <see cref="WTS_CURRENT_SERVER_HANDLE"/> to use the RD Session Host server that hosts your application.</param>
+        /// You can use the <see cref="WTSOpenServer"/> function to retrieve a handle to a specific server.</param>
         /// <param name="Reserved">This parameter is reserved. It must be zero.</param>
         /// <param name="Version">The version of the enumeration request. This parameter must be 1.</param>
         /// <param name="ppSessionInfo">A pointer to <see cref="IEnumerable&lt;WTS_SESSION_INFO&gt;"/> structures that represent the retrieved
@@ -955,7 +954,7 @@ namespace PSADT.PInvoke
         /// <summary>
         /// Closes an open handle to a Remote Desktop Session Host (RD Session Host) server.
         /// </summary>
-        /// <param name="hServer">A handle to an RD Session Host server opened by a call to the <see cref="WTSOpenServer"/> or <see cref="WTSOpenServerEx"/> function.</param>
+        /// <param name="hServer">A handle to an RD Session Host server opened by a call to the <see cref="WTSOpenServer"/> function.</param>
         [DllImport("wtsapi32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
         public static extern void WTSCloseServer(IntPtr hServer);
 

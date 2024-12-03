@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -145,11 +145,11 @@ namespace PSADT.PathEx
         /// Gets the directory path of the executing assembly.
         /// </summary>
         /// <returns>
-        /// The directory path of the executing assembly, or <see cref="AppDomain.CurrentDomain.BaseDirectory"/> if the path cannot be determined.
+        /// The directory path of the executing assembly, or the BaseDirectory property of <see cref="AppDomain.CurrentDomain"/> if the path cannot be determined.
         /// </returns>
         /// <remarks>
         /// This method retrieves the directory path by using <see cref="GetExecutingAssemblyFilePath"/> to obtain the full file path
-        /// and then extracting the directory name. If it cannot determine the file path, it defaults to <see cref="AppDomain.CurrentDomain.BaseDirectory"/>.
+        /// and then extracting the directory name. If it cannot determine the file path, it defaults to the BaseDirectory property of <see cref="AppDomain.CurrentDomain"/>.
         /// </remarks>
         public static string GetExecutingAssemblyDirectory()
         {
@@ -206,10 +206,10 @@ namespace PSADT.PathEx
         /// <remarks>
         /// This method attempts to retrieve the location of the executing assembly using several strategies:
         /// <list type="number">
-        /// <item><description>Tries <see cref="Assembly.GetExecutingAssembly().Location"/> to get the executing assembly's file path.</description></item>
+        /// <item><description>Tries the Location property of <see cref="Assembly.GetExecutingAssembly()"/> to get the executing assembly's file path.</description></item>
         /// <item><description>If the assembly location is empty (e.g., single-file deployment), falls back to <see cref="AppContext.BaseDirectory"/>.</description></item>
         /// <item><description>If the entry assembly's location is available, it uses that as a fallback.</description></item>
-        /// <item><description>Falls back to <see cref="AppDomain.CurrentDomain.BaseDirectory"/> if all else fails.</description></item>
+        /// <item><description>Falls back to the BaseDirectory property of <see cref="AppDomain.CurrentDomain"/> if all else fails.</description></item>
         /// </list>
         /// </remarks>
         public static string? GetExecutingAssemblyFilePath()

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace PSADT.PInvoke
 {
@@ -182,10 +182,10 @@ namespace PSADT.PInvoke
         PROCESS_MODE_BACKGROUND_END = 0x00200000,
     }
 
-    [Flags]
     /// <summary>
     /// Flags used to specify how a process's main window and startup behavior are configured in the <see cref="STARTUPINFO"/> structure.
     /// </summary>
+    [Flags]
     public enum STARTF : uint
     {
         /// <summary>
@@ -261,7 +261,7 @@ namespace PSADT.PInvoke
 
 
     /// <summary>
-    /// Flags that control the behavior of the <see cref="LoadLibraryEx"/> function, which is used to load a dynamic-link library (DLL).
+    /// Flags that control the behavior of the <see cref="NativeMethods.LoadLibraryEx"/> function, which is used to load a dynamic-link library (DLL).
     /// </summary>
     [Flags]
     public enum LoadLibraryExFlags : int
@@ -327,7 +327,7 @@ namespace PSADT.PInvoke
         LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400,
 
         /// <summary>
-        /// If this value is used, the system uses an altered search path to load the library, which can be specified in the <paramref name="lpFileName"/> parameter of <see cref="LoadLibraryEx"/>.
+        /// If this value is used, the system uses an altered search path to load the library, which can be specified in the lpFileName parameter of <see cref="NativeMethods.LoadLibraryEx"/>.
         /// </summary>
         LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008
     }
@@ -1217,7 +1217,9 @@ namespace PSADT.PInvoke
 
     #region user32.dll
 
-    /// <summary>The system metric or configuration setting to be retrieved by <see cref="GetSystemMetrics"/>.</summary>
+    /// <summary>
+    /// The system metric or configuration setting to be retrieved by <see cref="NativeMethods.GetSystemMetrics"/>.
+    /// </summary>
     public enum SystemMetric
     {
         /// <summary>
@@ -2362,8 +2364,7 @@ namespace PSADT.PInvoke
     #region shell32.dll
 
     /// <summary>
-	/// The flags that specify the file information to retrieve from <see cref="SHGetFileInfo(string, FileAttributes, ref SHFILEINFO,
-	/// int, SHGFI)"/>.
+	/// The flags that specify the file information to retrieve from <see cref="NativeMethods.SHGetFileInfo"/>.
 	/// </summary>
     [Flags]
     public enum SHGFI

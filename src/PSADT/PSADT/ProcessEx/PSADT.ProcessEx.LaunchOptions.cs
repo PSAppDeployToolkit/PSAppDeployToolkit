@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using PSADT.PInvoke;
 
 namespace PSADT.ProcessEx
@@ -38,6 +38,7 @@ namespace PSADT.ProcessEx
         /// </summary>
         public bool? InheritEnvironmentVariables { get; set; }
 
+        /// <summary>
         /// Wait for the process to exit before continuing.
         /// </summary>
         public bool Wait { get; set; }
@@ -141,7 +142,7 @@ namespace PSADT.ProcessEx
         /// <summary>
         /// Updates the value of the Username property. This is the only way to modify the property's value.
         /// </summary>
-        /// <param name="newValue">The new value to set for the property.</param>
+        /// <param name="username">The new value for the Username property.</param>
         public void UpdateUsername(string username)
         {
             Username = username;

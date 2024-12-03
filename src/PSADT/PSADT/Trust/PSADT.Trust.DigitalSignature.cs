@@ -7,7 +7,6 @@ namespace PSADT.Trust
     /// </summary>
     public class DigitalSignature : IDisposable
     {
-        internal readonly Authenticode _authenticode;
         internal readonly CatalogSignature _catalog;
 
         /// <summary>
@@ -15,7 +14,6 @@ namespace PSADT.Trust
         /// </summary>
         public DigitalSignature()
         {
-            _authenticode = new Authenticode();
             _catalog = new CatalogSignature();
         }
 
@@ -30,7 +28,7 @@ namespace PSADT.Trust
             if (string.IsNullOrWhiteSpace(filePath))
                 throw new ArgumentException("File path must be provided", nameof(filePath));
 
-            bool isAuthenticodeSigned = _authenticode.Verify(filePath);
+            bool isAuthenticodeSigned = Authenticode.Verify(filePath);
             bool isCatalogSigned = _catalog.Verify(filePath);
 
             return new SignatureVerification(isAuthenticodeSigned, isCatalogSigned);

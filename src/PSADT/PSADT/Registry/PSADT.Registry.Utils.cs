@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -168,7 +168,7 @@ namespace PSADT.Registry
         /// <param name="hiveFilePath">The path to the registry hive file.</param>
         /// <param name="hiveKey">The registry key where the hive will be loaded.</param>
         /// <param name="subKey">The subkey under the hive key where the hive will be loaded.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="mountKey"/> or <paramref name="hiveFilePath"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="hiveKey"/> or <paramref name="hiveFilePath"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the operation fails, including the error code in the message.</exception>
         public static void RegLoadHiveFile(string hiveFilePath, HKEY hiveKey, string subKey)
         {
@@ -193,7 +193,7 @@ namespace PSADT.Registry
         /// </summary>
         /// <param name="hiveKey">The registry key where the hive was loaded.</param>
         /// <param name="subKey">The subkey under the hive key where the hive was loaded.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="mountKey"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="hiveKey"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the operation fails, including the error code in the message.</exception>
         public static void RegUnloadHiveFile(HKEY hiveKey, string subKey)
         {

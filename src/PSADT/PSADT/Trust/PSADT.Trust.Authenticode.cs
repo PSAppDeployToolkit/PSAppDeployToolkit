@@ -1,17 +1,17 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using PSADT.PInvoke;
 
 namespace PSADT.Trust
 {
-    public class Authenticode
+    public static class Authenticode
     {
-        // <summary>
+        /// <summary>
         /// Verifies the Authenticode signature of the specified file.
         /// </summary>
         /// <param name="filePath">The file path of the file to verify.</param>
         /// <returns>True if the Authenticode signature is valid; otherwise, false.</returns>
-        public bool Verify(string filePath)
+        public static bool Verify(string filePath)
         {
             using var filePathHandle = new SafeHGlobalHandle(Marshal.StringToCoTaskMemUni(filePath));
             using var fileInfoHandle = new SafeHGlobalHandle(Marshal.AllocHGlobal(Marshal.SizeOf(typeof(WinTrustFileInfo))));

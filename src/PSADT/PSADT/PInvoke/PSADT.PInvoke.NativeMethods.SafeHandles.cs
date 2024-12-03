@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
@@ -171,7 +171,7 @@ namespace PSADT.PInvoke
     }
 
     /// <summary>
-    /// Represents a Wts server handle that can be closed with <see cref="WTSCloseServer(IntPtr)"/>.
+    /// Represents a Wts server handle that can be closed with <see cref="NativeMethods.WTSCloseServer(IntPtr)"/>.
     /// </summary>
     public sealed class SafeWTSServer : SafeHandle
     {
