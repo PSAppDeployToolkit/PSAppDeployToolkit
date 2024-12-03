@@ -46,8 +46,7 @@ function Show-ADTWelcomePromptClassic
         [System.String]$DeferDeadline,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.UInt32]$ForceCountdown,
+        [System.Management.Automation.SwitchParameter]$ForceCountdown,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceCloseProcessesCountdown,
@@ -191,7 +190,7 @@ function Show-ADTWelcomePromptClassic
             # If the countdown is complete, close the application(s) or continue.
             if ($countdownTime -le $currentTime)
             {
-                if ($forceCountdown -eq $true)
+                if ($ForceCountdown)
                 {
                     Write-ADTLogEntry -Message 'Countdown timer has elapsed. Force continue.'
                     $buttonContinue.PerformClick()
@@ -457,7 +456,7 @@ function Show-ADTWelcomePromptClassic
         $labelCountdownMessage.Name = 'LabelCountdownMessage'
         $labelCountdownMessage.TabStop = $false
         $labelCountdownMessage.AutoSize = $true
-        $labelCountdownMessage.Text = if ($forceCountdown -or !$WelcomeState.RunningProcessDescriptions)
+        $labelCountdownMessage.Text = if ($ForceCountdown -or !$WelcomeState.RunningProcessDescriptions)
         {
             [System.String]::Format($adtStrings.WelcomePrompt.CountdownMessage, $adtStrings.DeploymentType.$DeploymentType)
         }
