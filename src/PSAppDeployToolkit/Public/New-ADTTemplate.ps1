@@ -181,7 +181,7 @@ function New-ADTTemplate
                 # Display the newly created folder in Windows Explorer.
                 if ($Show)
                 {
-                    & $env:SystemRoot\explorer.exe $templatePath
+                    & ([System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'explorer.exe')) $templatePath
                 }
 
                 # Return a DirectoryInfo object if passing through.
