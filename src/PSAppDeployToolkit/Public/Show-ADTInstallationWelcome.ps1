@@ -438,7 +438,7 @@ function Show-ADTInstallationWelcome
                             DeploymentType = $PSBoundParameters.DeploymentType
                             CloseProcessesCountdown = $welcomeState.CloseProcessesCountdown
                             ForceCloseProcessesCountdown = !!$ForceCloseProcessesCountdown
-                            ForceCountdown = $ForceCountdown
+                            ForceCountdown = !!$ForceCountdown
                             PersistPrompt = $PersistPrompt
                             NoMinimizeWindows = $NoMinimizeWindows
                             CustomText = $CustomText
