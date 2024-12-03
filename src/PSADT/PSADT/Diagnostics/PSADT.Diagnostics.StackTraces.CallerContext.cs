@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -89,7 +89,7 @@ namespace PSADT.Diagnostics.StackTraces
         }
 
         /// <summary>
-        /// Overload for <see cref="FormatCallerContext"/> that uses the class's internal properties for caller information.
+        /// Overload for <see cref="CallerContext"/> FormatCallerContext() method that uses the class's internal properties for caller information.
         /// </summary>
         /// <param name="prependString">A string to prepend to the formatted output. Default is "[".</param>
         /// <param name="separatorBetweenFileAndMethod">Separator between the file name and method name. Default is "::".</param>

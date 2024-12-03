@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Management.Automation;
 
@@ -39,7 +39,7 @@ namespace PSADT.Shared
         /// <summary>
         /// Initializes a new instance of the <see cref="ScriptBlockWrapper"/> class with an asynchronous function delegate that returns a result and a <see cref="ScriptBlock"/>.
         /// </summary>
-        /// <param name="asyncFunc">The asynchronous <see cref="Func{Task{T}}"/> delegate to execute, returning a result that is passed to the <see cref="ScriptBlock"/>.</param>
+        /// <param name="asyncFunc">The asynchronous function delegate to execute, returning a result that is passed to the <see cref="ScriptBlock"/>.</param>
         /// <param name="scriptBlock">The <see cref="ScriptBlock"/> to invoke after the asynchronous function completes.</param>
         public ScriptBlockWrapper(Func<Task<object>> asyncFunc, ScriptBlock scriptBlock)
         {
@@ -84,10 +84,10 @@ namespace PSADT.Shared
         }
 
         /// <summary>
-        /// Wraps the asynchronous function and returns a new <see cref="Func{Task{T}}"/> that invokes the <see cref="ScriptBlock"/> after the asynchronous function completes.
+        /// Wraps the asynchronous function and returns a new function that invokes the <see cref="ScriptBlock"/> after the asynchronous function completes.
         /// </summary>
         /// <typeparam name="T">The type of the result returned by the asynchronous function.</typeparam>
-        /// <returns>A wrapped <see cref="Func{Task{T}}"/> delegate.</returns>
+        /// <returns>A wrapped function delegate.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the asynchronous function is not available.</exception>
         public Func<Task<T>> GetWrappedAsyncFunc<T>()
         {
@@ -126,7 +126,7 @@ namespace PSADT.Shared
         /// <summary>
         /// Returns the original asynchronous function delegate provided to the constructor.
         /// </summary>
-        /// <returns>The original <see cref="Func{Task{T}}"/> delegate.</returns>
+        /// <returns>The original function delegate.</returns>
         public Func<Task<object>>? GetOriginalAsyncFuncDelegate()
         {
             return _asyncFunc;

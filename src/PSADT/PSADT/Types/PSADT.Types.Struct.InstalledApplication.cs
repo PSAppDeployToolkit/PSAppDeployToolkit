@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 
 namespace PSADT.Types
@@ -158,28 +158,6 @@ namespace PSADT.Types
         }
 
         /// <summary>
-        /// Determines whether the application was installed recently (within the last X days).
-        /// </summary>
-        /// <param name="days">The number of days to check.</param>
-        /// <returns>True if the application was installed within the specified number of days; otherwise, false.</returns>
-        // public bool IsInstalledRecently(int days = 30)
-        // {
-        //     return InstallDate != DateTime.MinValue && (DateTime.Now - InstallDate).TotalDays <= days;
-        // }
-
-        /// <summary>
-        /// Determines whether a newer version of the application is available.
-        /// </summary>
-        /// <param name="currentVersion">The version to compare against.</param>
-        /// <returns>True if a newer version is available; otherwise, false.</returns>
-        // public bool IsUpdateAvailable(string currentVersion)
-        // {
-        //     return Version.TryParse(DisplayVersion, out var installedVersion) &&
-        //            Version.TryParse(currentVersion, out var targetVersion) &&
-        //            targetVersion > installedVersion;
-        // }
-
-        /// <summary>
         /// Validates whether the product code is a valid GUID.
         /// </summary>
         /// <returns>True if the product code is a valid GUID; otherwise, false.</returns>
@@ -187,95 +165,5 @@ namespace PSADT.Types
         {
             return (null != ProductCode);
         }
-
-        /// <summary>
-        /// Returns a robust uninstall command, handling MSI-based scenarios, sanitization, and command fixes.
-        /// </summary>
-        /// <returns>A valid uninstall command.</returns>
-        // public string GetUninstallCommand()
-        // {
-        //     if (string.IsNullOrWhiteSpace(UninstallString))
-        //     {
-        //         return string.Empty; // Return empty if no uninstall string is available.
-        //     }
-
-        //     string sanitizedCommand = UninstallString.Trim();
-
-        //     // Detect MSI-based uninstall commands using "msiexec"
-        //     if (sanitizedCommand.IndexOf("msiexec", StringComparison.OrdinalIgnoreCase) >= 0)
-        //     {
-        //         // Ensure the command is properly using /x for uninstall, not /i (install) or /f (repair)
-        //         sanitizedCommand = FixMsiexecCommand(sanitizedCommand);
-        //     }
-        //     else
-        //     {
-        //         // Non-MSI uninstall command handling (e.g., EXE)
-        //         sanitizedCommand = FixGeneralUninstallCommand(sanitizedCommand);
-        //     }
-
-        //     return sanitizedCommand;
-        // }
-
-        /// <summary>
-        /// Ensures that MSI-based commands use /x for uninstall instead of /i (install) or /f (repair).
-        /// </summary>
-        /// <param name="command">The original command string.</param>
-        /// <returns>A corrected and sanitized MSI uninstall command.</returns>
-        // private string FixMsiexecCommand(string command)
-        // {
-        //     string sanitizedCommand = command;
-
-        //     // Replace "/i" (install) or "/f" (repair) with "/x" for uninstall
-        //     sanitizedCommand = Regex.Replace(sanitizedCommand, @"(?i)(/i|/f)\s+", "/x ");
-
-        //     // Ensure that the product code is properly formatted for uninstallation
-        //     if (sanitizedCommand.IndexOf("/x", StringComparison.OrdinalIgnoreCase) < 0)
-        //     {
-        //         // If /x (uninstall) is not present, append it with the product code
-        //         sanitizedCommand += $" /x {ProductCode}";
-        //     }
-
-        //     // Check if quotes are needed for the command
-        //     if (sanitizedCommand.Contains(' ') && !sanitizedCommand.StartsWith("\""))
-        //     {
-        //         sanitizedCommand = $"\"{sanitizedCommand}\"";
-        //     }
-
-        //     return sanitizedCommand;
-        // }
-
-        /// <summary>
-        /// Sanitizes general uninstall commands (non-MSI based) and ensures proper quoting and flags.
-        /// </summary>
-        /// <param name="command">The original uninstall command.</param>
-        /// <returns>A properly formatted uninstall command.</returns>
-        // private string FixGeneralUninstallCommand(string command)
-        // {
-        //     string sanitizedCommand = command;
-
-        //     // Handle common shell execution scenarios
-        //     if (sanitizedCommand.StartsWith("cmd /C", StringComparison.OrdinalIgnoreCase))
-        //     {
-        //         sanitizedCommand = sanitizedCommand.Replace("cmd /C", string.Empty).Trim();
-        //     }
-
-        //     // Ensure the path is correctly quoted if it contains spaces
-        //     if (sanitizedCommand.Contains(' ') && !sanitizedCommand.StartsWith("\""))
-        //     {
-        //         sanitizedCommand = $"\"{sanitizedCommand}\"";
-        //     }
-
-        //     // Replace single backslashes with double backslashes if necessary (for Windows paths)
-        //     sanitizedCommand = Regex.Replace(sanitizedCommand, @"(?<!\\)\\(?!\\)", @"\\");
-
-        //     // Add common uninstall flags if not present (e.g., "/uninstall")
-        //     if (!sanitizedCommand.EndsWith("/uninstall", StringComparison.OrdinalIgnoreCase) &&
-        //         !sanitizedCommand.EndsWith("-silent", StringComparison.OrdinalIgnoreCase))
-        //     {
-        //         sanitizedCommand += " /uninstall";
-        //     }
-
-        //     return sanitizedCommand;
-        // }
     }
 }

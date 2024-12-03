@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Diagnostics.CodeAnalysis;
@@ -1271,7 +1271,7 @@ namespace PSADT.PInvoke
         public int nLength;
 
         /// <summary>
-        /// A pointer to a <see cref="SECURITY_DESCRIPTOR"/> structure that controls access to the object. If the value of this member is NULL, the object is assigned the default security descriptor associated with the access token of the calling process. This is not the same as granting access to everyone by assigning a NULL discretionary access control list (DACL). By default, the default DACL in the access token of a process allows access only to the user represented by the access token.
+        /// A pointer to a structure that controls access to the object. If the value of this member is NULL, the object is assigned the default security descriptor associated with the access token of the calling process. This is not the same as granting access to everyone by assigning a NULL discretionary access control list (DACL). By default, the default DACL in the access token of a process allows access only to the user represented by the access token.
         /// For information about creating a security descriptor, see Creating a Security Descriptor.
         /// </summary>
         public IntPtr lpSecurityDescriptor;

@@ -456,7 +456,7 @@ namespace PSADT.GUI
         /// </exception>
         /// <remarks>
         /// Setting a process as DPI aware improves its rendering and scaling behavior on high-DPI displays.
-        /// This method wraps the native <see cref="SetProcessDPIAware"/> function, which does not set last error codes for failure.
+        /// This method wraps the native <see cref="NativeMethods"/> SetProcessDPIAware() function, which does not set last error codes for failure.
         /// </remarks>
         public static bool TrySetProcessDPIAware()
         {

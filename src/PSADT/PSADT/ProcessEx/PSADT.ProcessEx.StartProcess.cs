@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -197,7 +197,6 @@ namespace PSADT.ProcessEx
         /// Launches a process in a specific session.
         /// </summary>
         /// <param name="options">The launch options for the process.</param>
-        /// <param name="sessionId">The ID of the session to launch the process in.</param>
         private async Task ExecuteProcessInSessionAsync(LaunchOptions options)
         {
             if (!options.SessionId.HasValue)
@@ -359,13 +358,6 @@ namespace PSADT.ProcessEx
                 );
         }
 
-        /// <summary>
-        /// Starts a process in the specified session.
-        /// </summary>
-        /// <param name="sessionId">The ID of the session to start the process in.</param>
-        /// <param name="startInfo">The ProcessStartInfo for the process to start.</param>
-        /// <param name="useLinkedAdminToken">If true, uses the linked admin token when available.</param>
-        /// <returns>The started ProcessEx object.</returns>
         /// <summary>
         /// Starts a process in the specified session.
         /// </summary>

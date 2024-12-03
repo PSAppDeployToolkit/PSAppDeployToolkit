@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Linq;
 using System.ComponentModel;
@@ -66,7 +66,7 @@ namespace PSADT.WTSSession
         /// <see langword="true"/> if the enumeration succeeds and at least one session is found; otherwise, <see langword="false"/>.
         /// </returns>
         /// <exception cref="Win32Exception">
-        /// Thrown when the underlying call to <see cref="NativeMethods.WTSEnumerateSessions"/> fails.
+        /// Thrown when the underlying call to <see cref="NativeMethods"/> WTSEnumerateSessions() method fails.
         /// </exception>
         /// <exception cref="InvalidOperationException">
         /// Thrown if the memory tokenInfo returned is invalid or the handle is closed.
@@ -146,7 +146,7 @@ namespace PSADT.WTSSession
         /// The session property of the specified type.
         /// </returns>
         /// <exception cref="Win32Exception">
-        /// Thrown when the underlying call to <see cref="NativeMethods.WTSQuerySessionInformation"/> fails.
+        /// Thrown when the underlying call to <see cref="NativeMethods"/> WTSQuerySessionInformation() method fails.
         /// </exception>
         /// <exception cref="InvalidOperationException">
         /// Thrown if the memory tokenInfo returned is invalid or the handle is closed.
@@ -246,11 +246,11 @@ namespace PSADT.WTSSession
         /// A <see cref="WINSTATIONINFORMATIONW"/> structure containing the information about the specified session.
         /// </returns>
         /// <remarks>
-        /// This method calls the native <see cref="NativeMethods.WinStationQueryInformation"/> function to retrieve session information.
+        /// This method calls the native <see cref="NativeMethods"/> WinStationQueryInformation() function to retrieve session information.
         /// The information is returned in a managed <see cref="WINSTATIONINFORMATIONW"/> structure.
         /// </remarks>
         /// <exception cref="Win32Exception">
-        /// Thrown when the underlying call to <see cref="NativeMethods.WinStationQueryInformation"/> fails.
+        /// Thrown when the underlying call to <see cref="NativeMethods"/> WinStationQueryInformation() fails.
         /// </exception>
         private static WINSTATIONINFORMATIONW WinStationQueryInformation(SafeWTSServer hServer, uint sessionId)
         {
@@ -896,9 +896,9 @@ namespace PSADT.WTSSession
 
         public static SessionInfo? GetPrimaryActiveUserSession(string? hServerName = "")
         {
-            /// Determine the primary active user session
-            //  If an active console user exists, then that will be the active user session. In some scenarios, there can be an active console and non-console session. Since admins log into the console session, we give it preference.
-            //  If no active console user exists but users are logged in, such as on terminal servers or VDIs, then the first logged-in non-console user that is 'Active' is the active user.
+            // Determine the primary active user session.
+            // If an active console user exists, then that will be the active user session. In some scenarios, there can be an active console and non-console session. Since admins log into the console session, we give it preference.
+            // If no active console user exists but users are logged in, such as on terminal servers or VDIs, then the first logged-in non-console user that is 'Active' is the active user.
 
             try
             {
@@ -926,9 +926,9 @@ namespace PSADT.WTSSession
 
         public static uint? GetPrimaryActiveUserSessionId(string? hServerName = "")
         {
-            /// Determine the active user session ID
-            //  If an active console user exists, then that will be the active user session. In some scenarios, there can be an active console and non-console session. Since admins log into the console session, we give it preference.
-            //  If no active console user exists but users are logged in, such as on terminal servers or VDIs, then the first logged-in non-console user that is 'Active' is the active user.
+            // Determine the active user session ID.
+            // If an active console user exists, then that will be the active user session. In some scenarios, there can be an active console and non-console session. Since admins log into the console session, we give it preference.
+            // If no active console user exists but users are logged in, such as on terminal servers or VDIs, then the first logged-in non-console user that is 'Active' is the active user.
 
             try
             {
@@ -950,9 +950,9 @@ namespace PSADT.WTSSession
 
         public static SessionInfo? GetPrimaryActiveLocalAdminUserSession(string? hServerName = "")
         {
-            /// Determine the primary active local admin user session
-            //  If an active, local admin, console user exists, then that will be the primary session. In some scenarios, there can be an active console and non-console session. Since admins log into the console session, we give it preference.
-            //  If no active, local admin, console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is 'Active' and is a local admin is the primary session.
+            // Determine the primary active local admin user session.
+            // If an active, local admin, console user exists, then that will be the primary session. In some scenarios, there can be an active console and non-console session. Since admins log into the console session, we give it preference.
+            // If no active, local admin, console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is 'Active' and is a local admin is the primary session.
 
             try
             {
@@ -988,9 +988,9 @@ namespace PSADT.WTSSession
 
         public static uint? GetPrimaryActiveLocalAdminUserSessionId(string? hServerName = "")
         {
-            /// Determine the primary active local admin user session
-            //  If an active, local admin, console user exists, then that will be the primary session. In some scenarios, there can be an active console and non-console session. Since admins log into the console session, we give it preference.
-            //  If no active, local admin, console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is 'Active' and is a local admin is the primary session.
+            // Determine the primary active local admin user session.
+            // If an active, local admin, console user exists, then that will be the primary session. In some scenarios, there can be an active console and non-console session. Since admins log into the console session, we give it preference.
+            // If no active, local admin, console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that is 'Active' and is a local admin is the primary session.
 
             try
             {

@@ -13,10 +13,10 @@ namespace PSADT.Types
         /// </summary>
         /// <param name="timeStamp">The timestamp of the log entry.</param>
         /// <param name="invoker">The standard output of the process.</param>
-        /// <param name="Message">The log entry message.</param>
-        /// <param name="Severity">The log entry's severity.</param>
-        /// <param name="Source">The log entry's source.</param>
-        /// <param name="ScriptSection">The log entry's script section, typically defaulting to the active session's InstallPhase value.</param>
+        /// <param name="message">The log entry message.</param>
+        /// <param name="severity">The log entry's severity.</param>
+        /// <param name="source">The log entry's source.</param>
+        /// <param name="scriptSection">The log entry's script section, typically defaulting to the active session's InstallPhase value.</param>
         public LogEntry(DateTime timeStamp, CallStackFrame invoker, string message, uint severity, string source, string scriptSection)
         {
             Timestamp = timeStamp;

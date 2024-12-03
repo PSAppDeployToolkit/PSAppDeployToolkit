@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Drawing;
@@ -33,7 +33,7 @@ namespace PSADT.Shared
         /// If the underlying native method call fails, a system error will be thrown. Use this method in contexts where
         /// system initialization is critical to the next steps of execution.
         ///
-        /// <param>If an error occurs, the method will throw a system error after a call to <see cref="GetLastWin32Error"/>.</param>
+        /// <param>If an error occurs, the method will throw a system error after a call to <see cref="System.Runtime.InteropServices.Marshal.GetLastWin32Error()"/>.</param>
         /// </remarks>
         /// <exception cref="InvalidOperationException">
         /// Thrown if the native method call to check the OOBE status fails./>

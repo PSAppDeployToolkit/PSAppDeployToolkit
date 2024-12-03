@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
@@ -268,7 +268,7 @@ namespace PSADT.AccessToken
         /// <remarks>
         /// This method creates a new thread configured to use the Multi-Threaded Apartment (MTA) model. 
         /// It runs the provided asynchronous action within this thread and handles any exceptions that may occur during the execution.
-        /// Asynchronous operations inside the thread are handled synchronously using <see cref="Task.GetAwaiter().GetResult()"/> 
+        /// Asynchronous operations inside the thread are handled synchronously using GetResult() from <see cref="Task.GetAwaiter()"/> 
         /// because the <see cref="Thread"/> class does not natively support asynchronous code.
         /// </remarks>
         public async Task<T> RunImpersonatedMethodWithMTAAsync<T>([PowerShellScriptBlock] Func<Task<T>> action)

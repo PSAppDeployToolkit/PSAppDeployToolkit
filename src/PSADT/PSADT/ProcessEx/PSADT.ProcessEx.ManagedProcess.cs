@@ -87,7 +87,6 @@ namespace PSADT.ProcessEx
         /// <summary>
         /// Sets up output redirection for the process.
         /// </summary>
-        /// <param name="processInfo">The ManagedProcess containing the process to set up redirection for.</param>
         /// <param name="options">The launch options containing redirection settings.</param>
         public void ConfigureOutputRedirection(LaunchOptions options)
         {
