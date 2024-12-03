@@ -34,15 +34,5 @@ namespace PSADT.SecureIPC
             : base(message, inner)
         {
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SecureNamedPipeException"/> class with serialized data.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data.</param>
-        /// <param name="context">The StreamingContext that contains contextual information.</param>
-        protected SecureNamedPipeException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }
