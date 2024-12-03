@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -328,6 +328,9 @@ namespace PSADT.UserInterface.Utilities
         }
     }
 
+    /// <summary>
+    /// Provides information about the system.
+    /// </summary>
     public static class SystemInformation
     {
         /// <summary>

@@ -6,8 +6,14 @@ using System.Windows.Media.Imaging;
 
 namespace PSADT.UserInterface.Utilities
 {
+    /// <summary>
+    /// Bitmap extensions
+    /// </summary>
     public static class BitmapExtensions
     {
+        /// <summary>
+        /// Convert a bitmap to an image source
+        /// </summary>
         public static ImageSource ConvertToImageSource(this Bitmap bitmap)
         {
             if (bitmap == null)

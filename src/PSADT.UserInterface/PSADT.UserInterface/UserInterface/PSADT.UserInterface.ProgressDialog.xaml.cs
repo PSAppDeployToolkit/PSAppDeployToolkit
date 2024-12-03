@@ -1,4 +1,4 @@
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 
@@ -6,6 +6,15 @@ namespace PSADT.UserInterface
 {
     public partial class ProgressDialog : BaseDialog
     {
+        /// <summary>
+        /// Constructor for ProgressDialog
+        /// </summary>
+        /// <param name="appTitle"></param>
+        /// <param name="subtitle"></param>
+        /// <param name="topMost"></param>
+        /// <param name="appIconImage"></param>
+        /// <param name="progressMessage"></param>
+        /// <param name="progressMessageDetail"></param>
         public ProgressDialog(
             string? appTitle,
             string? subtitle,
@@ -39,6 +48,12 @@ namespace PSADT.UserInterface
             ProgressBar.IsIndeterminate = true;
         }
 
+        /// <summary>
+        /// Update the progress bar
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="message"></param>
+        /// <param name="detailMessage"></param>
         public void UpdateProgress(double value, string? message = null, string? detailMessage = null)
         {
             Dispatcher.Invoke(() =>
@@ -58,6 +73,9 @@ namespace PSADT.UserInterface
             });
         }
 
+        /// <summary>
+        /// Sets the messages when the progress bar's percentage is indeterminate
+        /// </summary>
         public void SetIndeterminate(string? message = null, string? detailMessage = null)
         {
             Dispatcher.Invoke(() =>
@@ -76,6 +94,10 @@ namespace PSADT.UserInterface
             });
         }
 
+        /// <summary>
+        /// Override the OnClosed event to dispose of the dialog
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);

@@ -1,4 +1,4 @@
-
+﻿
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -8,11 +8,26 @@ namespace PSADT.UserInterface
 {
     public partial class RestartDialog : BaseDialog
     {
+        /// <summary>
+        /// Result of the dialog
+        /// </summary>
         public string? Result { get; private set; }
 
         private DispatcherTimer _timer;
         private TimeSpan _remainingTime;
 
+        /// <summary>
+        /// Constructor for RestartDialog
+        /// </summary>
+        /// <param name="appTitle"></param>
+        /// <param name="subtitle"></param>
+        /// <param name="topMost"></param>
+        /// <param name="appIconImage"></param>
+        /// <param name="timeRemainingText"></param>
+        /// <param name="restartCountdownMins"></param>
+        /// <param name="restartMessageText"></param>
+        /// <param name="dismissButtonText"></param>
+        /// <param name="restartButtonText"></param>
         public RestartDialog(
             string? appTitle,
             string? subtitle,
@@ -107,6 +122,10 @@ namespace PSADT.UserInterface
             Close();
         }
 
+        /// <summary>
+        /// Override the OnClosed event to dispose of the dialog
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);

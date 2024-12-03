@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Threading;
 using PSADT.UserInterface.Services;
 using Wpf.Ui.Markup;
@@ -144,7 +144,6 @@ namespace PSADT.UserInterface
         /// _currentWindow = welcomeDialog;
         /// Shows the ProgressDialog synchronously.
         /// </summary>
-        /// <param name="dialogExpiryDuration">How long before the dialog should expire.</param>
         /// <param name="appTitle">Title of the application.</param>
         /// <param name="subtitle">Subtitle of the application.</param>
         /// <param name="topMost">Whether the dialog should be topmost.</param>
@@ -238,13 +237,13 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Shows the RestartDialog synchronously and returns the user's response.
         /// </summary>
-        /// <param name="dialogExpiryDuration">How long before the dialog should expire.</param>
         /// <param name="appTitle">Title of the application.</param>
         /// <param name="subtitle">Subtitle of the application.</param>
         /// <param name="topMost">Whether the dialog should be topmost.</param>
         /// <param name="appIconImage">URI of the application icon.</param>
+        /// <param name="timeRemainingText">Main progress message.</param>
         /// <param name="restartCountdownMins">Message prompting users to close apps.</param>
-        /// <param name="restartMessage">Text for the word remain in, deferrals remaining.</param>
+        /// <param name="restartMessageText">Text for the word remain in, deferrals remaining.</param>
         /// <param name="dismissButtonText">Text for the defer button.</param>
         /// <param name="restartButtonText">Text for the continue button.</param>
         /// <returns>User's response as a string.</returns>
