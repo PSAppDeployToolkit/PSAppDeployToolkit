@@ -583,6 +583,12 @@ Add-BuildTask Build {
             throw "More than one statement is defined in [$($file.Name)]."
         }
 
+        # Throw if there's any AST values matching PowerShell's environment provider.
+        if ($scrAst.FindAll({ $args[0].ToString() -match '^(\$?env:|(Microsoft.PowerShell.Core\\)?Environment::)' }, $true).Count)
+        {
+            throw "The usage of PowerShell environment provider or drive within [$($file.Name)] is forbidden."
+        }
+
         # If our file isn't internal, redefine its command calls to be via the module's CommandTable.
         if (!$file.BaseName.EndsWith('Internal') -and ($file.Name -notmatch '^Imports(First|Last)\.ps1$'))
         {
