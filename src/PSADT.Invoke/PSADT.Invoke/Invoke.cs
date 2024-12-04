@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -88,9 +88,20 @@ namespace PSADT
                 WriteDebugMessage($"Commencing invocation of {adtFrontendPath}.");
 
                 // Test whether we've got a local config before continuing.
-                if (File.Exists(Path.Combine(currentPath, "Config\\config.psd1")))
+                if ((Path.Combine(currentPath, "Config\\config.psd1") is string adtLocalConfigPath) && File.Exists(adtLocalConfigPath))
                 {
-                    adtConfigPath = Path.Combine(currentPath, "Config\\config.psd1");
+                    // Test the file for validity prior to just blindly using it.
+                    var localConfigAst = Parser.ParseFile(adtLocalConfigPath, out Token[] localConfigTokens, out ParseError[] localConfigErrors);
+                    if (localConfigErrors.Length > 0)
+                    {
+                        throw new Exception($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtLocalConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
+                    }
+
+                    // Test that the local config is a hashtable.
+                    if ((localConfigAst.Find(p => p.GetType() == typeof(HashtableAst), false) is HashtableAst localConfig) && (((Hashtable)localConfig.SafeGetValue())["Toolkit"] is Hashtable localConfigToolkit) && (null != localConfigToolkit["RequireAdmin"]))
+                    {
+                        adtConfigPath = adtLocalConfigPath;
+                    }
                 }
 
                 // Verify if the App Deploy script file exists.
