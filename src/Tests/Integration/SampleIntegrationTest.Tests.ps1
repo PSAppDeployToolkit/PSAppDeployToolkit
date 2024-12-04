@@ -1,4 +1,4 @@
-# BeforeAll {
+﻿# BeforeAll {
 #     Set-Location -Path $PSScriptRoot
 #     $ModuleName = 'PSAppDeployToolkit'
 #     $PathToManifest = [System.IO.Path]::Combine('..', '..', 'Artifacts', "$ModuleName.psd1")

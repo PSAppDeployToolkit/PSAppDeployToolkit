@@ -1,4 +1,4 @@
-BeforeAll {
+﻿BeforeAll {
 	$DeployMode = 'NonInteractive'
 	$null = . "$PSScriptRoot\..\Toolkit\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
 	if (-not $SessionZero -or -not $RunAsActiveUser)

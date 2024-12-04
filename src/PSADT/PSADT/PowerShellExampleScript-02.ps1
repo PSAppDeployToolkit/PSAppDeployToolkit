@@ -1,4 +1,4 @@
-# Import the PSADT assembly
+﻿# Import the PSADT assembly
 Add-Type -Path "path\to\PSADT.dll"
 
 # SYSTEM Process Script

@@ -1,4 +1,4 @@
-BeforeAll {
+﻿BeforeAll {
 	Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
 	Import-Module "$PSScriptRoot\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
 }

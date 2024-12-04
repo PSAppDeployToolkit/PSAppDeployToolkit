@@ -1,4 +1,4 @@
-# Import the SecureIPC and PSHost assemblies
+﻿# Import the SecureIPC and PSHost assemblies
 Add-Type -Path "path\to\PSADT.dll"
 
 # Configure server options

@@ -1,4 +1,4 @@
-function Find-RegexMatch
+﻿function Find-RegexMatch
 {
 <#
 .SYNOPSIS

@@ -1,4 +1,4 @@
-BeforeAll {
+﻿BeforeAll {
 	try
 	{
 		$DeployMode = 'NonInteractive'

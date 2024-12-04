@@ -1,4 +1,4 @@
-BeforeAll {
+﻿BeforeAll {
 	$DebugPreference = 'Continue'
 	$appName = 'Execute-ProcessAsUser.Tests'
 	$DeployMode = 'NonInteractive'

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     An Invoke-Build Build file.
 
@@ -113,6 +113,7 @@ $buildItems = @(
 # Default build.
 $str = @()
 $str = 'Clean', 'ValidateRequirements', 'ImportModuleManifest'
+$str += 'EncodingCheck'
 $str += 'FormattingCheck'
 $str += 'Analyze', 'Test'
 $str += 'CreateHelpStart'
@@ -294,6 +295,33 @@ Add-BuildTask Clean {
     $null = Remove-Item $Script:ArtifactsPath -Force -Recurse -ErrorAction Ignore
     $null = New-Item $Script:ArtifactsPath -ItemType Directory
     Write-Build Green '      ...Clean Complete!'
+}
+
+# Synopsis: Analyze scripts to verify that the file encoding is UTF-8 with a BOM.
+Add-BuildTask EncodingCheck {
+    Write-Build White '      Performing script encoding checks...'
+    Get-ChildItem -Path "$BuildRoot\*.ps*1" -Recurse -File | & {
+        begin
+        {
+            # Create byte array to read into file.
+            $bom = [System.Byte[]]::new(4)
+        }
+
+        process
+        {
+            # Open the file, read out the first 4 bytes, then close it out.
+            $stream = [System.IO.FileStream]::new($_.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
+            $null = $stream.Read($bom, 0, $bom.Count)
+            $stream.Flush(); $stream.Close()
+
+            # Throw if the byte order mark doesn't match utf8-bom.
+            if (!(($bom[0] -eq 0xEF) -and ($bom[1] -eq 0xBB) -and ($bom[2] -eq 0xBF)))
+            {
+                throw "The file encoding for [$($_.Name)] is not UTF-8 with BOM."
+            }
+        }
+    }
+    Write-Build Green '      ...Encoding Analyze Complete!'
 }
 
 # Synopsis: Analyze scripts to verify if they adhere to desired coding format (Stroustrup / OTBS / Allman).
