@@ -1,4 +1,4 @@
-# Load the C# DLL
+﻿# Load the C# DLL
 Add-Type -Path "C:\path\to\your\CSharpLibrary.dll"
 
 # Define the log options

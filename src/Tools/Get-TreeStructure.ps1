@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Generates a directory tree structure for a Visual Studio project.
 

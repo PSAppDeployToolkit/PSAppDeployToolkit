@@ -1,4 +1,4 @@
-# Import the necessary .NET assemblies
+﻿# Import the necessary .NET assemblies
 Add-Type -Path "C:\Path\To\PSADT.UserInterface.dll"
 
 # Create an instance of the ProcessEvaluationService
