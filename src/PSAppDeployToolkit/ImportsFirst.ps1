@@ -40,7 +40,6 @@ $RequiredModules = [System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.
     @{ ModuleName = 'Microsoft.PowerShell.Security'; Guid = 'a94c8c7e-9810-47c0-b8af-65089c13a35a'; ModuleVersion = '1.0' }
     @{ ModuleName = 'Microsoft.PowerShell.Utility'; Guid = '1da87e53-152b-403e-98dc-74d7b4d63d59'; ModuleVersion = '1.0' }
     @{ ModuleName = 'NetAdapter'; Guid = '1042b422-63a8-4016-a6d6-293e19e8f8a6'; ModuleVersion = '1.0' }
-    @{ ModuleName = 'PowerShellGet'; Guid = '1d73a601-4a6c-43c5-ba3f-619b18bbb404'; ModuleVersion = '1.0' }
     @{ ModuleName = 'ScheduledTasks'; Guid = '5378ee8e-e349-49bb-83b9-f3d9c396c0a6'; ModuleVersion = '1.0' }
 )
 
@@ -57,14 +56,9 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 & $CommandTable.'Set-StrictMode' -Version 3
 
 # Throw if any previous version of the unofficial PSADT module is found on the system.
-if (($conflicts = & $CommandTable.'Get-Module' -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh))
+if (& $CommandTable.'Get-Module' -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh)
 {
-    & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
-            [System.NotSupportedException]::new("This module cannot be used while the PSADT module is installed. Please uninstall the PSADT module and try again."),
-            'ConflictingModulePresent',
-            [System.Management.Automation.ErrorCategory]::InvalidOperation,
-            $conflicts
-        ))
+    & $CommandTable.'Write-Warning' -Message "This module should not be used while the unofficial v3 PSADT module is installed."
 }
 
 # Import this module's manifest via the language parser. This allows us to test with potential extra variables that are permitted in manifests.
