@@ -37,7 +37,7 @@ function Show-ADTInstallationRestartPromptFluent
 
     # Send this straight out to the C# backend.
     Write-ADTLogEntry -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."
-    return [PSADT.UserInterface.UnifiedADTApplication]::ShowRestartDialog(
+    $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowRestartDialog(
         $Title,
         $Subtitle,
         !$NotTopMost,
@@ -48,4 +48,14 @@ function Show-ADTInstallationRestartPromptFluent
         $adtStrings.RestartPrompt.ButtonRestartLater,
         $adtStrings.RestartPrompt.ButtonRestartNow
     )
+
+    # Restart the computer if the button was pushed.
+    if ($result.Equals('Restart'))
+    {
+        Write-ADTLogEntry -Message 'Forcefully restarting the computer...'
+        Restart-Computer -Force
+    }
+
+    # Return the button's result to the caller.
+    return $result
 }
