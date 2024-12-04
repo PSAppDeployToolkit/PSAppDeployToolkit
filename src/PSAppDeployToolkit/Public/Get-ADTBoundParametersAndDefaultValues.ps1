@@ -25,6 +25,9 @@ function Get-ADTBoundParametersAndDefaultValues
     .PARAMETER Exclude
         One or more parameter names to exclude from the results.
 
+    .PARAMETER CommonParameters
+        Specifies whether PowerShell advanced function common parameters should be included.
+
     .INPUTS
         None
 
@@ -74,13 +77,25 @@ function Get-ADTBoundParametersAndDefaultValues
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$Exclude
+        [System.String[]]$Exclude,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$CommonParameters
     )
 
     begin
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Hold array of common parameters for filtration.
+        $commonParams = if (!$CommonParameters)
+        {
+            $(
+                [System.Management.Automation.PSCmdlet]::CommonParameters
+                [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
+            )
+        }
 
         # Internal function for testing parameter attributes.
         function Test-NamedAttributeArgumentAst
@@ -165,7 +180,7 @@ function Get-ADTBoundParametersAndDefaultValues
                     process
                     {
                         # Filter out excluded values.
-                        if (!$Exclude -or !$Exclude.Contains($_.Key))
+                        if (($commonParams -notcontains $_.Key) -and ($Exclude -notcontains $_.Key))
                         {
                             $obj.Add($_.Key, $_.Value)
                         }
@@ -189,7 +204,7 @@ function Get-ADTBoundParametersAndDefaultValues
                         }
 
                         # Filter out excluded values.
-                        if ($Exclude -and $Exclude.Contains($_.Name.VariablePath.UserPath))
+                        if ($Exclude -contains $_.Name.VariablePath.UserPath)
                         {
                             return
                         }
