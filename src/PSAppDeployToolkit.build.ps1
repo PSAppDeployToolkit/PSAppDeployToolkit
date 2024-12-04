@@ -258,7 +258,8 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
             {
                 $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Debug\*')
                 $buildItem.OutputPath | ForEach-Object {
-                    Write-Build Gray "          Copying from $sourcePath to $(($destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)))..."
+                    $destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)
+                    Write-Build Gray "          Copying from $sourcePath to $destPath..."
                     Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
                 }
             }
@@ -575,6 +576,13 @@ Add-BuildTask AssetCopy -Before Build {
             Write-Build Gray "        Copying from $sourcePath to $destPath..."
             Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
         }
+    }
+
+    # For Invoke-AppDeployToolkit.exe, we need an additional check to make sure the assembly is renamed.
+    if ([System.IO.File]::Exists("$($Script:BuildModuleRoot)\Frontend\v3\Invoke-AppDeployToolkit.exe"))
+    {
+        Remove-Item -LiteralPath "$($Script:BuildModuleRoot)\Frontend\v3\Deploy-Application.exe" -Force -Confirm:$false
+        Rename-Item -LiteralPath "$($Script:BuildModuleRoot)\Frontend\v3\Invoke-AppDeployToolkit.exe" -NewName Deploy-Application.exe -Force -Confirm:$false
     }
     Write-Build Green '      ...Assets Copy Complete!'
 }
