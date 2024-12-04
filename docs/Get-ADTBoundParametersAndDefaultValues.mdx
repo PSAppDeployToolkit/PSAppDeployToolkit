@@ -13,7 +13,7 @@ Returns a hashtable with the output of $PSBoundParameters and default-valued par
 
 ```powershell
 Get-ADTBoundParametersAndDefaultValues [-Invocation] <InvocationInfo> [[-ParameterSetName] <String>]
- [[-HelpMessage] <String>] [[-Exclude] <String[]>] [<CommonParameters>]
+ [[-HelpMessage] <String>] [[-Exclude] <String[]>] [-CommonParameters] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -92,6 +92,22 @@ Aliases:
 Required: False
 Position: 4
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CommonParameters
+
+Specifies whether PowerShell advanced function common parameters should be included.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
