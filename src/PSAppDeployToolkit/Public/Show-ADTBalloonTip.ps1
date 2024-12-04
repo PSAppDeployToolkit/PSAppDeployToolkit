@@ -66,7 +66,7 @@ function Show-ADTBalloonTip
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
+        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
