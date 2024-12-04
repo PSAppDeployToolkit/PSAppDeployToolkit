@@ -105,6 +105,7 @@ namespace PSADT.UserInterface
             _deferButtonText = deferButtonText;
 
             AppTitleTextBlock.Text = appTitle ?? "Application";
+            this.Title = appTitle ?? "Application";
             SubtitleTextBlock.Text = subtitle ?? "";
             Topmost = topMost ?? false;
             DeferButton.Content = deferButtonText ?? "Defer";
@@ -122,6 +123,7 @@ namespace PSADT.UserInterface
             if (!string.IsNullOrWhiteSpace(appIconImage))
             {
                 AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
+                this.Icon = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
             }
 
             // Bind the ListView to the AppsToCloseCollection
@@ -298,14 +300,21 @@ namespace PSADT.UserInterface
                 Application.Current.Dispatcher.Invoke(() => UpdateDeferButtonState());
             }
             Result = "Defer";
-            Close();
+            CloseDialog();
         }
 
         private void ContinueButton_Click(object sender, RoutedEventArgs e)
         {
             Result = "Continue";
-            Close();
+            CloseDialog();
         }
+
+        private void CloseDialog()
+        {
+            Close();
+            Dispose();
+        }
+
 
         private void AppsToCloseListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
@@ -358,7 +367,7 @@ namespace PSADT.UserInterface
             }
         }
 
-        private bool AreProcessListsEqual(List<AppProcessInfo> list1, List<AppProcessInfo> list2)
+        private static bool AreProcessListsEqual(List<AppProcessInfo> list1, List<AppProcessInfo> list2)
         {
             if (list1.Count != list2.Count)
                 return false;
@@ -392,10 +401,7 @@ namespace PSADT.UserInterface
 
             Application.Current.Dispatcher.Invoke(() =>
             {
-                if (AppsToCloseCollection.Contains(e))
-                {
-                    AppsToCloseCollection.Remove(e);
-                }
+                AppsToCloseCollection.Remove(e);
             });
         }
 
