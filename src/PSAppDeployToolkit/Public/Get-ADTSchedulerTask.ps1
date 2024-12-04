@@ -94,7 +94,7 @@ function Get-ADTSchedulerTask
                 }
 
                 # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
-                if (($schTasks = $exeSchtasksResults | ConvertFrom-Csv | & { process { if (($_ -match '^\\') -and ($_ -match $TaskName)) { return $_ } } }))
+                if (($schTasks = $exeSchtasksResults | ConvertFrom-Csv | & { process { if (($_.TaskName -match '^\\') -and ([string]::IsNullOrWhiteSpace($TaskName) -or $_.TaskName -match $TaskName)) { return $_ } } }))
                 {
                     return $schTasks | Select-Object -Property ($schTasks[0].PSObject.Properties.Name | & {
                             process
