@@ -12,7 +12,7 @@ Creates a new folder containing a template front end and module folder, ready to
 ## SYNTAX
 
 ```powershell
-New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-Version] <Int32>] [-Force] [-PassThru]
+New-ADTTemplate [[-Destination] <String>] [[-Name] <String>] [[-Version] <Int32>] [-Show] [-Force] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ### -Name
 
 Name of the newly created folder.
-Default is PSAppDeployToolkit.
+Default is PSAppDeployToolkit_Version.
 
 ```yaml
 Type: String
@@ -70,7 +70,7 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: $MyInvocation.MyCommand.Module.Name
+Default value: "$($MyInvocation.MyCommand.Module.Name)_$($MyInvocation.MyCommand.Module.Version)"
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -88,6 +88,22 @@ Aliases:
 Required: False
 Position: 3
 Default value: 4
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Show
+
+Opens the newly created folder in Windows Explorer.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -7,7 +7,7 @@ hide_table_of_contents: false
 
 ## SYNOPSIS
 
-Get message for MSI error code.
+Get message for MSI exit code.
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-ADTMsiExitCodeMessage [-MsiExitCode] <Int32> [<CommonParameters>]
 
 ## DESCRIPTION
 
-Get message for MSI error code by reading it from msimsg.dll.
+Get message for MSI exit code by reading it from msimsg.dll.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Get-ADTMsiExitCodeMessage -MsiErrorCode 1618
+Get-ADTMsiExitCodeMessage -MsiExitCode 1618
 ```
 
 ## PARAMETERS
 
 ### -MsiExitCode
 
-MSI error code.
+MSI exit code.
 
 ```yaml
 Type: Int32
@@ -58,7 +58,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### System.String
 
-### Returns the message for the MSI error code.
+### Returns the message for the MSI exit code.
 ## NOTES
 An active ADT session is NOT required to use this function.
 
