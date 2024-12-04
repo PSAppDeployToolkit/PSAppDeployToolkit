@@ -566,30 +566,30 @@ Add-BuildTask Build {
         # Import the script file as a string for substring replacement.
         $text = [System.IO.File]::ReadAllText($file.FullName).Trim()
 
-        # If our file isn't internal, redefine its command calls to be via the module's CommandTable.
-        if (!$file.BaseName.EndsWith('Internal') -and !$file.BaseName.StartsWith('Imports'))
+        # Parse the ps1 file and store its AST.
+        $tokens = $null
+        $errors = $null
+        $scrAst = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$tokens, [ref]$errors)
+
+        # Throw if we had any parsing errors.
+        if ($errors)
         {
-            # Parse the ps1 file and store its AST.
-            $tokens = $null
-            $errors = $null
-            $scrAst = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$tokens, [ref]$errors)
+            throw "Received $(($errCount = ($errors | Measure-Object).Count)) error$(if (!$errCount.Equals(1)) {'s'}) while parsing [$($file.Name)]."
+        }
 
-            # Throw if we had any parsing errors.
-            if ($errors)
-            {
-                throw "Received $(($errCount = ($errors | Measure-Object).Count)) error$(if (!$errCount.Equals(1)) {'s'}) while parsing [$($file.Name)]."
-            }
+        # Throw if we don't have exactly one statement.
+        if (!$scrAst.EndBlock.Statements.Count.Equals(1) -and ($file.Name -notmatch '^Imports(First|Last)\.ps1$'))
+        {
+            throw "More than one statement is defined in [$($file.Name)]."
+        }
 
-            # Throw if we don't have exactly one statement.
-            if (!$scrAst.EndBlock.Statements.Count.Equals(1))
-            {
-                throw "More than one statement is defined in [$($file.Name)]."
-            }
-
+        # If our file isn't internal, redefine its command calls to be via the module's CommandTable.
+        if (!$file.BaseName.EndsWith('Internal') -and ($file.Name -notmatch '^Imports(First|Last)\.ps1$'))
+        {
             # Recursively get all CommandAst objects that have an unknown InvocationOperator (bare word within a script).
             $commandAsts = $scrAst.FindAll({ ($args[0] -is [System.Management.Automation.Language.CommandAst]) -and $args[0].InvocationOperator.Equals([System.Management.Automation.Language.TokenKind]::Unknown) }, $true)
 
-            # Throw if there's a found CommandAst object where the first command element isn't a bare word (something unknowh has happened here).
+            # Throw if there's a found CommandAst object where the first command element isn't a bare word (something unknown has happened here).
             if ($commandAsts.GetEnumerator().ForEach({ if (($_.CommandElements[0] -isnot [System.Management.Automation.Language.StringConstantExpressionAst]) -or !$_.CommandElements[0].StringConstantType.Equals([System.Management.Automation.Language.StringConstantType]::BareWord)) { return $_ } }).Count)
             {
                 throw "One or more found CommandAst objects within [$($file.Name)] were invalid."
