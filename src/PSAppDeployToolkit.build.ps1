@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     An Invoke-Build Build file.
 
@@ -113,6 +113,7 @@ $buildItems = @(
 # Default build.
 $str = @()
 $str = 'Clean', 'ValidateRequirements', 'ImportModuleManifest'
+$str += 'EncodingCheck'
 $str += 'FormattingCheck'
 $str += 'Analyze', 'Test'
 $str += 'CreateHelpStart'
@@ -294,6 +295,33 @@ Add-BuildTask Clean {
     $null = Remove-Item $Script:ArtifactsPath -Force -Recurse -ErrorAction Ignore
     $null = New-Item $Script:ArtifactsPath -ItemType Directory
     Write-Build Green '      ...Clean Complete!'
+}
+
+# Synopsis: Analyze scripts to verify that the file encoding is UTF-8 with a BOM.
+Add-BuildTask EncodingCheck {
+    Write-Build White '      Performing script encoding checks...'
+    Get-ChildItem -Path "$BuildRoot\*.ps*1" -Recurse -File | & {
+        begin
+        {
+            # Create byte array to read into file.
+            $bom = [System.Byte[]]::new(4)
+        }
+
+        process
+        {
+            # Open the file, read out the first 4 bytes, then close it out.
+            $stream = [System.IO.FileStream]::new($_.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
+            $null = $stream.Read($bom, 0, $bom.Count)
+            $stream.Flush(); $stream.Close()
+
+            # Throw if the byte order mark doesn't match utf8-bom.
+            if (!(($bom[0] -eq 0xEF) -and ($bom[1] -eq 0xBB) -and ($bom[2] -eq 0xBF)))
+            {
+                throw "The file encoding for [$($_.Name)] is not UTF-8 with BOM."
+            }
+        }
+    }
+    Write-Build Green '      ...Encoding Analyze Complete!'
 }
 
 # Synopsis: Analyze scripts to verify if they adhere to desired coding format (Stroustrup / OTBS / Allman).
@@ -566,30 +594,36 @@ Add-BuildTask Build {
         # Import the script file as a string for substring replacement.
         $text = [System.IO.File]::ReadAllText($file.FullName).Trim()
 
-        # If our file isn't internal, redefine its command calls to be via the module's CommandTable.
-        if (!$file.BaseName.EndsWith('Internal') -and !$file.BaseName.StartsWith('Imports'))
+        # Parse the ps1 file and store its AST.
+        $tokens = $null
+        $errors = $null
+        $scrAst = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$tokens, [ref]$errors)
+
+        # Throw if we had any parsing errors.
+        if ($errors)
         {
-            # Parse the ps1 file and store its AST.
-            $tokens = $null
-            $errors = $null
-            $scrAst = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$tokens, [ref]$errors)
+            throw "Received $(($errCount = ($errors | Measure-Object).Count)) error$(if (!$errCount.Equals(1)) {'s'}) while parsing [$($file.Name)]."
+        }
 
-            # Throw if we had any parsing errors.
-            if ($errors)
-            {
-                throw "Received $(($errCount = ($errors | Measure-Object).Count)) error$(if (!$errCount.Equals(1)) {'s'}) while parsing [$($file.Name)]."
-            }
+        # Throw if we don't have exactly one statement.
+        if (!$scrAst.EndBlock.Statements.Count.Equals(1) -and ($file.Name -notmatch '^Imports(First|Last)\.ps1$'))
+        {
+            throw "More than one statement is defined in [$($file.Name)]."
+        }
 
-            # Throw if we don't have exactly one statement.
-            if (!$scrAst.EndBlock.Statements.Count.Equals(1))
-            {
-                throw "More than one statement is defined in [$($file.Name)]."
-            }
+        # Throw if there's any AST values matching PowerShell's environment provider.
+        if ($scrAst.FindAll({ $args[0].ToString() -match '^(\$?env:|(Microsoft.PowerShell.Core\\)?Environment::)' }, $true).Count)
+        {
+            throw "The usage of PowerShell environment provider or drive within [$($file.Name)] is forbidden."
+        }
 
+        # If our file isn't internal, redefine its command calls to be via the module's CommandTable.
+        if (!$file.BaseName.EndsWith('Internal') -and ($file.Name -notmatch '^Imports(First|Last)\.ps1$'))
+        {
             # Recursively get all CommandAst objects that have an unknown InvocationOperator (bare word within a script).
             $commandAsts = $scrAst.FindAll({ ($args[0] -is [System.Management.Automation.Language.CommandAst]) -and $args[0].InvocationOperator.Equals([System.Management.Automation.Language.TokenKind]::Unknown) }, $true)
 
-            # Throw if there's a found CommandAst object where the first command element isn't a bare word (something unknowh has happened here).
+            # Throw if there's a found CommandAst object where the first command element isn't a bare word (something unknown has happened here).
             if ($commandAsts.GetEnumerator().ForEach({ if (($_.CommandElements[0] -isnot [System.Management.Automation.Language.StringConstantExpressionAst]) -or !$_.CommandElements[0].StringConstantType.Equals([System.Management.Automation.Language.StringConstantType]::BareWord)) { return $_ } }).Count)
             {
                 throw "One or more found CommandAst objects within [$($file.Name)] were invalid."
