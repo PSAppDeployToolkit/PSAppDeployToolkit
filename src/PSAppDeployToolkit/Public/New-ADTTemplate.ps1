@@ -79,10 +79,10 @@ function New-ADTTemplate
         [System.Int32]$Version = 4,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Force,
+        [System.Management.Automation.SwitchParameter]$Show,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Show,
+        [System.Management.Automation.SwitchParameter]$Force,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
