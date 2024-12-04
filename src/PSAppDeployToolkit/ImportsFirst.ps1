@@ -57,7 +57,7 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 
 # Throw if any previous version of the unofficial PSADT module is found on the system.
 if (& $CommandTable.'Get-Module' -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh)
-# {
+{
     & $CommandTable.'Write-Warning' -Message "This module should not be used while the unofficial v3 PSADT module is installed."
 }
 
