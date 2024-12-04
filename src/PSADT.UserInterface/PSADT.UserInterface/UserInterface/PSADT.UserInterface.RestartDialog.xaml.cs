@@ -51,6 +51,7 @@ namespace PSADT.UserInterface
             Loaded += RestartDialog_Loaded;
 
             AppTitleTextBlock.Text = appTitle ?? "Application";
+            this.Title = appTitle ?? "Application";
             SubtitleTextBlock.Text = subtitle ?? "";
             Topmost = topMost ?? false;
 
@@ -68,6 +69,7 @@ namespace PSADT.UserInterface
             if (!string.IsNullOrWhiteSpace(appIconImage))
             {
                 AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
+                this.Icon = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
             }
 
             // Initialize the DispatcherTimer
@@ -111,15 +113,26 @@ namespace PSADT.UserInterface
 
         private void DismissButton_Click(object sender, RoutedEventArgs e)
         {
-            _timer.Stop();
-            this.Close();
+            Result = "Dismiss";
+            CloseDialog();
+        }
+
+        private void Button2_Click(object sender, RoutedEventArgs e)
+        {
+            CloseDialog();
         }
 
         private void RestartButton_Click(object sender, RoutedEventArgs e)
         {
-            _timer.Stop();
             Result = "Restart";
+            CloseDialog();
+        }
+
+        private void CloseDialog()
+        {
+            _timer.Stop();
             Close();
+            Dispose();
         }
 
         /// <summary>

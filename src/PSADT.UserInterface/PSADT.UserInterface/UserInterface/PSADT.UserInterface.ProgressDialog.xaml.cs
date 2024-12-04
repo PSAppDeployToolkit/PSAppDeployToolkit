@@ -32,6 +32,7 @@ namespace PSADT.UserInterface
             InitializeComponent();
 
             AppTitleTextBlock.Text = appTitle ?? "Application";
+            this.Title = appTitle ?? "Application";
             SubtitleTextBlock.Text = subtitle ?? "";
             Topmost = topMost ?? false;
             ProgressMessageTextBlock.Text = progressMessage ?? "Installation in progress. Please wait ...";
@@ -42,6 +43,8 @@ namespace PSADT.UserInterface
             if (!string.IsNullOrWhiteSpace(appIconImage))
             {
                 AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
+                this.Icon = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
+
             }
 
 
