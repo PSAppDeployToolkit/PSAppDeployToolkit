@@ -56,22 +56,16 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 # Ensure module operates under the strictest of conditions.
 & $CommandTable.'Set-StrictMode' -Version 3
 
-# Attempt to remove any previous version of the unofficial PSADT module.
-if ($PSEdition.Equals('Core'))
+# Throw if any previous version of the unofficial PSADT module is found on the system.
+if (($conflicts = & $CommandTable.'Get-Module' -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh))
 {
-    # When inside PowerShell 7, we need to remove any PowerShell 5.x-installed instances via Windows PowerShell.
-    $spParams = @{
-        FilePath = "$([System.Environment]::SystemDirectory)\WindowsPowerShell\v1.0\powershell.exe"
-        ArgumentList = @(
-            '-NonInteractive'
-            '-NoProfile'
-            '-NoLogo'
-            '-Command Get-InstalledModule -Name PSADT -AllVersions -AllowPrerelease -ErrorAction Ignore | Uninstall-Module -Force -Confirm:$false -ErrorAction Ignore'
-        )
-    }
-    & $CommandTable.'Start-Process' @spParams -UseNewEnvironment -NoNewWindow -Wait
+    & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+            [System.NotSupportedException]::new("This module cannot be used while the PSADT module is installed. Please uninstall the PSADT module and try again."),
+            'ConflictingModulePresent',
+            [System.Management.Automation.ErrorCategory]::InvalidOperation,
+            $conflicts
+        ))
 }
-& $CommandTable.'Get-InstalledModule' -Name PSADT -AllVersions -AllowPrerelease -ErrorAction Ignore | & $CommandTable.'Uninstall-Module' -Force -Confirm:$false -ErrorAction Ignore
 
 # Import this module's manifest via the language parser. This allows us to test with potential extra variables that are permitted in manifests.
 # https://github.com/PowerShell/PowerShell/blob/7ca7aae1d13d19e38c7c26260758f474cb9bef7f/src/System.Management.Automation/engine/Modules/ModuleCmdletBase.cs#L509-L512
