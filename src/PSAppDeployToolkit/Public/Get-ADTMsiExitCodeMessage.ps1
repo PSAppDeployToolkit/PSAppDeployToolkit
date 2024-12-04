@@ -8,13 +8,13 @@ function Get-ADTMsiExitCodeMessage
 {
     <#
     .SYNOPSIS
-        Get message for MSI error code.
+        Get message for MSI exit code.
 
     .DESCRIPTION
-        Get message for MSI error code by reading it from msimsg.dll.
+        Get message for MSI exit code by reading it from msimsg.dll.
 
     .PARAMETER MsiExitCode
-        MSI error code.
+        MSI exit code.
 
     .INPUTS
         None
@@ -24,10 +24,10 @@ function Get-ADTMsiExitCodeMessage
     .OUTPUTS
         System.String
 
-        Returns the message for the MSI error code.
+        Returns the message for the MSI exit code.
 
     .EXAMPLE
-        Get-ADTMsiExitCodeMessage -MsiErrorCode 1618
+        Get-ADTMsiExitCodeMessage -MsiExitCode 1618
 
     .NOTES
         An active ADT session is NOT required to use this function.
