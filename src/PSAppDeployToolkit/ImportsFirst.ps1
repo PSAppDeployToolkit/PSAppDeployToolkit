@@ -1,4 +1,4 @@
-﻿<#
+<#
 
 .SYNOPSIS
 PSAppDeployToolkit - This module script contains the PSADT core runtime and functions using by a Invoke-AppDeployToolkit.ps1 script.
@@ -59,12 +59,7 @@ $CommandTable = [ordered]@{}; $ExecutionContext.SessionState.InvokeCommand.GetCm
 # Throw if any previous version of the unofficial PSADT module is found on the system.
 if (($conflicts = & $CommandTable.'Get-Module' -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh))
 {
-    & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
-            [System.NotSupportedException]::new("This module cannot be used while the PSADT module is installed. Please uninstall the PSADT module and try again."),
-            'ConflictingModulePresent',
-            [System.Management.Automation.ErrorCategory]::InvalidOperation,
-            $conflicts
-        ))
+    & $CommandTable.'Write-Warning' -Message "This module should not be used while the unofficial v3 PSADT module is installed."
 }
 
 # Import this module's manifest via the language parser. This allows us to test with potential extra variables that are permitted in manifests.
