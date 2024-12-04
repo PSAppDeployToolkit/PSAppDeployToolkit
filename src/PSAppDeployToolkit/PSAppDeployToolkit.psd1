@@ -51,7 +51,7 @@
     # RequiredModules = @()
 
     # Assemblies that must be loaded prior to importing this module
-    RequiredAssemblies = $(
+    RequiredAssemblies = @(
         'System.ServiceProcess'
         'System.Drawing'
         'System.Windows.Forms'
