@@ -1,4 +1,4 @@
-<#
+﻿<#
 
 .SYNOPSIS
 PSAppDeployToolkit - This module script contains the PSADT core runtime and functions using by a Invoke-AppDeployToolkit.ps1 script.
