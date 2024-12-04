@@ -110,7 +110,7 @@ function New-ADTEnvironmentTable
                 # If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
                 Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | Select-Object -ExpandProperty DCName -ErrorAction Ignore
             })
-        while ($variables.envLogonServer.StartsWith('\'))
+        while ($variables.envLogonServer -and $variables.envLogonServer.StartsWith('\'))
         {
             $variables.envLogonServer = $variables.envLogonServer.Substring(1)
         }
