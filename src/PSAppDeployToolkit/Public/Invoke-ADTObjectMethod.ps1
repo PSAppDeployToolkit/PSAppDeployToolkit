@@ -95,7 +95,7 @@ function Invoke-ADTObjectMethod
                     Named
                     {
                         # Invoke method by using parameter names.
-                        return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, [System.Object[]]$Parameter.Values, $null, $null, [System.String[]]$Parameter.Keys)
+                        return $InputObject.GetType().InvokeMember($MethodName, [System.Reflection.BindingFlags]::InvokeMethod, $null, $InputObject, ([System.Object[]]$Parameter.Values), $null, $null, ([System.String[]]$Parameter.Keys))
                     }
                     Positional
                     {
