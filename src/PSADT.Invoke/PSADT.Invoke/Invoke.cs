@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
 using System.Security.Principal;
@@ -59,7 +58,7 @@ namespace PSADT
         }
 
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string assemblyName = AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Name;
+        private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
         private static readonly string v3ToolkitPath = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
         private static readonly string v4ToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit");
         private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
