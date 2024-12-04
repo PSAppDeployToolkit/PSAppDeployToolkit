@@ -111,10 +111,9 @@ function Start-ADTMspProcess
                 [__ComObject]$Installer = New-Object -ComObject WindowsInstaller.Installer
                 [__ComObject]$Database = Invoke-ADTObjectMethod -InputObject $Installer -MethodName OpenDatabase -ArgumentList @($mspFile, 32)
 
-                # Get the SummaryInformation from the windows installer database and store all product codes found.
+                # Get the SummaryInformation from the Windows Installer database and store all product codes found.
                 [__ComObject]$SummaryInformation = Get-ADTObjectProperty -InputObject $Database -PropertyName SummaryInformation
-                $msiProductCode = (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
-                $AllTargetedProductCodes = Get-ADTApplication -FilterScript { $_.ProductCode -eq $msiProductCode }
+                $AllTargetedProductCodes = Get-ADTApplication -ProductCode (Get-ADTObjectProperty -InputObject $SummaryInformation -PropertyName Property -ArgumentList @(7)).Split(';')
 
                 # Free our COM objects.
                 [System.Runtime.InteropServices.Marshal]::ReleaseComObject($SummaryInformation)

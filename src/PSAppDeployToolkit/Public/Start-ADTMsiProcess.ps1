@@ -247,11 +247,11 @@ function Start-ADTMsiProcess
                 }
                 elseif ($ProductCode)
                 {
-                    $ProductCode.ToString()
+                    $ProductCode.ToString('B')
                 }
                 elseif ($InstalledApplication)
                 {
-                    $InstalledApplication.ProductCode.ToString()
+                    $InstalledApplication.ProductCode.ToString('B')
                 }
                 elseif (Test-Path -LiteralPath $FilePath)
                 {

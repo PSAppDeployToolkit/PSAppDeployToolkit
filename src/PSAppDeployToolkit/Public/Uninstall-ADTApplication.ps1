@@ -179,7 +179,10 @@ function Uninstall-ADTApplication
 
             # Build the hashtable with the options that will be passed to Get-ADTApplication using splatting
             $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -ParameterSetName $PSCmdlet.ParameterSetName -Exclude ArgumentList, AdditionalArgumentList, LoggingOptions, LogFileName, PassThru, SecureArgumentList
-            $InstalledApplication = Get-ADTApplication @gaiaParams
+            if (($installedApps = Get-ADTApplication @gaiaParams))
+            {
+                $InstalledApplication = $installedApps
+            }
         }
 
         # Build the hashtable with the options that will be passed to Start-ADTMsiProcess using splatting
@@ -209,12 +212,12 @@ function Uninstall-ADTApplication
             {
                 if ($removeApplication.WindowsInstaller)
                 {
-                    if ($removeApplication.ProductCode)
+                    if (!$removeApplication.ProductCode)
                     {
                         Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
-                    Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode)]."
+                    Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)] with ProductCode [$($removeApplication.ProductCode.ToString('B'))]."
                     try
                     {
                         if ($sampParams.ContainsKey('FilePath'))
