@@ -21,7 +21,7 @@
 		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
 		
 		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-		<TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
+		<TargetFrameworks>net462;net8.0-windows10.0.17763</TargetFrameworks>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 		<LangVersion>latest</LangVersion>
 		<Deterministic>true</Deterministic>
@@ -51,7 +51,7 @@
 	  <Optimize>true</Optimize>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763'">
 		<DefineConstants>$(DefineConstants);CoreCLR</DefineConstants>
 	</PropertyGroup>
 
@@ -66,7 +66,7 @@
 	  <Optimize>false</Optimize>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.17763|AnyCPU'">
 	  <DebugSymbols>true</DebugSymbols>
 	  <DebugType>full</DebugType>
 	  <WarningLevel>3</WarningLevel>
@@ -80,7 +80,7 @@
 	  <Optimize>true</Optimize>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.17763|AnyCPU'">
 	  <DebugSymbols>false</DebugSymbols>
 	  <DebugType>none</DebugType>
 	  <WarningLevel>3</WarningLevel>
@@ -99,7 +99,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.Management.Automation" Version="7.4.*" Condition="'$(TargetFramework)' == 'net8.0-windows'" PrivateAssets="all" />
+		<PackageReference Include="System.Management.Automation" Version="7.4.*" Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763'" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
