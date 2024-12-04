@@ -7,10 +7,10 @@
 		<NoWarn>$(NoWarn);CA1416;CS4014</NoWarn>
 		<UseWindowsForms>true</UseWindowsForms>
 
-		<AssemblyVersion>3.93.0.0</AssemblyVersion>
-		<FileVersion>3.93.0</FileVersion>
-		<InformationalVersion>3.93.0</InformationalVersion>
-		<ApplicationVersion>3.93.0</ApplicationVersion>
+		<AssemblyVersion>3.94.0.0</AssemblyVersion>
+		<FileVersion>3.94.0</FileVersion>
+		<InformationalVersion>3.94.0</InformationalVersion>
+		<ApplicationVersion>3.94.0</ApplicationVersion>
 		<Authors>PSAppDeployToolkit Team</Authors>
 		<Company>PSAppDeployToolkit Team</Company>
 		<Description>PSAppDeployToolkit Support Library</Description>

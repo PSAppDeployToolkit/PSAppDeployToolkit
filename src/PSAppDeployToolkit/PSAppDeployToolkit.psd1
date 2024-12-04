@@ -9,7 +9,7 @@
     RootModule = 'PSAppDeployToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion = '3.93.0'
+    ModuleVersion = '3.94.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
