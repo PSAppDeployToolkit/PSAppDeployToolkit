@@ -46,6 +46,7 @@ namespace PSADT.UserInterface
             Loaded += CustomWindow_Loaded;
 
             AppTitleTextBlock.Text = appTitle ?? "Application";
+            this.Title = appTitle ?? "Application";
             SubtitleTextBlock.Text = subtitle ?? "";
             Topmost = topMost ?? false;
 
@@ -66,6 +67,7 @@ namespace PSADT.UserInterface
             if (!string.IsNullOrWhiteSpace(appIconImage))
             {
                 AppIconImage.Source = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
+                this.Icon = new BitmapImage(new Uri(appIconImage, UriKind.Absolute));
             }
 
 
@@ -75,22 +77,6 @@ namespace PSADT.UserInterface
         {
         }
 
-        private void ShowItem_Click(object sender, RoutedEventArgs e)
-        {
-            ShowWindow();
-        }
-
-        private void NotifyIcon_LeftClick(object sender, RoutedEventArgs e)
-        {
-            ShowWindow();
-        }
-
-        private void ShowWindow()
-        {
-            Show();
-            WindowState = WindowState.Normal;
-            Activate();
-        }
 
         private void ExitItem_Click(object sender, RoutedEventArgs e)
         {
@@ -98,22 +84,10 @@ namespace PSADT.UserInterface
         }
 
 
-        /// <summary>
-        /// Override the OnClosing event to prevent the window from closing
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
-        {
-            // Instead of closing, minimize to tray
-            e.Cancel = true;
-            Hide();
-        }
-
         private void Button1_Click(object sender, RoutedEventArgs e)
         {
             Result = Button1.Content.ToString();
-            // Instead of closing, minimize to tray
-            Hide();
+            CloseDialog();
         }
 
         private void Button2_Click(object sender, RoutedEventArgs e)
