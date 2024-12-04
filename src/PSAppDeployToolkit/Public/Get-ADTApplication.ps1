@@ -193,13 +193,10 @@ function Get-ADTApplication
 
                         # Apply ProductCode filter if specified.
                         $defaultGuid = [System.Guid]::Empty
-                        $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($_.PSChildName, [ref]$defaultGuid))
+                        $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($_.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
+                        if ($ProductCode -and (!$appMsiGuid -or ($ProductCode -notcontains $appMsiGuid)))
                         {
-                            if ($ProductCode -and ($ProductCode -notcontains $appMsiGuid))
-                            {
-                                return
-                            }
-                            $defaultGuid
+                            return
                         }
 
                         # Apply name filter if specified.
