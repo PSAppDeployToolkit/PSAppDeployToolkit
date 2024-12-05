@@ -34,11 +34,11 @@
     }
     Progress = @{
         MessageInstall = "Installatie bezig. Even geduld..."
-        MessageInstallDetail = "Dette vinduet lukkes automatisk når installasjonen er fullført."
+        MessageInstallDetail = "Dit venster wordt automatisch gesloten wanneer de installatie voltooid is."
         MessageRepair = "Reparatie bezig. Even geduld..."
-        MessageRepairDetail = "Dette vinduet lukkes automatisk når reparasjonen er fullført."
+        MessageRepairDetail = "Dit venster sluit automatisch wanneer de reparatie is voltooid."
         MessageUninstall = "Verwijderen bezig. Even geduld..."
-        MessageUninstallDetail = "Dette vinduet lukkes automatisk når avinstallasjonen er fullført."
+        MessageUninstallDetail = "Dit venster wordt automatisch gesloten als de de-installatie voltooid is."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimaliseren"
@@ -56,12 +56,12 @@
         }
         Fluent = @{
             Subtitle = 'PSAppDeployToolkit - App {0}'
-            DialogMessage = 'Lagre arbeidet ditt før du fortsetter, da de følgende programmene lukkes automatisk.'
-            DialogMessageNoProcesses = 'Velg Installer for å fortsette med installasjonen. Hvis du har noen utsettelser igjen, kan du også velge å utsette installasjonen.'
-            ButtonDeferRemaining = 'forbli'
-            ButtonLeftText = 'Utsette'
-            ButtonRightText = 'Lukk apper og installer'
-            ButtonRightTextNoProcesses = 'Installere'
+            DialogMessage = "Sla je werk op voordat je verdergaat, want de volgende programma's worden automatisch afgesloten."
+            DialogMessageNoProcesses = 'Selecteer Installeren om door te gaan met de installatie. Als je nog uitstel hebt, kun je er ook voor kiezen om de installatie uit te stellen.'
+            ButtonDeferRemaining = 'resterend'
+            ButtonLeftText = 'Uitstellen'
+            ButtonRightText = 'Apps sluiten en installeren'
+            ButtonRightTextNoProcesses = 'Installeren'
         }
     }
 }
