@@ -270,6 +270,34 @@ function Start-ADTMsiProcess
                     throw (New-ADTErrorRecord @naerParams)
                 }
 
+                # Fix up any bad file paths.
+                if ([System.IO.Path]::GetExtension($msiProduct) -eq '.msi')
+                {
+                    # Iterate transforms.
+                    if ($Transforms)
+                    {
+                        for ($i = 0; $i -lt $Transforms.Length; $i++)
+                        {
+                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $Transforms[$i].Replace('.\', ''))))
+                            {
+                                $Transforms[$i] = $fullPath
+                            }
+                        }
+                    }
+
+                    # Iterate patches.
+                    if ($Patches)
+                    {
+                        for ($i = 0; $i -lt $Patches.Length; $i++)
+                        {
+                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $Patches[$i].Replace('.\', ''))))
+                            {
+                                $Patches[$i] = $fullPath
+                            }
+                        }
+                    }
+                }
+
                 # If the provided MSI was a file path, get the Property table and store it.
                 $msiPropertyTable = if ([System.IO.Path]::GetExtension($msiProduct) -eq '.msi')
                 {
@@ -416,32 +444,12 @@ function Start-ADTMsiProcess
                 # Enumerate all transforms specified, qualify the full path if possible and enclose in quotes.
                 $mstFile = if ($Transforms)
                 {
-                    # Fix up any bad file paths.
-                    for ($i = 0; $i -lt $Transforms.Length; $i++)
-                    {
-                        if (($FullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $Transforms[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
-                        {
-                            $Transforms[$i] = $FullPath
-                        }
-                    }
-
-                    # Echo an msiexec.exe compatible string back out with all transforms.
                     "`"$($Transforms -join ';')`""
                 }
 
                 # Enumerate all patches specified, qualify the full path if possible and enclose in quotes.
                 $mspFile = if ($Patches)
                 {
-                    # Fix up any bad file paths.
-                    for ($i = 0; $i -lt $patches.Length; $i++)
-                    {
-                        if (($FullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $patches[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
-                        {
-                            $Patches[$i] = $FullPath
-                        }
-                    }
-
-                    # Echo an msiexec.exe compatible string back out with all patches.
                     "`"$($Patches -join ';')`""
                 }
 
