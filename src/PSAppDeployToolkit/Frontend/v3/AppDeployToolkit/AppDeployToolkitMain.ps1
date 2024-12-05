@@ -2544,6 +2544,11 @@ function Execute-MSI
         $PSBoundParameters.ProductCode = [System.Guid]::new($FilePath)
         $null = $PSBoundParameters.Remove('FilePath')
     }
+    if ($PSBoundParameters.ContainsKey('Transform'))
+    {
+        $PSBoundParameters.Transforms = $Transform.Split(';')
+        $null = $PSBoundParameters.Remove('Transform')
+    }
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
     {
         $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
