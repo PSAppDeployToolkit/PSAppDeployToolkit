@@ -72,13 +72,13 @@ function Invoke-ADTServiceAndDependencyOperation
     )
 
     # Internal worker function.
-    function Invoke-DependentServiceOperation
+    function Invoke-ADTDependentServiceOperation
     {
         # Discover all dependent services.
-        Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Name] which are not '$($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'})'."
+        Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Service] which are not '$(($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'}))'."
         if (!($dependentServices = Get-Service -Name $Service.ServiceName -DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } }))
         {
-            Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Name]."
+            Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Service]."
             return
         }
 
@@ -98,9 +98,9 @@ function Invoke-ADTServiceAndDependencyOperation
     }
 
     # Wait up to 60 seconds if service is in a pending state.
-    if (([System.ServiceProcess.ServiceControllerStatus]$desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }[$Service.Status]))
+    if (($desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }[$Service.Status]))
     {
-        Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$DesiredStatus]."
+        Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$([System.ServiceProcess.ServiceControllerStatus]$desiredStatus)]."
         $Service.WaitForStatus($desiredStatus, $PendingStatusWait)
         $Service.Refresh()
     }
@@ -112,7 +112,7 @@ function Invoke-ADTServiceAndDependencyOperation
         # Process all dependent services.
         if (!$SkipDependentServices)
         {
-            Invoke-DependentServiceOperation
+            Invoke-ADTDependentServiceOperation
         }
 
         # Stop the parent service.
@@ -128,7 +128,7 @@ function Invoke-ADTServiceAndDependencyOperation
         # Process all dependent services.
         if (!$SkipDependentServices)
         {
-            Invoke-DependentServiceOperation
+            Invoke-ADTDependentServiceOperation
         }
     }
 
