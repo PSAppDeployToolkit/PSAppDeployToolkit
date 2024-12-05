@@ -344,6 +344,18 @@ function Start-ADTMsiProcess
                     $Action -ne 'Install'
                 }
 
+                # Return early if we're installing an installed product, or anything else for a non-installed product.
+                if ($msiInstalled -and ($Action -eq 'Install'))
+                {
+                    Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
+                    return $(if ($PassThru) { [PSADT.Types.ProcessResult]::new(1638, $null, $null) })
+                }
+                elseif (!$msiInstalled -and ($Action -ne 'Install'))
+                {
+                    Write-ADTLogEntry -Message "The MSI is not installed on this system. Skipping action [$Action]..."
+                    return
+                }
+
                 # Set up the log file to use.
                 $logFile = if ($PSBoundParameters.ContainsKey('LogFileName'))
                 {
@@ -514,68 +526,55 @@ function Start-ADTMsiProcess
                     }
                 }
 
-                # Bypass if we're installing and the MSI is already installed, otherwise proceed.
-                $ExecuteResults = if ($msiInstalled -and ($Action -eq 'Install'))
-                {
-                    Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
-                    [PSADT.Types.ProcessResult]::new(1638, $null, $null)
+                # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
+                $ExecuteProcessSplat = @{
+                    FilePath = "$([System.Environment]::SystemDirectory)\msiexec.exe"
+                    ArgumentList = $argsMSI
+                    WindowStyle = 'Normal'
                 }
-                elseif ((!$msiInstalled -and ($Action -eq 'Install')) -or $msiInstalled)
+                if ($WorkingDirectory)
                 {
-                    # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
-                    $ExecuteProcessSplat = @{
-                        FilePath = "$([System.Environment]::SystemDirectory)\msiexec.exe"
-                        ArgumentList = $argsMSI
-                        WindowStyle = 'Normal'
-                    }
-                    if ($WorkingDirectory)
-                    {
-                        $ExecuteProcessSplat.Add('WorkingDirectory', $WorkingDirectory)
-                    }
-                    if ($SecureArgumentList)
-                    {
-                        $ExecuteProcessSplat.Add('SecureArgumentList', $SecureArgumentList)
-                    }
-                    if ($PassThru)
-                    {
-                        $ExecuteProcessSplat.Add('PassThru', $PassThru)
-                    }
-                    if ($SuccessExitCodes)
-                    {
-                        $ExecuteProcessSplat.Add('SuccessExitCodes', $SuccessExitCodes)
-                    }
-                    if ($RebootExitCodes)
-                    {
-                        $ExecuteProcessSplat.Add('RebootExitCodes', $RebootExitCodes)
-                    }
-                    if ($IgnoreExitCodes)
-                    {
-                        $ExecuteProcessSplat.Add('IgnoreExitCodes', $IgnoreExitCodes)
-                    }
-                    if ($PriorityClass)
-                    {
-                        $ExecuteProcessSplat.Add('PriorityClass', $PriorityClass)
-                    }
-                    if ($NoWait)
-                    {
-                        $ExecuteProcessSplat.Add('NoWait', $NoWait)
-                    }
+                    $ExecuteProcessSplat.Add('WorkingDirectory', $WorkingDirectory)
+                }
+                if ($SecureArgumentList)
+                {
+                    $ExecuteProcessSplat.Add('SecureArgumentList', $SecureArgumentList)
+                }
+                if ($PassThru)
+                {
+                    $ExecuteProcessSplat.Add('PassThru', $PassThru)
+                }
+                if ($SuccessExitCodes)
+                {
+                    $ExecuteProcessSplat.Add('SuccessExitCodes', $SuccessExitCodes)
+                }
+                if ($RebootExitCodes)
+                {
+                    $ExecuteProcessSplat.Add('RebootExitCodes', $RebootExitCodes)
+                }
+                if ($IgnoreExitCodes)
+                {
+                    $ExecuteProcessSplat.Add('IgnoreExitCodes', $IgnoreExitCodes)
+                }
+                if ($PriorityClass)
+                {
+                    $ExecuteProcessSplat.Add('PriorityClass', $PriorityClass)
+                }
+                if ($NoWait)
+                {
+                    $ExecuteProcessSplat.Add('NoWait', $NoWait)
+                }
 
-                    # Call the Start-ADTProcess function.
-                    Start-ADTProcess @ExecuteProcessSplat
+                # Call the Start-ADTProcess function.
+                $result = Start-ADTProcess @ExecuteProcessSplat
 
-                    # Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs.
-                    Update-ADTDesktop
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "The MSI is not installed on this system. Skipping action [$Action]..."
-                }
+                # Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs.
+                Update-ADTDesktop
 
                 # Return the results if passing through.
-                if ($PassThru -and $ExecuteResults)
+                if ($PassThru -and $result)
                 {
-                    return $ExecuteResults
+                    return $result
                 }
             }
             catch
