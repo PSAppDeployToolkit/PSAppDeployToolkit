@@ -237,7 +237,7 @@ function Show-ADTInstallationWelcome
             ))
         $paramDictionary.Add('DeploymentType', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'DeploymentType', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Classic'); HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
                     [System.Management.Automation.ValidateSetAttribute]::new($adtStrings.DeploymentType.Keys)
                 )
             ))
@@ -253,17 +253,17 @@ function Show-ADTInstallationWelcome
         $adtEnv = Get-ADTEnvironment
 
         # Set up defaults if not specified.
+        if (!$PSBoundParameters.ContainsKey('DeploymentType'))
+        {
+            $PSBoundParameters.Add('DeploymentType', $adtSession.DeploymentType)
+        }
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
-        }
-        if (!$PSBoundParameters.ContainsKey('DeploymentType'))
-        {
-            $PSBoundParameters.Add('DeploymentType', $adtSession.DeploymentType)
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $PSBoundParameters.DeploymentType))
         }
 
         # Instantiate new object to hold all data needed within this call.
