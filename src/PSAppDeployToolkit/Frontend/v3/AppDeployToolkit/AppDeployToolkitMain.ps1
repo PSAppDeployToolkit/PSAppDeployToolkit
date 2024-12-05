@@ -4998,7 +4998,7 @@ $adtModule = if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit
     Import-Module -Force -PassThru -FullyQualifiedName @{
         ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
         Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'
-        ModuleVersion = '4.0.1'
+        ModuleVersion = '4.0.2'
     }
 }
 elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
@@ -5009,7 +5009,7 @@ elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployTool
     Import-Module -Force -PassThru -FullyQualifiedName @{
         ModuleName = "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
         Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'
-        ModuleVersion = '4.0.1'
+        ModuleVersion = '4.0.2'
     }
 }
 else
