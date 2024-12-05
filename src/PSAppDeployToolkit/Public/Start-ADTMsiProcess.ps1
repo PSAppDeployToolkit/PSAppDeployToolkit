@@ -241,33 +241,44 @@ function Start-ADTMsiProcess
                 Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
 
                 # If the MSI is in the Files directory, set the full path to the MSI.
-                $msiProduct = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath))))
+                $msiProduct = switch ($PSCmdlet.ParameterSetName)
                 {
-                    $dirFilesPath
-                }
-                elseif ($ProductCode)
-                {
-                    $ProductCode.ToString('B')
-                }
-                elseif ($InstalledApplication)
-                {
-                    $InstalledApplication.ProductCode.ToString('B')
-                }
-                elseif (Test-Path -LiteralPath $FilePath)
-                {
-                    (Get-Item -LiteralPath $FilePath).FullName
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "Failed to find MSI file [$FilePath]." -Severity 3
-                    $naerParams = @{
-                        Exception = [System.IO.FileNotFoundException]::new("Failed to find MSI file [$FilePath].")
-                        Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        ErrorId = 'MsiFileNotFound'
-                        TargetObject = $FilePath
-                        RecommendedAction = "Please confirm the path of the MSI file and try again."
+                    FilePath
+                    {
+                        if (Test-Path -LiteralPath $FilePath -PathType Leaf)
+                        {
+                            (Get-Item -LiteralPath $FilePath).FullName
+                        }
+                        elseif ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath))))
+                        {
+                            $dirFilesPath
+                        }
+                        else
+                        {
+                            Write-ADTLogEntry -Message "Failed to find the file [$FilePath]." -Severity 3
+                            $naerParams = @{
+                                Exception = [System.IO.FileNotFoundException]::new("Failed to find the file [$FilePath].")
+                                Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                                ErrorId = 'FilePathNotFound'
+                                TargetObject = $FilePath
+                                RecommendedAction = "Please confirm the path of the file and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
+                        }
+                        break
                     }
-                    throw (New-ADTErrorRecord @naerParams)
+
+                    ProductCode
+                    {
+                        $ProductCode.ToString('B')
+                        break
+                    }
+
+                    InstalledApplication
+                    {
+                        $InstalledApplication.ProductCode.ToString('B')
+                        break
+                    }
                 }
 
                 # Fix up any bad file paths.
