@@ -80,7 +80,8 @@ function Get-ADTRunningProcesses
                 $_.Product,
                 $_.Company,
                 $null,
-                $_.StartTime
+                $_.StartTime,
+                $_.MainWindowHandle
             )
         }
     }
