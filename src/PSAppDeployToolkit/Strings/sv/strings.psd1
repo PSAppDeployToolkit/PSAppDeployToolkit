@@ -57,8 +57,8 @@
         Fluent = @{
             Subtitle = 'PSAppDeployToolkit - App {0}'
             DialogMessage = 'Spara ditt arbete innan du fortsätter eftersom följande applikationer kommer att stängas automatiskt.'
-            DialogMessageNoProcesses = 'Välj Install för att fortsätta med installationen. Om du har några uppskjutna betalningar kvar kan du också välja att skjuta upp installationen.'
-            ButtonDeferRemaining = 'kvarstå'
+            DialogMessageNoProcesses = "Välj Installera för att fortsätta med installationen eller välj `"Skjut upp`" för att installationen skall utföras vid ett senare tillfälle."
+            ButtonDeferRemaining = 'kvarstår'
             ButtonLeftText = 'Skjut upp'
             ButtonRightText = 'Stäng appar och installera'
             ButtonRightTextNoProcesses = 'Installera'
