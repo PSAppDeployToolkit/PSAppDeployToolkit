@@ -281,15 +281,8 @@ function Start-ADTMsiProcess
                 }
                 elseif ([System.IO.Path]::GetExtension($msiFile) -eq '.msi')
                 {
-                    try
-                    {
-                        $GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }; if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
-                        [System.Guid]::new((Get-ADTMsiTableProperty @GetMsiTablePropertySplat).ProductCode)
-                    }
-                    catch
-                    {
-                        Write-ADTLogEntry -Message "Failed to get the ProductCode from the MSI file. Continue with requested action [$Action]..."
-                    }
+                    $GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }; if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
+                    [System.Guid]::new((Get-ADTMsiTableProperty @GetMsiTablePropertySplat).ProductCode)
                 }
 
                 # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
