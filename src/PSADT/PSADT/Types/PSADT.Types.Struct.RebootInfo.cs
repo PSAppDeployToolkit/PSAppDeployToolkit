@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.Collections.ObjectModel;
 
 namespace PSADT.Types
 {
@@ -31,8 +30,8 @@ namespace PSADT.Types
             bool? isSCCMClientRebootPending,
             bool isAppVRebootPending,
             bool? isFileRenameRebootPending,
-            IEnumerable<string>? pendingFileRenameOperations = null,
-            StringCollection? errorMsg = null)
+            string[]? pendingFileRenameOperations,
+            string[]? errorMsg)
         {
             ComputerName = computerName;
             LastBootUpTime = lastBootUpTime;
@@ -42,8 +41,8 @@ namespace PSADT.Types
             IsSCCMClientRebootPending = isSCCMClientRebootPending;
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
-            PendingFileRenameOperations = pendingFileRenameOperations ?? Array.Empty<string>();
-            ErrorMsg = errorMsg ?? new StringCollection();
+            PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations ?? []);
+            ErrorMsg = new ReadOnlyCollection<string>(errorMsg ?? []);
         }
 
         /// <summary>
@@ -89,12 +88,12 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the list of pending file rename operations.
         /// </summary>
-        public IEnumerable<string> PendingFileRenameOperations { get; }
+        public ReadOnlyCollection<string> PendingFileRenameOperations { get; }
 
         /// <summary>
         /// Gets the error messages related to reboot operations.
         /// </summary>
-        public StringCollection ErrorMsg { get; }
+        public ReadOnlyCollection<string> ErrorMsg { get; }
 
         /// <summary>
         /// Returns a value indicating whether any reboot is pending.
