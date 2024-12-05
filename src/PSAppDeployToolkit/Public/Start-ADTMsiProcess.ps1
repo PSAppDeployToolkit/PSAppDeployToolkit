@@ -270,6 +270,13 @@ function Start-ADTMsiProcess
                     throw (New-ADTErrorRecord @naerParams)
                 }
 
+                # If the provided MSI was a file path, get the Property table and store it.
+                $msiPropertyTable = if ([System.IO.Path]::GetExtension($msiProduct) -eq '.msi')
+                {
+                    $gmtpParams = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $gmtpParams.Add('TransformPath', $transforms) }
+                    Get-ADTMsiTableProperty @gmtpParams
+                }
+
                 # Get the ProductCode of the MSI.
                 $msiProductCode = if ($ProductCode)
                 {
@@ -279,10 +286,9 @@ function Start-ADTMsiProcess
                 {
                     $InstalledApplication.ProductCode
                 }
-                elseif ([System.IO.Path]::GetExtension($msiProduct) -eq '.msi')
+                elseif ($msiPropertyTable)
                 {
-                    $GetMsiTablePropertySplat = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
-                    [System.Guid]::new((Get-ADTMsiTableProperty @GetMsiTablePropertySplat).ProductCode)
+                    $msiPropertyTable.ProductCode
                 }
 
                 # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
@@ -306,19 +312,11 @@ function Start-ADTMsiProcess
                 }
                 elseif ($InstalledApplication)
                 {
-                    # Resolve the product code to a publisher, application name, and version.
-                    if (![System.String]::IsNullOrWhiteSpace(($productCodeNameVersion = $InstalledApplication | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore).Publisher))
-                    {
-                        (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
-                    }
-                    else
-                    {
-                        (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
-                    }
+                    (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
                 }
-                elseif ($PSBoundParameters.ContainsKey('FilePath'))
+                elseif ($msiPropertyTable)
                 {
-                    ([System.IO.FileInfo]$FilePath).BaseName
+                    (Remove-ADTInvalidFileNameChars -Name ($msiPropertyTable.ProductName + '_' + $msiPropertyTable.ProductVersion)) -replace '\s+'
                 }
 
                 # Build the log path to use.
