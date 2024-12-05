@@ -17,7 +17,8 @@ namespace PSADT.UserInterface.Services
         string? productName,
         string? publisherName,
         ImageSource? icon,
-        DateTime? lastUpdated = null) : IEquatable<AppProcessInfo>
+        DateTime? lastUpdated = null,
+        IntPtr? mainWindowHandle = null) : IEquatable<AppProcessInfo>
     {
         /// <summary>
         /// Name of the process
@@ -48,6 +49,11 @@ namespace PSADT.UserInterface.Services
         /// The last time the process information was updated
         /// </summary>
         public DateTime LastUpdated { get; } = lastUpdated ?? DateTime.Now;
+
+        /// <summary>
+        /// The handle of the process
+        /// </summary>
+        public IntPtr? MainWindowHandle { get; } = mainWindowHandle;
 
         /// <summary>
         /// Update the description of the process
