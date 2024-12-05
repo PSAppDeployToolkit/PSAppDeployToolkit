@@ -286,7 +286,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Check if the MSI is already installed. If no valid ProductCode to check or SkipMSIAlreadyInstalledCheck supplied, then continue with requested MSI action.
-                $IsMsiInstalled = if ($msiProductCode -and !$SkipMSIAlreadyInstalledCheck)
+                $msiInstalled = if ($msiProductCode -and !$SkipMSIAlreadyInstalledCheck)
                 {
                     if (!$InstalledApplication -and ($installedApps = Get-ADTApplication -FilterScript { $_.ProductCode -eq $msiProductCode } -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes))
                     {
@@ -506,12 +506,12 @@ function Start-ADTMsiProcess
                 }
 
                 # Bypass if we're installing and the MSI is already installed, otherwise proceed.
-                $ExecuteResults = if ($IsMsiInstalled -and ($Action -eq 'Install'))
+                $ExecuteResults = if ($msiInstalled -and ($Action -eq 'Install'))
                 {
                     Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
                     [PSADT.Types.ProcessResult]::new(1638, $null, $null)
                 }
-                elseif ((!$IsMsiInstalled -and ($Action -eq 'Install')) -or $IsMsiInstalled)
+                elseif ((!$msiInstalled -and ($Action -eq 'Install')) -or $msiInstalled)
                 {
                     # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
                     $ExecuteProcessSplat = @{
