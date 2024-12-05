@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Security.Principal;
 using System.Runtime.InteropServices;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Windows.Forms;
 
@@ -59,6 +60,7 @@ namespace PSADT
 
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
+        private static readonly string psGalleryPath = PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First().Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault();
         private static readonly string v3ToolkitPath = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
         private static readonly string v4ToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit");
         private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
@@ -75,7 +77,7 @@ namespace PSADT
             {
                 // Set up variables.
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-                string adtToolkitPath = Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : (Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : null);
+                string adtToolkitPath = Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : !string.IsNullOrWhiteSpace(psGalleryPath) ? psGalleryPath : null;
                 string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string pwshArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
