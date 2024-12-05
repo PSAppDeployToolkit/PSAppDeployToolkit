@@ -4990,33 +4990,29 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 3
 
 # Import our module backend.
-$adtModule = if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
+$moduleName = if ([System.IO.Directory]::Exists("$PSScriptRoot\PSAppDeployToolkit"))
 {
-    # Expected directory when running from a template.
     Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File
-    Remove-Module -Name PSAppDeployToolkit* -Force
-    Import-Module -Force -PassThru -FullyQualifiedName @{
-        ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
-        Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'
-        ModuleVersion = '4.0.2'
-    }
+    "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
 }
 elseif ([System.IO.Directory]::Exists("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit"))
 {
-    # Expected directory if executing directly from inside the module.
     Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File
-    Remove-Module -Name PSAppDeployToolkit* -Force
-    Import-Module -Force -PassThru -FullyQualifiedName @{
-        ModuleName = "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
-        Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'
-        ModuleVersion = '4.0.2'
-    }
+    "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
 }
 else
 {
-    # The module couldn't be found along-side this script.
+    'PSAppDeployToolkit'
+}
+Remove-Module -Name PSAppDeployToolkit* -Force
+try
+{
+    $adtModule = Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.2' } -Force -PassThru
+}
+catch
+{
     Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
-            [System.IO.FileNotFoundException]::new("PSAppDeployToolkit module folder cannot be found."),
+            [System.IO.FileNotFoundException]::new("PSAppDeployToolkit module cannot be found."),
             'ModuleNotFoundError',
             [System.Management.Automation.ErrorCategory]::InvalidOperation,
             $null
