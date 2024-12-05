@@ -227,6 +227,18 @@ function Start-ADTMsiProcess
 
     begin
     {
+        # The use of a ProductCode with an Install action is not supported.
+        if ($ProductCode -and ($Action -eq 'Install'))
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The ProductCode parameter can only be used with non-install actions.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'ProductCodeInstallActionNotSupported'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = "Please review the supplied parameters and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet; $adtConfig = Get-ADTConfig
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
