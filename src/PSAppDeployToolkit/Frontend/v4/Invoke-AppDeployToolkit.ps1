@@ -107,7 +107,7 @@ $adtSession = @{
 
     # Script variables.
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
-    DeployAppScriptVersion = '4.0.1'
+    DeployAppScriptVersion = '4.0.2'
     DeployAppScriptParameters = $PSBoundParameters
 
     # Script parameters.
@@ -272,7 +272,7 @@ Set-StrictMode -Version 1
 try
 {
     Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File
-    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.1' } -Force
+    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.2' } -Force
     try
     {
         $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession -PassThru
@@ -297,7 +297,7 @@ catch
 try
 {
     Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit.Extensions -Recurse -File | Unblock-File
-    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit.Extensions\PSAppDeployToolkit.Extensions.psd1"; Guid = '55276a4c-9fbb-49a4-8481-159113757c39'; ModuleVersion = '4.0.1' } -Force
+    Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit.Extensions\PSAppDeployToolkit.Extensions.psd1"; Guid = '55276a4c-9fbb-49a4-8481-159113757c39'; ModuleVersion = '4.0.2' } -Force
     & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession
 }
