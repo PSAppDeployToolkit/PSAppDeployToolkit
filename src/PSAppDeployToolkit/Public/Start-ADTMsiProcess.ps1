@@ -299,61 +299,46 @@ function Start-ADTMsiProcess
                     $Action -ne 'Install'
                 }
 
-                # If the path matches a product code.
-                if ($InstalledApplication)
+                # Set up the log file to use.
+                $logFile = if ($PSBoundParameters.ContainsKey('LogFileName'))
+                {
+                    [System.IO.Path]::GetFileNameWithoutExtension($LogFileName)
+                }
+                elseif ($InstalledApplication)
                 {
                     # Resolve the product code to a publisher, application name, and version.
-                    $productCodeNameVersion = $InstalledApplication | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore
-
-                    # Build the log file name.
-                    if (!$LogFileName)
+                    if (![System.String]::IsNullOrWhiteSpace(($productCodeNameVersion = $InstalledApplication | Select-Object -Property Publisher, DisplayName, DisplayVersion -First 1 -ErrorAction Ignore).Publisher))
                     {
-                        $LogFileName = if ($productCodeNameVersion)
+                        (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
+                    }
+                    else
+                    {
+                        (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
+                    }
+                }
+                elseif ($PSBoundParameters.ContainsKey('FilePath'))
+                {
+                    ([System.IO.FileInfo]$FilePath).BaseName
+                }
+
+                # Build the log path to use.
+                $logPath = if ($logFile)
+                {
+                    if ($adtSession -and $adtConfig.Toolkit.CompressLogs)
+                    {
+                        Join-Path -Path $adtSession.LogTempFolder -ChildPath $logFile
+                    }
+                    else
+                    {
+                        # Create the Log directory if it doesn't already exist.
+                        if (![System.IO.Directory]::Exists($adtConfig.MSI.LogPath))
                         {
-                            if ($productCodeNameVersion.Publisher)
-                            {
-                                (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.Publisher + '_' + $productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
-                            }
-                            else
-                            {
-                                (Remove-ADTInvalidFileNameChars -Name ($productCodeNameVersion.DisplayName + '_' + $productCodeNameVersion.DisplayVersion)) -replace ' '
-                            }
+                            $null = [System.IO.Directory]::CreateDirectory($adtConfig.MSI.LogPath)
                         }
-                        else
-                        {
-                            # Out of other options, make the Product Code the name of the log file.
-                            $FilePath
-                        }
-                    }
-                }
-                elseif (!$LogFileName)
-                {
-                    # Get the log file name without file extension.
-                    $LogFileName = ([System.IO.FileInfo]$FilePath).BaseName
-                }
-                else
-                {
-                    while ('.log', '.txt' -contains [System.IO.Path]::GetExtension($LogFileName))
-                    {
-                        $LogFileName = [System.IO.Path]::GetFileNameWithoutExtension($LogFileName)
-                    }
-                }
 
-                # Build the log file path.
-                $logPath = if ($adtSession -and $adtConfig.Toolkit.CompressLogs)
-                {
-                    Join-Path -Path $adtSession.LogTempFolder -ChildPath $LogFileName
-                }
-                else
-                {
-                    # Create the Log directory if it doesn't already exist.
-                    if (![System.IO.Directory]::Exists($adtConfig.MSI.LogPath))
-                    {
-                        $null = [System.IO.Directory]::CreateDirectory($adtConfig.MSI.LogPath)
+                        # Build the log file path.
+                        Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $logFile
                     }
-
-                    # Build the log file path.
-                    Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $LogFileName
                 }
 
                 # Set the installation parameters.
@@ -374,50 +359,54 @@ function Start-ADTMsiProcess
                     Install
                     {
                         $option = '/i'
-                        $msiLogFile = "$logPath" + '_Install'
+                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $msiInstallDefaultParams
                         break
                     }
                     Uninstall
                     {
                         $option = '/x'
-                        $msiLogFile = "$logPath" + '_Uninstall'
+                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $msiUninstallDefaultParams
                         break
                     }
                     Patch
                     {
                         $option = '/update'
-                        $msiLogFile = "$logPath" + '_Patch'
+                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $msiInstallDefaultParams
                         break
                     }
                     Repair
                     {
                         $option = "/f$(if ($RepairFromSource) {'vomus'})"
-                        $msiLogFile = "$logPath" + '_Repair'
+                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $msiInstallDefaultParams
                         break
                     }
                     ActiveSetup
                     {
                         $option = '/fups'
-                        $msiLogFile = "$logPath" + '_ActiveSetup'
+                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = $null
                         break
                     }
                 }
 
-                # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                if (!(Test-ADTCallerIsAdmin))
+                # Post-process the MSI log file variable.
+                if ($msiLogFile)
                 {
-                    $msiLogFile = $msiLogFile + '_' + (Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))
-                }
+                    # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
+                    if (!(Test-ADTCallerIsAdmin))
+                    {
+                        $msiLogFile = $msiLogFile + '_' + (Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))
+                    }
 
-                # Append ".log" to the MSI logfile path and enclose in quotes.
-                if ([IO.Path]::GetExtension($msiLogFile) -ne '.log')
-                {
-                    $msiLogFile = "`"$($msiLogFile + '.log')`""
+                    # Append ".log" to the MSI logfile path and enclose in quotes.
+                    if ([IO.Path]::GetExtension($msiLogFile) -ne '.log')
+                    {
+                        $msiLogFile = "`"$($msiLogFile + '.log')`""
+                    }
                 }
 
                 # Set the working directory of the MSI.
@@ -484,7 +473,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Add reinstallmode and reinstall variable for Patch.
-                If ($action -eq 'Patch')
+                if ($action -eq 'Patch')
                 {
                     $argsMSI = "$argsMSI REINSTALLMODE=ecmus REINSTALL=ALL"
                 }
@@ -496,13 +485,16 @@ function Start-ADTMsiProcess
                 }
 
                 # Add custom Logging Options if specified, otherwise, add default Logging Options from Config file.
-                $argsMSI = if ($LoggingOptions)
+                if ($msiLogFile)
                 {
-                    "$argsMSI $LoggingOptions $msiLogFile"
-                }
-                else
-                {
-                    "$argsMSI $($adtConfig.MSI.LoggingOptions) $msiLogFile"
+                    $argsMSI = if ($LoggingOptions)
+                    {
+                        "$argsMSI $LoggingOptions $msiLogFile"
+                    }
+                    else
+                    {
+                        "$argsMSI $($adtConfig.MSI.LoggingOptions) $msiLogFile"
+                    }
                 }
 
                 # Bypass if we're installing and the MSI is already installed, otherwise proceed.
