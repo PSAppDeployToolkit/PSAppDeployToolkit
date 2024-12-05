@@ -241,7 +241,7 @@ function Start-ADTMsiProcess
                 Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
 
                 # If the MSI is in the Files directory, set the full path to the MSI.
-                $msiFile = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath))))
+                $msiProduct = if ($adtSession -and [System.IO.File]::Exists(($dirFilesPath = [System.IO.Path]::Combine($adtSession.DirFiles, $FilePath))))
                 {
                     $dirFilesPath
                 }
@@ -279,9 +279,9 @@ function Start-ADTMsiProcess
                 {
                     $InstalledApplication.ProductCode
                 }
-                elseif ([System.IO.Path]::GetExtension($msiFile) -eq '.msi')
+                elseif ([System.IO.Path]::GetExtension($msiProduct) -eq '.msi')
                 {
-                    $GetMsiTablePropertySplat = @{ Path = $msiFile; Table = 'Property' }; if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
+                    $GetMsiTablePropertySplat = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $GetMsiTablePropertySplat.Add('TransformPath', $transforms) }
                     [System.Guid]::new((Get-ADTMsiTableProperty @GetMsiTablePropertySplat).ProductCode)
                 }
 
@@ -423,7 +423,7 @@ function Start-ADTMsiProcess
                 # Set the working directory of the MSI.
                 if ($PSCmdlet.ParameterSetName.Equals('FilePath') -and !$workingDirectory)
                 {
-                    $WorkingDirectory = [System.IO.Path]::GetDirectoryName($msiFile)
+                    $WorkingDirectory = [System.IO.Path]::GetDirectoryName($msiProduct)
                 }
 
                 # Enumerate all transforms specified, qualify the full path if possible and enclose in quotes.
@@ -432,7 +432,7 @@ function Start-ADTMsiProcess
                     # Fix up any bad file paths.
                     for ($i = 0; $i -lt $Transforms.Length; $i++)
                     {
-                        if (($FullPath = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $Transforms[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
+                        if (($FullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $Transforms[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
                         {
                             $Transforms[$i] = $FullPath
                         }
@@ -448,7 +448,7 @@ function Start-ADTMsiProcess
                     # Fix up any bad file paths.
                     for ($i = 0; $i -lt $patches.Length; $i++)
                     {
-                        if (($FullPath = Join-Path -Path (Split-Path -Path $msiFile -Parent) -ChildPath $patches[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
+                        if (($FullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $patches[$i].Replace('.\', '')) -and [System.IO.File]::Exists($FullPath))
                         {
                             $Patches[$i] = $FullPath
                         }
@@ -459,7 +459,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Start building the MsiExec command line starting with the base action and file.
-                $argsMSI = "$option `"$msiFile`""
+                $argsMSI = "$option `"$msiProduct`""
 
                 # Add MST.
                 if ($mstFile)
