@@ -17,6 +17,7 @@ namespace PSADT.Types
         /// <param name="isCBServicingRebootPending">Indicates if Component-Based Servicing (CBS) requires a reboot.</param>
         /// <param name="isWindowsUpdateRebootPending">Indicates if a Windows Update reboot is pending.</param>
         /// <param name="isSCCMClientRebootPending">Indicates if the SCCM client requires a reboot.</param>
+        /// <param name="isIntuneClientRebootPending">Indicates if the Intune Management Extension client requires a reboot.</param>
         /// <param name="isAppVRebootPending">Indicates if an App-V client requires a reboot.</param>
         /// <param name="isFileRenameRebootPending">Indicates if file rename operations require a reboot.</param>
         /// <param name="pendingFileRenameOperations">A list of pending file rename operations.</param>
@@ -28,6 +29,7 @@ namespace PSADT.Types
             bool isCBServicingRebootPending,
             bool isWindowsUpdateRebootPending,
             bool? isSCCMClientRebootPending,
+            bool? isIntuneClientRebootPending,
             bool isAppVRebootPending,
             bool? isFileRenameRebootPending,
             string[]? pendingFileRenameOperations,
@@ -39,6 +41,7 @@ namespace PSADT.Types
             IsCBServicingRebootPending = isCBServicingRebootPending;
             IsWindowsUpdateRebootPending = isWindowsUpdateRebootPending;
             IsSCCMClientRebootPending = isSCCMClientRebootPending;
+            IsIntuneClientRebootPending = isIntuneClientRebootPending;
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
             PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations ?? []);
@@ -74,6 +77,11 @@ namespace PSADT.Types
         /// Gets a value indicating whether the SCCM client requires a reboot.
         /// </summary>
         public bool? IsSCCMClientRebootPending { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the Intune Management Extension client requires a reboot.
+        /// </summary>
+        public bool? IsIntuneClientRebootPending { get; }
 
         /// <summary>
         /// Gets a value indicating whether an App-V client requires a reboot.
