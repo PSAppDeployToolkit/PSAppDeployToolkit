@@ -18,7 +18,7 @@ Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-Clos
  [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String> -Subtitle <String>
- [-DeploymentType <String>] [<CommonParameters>]
+ -DeploymentType <String> [<CommonParameters>]
 ```
 
 ### CheckDiskSpace
@@ -28,7 +28,7 @@ Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-Clos
  [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>]
- [-CustomText] -Title <String> -Subtitle <String> [-DeploymentType <String>] [<CommonParameters>]
+ [-CustomText] -Title <String> -Subtitle <String> -DeploymentType <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -422,7 +422,7 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
