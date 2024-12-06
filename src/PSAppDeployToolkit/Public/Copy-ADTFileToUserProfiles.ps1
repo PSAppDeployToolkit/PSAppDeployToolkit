@@ -63,22 +63,22 @@ function Copy-ADTFileToUserProfiles
         This function does not generate any output.
 
     .EXAMPLE
-        Copy-ADTFileToUserProfiles -Path "$dirSupportFiles\config.txt" -Destination "AppData\Roaming\MyApp"
+        Copy-ADTFileToUserProfiles -Path "$($adtSession.DirSupportFiles)\config.txt" -Destination "AppData\Roaming\MyApp"
 
         Copy a single file to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
     .EXAMPLE
-        Copy-ADTFileToUserProfiles -Path "$dirSupportFiles\config.txt","$dirSupportFiles\config2.txt" -Destination "AppData\Roaming\MyApp"
+        Copy-ADTFileToUserProfiles -Path "$($adtSession.DirSupportFiles)\config.txt","$($adtSession.DirSupportFiles)\config2.txt" -Destination "AppData\Roaming\MyApp"
 
         Copy two files to C:\Users\<UserName>\AppData\Roaming\MyApp for each user.
 
     .EXAMPLE
-        Copy-ADTFileToUserProfiles -Path "$dirFiles\MyDocs" Destination "MyApp" -BasePath "Documents" -Recurse
+        Copy-ADTFileToUserProfiles -Path "$($adtSession.DirFiles)\MyDocs" Destination "MyApp" -BasePath "Documents" -Recurse
 
         Copy an entire folder recursively to a new MyApp folder under each user's Documents folder.
 
     .EXAMPLE
-        Copy-ADTFileToUserProfiles -Path "$dirFiles\.appConfigFolder" -Recurse
+        Copy-ADTFileToUserProfiles -Path "$($adtSession.DirFiles)\.appConfigFolder" -Recurse
 
         Copy an entire folder to C:\Users\<UserName> for each user.
 

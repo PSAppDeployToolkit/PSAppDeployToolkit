@@ -8,10 +8,10 @@ function Remove-ADTContentFromCache
 {
     <#
     .SYNOPSIS
-        Removes the toolkit content from the cache folder on the local machine and reverts the $dirFiles and $supportFiles directory.
+        Removes the toolkit content from the cache folder on the local machine and reverts the $adtSession.DirFiles and $adtSession.SupportFiles directory.
 
     .DESCRIPTION
-        This function removes the toolkit content from the cache folder on the local machine. It also reverts the $dirFiles and $supportFiles directory to their original state. If the specified cache folder does not exist, it logs a message and exits.
+        This function removes the toolkit content from the cache folder on the local machine. It also reverts the $adtSession.DirFiles and $adtSession.SupportFiles directory to their original state. If the specified cache folder does not exist, it logs a message and exits.
 
     .PARAMETER Path
         The path to the software cache folder.
@@ -27,7 +27,7 @@ function Remove-ADTContentFromCache
         This function does not return objects.
 
     .EXAMPLE
-        Remove-ADTContentFromCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
+        Remove-ADTContentFromCache -Path "$envWinDir\Temp\PSAppDeployToolkit"
 
         Removes the toolkit content from the specified cache folder.
 

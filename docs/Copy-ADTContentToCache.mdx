@@ -7,7 +7,7 @@ hide_table_of_contents: false
 
 ## SYNOPSIS
 
-Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
+Copies the toolkit content to a cache folder on the local machine and sets the $adtSession.DirFiles and $adtSession.DirSupportFiles directory to the cache path.
 
 ## SYNTAX
 
@@ -17,8 +17,10 @@ Copy-ADTContentToCache [[-Path] <String>] [<CommonParameters>]
 
 ## DESCRIPTION
 
-Copies the toolkit content to a cache folder on the local machine and sets the $dirFiles and $supportFiles directory to the cache path.
+Copies the toolkit content to a cache folder on the local machine and sets the $adtSession.DirFiles and $adtSession.DirSupportFiles directory to the cache path.
+
 This function is useful in environments where an Endpoint Management solution does not provide a managed cache for source files, such as Intune.
+
 It is important to clean up the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
 
 ## EXAMPLES
@@ -26,7 +28,7 @@ It is important to clean up the cache in the uninstall section for the current v
 ### EXAMPLE 1
 
 ```powershell
-Copy-ADTContentToCache -Path 'C:\Windows\Temp\PSAppDeployToolkit'
+Copy-ADTContentToCache -Path "$envWinDir\Temp\PSAppDeployToolkit"
 ```
 
 This example copies the toolkit content to the specified cache folder.
@@ -71,7 +73,7 @@ Intune is lacking this functionality whereas ConfigMgr includes this functionali
 
 Since this cache folder is effectively unmanaged, it is important to cleanup the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
 
-This can be done using [Remove-ADTFile -Path "(Get-ADTConfig).Toolkit.CachePath\$installName" -Recurse -ErrorAction Ignore]
+This can be done using `Remove-ADTFile -Path "(Get-ADTConfig).Toolkit.CachePath\$($adtSession.InstallName)" -Recurse -ErrorAction Ignore`.
 
 Tags: psadt
 Website: https://psappdeploytoolkit.com

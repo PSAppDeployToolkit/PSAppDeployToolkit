@@ -26,7 +26,7 @@ It handles older redistributables and different types of updates appropriately.
 ### EXAMPLE 1
 
 ```powershell
-Install-ADTMSUpdates -Directory "$dirFiles\MSUpdates"
+Install-ADTMSUpdates -Directory "$($adtSession.DirFiles)\MSUpdates"
 ```
 
 Installs all Microsoft Updates found in the specified directory.
