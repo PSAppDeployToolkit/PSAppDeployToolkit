@@ -14,19 +14,19 @@ Convert between NT Account names and their security identifiers (SIDs).
 ### NTAccountToSID
 
 ```powershell
-ConvertTo-ADTNTAccountOrSID -AccountName <String> [<CommonParameters>]
+ConvertTo-ADTNTAccountOrSID -AccountName <NTAccount> [<CommonParameters>]
 ```
 
 ### SIDToNTAccount
 
 ```powershell
-ConvertTo-ADTNTAccountOrSID -SID <String> [<CommonParameters>]
+ConvertTo-ADTNTAccountOrSID -SID <SecurityIdentifier> [<CommonParameters>]
 ```
 
 ### WellKnownName
 
 ```powershell
-ConvertTo-ADTNTAccountOrSID -WellKnownSIDName <String> [-WellKnownToNTAccount] [-LocalHost]
+ConvertTo-ADTNTAccountOrSID -WellKnownSIDName <WellKnownSidType> [-WellKnownToNTAccount] [-LocalHost]
  [<CommonParameters>]
 ```
 
@@ -70,7 +70,7 @@ The Windows NT Account name specified in &lt;domain&gt;&lt;username&gt; format.
 Use fully qualified account names (e.g., &lt;domain&gt;&lt;username&gt;) instead of isolated names (e.g, &lt;username&gt;) because they are unambiguous and provide better performance.
 
 ```yaml
-Type: String
+Type: NTAccount
 Parameter Sets: NTAccountToSID
 Aliases:
 
@@ -86,7 +86,7 @@ Accept wildcard characters: False
 The Windows NT Account SID.
 
 ```yaml
-Type: String
+Type: SecurityIdentifier
 Parameter Sets: SIDToNTAccount
 Aliases:
 
@@ -104,9 +104,10 @@ Specify the Well Known SID name translate to the actual SID (e.g., LocalServiceS
 To get all well known SIDs available on system: [Enum]::GetNames([Security.Principal.WellKnownSidType])
 
 ```yaml
-Type: String
+Type: WellKnownSidType
 Parameter Sets: WellKnownName
 Aliases:
+Accepted values: NullSid, WorldSid, LocalSid, CreatorOwnerSid, CreatorGroupSid, CreatorOwnerServerSid, CreatorGroupServerSid, NTAuthoritySid, DialupSid, NetworkSid, BatchSid, InteractiveSid, ServiceSid, AnonymousSid, ProxySid, EnterpriseControllersSid, SelfSid, AuthenticatedUserSid, RestrictedCodeSid, TerminalServerSid, RemoteLogonIdSid, LogonIdsSid, LocalSystemSid, LocalServiceSid, NetworkServiceSid, BuiltinDomainSid, BuiltinAdministratorsSid, BuiltinUsersSid, BuiltinGuestsSid, BuiltinPowerUsersSid, BuiltinAccountOperatorsSid, BuiltinSystemOperatorsSid, BuiltinPrintOperatorsSid, BuiltinBackupOperatorsSid, BuiltinReplicatorSid, BuiltinPreWindows2000CompatibleAccessSid, BuiltinRemoteDesktopUsersSid, BuiltinNetworkConfigurationOperatorsSid, AccountAdministratorSid, AccountGuestSid, AccountKrbtgtSid, AccountDomainAdminsSid, AccountDomainUsersSid, AccountDomainGuestsSid, AccountComputersSid, AccountControllersSid, AccountCertAdminsSid, AccountSchemaAdminsSid, AccountEnterpriseAdminsSid, AccountPolicyAdminsSid, AccountRasAndIasServersSid, NtlmAuthenticationSid, DigestAuthenticationSid, SChannelAuthenticationSid, ThisOrganizationSid, OtherOrganizationSid, BuiltinIncomingForestTrustBuildersSid, BuiltinPerformanceMonitoringUsersSid, BuiltinPerformanceLoggingUsersSid, BuiltinAuthorizationAccessSid, WinBuiltinTerminalServerLicenseServersSid, MaxDefined
 
 Required: True
 Position: Named
