@@ -34,7 +34,7 @@
     }
     Progress = @{
         MessageInstall = "Installation en cours, merci de patienter..."
-        MessageInstallDetail = "Cette fenêtre se fermera automatiquement lorsque la désinstallation sera terminée."
+        MessageInstallDetail = "Cette fenêtre se fermera automatiquement lorsque l'installation sera terminée."
         MessageRepair = "Réparation en cours, merci de patienter..."
         MessageRepairDetail = "Cette fenêtre se fermera automatiquement lorsque la réparation sera terminée."
         MessageUninstall = "Désinstallation en cours, merci de patienter..."
