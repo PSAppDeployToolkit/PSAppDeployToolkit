@@ -70,9 +70,11 @@
 
   <ItemGroup>
 	<PackageReference Include="System.Management" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763'" PrivateAssets="all" ExcludeAssets="runtime" />
-	<PackageReference Include="System.ValueTuple" Version="4.5.0" />
-	<PackageReference Include="WPF-UI" Version="4.0.0-rc.2" />
-	<PackageReference Include="WPF-UI.Tray" Version="4.0.0-rc.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\lib\wpfui\src\Wpf.Ui.Tray\Wpf.Ui.Tray.csproj" />
+    <ProjectReference Include="..\..\..\lib\wpfui\src\Wpf.Ui\Wpf.Ui.csproj" />
   </ItemGroup>
 
   <ItemGroup>
