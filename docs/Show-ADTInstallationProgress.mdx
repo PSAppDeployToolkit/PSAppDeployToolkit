@@ -166,7 +166,7 @@ Accept wildcard characters: False
 ### -WindowSubtitle
 
 The subtitle of the window to be displayed with a fluent progress window.
-The default is the derived value from $DeploymentType.
+The default is the derived value from "$($adtSession.DeploymentType)".
 
 ```yaml
 Type: String
@@ -183,7 +183,7 @@ Accept wildcard characters: False
 ### -WindowTitle
 
 The title of the window to be displayed.
-The default is the derived value from $InstallTitle.
+The default is the derived value from "$($adtSession.InstallTitle)".
 
 ```yaml
 Type: String

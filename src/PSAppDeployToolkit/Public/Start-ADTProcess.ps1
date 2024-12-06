@@ -16,7 +16,7 @@ function Start-ADTProcess
     .PARAMETER FilePath
         Path to the file to be executed. If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
 
-        Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$dirFiles" variable as shown in the example.
+        Otherwise, the full path of the file must be specified. If the files is in a subdirectory of "Files", use the "$($adtSession.DirFiles)" variable as shown in the example.
 
     .PARAMETER ArgumentList
         Arguments to be passed to the executable.
@@ -71,21 +71,25 @@ function Start-ADTProcess
     .EXAMPLE
         Start-ADTProcess -FilePath 'setup.exe' -ArgumentList '/S' -IgnoreExitCodes 1,2
 
+        Launch InstallShield "setup.exe" from the ".\Files" sub-directory.
+
     .EXAMPLE
-        Start-ADTProcess -FilePath "$dirFiles\Bin\setup.exe" -ArgumentList '/S' -WindowStyle 'Hidden'
+        Start-ADTProcess -FilePath "$($adtSession.DirFiles)\Bin\setup.exe" -ArgumentList '/S' -WindowStyle 'Hidden'
+
+        Launch InstallShield "setup.exe" from the ".\Files\Bin" sub-directory.
 
     .EXAMPLE
         Start-ADTProcess -FilePath 'uninstall_flash_player_64bit.exe' -ArgumentList '/uninstall' -WindowStyle 'Hidden'
 
-        If the file is in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
+        If the file is in the "Files" directory of the AppDeployToolkit, only the file name needs to be specified.
 
     .EXAMPLE
-        Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`""
+        Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$($adtSession.InstallName).log`""
 
         Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
 
     .EXAMPLE
-        Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "/s /v`"ALLUSERS=1 /qn /L* `"$((Get-ADTConfig).Toolkit.LogPath)\$installName.log`"`""
+        Start-ADTProcess -FilePath 'setup.exe' -ArgumentList "/s /v`"ALLUSERS=1 /qn /L* `"$((Get-ADTConfig).Toolkit.LogPath)\$($adtSession.InstallName).log`"`""
 
         Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 

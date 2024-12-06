@@ -95,7 +95,7 @@ Accept wildcard characters: False
 ### -ScriptSection
 
 The heading for the portion of the script that is being executed.
-Default is: $installPhase.
+Default is: "$($adtSession.InstallPhase)".
 
 ```yaml
 Type: String

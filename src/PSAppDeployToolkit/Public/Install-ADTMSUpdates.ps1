@@ -27,7 +27,7 @@ function Install-ADTMSUpdates
         This function does not return any objects.
 
     .EXAMPLE
-        Install-ADTMSUpdates -Directory "$dirFiles\MSUpdates"
+        Install-ADTMSUpdates -Directory "$($adtSession.DirFiles)\MSUpdates"
 
         Installs all Microsoft Updates found in the specified directory.
 
