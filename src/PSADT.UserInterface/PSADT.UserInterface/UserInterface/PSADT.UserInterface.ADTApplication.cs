@@ -242,8 +242,9 @@ namespace PSADT.UserInterface
         /// <param name="topMost">Whether the dialog should be topmost.</param>
         /// <param name="appIconImage">URI of the application icon.</param>
         /// <param name="timeRemainingText">Main progress message.</param>
-        /// <param name="restartCountdownMins">Message prompting users to close apps.</param>
+        /// <param name="restartCountdown">Message prompting users to close apps.</param>
         /// <param name="restartMessageText">Text for the word remain in, deferrals remaining.</param>
+        /// <param name="restartMessageCountdownText">Text for the word remain in, deferrals remaining.</param>
         /// <param name="dismissButtonText">Text for the defer button.</param>
         /// <param name="restartButtonText">Text for the continue button.</param>
         /// <returns>User's response as a string.</returns>
@@ -253,8 +254,9 @@ namespace PSADT.UserInterface
             bool? topMost,
             string? appIconImage,
             string? timeRemainingText,
-            double restartCountdownMins,
+            TimeSpan? restartCountdown,
             string restartMessageText,
+            string restartMessageCountdownText,
             string? dismissButtonText,
             string? restartButtonText)
         {
@@ -273,8 +275,9 @@ namespace PSADT.UserInterface
                     topMost,
                     appIconImage,
                     timeRemainingText,
-                    restartCountdownMins,
+                    restartCountdown,
                     restartMessageText,
+                    restartMessageCountdownText,
                     dismissButtonText,
                     restartButtonText);
 

@@ -196,6 +196,7 @@
                         BorderBrush="{DynamicResource ControlStrokeColorOnAccentTertiaryBrush}" />
 
                     <StackPanel
+                        x:Name="RestartCountdownStackPanel"
                         Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"

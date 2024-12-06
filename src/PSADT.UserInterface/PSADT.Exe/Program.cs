@@ -1,4 +1,4 @@
-using PSADT.UserInterface;
+﻿using PSADT.UserInterface;
 using PSADT.UserInterface.Services;
 
 namespace PSADT.UserInterface
@@ -49,8 +49,9 @@ namespace PSADT.UserInterface
             const string progressMessageDetail = "Testing your system to ensure the installation can proceed, please wait ...";
 
             const string timeRemainingText = "Time Remaining:";
-            const double restartCountdownMins = 5;
+            TimeSpan restartCountdown = TimeSpan.FromMinutes(5);
             const string restartMessage = "The installation will begin in 5 minutes. You can restart your computer now or wait for the countdown to complete.";
+            const string restartCountdownMessage = "The installation will begin in 5 minutes. You can restart your computer now or wait for the countdown to complete.";
             const string dismissButtonText = "Dismiss";
             const string restartButtonText = "Restart Now";
 
@@ -131,8 +132,9 @@ namespace PSADT.UserInterface
                     topMost,
                     appIconImage,
                     timeRemainingText,
-                    restartCountdownMins,
+                    restartCountdown,
                     restartMessage,
+                    restartCountdownMessage,
                     dismissButtonText,
                     restartButtonText);
 
