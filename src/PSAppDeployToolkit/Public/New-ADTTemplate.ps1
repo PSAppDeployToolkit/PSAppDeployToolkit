@@ -42,12 +42,12 @@ function New-ADTTemplate
         This function does not generate any output.
 
     .EXAMPLE
-        New-ADTTemplate -Path 'C:\Temp' -Name 'PSAppDeployToolkitv4'
+        New-ADTTemplate -Destination 'C:\Temp' -Name 'PSAppDeployToolkitv4'
 
         Creates a new v4 template named PSAppDeployToolkitv4 under C:\Temp.
 
     .EXAMPLE
-        New-ADTTemplate -Path 'C:\Temp' -Name 'PSAppDeployToolkitv3' -Version 3
+        New-ADTTemplate -Destination 'C:\Temp' -Name 'PSAppDeployToolkitv3' -Version 3
 
         Creates a new v3 compatibility mode template named PSAppDeployToolkitv3 under C:\Temp.
 
