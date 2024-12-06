@@ -1,0 +1,61 @@
+release:
+  - base-branch: 'main'
+
+PR:
+  - base-branch: [ 'main', 'development' ]
+
+github_actions:
+- changed-files:
+  - any-glob-to-any-file: '.github/workflows/**'
+
+documentation:
+- changed-files:
+  - any-glob-to-any-file: 'docs/**'
+
+dotnet:
+- changed-files:
+  - any-glob-to-any-file: '**/*.cs'
+
+update:
+- changed-files:
+  - any-glob-to-any-file: 'src/Directory.Build.props'
+
+NuGet:
+- changed-files:
+  - any-glob-to-any-file: 'src/Directory.Packages.props'
+
+dependencies:
+- changed-files:
+  - any-glob-to-any-file: [ 'src/Directory.Packages.props', 'branding/package.json' ]
+
+styles:
+- changed-files:
+  - any-glob-to-any-file: 'src/Wpf.Ui/**/*.xaml'
+
+themes:
+- changed-files:
+  - any-glob-to-any-file: 'src/Wpf.Ui/Appearance/**'
+
+titlebar:
+- changed-files:
+  - any-glob-to-any-file: 'src/Wpf.Ui/Controls/TitleBar/**'
+
+tray:
+- changed-files:
+  - any-glob-to-any-file: 'src/Wpf.Ui.Tray/**'
+
+controls:
+- changed-files:
+  - any-glob-to-any-file: 'src/Wpf.Ui/Controls/**'
+
+navigation:
+- changed-files:
+  - any-glob-to-any-file: 'src/Wpf.Ui/Controls/NavigationView/**'
+
+gallery:
+- changed-files:
+  - any-glob-to-any-file: 'src/Wpf.Ui.Gallery/**'
+
+icons:
+- changed-files:
+  - any-glob-to-any-file: [ 'src/Wpf.Ui/Resources/Fonts/**', 'src/Wpf.Ui/Controls/IconSource/*', 'src/Wpf.Ui/Controls/IconElement/*' ]
