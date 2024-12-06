@@ -32,6 +32,11 @@ https://psappdeploytoolkit.com
 #
 #---------------------------------------------------------------------------
 
+[CmdletBinding()]
+param
+(
+)
+
 # Remove all functions defined in this script from the function provider.
 Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Microsoft.PowerShell.Core\Function::$($_.Name)" } } }) -Force -ErrorAction Ignore
 
@@ -5016,7 +5021,7 @@ try
 }
 catch
 {
-    Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+    $PSCmdlet.ThrowTerminatingError([System.Management.Automation.ErrorRecord]::new(
             [System.IO.FileNotFoundException]::new("PSAppDeployToolkit module cannot be found."),
             'ModuleNotFoundError',
             [System.Management.Automation.ErrorCategory]::InvalidOperation,
