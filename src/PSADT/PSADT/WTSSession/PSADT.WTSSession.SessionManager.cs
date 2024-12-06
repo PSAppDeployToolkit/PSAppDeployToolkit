@@ -526,7 +526,7 @@ namespace PSADT.WTSSession
             sessionInfo.UserName = GetWTSInfoClassProperty<string>(hServer, sessionId, WTS_INFO_CLASS.WTSUserName)?.TrimEnd('\0') ?? string.Empty;
 
             // Handle user identity information
-            if (!string.IsNullOrEmpty(sessionInfo.UserName))
+            if (!string.IsNullOrWhiteSpace(sessionInfo.UserName))
             {
                 try
                 {
