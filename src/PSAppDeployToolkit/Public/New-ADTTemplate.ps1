@@ -75,7 +75,7 @@ function New-ADTTemplate
         [System.String]$Name = "$($MyInvocation.MyCommand.Module.Name)_$($MyInvocation.MyCommand.Module.Version)",
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet(3, 4)]
+        [ValidateRange(3, 4)]
         [System.Int32]$Version = 4,
 
         [Parameter(Mandatory = $false)]
