@@ -33,6 +33,7 @@ function Get-ADTPendingReboot
         - IsCBServicingRebootPending
         - IsWindowsUpdateRebootPending
         - IsSCCMClientRebootPending
+        - IsIntuneClientRebootPending
         - IsFileRenameRebootPending
         - PendingFileRenameOperations
         - ErrorMsg
@@ -121,6 +122,17 @@ function Get-ADTPendingReboot
                     $null = $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
                 }
 
+                # Determine Intune Management Extension reboot pending status.
+                $IsIntuneClientRebootPending = try
+                {
+                    !!(Get-Item -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\RebootSettings\RebootFlag')
+                }
+                catch
+                {
+                    Write-ADTLogEntry -Message "Failed to get IsIntuneClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                    $null = $PendRebootErrorMsg.Add("Failed to get IsIntuneClientRebootPending: $($_.Exception.Message)")
+                }
+
                 # Create a custom object containing pending reboot information for the system.
                 $PendingRebootInfo = [PSADT.Types.RebootInfo]::new(
                     $HostName,
@@ -129,6 +141,7 @@ function Get-ADTPendingReboot
                     $IsCBServicingRebootPending,
                     $IsWindowsUpdateRebootPending,
                     $IsSCCMClientRebootPending,
+                    $IsIntuneClientRebootPending,
                     $IsAppVRebootPending,
                     $IsFileRenameRebootPending,
                     $PendingFileRenameOperations,
