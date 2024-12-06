@@ -27,7 +27,7 @@ namespace PSADT.ProcessUtilities
         {
             options ??= new LockingProcessesOptions();
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentNullException(nameof(path));
 
             var processInfos = new ConcurrentDictionary<int, ProcessInfo>();

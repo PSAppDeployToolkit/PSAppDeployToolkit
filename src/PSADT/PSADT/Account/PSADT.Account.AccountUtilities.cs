@@ -355,7 +355,7 @@ namespace PSADT.Account
                             var value = field.GetValue(memberInfo);
                             string? memberName = ExtractMemberName(value, level);
 
-                            if (!string.IsNullOrEmpty(memberName))
+                            if (!string.IsNullOrWhiteSpace(memberName))
                             {
                                 groupMembers.Add(memberName!);
                                 UnifiedLogger.Create().Message($"Group member: [{memberName}].").Severity(LogLevel.Debug);

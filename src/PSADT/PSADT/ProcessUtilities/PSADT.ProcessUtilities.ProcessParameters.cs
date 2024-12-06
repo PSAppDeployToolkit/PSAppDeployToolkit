@@ -222,7 +222,7 @@ namespace PSADT.ProcessUtilities
 
         internal static string RemoveTrailingBackslash(string path)
         {
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
                 return path;
 
             return path.TrimEnd('\\');
