@@ -82,15 +82,15 @@ function ConvertTo-ADTNTAccountOrSID
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$AccountName,
+        [System.Security.Principal.NTAccount]$AccountName,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SIDToNTAccount', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$SID,
+        [System.Security.Principal.SecurityIdentifier]$SID,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownName', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$WellKnownSIDName,
+        [System.Security.Principal.WellKnownSidType]$WellKnownSIDName,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
         [System.Management.Automation.SwitchParameter]$WellKnownToNTAccount,
@@ -113,7 +113,7 @@ function ConvertTo-ADTNTAccountOrSID
                 Write-ADTLogEntry -Message "Converting $(($msg = "the SID [$SID] to an NT Account name"))."
                 try
                 {
-                    return [System.Security.Principal.SecurityIdentifier]::new($SID).Translate([System.Security.Principal.NTAccount])
+                    return $SID.Translate([System.Security.Principal.NTAccount])
                 }
                 catch
                 {
@@ -126,7 +126,7 @@ function ConvertTo-ADTNTAccountOrSID
                 Write-ADTLogEntry -Message "Converting $(($msg = "the NT Account [$AccountName] to a SID"))."
                 try
                 {
-                    return [System.Security.Principal.NTAccount]::new($AccountName).Translate([System.Security.Principal.SecurityIdentifier])
+                    return $AccountName.Translate([System.Security.Principal.SecurityIdentifier])
                 }
                 catch
                 {
@@ -153,7 +153,7 @@ function ConvertTo-ADTNTAccountOrSID
                 # Get the SID for the well known SID name.
                 try
                 {
-                    $NTAccountSID = [System.Security.Principal.SecurityIdentifier]::new([System.Security.Principal.WellKnownSidType]::$WellKnownSIDName, $DomainSid)
+                    $NTAccountSID = [System.Security.Principal.SecurityIdentifier]::new($WellKnownSIDName, $DomainSid)
                     if ($WellKnownToNTAccount)
                     {
                         return $NTAccountSID.Translate([System.Security.Principal.NTAccount])
