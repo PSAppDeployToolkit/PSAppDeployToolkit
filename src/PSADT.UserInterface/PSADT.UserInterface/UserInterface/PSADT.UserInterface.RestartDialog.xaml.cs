@@ -14,7 +14,7 @@ namespace PSADT.UserInterface
         public string? Result { get; private set; }
 
         private DispatcherTimer _timer;
-        private TimeSpan _remainingTime;
+        private TimeSpan? _remainingTime;
 
         /// <summary>
         /// Constructor for RestartDialog
@@ -24,8 +24,9 @@ namespace PSADT.UserInterface
         /// <param name="topMost"></param>
         /// <param name="appIconImage"></param>
         /// <param name="timeRemainingText"></param>
-        /// <param name="restartCountdownMins"></param>
+        /// <param name="restartCountdown"></param>
         /// <param name="restartMessageText"></param>
+        /// <param name="restartMessageCountdownText"></param>
         /// <param name="dismissButtonText"></param>
         /// <param name="restartButtonText"></param>
         public RestartDialog(
@@ -34,8 +35,9 @@ namespace PSADT.UserInterface
             bool? topMost,
             string? appIconImage,
             string? timeRemainingText,
-            double restartCountdownMins,
+            TimeSpan? restartCountdown,
             string? restartMessageText,
+            string? restartMessageCountdownText,
             string? dismissButtonText,
             string? restartButtonText)
             : base(null)
@@ -56,11 +58,11 @@ namespace PSADT.UserInterface
             Topmost = topMost ?? false;
 
             // Initialize the countdown timer
-            _remainingTime = TimeSpan.FromMinutes(restartCountdownMins);
+            _remainingTime = restartCountdown;
             UpdateCountdownDisplay();
 
             TimeRemainingTextBlock.Text = timeRemainingText;
-            RestartMessageTextBlock.Text = restartMessageText;
+            RestartMessageTextBlock.Text = (null != _remainingTime) ? restartMessageCountdownText : restartMessageText;
             DismissButton.Content = dismissButtonText ?? "Dismiss";
             RestartButton.Content = restartButtonText ?? "Restart";
 
@@ -87,9 +89,14 @@ namespace PSADT.UserInterface
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            if (_remainingTime.TotalSeconds > 0)
+            if (null == _remainingTime)
             {
-                _remainingTime = _remainingTime.Subtract(TimeSpan.FromSeconds(1));
+                return;
+            }
+
+            if (_remainingTime?.TotalSeconds > 0)
+            {
+                _remainingTime = _remainingTime?.Subtract(TimeSpan.FromSeconds(1));
                 UpdateCountdownDisplay();
             }
             else
@@ -102,7 +109,13 @@ namespace PSADT.UserInterface
         private void UpdateCountdownDisplay()
         {
             // Ensure that the display is in hh:mm:ss format
-            RestartCountdownMinsTextBlock.Text = _remainingTime.ToString(@"hh\:mm\:ss");
+            if (null == _remainingTime)
+            {
+                RestartCountdownStackPanel.Visibility = Visibility.Collapsed;
+                RestartCountdownMinsTextBlock.Text = null;
+                return;
+            }
+            RestartCountdownMinsTextBlock.Text = _remainingTime?.ToString(@"hh\:mm\:ss");
         }
 
         private void TriggerRestart()

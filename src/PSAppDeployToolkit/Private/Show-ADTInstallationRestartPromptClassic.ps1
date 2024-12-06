@@ -324,13 +324,6 @@ function Show-ADTInstallationRestartPromptClassic
     }
 
     # Show the Form.
-    if ($NoCountdown)
-    {
-        Write-ADTLogEntry -Message 'Displaying restart prompt with no countdown.'
-    }
-    else
-    {
-        Write-ADTLogEntry -Message "Displaying restart prompt with a [$countDownSeconds] second countdown."
-    }
+    Write-ADTLogEntry -Message "Displaying restart prompt with $(if ($NoCountdown) { 'no' } else { "a [$CountdownSeconds] second" }) countdown."
     return $formRestart.ShowDialog()
 }

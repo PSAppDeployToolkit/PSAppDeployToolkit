@@ -123,8 +123,9 @@ namespace PSADT.UserInterface
             bool? topMost,
             string? appIconImage,
             string? timeRemainingText,
-            double restartCountdownMins,
+            TimeSpan? restartCountdown,
             string restartMessageText,
+            string restartMessageCountdownText,
             string? dismissButtonText,
             string? restartButtonText)
         {
@@ -134,8 +135,9 @@ namespace PSADT.UserInterface
                 topMost,
                 appIconImage,
                 timeRemainingText,
-                restartCountdownMins,
+                restartCountdown,
                 restartMessageText,
+                restartMessageCountdownText,
                 dismissButtonText,
                 restartButtonText);
         }
