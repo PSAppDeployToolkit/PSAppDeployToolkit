@@ -179,8 +179,8 @@ function Get-ADTBoundParametersAndDefaultValues
                 $Invocation.BoundParameters.GetEnumerator() | & {
                     process
                     {
-                        # Filter out excluded values.
-                        if (($commonParams -notcontains $_.Key) -and ($Exclude -notcontains $_.Key))
+                        # Filter out common parameters.
+                        if ($commonParams -notcontains $_.Key)
                         {
                             $obj.Add($_.Key, $_.Value)
                         }
@@ -191,9 +191,24 @@ function Get-ADTBoundParametersAndDefaultValues
                 $parameters | & {
                     process
                     {
-                        # Filter out parameters without a default value.
-                        if ($null -eq $_.DefaultValue)
+                        # Filter out excluded values.
+                        if ($Exclude -contains $_.Name.VariablePath.UserPath)
                         {
+                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
+                            return
+                        }
+
+                        # Filter out values based on the specified parameter set.
+                        if ($ParameterSetName -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument ParameterSetName -Value $ParameterSetName))
+                        {
+                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
+                            return
+                        }
+
+                        # Filter out values based on the specified help message.
+                        if ($HelpMessage -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument HelpMessage -Value $HelpMessage))
+                        {
+                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
                             return
                         }
 
@@ -203,20 +218,8 @@ function Get-ADTBoundParametersAndDefaultValues
                             return
                         }
 
-                        # Filter out excluded values.
-                        if ($Exclude -contains $_.Name.VariablePath.UserPath)
-                        {
-                            return
-                        }
-
-                        # Filter out values based on the specified parameter set.
-                        if ($ParameterSetName -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument ParameterSetName -Value $ParameterSetName))
-                        {
-                            return
-                        }
-
-                        # Filter out values based on the specified help message.
-                        if ($HelpMessage -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument HelpMessage -Value $HelpMessage))
+                        # Filter out parameters without a default value.
+                        if ($null -eq $_.DefaultValue)
                         {
                             return
                         }
