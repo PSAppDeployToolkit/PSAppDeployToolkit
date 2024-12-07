@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Security.Principal;
 using System.Collections.Generic;
@@ -166,6 +166,30 @@ namespace PSADT.AccessToken
             {
                 int error = Marshal.GetLastWin32Error();
                 throw new InvalidOperationException($"Failed to remove all privileges. Error code: {error}", new Win32Exception(error));
+            }
+        }
+
+        /// <summary>
+        /// Enables or disables the SeDebugPrivilege on the specified token.
+        /// </summary>
+        /// <param name="tokenHandle">The safe handle to the token.</param>
+        /// <param name="enable">True to enable the privileges, false to disable them.</param>
+        public static void SetSeDebugPrivilege(SafeAccessToken tokenHandle, bool enable = true)
+        {
+            string privilegeName = "Debug";
+            try
+            {
+                TokenPrivilege privilege = GetTokenPrivilegeByName(privilegeName);
+
+                AdjustTokenPrivilegeInternal(tokenHandle, privilege, enable);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                UnifiedLogger.Create().Message($"Privilege [{privilegeName}] not found: {ex.Message}").Severity(LogLevel.Error);
+            }
+            catch (Exception ex)
+            {
+                UnifiedLogger.Create().Message($"Failed to adjust privilege [{privilegeName}]: {ex.Message}").Severity(LogLevel.Error);
             }
         }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Security;
 using System.ComponentModel;
@@ -64,6 +64,8 @@ namespace PSADT.AccessToken
 
                 UnifiedLogger.Create().Message("Successfully duplicated token as a primary token.").Severity(LogLevel.Debug);
 
+                PrivilegeManager.SetSeDebugPrivilege(primaryToken, enable: true);
+
                 // Do not dispose of the input token; the caller manages its disposal.
                 return true;
             }
@@ -99,6 +101,8 @@ namespace PSADT.AccessToken
                 }
 
                 UnifiedLogger.Create().Message("Successfully duplicated token as an impersonation token.").Severity(LogLevel.Debug);
+
+                PrivilegeManager.SetSeDebugPrivilege(impersonationToken, enable: true);
 
                 // Do not dispose of the input token; the caller manages its disposal.
                 return true;
