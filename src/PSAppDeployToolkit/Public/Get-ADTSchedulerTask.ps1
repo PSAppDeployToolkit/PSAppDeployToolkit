@@ -84,7 +84,7 @@ function Get-ADTSchedulerTask
                 if ($Global:LASTEXITCODE -ne 0)
                 {
                     $naerParams = @{
-                        Exception = [System.ApplicationException]::new("The call to [$([System.Environment]::SystemDirectory)\schtasks.exe] failed with exit code [$Global:LASTEXITCODE].")
+                        Exception = [System.Runtime.InteropServices.ExternalException]::new("The call to [$([System.Environment]::SystemDirectory)\schtasks.exe] failed with exit code [$Global:LASTEXITCODE].", $Global:LASTEXITCODE)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'SchTasksExecutableFailure'
                         TargetObject = $exeSchtasksResults
