@@ -3,10 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface", "PSADT.UserInterface\PSADT.UserInterface.csproj", "{5C650CD5-0AAC-410B-992B-68C690F885CA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{78D29136-B01A-4D59-9BB1-72FC8FECC054} = {78D29136-B01A-4D59-9BB1-72FC8FECC054}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface.TestHarness", "PSADT.Exe\PSADT.UserInterface.TestHarness.csproj", "{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FE355DF2-335E-4CF2-9EE1-1276393AEF33}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wpf.Ui", "..\..\lib\wpfui\src\Wpf.Ui\Wpf.Ui.csproj", "{8AF5D89E-60DB-47C8-A376-11317BD8FE1C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wpf.Ui.Abstractions", "..\..\lib\wpfui\src\Wpf.Ui.Abstractions\Wpf.Ui.Abstractions.csproj", "{051CFC97-39F6-477E-B4A4-D1BEA7156196}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wpf.Ui.Tray", "..\..\lib\wpfui\src\Wpf.Ui.Tray\Wpf.Ui.Tray.csproj", "{78D29136-B01A-4D59-9BB1-72FC8FECC054}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,6 +31,18 @@ Global
 		{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AF5D89E-60DB-47C8-A376-11317BD8FE1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AF5D89E-60DB-47C8-A376-11317BD8FE1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AF5D89E-60DB-47C8-A376-11317BD8FE1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AF5D89E-60DB-47C8-A376-11317BD8FE1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{051CFC97-39F6-477E-B4A4-D1BEA7156196}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{051CFC97-39F6-477E-B4A4-D1BEA7156196}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{051CFC97-39F6-477E-B4A4-D1BEA7156196}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{051CFC97-39F6-477E-B4A4-D1BEA7156196}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78D29136-B01A-4D59-9BB1-72FC8FECC054}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78D29136-B01A-4D59-9BB1-72FC8FECC054}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78D29136-B01A-4D59-9BB1-72FC8FECC054}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78D29136-B01A-4D59-9BB1-72FC8FECC054}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

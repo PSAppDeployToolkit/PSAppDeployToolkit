@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Wpf.Ui.Abstractions</name>
+    </assembly>
+    <members>
+        <member name="T:Wpf.Ui.Abstractions.Controls.INavigableView`1">
+            <summary>
+            A component whose ViewModel is separate from the DataContext and can be navigated by INavigationView.
+            </summary>
+            <typeparam name="T">The type of the ViewModel associated with the view. This type optionally may implement <see cref="T:Wpf.Ui.Abstractions.Controls.INavigationAware"/> to participate in navigation processes.</typeparam>
+        </member>
+        <member name="P:Wpf.Ui.Abstractions.Controls.INavigableView`1.ViewModel">
+            <summary>
+            Gets the view model used by the view.
+            Optionally, it may implement <see cref="T:Wpf.Ui.Abstractions.Controls.INavigationAware"/> and be navigated by INavigationView.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Abstractions.Controls.INavigationAware">
+            <summary>
+            Notifies class about being navigated.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.Controls.INavigationAware.OnNavigatedToAsync">
+            <summary>
+            Asynchronously handles the event that is fired after the component is navigated to.
+            </summary>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.Controls.INavigationAware.OnNavigatedFromAsync">
+            <summary>
+            Asynchronously handles the event that is fired before the component is navigated from.
+            </summary>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="T:Wpf.Ui.Abstractions.Controls.NavigationAware">
+            <summary>
+            Provides a base class for navigation-aware components.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.Controls.NavigationAware.OnNavigatedToAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.Controls.NavigationAware.OnNavigatedTo">
+            <summary>
+            Handles the event that is fired after the component is navigated to.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.Controls.NavigationAware.OnNavigatedFromAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.Controls.NavigationAware.OnNavigatedFrom">
+            <summary>
+            Handles the event that is fired before the component is navigated from.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Abstractions.INavigationViewPageProvider">
+            <summary>
+            Defines a service that provides pages for navigation.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.INavigationViewPageProvider.GetPage(System.Type)">
+            <summary>
+            Retrieves a page of the specified type.
+            </summary>
+            <param name="pageType">The type of the page to retrieve.</param>
+            <returns>An instance of the specified page type, or null if the page is not found.</returns>
+        </member>
+        <member name="T:Wpf.Ui.Abstractions.NavigationException">
+            <summary>
+            Represents errors that occur during navigation.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.NavigationException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the NavigationException class with a specified error message.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.NavigationException.#ctor(System.Exception,System.String)">
+            <summary>
+            Initializes a new instance of the NavigationException class with a specified error message and a reference to the inner exception that is the cause of this exception.
+            </summary>
+            <param name="e">The exception that is the cause of the current exception.</param>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="T:Wpf.Ui.Abstractions.NavigationViewPageProviderExtensions">
+            <summary>
+            Provides extension methods for the INavigationViewPageProvider interface.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.NavigationViewPageProviderExtensions.GetPage``1(Wpf.Ui.Abstractions.INavigationViewPageProvider)">
+            <summary>
+            Retrieves a page of the specified type from the page service.
+            </summary>
+            <typeparam name="TPage">The type of the page to retrieve.</typeparam>
+            <param name="navigationViewPageProvider">The page service instance.</param>
+            <returns>An instance of the specified page type, or null if the page is not found.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Abstractions.NavigationViewPageProviderExtensions.GetRequiredPage``1(Wpf.Ui.Abstractions.INavigationViewPageProvider)">
+            <summary>
+            Retrieves a page of the specified type from the page service.
+            Throws a NavigationException if the page is not found.
+            </summary>
+            <typeparam name="TPage">The type of the page to retrieve.</typeparam>
+            <param name="navigationViewPageProvider">The page service instance.</param>
+            <returns>An instance of the specified page type.</returns>
+            <exception cref="T:Wpf.Ui.Abstractions.NavigationException">Thrown when the specified page type is not found.</exception>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute">
+            <summary>
+            Specifies the priority of a member in overload resolution. When unspecified, the default priority is 0.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute"/> class.
+            </summary>
+            <param name="priority">The priority of the attributed member. Higher numbers are prioritized, lower numbers are deprioritized. 0 is the default if no attribute is present.</param>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute.Priority">
+            <summary>
+            The priority of the member.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ParamCollectionAttribute">
+            <summary>
+            Indicates that a method will allow a variable number of arguments in its invocation.
+            </summary>
+        </member>
+    </members>
+</doc>

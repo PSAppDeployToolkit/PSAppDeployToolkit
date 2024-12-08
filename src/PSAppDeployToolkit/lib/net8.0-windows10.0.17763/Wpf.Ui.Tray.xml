@@ -1,0 +1,1457 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Wpf.Ui.Tray</name>
+    </assembly>
+    <members>
+        <member name="T:Wpf.Ui.Tray.Controls.NotifyIcon">
+            <summary>
+            Represents the implementation of icon in the tray menu as <see cref="T:System.Windows.FrameworkElement"/>.
+            </summary>
+            <example>
+            <code lang="xml">
+            &lt;tray:NotifyIcon
+                Grid.Row="0"
+                FocusOnLeftClick="True"
+                Icon="pack://application:,,,/Assets/wpfui.png"
+                MenuOnRightClick="True"
+                TooltipText="WPF UI"&gt;
+                    &lt;tray:NotifyIcon.Menu&gt;
+                        &lt;ContextMenu ItemsSource = "{Binding ViewModel.TrayMenuItems, Mode=OneWay}" /&gt;
+                    &lt;/tray:NotifyIcon.Menu&gt;
+            &lt;/tray:NotifyIcon&gt;
+            </code>
+            </example>
+        </member>
+        <member name="P:Wpf.Ui.Tray.Controls.NotifyIcon.Disposed">
+            <summary>
+            Gets or sets a value indicating whether the control is disposed.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.Controls.NotifyIcon.IsRegistered">
+            <summary>
+            Gets a value indicating whether the icon is registered in the tray menu.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.TooltipTextProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Tray.Controls.NotifyIcon.TooltipText"/> dependency property.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.FocusOnLeftClickProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Tray.Controls.NotifyIcon.FocusOnLeftClick"/> dependency property.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.MenuOnRightClickProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Tray.Controls.NotifyIcon.MenuOnRightClick"/> dependency property.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.IconProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Tray.Controls.NotifyIcon.Icon"/> dependency property.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.MenuProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Tray.Controls.NotifyIcon.Menu"/> dependency property.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.MenuFontSizeProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Tray.Controls.NotifyIcon.MenuFontSize"/> dependency property.</summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.Controls.NotifyIcon.MenuOnRightClick">
+            <summary>
+            Gets or sets a value indicating whether to show the <see cref="P:Wpf.Ui.Tray.Controls.NotifyIcon.Menu"/> on single right click.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.Controls.NotifyIcon.FocusOnLeftClick">
+            <summary>
+            Gets or sets a value indicating whether to focus the <see cref="P:System.Windows.Application.MainWindow"/> on single left click.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.Controls.NotifyIcon.Menu">
+            <summary>
+            Gets or sets the context menu.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.LeftClickEvent">
+            <summary>Identifies the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.LeftClick"/> routed event.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.LeftDoubleClickEvent">
+            <summary>Identifies the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.LeftDoubleClick"/> routed event.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.RightClickEvent">
+            <summary>Identifies the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.RightClick"/> routed event.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.RightDoubleClickEvent">
+            <summary>Identifies the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.RightDoubleClick"/> routed event.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.MiddleClickEvent">
+            <summary>Identifies the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.MiddleClick"/> routed event.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Controls.NotifyIcon.MiddleDoubleClickEvent">
+            <summary>Identifies the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.MiddleDoubleClick"/> routed event.</summary>
+        </member>
+        <member name="E:Wpf.Ui.Tray.Controls.NotifyIcon.LeftClick">
+            <summary>
+            Triggered when the user left-clicks on the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/>.
+            </summary>
+        </member>
+        <member name="E:Wpf.Ui.Tray.Controls.NotifyIcon.LeftDoubleClick">
+            <summary>
+            Triggered when the user double-clicks the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> with the left mouse button.
+            </summary>
+        </member>
+        <member name="E:Wpf.Ui.Tray.Controls.NotifyIcon.RightClick">
+            <summary>
+            Triggered when the user right-clicks on the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/>.
+            </summary>
+        </member>
+        <member name="E:Wpf.Ui.Tray.Controls.NotifyIcon.RightDoubleClick">
+            <summary>
+            Triggered when the user double-clicks the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> with the right mouse button.
+            </summary>
+        </member>
+        <member name="E:Wpf.Ui.Tray.Controls.NotifyIcon.MiddleClick">
+            <summary>
+            Triggered when the user middle-clicks on the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/>.
+            </summary>
+        </member>
+        <member name="E:Wpf.Ui.Tray.Controls.NotifyIcon.MiddleDoubleClick">
+            <summary>
+            Triggered when the user double-clicks the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> with the middle mouse button.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.Finalize">
+            <summary>
+            Finalizes an instance of the <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> class.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.Register">
+            <summary>
+            Tries to register the <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> in the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.Unregister">
+            <summary>
+            Tries to unregister the <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> from the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.OnRender(System.Windows.Media.DrawingContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.OnLeftClick">
+            <summary>
+            This virtual method is called when <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> is left-clicked and it raises the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.LeftClick"/> <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.OnLeftDoubleClick">
+            <summary>
+            This virtual method is called when <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> is left-clicked and it raises the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.LeftDoubleClick"/> <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.OnRightClick">
+            <summary>
+            This virtual method is called when <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> is left-clicked and it raises the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.RightClick"/> <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.OnRightDoubleClick">
+            <summary>
+            This virtual method is called when <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> is left-clicked and it raises the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.RightDoubleClick"/> <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.OnMiddleClick">
+            <summary>
+            This virtual method is called when <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> is left-clicked and it raises the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.MiddleClick"/> <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.OnMiddleDoubleClick">
+            <summary>
+            This virtual method is called when <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> is left-clicked and it raises the <see cref="E:Wpf.Ui.Tray.Controls.NotifyIcon.MiddleDoubleClick"/> <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.Dispose(System.Boolean)">
+            <summary>
+            If disposing equals <see langword="true"/>, the method has been called directly or indirectly
+            by a user's code. Managed and unmanaged resources can be disposed. If disposing equals <see langword="false"/>,
+            the method has been called by the runtime from inside the finalizer and you should not
+            reference other objects.
+            <para>Only unmanaged resources can be disposed.</para>
+            </summary>
+            <param name="disposing">If disposing equals <see langword="true"/>, dispose all managed and unmanaged resources.</param>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Controls.NotifyIcon.OnMenuChanged(System.Windows.Controls.ContextMenu)">
+            <summary>
+            This virtual method is called when <see cref="T:System.Windows.Controls.ContextMenu"/> of <see cref="T:Wpf.Ui.Tray.Controls.NotifyIcon"/> is changed.
+            </summary>
+            <param name="contextMenu">New context menu object.</param>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Hicon">
+            <summary>
+            Facilitates the creation of a hIcon.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Hicon.FromApp">
+            <summary>
+            Tries to take the icon pointer assigned to the application.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Hicon.FromSource(System.Windows.Media.ImageSource)">
+            <summary>
+            Tries to allocate an icon to memory and fetch a pointer to it.
+            </summary>
+            <param name="source">Image source.</param>
+        </member>
+        <member name="T:Wpf.Ui.Tray.INotifyIcon">
+            <summary>
+            Represents an icon in the tray menu.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.ShellIconData">
+            <summary>
+            Gets or sets the notify icon shell data.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.IsRegistered">
+            <summary>
+            Gets or sets a value indicating whether the icon is currently registered in the tray area.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.Id">
+            <summary>
+            Gets or sets the Shell identifier of the icon.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.TooltipText">
+            <summary>
+            Gets or sets the ToolTip text displayed when the mouse pointer rests on a notification area icon.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.Icon">
+            <summary>
+            Gets or sets the <see cref="T:System.Windows.Media.Imaging.BitmapSource"/> of the tray icon.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.HookWindow">
+            <summary>
+            Gets or sets the hWnd that will receive messages for the icon.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.ContextMenu">
+            <summary>
+            Gets or sets the menu displayed when the icon is right-clicked.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.FocusOnLeftClick">
+            <summary>
+            Gets or sets a value indicating whether to focus the <see cref="P:System.Windows.Application.MainWindow"/> on single left click.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIcon.MenuOnRightClick">
+            <summary>
+            Gets or sets a value indicating whether to show the <see cref="T:System.Windows.Controls.Menu"/> on single right click.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIcon.WndProc(System.IntPtr,System.Int32,System.IntPtr,System.IntPtr,System.Boolean@)">
+            <summary>
+            A callback function that processes messages sent to a window.
+            The WNDPROC type defines a pointer to this callback function.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIcon.Register">
+            <summary>
+            Tries to register the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> in the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIcon.Register(System.Windows.Window)">
+            <summary>
+            Tries to register the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> in the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIcon.ModifyIcon">
+            <summary>
+            Tries to modify the icon of the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> in the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIcon.ModifyToolTip">
+            <summary>
+            Tries to modify the tooltip of the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> in the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIcon.Unregister">
+            <summary>
+            Tries to remove the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> from the shell.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.INotifyIconService">
+            <summary>
+            Represents a contract with a service that provides methods for displaying the icon and menu in the tray area.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIconService.Id">
+            <summary>
+            Gets the notify icon id.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIconService.IsRegistered">
+            <summary>
+            Gets a value indicating whether the notify icon is registered in the tray.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIconService.TooltipText">
+            <summary>
+            Gets or sets the ToolTip text displayed when the mouse pointer rests on a notification area icon.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIconService.ContextMenu">
+            <summary>
+            Gets or sets the context menu displayed after clicking the icon.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.INotifyIconService.Icon">
+            <summary>
+            Gets or sets the <see cref="T:System.Windows.Media.Imaging.BitmapFrame"/> of the tray icon.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIconService.Register">
+            <summary>
+            Tries to register the Notify Icon in the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIconService.Unregister">
+            <summary>
+            Tries to unregister the Notify Icon from the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.INotifyIconService.SetParentWindow(System.Windows.Window)">
+            <summary>
+            Sets parent window of the tray icon.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Internal.InternalNotifyIconManager">
+            <summary>
+            Internal service for Notify Icon management.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Internal.InternalNotifyIconManager._disposed">
+            <summary>
+            Whether the control is disposed.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.Id">
+            <inheritdoc />
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.IsRegistered">
+            <inheritdoc />
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.TooltipText">
+            <inheritdoc />
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.Icon">
+            <inheritdoc />
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.HookWindow">
+            <inheritdoc />
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.ContextMenu">
+            <inheritdoc />
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.FocusOnLeftClick">
+            <inheritdoc />
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.MenuOnRightClick">
+            <inheritdoc />
+        </member>
+        <member name="P:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.ShellIconData">
+            <summary>
+            Gets or sets a set of information for Shell32 to manipulate the icon.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.Register">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.Register(System.Windows.Window)">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.ModifyIcon">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.ModifyToolTip">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.Unregister">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.OnThemeChanged(Wpf.Ui.Appearance.ApplicationTheme,System.Windows.Media.Color)">
+            <summary>
+            Occurs when the application theme is changing.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.FocusApp">
+            <summary>
+            Focus the application main window.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.OpenMenu">
+            <summary>
+            Shows the menu if it has been added.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.OnLeftClick">
+            <summary>
+            This virtual method is called when tray icon is left-clicked and it raises the left click <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.OnLeftDoubleClick">
+            <summary>
+            This virtual method is called when tray icon is left-clicked and it raises the left double click <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.OnRightClick">
+            <summary>
+            This virtual method is called when tray icon is left-clicked and it raises the right click <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.OnRightDoubleClick">
+            <summary>
+            This virtual method is called when tray icon is left-clicked and it raises the right double click <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.OnMiddleClick">
+            <summary>
+            This virtual method is called when tray icon is left-clicked and it raises the middle click <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.OnMiddleDoubleClick">
+            <summary>
+            This virtual method is called when tray icon is left-clicked and it raises the middle double click <see langword="event"/>.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.Dispose(System.Boolean)">
+            <summary>
+            If disposing equals <see langword="true"/>, the method has been called directly or indirectly
+            by a user's code. Managed and unmanaged resources can be disposed. If disposing equals <see langword="false"/>,
+            the method has been called by the runtime from inside the finalizer and you should not
+            reference other objects.
+            <para>Only unmanaged resources can be disposed.</para>
+            </summary>
+            <param name="disposing">If disposing equals <see langword="true"/>, dispose all managed and unmanaged resources.</param>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Internal.InternalNotifyIconManager.WndProc(System.IntPtr,System.Int32,System.IntPtr,System.IntPtr,System.Boolean@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.Libraries">
+            <summary>
+            Windows kernel module.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.Shell32">
+            <summary>
+            The Windows UI provides users with access to a wide variety of objects necessary to run applications and manage the operating system.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.Shell32.DOGIF">
+            <summary>
+            DATAOBJ_GET_ITEM_FLAGS.  DOGIF_*.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.Shell32.NIM">
+            <summary>
+            Shell_NotifyIcon messages.  NIM_*
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.Shell32.NIF">
+            <summary>
+            Shell_NotifyIcon flags.  NIF_*
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NIF.REALTIME">
+            <summary>
+            Vista only.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NIF.SHOWTIP">
+            <summary>
+            Vista only.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.cbSize">
+            <summary>
+            The size of this structure, in bytes.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.hWnd">
+            <summary>
+            A handle to the window that receives notifications associated with an icon in the notification area.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.uID">
+            <summary>
+            The application-defined identifier of the taskbar icon. The Shell uses either (hWnd plus uID) or guidItem to identify which icon to operate on when Shell_NotifyIcon is invoked.
+            You can have multiple icons associated with a single hWnd by assigning each a different uID. If guidItem is specified, uID is ignored.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.uFlags">
+            <summary>
+            Flags that either indicate which of the other members of the structure contain valid data or provide additional information to the tooltip as to how it should display.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.uCallbackMessage">
+            <summary>
+            0x00000001. The uCallbackMessage member is valid.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.hIcon">
+            <summary>
+            0x00000002. The hIcon member is valid.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.szTip">
+            <summary>
+            0x00000004. The szTip member is valid.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.dwState">
+            <summary>
+            The state of the icon.  There are two flags that can be set independently.
+            NIS_HIDDEN = 1.  The icon is hidden.
+            NIS_SHAREDICON = 2.  The icon is shared.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.Shell32.NOTIFYICONDATA.uVersion">
+            <summary>
+            Prior to Vista this was a union of uTimeout and uVersion.  As of Vista, uTimeout has been deprecated.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.Shell32.SetCurrentProcessExplicitAppUserModelID(System.String)">
+            <summary>
+            Sets the User Model AppID for the current process, enabling Windows to retrieve this ID
+            </summary>
+            <param name="AppID">The string ID to be assigned</param>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.Shell32.GetCurrentProcessExplicitAppUserModelID(System.String@)">
+            <summary>
+            Retrieves the User Model AppID that has been explicitly set for the current process via SetCurrentProcessExplicitAppUserModelID
+            </summary>
+            <param name="AppID">Out parameter that receives the string ID.</param>
+            <returns>An HRESULT indicating success (S_OK) or failure of the operation. If the function fails, the returned AppID is null.</returns>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32">
+            <summary>
+            USER procedure declarations, constant definitions and macros.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.SWP">
+            <summary>
+            SetWindowPos options
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.MF">
+            <summary>
+            EnableMenuItem uEnable values, MF_*
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.MF.DOES_NOT_EXIST">
+            <summary>
+            Possible return value for EnableMenuItem
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.SC">
+            <summary>
+            Menu item element.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.SC.F_ISSECURE">
+            <summary>
+            SCF_ISSECURE
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST">
+            <summary>
+            WM_NCHITTEST and MOUSEHOOKSTRUCT Mouse Position Codes
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTERROR">
+            <summary>
+            Hit test returned error.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTTRANSPARENT">
+            <summary>
+            Hit test returned transparent.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTNOWHERE">
+            <summary>
+            On the screen background or on a dividing line between windows.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTCLIENT">
+            <summary>
+            In a client area.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTCAPTION">
+            <summary>
+            In a title bar.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTSYSMENU">
+            <summary>
+            In a window menu or in a Close button in a child window.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTGROWBOX">
+            <summary>
+            In a size box (same as HTSIZE).
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTMENU">
+            <summary>
+            In a menu.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTHSCROLL">
+            <summary>
+            In a horizontal scroll bar.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTVSCROLL">
+            <summary>
+            In the vertical scroll bar.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTMINBUTTON">
+            <summary>
+            In a Minimize button.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTMAXBUTTON">
+            <summary>
+            In a Maximize button.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTLEFT">
+            <summary>
+            In the left border of a resizable window (the user can click the mouse to resize the window horizontally).
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTRIGHT">
+            <summary>
+            In the right border of a resizable window (the user can click the mouse to resize the window horizontally).
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM_NCHITTEST.HTTOP">
+            <summary>
+            In the upper-horizontal border of a window.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.GWL">
+            <summary>
+            Window long flags.
+            <para><see href="https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlonga"/></para>
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.GWL_EXSTYLE">
+            <summary>
+            Sets a new extended window style.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.GWLP_HINSTANCE">
+            <summary>
+            Sets a new application instance handle.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.GWLP_HWNDPARENT">
+            <summary>
+            Sets a new hWnd parent.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.GWL_ID">
+            <summary>
+            Sets a new identifier of the child window. The window cannot be a top-level window.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.GWL_STYLE">
+            <summary>
+            Sets a new window style.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.GWL_USERDATA">
+            <summary>
+            Sets the user data associated with the window.
+            This data is intended for use by the application that created the window. Its value is initially zero.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.GWL_WNDPROC">
+            <summary>
+            Sets a new address for the window procedure.
+            You cannot change this attribute if the window does not belong to the same process as the calling thread.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.DWLP_USER">
+            <summary>
+            Sets new extra information that is private to the application, such as handles or pointers.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.DWLP_MSGRESULT">
+            <summary>
+            Sets the return value of a message processed in the dialog box procedure.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.GWL.DWLP_DLGPROC">
+            <summary>
+            Sets the new address of the dialog box procedure.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.WCA">
+            <summary>
+            Window composition attributes.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.ACCENT_STATE">
+            <summary>
+            DWM window accent state.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.ACCENT_POLICY">
+            <summary>
+            WCA window accent policy.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.CS">
+            <summary>
+            CS_*
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.MSGFLT">
+            <summary>
+            MSGFLT_*. New in Vista. Realiased in Windows 7.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.MSGFLT.RESET">
+            <summary>
+            Resets the window message filter for hWnd to the default. Any message allowed globally or process-wide will get through, but any message not included in those two categories, and which comes from a lower privileged process, will be blocked.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.MSGFLT.ALLOW">
+            <summary>
+            Allows the message through the filter. This enables the message to be received by hWnd, regardless of the source of the message, even it comes from a lower privileged process.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.MSGFLT.DISALLOW">
+            <summary>
+            Blocks the message to be delivered to hWnd if it comes from a lower privileged process, unless the message is allowed process-wide by using the ChangeWindowMessageFilter function or globally.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.MSGFLTINFO">
+            <summary>
+            MSGFLTINFO.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.CHANGEFILTERSTRUCT">
+            <summary>
+            Win7 only.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.WM">
+            <summary>
+            Window message values, WM_*
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WM.TRAYMOUSEMESSAGE">
+            <summary>
+            This is the hard-coded message value used by WinForms for Shell_NotifyIcon.
+            It's relatively safe to reuse.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.WS">
+            <summary>
+            WindowStyle values, WS_*
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.WS_EX">
+            <summary>
+            Window style extended values, WS_EX_*
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.SM">
+            <summary>
+            SystemMetrics.  SM_*
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.SW">
+            <summary>
+            ShowWindow options
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX">
+            <summary>
+            Contains window class information. It is used with the <see cref="M:Wpf.Ui.Tray.Interop.User32.RegisterClassEx(Wpf.Ui.Tray.Interop.User32.WNDCLASSEX@)"/> and GetClassInfoEx functions.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.cbSize">
+            <summary>
+            The size, in bytes, of this structure. Set this member to sizeof(WNDCLASSEX). Be sure to set this member before calling the GetClassInfoEx function.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.style">
+            <summary>
+            The class style(s). This member can be any combination of the Class Styles.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.lpfnWndProc">
+            <summary>
+            A pointer to the window procedure. You must use the CallWindowProc function to call the window procedure. For more information, see WindowProc.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.cbClsExtra">
+            <summary>
+            The number of extra bytes to allocate following the window-class structure. The system initializes the bytes to zero.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.cbWndExtra">
+            <summary>
+            The number of extra bytes to allocate following the window instance. The system initializes the bytes to zero. If an application uses WNDCLASSEX to register a dialog box created by using the CLASS directive in the resource file, it must set this member to DLGWINDOWEXTRA.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.hInstance">
+            <summary>
+            A handle to the instance that contains the window procedure for the class.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.hIcon">
+            <summary>
+            A handle to the class icon. This member must be a handle to an icon resource. If this member is NULL, the system provides a default icon.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.hCursor">
+            <summary>
+            A handle to the class cursor. This member must be a handle to a cursor resource. If this member is NULL, an application must explicitly set the cursor shape whenever the mouse moves into the application's window.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.hbrBackground">
+            <summary>
+            A handle to the class background brush. This member can be a handle to the brush to be used for painting the background, or it can be a color value.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.lpszMenuName">
+            <summary>
+            Pointer to a null-terminated character string that specifies the resource name of the class menu, as the name appears in the resource file. If you use an integer to identify the menu, use the MAKEINTRESOURCE macro. If this member is NULL, windows belonging to this class have no default menu.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.lpszClassName">
+            <summary>
+            A pointer to a null-terminated string or is an atom. If this parameter is an atom, it must be a class atom created by a previous call to the RegisterClass or RegisterClassEx function. The atom must be in the low-order word of lpszClassName; the high-order word must be zero.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX.hIconSm">
+            <summary>
+            A handle to a small icon that is associated with the window class. If this member is NULL, the system searches the icon resource specified by the hIcon member for an icon of the appropriate size to use as the small icon.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.WndProc">
+            <summary>
+            Delegate declaration that matches native WndProc signatures.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.WndProcHook">
+            <summary>
+            Delegate declaration that matches native WndProc signatures.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.Interop.User32.MessageHandler">
+            <summary>
+            Delegate declaration that matches managed WndProc signatures.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.ReleaseDC(System.IntPtr,System.IntPtr)">
+            <summary>
+            The ReleaseDC function releases a device context (DC), freeing it for use by other applications.
+            The effect of the ReleaseDC function depends on the type of DC. It frees only common and window DCs. It has no effect on class or private DCs.
+            </summary>
+            <param name="hWnd">A handle to the window whose DC is to be released.</param>
+            <param name="hDC">A handle to the DC to be released.</param>
+            <returns>The return value indicates whether the DC was released. If the DC was released, the return value is 1. If the DC was not released, the return value is zero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.AdjustWindowRectEx(System.Windows.Rect@,Wpf.Ui.Tray.Interop.User32.WS,System.Boolean,Wpf.Ui.Tray.Interop.User32.WS_EX)">
+            <summary>
+            Calculates the required size of the window rectangle, based on the desired size of the client rectangle.
+            The window rectangle can then be passed to the CreateWindowEx function to create a window whose client area is the desired size.
+            </summary>
+            <param name="lpRect">A pointer to a RECT structure that contains the coordinates of the top-left and bottom-right corners of the desired client area.</param>
+            <param name="dwStyle">The window style of the window whose required size is to be calculated. Note that you cannot specify the WS_OVERLAPPED style.</param>
+            <param name="bMenu">Indicates whether the window has a menu.</param>
+            <param name="dwExStyle">The extended window style of the window whose required size is to be calculated.</param>
+            <returns>If the function succeeds, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.ChangeWindowMessageFilter(Wpf.Ui.Tray.Interop.User32.WM,Wpf.Ui.Tray.Interop.User32.MSGFLT)">
+            <summary>
+            [Using the ChangeWindowMessageFilter function is not recommended, as it has process-wide scope. Instead, use the ChangeWindowMessageFilterEx function to control access to specific windows as needed. ChangeWindowMessageFilter may not be supported in future versions of Windows.
+            <para>Adds or removes a message from the User Interface Privilege Isolation(UIPI) message filter.</para>
+            </summary>
+            <param name="message">The message to add to or remove from the filter.</param>
+            <param name="dwFlag">The action to be performed. One of the following values.</param>
+            <returns><see langword="true"/> if successful; otherwise, <see langword="false"/>. To get extended error information, call Kernel32.GetLastError().</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.ChangeWindowMessageFilterEx(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,Wpf.Ui.Tray.Interop.User32.MSGFLT,Wpf.Ui.Tray.Interop.User32.CHANGEFILTERSTRUCT@)">
+            <summary>
+            Modifies the User Interface Privilege Isolation (UIPI) message filter for a specified window.
+            </summary>
+            <param name="hWnd">A handle to the window whose UIPI message filter is to be modified.</param>
+            <param name="message">The message that the message filter allows through or blocks.</param>
+            <param name="action">The action to be performed.</param>
+            <param name="pChangeFilterStruct">Optional pointer to a <see cref="T:Wpf.Ui.Tray.Interop.User32.CHANGEFILTERSTRUCT"/> structure.</param>
+            <returns>If the function succeeds, it returns <see langword="true"/>; otherwise, it returns <see langword="false"/>. To get extended error information, call Kernel32.GetLastError().</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.PostMessageW(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)">
+            <summary>
+            Places (posts) a message in the message queue associated with the thread that created the specified window and returns without waiting for the thread to process the message.
+            <para>Unicode declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.PostMessage(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window whose window procedure is to receive the message.</param>
+            <param name="Msg">The message to be posted.</param>
+            <param name="wParam">Additional message-specific information.</param>
+            <param name="lParam">Additional message-specific information.~</param>
+            <returns>If the function succeeds, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.PostMessageA(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)">
+            <summary>
+            Places (posts) a message in the message queue associated with the thread that created the specified window and returns without waiting for the thread to process the message.
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.PostMessage(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window whose window procedure is to receive the message.</param>
+            <param name="Msg">The message to be posted.</param>
+            <param name="wParam">Additional message-specific information.</param>
+            <param name="lParam">Additional message-specific information.~</param>
+            <returns>If the function succeeds, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.PostMessage(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)">
+            <summary>
+            Places (posts) a message in the message queue associated with the thread that created the specified window and returns without waiting for the thread to process the message.
+            </summary>
+            <param name="hWnd">A handle to the window whose window procedure is to receive the message.</param>
+            <param name="Msg">The message to be posted.</param>
+            <param name="wParam">Additional message-specific information.</param>
+            <param name="lParam">Additional message-specific information.~</param>
+            <returns>If the function succeeds, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SendMessage(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)">
+            <summary>
+            Sends the specified message to a window or windows. The SendMessage function calls the window procedure for the specified window and does not return until the window procedure has processed the message.
+            </summary>
+            <param name="hWnd">A handle to the window whose window procedure will receive the message.</param>
+            <param name="wMsg">The message to be sent.</param>
+            <param name="wParam">Additional message-specific information.</param>
+            <param name="lParam">Additional message-specific information.~</param>
+            <returns>The return value specifies the result of the message processing; it depends on the message sent.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.CreateWindowExW(Wpf.Ui.Tray.Interop.User32.WS_EX,System.String,System.String,Wpf.Ui.Tray.Interop.User32.WS,System.Int32,System.Int32,System.Int32,System.Int32,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            Creates an overlapped, pop-up, or child window with an extended window style; otherwise,
+            this function is identical to the CreateWindow function. For more information about
+            creating a window and for full descriptions of the other parameters of CreateWindowEx, see CreateWindow.
+            </summary>
+            <param name="dwExStyle">The extended window style of the window being created.</param>
+            <param name="lpClassName">A null-terminated string or a class atom created by a previous call to the RegisterClass or RegisterClassEx function.</param>
+            <param name="lpWindowName">The window name. If the window style specifies a title bar, the window title pointed to by lpWindowName is displayed in the title bar.</param>
+            <param name="dwStyle">The style of the window being created. This parameter can be a combination of the window style values, plus the control styles indicated in the Remarks section.</param>
+            <param name="x">The initial horizontal position of the window. For an overlapped or pop-up window, the x parameter is the initial x-coordinate of the window's upper-left corner, in screen coordinates.</param>
+            <param name="y">The initial vertical position of the window. For an overlapped or pop-up window, the y parameter is the initial y-coordinate of the window's upper-left corner, in screen coordinates.</param>
+            <param name="nWidth">The width, in device units, of the window. For overlapped windows, nWidth is the window's width, in screen coordinates, or CW_USEDEFAULT.</param>
+            <param name="nHeight">The height, in device units, of the window. For overlapped windows, nHeight is the window's height, in screen coordinates. If the nWidth parameter is set to CW_USEDEFAULT, the system ignores nHeight.</param>
+            <param name="hWndParent">A handle to the parent or owner window of the window being created. To create a child window or an owned window, supply a valid window handle. This parameter is optional for pop-up windows.</param>
+            <param name="hMenu">A handle to a menu, or specifies a child-window identifier, depending on the window style. For an overlapped or pop-up window, hMenu identifies the menu to be used with the window; it can be NULL if the class menu is to be used.</param>
+            <param name="hInstance">A handle to the instance of the module to be associated with the window.</param>
+            <param name="lpParam">Pointer to a value to be passed to the window through the CREATESTRUCT structure (lpCreateParams member) pointed to by the lParam param of the WM_CREATE message. This message is sent to the created window by this function before it returns.</param>
+            <returns>If the function succeeds, the return value is a handle to the new window.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.CreateWindowEx(Wpf.Ui.Tray.Interop.User32.WS_EX,System.String,System.String,Wpf.Ui.Tray.Interop.User32.WS,System.Int32,System.Int32,System.Int32,System.Int32,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            Creates an overlapped, pop-up, or child window with an extended window style; otherwise,
+            this function is identical to the CreateWindow function. For more information about
+            creating a window and for full descriptions of the other parameters of CreateWindowEx, see CreateWindow.
+            </summary>
+            <param name="dwExStyle">The extended window style of the window being created.</param>
+            <param name="lpClassName">A null-terminated string or a class atom created by a previous call to the RegisterClass or RegisterClassEx function.</param>
+            <param name="lpWindowName">The window name. If the window style specifies a title bar, the window title pointed to by lpWindowName is displayed in the title bar.</param>
+            <param name="dwStyle">The style of the window being created. This parameter can be a combination of the window style values, plus the control styles indicated in the Remarks section.</param>
+            <param name="x">The initial horizontal position of the window. For an overlapped or pop-up window, the x parameter is the initial x-coordinate of the window's upper-left corner, in screen coordinates.</param>
+            <param name="y">The initial vertical position of the window. For an overlapped or pop-up window, the y parameter is the initial y-coordinate of the window's upper-left corner, in screen coordinates.</param>
+            <param name="nWidth">The width, in device units, of the window. For overlapped windows, nWidth is the window's width, in screen coordinates, or CW_USEDEFAULT.</param>
+            <param name="nHeight">The height, in device units, of the window. For overlapped windows, nHeight is the window's height, in screen coordinates. If the nWidth parameter is set to CW_USEDEFAULT, the system ignores nHeight.</param>
+            <param name="hWndParent">A handle to the parent or owner window of the window being created. To create a child window or an owned window, supply a valid window handle. This parameter is optional for pop-up windows.</param>
+            <param name="hMenu">A handle to a menu, or specifies a child-window identifier, depending on the window style. For an overlapped or pop-up window, hMenu identifies the menu to be used with the window; it can be NULL if the class menu is to be used.</param>
+            <param name="hInstance">A handle to the instance of the module to be associated with the window.</param>
+            <param name="lpParam">Pointer to a value to be passed to the window through the CREATESTRUCT structure (lpCreateParams member) pointed to by the lParam param of the WM_CREATE message. This message is sent to the created window by this function before it returns.</param>
+            <returns>If the function succeeds, the return value is a handle to the new window.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.RegisterClassExW(Wpf.Ui.Tray.Interop.User32.WNDCLASSEX@)">
+            <summary>
+            Registers a window class for subsequent use in calls to the CreateWindow or CreateWindowEx function.
+            <para>Unicode declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.RegisterClassEx(Wpf.Ui.Tray.Interop.User32.WNDCLASSEX@)"/></para>
+            </summary>
+            <param name="lpwcx">A pointer to a <see cref="T:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX"/> structure. You must fill the structure with the appropriate class attributes before passing it to the function.</param>
+            <returns>If the function succeeds, the return value is a class atom that uniquely identifies the class being registered.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.RegisterClassExA(Wpf.Ui.Tray.Interop.User32.WNDCLASSEX@)">
+            <summary>
+            Registers a window class for subsequent use in calls to the CreateWindow or CreateWindowEx function.
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.RegisterClassEx(Wpf.Ui.Tray.Interop.User32.WNDCLASSEX@)"/></para>
+            </summary>
+            <param name="lpwcx">A pointer to a <see cref="T:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX"/> structure. You must fill the structure with the appropriate class attributes before passing it to the function.</param>
+            <returns>If the function succeeds, the return value is a class atom that uniquely identifies the class being registered.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.RegisterClassEx(Wpf.Ui.Tray.Interop.User32.WNDCLASSEX@)">
+            <summary>
+            Registers a window class for subsequent use in calls to the CreateWindow or CreateWindowEx function.
+            </summary>
+            <param name="lpwcx">A pointer to a <see cref="T:Wpf.Ui.Tray.Interop.User32.WNDCLASSEX"/> structure. You must fill the structure with the appropriate class attributes before passing it to the function.</param>
+            <returns>If the function succeeds, the return value is a class atom that uniquely identifies the class being registered.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.DefWindowProcW(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)">
+            <summary>
+            Calls the default window procedure to provide default processing for any window messages that an application does not process.
+            This function ensures that every message is processed. DefWindowProc is called with the same parameters received by the window procedure.
+            <para>Unicode declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.DefWindowProc(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window procedure that received the message.</param>
+            <param name="Msg">The message.</param>
+            <param name="wParam">Additional message information. The content of this parameter depends on the value of the Msg parameter.</param>
+            <param name="lParam">Additional message information. The content of this parameter depends on the value of the Msg parameter.~</param>
+            <returns>The return value is the result of the message processing and depends on the message.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.DefWindowProcA(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)">
+            <summary>
+            Calls the default window procedure to provide default processing for any window messages that an application does not process.
+            This function ensures that every message is processed. DefWindowProc is called with the same parameters received by the window procedure.
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.DefWindowProc(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window procedure that received the message.</param>
+            <param name="Msg">The message.</param>
+            <param name="wParam">Additional message information. The content of this parameter depends on the value of the Msg parameter.</param>
+            <param name="lParam">Additional message information. The content of this parameter depends on the value of the Msg parameter.~</param>
+            <returns>The return value is the result of the message processing and depends on the message.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.DefWindowProc(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WM,System.IntPtr,System.IntPtr)">
+            <summary>
+            Calls the default window procedure to provide default processing for any window messages that an application does not process.
+            This function ensures that every message is processed. DefWindowProc is called with the same parameters received by the window procedure.
+            </summary>
+            <param name="hWnd">A handle to the window procedure that received the message.</param>
+            <param name="Msg">The message.</param>
+            <param name="wParam">Additional message information. The content of this parameter depends on the value of the Msg parameter.</param>
+            <param name="lParam">Additional message information. The content of this parameter depends on the value of the Msg parameter.~</param>
+            <returns>The return value is the result of the message processing and depends on the message.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongW(System.IntPtr,System.Int32)">
+            <summary>
+            Retrieves information about the specified window. The function also retrieves the 32-bit (DWORD) value at the specified offset into the extra window memory.
+            <para>If you are retrieving a pointer or a handle, this function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/> function.</para>
+            <para>Unicode declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLong(System.IntPtr,System.Int32)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be retrieved.</param>
+            <returns>If the function succeeds, the return value is the requested value.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongA(System.IntPtr,System.Int32)">
+            <summary>
+            Retrieves information about the specified window. The function also retrieves the 32-bit (DWORD) value at the specified offset into the extra window memory.
+            <para>If you are retrieving a pointer or a handle, this function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/> function.</para>
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLong(System.IntPtr,System.Int32)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be retrieved.</param>
+            <returns>If the function succeeds, the return value is the requested value.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowLong(System.IntPtr,System.Int32)">
+            <summary>
+            Retrieves information about the specified window. The function also retrieves the 32-bit (DWORD) value at the specified offset into the extra window memory.
+            <para>If you are retrieving a pointer or a handle, this function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/> function.</para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be retrieved.</param>
+            <returns>If the function succeeds, the return value is the requested value.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowLong(System.IntPtr,Wpf.Ui.Tray.Interop.User32.GWL)">
+            <summary>
+            Retrieves information about the specified window. The function also retrieves the 32-bit (DWORD) value at the specified offset into the extra window memory.
+            <para>If you are retrieving a pointer or a handle, this function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/> function.</para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be retrieved.</param>
+            <returns>If the function succeeds, the return value is the requested value.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtrW(System.IntPtr,System.Int32)">
+            <summary>
+            Retrieves information about the specified window. The function also retrieves the value at a specified offset into the extra window memory.
+            <para>Unicode declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be retrieved.</param>
+            <returns>If the function succeeds, the return value is the requested value.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtrA(System.IntPtr,System.Int32)">
+            <summary>
+            Retrieves information about the specified window. The function also retrieves the value at a specified offset into the extra window memory.
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be retrieved.</param>
+            <returns>If the function succeeds, the return value is the requested value.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)">
+            <summary>
+            Retrieves information about the specified window. The function also retrieves the value at a specified offset into the extra window memory.
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be retrieved.</param>
+            <returns>If the function succeeds, the return value is the requested value.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongW(System.IntPtr,System.Int32,System.Int64)">
+            <summary>
+            Changes an attribute of the specified window. The function also sets the 32-bit (long) value at the specified offset into the extra window memory.
+            <para>Note: This function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtr(System.IntPtr,System.Int32,System.IntPtr)"/> function. To write code that is compatible with both 32-bit and 64-bit versions of Windows, use the SetWindowLongPtr function.</para>
+            <para>Unicode declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be set. Valid values are in the range zero through the number of bytes of extra window memory, minus the size of an integer.</param>
+            <param name="dwNewLong">The replacement value.</param>
+            <returns>If the function succeeds, the return value is the previous value of the specified 32-bit integer.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongA(System.IntPtr,System.Int32,System.Int64)">
+            <summary>
+            Changes an attribute of the specified window. The function also sets the 32-bit (long) value at the specified offset into the extra window memory.
+            <para>Note: This function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtr(System.IntPtr,System.Int32,System.IntPtr)"/> function. To write code that is compatible with both 32-bit and 64-bit versions of Windows, use the SetWindowLongPtr function.</para>
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be set. Valid values are in the range zero through the number of bytes of extra window memory, minus the size of an integer.</param>
+            <param name="dwNewLong">The replacement value.</param>
+            <returns>If the function succeeds, the return value is the previous value of the specified 32-bit integer.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowLong(System.IntPtr,System.Int32,System.Int64)">
+            <summary>
+            Changes an attribute of the specified window. The function also sets the 32-bit (long) value at the specified offset into the extra window memory.
+            <para>Note: This function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtr(System.IntPtr,System.Int32,System.IntPtr)"/> function. To write code that is compatible with both 32-bit and 64-bit versions of Windows, use the SetWindowLongPtr function.</para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be set. Valid values are in the range zero through the number of bytes of extra window memory, minus the size of an integer.</param>
+            <param name="dwNewLong">The replacement value.</param>
+            <returns>If the function succeeds, the return value is the previous value of the specified 32-bit integer.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowLong(System.IntPtr,Wpf.Ui.Tray.Interop.User32.GWL,System.Int64)">
+            <summary>
+            Changes an attribute of the specified window. The function also sets the 32-bit (long) value at the specified offset into the extra window memory.
+            <para>Note: This function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtr(System.IntPtr,System.Int32,System.IntPtr)"/> function. To write code that is compatible with both 32-bit and 64-bit versions of Windows, use the SetWindowLongPtr function.</para>
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be set. Valid values are in the range zero through the number of bytes of extra window memory, minus the size of an integer.</param>
+            <param name="dwNewLong">The replacement value.</param>
+            <returns>If the function succeeds, the return value is the previous value of the specified 32-bit integer.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowLong(System.IntPtr,Wpf.Ui.Tray.Interop.User32.GWL,Wpf.Ui.Tray.Interop.User32.WS)">
+            <summary>
+            Changes an attribute of the specified window. The function also sets the 32-bit (long) value at the specified offset into the extra window memory.
+            <para>Note: This function has been superseded by the <see cref="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtr(System.IntPtr,System.Int32,System.IntPtr)"/> function. To write code that is compatible with both 32-bit and 64-bit versions of Windows, use the SetWindowLongPtr function.</para>
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.GetWindowLongPtr(System.IntPtr,System.Int32)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be set. Valid values are in the range zero through the number of bytes of extra window memory, minus the size of an integer.</param>
+            <param name="dwNewLong">New window style.</param>
+            <returns>If the function succeeds, the return value is the previous value of the specified 32-bit integer.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtrW(System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            Changes an attribute of the specified window. The function also sets a value at the specified offset in the extra window memory.
+            <para>Unicode declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtr(System.IntPtr,System.Int32,System.IntPtr)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be set.</param>
+            <param name="dwNewLong">The replacement value.</param>
+            <returns>If the function succeeds, the return value is the previous value of the specified offset.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtrA(System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            Changes an attribute of the specified window. The function also sets a value at the specified offset in the extra window memory.
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtr(System.IntPtr,System.Int32,System.IntPtr)"/></para>
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be set.</param>
+            <param name="dwNewLong">The replacement value.</param>
+            <returns>If the function succeeds, the return value is the previous value of the specified offset.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowLongPtr(System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            Changes an attribute of the specified window. The function also sets a value at the specified offset in the extra window memory.
+            </summary>
+            <param name="hWnd">A handle to the window and, indirectly, the class to which the window belongs.</param>
+            <param name="nIndex">The zero-based offset to the value to be set.</param>
+            <param name="dwNewLong">The replacement value.</param>
+            <returns>If the function succeeds, the return value is the previous value of the specified offset.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.DestroyIcon(System.IntPtr)">
+            <summary>
+            Destroys an icon and frees any memory the icon occupied.
+            </summary>
+            <param name="handle">A handle to the icon to be destroyed. The icon must not be in use.</param>
+            <returns>If the function succeeds, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.IsWindow(System.IntPtr)">
+            <summary>
+            Determines whether the specified window handle identifies an existing window.
+            </summary>
+            <param name="hWnd">A handle to the window to be tested.</param>
+            <returns>If the window handle identifies an existing window, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.DestroyWindow(System.IntPtr)">
+            <summary>
+            Destroys the specified window. The function sends WM_DESTROY and WM_NCDESTROY messages to the window to deactivate it and remove the keyboard focus from it.
+            </summary>
+            <param name="hWnd">A handle to the window to be destroyed.</param>
+            <returns>If the function succeeds, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowRect(System.IntPtr,System.Windows.Rect@)">
+            <summary>
+            Retrieves the dimensions of the bounding rectangle of the specified window. The dimensions are given in screen coordinates that are relative to the upper-left corner of the screen.
+            </summary>
+            <param name="hWnd">A handle to the window.</param>
+            <param name="lpRect">A pointer to a RECT structure that receives the screen coordinates of the upper-left and lower-right corners of the window.</param>
+            <returns>If the function succeeds, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.IsWindowVisible(System.IntPtr)">
+            <summary>
+            Determines the visibility state of the specified window.
+            </summary>
+            <param name="hWnd">A handle to the window to be tested.</param>
+            <returns>If the specified window, its parent window, its parent's parent window, and so forth, have the WS_VISIBLE style, the return value is nonzero. Otherwise, the return value is zero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.IsWindowEnabled(System.IntPtr)">
+            <summary>
+            Determines whether the specified window is enabled for mouse and keyboard input.
+            </summary>
+            <param name="hWnd">A handle to the window to be tested.</param>
+            <returns>If the window is enabled, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.MonitorFromWindow(System.IntPtr,System.UInt32)">
+            <summary>
+            The MonitorFromWindow function retrieves a handle to the display monitor that has the largest area of intersection with the bounding rectangle of a specified window.
+            </summary>
+            <param name="hWnd">A handle to the window of interest.</param>
+            <param name="dwFlags">Determines the function's return value if the window does not intersect any display monitor.</param>
+            <returns>If the window intersects one or more display monitor rectangles, the return value is an HMONITOR handle to the display monitor that has the largest area of intersection with the window.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetSystemMetrics(Wpf.Ui.Tray.Interop.User32.SM)">
+            <summary>
+            Retrieves the specified system metric or system configuration setting.
+            Note that all dimensions retrieved by GetSystemMetrics are in pixels.
+            </summary>
+            <param name="nIndex">The system metric or configuration setting to be retrieved. This parameter can be one of the <see cref="T:Wpf.Ui.Tray.Interop.User32.SM"/> values.
+            Note that all SM_CX* values are widths and all SM_CY* values are heights. Also note that all settings designed to return Boolean data represent <see langword="true"/> as any nonzero value, and <see langword="false"/> as a zero value.</param>
+            <returns>If the function succeeds, the return value is the requested system metric or configuration setting.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.RegisterWindowMessageW(System.String)">
+            <summary>
+            Defines a new window message that is guaranteed to be unique throughout the system. The message value can be used when sending or posting messages.
+            <para>Unicode declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.RegisterWindowMessage(System.String)"/></para>
+            </summary>
+            <param name="lpString">The message to be registered.</param>
+            <returns>If the message is successfully registered, the return value is a message identifier in the range 0xC000 through 0xFFFF.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.RegisterWindowMessageA(System.String)">
+            <summary>
+            Defines a new window message that is guaranteed to be unique throughout the system. The message value can be used when sending or posting messages.
+            <para>ANSI declaration for <see cref="M:Wpf.Ui.Tray.Interop.User32.RegisterWindowMessage(System.String)"/></para>
+            </summary>
+            <param name="lpString">The message to be registered.</param>
+            <returns>If the message is successfully registered, the return value is a message identifier in the range 0xC000 through 0xFFFF.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.RegisterWindowMessage(System.String)">
+            <summary>
+            Defines a new window message that is guaranteed to be unique throughout the system. The message value can be used when sending or posting messages.
+            </summary>
+            <param name="lpString">The message to be registered.</param>
+            <returns>If the message is successfully registered, the return value is a message identifier in the range 0xC000 through 0xFFFF.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetActiveWindow(System.IntPtr)">
+            <summary>
+            Activates a window. The window must be attached to the calling thread's message queue.
+            </summary>
+            <param name="hWnd">A handle to the top-level window to be activated.</param>
+            <returns>If the function succeeds, the return value is the handle to the window that was previously active.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetForegroundWindow(System.IntPtr)">
+            <summary>
+            Brings the thread that created the specified window into the foreground and activates the window.
+            Keyboard input is directed to the window, and various visual cues are changed for the user.
+            The system assigns a slightly higher priority to the thread that created the foreground window than it does to other threads.
+            </summary>
+            <param name="hWnd">A handle to the window that should be activated and brought to the foreground.</param>
+            <returns>If the window was brought to the foreground, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.EnableMenuItem(System.IntPtr,Wpf.Ui.Tray.Interop.User32.SC,Wpf.Ui.Tray.Interop.User32.MF)">
+            <summary>
+            Enables, disables, or grays the specified menu item.
+            </summary>
+            <param name="hMenu">A handle to the menu.</param>
+            <param name="uIDEnableItem">The menu item to be enabled, disabled, or grayed, as determined by the uEnable parameter.</param>
+            <param name="uEnable">Controls the interpretation of the uIDEnableItem parameter and indicate whether the menu item is enabled, disabled, or grayed.</param>
+            <returns>The return value specifies the previous state of the menu item (it is either MF_DISABLED, MF_ENABLED, or MF_GRAYED). If the menu item does not exist, the return value is -1 (<see cref="F:Wpf.Ui.Tray.Interop.User32.MF.DOES_NOT_EXIST"/>).</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowRgn(System.IntPtr,System.IntPtr,System.Boolean)">
+            <summary>
+            The SetWindowRgn function sets the window region of a window. The window region determines the area within the window where the system permits drawing. The system does not display any portion of a window that lies outside of the window region.
+            </summary>
+            <param name="hWnd">A handle to the window whose window region is to be set.</param>
+            <param name="hRgn">A handle to a region. The function sets the window region of the window to this region.</param>
+            <param name="bRedraw">Specifies whether the system redraws the window after setting the window region. If bRedraw is <see langword="true"/>, the system does so; otherwise, it does not.</param>
+            <exception cref="T:System.ComponentModel.Win32Exception">Native method returned HRESULT.</exception>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowPos(System.IntPtr,System.IntPtr,System.Int32,System.Int32,System.Int32,System.Int32,Wpf.Ui.Tray.Interop.User32.SWP)">
+            <summary>
+            Changes the size, position, and Z order of a child, pop-up, or top-level window. These windows are ordered according to their appearance on the screen. The topmost window receives the highest rank and is the first window in the Z order.
+            </summary>
+            <param name="hWnd">A handle to the window.</param>
+            <param name="hWndInsertAfter">A handle to the window to precede the positioned window in the Z order.</param>
+            <param name="x">The new position of the left side of the window, in client coordinates.</param>
+            <param name="y">The new position of the top of the window, in client coordinates.</param>
+            <param name="cx">The new width of the window, in pixels.</param>
+            <param name="cy">The new height of the window, in pixels.</param>
+            <param name="uFlags">The window sizing and positioning flags.</param>
+            <returns>If the function succeeds, the return value is nonzero.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetProcessDPIAware">
+            <summary>
+            Sets the process-default DPI awareness to system-DPI awareness. This is equivalent to calling SetProcessDpiAwarenessContext with a DPI_AWARENESS_CONTEXT value of DPI_AWARENESS_CONTEXT_SYSTEM_AWARE.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.SetWindowCompositionAttribute(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WINCOMPATTRDATA@)">
+            <summary>
+            Sets various information regarding DWM window attributes.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetWindowCompositionAttribute(System.IntPtr,Wpf.Ui.Tray.Interop.User32.WINCOMPATTRDATA@)">
+            <summary>
+            Sets various information regarding DWM window attributes.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetDpiForWindow(System.IntPtr)">
+            <summary>
+            Returns the dots per inch (dpi) value for the specified window.
+            </summary>
+            <param name="hWnd">The window that you want to get information about.</param>
+            <returns>The DPI for the window, which depends on the DPI_AWARENESS of the window.</returns>
+        </member>
+        <member name="M:Wpf.Ui.Tray.Interop.User32.GetDpiForWindow(System.Runtime.InteropServices.HandleRef)">
+            <summary>
+            Returns the dots per inch (dpi) value for the specified window.
+            </summary>
+            <param name="hwnd">The window that you want to get information about.</param>
+            <returns>The DPI for the window, which depends on the DPI_AWARENESS of the window.</returns>
+        </member>
+        <member name="T:Wpf.Ui.Tray.NotifyIconService">
+            <summary>
+            Base implementation of the notify icon service.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.NotifyIconService.SetParentWindow(System.Windows.Window)">
+            <inheritdoc />
+        </member>
+        <member name="M:Wpf.Ui.Tray.NotifyIconService.OnLeftClick">
+            <summary>
+            This virtual method is called when the user clicks the left mouse button on the tray icon.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.NotifyIconService.OnLeftDoubleClick">
+            <summary>
+            This virtual method is called when the user double-clicks the left mouse button on the tray icon.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.NotifyIconService.OnRightClick">
+            <summary>
+            This virtual method is called when the user clicks the right mouse button on the tray icon.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.NotifyIconService.OnRightDoubleClick">
+            <summary>
+            This virtual method is called when the user double-clicks the right mouse button on the tray icon.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.NotifyIconService.OnMiddleClick">
+            <summary>
+            This virtual method is called when the user clicks the middle mouse button on the tray icon.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.NotifyIconService.OnMiddleDoubleClick">
+            <summary>
+            This virtual method is called when the user double-clicks the middle mouse button on the tray icon.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.RoutedNotifyIconEvent">
+            <summary>
+            Event triggered on successful navigation.
+            </summary>
+            <param name="sender">Source of the event, which should be the current navigation instance.</param>
+            <param name="e">Event data containing information about the navigation event.</param>
+        </member>
+        <member name="T:Wpf.Ui.Tray.TrayData">
+            <summary>
+            Singleton containing persistent information about icons in the tray menu for application session.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.TrayData.NotifyIcons">
+            <summary>
+            Gets or sets the collection of registered tray icons.
+            </summary>
+        </member>
+        <member name="T:Wpf.Ui.Tray.TrayHandler">
+            <summary>
+            Manages the Win32 API and Windows messages.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Tray.TrayHandler.ElementId">
+            <summary>
+            Gets or sets the id of the hooked element.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.TrayHandler.#ctor(System.String,System.IntPtr)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Wpf.Ui.Tray.TrayHandler"/> class, creating a new hWnd as a child with transparency parameters, no size, and in the default position. It attaches the default delegation to the messages it receives.
+            </summary>
+            <param name="name">The name of the created window.</param>
+            <param name="parent">Parent of the created window.</param>
+        </member>
+        <member name="T:Wpf.Ui.Tray.TrayManager">
+            <summary>
+            Responsible for managing the icons in the Tray bar.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.TrayManager.Unregister(Wpf.Ui.Tray.INotifyIcon)">
+            <summary>
+            Tries to remove the <see cref="T:Wpf.Ui.Tray.INotifyIcon"/> from the shell.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Tray.TrayManager.GetParentSource">
+            <summary>
+            Gets application source.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute">
+            <summary>
+            Specifies the priority of a member in overload resolution. When unspecified, the default priority is 0.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute"/> class.
+            </summary>
+            <param name="priority">The priority of the attributed member. Higher numbers are prioritized, lower numbers are deprioritized. 0 is the default if no attribute is present.</param>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute.Priority">
+            <summary>
+            The priority of the member.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ParamCollectionAttribute">
+            <summary>
+            Indicates that a method will allow a variable number of arguments in its invocation.
+            </summary>
+        </member>
+    </members>
+</doc>
