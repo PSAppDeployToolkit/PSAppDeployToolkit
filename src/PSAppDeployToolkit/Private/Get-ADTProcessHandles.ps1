@@ -17,7 +17,7 @@ function Get-ADTProcessHandles
     if ($Global:LASTEXITCODE -ne 0)
     {
         $naerParams = @{
-            Exception = [System.ApplicationException]::new("The call to [$exeHandle] failed with exit code [$Global:LASTEXITCODE].")
+            Exception = [System.Runtime.InteropServices.ExternalException]::new("The call to [$exeHandle] failed with exit code [$Global:LASTEXITCODE].", $Global:LASTEXITCODE)
             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
             ErrorId = 'HandleExecutableFailure'
             TargetObject = $exeHandleResults

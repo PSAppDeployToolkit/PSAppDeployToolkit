@@ -79,7 +79,7 @@ function Invoke-ADTSubstOperation
     # If we're here, we had a bad exit code.
     Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $substResult") -Severity 3
     $naerParams = @{
-        Exception = [System.ApplicationException]::new($msg)
+        Exception = [System.Runtime.InteropServices.ExternalException]::new($msg, $Global:LASTEXITCODE)
         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
         ErrorId = 'SubstUtilityFailure'
         TargetObject = $substResult
