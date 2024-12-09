@@ -65,7 +65,7 @@ function Show-ADTInstallationPromptClassic
     $controlSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 0)
     $paddingNone = [System.Windows.Forms.Padding]::new(0, 0, 0, 0)
     $buttonSize = [System.Drawing.Size]::new(130, 24)
-    $adtEnv = Get-ADTEnvironment
+    $adtEnv = Get-ADTEnvironmentTable
     $adtConfig = Get-ADTConfig
 
     # Define events for form windows.

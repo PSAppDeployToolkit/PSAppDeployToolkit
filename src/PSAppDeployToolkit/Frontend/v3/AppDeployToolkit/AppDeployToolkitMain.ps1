@@ -2465,7 +2465,7 @@ function Execute-MSI
         [System.String]$Action,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
-        [ValidateScript({ ($_ -match (Get-ADTEnvironment).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_)) })]
+        [ValidateScript({ ($_ -match (Get-ADTEnvironmentTable).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_)) })]
         [Alias('Path')]
         [System.String]$FilePath,
 
@@ -2544,7 +2544,7 @@ function Execute-MSI
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMsiProcess]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
     # Convert out changed parameters.
-    if ($FilePath -match (Get-ADTEnvironment).MSIProductCodeRegExPattern)
+    if ($FilePath -match (Get-ADTEnvironmentTable).MSIProductCodeRegExPattern)
     {
         $PSBoundParameters.ProductCode = [System.Guid]::new($FilePath)
         $null = $PSBoundParameters.Remove('FilePath')

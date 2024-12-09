@@ -45,7 +45,7 @@ function Show-ADTWelcomePromptFluent
     # Minimize all other windows.
     if (!$NoMinimizeWindows)
     {
-        $null = (Get-ADTEnvironment).ShellApp.MinimizeAll()
+        $null = (Get-ADTEnvironmentTable).ShellApp.MinimizeAll()
     }
 
     # Send this out to the C# code.

@@ -1,17 +1,17 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Get-ADTEnvironment
+# MARK: Get-ADTEnvironmentTable
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTEnvironment
+function Get-ADTEnvironmentTable
 {
     <#
     .SYNOPSIS
         Retrieves the environment data for the ADT module.
 
     .DESCRIPTION
-        The Get-ADTEnvironment function retrieves the environment data for the ADT module. This function ensures that the ADT module has been initialized before attempting to retrieve the environment data. If the module is not initialized, it throws an error.
+        The Get-ADTEnvironmentTable function retrieves the environment data for the ADT module. This function ensures that the ADT module has been initialized before attempting to retrieve the environment data. If the module is not initialized, it throws an error.
 
     .INPUTS
         None
@@ -19,12 +19,12 @@ function Get-ADTEnvironment
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.Hashtable
+        System.Collections.Specialized.OrderedDictionary
 
-        Returns the environment data as a hashtable.
+        Returns the environment data as a read-only ordered dictionary.
 
     .EXAMPLE
-        $environment = Get-ADTEnvironment
+        $environment = Get-ADTEnvironmentTable
 
         This example retrieves the environment data for the ADT module and stores it in the $environment variable.
 

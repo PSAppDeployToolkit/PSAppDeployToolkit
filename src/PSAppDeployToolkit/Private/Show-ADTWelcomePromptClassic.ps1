@@ -604,7 +604,7 @@ function Show-ADTWelcomePromptClassic
     # Minimize all other windows.
     if (!$NoMinimizeWindows)
     {
-        $null = (Get-ADTEnvironment).ShellApp.MinimizeAll()
+        $null = (Get-ADTEnvironmentTable).ShellApp.MinimizeAll()
     }
 
     # Run the form and store the result.

@@ -339,7 +339,7 @@ function Open-ADTSession
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
-                $Script:ADT.Sessions.Add(($adtSession = [PSADT.Module.DeploymentSession]::new($Script:ADT, (Get-ADTEnvironment), (Get-ADTConfig), (Get-ADTStringTable), $ExecutionContext.SessionState, $runspaceOrigin, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
+                $Script:ADT.Sessions.Add(($adtSession = [PSADT.Module.DeploymentSession]::new($Script:ADT, (Get-ADTEnvironmentTable), (Get-ADTConfig), (Get-ADTStringTable), $ExecutionContext.SessionState, $runspaceOrigin, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
 
                 # Invoke all callbacks.
                 foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))

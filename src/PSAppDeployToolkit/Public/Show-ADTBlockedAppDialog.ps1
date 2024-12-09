@@ -78,7 +78,7 @@ function Show-ADTBlockedAppDialog
             try
             {
                 # Create a mutex and specify a name without acquiring a lock on the mutex.
-                $showBlockedAppDialogMutexName = "Global\$((Get-ADTEnvironment).appDeployToolkitName)_ShowBlockedAppDialog_Message"
+                $showBlockedAppDialogMutexName = "Global\$((Get-ADTEnvironmentTable).appDeployToolkitName)_ShowBlockedAppDialog_Message"
                 $showBlockedAppDialogMutex = [System.Threading.Mutex]::new($false, $showBlockedAppDialogMutexName)
 
                 # Attempt to acquire an exclusive lock on the mutex, attempt will fail after 1 millisecond if unable to acquire exclusive lock.

@@ -105,7 +105,7 @@
         'Get-ADTBoundParametersAndDefaultValues'
         'Get-ADTConfig'
         'Get-ADTDeferHistory'
-        'Get-ADTEnvironment'
+        'Get-ADTEnvironmentTable'
         'Get-ADTFileVersion'
         'Get-ADTFreeDiskSpace'
         'Get-ADTIniValue'

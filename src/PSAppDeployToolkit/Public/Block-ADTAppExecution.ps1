@@ -66,7 +66,7 @@ function Block-ADTAppExecution
         # Get everything we need before commencing.
         try
         {
-            $adtEnv = Get-ADTEnvironment
+            $adtEnv = Get-ADTEnvironmentTable
             $adtSession = Get-ADTSession
         }
         catch

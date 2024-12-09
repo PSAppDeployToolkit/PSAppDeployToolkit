@@ -250,7 +250,7 @@ function Show-ADTInstallationWelcome
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtEnv = Get-ADTEnvironment
+        $adtEnv = Get-ADTEnvironmentTable
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('DeploymentType'))

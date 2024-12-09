@@ -106,7 +106,7 @@ function Import-ADTConfig
     }
 
     # Expand out environment variables and asset file paths.
-    ($adtEnv = Get-ADTEnvironment).GetEnumerator() | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { $config | Expand-ADTVariablesInConfig } }
+    ($adtEnv = Get-ADTEnvironmentTable).GetEnumerator() | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { $config | Expand-ADTVariablesInConfig } }
     $config.Assets | Update-ADTAssetFilePath
 
     # Process the classic assets by grabbing the bytes of each image asset, storing them into a memory stream, then as an image for WinForms to use.
