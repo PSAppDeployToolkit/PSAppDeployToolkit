@@ -4990,6 +4990,53 @@ function Set-PinnedApplication
 
 #---------------------------------------------------------------------------
 #
+# MARK: Direct copy of Write-FunctionHeaderOrFooter for backwards compatibility reasons.
+#
+#---------------------------------------------------------------------------
+
+function Write-FunctionHeaderOrFooter
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$CmdletName,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Header')]
+        [AllowEmptyCollection()]
+        [System.Collections.Hashtable]$CmdletBoundParameters,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Header')]
+        [System.Management.Automation.SwitchParameter]$Header,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Footer')]
+        [System.Management.Automation.SwitchParameter]$Footer
+    )
+
+    if ($Header)
+    {
+        Write-ADTLogEntry -Message 'Function Start' -Source ${CmdletName} -DebugMessage
+
+        # Get the parameters that the calling function was invoked with.
+        if ([System.String]$CmdletBoundParameters = $CmdletBoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { $_.Value.GetType().Name }; Alignment = 'Left' } -AutoSize -Wrap | Out-String)
+        {
+            Write-ADTLogEntry -Message "Function invoked with bound parameter(s): `r`n$CmdletBoundParameters" -Source ${CmdletName} -DebugMessage
+        }
+        else
+        {
+            Write-ADTLogEntry -Message 'Function invoked without any bound parameters.' -Source ${CmdletName} -DebugMessage
+        }
+    }
+    elseif ($Footer)
+    {
+        Write-ADTLogEntry -Message 'Function End' -Source ${CmdletName} -DebugMessage
+    }
+}
+
+
+#---------------------------------------------------------------------------
+#
 # MARK: Module and session code
 #
 #---------------------------------------------------------------------------
