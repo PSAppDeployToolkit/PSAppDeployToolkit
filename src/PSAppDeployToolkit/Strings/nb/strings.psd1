@@ -7,15 +7,15 @@
         Start = "startet."
     }
     BlockExecution = @{
-        Message = "Start av dette programmet er midlertidig blokkert til programvareinstallasjon er ferdig."
+        Message = "Start av dette programmet er midlertidig blokkert inntil pågående programvareinstallasjon er fullført."
     }
     ClosePrompt = @{
-        ButtonClose = "Lukk Programmer"
+        ButtonClose = "Lukk programmer"
         ButtonContinue = "Fortsett"
-        ButtonContinueTooltip = "Velg kun `"Fortsett`" etter du har lukket applikasjonen(e) oppført over."
+        ButtonContinueTooltip = "Velg kun `"Fortsett`" etter du har lukket applikasjonen(e) i listen over."
         ButtonDefer = "Utsett"
         CountdownMessage = "OBS: Programmet vil automatisk lukkes om:"
-        Message = "Følgende programmer må lukkes før installasjonen kan fortsette.`n`nLagre arbeidet, lukk programmene og velg `"Fortsett`" Eller velg `"Lukk Programmer`" uten å lagre."
+        Message = "Følgende programmer må lukkes før installasjonen kan fortsette.`n`nLagre arbeidet, lukk programmene og velg `"Fortsett`", eller velg `"Lukk programmer`" uten å lagre arbeidet."
     }
     DeferPrompt = @{
         Deadline = "Frist:"
@@ -33,32 +33,32 @@
         Message = "Du har ikke nok diskplass for å fullføre installasjonen av:`n{0}`n`nLedig plass påkrevd: {1}MB`nLedig plass tilgjengelig: {2}MB`n`nFrigjør diskplass for å fortsette installasjonen."
     }
     Progress = @{
-        MessageInstall = "Programvareinstallasjon pågår. Vennligst vent.."
+        MessageInstall = "Installasjon av programvare pågår. Vennligst vent.."
         MessageInstallDetail = "Dette vinduet lukkes automatisk når installasjonen er fullført."
-        MessageRepair = "ProgramvareReparasjon pågår. Vennligst vent.."
+        MessageRepair = "Reparasjon av programvare pågår. Vennligst vent.."
         MessageRepairDetail = "Dette vinduet lukkes automatisk når reparasjonen er fullført."
-        MessageUninstall = "ProgramvareAvinstallasjon pågår. Vennligst vent.."
+        MessageUninstall = "Avinstallasjon av programvare pågår. Vennligst vent.."
         MessageUninstallDetail = "Dette vinduet lukkes automatisk når avinstallasjonen er fullført."
     }
     RestartPrompt = @{
         ButtonRestartLater = "Minimere"
-        ButtonRestartNow = "Omstart Nå"
-        Message = "En omstart av pcen er nødvendig for å fullføre installasjonen."
-        MessageRestart = "Pcen vil automatisk starte på nytt, når nedtellingen er slutt."
-        MessageTime = "Lagre arbeidet ditt og gjør en omstart av pc innen fristen."
+        ButtonRestartNow = "Omstart nå"
+        Message = "En omstart av maskinen er nødvendig for å fullføre installasjonen."
+        MessageRestart = "Maskinen vil automatisk starte på nytt, når nedtellingen er omme."
+        MessageTime = "Lagre arbeidet ditt og ta en omstart av maskinen innen fristen."
         TimeRemaining = "Tid som gjenstår:"
-        Title = "Omstart Kreves"
+        Title = "Omstart kreves"
     }
     WelcomePrompt = @{
         Classic = @{
-            CountdownMessage = "{0} vil automatisk fortsette i:"
+            CountdownMessage = "{0} vil automatisk fortsette om:"
             CustomMessage = ""
         }
         Fluent = @{
             Subtitle = 'PSAppDeployToolkit - App {0}'
-            DialogMessage = 'Lagre arbeidet ditt før du fortsetter, da de følgende programmene lukkes automatisk.'
-            DialogMessageNoProcesses = 'Velg Installer for å fortsette med installasjonen. Hvis du har noen utsettelser igjen, kan du også velge å utsette installasjonen.'
-            ButtonDeferRemaining = 'forbli'
+            DialogMessage = 'Lagre arbeidet ditt før du fortsetter, fordi de følgende programmene blir lukket automatisk.'
+            DialogMessageNoProcesses = 'Velg Installere for å fortsette med installasjonen. Hvis du har noen utsettelser igjen, kan du også velge å utsette installasjonen.'
+            ButtonDeferRemaining = 'gjenstår'
             ButtonLeftText = 'Utsette'
             ButtonRightText = 'Lukk apper og installer'
             ButtonRightTextNoProcesses = 'Installere'
