@@ -306,6 +306,13 @@ function Start-ADTProcessAsUser
 
     process
     {
+        # Return early if we're not running as SYSTEM.
+        if (![System.Security.Principal.WindowsIdentity]::GetCurrent().User.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
+        {
+            Write-ADTLogEntry -Message "This function cannot start processes as other users unless it is running as [NT AUTHORITY\SYSTEM]. Returning without performing process invocation." -Severity 2
+            return
+        }
+
         # Announce start.
         switch ($PSCmdlet.ParameterSetName)
         {
