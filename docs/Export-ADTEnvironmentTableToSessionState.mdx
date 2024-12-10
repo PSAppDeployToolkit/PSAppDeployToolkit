@@ -1,0 +1,82 @@
+---
+id: Export-ADTEnvironmentTableToSessionState
+title: Export-ADTEnvironmentTableToSessionState
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Exports the content of `Get-ADTEnvironmentTable` to the provided SessionState as variables.
+
+## SYNTAX
+
+```powershell
+Export-ADTEnvironmentTableToSessionState [-SessionState] <SessionState> [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function exports the content of `Get-ADTEnvironmentTable` to the provided SessionState as variables.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Export-ADTEnvironmentTableToSessionState -SessionState $ExecutionContext.SessionState
+```
+
+Invokes the Export-ADTEnvironmentTableToSessionState function and exports the module's environment table to the provided SessionState.
+
+### EXAMPLE 2
+
+```powershell
+Export-ADTEnvironmentTableToSessionState -SessionState $PSCmdlet.SessionState
+```
+
+Invokes the Export-ADTEnvironmentTableToSessionState function and exports the module's environment table to the provided SessionState.
+
+## PARAMETERS
+
+### -SessionState
+
+Caller's SessionState.
+
+```yaml
+Type: SessionState
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### None
+
+### This function does not return any output.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
