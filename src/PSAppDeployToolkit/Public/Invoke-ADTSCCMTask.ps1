@@ -123,7 +123,7 @@ function Invoke-ADTSCCMTask
 
                 # Trigger SCCM task.
                 Write-ADTLogEntry -Message "Triggering SCCM Task ID [$ScheduleId]."
-                $null = Invoke-CimMethod -Namespace ROOT\CCM -ClassName SMS_Client -MethodName TriggerSchedule -Arguments $ScheduleIds.$ScheduleID
+                $null = Invoke-CimMethod -Namespace ROOT\CCM -ClassName SMS_Client -MethodName TriggerSchedule -Arguments @{ sScheduleID = $ScheduleIds.$ScheduleID }
             }
             catch
             {
