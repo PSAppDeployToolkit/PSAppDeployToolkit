@@ -350,7 +350,7 @@ function Open-ADTSession
                 # Export the environment table to variables within the caller's scope.
                 if ($firstSession)
                 {
-                    $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $Script:ADT.Environment)
+                    Export-ADTEnvironmentTableToSessionState -SessionState $SessionState
                 }
 
                 # Change the install phase since we've finished initialising. This should get overwritten shortly.

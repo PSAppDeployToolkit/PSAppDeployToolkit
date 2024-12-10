@@ -102,6 +102,7 @@
         'Disable-ADTTerminalServerInstallMode'
         'Dismount-ADTWimFile'
         'Enable-ADTTerminalServerInstallMode'
+        'Export-ADTEnvironmentTableToSessionState'
         'Get-ADTBoundParametersAndDefaultValues'
         'Get-ADTConfig'
         'Get-ADTDeferHistory'
