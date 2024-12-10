@@ -27,7 +27,7 @@ $modulesToInstall = New-Object System.Collections.Generic.List[object]
 # older version used due to: https://github.com/PowerShell/platyPS/issues/457
 [void]$modulesToInstall.Add(([PSCustomObject]@{
             ModuleName    = 'platyPS'
-            ModuleVersion = '0.12.0'
+            ModuleVersion = '0.14.2'
         }))
 # https://github.com/alt3/Docusaurus.Powershell
 # Needed for our website documentation
