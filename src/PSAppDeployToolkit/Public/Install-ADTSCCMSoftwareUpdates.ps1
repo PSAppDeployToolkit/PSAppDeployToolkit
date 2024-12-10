@@ -113,7 +113,7 @@ function Install-ADTSCCMSoftwareUpdates
 
                 # Install missing updates.
                 Write-ADTLogEntry -Message "Installing missing updates. The number of missing updates is [$($CMMissingUpdates.Count)]."
-                $null = (Get-CimInstance -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -List).InstallUpdates($CMMissingUpdates)
+                $null = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_SoftwareUpdatesManager -MethodName InstallUpdates -Arguments $CMMissingUpdates
 
                 # Wait for pending updates to finish installing or the timeout value to expire.
                 do
