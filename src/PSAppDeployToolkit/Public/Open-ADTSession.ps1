@@ -106,6 +106,9 @@ function Open-ADTSession
     .PARAMETER PassThru
         Passes the session object through the pipeline.
 
+    .PARAMETER UnboundArguments
+        Captures any additional arguments passed to the function.
+
     .INPUTS
         None
 
@@ -283,7 +286,11 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$ForceWimDetection,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$PassThru
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
     begin
@@ -345,6 +352,22 @@ function Open-ADTSession
                 foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))
                 {
                     & $callback
+                }
+
+                # Add any unbound arguments into the $adtSession object as PSNoteProperty objects.
+                if ($PSBoundParameters.ContainsKey('UnboundArguments'))
+                {
+                    (Convert-ADTValuesFromRemainingArguments -RemainingArguments $UnboundArguments).GetEnumerator() | & {
+                        begin
+                        {
+                            $adtSessionProps = $adtSession.PSObject.Properties
+                        }
+
+                        process
+                        {
+                            $adtSessionProps.Add([System.Management.Automation.PSNoteProperty]::new($_.Key, $_.Value))
+                        }
+                    }
                 }
 
                 # Export the environment table to variables within the caller's scope.
