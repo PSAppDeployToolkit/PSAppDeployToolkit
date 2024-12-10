@@ -256,7 +256,7 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
             # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
             if ($buildType.Equals('Debug'))
             {
-                $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Debug\*')
+                $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Debug\net462\*')
                 $buildItem.OutputPath | ForEach-Object {
                     $destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)
                     Write-Build Gray "          Copying from $sourcePath to $destPath..."
@@ -570,7 +570,7 @@ Add-BuildTask AssetCopy -Before Build {
     Copy-Item -Path "$Script:ModuleSourcePath\*" -Destination $Script:BuildModuleRoot -Exclude "$($Script:ModuleName).ps*1" -Recurse
     foreach ($buildItem in $Script:buildItems)
     {
-        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\*')
+        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\net462\*')
         $buildItem.OutputPath.Replace("src\PSAppDeployToolkit\", $null) | ForEach-Object {
             $destPath = [System.IO.Path]::Combine($Script:BuildModuleRoot, $_)
             Write-Build Gray "        Copying from $sourcePath to $destPath..."

@@ -58,16 +58,8 @@
         'PresentationCore'
         'PresentationFramework'
         'WindowsBase'
-        if ($PSEdition -eq 'Desktop')
-        {
-            'lib\net462\PSADT.dll'
-            'lib\net462\PSADT.UserInterface.dll'
-        }
-        else
-        {
-            'lib\net8.0-windows10.0.17763\PSADT.dll'
-            'lib\net8.0-windows10.0.17763\PSADT.UserInterface.dll'
-        }
+        'lib\PSADT.dll'
+        'lib\PSADT.UserInterface.dll'
     )
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
