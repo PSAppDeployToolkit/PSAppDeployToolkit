@@ -959,7 +959,7 @@ namespace PSADT.Module
             if ((bool)configToolkit["CompressLogs"]!)
             {
                 // Archive the log files to zip format and then delete the temporary logs folder.
-                string destArchiveFileName = $"{InstallName}_{DeploymentType}_{0}.zip";
+                string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
                 try
                 {
                     // Get all archive files sorted by last write time.
