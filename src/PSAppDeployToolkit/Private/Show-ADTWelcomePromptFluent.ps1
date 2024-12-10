@@ -19,6 +19,10 @@ function Show-ADTWelcomePromptFluent
         [ValidateNotNullOrEmpty()]
         [System.String]$Subtitle,
 
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DeploymentType,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$ProcessObjects,
@@ -41,6 +45,7 @@ function Show-ADTWelcomePromptFluent
     # Perform initial setup.
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
+    $dtString = $adtStrings.DeploymentType.$DeploymentType
 
     # Minimize all other windows.
     if (!$NoMinimizeWindows)
@@ -58,11 +63,11 @@ function Show-ADTWelcomePromptFluent
         (Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue),
         $adtConfig.Assets.Logo,
         $adtStrings.WelcomePrompt.Fluent.DialogMessage,
-        $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses,
+        [System.String]::Format($adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses, $dtString, $dtString.ToLower()),
         $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,
         $adtStrings.WelcomePrompt.Fluent.ButtonLeftText,
-        $adtStrings.WelcomePrompt.Fluent.ButtonRightText,
-        $adtStrings.WelcomePrompt.Fluent.ButtonRightTextNoProcesses,
+        [System.String]::Format($adtStrings.WelcomePrompt.Fluent.ButtonRightText, $dtString),
+        $dtString,
         $(if ($adtConfig.UI.DynamicProcessEvaluation) { [PSADT.UserInterface.Services.ProcessEvaluationService]::new() })
     )
 
