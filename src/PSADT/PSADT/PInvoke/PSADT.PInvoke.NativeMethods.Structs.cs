@@ -469,11 +469,20 @@ namespace PSADT.PInvoke
     /// The TOKEN_PRIVILEGES structure contains information about a set of privileges for an access token.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    internal struct TOKEN_PRIVILEGES
+    public struct TOKEN_PRIVILEGES
     {
         public uint PrivilegeCount;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
         public LUID_AND_ATTRIBUTES[] Privileges;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PRIVILEGE_SET
+    {
+        public uint PrivilegeCount;
+        public PRIVILEGE_SET_CONTROL Control;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
+        public LUID_AND_ATTRIBUTES[] Privilege;
     }
 
     /// <summary>
@@ -484,7 +493,7 @@ namespace PSADT.PInvoke
     /// } LUID, *PLUID;
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    internal struct LUID
+    public struct LUID
     {
         public uint LowPart;
         public int HighPart;
@@ -494,7 +503,7 @@ namespace PSADT.PInvoke
     /// The LUID_AND_ATTRIBUTES structure represents a locally unique identifier (LUID) and its attributes.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    internal struct LUID_AND_ATTRIBUTES
+    public struct LUID_AND_ATTRIBUTES
     {
         public LUID Luid;
         public uint Attributes;

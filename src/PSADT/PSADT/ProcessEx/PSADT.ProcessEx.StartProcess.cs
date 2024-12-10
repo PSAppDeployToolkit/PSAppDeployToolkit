@@ -429,20 +429,41 @@ namespace PSADT.ProcessEx
                     {
                         UnifiedLogger.Create().Message($"Attempting to start process with CreateProcessAsUser with: FileName [{startInfo.FileName}], Arguments [{string.Join(", ", startInfo.Arguments)}], WorkingDirectory [{startInfo.WorkingDirectory}].").Severity(LogLevel.Information);
 
-                        if (!NativeMethods.CreateProcessAsUser(
-                            tokenToUse,
-                            startInfo.FileName,
-                            new StringBuilder(startInfo.Arguments),
-                            default,
-                            default,
-                            false,
-                            processCreationFlags,
-                            environmentBlock.DangerousGetHandle(),
-                            startInfo.WorkingDirectory,
-                            in startupInfo,
-                            out processInfo))
+                        using var processToken = TokenManager.GetCurrentProcessToken();
+                        bool isSeTcbPrivilegeEnabled = PrivilegeManager.IsPrivilegeEnabled(processToken, TokenPrivilege.TrustedComputerBase);
+                        if (isSeTcbPrivilegeEnabled)
                         {
-                            ErrorHandler.ThrowSystemError($"'CreateProcessAsUser' failed to start the process [{startInfo.FileName}].", SystemErrorType.Win32);
+                            if (!NativeMethods.CreateProcessAsUser(
+                                tokenToUse,
+                                startInfo.FileName,
+                                new StringBuilder(startInfo.Arguments),
+                                default,
+                                default,
+                                false,
+                                processCreationFlags,
+                                environmentBlock.DangerousGetHandle(),
+                                startInfo.WorkingDirectory,
+                                in startupInfo,
+                                out processInfo))
+                            {
+                                ErrorHandler.ThrowSystemError($"'CreateProcessAsUser' failed to start the process [{startInfo.FileName}].", SystemErrorType.Win32);
+                            }
+                        }
+                        else
+                        {
+                            if (!NativeMethods.CreateProcessWithTokenW(
+                                tokenToUse,
+                                0,
+                                startInfo.FileName,
+                                new StringBuilder(startInfo.Arguments),
+                                processCreationFlags,
+                                environmentBlock.DangerousGetHandle(),
+                                startInfo.WorkingDirectory,
+                                in startupInfo,
+                                out processInfo))
+                            {
+                                ErrorHandler.ThrowSystemError($"'CreateProcessWithTokenW' failed to start the process [{startInfo.FileName}].", SystemErrorType.Win32);
+                            }
                         }
                     }
 

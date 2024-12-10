@@ -1045,6 +1045,11 @@ namespace PSADT.PInvoke
         TOKEN_EXECUTE = 0x00020000
     }
 
+    public enum PRIVILEGE_SET_CONTROL : uint
+    {
+        PRIVILEGE_SET_ALL_NECESSARY = 1
+    }
+
     /// <summary>
     /// Contains values that specify security impersonation levels. Security impersonation levels govern the degree to which a server process can act on behalf of a client process.
     /// </summary>
@@ -1211,6 +1216,39 @@ namespace PSADT.PInvoke
 
         /// <summary>Privilege to read unsolicited input from a terminal device.</summary>
         UnsolicitedInput
+    }
+
+    /// <summary>The logon option.</summary>
+    [Flags]
+    public enum ProcessLogonFlags : uint
+    {
+        /// <summary>
+        /// Log on, then load the user profile in the HKEY_USERS registry key. The function returns after the profile is loaded. Loading
+        /// the profile can be time-consuming, so it is best to use this value only if you must access the information in the
+        /// HKEY_CURRENT_USER registry key.
+        /// <para>
+        /// Windows Server 2003: The profile is unloaded after the new process is terminated, whether or not it has created child processes.
+        /// </para>
+        /// <para>Windows XP: The profile is unloaded after the new process and all child processes it has created are terminated.</para>
+        /// </summary>
+        LOGON_WITH_PROFILE = 0x00000001,
+
+        /// <summary>
+        /// Log on, but use the specified credentials on the network only. The new process uses the same token as the caller, but the
+        /// system creates a new logon session within LSA, and the process uses the specified credentials as the default credentials.
+        /// <para>
+        /// This value can be used to create a process that uses a different set of credentials locally than it does remotely. This is
+        /// useful in inter-domain scenarios where there is no trust relationship.
+        /// </para>
+        /// <para>
+        /// The system does not validate the specified credentials. Therefore, the process can start, but it may not have access to
+        /// network resources.
+        /// </para>
+        /// </summary>
+        LOGON_NETCREDENTIALS_ONLY = 0x00000002,
+
+        /// <summary>The logon zero password buffer</summary>
+        LOGON_ZERO_PASSWORD_BUFFER = 0x80000000
     }
 
     #endregion

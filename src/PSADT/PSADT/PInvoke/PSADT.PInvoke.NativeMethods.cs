@@ -540,7 +540,7 @@ namespace PSADT.PInvoke
         /// <returns>The return value is a handle to the current process.</returns>
         // HANDLE WINAPI GetCurrentProcess(void); https://msdn.microsoft.com/en-us/library/windows/desktop/ms683179(v=vs.85).aspx
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
-        public static extern IntPtr GetCurrentProcess();
+        public static extern SafeProcessHandle GetCurrentProcess();
 
         /// <summary>Converts a file time to system time format. System time is based on Coordinated Universal Time (UTC).</summary>
     	/// <param name="lpFileTime">
@@ -854,7 +854,7 @@ namespace PSADT.PInvoke
         // BOOL WINAPI IsWow64Process( _In_ HANDLE hProcess, _Out_ USHORT *pProcessMachine, _Out_opt_ USHORT *pNativeMachine); https://msdn.microsoft.com/en-us/library/windows/desktop/mt804318(v=vs.85).aspx
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool IsWow64Process2([In] IntPtr hProcess, out IMAGE_FILE_MACHINE pProcessMachine, out IMAGE_FILE_MACHINE pNativeMachine);
+        public static extern bool IsWow64Process2([In] SafeProcessHandle hProcess, out IMAGE_FILE_MACHINE pProcessMachine, out IMAGE_FILE_MACHINE pNativeMachine);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern SafeProcessHandle OpenProcess(
@@ -1041,7 +1041,7 @@ namespace PSADT.PInvoke
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool OpenProcessToken(
             SafeProcessHandle ProcessHandle,
-            uint DesiredAccess,
+            TokenAccess DesiredAccess,
             out SafeAccessToken TokenHandle);
 
         /// <summary>
@@ -1077,7 +1077,7 @@ namespace PSADT.PInvoke
         /// <summary>
         /// Retrieves a specified type of information about an access token.
         /// </summary>
-        /// <param name="TokenHandle">A handle to an access token from which information is retrieved.</param>
+        /// <param name="hToken">A handle to an access token from which information is retrieved.</param>
         /// <param name="TokenInformationClass">Specifies the type of information being retrieved.</param>
         /// <param name="TokenInformation">A pointer to a buffer the function fills with the requested information.</param>
         /// <param name="TokenInformationLength">Specifies the size, in bytes, of the buffer pointed to by the TokenInformation parameter.</param>
@@ -1086,11 +1086,24 @@ namespace PSADT.PInvoke
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetTokenInformation(
-            SafeAccessToken TokenHandle,
+            SafeAccessToken hToken,
             TOKEN_INFORMATION_CLASS TokenInformationClass,
             IntPtr TokenInformation,
             int TokenInformationLength,
             out int ReturnLength);
+
+        [DllImport("advapi32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CreateProcessWithTokenW(SafeAccessToken hToken, ProcessLogonFlags dwLogonFlags, string lpApplicationName, [Optional] StringBuilder lpCommandLine, CREATE_PROCESS dwCreationFlags,
+            [In, Optional] IntPtr lpEnvironment, [Optional] string? lpCurrentDirectory, in STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
+
+        //public static bool CreateProcessWithTokenW(SafeAccessToken hToken, ProcessLogonFlags dwLogonFlags, string lpApplicationName, [Optional] StringBuilder? lpCommandLine, CREATE_PROCESS dwCreationFlags,
+        //    [Optional] IntPtr lpEnvironment, [Optional] string? lpCurrentDirectory, in STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION? lpProcessInformation)
+        //{
+        //    bool ret = CreateProcessWithTokenW(hToken, dwLogonFlags, lpApplicationName, lpCommandLine!, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, out PROCESS_INFORMATION pi);
+        //    lpProcessInformation = ret ? pi : null;
+        //    return ret;
+        //}
 
         /// <summary>
         /// Creates a new access token that duplicates an existing token.
@@ -1138,15 +1151,21 @@ namespace PSADT.PInvoke
         /// <returns>If the function succeeds, the return value is nonzero.</returns>
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool ImpersonateNamedPipeClient(SafePipeHandle hNamedPipe);
+        public static extern bool ImpersonateNamedPipeClient(SafePipeHandle hNamedPipe);
 
-        /// <summary>
-        /// Terminates the impersonation of a client application.
-        /// </summary>
-        /// <returns>If the function succeeds, the return value is nonzero.</returns>
-        [DllImport("advapi32.dll", SetLastError = true)]
+        [DllImport("advapi32.dll", SetLastError = true, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool RevertToSelf();
+        public static extern bool ImpersonateLoggedOnUser(SafeAccessToken hToken);
+
+
+        /// <summary>The RevertToSelf function terminates the impersonation of a client application.</summary>
+        /// <returns>
+        /// If the function succeeds, the function returns nonzero. If the function fails, it returns zero. To get extended error
+        /// information, call GetLastError.
+        /// </returns>
+        [DllImport("advapi32.dll", ExactSpelling = true, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool RevertToSelf();
 
         /// <summary>
         /// Retrieves the locally unique identifier (LUID) used on a specified system to locally represent the specified privilege name.
@@ -1157,10 +1176,17 @@ namespace PSADT.PInvoke
         /// <returns>If the function succeeds, the return value is nonzero.</returns>
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool LookupPrivilegeValue(
+        public static extern bool LookupPrivilegeValue(
             string lpSystemName,
             string lpName,
             out LUID lpLuid);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool PrivilegeCheck(
+        SafeAccessToken hExistingToken,
+        ref PRIVILEGE_SET RequiredPrivileges,
+        out bool Result);
 
         /// <summary>
         /// Enables or disables privileges in the specified access token.
@@ -1174,7 +1200,7 @@ namespace PSADT.PInvoke
         /// <returns>If the function succeeds, the return value is nonzero.</returns>
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool AdjustTokenPrivileges(
+        public static extern bool AdjustTokenPrivileges(
             IntPtr TokenHandle,
             [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
             ref TOKEN_PRIVILEGES NewState,
@@ -1197,7 +1223,7 @@ namespace PSADT.PInvoke
         /// <returns>If the function succeeds, the return value is nonzero.</returns>
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool CreateRestrictedToken(
+        public static extern bool CreateRestrictedToken(
             IntPtr ExistingTokenHandle,
             uint Flags,
             uint DisableSidCount,

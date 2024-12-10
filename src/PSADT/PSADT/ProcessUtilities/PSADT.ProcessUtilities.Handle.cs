@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -260,7 +260,7 @@ namespace PSADT.ProcessUtilities
             SafeAccessToken? tokenHandle = null;
             try
             {
-                if (!NativeMethods.OpenProcessToken(processHandle, NativeMethods.TOKEN_QUERY, out tokenHandle))
+                if (!NativeMethods.OpenProcessToken(processHandle, TokenAccess.TOKEN_QUERY, out tokenHandle))
                     return "Unknown";
 
                 using (tokenHandle)
