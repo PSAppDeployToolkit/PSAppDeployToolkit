@@ -21,7 +21,8 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-D
  [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
  [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>]
  [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
- [[-DefaultMspFiles] <String[]>] [-ForceWimDetection] [-PassThru] [<CommonParameters>]
+ [[-DefaultMspFiles] <String[]>] [-ForceWimDetection] [-PassThru]
+ [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -534,6 +535,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UnboundArguments
+
+Captures any additional arguments passed to the function.
+
+```yaml
+Type: System.Collections.Generic.List`1[System.Object]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 27
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
