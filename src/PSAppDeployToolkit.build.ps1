@@ -94,7 +94,7 @@ $buildItems = @(
         SourcePath = 'src\PSADT'
         SolutionPath = 'src\PSADT\PSADT.sln'
         OutputPath = 'src\PSAppDeployToolkit\lib'
-        OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.dll'
+        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.dll'
     },
     @{
         SourcePath = 'src\PSADT.Invoke'
@@ -106,7 +106,7 @@ $buildItems = @(
         SourcePath = 'src\PSADT.UserInterface'
         SolutionPath = 'src\PSADT.UserInterface\PSADT.UserInterface.sln'
         OutputPath = 'src\PSAppDeployToolkit\lib'
-        OutputFile = 'src\PSAppDeployToolkit\lib\net462\PSADT.UserInterface.dll'
+        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.dll'
     }
 )
 
