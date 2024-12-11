@@ -169,13 +169,16 @@ function Set-ADTActiveSetup
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Set defaults for when there's an active ADTSession and overriding values haven't been specified.
-        $Description = if (!$PSBoundParameters.ContainsKey('Description'))
+        $Description = if ($PSCmdlet.ParameterSetName.Equals('Create'))
         {
-            $adtSession.InstallName
-        }
-        else
-        {
-            $PSBoundParameters.Description
+            if (!$PSBoundParameters.ContainsKey('Description'))
+            {
+                $adtSession.InstallName
+            }
+            else
+            {
+                $PSBoundParameters.Description
+            }
         }
         $Key = if (!$PSBoundParameters.ContainsKey('Key'))
         {
@@ -190,6 +193,7 @@ function Set-ADTActiveSetup
         $runAsActiveUser = Get-ADTRunAsActiveUser
         $CUStubExePath = $null
         $CUArguments = $null
+        $StubExeExt = [System.IO.Path]::GetExtension($StubExePath)
         $StubPath = $null
 
         # Define internal function to test current ActiveSetup stuff.
@@ -222,9 +226,9 @@ function Set-ADTActiveSetup
                 Get-ADTRegistryKey -Key $HKCUKey
             }
             $HKLMProps = Get-ADTRegistryKey -Key $HKLMKey
-            $HKCUVer = $HKCUProps.Version
-            $HKLMVer = $HKLMProps.Version
-            $HKLMInst = $HKLMProps.IsInstalled
+            $HKCUVer = $HKCUProps | Select-Object -ExpandProperty Version -ErrorAction Ignore
+            $HKLMVer = $HKLMProps | Select-Object -ExpandProperty Version -ErrorAction Ignore
+            $HKLMInst = $HKLMProps | Select-Object -ExpandProperty IsInstalled -ErrorAction Ignore
 
             # HKLM entry not present. Nothing to run.
             if (!$HKLMProps)
@@ -424,7 +428,7 @@ function Set-ADTActiveSetup
 
                 # Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there).
                 $StubExePath = [System.Environment]::ExpandEnvironmentVariables($StubExePath)
-                if ($adtSession)
+                if ($adtSession -and $adtSession.DirFiles)
                 {
                     $StubExeFile = Join-Path -Path $adtSession.DirFiles -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
                     if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
