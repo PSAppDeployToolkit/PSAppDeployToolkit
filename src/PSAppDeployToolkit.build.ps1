@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     An Invoke-Build Build file.
 
@@ -250,7 +250,7 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
         Write-Build Gray "            Building $(($solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)))..."
         foreach ($buildType in $buildConfigs)
         {
-            & $msbuildPath $solutionPath -target:Rebuild -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m
+            & $msbuildPath $solutionPath -target:Rebuild -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m -verbosity:minimal
             if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
 
             # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
