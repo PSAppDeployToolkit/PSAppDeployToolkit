@@ -218,25 +218,25 @@ Add-BuildTask DotNetBuild -Before TestModuleManifest {
                 # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
                 $buildItem.OutputFile | ForEach-Object {
                     # Get commit date via git, parse the result, then add one second and convert to proper ISO 8601 format..
-                    $lastCommitDate = git log -1 --format="%ci" -- [System.IO.Path]::Combine($Script:RepoRootPath, $_)
+                    $lastCommitDate = git log -1 --format="%ci" -- ([System.IO.Path]::Combine($Script:RepoRootPath, $_))
                     $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
                     $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
 
                     # Get the list of source files modified since the last commit date of the file we're comparing against
-                    if (git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SourcePath) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique)
+                    if (git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- ([System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SourcePath)) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique)
                     {
-                        Write-Build Blue "          Files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($lastCommitDate), build required."
+                        Write-Build Blue "          Files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($lastCommitDate), debug build required."
                         $null = $buildConfigs.Add('Debug')
                     }
                     else
                     {
-                        Write-Build Gray "          No files have been modified in $($buildItem.SourcePath), nothing to build."
+                        Write-Build Gray "          No files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($lastCommitDate), debug build not required."
                     }
                 }
             }
             else
             {
-                Write-Build Blue "          Uncommitted file changes found under $($buildItem.SourcePath), build required."
+                Write-Build Blue "          Uncommitted file changes found under $($buildItem.SourcePath), debug build required."
                 $null = $buildConfigs.Add('Debug')
             }
         }
