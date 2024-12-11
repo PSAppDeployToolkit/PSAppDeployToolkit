@@ -58,9 +58,14 @@ function Copy-ADTFile
         Recursively copies the folder 'Folder' from 'C:\Path' to 'D:\Destination'.
 
     .EXAMPLE
-        Copy-ADTFile -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt' -Force
+        Copy-ADTFile -Path 'C:\Path\file.txt' -Destination 'D:\Destination\file.txt'
 
         Copies the file 'file.txt' from 'C:\Path' to 'D:\Destination', overwriting the destination file if it exists.
+
+    .EXAMPLE
+        Copy-ADTFile -Path "$($adtSession.DirFiles)\*" -Destination C:\some\random\file\path
+
+        Copies all files within the active session's Files folder to 'C:\some\random\file\path', overwriting the destination file if it exists.
 
     .NOTES
         An active ADT session is NOT required to use this function.
