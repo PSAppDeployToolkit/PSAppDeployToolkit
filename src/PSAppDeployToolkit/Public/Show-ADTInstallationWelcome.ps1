@@ -238,7 +238,7 @@ function Show-ADTInstallationWelcome
         $paramDictionary.Add('DeploymentType', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'DeploymentType', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
-                    [System.Management.Automation.ValidateSetAttribute]::new($adtStrings.DeploymentType.Keys)
+                    [System.Management.Automation.ValidateSetAttribute]::new(('Install', 'Uninstall', 'Repair'))
                 )
             ))
 
@@ -252,18 +252,20 @@ function Show-ADTInstallationWelcome
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtEnv = Get-ADTEnvironmentTable
 
-        # Set up defaults if not specified.
+        # Set up DeploymentType if not specified.
         if (!$PSBoundParameters.ContainsKey('DeploymentType'))
         {
             $PSBoundParameters.Add('DeploymentType', $adtSession.DeploymentType)
         }
+
+        # Set up remainder if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $PSBoundParameters.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', $adtStrings.WelcomePrompt.Fluent.Subtitle.($PSBoundParameters.DeploymentType))
         }
 
         # Instantiate new object to hold all data needed within this call.
@@ -323,7 +325,7 @@ function Show-ADTInstallationWelcome
                         Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
                         if (!$Silent)
                         {
-                            Show-ADTInstallationPrompt -Message ((Get-ADTStringTable).DiskSpace.Message -f $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
+                            Show-ADTInstallationPrompt -Message ([System.String]::Format($adtStrings.DiskSpace.Message.($PSBoundParameters.DeploymentType), $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace)) -ButtonRightText OK -Icon Error
                         }
                         Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                     }

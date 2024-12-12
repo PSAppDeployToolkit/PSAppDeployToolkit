@@ -18,6 +18,10 @@ function Show-ADTInstallationRestartPromptClassic
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [System.String]$DeploymentType,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.UInt32]$CountdownSeconds,
 
         [Parameter(Mandatory = $true)]
@@ -38,6 +42,9 @@ function Show-ADTInstallationRestartPromptClassic
     # Initialize variables.
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
+
+    # Concatenare the restart message.
+    $rpMessage = $adtStrings.RestartPrompt.Message.$DeploymentType
 
     # Define starting counters.
     $startTime = [System.DateTime]::Now
@@ -181,11 +188,11 @@ function Show-ADTInstallationRestartPromptClassic
     $labelMessage.AutoSize = $true
     $labelMessage.Text = if ($NoCountdown)
     {
-        $adtStrings.RestartPrompt.Message
+        $rpMessage
     }
     else
     {
-        "$($adtStrings.RestartPrompt.Message) $($adtStrings.RestartPrompt.MessageTime)`n`n$($adtStrings.RestartPrompt.MessageRestart)"
+        "$rpMessage $($adtStrings.RestartPrompt.MessageTime)`n`n$($adtStrings.RestartPrompt.MessageRestart)"
     }
 
     # Label Countdown.
