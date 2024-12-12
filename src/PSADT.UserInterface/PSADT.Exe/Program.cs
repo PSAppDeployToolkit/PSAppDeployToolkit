@@ -17,7 +17,7 @@ namespace PSADT.UserInterface
             }
 
             // Set up parameters for testing
-            const string accentColorHexValue = "#550078d7";
+            const string accentColorHexValue = "#ffE81123";
             const string appTitle = "Microsoft Office 365 1.2 x64 EN";
             const string subtitle = "MyCompanyName Technology Ltd - App Install";
             const bool topMost = true;

@@ -48,7 +48,7 @@
             Grid.Row="0"
             Grid.Column="1"
             Grid.RowSpan="3"
-            Fill="{DynamicResource LayerOnAccentAcrylicFillColorDefaultBrush}" />
+            Fill="{DynamicResource LayerOnMicaBaseAltFillColorDefaultBrush}" />
 
         <!-- Accent Sidebar and Icon -->
         <Grid
