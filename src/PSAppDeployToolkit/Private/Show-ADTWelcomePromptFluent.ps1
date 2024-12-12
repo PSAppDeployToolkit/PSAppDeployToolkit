@@ -88,7 +88,7 @@ function Show-ADTWelcomePromptFluent
                 ErrorId = "WelcomeDialogInvalidResult"
                 TargetObject = $_
             }
-            throw (New-ADTErrorRecord @naerParams)
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
     }
 }
