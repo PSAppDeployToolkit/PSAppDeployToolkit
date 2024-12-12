@@ -69,7 +69,7 @@ namespace PSADT.UserInterface
             string? subtitle,
             bool? topMost,
             int? defersRemaining,
-            List<AppProcessInfo>? appsToClose,
+            AppProcessInfo[]? appsToClose,
             string? appIconImage,
             string closeAppMessage,
             string altCloseAppMessage,
@@ -89,10 +89,10 @@ namespace PSADT.UserInterface
             SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
 
             // Set up Process Evaluation
-            if (appsToClose?.Count > 0)
+            if (appsToClose?.Length > 0)
             {
                 _isAppsToClose = true;
-                _appsToClose = appsToClose;
+                _appsToClose = appsToClose.ToList();
             }
 
             // Set up window events and controlsProcess Evaluation

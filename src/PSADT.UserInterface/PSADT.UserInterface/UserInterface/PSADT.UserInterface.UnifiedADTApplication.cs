@@ -1,4 +1,4 @@
-using PSADT.UserInterface.Services;
+﻿using PSADT.UserInterface.Services;
 
 namespace PSADT.UserInterface
 {
@@ -41,7 +41,7 @@ namespace PSADT.UserInterface
             string? subtitle,
             bool? topMost,
             int? defersRemaining,
-            List<AppProcessInfo>? appsToClose,
+            AppProcessInfo[]? appsToClose,
             string? appIconImage,
             string closeAppMessage,
             string altCloseAppMessage,

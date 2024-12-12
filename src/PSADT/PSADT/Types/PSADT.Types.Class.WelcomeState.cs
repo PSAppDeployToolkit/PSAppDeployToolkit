@@ -8,6 +8,11 @@ namespace PSADT.Types
     public class WelcomeState
     {
         /// <summary>
+        /// Gets/sets the running processes. Untyped as the type is in another assembly.
+        /// </summary>
+        public object[]? RunningProcesses { get; set; }
+
+        /// <summary>
         /// Gets/sets the classic WelcomePrompt's starting position.
         /// </summary>
         public System.Drawing.Point FormStartLocation { get; set; }

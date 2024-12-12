@@ -21,10 +21,6 @@ function Show-ADTWelcomePromptFluent
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.ProcessObject[]]$ProcessObjects,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
         [System.Int32]$DeferTimes,
 
         [Parameter(Mandatory = $false)]
@@ -55,7 +51,7 @@ function Show-ADTWelcomePromptFluent
         $Subtitle,
         !$NotTopMost,
         $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes + 1 }),
-        (Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue),
+        $WelcomeState.RunningProcesses,
         $adtConfig.Assets.Logo,
         $adtStrings.WelcomePrompt.Fluent.DialogMessage,
         $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses,

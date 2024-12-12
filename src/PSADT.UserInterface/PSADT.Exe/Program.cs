@@ -21,8 +21,8 @@ namespace PSADT.UserInterface
             const string subtitle = "MyCompanyName Technology Ltd - App Install";
             const bool topMost = true;
             const string? appIconImage = null;
-            
-            var appsToClose = new List<AppProcessInfo>
+
+            AppProcessInfo[] appsToClose =
             {
                 new("excel", "Microsoft Office Excel", null, null, null),
                 new("cmd", "Command Prompt", null, null, null),

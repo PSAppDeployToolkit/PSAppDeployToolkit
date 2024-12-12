@@ -425,10 +425,10 @@ function Show-ADTInstallationWelcome
                     }
                     $welcomeState.CloseProcessesCountdown = $CloseProcessesCountdown
 
-                    while (($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($welcomeState.RunningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
-                        $welcomeState.RunningProcessDescriptions = $runningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
+                        $welcomeState.RunningProcessDescriptions = $welcomeState.RunningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
 
                         # Define parameters for welcome prompt.
                         $promptParams = @{
@@ -477,7 +477,7 @@ function Show-ADTInstallationWelcome
                         {
                             # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
                             Write-ADTLogEntry -Message 'The user selected to continue...'
-                            if (!$runningProcesses)
+                            if (!$welcomeState.RunningProcesses)
                             {
                                 # Break the while loop if there are no processes to close and the user has clicked OK to continue.
                                 break
@@ -497,7 +497,7 @@ function Show-ADTInstallationWelcome
                             $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -InformationAction SilentlyContinue
                             $PromptToSaveTimeout = [System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)
                             $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
-                            foreach ($runningProcess in ($runningProcesses = Get-ADTRunningProcesses -ProcessObject $CloseProcesses -InformationAction SilentlyContinue))
+                            foreach ($runningProcess in ($welcomeState.RunningProcesses = Get-ADTRunningProcesses -ProcessObject $CloseProcesses -InformationAction SilentlyContinue))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
                                 if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & { process { if ($_.ParentProcess -eq $runningProcess.ProcessName) { return $_ } } } | Select-Object -First 1) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
@@ -553,7 +553,7 @@ function Show-ADTInstallationWelcome
                                 }
                             }
 
-                            if ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue)
+                            if ($welcomeState.RunningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue)
                             {
                                 # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
                                 Write-ADTLogEntry -Message 'Sleeping for 2 seconds because the processes are still not closed...'
