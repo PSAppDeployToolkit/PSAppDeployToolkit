@@ -178,6 +178,10 @@ namespace PSADT.Module
                     {
                         _defaultMspFiles = new ReadOnlyCollection<string>((string[])parameters["DefaultMspFiles"]);
                     }
+                    if (parameters.ContainsKey("LogName"))
+                    {
+                        _logName = (string)parameters["LogName"];
+                    }
                     if (parameters.ContainsKey("ForceWimDetection"))
                     {
                         ForceWimDetection = (SwitchParameter)parameters["ForceWimDetection"];
@@ -460,13 +464,16 @@ namespace PSADT.Module
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                if ((bool)ADTEnv["IsAdmin"]!)
+                if (string.IsNullOrWhiteSpace(_logName))
                 {
-                    _logName = $"{_installName}_{ADTEnv["appDeployToolkitName"]}_{_deploymentType}.log";
-                }
-                else
-                {
-                    _logName = $"{_installName}_{ADTEnv["appDeployToolkitName"]}_{_deploymentType}_{ADTEnv["envUserName"]}.log";
+                    if ((bool)ADTEnv["IsAdmin"]!)
+                    {
+                        _logName = $"{_installName}_{ADTEnv["appDeployToolkitName"]}_{_deploymentType}.log";
+                    }
+                    else
+                    {
+                        _logName = $"{_installName}_{ADTEnv["appDeployToolkitName"]}_{_deploymentType}_{ADTEnv["envUserName"]}.log";
+                    }
                 }
                 _logName = Regex.Replace(_logName, invalidChars, string.Empty);
                 string logFile = Path.Combine(LogPath, _logName);

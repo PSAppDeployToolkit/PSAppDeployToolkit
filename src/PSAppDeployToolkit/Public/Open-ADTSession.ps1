@@ -100,6 +100,9 @@ function Open-ADTSession
     .PARAMETER DefaultMspFiles
         Specifies the default MSP files.
 
+    .PARAMETER LogName
+        Specifies an override for the default-generated log file name.
+
     .PARAMETER ForceWimDetection
         Specifies that WIM files should be detected and mounted during session initialization, irrespective of whether any App values are provided.
 
@@ -281,6 +284,20 @@ function Open-ADTSession
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$DefaultMspFiles,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateScript({
+                if ([System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
+                }
+                if ([System.IO.Path]::GetExtension($_) -ne '.log')
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage 'The specified name does not have a [.log] extension.'))
+                }
+                return $_
+            })]
+        [System.String]$LogName,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceWimDetection,
