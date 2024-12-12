@@ -452,6 +452,12 @@ namespace PSADT.Module
                     LogPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
                 }
 
+                // Append subfolder path if configured to do so.
+                if ((bool)configToolkit["LogToSubfolder"]!)
+                {
+                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, _installName)).FullName;
+                }
+
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                 if ((bool)ADTEnv["IsAdmin"]!)

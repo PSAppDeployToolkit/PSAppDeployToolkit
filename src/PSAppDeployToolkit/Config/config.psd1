@@ -58,6 +58,9 @@
         # Same as LogPath but used when RequireAdmin is False.
         LogPathNoAdminRights = '$envProgramData\Logs\Software'
 
+        # Specifies that a subfolder based on InstallName should be used for all log capturing.
+        LogToSubfolder = $false
+
         # Specify if log file should be a CMTrace compatible log file or a Legacy text log file.
         LogStyle = 'CMTrace'
 
