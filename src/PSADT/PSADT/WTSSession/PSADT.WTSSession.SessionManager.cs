@@ -296,7 +296,6 @@ namespace PSADT.WTSSession
                 isCurrentProcessSession = null;
             }
 
-            OSVersionInfo osVersionInfo = new OSVersionInfo();
             bool isLocalServer = string.IsNullOrWhiteSpace(hServerName);
 
             foreach (WTS_SESSION_INFO session in sessionsInfo)
@@ -372,8 +371,8 @@ namespace PSADT.WTSSession
                     isLocalSession = true;
                 }
 
-                if (osVersionInfo.IsWorkstation && OSHelper.GetIsWindows7OrGreater(osVersionInfo.OperatingSystem) &&
-                    osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem) &&
+                if (OSVersionInfo.Current.IsWorkstation && OSHelper.GetIsWindows7OrGreater(OSVersionInfo.Current.OperatingSystem) &&
+                    OSVersionInfo.Current.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(OSVersionInfo.Current.OperatingSystem) &&
                     isLocalServer)
                 {
                     isRemoteSession = GetWTSInfoClassProperty<bool>(SafeWTSServer.WTS_CURRENT_SERVER_HANDLE, session.SessionId, WTS_INFO_CLASS.WTSIsRemoteSession);
@@ -588,14 +587,11 @@ namespace PSADT.WTSSession
                 UnifiedLogger.Create().Message("Failed to retrieve display information").Error(ex).Severity(LogLevel.Warning);
             }
 
-            // OS version information
-            var osVersionInfo = new OSVersionInfo();
-
             // Remote session status
             try
             {
-                if (((osVersionInfo.IsWorkstation && OSHelper.GetIsWindows7OrGreater(osVersionInfo.OperatingSystem)) ||
-                (osVersionInfo.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(osVersionInfo.OperatingSystem))) &&
+                if (((OSVersionInfo.Current.IsWorkstation && OSHelper.GetIsWindows7OrGreater(OSVersionInfo.Current.OperatingSystem)) ||
+                (OSVersionInfo.Current.IsServer && OSHelper.GetIsWindowsServer2012OrGreater(OSVersionInfo.Current.OperatingSystem))) &&
                 hServer.IsLocalServer)
                 {
                     sessionInfo.IsRemoteSession = GetWTSInfoClassProperty<bool>(hServer, sessionId, WTS_INFO_CLASS.WTSIsRemoteSession);
@@ -616,7 +612,7 @@ namespace PSADT.WTSSession
             // Time-related information
             try
             {
-                if (OSHelper.GetIsWindowsVistaSP1OrGreater(osVersionInfo.OperatingSystem))
+                if (OSHelper.GetIsWindowsVistaSP1OrGreater(OSVersionInfo.Current.OperatingSystem))
                 {
                     try
                     {

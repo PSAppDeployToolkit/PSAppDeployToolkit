@@ -41,6 +41,7 @@ module.exports = [
     'commands/Get-ADTMsiExitCodeMessage',
     'commands/Get-ADTMsiTableProperty',
     'commands/Get-ADTObjectProperty',
+    'commands/Get-ADTOperatingSystemInfo',
     'commands/Get-ADTPEFileArchitecture',
     'commands/Get-ADTPendingReboot',
     'commands/Get-ADTPowerShellProcessPath',

@@ -119,6 +119,7 @@
         'Get-ADTSession'
         'Get-ADTShortcut'
         'Get-ADTStringTable'
+        'Get-ADTOperatingSystemInfo'
         'Get-ADTUniversalDate'
         'Get-ADTUserProfiles'
         'Get-ADTWindowTitle'

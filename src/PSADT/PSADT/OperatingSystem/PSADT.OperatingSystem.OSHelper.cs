@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -7,7 +7,7 @@ using PSADT.PInvoke;
 
 namespace PSADT.OperatingSystem
 {
-    public static partial class OSHelper
+    public static class OSHelper
     {
         private static string? GetValue(string keyName, string valueName)
         {
@@ -168,7 +168,7 @@ namespace PSADT.OperatingSystem
             return false;
         }
 
-        public static WindowsOS GetOperatingSystem(int MajorVersion, int MinorVersion, int BuildNumber, ushort ServicePackMajor, string? ReleaseId, bool IsWorkstation, bool IsServer, bool Is64BitOperatingSystem, SuiteMask suiteMask)
+        public static WindowsOS GetOperatingSystem(int MajorVersion, int MinorVersion, int BuildNumber, ushort ServicePackMajor, bool IsWorkstation, bool IsServer, bool Is64BitOperatingSystem, SuiteMask suiteMask)
         {
             switch (MajorVersion)
             {

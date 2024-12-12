@@ -1,4 +1,6 @@
-using System;
+﻿using System;
+using System.Linq;
+using System.ComponentModel;
 using PSADT.PInvoke;
 using PSADT.Shared;
 
@@ -22,7 +24,7 @@ namespace PSADT.OperatingSystem
         public bool IsServer { get; }
         public bool IsDomainController { get; }
 
-        public OSVersionInfo()
+        private OSVersionInfo()
         {
             OSHelper.GetRtlVersion(out OSVERSIONINFOEX OSVersionInfoEx);
 
@@ -70,14 +72,16 @@ namespace PSADT.OperatingSystem
                 OSVersionInfoEx.MinorVersion,
                 OSVersionInfoEx.BuildNumber,
                 OSVersionInfoEx.ServicePackMajor,
-                ReleaseId,
                 IsWorkstation,
                 IsServer,
                 Is64BitOperatingSystem,
                 OSVersionInfoEx.SuiteMask);
 
+            Name = ((DescriptionAttribute[])OperatingSystem.GetType().GetField(OperatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false)).First().Description;
             Edition = OSEdition;
             Architecture = OSHelper.GetArchitecture();
         }
+
+        public static readonly OSVersionInfo Current = new OSVersionInfo();
     }
 }

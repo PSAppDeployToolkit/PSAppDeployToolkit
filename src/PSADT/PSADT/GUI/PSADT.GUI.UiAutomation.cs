@@ -543,21 +543,19 @@ namespace PSADT.GUI
         /// </remarks>
         public static void SetProcessDpiAwarenessForOSVersion()
         {
-            OSVersionInfo osVersionInfo = new OSVersionInfo();
-
-            if (osVersionInfo.Version >= new Version(10, 0, 15063)) // Windows 10, Creators Update (Version 1703) and later
+            if (OSVersionInfo.Current.Version >= new Version(10, 0, 15063)) // Windows 10, Creators Update (Version 1703) and later
             {
                 SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             }
-            else if (osVersionInfo.Version >= new Version(10, 0, 14393)) // Windows 10, Anniversary Update (Version 1607)
+            else if (OSVersionInfo.Current.Version >= new Version(10, 0, 14393)) // Windows 10, Anniversary Update (Version 1607)
             {
                 SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
             }
-            else if (osVersionInfo.Version >= new Version(6, 3, 9600)) // Windows 8.1
+            else if (OSVersionInfo.Current.Version >= new Version(6, 3, 9600)) // Windows 8.1
             {
                 SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
             }
-            else if (osVersionInfo.Version >= new Version(6, 0, 6000)) // Windows Vista or Windows 7
+            else if (OSVersionInfo.Current.Version >= new Version(6, 0, 6000)) // Windows Vista or Windows 7
             {
                 if (!TrySetProcessDPIAware())
                 {
