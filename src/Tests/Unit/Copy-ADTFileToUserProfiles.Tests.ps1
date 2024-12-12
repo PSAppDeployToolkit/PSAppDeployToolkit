@@ -15,7 +15,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
 			if ($PesterBoundParameters.LoadProfilePaths) {
 				[PSADT.Types.UserProfile]::new(
 					'User1',
-					'S-1-5-21-User1',
+					'S-1-0-0',
 					'C:\Users\User1',
 					'C:\Users\User1\AppData\Roaming',
 					'C:\Users\User1\AppData\Local',
@@ -28,7 +28,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
 				)
 				[PSADT.Types.UserProfile]::new(
 					'User2',
-					'S-1-5-21-User2',
+					'S-1-0-0',
 					'C:\Users\User2',
 					'C:\Users\User2\AppData\Roaming',
 					'C:\Users\User2\AppData\Local',
@@ -42,7 +42,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
 			} else {
 				[PSADT.Types.UserProfile]::new(
 					'User1',
-					'S-1-5-21-User1',
+					'S-1-0-0',
 					'C:\Users\User1',
 					$null,
 					$null,
@@ -55,7 +55,7 @@ Describe 'Copy-ADTFileToUserProfiles' {
 				)
 				[PSADT.Types.UserProfile]::new(
 					'User2',
-					'S-1-5-21-User2',
+					'S-1-0-0',
 					'C:\Users\User2',
 					$null,
 					$null,

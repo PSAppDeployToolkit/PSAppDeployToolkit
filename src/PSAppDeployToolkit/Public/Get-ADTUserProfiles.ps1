@@ -80,7 +80,7 @@ function Get-ADTUserProfiles
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String[]]$ExcludeNTAccount,
+        [System.Security.Principal.NTAccount[]]$ExcludeNTAccount,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IncludeSystemProfiles,
@@ -138,7 +138,7 @@ function Get-ADTUserProfiles
                         }
 
                         # Return early for accounts that have a null NTAccount.
-                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName | Select-Object -ExpandProperty Value))
+                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName))
                         {
                             return
                         }
@@ -192,8 +192,8 @@ function Get-ADTUserProfiles
                     if ($LoadProfilePaths)
                     {
                         return [PSADT.Types.UserProfile]::new(
-                            'Default User',
-                            'S-1-5-21-Default-User',
+                            'Default',
+                            'S-1-0-0',
                             $defaultUserProfilePath,
                             ((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'AppData' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
                             ((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Local AppData' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
@@ -206,8 +206,8 @@ function Get-ADTUserProfiles
                         )
                     }
                     return [PSADT.Types.UserProfile]::new(
-                        'Default User',
-                        'S-1-5-21-Default-User',
+                        'Default',
+                        'S-1-0-0',
                         $defaultUserProfilePath
                     )
                 }

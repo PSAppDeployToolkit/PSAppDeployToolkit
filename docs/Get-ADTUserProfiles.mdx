@@ -12,7 +12,7 @@ Get the User Profile Path, User Account SID, and the User Account Name for all u
 ## SYNTAX
 
 ```powershell
-Get-ADTUserProfiles [[-ExcludeNTAccount] <String[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles]
+Get-ADTUserProfiles [[-ExcludeNTAccount] <NTAccount[]>] [-IncludeSystemProfiles] [-IncludeServiceProfiles]
  [-IncludeIISAppPoolProfiles] [-ExcludeDefaultUser] [-LoadProfilePaths] [<CommonParameters>]
 ```
 
@@ -55,7 +55,7 @@ This information can then be used to make modifications under the user profile o
 Specify NT account names in DOMAIN\username format to exclude from the list of user profiles.
 
 ```yaml
-Type: String[]
+Type: NTAccount[]
 Parameter Sets: (All)
 Aliases:
 
