@@ -132,7 +132,7 @@ namespace PSADT.UserInterface
             UpdateDeferButtonState();
 
             // Update the AppsToCloseList synchronously
-            UpdateAppsToCloseList(appsToClose);
+            UpdateAppsToCloseList();
         }
 
         private void WelcomeWindow_Loaded(object sender, RoutedEventArgs e)
@@ -141,7 +141,7 @@ namespace PSADT.UserInterface
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    UpdateAppsToCloseList(_appsToClose);
+                    UpdateAppsToCloseList();
 
                     if (_processEvaluationService != null)
                     {
@@ -150,8 +150,11 @@ namespace PSADT.UserInterface
                     }
                 });
 
-                _cts = new CancellationTokenSource();
-                _ = StartProcessEvaluationLoopAsync(_appsToClose!, _cts.Token);
+                if (_processEvaluationService != null)
+                {
+                    _cts = new CancellationTokenSource();
+                    _ = StartProcessEvaluationLoopAsync(_appsToClose!, _cts.Token);
+                }
             }
 
             Application.Current.Dispatcher.Invoke(() =>
@@ -244,9 +247,9 @@ namespace PSADT.UserInterface
             }
         }
 
-        private void UpdateAppsToCloseList(List<AppProcessInfo>? appsToClose)
+        private void UpdateAppsToCloseList()
         {
-            if (appsToClose == null || appsToClose.Count == 0)
+            if (_appsToClose == null || _appsToClose.Count == 0)
             {
                 AppsToCloseListView.Visibility = Visibility.Collapsed;
                 return;
@@ -255,16 +258,19 @@ namespace PSADT.UserInterface
             if (_processEvaluationService == null)
             {
                 // Populate the collection directly
-                foreach (var app in appsToClose)
+                foreach (var app in _appsToClose)
                 {
-                    AppsToCloseCollection.Add(app);
+                    if (null == AppsToCloseCollection.Where(a => a.ProcessName.Equals(app.ProcessName)).FirstOrDefault())
+                    {
+                        AppsToCloseCollection.Add(app);
+                    }
                 }
 
                 return;
             }
 
             // Evaluate running processes and populate the collection
-            var updatedAppsToClose = _processEvaluationService.EvaluateRunningProcesses(appsToClose);
+            var updatedAppsToClose = _processEvaluationService.EvaluateRunningProcesses(_appsToClose);
 
             // Clear existing items
             AppsToCloseCollection.Clear();
@@ -272,7 +278,10 @@ namespace PSADT.UserInterface
             // Add updated apps
             foreach (var app in updatedAppsToClose)
             {
-                AppsToCloseCollection.Add(app);
+                if (null == AppsToCloseCollection.Where(a => a.ProcessName.Equals(app.ProcessName)).FirstOrDefault())
+                {
+                    AppsToCloseCollection.Add(app);
+                }
             }
 
             _previousProcessInfo = new List<AppProcessInfo>(updatedAppsToClose);
@@ -342,7 +351,10 @@ namespace PSADT.UserInterface
                             AppsToCloseCollection.Clear();
                             foreach (var app in updatedApps)
                             {
-                                AppsToCloseCollection.Add(app);
+                                if (null == AppsToCloseCollection.Where(a => a.ProcessName.Equals(app.ProcessName)).FirstOrDefault())
+                                {
+                                    AppsToCloseCollection.Add(app);
+                                }
                             }
                         });
 
@@ -389,7 +401,10 @@ namespace PSADT.UserInterface
             {
                 if (!AppsToCloseCollection.Contains(e))
                 {
-                    AppsToCloseCollection.Add(e);
+                    if (null == AppsToCloseCollection.Where(a => a.ProcessName.Equals(e.ProcessName)).FirstOrDefault())
+                    {
+                        AppsToCloseCollection.Add(e);
+                    }
                 }
             });
         }
@@ -417,9 +432,11 @@ namespace PSADT.UserInterface
 
             if (_isAppsToClose)
             {
-                _processEvaluationService!.ProcessStarted -= ProcessEvaluationService_ProcessStarted;
-                _processEvaluationService.ProcessExited -= ProcessEvaluationService_ProcessExited;
-
+                if (_processEvaluationService != null)
+                {
+                    _processEvaluationService!.ProcessStarted -= ProcessEvaluationService_ProcessStarted;
+                    _processEvaluationService.ProcessExited -= ProcessEvaluationService_ProcessExited;
+                }
                 AppsToCloseCollection.CollectionChanged -= AppsToCloseCollection_CollectionChanged;
             }
 

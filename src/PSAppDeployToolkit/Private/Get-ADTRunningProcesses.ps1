@@ -58,6 +58,17 @@ function Get-ADTRunningProcesses
     $runningProcesses = Get-Process -Name $ProcessObjects.Name -ErrorAction Ignore | & {
         process
         {
+            # Get icon so we can convert it into a media image for the UI.
+            $icon = try
+            {
+                [PSADT.UserInterface.Utilities.ProcessExtensions]::GetIcon($_, $true)
+            }
+            catch
+            {
+                $null = $null
+            }
+
+            # Instantiate and return a new AppProcessInfo object.
             return [PSADT.UserInterface.Services.AppProcessInfo]::new(
                 $_.Name,
                 $(
@@ -79,7 +90,7 @@ function Get-ADTRunningProcesses
                 ),
                 $_.Product,
                 $_.Company,
-                $null,
+                $(if ($icon) { [PSADT.UserInterface.Utilities.BitmapExtensions]::ConvertToImageSource($icon.ToBitmap()) }),
                 $_.StartTime,
                 $_.MainWindowHandle
             )
