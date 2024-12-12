@@ -38,7 +38,7 @@ function Show-ADTInstallationProgressFluent
     $adtConfig = Get-ADTConfig
 
     # Advise that repositioning the progress window is unsupported for fluent.
-    if ($UnboundArguments -match '-WindowLocation:')
+    if ($UnboundArguments -eq '-WindowLocation:')
     {
         Write-ADTLogEntry -Message "The parameter [-WindowLocation] is not supported with fluent dialogs and has no effect." -Severity 2
     }
