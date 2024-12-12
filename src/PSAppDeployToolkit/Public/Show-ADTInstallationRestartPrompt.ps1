@@ -118,7 +118,7 @@ function Show-ADTInstallationRestartPrompt
         $paramDictionary.Add('DeploymentType', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'DeploymentType', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
-                    [System.Management.Automation.ValidateSetAttribute]::new($adtStrings.DeploymentType.Keys)
+                    [System.Management.Automation.ValidateSetAttribute]::new(('Install', 'Uninstall', 'Repair'))
                 )
             ))
 
@@ -137,7 +137,6 @@ function Show-ADTInstallationRestartPrompt
         {
             $PSBoundParameters.Add('DeploymentType', $adtSession.DeploymentType)
         }
-        $dtString = $adtStrings.DeploymentType.($PSBoundParameters.DeploymentType)
 
         # Set up remainder if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
@@ -146,7 +145,7 @@ function Show-ADTInstallationRestartPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $dtString))
+            $PSBoundParameters.Add('Subtitle', $adtStrings.WelcomePrompt.Fluent.Subtitle.($PSBoundParameters.DeploymentType))
         }
         if (!$PSBoundParameters.ContainsKey('CountdownSeconds'))
         {
@@ -156,10 +155,6 @@ function Show-ADTInstallationRestartPrompt
         {
             $PSBoundParameters.Add('CountdownNoHideSeconds', $CountdownNoHideSeconds)
         }
-
-        # Amend parameters for the backend dialog functions.
-        $PSBoundParameters.Add('DeploymentTypeName', $dtString)
-        $null = $PSBoundParameters.Remove('DeploymentType')
     }
 
     process

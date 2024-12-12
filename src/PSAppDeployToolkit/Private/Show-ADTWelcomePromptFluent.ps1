@@ -21,7 +21,7 @@ function Show-ADTWelcomePromptFluent
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeploymentTypeName,
+        [System.String]$DeploymentType,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -62,11 +62,11 @@ function Show-ADTWelcomePromptFluent
         (Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue),
         $adtConfig.Assets.Logo,
         $adtStrings.WelcomePrompt.Fluent.DialogMessage,
-        [System.String]::Format($adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses, $DeploymentTypeName, $DeploymentTypeName.ToLower()),
+        $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses.$DeploymentType,
         $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,
         $adtStrings.WelcomePrompt.Fluent.ButtonLeftText,
-        [System.String]::Format($adtStrings.WelcomePrompt.Fluent.ButtonRightText, $DeploymentTypeName),
-        $DeploymentTypeName,
+        $adtStrings.WelcomePrompt.Fluent.ButtonRightText.$DeploymentType,
+        $adtStrings.WelcomePrompt.Fluent.ButtonRightTextNoProcesses.$DeploymentType,
         $(if ($adtConfig.UI.DynamicProcessEvaluation) { [PSADT.UserInterface.Services.ProcessEvaluationService]::new() })
     )
 

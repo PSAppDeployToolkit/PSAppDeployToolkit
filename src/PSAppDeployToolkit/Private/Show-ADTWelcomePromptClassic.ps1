@@ -21,7 +21,7 @@ function Show-ADTWelcomePromptClassic
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeploymentTypeName,
+        [System.String]$DeploymentType,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -302,7 +302,7 @@ function Show-ADTWelcomePromptClassic
     $labelWelcomeMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
     $labelWelcomeMessage.Font = $Script:Dialogs.Classic.Font
     $labelWelcomeMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-    $labelWelcomeMessage.Text = [System.String]::Format($adtStrings.DeferPrompt.WelcomeMessage, $DeploymentTypeName.ToLower())
+    $labelWelcomeMessage.Text = $adtStrings.DeferPrompt.WelcomeMessage.$DeploymentType
     $labelWelcomeMessage.Name = 'LabelWelcomeMessage'
     $labelWelcomeMessage.TabStop = $false
     $labelWelcomeMessage.AutoSize = $true
@@ -386,7 +386,7 @@ function Show-ADTWelcomePromptClassic
         $labelCloseProcessesMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
         $labelCloseProcessesMessage.Font = $Script:Dialogs.Classic.Font
         $labelCloseProcessesMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelCloseProcessesMessage.Text = [System.String]::Format($adtStrings.ClosePrompt.Message, $DeploymentTypeName.ToLower())
+        $labelCloseProcessesMessage.Text = $adtStrings.ClosePrompt.Message.$DeploymentType
         $labelCloseProcessesMessage.Name = 'LabelCloseProcessesMessage'
         $labelCloseProcessesMessage.TabStop = $false
         $labelCloseProcessesMessage.AutoSize = $true
@@ -404,7 +404,7 @@ function Show-ADTWelcomePromptClassic
         $labelDeferExpiryMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
         $labelDeferExpiryMessage.Font = $Script:Dialogs.Classic.Font
         $labelDeferExpiryMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelDeferExpiryMessage.Text = [System.String]::Format($adtStrings.DeferPrompt.ExpiryMessage, $DeploymentTypeName.ToLower())
+        $labelDeferExpiryMessage.Text = $adtStrings.DeferPrompt.ExpiryMessage.$DeploymentType
         $labelDeferExpiryMessage.Name = 'LabelDeferExpiryMessage'
         $labelDeferExpiryMessage.TabStop = $false
         $labelDeferExpiryMessage.AutoSize = $true
@@ -458,7 +458,7 @@ function Show-ADTWelcomePromptClassic
         $labelCountdownMessage.AutoSize = $true
         $labelCountdownMessage.Text = if ($ForceCountdown -or !$WelcomeState.RunningProcessDescriptions)
         {
-            [System.String]::Format($adtStrings.WelcomePrompt.Classic.CountdownMessage, $DeploymentTypeName.ToLower())
+            $adtStrings.WelcomePrompt.Classic.CountdownMessage.$DeploymentType
         }
         else
         {

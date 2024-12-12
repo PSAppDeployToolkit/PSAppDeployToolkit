@@ -18,7 +18,7 @@ function Show-ADTInstallationRestartPromptClassic
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeploymentTypeName,
+        [System.String]$DeploymentType,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -44,7 +44,7 @@ function Show-ADTInstallationRestartPromptClassic
     $adtStrings = Get-ADTStringTable
 
     # Concatenare the restart message.
-    $rpMessage = [System.String]::Format($adtStrings.RestartPrompt.Message, $DeploymentTypeName.ToLower())
+    $rpMessage = $adtStrings.RestartPrompt.Message.$DeploymentType
 
     # Define starting counters.
     $startTime = [System.DateTime]::Now
