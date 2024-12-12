@@ -182,10 +182,6 @@ namespace PSADT.Module
                     {
                         _logName = (string)parameters["LogName"];
                     }
-                    if (parameters.ContainsKey("ForceWimDetection"))
-                    {
-                        ForceWimDetection = (SwitchParameter)parameters["ForceWimDetection"];
-                    }
                 }
 
                 // Ensure DeploymentType is title cased for aesthetics.
@@ -211,7 +207,7 @@ namespace PSADT.Module
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(_appName) || ForceWimDetection)
+                if (string.IsNullOrWhiteSpace(_appName) || ((parameters?["ForceWimDetection"] is SwitchParameter forceWimDetection) && forceWimDetection))
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
                     if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
@@ -330,18 +326,21 @@ namespace PSADT.Module
                         }
 
                         // Read the MSI and get the installation details.
-                        var msiProps = (ReadOnlyDictionary<string, object>)((PSObject)ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File").InvokeReturnAsIs(DefaultMsiFile, DefaultMstFile)).BaseObject;
-                        List<ProcessObject> msiExecList = msiProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
-
-                        // Generate list of MSI executables for testing later on.
-                        if (msiExecList.Count > 0)
+                        if ((parameters?["DisableDefaultMsiProcessList"] is SwitchParameter disableDefaultMsiProcessList) && disableDefaultMsiProcessList)
                         {
-                            DefaultMsiExecutablesList = msiExecList.AsReadOnly();
-                            WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(static p => p.Name))}].");
+                            var exeProps = (ReadOnlyDictionary<string, object>)((PSObject)ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File").InvokeReturnAsIs(DefaultMsiFile, DefaultMstFile)).BaseObject;
+                            List<ProcessObject> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
+
+                            // Generate list of MSI executables for testing later on.
+                            if (msiExecList.Count > 0)
+                            {
+                                DefaultMsiExecutablesList = msiExecList.AsReadOnly();
+                                WriteLogEntry($"MSI Executable List [{string.Join(", ", DefaultMsiExecutablesList.Select(static p => p.Name))}].");
+                            }
                         }
 
                         // Update our app variables with new values.
-                        msiProps = (ReadOnlyDictionary<string, object>)((PSObject)ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property").InvokeReturnAsIs(DefaultMsiFile, DefaultMstFile)).BaseObject;
+                        var msiProps = (ReadOnlyDictionary<string, object>)((PSObject)ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property").InvokeReturnAsIs(DefaultMsiFile, DefaultMstFile)).BaseObject;
                         _appName = (string)msiProps["ProductName"];
                         _appVersion = (string)msiProps["ProductVersion"];
                         WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
@@ -1503,11 +1502,6 @@ namespace PSADT.Module
         /// Gets whether this deployment session was instantiated via a script or the command line.
         /// </summary>
         private bool RunspaceOrigin { get; }
-
-        /// <summary>
-        /// Gets whether this deployment session should force WIM file detection, even if AppName was defined.
-        /// </summary>
-        private bool ForceWimDetection { get; }
 
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.

@@ -100,6 +100,9 @@ function Open-ADTSession
     .PARAMETER DefaultMspFiles
         Specifies the default MSP files.
 
+    .PARAMETER DisableDefaultMsiProcessList
+        Specifies that the zero-config MSI code should not gather process names from the MSI file.
+
     .PARAMETER LogName
         Specifies an override for the default-generated log file name.
 
@@ -284,6 +287,9 @@ function Open-ADTSession
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$DefaultMspFiles,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$DisableDefaultMsiProcessList,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({

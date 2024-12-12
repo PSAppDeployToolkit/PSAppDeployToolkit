@@ -21,8 +21,8 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-D
  [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
  [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>]
  [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
- [[-DefaultMspFiles] <String[]>] [[-LogName] <String>] [-ForceWimDetection] [-PassThru]
- [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
+ [[-DefaultMspFiles] <String[]>] [-DisableDefaultMsiProcessList] [[-LogName] <String>] [-ForceWimDetection]
+ [-PassThru] [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -503,6 +503,22 @@ Aliases:
 Required: False
 Position: 26
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisableDefaultMsiProcessList
+
+Specifies that the zero-config MSI code should not gather process names from the MSI file.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
