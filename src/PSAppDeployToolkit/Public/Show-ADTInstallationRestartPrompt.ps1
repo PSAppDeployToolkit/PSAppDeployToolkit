@@ -97,6 +97,7 @@ function Show-ADTInstallationRestartPrompt
     {
         # Initialize variables.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtStrings = Get-ADTStringTable
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -114,6 +115,12 @@ function Show-ADTInstallationRestartPrompt
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
+        $paramDictionary.Add('DeploymentType', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'DeploymentType', [System.String], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
+                    [System.Management.Automation.ValidateSetAttribute]::new($adtStrings.DeploymentType.Keys)
+                )
+            ))
 
         # Return the populated dictionary.
         return $paramDictionary
@@ -123,17 +130,23 @@ function Show-ADTInstallationRestartPrompt
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtStrings = Get-ADTStringTable
         $adtConfig = Get-ADTConfig
 
-        # Set up defaults if not specified.
+        # Set up DeploymentType if not specified.
+        if (!$PSBoundParameters.ContainsKey('DeploymentType'))
+        {
+            $PSBoundParameters.Add('DeploymentType', $adtSession.DeploymentType)
+        }
+        $dtString = $adtStrings.DeploymentType.($PSBoundParameters.DeploymentType)
+
+        # Set up remainder if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $dtString))
         }
         if (!$PSBoundParameters.ContainsKey('CountdownSeconds'))
         {
@@ -143,6 +156,10 @@ function Show-ADTInstallationRestartPrompt
         {
             $PSBoundParameters.Add('CountdownNoHideSeconds', $CountdownNoHideSeconds)
         }
+
+        # Amend parameters for the backend dialog functions.
+        $PSBoundParameters.Add('DeploymentTypeName', $dtString)
+        $null = $PSBoundParameters.Remove('DeploymentType')
     }
 
     process

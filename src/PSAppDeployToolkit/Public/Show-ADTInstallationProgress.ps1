@@ -105,7 +105,7 @@ function Show-ADTInstallationProgress
             ))
         $paramDictionary.Add('WindowSubtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'WindowSubtitle', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = 'The subtitle of the window to be displayed with a fluent progress window. The default is the derived value from "$($adtSession.DeploymentType)".' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = 'The subtitle of the window to be displayed with a fluent progress window. The default is the derived value from "$($adtSession.DeploymentTypeName)".' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
@@ -140,15 +140,15 @@ function Show-ADTInstallationProgress
         }
         if (!$PSBoundParameters.ContainsKey('WindowSubtitle'))
         {
-            $PSBoundParameters.Add('WindowSubtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
+            $PSBoundParameters.Add('WindowSubtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentTypeName))
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessage'))
         {
-            $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.DeploymentType)")
+            $PSBoundParameters.Add('StatusMessage', [System.String]::Format($adtStrings.Progress.Message, $adtSession.DeploymentTypeName))
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
         {
-            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.DeploymentType)Detail")
+            $PSBoundParameters.Add('StatusMessageDetail', [System.String]::Format($adtStrings.Progress.MessageDetail, $adtSession.DeploymentTypeName.ToLower()))
         }
     }
 

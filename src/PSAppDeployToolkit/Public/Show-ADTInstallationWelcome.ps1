@@ -252,18 +252,21 @@ function Show-ADTInstallationWelcome
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtEnv = Get-ADTEnvironmentTable
 
-        # Set up defaults if not specified.
+        # Set up DeploymentType if not specified.
         if (!$PSBoundParameters.ContainsKey('DeploymentType'))
         {
             $PSBoundParameters.Add('DeploymentType', $adtSession.DeploymentType)
         }
+        $dtString = $adtStrings.DeploymentType.($PSBoundParameters.DeploymentType)
+
+        # Set up remainder if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $PSBoundParameters.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $dtString))
         }
 
         # Instantiate new object to hold all data needed within this call.
@@ -323,7 +326,7 @@ function Show-ADTInstallationWelcome
                         Write-ADTLogEntry -Message "Failed to meet minimum disk space requirement. Space Required [$RequiredDiskSpace MB], Space Available [$freeDiskSpace MB]." -Severity 3
                         if (!$Silent)
                         {
-                            Show-ADTInstallationPrompt -Message ((Get-ADTStringTable).DiskSpace.Message -f $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace) -ButtonRightText OK -Icon Error
+                            Show-ADTInstallationPrompt -Message ([System.String]::Format($adtStrings.DiskSpace.Message, $PSBoundParameters.Title, $RequiredDiskSpace, $freeDiskSpace, $dtString.ToLower())) -ButtonRightText OK -Icon Error
                         }
                         Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                     }
@@ -435,7 +438,7 @@ function Show-ADTInstallationWelcome
                             WelcomeState = $welcomeState
                             Title = $PSBoundParameters.Title
                             Subtitle = $PSBoundParameters.Subtitle
-                            DeploymentType = $PSBoundParameters.DeploymentType
+                            DeploymentTypeName = $dtString
                             CloseProcessesCountdown = $welcomeState.CloseProcessesCountdown
                             ForceCloseProcessesCountdown = !!$ForceCloseProcessesCountdown
                             ForceCountdown = !!$ForceCountdown

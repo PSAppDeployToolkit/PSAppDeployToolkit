@@ -18,7 +18,7 @@
 
     BlockExecution = @{
         # Text displayed when prompting user that an application has been blocked.
-        Message = 'Launching this application has been temporarily blocked so that an installation operation can complete.'
+        Message = 'Launching this application has been temporarily blocked so that an {0} operation can complete.'
     }
 
     ClosePrompt = @{
@@ -38,7 +38,7 @@
         CountdownMessage = 'NOTE: The program(s) will be automatically closed in:'
 
         # Text displayed when prompting to close running programs.
-        Message = "The following programs must be closed before the installation can proceed.`n`nPlease save your work, close the programs, and then continue. Alternatively, save your work and click `"Close Programs`"."
+        Message = "The following programs must be closed before the {0} can proceed.`n`nPlease save your work, close the programs, and then continue. Alternatively, save your work and click `"Close Programs`"."
     }
 
     DeferPrompt = @{
@@ -46,7 +46,7 @@
         Deadline = 'Deadline:'
 
         # Text displayed when a deferral option is available.
-        ExpiryMessage = 'You can choose to defer the installation until the deferral expires:'
+        ExpiryMessage = 'You can choose to defer the {0} until the deferral expires:'
 
         # Text displayed when there are a specific number of deferrals remaining.
         RemainingDeferrals = 'Remaining Deferrals:'
@@ -55,43 +55,31 @@
         WarningMessage = 'Once the deferral has expired, you will no longer have the option to defer.'
 
         # Text displayed when only the deferral dialog is to be displayed and there are no applications to close.
-        WelcomeMessage = 'The following application is about to be installed:'
+        WelcomeMessage = 'The following application {0} is about to begin:'
     }
 
     DeploymentType = @{
-        # Name displayed in UI for installation deployment type.
-        Install = 'Installation'
+        # Name displayed in UI for install deployment type.
+        Install = 'Install'
 
         # Name displayed in UI for repair deployment type.
-        Repair = 'Repairing'
+        Repair = 'Repair'
 
-        # Name displayed in UI for Uninstallation deployment type.
-        Uninstall = 'Uninstallation'
+        # Name displayed in UI for uninstall deployment type.
+        Uninstall = 'Uninstall'
     }
 
     DiskSpace = @{
-        # Text displayed when the system does not have sufficient free disk space available to complete the installation.
-        Message = "You do not have enough disk space to complete the installation of:`n{0}`n`nSpace required: {1}MB`nSpace available: {2}MB`n`nPlease free up enough disk space in order to proceed with the installation."
+        # Text displayed when the system does not have sufficient free disk space available to complete the deployment.
+        Message = "You do not have enough disk space to complete the {3} of:`n{0}`n`nSpace required: {1}MB`nSpace available: {2}MB`n`nPlease free up enough disk space in order for the {3} to proceed."
     }
 
     Progress = @{
-        # Default text displayed in the progress bar for installations.
-        MessageInstall = 'Installation in progress. Please wait...'
+        # Default text displayed in the progress bar for deployments.
+        Message = '{0} in progress. Please wait...'
 
-        # Default text displayed in the progress bar for installations.
-        MessageInstallDetail = 'This window will close automatically when the installation is complete.'
-
-        # Default text displayed in the progress bar for repairs.
-        MessageRepair = 'Repair in progress. Please wait...'
-
-        # Default text displayed in the progress bar for repairs.
-        MessageRepairDetail = 'This window will close automatically when the repair is complete.'
-
-        # Default text displayed in the progress bar for Uninstallations.
-        MessageUninstall = 'Uninstallation in progress. Please wait...'
-
-        # Default text displayed in the progress bar for Uninstallations.
-        MessageUninstallDetail = 'This window will close automatically when the uninstallation is complete.'
+        # Default subtext displayed in the progress bar for deployment.
+        MessageDetail = 'This window will close automatically when the {0} is complete.'
     }
 
     RestartPrompt = @{
@@ -102,7 +90,7 @@
         ButtonRestartNow = 'Restart Now'
 
         # Text displayed when the device requires a restart.
-        Message = 'In order for the installation to complete, you must restart your computer.'
+        Message = 'In order for the {0} to complete, you must restart your computer.'
 
         # Text displayed when indicating when the device will be restarted.
         MessageRestart = 'Your computer will be automatically restarted at the end of the countdown.'
@@ -119,33 +107,30 @@
 
     WelcomePrompt = @{
         Classic = @{
-            # The countdown message displayed at the Welcome Screen to indicate when the install will continue if no response from user.
+            # The countdown message displayed at the Welcome Screen to indicate when the deployment will continue if no response from user.
             CountdownMessage = 'The {0} will automatically continue in:'
 
             # This is a custom message to display at the Welcome Screen window.
             CustomMessage = ''
         }
         Fluent = @{
-            # The subtitle underneath the Application Title, e.g. Company Name. Using {0} will insert the Application Type, e.g. App "Install"
+            # The subtitle underneath the Application Title, e.g. Company Name. Using {0} will insert the Application Type, e.g. App "Install".
             Subtitle = 'PSAppDeployToolkit - App {0}'
 
             # This is a message to prompt users to save their work.
             DialogMessage = 'Please save your work before continuing as the following applications will be closed automatically.'
 
             # This is a message to when there are no running processes available.
-            DialogMessageNoProcesses = 'Please select Install to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.'
+            DialogMessageNoProcesses = 'Please select {0} to continue. If you have any deferrals remaining, you may also choose to delay the {1}.'
 
             # This is a word used to describe the number of deferrals left. custom message to display at the Welcome Screen window.
             ButtonDeferRemaining = 'remain'
 
-            # This is a phrase used to describe the process of deferring an application installation.
+            # This is a phrase used to describe the process of deferring a deployment.
             ButtonLeftText = 'Defer'
 
-            # This is a phrase used to describe the process of closing applications and installing the application.
-            ButtonRightText = 'Close Apps & Install'
-
-            # This is a phrase used to describe the process of installing the application.
-            ButtonRightTextNoProcesses = 'Install'
+            # This is a phrase used to describe the process of closing applications and commencing the deployment.
+            ButtonRightText = 'Close Apps & {0}'
         }
     }
 }
