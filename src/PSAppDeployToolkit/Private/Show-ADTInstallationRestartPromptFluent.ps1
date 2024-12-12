@@ -45,6 +45,7 @@ function Show-ADTInstallationRestartPromptFluent
     # Send this straight out to the C# backend.
     Write-ADTLogEntry -Message "Displaying restart prompt with $(if ($NoCountdown) { 'no' } else { "a [$CountdownSeconds] second" }) countdown."
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowRestartDialog(
+        $adtConfig.UI.FluentAccentColorOverride,
         $Title,
         $Subtitle,
         !$NotTopMost,

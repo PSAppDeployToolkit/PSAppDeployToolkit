@@ -48,6 +48,7 @@ function Show-ADTInstallationProgressFluent
     {
         # Instantiate a new progress window object and start it up.
         [PSADT.UserInterface.UnifiedADTApplication]::ShowProgressDialog(
+            $adtConfig.UI.FluentAccentColorOverride,
             $WindowTitle,
             $WindowSubtitle,
             !$NotTopMost,

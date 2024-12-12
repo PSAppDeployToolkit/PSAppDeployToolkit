@@ -16,13 +16,14 @@ namespace PSADT.UserInterface
         /// <param name="progressMessage"></param>
         /// <param name="progressMessageDetail"></param>
         public ProgressDialog(
+            string? accentColorHexValue,
             string? appTitle,
             string? subtitle,
             bool? topMost,
             string? appIconImage,
             string? progressMessage,
             string? progressMessageDetail)
-            : base(null)
+            : base(null, null)
         {
             DataContext = this;
 

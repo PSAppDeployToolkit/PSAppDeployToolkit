@@ -14,6 +14,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Constructor for CustomDialog
         /// </summary>
+        /// <param name="accentColorHexValue"></param>
         /// <param name="dialogExpiryDuration"></param>
         /// <param name="appTitle"></param>
         /// <param name="subtitle"></param>
@@ -24,6 +25,7 @@ namespace PSADT.UserInterface
         /// <param name="button2Text"></param>
         /// <param name="button3Text"></param>
         public CustomDialog(
+            string? accentColorHexValue,
             TimeSpan dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
@@ -33,7 +35,7 @@ namespace PSADT.UserInterface
             string? button1Text,
             string? button2Text,
             string? button3Text)
-            : base(dialogExpiryDuration)
+            : base(accentColorHexValue, dialogExpiryDuration)
 
         {
             DataContext = this;

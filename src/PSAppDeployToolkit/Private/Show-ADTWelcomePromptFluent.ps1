@@ -54,6 +54,7 @@ function Show-ADTWelcomePromptFluent
 
     # Send this out to the C# code.
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowWelcomeDialog(
+        $adtConfig.UI.FluentAccentColorOverride,
         [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout),
         $Title,
         $Subtitle,

@@ -124,6 +124,9 @@
         # Time in seconds after which to re-enumerate running processes while displaying the Show-ADTInstallationWelcome prompt. Default is 2 seconds.
         DynamicProcessEvaluationInterval = 2
 
+        # The color to use for the Fluent UI accent color. Value should be in Hex RGB or ARGB, e.g. '#0078D7' or '#FF0078D7'. Leave empty to use the current system default accent color.
+        FluentAccentColorOverride = ''
+
         <# Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.
             Language Code    Language       |       Language Code    Language
             =============    ========       |       =============    ========

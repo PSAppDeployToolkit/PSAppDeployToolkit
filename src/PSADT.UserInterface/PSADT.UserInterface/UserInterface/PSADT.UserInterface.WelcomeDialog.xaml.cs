@@ -10,6 +10,7 @@ namespace PSADT.UserInterface
 {
     public partial class WelcomeDialog : BaseDialog
     {
+        private System.Windows.Media.Color _accentColor;
         private readonly IProcessEvaluationService? _processEvaluationService;
         private int? _defersRemaining;
         private readonly string? _deferRemainText;
@@ -49,6 +50,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Constructor for WelcomeDialog
         /// </summary>
+        /// <param name="accentColorHexValue"></param>
         /// <param name="dialogExpiryDuration"></param>
         /// <param name="appTitle"></param>
         /// <param name="subtitle"></param>
@@ -64,6 +66,7 @@ namespace PSADT.UserInterface
         /// <param name="altContinueButtonText"></param>
         /// <param name="processEvaluationService"></param>
         public WelcomeDialog(
+            string? accentColorHexValue,
             TimeSpan? dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
@@ -78,15 +81,12 @@ namespace PSADT.UserInterface
             string? continueButtonText,
             string? altContinueButtonText,
             IProcessEvaluationService? processEvaluationService = null)
-            : base(dialogExpiryDuration)
+            : base(accentColorHexValue, dialogExpiryDuration)
 
         {
             DataContext = this;
 
             InitializeComponent();
-
-            // Set up Mica backdrop and watch for theme changes
-            SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
 
             // Set up Process Evaluation
             if (appsToClose?.Count > 0)

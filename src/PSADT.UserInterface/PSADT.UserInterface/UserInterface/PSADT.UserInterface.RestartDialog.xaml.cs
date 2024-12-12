@@ -30,6 +30,7 @@ namespace PSADT.UserInterface
         /// <param name="dismissButtonText"></param>
         /// <param name="restartButtonText"></param>
         public RestartDialog(
+            string? accentColorHexValue,
             string? appTitle,
             string? subtitle,
             bool? topMost,
@@ -40,13 +41,10 @@ namespace PSADT.UserInterface
             string? restartMessageCountdownText,
             string? dismissButtonText,
             string? restartButtonText)
-            : base(null)
+            : base(null, null)
 
         {
             DataContext = this;
-
-            // Set up Mica backdrop and watch for theme changes
-            SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
 
             InitializeComponent();
 

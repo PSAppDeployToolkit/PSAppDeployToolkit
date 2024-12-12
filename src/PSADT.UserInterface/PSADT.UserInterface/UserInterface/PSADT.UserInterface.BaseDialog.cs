@@ -5,6 +5,9 @@ using Microsoft.Win32;
 using PSADT.UserInterface.Utilities;
 using System.Windows.Interop;
 using Wpf.Ui.Controls;
+using Wpf.Ui.Appearance;
+using System.ComponentModel;
+using System.Windows.Media;
 
 namespace PSADT.UserInterface
 {
@@ -20,8 +23,9 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Constructor for BaseDialog
         /// </summary>
+        /// <param name="accentColorHexValue"></param>
         /// <param name="dialogExpiryDuration"></param>
-        protected BaseDialog(TimeSpan? dialogExpiryDuration)
+        protected BaseDialog(string? accentColorHexValue, TimeSpan? dialogExpiryDuration)
         {
             DataContext = this;
 
@@ -39,6 +43,18 @@ namespace PSADT.UserInterface
 
             SizeChanged += BaseDialog_SizeChanged;
 
+            // Set up Mica backdrop and watch for theme changes
+            if (string.IsNullOrWhiteSpace(accentColorHexValue))
+            {
+                SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
+            }
+            else
+            {
+                System.Windows.Media.Color _accentColor = StringToColor(accentColorHexValue!);
+                SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, false);
+                ApplicationTheme appTheme = ApplicationThemeManager.GetAppTheme();
+                ApplicationAccentColorManager.Apply(_accentColor, appTheme, true);
+            }
         }
 
         /// <summary>
@@ -105,6 +121,18 @@ namespace PSADT.UserInterface
                     break;
             }
             return IntPtr.Zero;
+        }
+
+        public static Color StringToColor(string colorStr)
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(colorStr, "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"))
+            {
+                throw new FormatException("Invalid hex color string.");
+            }
+
+            TypeConverter cc = TypeDescriptor.GetConverter(typeof(Color));
+            var result = (Color)cc.ConvertFromString(colorStr);
+            return result;
         }
 
         /// <summary>

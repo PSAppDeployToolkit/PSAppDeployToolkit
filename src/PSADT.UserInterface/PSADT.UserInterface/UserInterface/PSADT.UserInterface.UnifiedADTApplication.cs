@@ -1,4 +1,4 @@
-using PSADT.UserInterface.Services;
+﻿using PSADT.UserInterface.Services;
 
 namespace PSADT.UserInterface
 {
@@ -36,6 +36,7 @@ namespace PSADT.UserInterface
         /// Shows the WelcomeDialog synchronously and returns the user's response.
         /// </summary>
         public static string ShowWelcomeDialog(
+            string? accentColorHexValue,
             TimeSpan? dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
@@ -52,6 +53,7 @@ namespace PSADT.UserInterface
             IProcessEvaluationService? processEvaluationService = null)
         {
             return Instance.ShowWelcomeDialog(
+                accentColorHexValue,
                 dialogExpiryDuration,
                 appTitle,
                 subtitle,
@@ -72,6 +74,7 @@ namespace PSADT.UserInterface
         /// Shows the ProgressDialog synchronously.
         /// </summary>
         public static void ShowProgressDialog(
+            string? accentColorHexValue,
             string? appTitle,
             string? subtitle,
             bool? topMost,
@@ -80,6 +83,7 @@ namespace PSADT.UserInterface
             string? progressMessageDetail)
         {
             Instance.ShowProgressDialog(
+                accentColorHexValue,
                 appTitle,
                 subtitle,
                 topMost,
@@ -92,6 +96,7 @@ namespace PSADT.UserInterface
         /// Shows the CustomDialog synchronously and returns the user's response.
         /// </summary>
         public static string ShowCustomDialog(
+            string? accentColorHexValue,
             TimeSpan dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
@@ -103,6 +108,7 @@ namespace PSADT.UserInterface
             string? button3Text)
         {
             return Instance.ShowCustomDialog(
+                accentColorHexValue,
                 dialogExpiryDuration,
                 appTitle,
                 subtitle,
@@ -118,6 +124,7 @@ namespace PSADT.UserInterface
         /// Shows the RestartDialog synchronously and returns the user's response.
         /// </summary>
         public static string ShowRestartDialog(
+            string? accentColorHexValue,
             string? appTitle,
             string? subtitle,
             bool? topMost,
@@ -130,6 +137,7 @@ namespace PSADT.UserInterface
             string? restartButtonText)
         {
             return Instance.ShowRestartDialog(
+                accentColorHexValue,
                 appTitle,
                 subtitle,
                 topMost,

@@ -92,6 +92,7 @@ namespace PSADT.UserInterface
         /// <param name="processEvaluationService">Optional process evaluation service.</param>
         /// <returns>User's response as a string.</returns>
         public string ShowWelcomeDialog(
+            string? accentColorHexValue,
             TimeSpan? dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
@@ -117,6 +118,7 @@ namespace PSADT.UserInterface
             _app!.Dispatcher.Invoke(() =>
             {
                 var welcomeDialog = new WelcomeDialog(
+                    accentColorHexValue,
                     dialogExpiryDuration,
                     appTitle,
                     subtitle,
@@ -144,6 +146,7 @@ namespace PSADT.UserInterface
         /// _currentWindow = welcomeDialog;
         /// Shows the ProgressDialog synchronously.
         /// </summary>
+        /// <param name="accentColorHexValue">Accent color hex value.</param>
         /// <param name="appTitle">Title of the application.</param>
         /// <param name="subtitle">Subtitle of the application.</param>
         /// <param name="topMost">Whether the dialog should be topmost.</param>
@@ -151,6 +154,7 @@ namespace PSADT.UserInterface
         /// <param name="progressMessage">Main progress message.</param>
         /// <param name="progressMessageDetail">Detailed progress message.</param>
         public void ShowProgressDialog(
+            string? accentColorHexValue,
             string? appTitle,
             string? subtitle,
             bool? topMost,
@@ -166,6 +170,7 @@ namespace PSADT.UserInterface
             _app!.Dispatcher.Invoke(() =>
             {
                 var progressDialog = new ProgressDialog(
+                    accentColorHexValue,
                     appTitle,
                     subtitle,
                     topMost,
@@ -194,6 +199,7 @@ namespace PSADT.UserInterface
         /// <param name="button3Text">Text for the word remain in, deferrals remaining.</param>
         /// <returns>User's response as a string.</returns>
         public string ShowCustomDialog(
+            string? accentColorHexValue,
             TimeSpan dialogExpiryDuration,
             string? appTitle,
             string? subtitle,
@@ -214,6 +220,7 @@ namespace PSADT.UserInterface
             _app!.Dispatcher.Invoke(() =>
             {
                 var customDialog = new CustomDialog(
+                    accentColorHexValue,
                     dialogExpiryDuration,
                     appTitle,
                     subtitle,
@@ -249,6 +256,7 @@ namespace PSADT.UserInterface
         /// <param name="restartButtonText">Text for the continue button.</param>
         /// <returns>User's response as a string.</returns>
         public string ShowRestartDialog(
+            string? accentColorHexValue,
             string? appTitle,
             string? subtitle,
             bool? topMost,
@@ -270,6 +278,7 @@ namespace PSADT.UserInterface
             _app!.Dispatcher.Invoke(() =>
             {
                 var restartDialog = new RestartDialog(
+                    accentColorHexValue,
                     appTitle,
                     subtitle,
                     topMost,

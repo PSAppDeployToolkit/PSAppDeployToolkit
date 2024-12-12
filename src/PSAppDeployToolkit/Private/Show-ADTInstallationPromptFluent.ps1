@@ -47,8 +47,12 @@ function Show-ADTInstallationPromptFluent
         [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
+    # Perform initial setup.
+    $adtConfig = Get-ADTConfig
+
     # Send this straight out to the C# backend.
     return [PSADT.UserInterface.UnifiedADTApplication]::ShowCustomDialog(
+        $adtConfig.UI.FluentAccentColorOverride,
         [System.TimeSpan]::FromSeconds($Timeout),
         $Title,
         $Subtitle,

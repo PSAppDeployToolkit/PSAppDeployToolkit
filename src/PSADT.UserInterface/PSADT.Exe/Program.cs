@@ -17,6 +17,7 @@ namespace PSADT.UserInterface
             }
 
             // Set up parameters for testing
+            const string accentColorHexValue = "#550078d7";
             const string appTitle = "Microsoft Office 365 1.2 x64 EN";
             const string subtitle = "MyCompanyName Technology Ltd - App Install";
             const bool topMost = true;
@@ -67,6 +68,7 @@ namespace PSADT.UserInterface
             {
                 // Show Welcome Dialog
                 string welcomeResult = UnifiedAdtApplication.ShowWelcomeDialog(
+                    accentColorHexValue,
                     dialogExpiryDuration,
                     appTitle,
                     subtitle,
@@ -88,6 +90,7 @@ namespace PSADT.UserInterface
                 {
                     // Show Progress Dialog
                     UnifiedAdtApplication.ShowProgressDialog(
+                        accentColorHexValue,
                         appTitle,
                         subtitle,
                         topMost,
@@ -108,6 +111,7 @@ namespace PSADT.UserInterface
 
                     // Show Custom Dialog for completion
                     string customResult = UnifiedAdtApplication.ShowCustomDialog(
+                        accentColorHexValue,
                         dialogExpiryDuration,
                         appTitle,
                         subtitle,
@@ -127,6 +131,7 @@ namespace PSADT.UserInterface
 
                 // Show Restart Dialog
                 string restartResult = UnifiedAdtApplication.ShowRestartDialog(
+                    accentColorHexValue,
                     appTitle,
                     subtitle,
                     topMost,
