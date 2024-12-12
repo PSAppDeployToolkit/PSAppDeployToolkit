@@ -13,7 +13,7 @@ Set current user registry settings for all current users and any new users in th
 
 ```powershell
 Invoke-ADTAllUsersRegistryAction [-ScriptBlock] <ScriptBlock[]> [-UserProfiles <UserProfile[]>]
- [<CommonParameters>]
+ [-SkipUnloadedProfiles] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -95,6 +95,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: (Get-ADTUserProfiles)
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SkipUnloadedProfiles
+
+Specifies that unloaded registry hives should be skipped and not be loaded by the function.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

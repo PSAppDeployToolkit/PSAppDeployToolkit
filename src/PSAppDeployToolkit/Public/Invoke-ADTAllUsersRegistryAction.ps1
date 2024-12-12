@@ -25,6 +25,9 @@ function Invoke-ADTAllUsersRegistryAction
     .PARAMETER UserProfiles
         Specify the user profiles to modify HKCU registry settings for. Default is all user profiles except for system profiles.
 
+    .PARAMETER SkipUnloadedProfiles
+        Specifies that unloaded registry hives should be skipped and not be loaded by the function.
+
     .INPUTS
         None
 
@@ -80,7 +83,10 @@ function Invoke-ADTAllUsersRegistryAction
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.UserProfile[]]$UserProfiles = (Get-ADTUserProfiles)
+        [PSADT.Types.UserProfile[]]$UserProfiles = (Get-ADTUserProfiles),
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$SkipUnloadedProfiles
     )
 
     begin
@@ -111,6 +117,13 @@ function Invoke-ADTAllUsersRegistryAction
                     # Load the User profile registry hive if it is not already loaded because the User is logged in.
                     if (!(Test-Path -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$($UserProfile.SID)"))
                     {
+                        # Only load the profile if we've been asked to.
+                        if ($SkipUnloadedProfiles)
+                        {
+                            Write-ADTLogEntry -Message "Skipping User [$($UserProfile.NTAccount)] as the registry hive is not loaded."
+                            continue
+                        }
+
                         # Load the User registry hive if the registry hive file exists.
                         if (![System.IO.File]::Exists($UserRegistryHiveFile))
                         {
@@ -127,10 +140,6 @@ function Invoke-ADTAllUsersRegistryAction
                         Write-ADTLogEntry -Message "Loading the User [$($UserProfile.NTAccount)] registry hive in path [HKEY_USERS\$($UserProfile.SID)]."
                         $null = & "$([System.Environment]::SystemDirectory)\reg.exe" LOAD "HKEY_USERS\$($UserProfile.SID)" $UserRegistryHiveFile 2>&1
                         $ManuallyLoadedRegHive = $true
-                    }
-                    else
-                    {
-                        Write-ADTLogEntry -Message "The user [$($UserProfile.NTAccount)] registry hive is already loaded in path [HKEY_USERS\$($UserProfile.SID)]."
                     }
 
                     # Invoke changes against registry.
