@@ -111,6 +111,7 @@
         'Get-ADTPEFileArchitecture'
         'Get-ADTPendingReboot'
         'Get-ADTPowerShellProcessPath'
+        'Get-ADTPresentationSettingsEnabledUsers'
         'Get-ADTRegistryKey'
         'Get-ADTRunAsActiveUser'
         'Get-ADTSchedulerTask'

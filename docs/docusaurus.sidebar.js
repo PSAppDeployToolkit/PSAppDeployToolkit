@@ -44,6 +44,7 @@ module.exports = [
     'commands/Get-ADTPEFileArchitecture',
     'commands/Get-ADTPendingReboot',
     'commands/Get-ADTPowerShellProcessPath',
+    'commands/Get-ADTPresentationSettingsEnabledUsers',
     'commands/Get-ADTRegistryKey',
     'commands/Get-ADTRunAsActiveUser',
     'commands/Get-ADTSchedulerTask',

@@ -1,33 +1,34 @@
 ---
-id: Test-ADTUserIsBusy
-title: Test-ADTUserIsBusy
+id: Get-ADTPresentationSettingsEnabledUsers
+title: Get-ADTPresentationSettingsEnabledUsers
 hide_title: false
 hide_table_of_contents: false
 ---
 
 ## SYNOPSIS
 
-Tests whether the device's microphone is in use, the user has manually turned on presentation mode, or PowerPoint is running in either fullscreen slideshow mode or presentation mode.
+Tests whether any users have presentation mode enabled on their device.
 
 ## SYNTAX
 
 ```powershell
-Test-ADTUserIsBusy [<CommonParameters>]
+Get-ADTPresentationSettingsEnabledUsers [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-Tests whether the device's microphone is in use, the user has manually turned on presentation mode, or PowerPoint is running in either fullscreen slideshow mode or presentation mode.
+Tests whether any users have presentation mode enabled on their device.
+This can be enabled via the PC's Mobility Settings, or with PresentationSettings.exe.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Test-ADTUserIsBusy
+Get-ADTPresentationSettingsEnabledUsers
 ```
 
-Tests whether the device's microphone is in use, the user has manually turned on presentation mode, or PowerPoint is running in either fullscreen slideshow mode or presentation mode, and returns true or false.
+Checks whether any users users have presentation settings enabled on their device and returns an associated UserProfile object.
 
 ## PARAMETERS
 
@@ -42,9 +43,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### System.Boolean
+### PSADT.Types.UserProfile
 
-### Returns $true if the device's microphone is in use, the user has manually turned on presentation mode, or PowerPoint is running in either fullscreen slideshow mode or presentation mode, otherwise $false.
+### Returns one or more UserProfile objects of the users with presentation mode enabled on their device.
 ## NOTES
 An active ADT session is NOT required to use this function.
 
