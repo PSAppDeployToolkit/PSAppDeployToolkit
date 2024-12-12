@@ -540,10 +540,6 @@ function Show-ADTInstallationWelcome
                                         {
                                             Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
                                         }
-                                        finally
-                                        {
-                                            $runningProcess.Refresh()
-                                        }
                                     }
                                 }
                                 else
