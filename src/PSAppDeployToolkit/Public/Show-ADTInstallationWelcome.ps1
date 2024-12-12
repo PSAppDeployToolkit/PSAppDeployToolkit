@@ -79,7 +79,7 @@ function Show-ADTInstallationWelcome
         Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.
 
     .PARAMETER CustomText
-        Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.
+        Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.
 
     .INPUTS
         None
@@ -135,7 +135,7 @@ function Show-ADTInstallationWelcome
 
         The process descriptions are retrieved via Get-Process, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself with a '=' symbol - see examples.
 
-        The dialog box will timeout after the timeout specified in the XML configuration file (default 1 hour and 55 minutes) to prevent SCCM installations from timing out and returning a failure code to SCCM. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
+        The dialog box will timeout after the timeout specified in the config.psd1 file (default 55 minutes) to prevent Intune/SCCM installations from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com
@@ -208,7 +208,7 @@ function Show-ADTInstallationWelcome
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$ForceCountdown,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to display a custom message specified in the XML file. Custom message must be populated for each language section in the XML.')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
         [System.Management.Automation.SwitchParameter]$CustomText
     )
 

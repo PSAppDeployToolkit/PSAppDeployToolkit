@@ -11,13 +11,11 @@ function Start-ADTMsiProcess
         Executes msiexec.exe to perform actions such as install, uninstall, patch, repair, or active setup for MSI and MSP files or MSI product codes.
 
     .DESCRIPTION
-        This function utilizes msiexec.exe to handle various operations on MSI and MSP files, as well as MSI product codes.
-        The operations include installation, uninstallation, patching, repair, and setting up active configurations.
+        This function utilizes msiexec.exe to handle various operations on MSI and MSP files, as well as MSI product codes. The operations include installation, uninstallation, patching, repair, and setting up active configurations.
 
         If the -Action parameter is set to "Install" and the MSI is already installed, the function will terminate without performing any actions.
 
-        The function automatically sets default switches for msiexec based on preferences defined in the XML configuration file.
-        Additionally, it generates a log file name and creates a verbose log for all msiexec operations, ensuring detailed tracking.
+        The function automatically sets default switches for msiexec based on preferences defined in the config.psd1 file. Additionally, it generates a log file name and creates a verbose log for all msiexec operations, ensuring detailed tracking.
 
         The MSI or MSP file is expected to reside in the "Files" subdirectory of the App Deploy Toolkit, with transform files expected to be in the same directory as the MSI file.
 
@@ -40,16 +38,16 @@ function Start-ADTMsiProcess
         The name(s) of the patch (MSP) file(s) to be applied to the MSI for the "Install" action. The patch files should be in the same directory as the MSI file.
 
     .PARAMETER ArgumentList
-        Overrides the default parameters specified in the XML configuration file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
+        Overrides the default parameters specified in the config.psd1 file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
 
     .PARAMETER AdditionalArgumentList
-        Adds additional parameters to the default set specified in the XML configuration file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
+        Adds additional parameters to the default set specified in the config.psd1 file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
 
     .PARAMETER SecureArgumentList
         Hides all parameters passed to the MSI or MSP file from the toolkit log file.
 
     .PARAMETER LoggingOptions
-        Overrides the default logging options specified in the XML configuration file.
+        Overrides the default logging options specified in the config.psd1 file.
 
     .PARAMETER LogFileName
         Overrides the default log file name. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.

@@ -22,7 +22,7 @@ Show-ADTInstallationProgress [[-WindowLocation] <String>] [[-MessageAlignment] <
 Creates a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated.
 The status message supports line breaks.
 
-The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
+The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the config.psd1 file).
 
 ## EXAMPLES
 
@@ -32,7 +32,7 @@ The first time this function is called in a script, it will display a balloon ti
 Show-ADTInstallationProgress
 ```
 
-Uses the default status message from the XML configuration file.
+Uses the default status message from the strings.psd1 file.
 
 ### EXAMPLE 2
 
@@ -132,7 +132,7 @@ Accept wildcard characters: False
 ### -StatusMessage
 
 The status message to be displayed.
-The default status message is taken from the configuration file.
+The default status message is taken from the config.psd1 file.
 
 ```yaml
 Type: String
@@ -149,7 +149,7 @@ Accept wildcard characters: False
 ### -StatusMessageDetail
 
 The status message detail to be displayed with a fluent progress window.
-The default status message is taken from the configuration file.
+The default status message is taken from the config.psd1 file.
 
 ```yaml
 Type: String

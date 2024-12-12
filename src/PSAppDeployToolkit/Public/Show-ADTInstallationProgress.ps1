@@ -13,7 +13,7 @@ function Show-ADTInstallationProgress
     .DESCRIPTION
         Creates a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated. The status message supports line breaks.
 
-        The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the configuration).
+        The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the config.psd1 file).
 
     .PARAMETER WindowLocation
         The location of the progress window. Default: center of the screen.
@@ -40,7 +40,7 @@ function Show-ADTInstallationProgress
     .EXAMPLE
         Show-ADTInstallationProgress
 
-        Uses the default status message from the XML configuration file.
+        Uses the default status message from the strings.psd1 file.
 
     .EXAMPLE
         Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...'
@@ -111,13 +111,13 @@ function Show-ADTInstallationProgress
             ))
         $paramDictionary.Add('StatusMessage', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'StatusMessage', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'The status message to be displayed. The default status message is taken from the configuration file.' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'The status message to be displayed. The default status message is taken from the config.psd1 file.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
         $paramDictionary.Add('StatusMessageDetail', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'StatusMessageDetail', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = 'The status message detail to be displayed with a fluent progress window. The default status message is taken from the configuration file.' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = 'The status message detail to be displayed with a fluent progress window. The default status message is taken from the config.psd1 file.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))

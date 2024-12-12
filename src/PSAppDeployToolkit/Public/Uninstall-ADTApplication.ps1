@@ -37,16 +37,16 @@ function Uninstall-ADTApplication
         A script used to filter the results as they're processed.
 
     .PARAMETER ArgumentList
-        Overrides the default MSI parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
+        Overrides the default MSI parameters specified in the config.psd1 file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
     .PARAMETER AdditionalArgumentList
-        Adds to the default parameters specified in the configuration file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
+        Adds to the default parameters specified in the config.psd1 file, or the parameters found in QuietUninstallString/UninstallString for EXE applications.
 
     .PARAMETER SecureArgumentList
         Hides all parameters passed to the executable from the Toolkit log file.
 
     .PARAMETER LoggingOptions
-        Overrides the default MSI logging options specified in the configuration file. Default options are: "/L*v".
+        Overrides the default MSI logging options specified in the config.psd1 file. Default options are: "/L*v".
 
     .PARAMETER LogFileName
         Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
