@@ -646,7 +646,7 @@ namespace PSADT.AccessToken
             while (true)
             {
                 string entry = Marshal.PtrToStringUni(IntPtr.Add(ptr, offset)) ?? string.Empty;
-                if (string.IsNullOrEmpty(entry)) break;
+                if (string.IsNullOrWhiteSpace(entry)) break;
 
                 int equalsIndex = entry.IndexOf('=');
                 if (equalsIndex > 0)
