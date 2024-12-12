@@ -39,47 +39,6 @@
             AppVeyor  - actions_bootstrap.ps1
 #>
 
-# Function to get GitHub release URLs.
-function Get-GitHubReleaseAssetUri
-{
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FilePattern', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding()]
-    [OutputType([System.Uri])]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Account,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Repository,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$FilePattern,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Regex
-    )
-
-    # Get the list of URLs from GitHub's API.
-    $links = (Invoke-RestMethod -UseBasicParsing -Uri "https://api.github.com/repos/$Account/$Repository/releases/latest").assets.browser_download_url
-    $match = if ($Regex) { { $_ -match $FilePattern } } else { { $_ -like $FilePattern } }
-
-    # Find the one that matches the pattern and confirm we have a singular result.
-    if (!(($link = $links | Where-Object { $_.Split('/').Where($match) }) | Measure-Object).Count.Equals(1))
-    {
-        $PSCmdlet.ThrowTerminatingError([System.Management.Automation.ErrorRecord]::new(
-                [System.InvalidOperationException]::new("The match against the provided file pattern returned an invalid result."),
-                'UriPatternMatchInvalidResult',
-                [System.Management.Automation.ErrorCategory]::InvalidResult,
-                $link
-            ))
-    }
-    return [System.Uri]$link
-}
-
 # Default variables.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
