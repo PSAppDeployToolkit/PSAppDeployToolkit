@@ -52,6 +52,7 @@ function Update-ADTDesktop
 
     process
     {
+        Write-ADTLogEntry -Message 'Refreshing the Desktop and the Windows Explorer environment process block.'
         try
         {
             try
