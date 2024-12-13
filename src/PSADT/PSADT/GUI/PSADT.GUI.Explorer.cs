@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using PSADT.PInvoke;
 using PSADT.Diagnostics.Exceptions;
@@ -13,33 +14,28 @@ namespace PSADT.GUI
         /// <exception cref="InvalidOperationException">Thrown if the operation fails.</exception>
         public static void RefreshDesktopAndEnvironmentVariables()
         {
-            try
+            // Update desktop icons using SHChangeNotify
+            NativeMethods.SHChangeNotify(NativeMethods.SHCNE_ASSOCCHANGED, NativeMethods.SHCNF_FLUSHNOWAIT, IntPtr.Zero, IntPtr.Zero);
+
+            // Notify all top-level windows that the environment variables have changed
+            if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST,
+                                                 NativeMethods.WM_SETTINGCHANGE,
+                                                 IntPtr.Zero,
+                                                 null,
+                                                 NativeMethods.SMTO_ABORTIFHUNG,
+                                                 100,
+                                                 IntPtr.Zero) == IntPtr.Zero)
             {
-                // Update desktop icons using SHChangeNotify
-                NativeMethods.SHChangeNotify(NativeMethods.SHCNE_ASSOCCHANGED, NativeMethods.SHCNF_FLUSHNOWAIT, IntPtr.Zero, IntPtr.Zero);
-
-                // Notify all top-level windows that the environment variables have changed
-                if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST,
-                                                     NativeMethods.WM_SETTINGCHANGE,
-                                                     IntPtr.Zero,
-                                                     null,
-                                                     NativeMethods.SMTO_ABORTIFHUNG,
-                                                     100,
-                                                     IntPtr.Zero) == IntPtr.Zero)
-                {
-                    throw new InvalidOperationException($"Failed to send WM_SETTINGCHANGE message. Error code [{Marshal.GetLastWin32Error()}].");
-                }
-
-                if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST, NativeMethods.WM_SETTINGCHANGE,
-                                                     IntPtr.Zero, "Environment", NativeMethods.SMTO_ABORTIFHUNG, 100,
-                                                     IntPtr.Zero) == IntPtr.Zero)
-                {
-                    throw new InvalidOperationException($"Failed to send WM_SETTINGCHANGE message for environment variables. Error code [{Marshal.GetLastWin32Error()}].");
-                }
+                var errorCode = Marshal.GetLastWin32Error();
+                throw new Win32Exception(errorCode, $"Failed to send WM_SETTINGCHANGE message. Error code [{errorCode}].");
             }
-            catch (Exception ex)
+
+            if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST, NativeMethods.WM_SETTINGCHANGE,
+                                                 IntPtr.Zero, "Environment", NativeMethods.SMTO_ABORTIFHUNG, 100,
+                                                 IntPtr.Zero) == IntPtr.Zero)
             {
-                throw new InvalidOperationException("An error occurred while refreshing desktop and environment variables.", ex);
+                var errorCode = Marshal.GetLastWin32Error();
+                throw new Win32Exception(errorCode, $"Failed to send WM_SETTINGCHANGE message for environment variables. Error code [{errorCode}].");
             }
         }
 
