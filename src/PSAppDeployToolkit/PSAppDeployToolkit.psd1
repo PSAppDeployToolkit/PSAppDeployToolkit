@@ -96,6 +96,7 @@
         'Enable-ADTTerminalServerInstallMode'
         'Export-ADTEnvironmentTableToSessionState'
         'Get-ADTBoundParametersAndDefaultValues'
+        'Get-ADTCommandTable'
         'Get-ADTConfig'
         'Get-ADTDeferHistory'
         'Get-ADTEnvironment'

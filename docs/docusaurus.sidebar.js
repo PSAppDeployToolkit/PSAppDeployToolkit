@@ -30,6 +30,7 @@ module.exports = [
     'commands/Export-ADTEnvironmentTableToSessionState',
     'commands/Get-ADTApplication',
     'commands/Get-ADTBoundParametersAndDefaultValues',
+    'commands/Get-ADTCommandTable',
     'commands/Get-ADTConfig',
     'commands/Get-ADTDeferHistory',
     'commands/Get-ADTEnvironment',
