@@ -207,7 +207,7 @@ namespace PSADT.Module
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(_appName) || ((parameters?["ForceWimDetection"] is SwitchParameter forceWimDetection) && forceWimDetection))
+                if (string.IsNullOrWhiteSpace(_appName) || ((bool)parameters?.ContainsKey("ForceWimDetection")! && (SwitchParameter)parameters["ForceWimDetection"]))
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
                     if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
@@ -326,7 +326,7 @@ namespace PSADT.Module
                         }
 
                         // Read the MSI and get the installation details.
-                        if ((parameters?["DisableDefaultMsiProcessList"] is SwitchParameter disableDefaultMsiProcessList) && disableDefaultMsiProcessList)
+                        if (((bool)parameters?.ContainsKey("DisableDefaultMsiProcessList")! && (SwitchParameter)parameters["DisableDefaultMsiProcessList"]))
                         {
                             var exeProps = (ReadOnlyDictionary<string, object>)((PSObject)ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File").InvokeReturnAsIs(DefaultMsiFile, DefaultMstFile)).BaseObject;
                             List<ProcessObject> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
