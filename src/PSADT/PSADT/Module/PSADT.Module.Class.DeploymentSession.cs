@@ -826,6 +826,7 @@ namespace PSADT.Module
                 WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", 3);
                 SetExitCode(60008);
                 Close();
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }
