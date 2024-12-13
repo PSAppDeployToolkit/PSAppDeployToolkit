@@ -92,7 +92,7 @@ function Invoke-ADTCommandWithRetries
                 {
                     $Command
                 }
-                elseif ($Script:CommandTable.Contains($Command))
+                elseif ($Script:CommandTable.ContainsKey($Command))
                 {
                     $Script:CommandTable.$Command
                 }

@@ -608,7 +608,7 @@ Add-BuildTask Build {
                     }
 
                     # Throw if the CommandTable doesn't contain the command.
-                    if (!$Script:moduleCommandTable.Contains($_.Text))
+                    if (!$Script:moduleCommandTable.ContainsKey($_.Text))
                     {
                         throw "Unable to find the command [$($_.Text)] from [$($file.Name)] within the module's CommandTable."
                     }
