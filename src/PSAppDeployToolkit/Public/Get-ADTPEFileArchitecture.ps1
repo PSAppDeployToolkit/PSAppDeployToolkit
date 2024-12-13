@@ -88,20 +88,14 @@ function Get-ADTPEFileArchitecture
                     $stream.Close()
 
                     # Get the file header from the header's address, factoring in any offsets.
-                    $PEArchitecture = try
-                    {
-                        [PSADT.Shared.SystemArchitecture][System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)
-                    }
-                    catch
-                    {
-                        [PSADT.Shared.SystemArchitecture]::Unknown
-                    }
-                    Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$PEArchitecture]."
+                    $peArchValue = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)
+                    $peArchEnum = [PSADT.Shared.SystemArchitecture]::Unknown; $null = [PSADT.Shared.SystemArchitecture]::TryParse($peArchValue, [ref]$peArchEnum)
+                    Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$peArchEnum]."
                     if ($PassThru)
                     {
-                        return ($Path | Add-Member -MemberType NoteProperty -Name BinaryType -Value $PEArchitecture -Force -PassThru)
+                        return ($Path | Add-Member -MemberType NoteProperty -Name BinaryType -Value $peArchEnum -Force -PassThru)
                     }
-                    return $PEArchitecture
+                    return $peArchEnum
                 }
                 catch
                 {
