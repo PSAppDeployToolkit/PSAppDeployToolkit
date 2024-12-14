@@ -12,6 +12,9 @@ Describe 'Add-ADTEdgeExtension' {
 			return $mockedOutput
 		}
 
+		# Mock Set-ADTPreferenceVariables due to its expense when running via Pester.
+		Mock -ModuleName PSAppDeployToolkit Set-ADTPreferenceVariables { }
+
 		$RedirectedEdgeKey = 'TestRegistry:\HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Edge'
 	}
 

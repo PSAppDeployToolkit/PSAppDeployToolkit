@@ -68,6 +68,9 @@ Describe 'Copy-ADTFileToUserProfiles' {
 				)
 			}
 		}
+
+		# Mock Set-ADTPreferenceVariables due to its expense when running via Pester.
+		Mock -ModuleName PSAppDeployToolkit Set-ADTPreferenceVariables { }
 	}
 
 	Context 'Functionality' {
