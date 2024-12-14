@@ -114,6 +114,9 @@ function Write-ADTLogEntry
 
     begin
     {
+        # Get the caller's preference values and set them within this scope.
+        Set-ADTPreferenceVariables -SessionState $ExecutionContext.SessionState
+
         # Set up collector for piped in messages.
         $messages = [System.Collections.Specialized.StringCollection]::new()
     }

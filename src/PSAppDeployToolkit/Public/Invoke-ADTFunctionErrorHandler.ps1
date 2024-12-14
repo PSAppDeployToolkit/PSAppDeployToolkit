@@ -122,8 +122,6 @@ function Invoke-ADTFunctionErrorHandler
     # this can also write out an [System.Management.Automation.ActionPreferenceStopException] object.
     if ($ErrorActionPreference.Equals([System.Management.Automation.ActionPreference]::Stop))
     {
-        # Restore original global verbosity before terminating.
-        Undo-ADTGlobalPreferenceChanges -Cmdlet $Cmdlet
         $Cmdlet.ThrowTerminatingError($ErrorRecord)
     }
     elseif (!(Test-ADTSessionActive) -or ($ErrorActionPreference -notmatch '^(SilentlyContinue|Ignore)$'))

@@ -119,20 +119,4 @@ function Initialize-ADTFunction
         Set-CallerVariable -Name OriginalErrorAction -Value $Script:ErrorActionPreference
     }
     Set-CallerVariable -Name ErrorActionPreference -Value $Script:ErrorActionPreference
-
-    # Handle the caller's -InformationAction parameter, which doesn't always work between them and the module barrier.
-    # https://github.com/PowerShell/PowerShell/issues/4568
-    if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('InformationAction'))
-    {
-        $Cmdlet.SessionState.PSVariable.Set('OriginalInformationPreference', $Global:InformationPreference)
-        $Global:InformationPreference = $Cmdlet.MyInvocation.BoundParameters.InformationAction
-    }
-
-    # Handle the caller's -Verbose parameter, which doesn't always work between them and the module barrier.
-    # https://github.com/PowerShell/PowerShell/issues/4568
-    if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('Verbose'))
-    {
-        $Cmdlet.SessionState.PSVariable.Set('OriginalVerbosePreference', $Global:VerbosePreference)
-        $Global:VerbosePreference = [System.Management.Automation.ActionPreference]::Continue
-    }
 }

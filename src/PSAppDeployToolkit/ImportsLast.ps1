@@ -114,6 +114,17 @@
             }).AsReadOnly()
     }).AsReadOnly()
 
+# Lookup table for preference variables and their associated CommonParameter name.
+& $CommandTable.'New-Variable' -Name PreferenceVariableTable -Option Constant -Value ([ordered]@{
+        'InformationAction' = 'InformationPreference'
+        'ProgressAction' = 'ProgressPreference'
+        'WarningAction' = 'WarningPreference'
+        'Confirm' = 'ConfirmPreference'
+        'Verbose' = 'VerbosePreference'
+        'WhatIf' = 'WhatIfPreference'
+        'Debug' = 'DebugPreference'
+    }).AsReadOnly()
+
 # Import the XML code for the classic progress window.
 $Dialogs.Classic.ProgressWindow.XamlCode = [System.IO.StringReader]::new(@'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="Window" Title="" ToolTip="" Padding="0,0,0,0" Margin="0,0,0,0" WindowStartupLocation="Manual" Top="0" Left="0" Topmost="" ResizeMode="NoResize" ShowInTaskbar="True" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" SizeToContent="WidthAndHeight">
