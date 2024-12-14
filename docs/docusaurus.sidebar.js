@@ -20,6 +20,7 @@ module.exports = [
     'commands/Complete-ADTFunction',
     'commands/Convert-ADTRegistryPath',
     'commands/Convert-ADTValuesFromRemainingArguments',
+    'commands/Convert-ADTValueType',
     'commands/ConvertTo-ADTNTAccountOrSID',
     'commands/Copy-ADTContentToCache',
     'commands/Copy-ADTFile',

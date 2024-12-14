@@ -1,4 +1,4 @@
-namespace PSADT.Shared
+﻿namespace PSADT.Shared
 {
     public enum SystemArchitecture : ushort
     {
@@ -100,5 +100,23 @@ namespace PSADT.Shared
 
         /// <summary>CEE</summary>
         CEE = 0xC0EE,
+    }
+
+    public enum ValueTypes
+    {
+	    SByte,
+	    Byte,
+	    Short,
+	    Int16,
+	    UShort,
+	    UInt16,
+	    Int,
+	    Int32,
+	    UInt,
+	    UInt32,
+	    Long,
+	    Int64,
+	    ULong,
+	    UInt64,
     }
 }

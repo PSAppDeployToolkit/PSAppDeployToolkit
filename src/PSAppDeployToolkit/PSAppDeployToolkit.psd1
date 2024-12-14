@@ -87,6 +87,7 @@
         'Complete-ADTFunction'
         'Convert-ADTRegistryPath'
         'Convert-ADTValuesFromRemainingArguments'
+        'Convert-ADTValueType'
         'ConvertTo-ADTNTAccountOrSID'
         'Copy-ADTContentToCache'
         'Copy-ADTFile'

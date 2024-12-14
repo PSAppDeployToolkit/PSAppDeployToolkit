@@ -1,0 +1,92 @@
+---
+id: Convert-ADTValueType
+title: Convert-ADTValueType
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Casts the provided value to the requested type without range errors.
+
+## SYNTAX
+
+```powershell
+Convert-ADTValueType [-Value] <Int64> [-To] <ValueTypes> [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function uses C# code to cast the provided value to the requested type.
+This avoids errors from PowerShell when values exceed the casted value type's range.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Convert-ADTValueType -Value 256 -To SByte
+```
+
+Invokes the Convert-ADTValueType function and returns the value as a byte, which would equal 0.
+
+## PARAMETERS
+
+### -Value
+
+The value to convert.
+
+```yaml
+Type: Int64
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: 0
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -To
+
+What to cast the value to.
+
+```yaml
+Type: ValueTypes
+Parameter Sets: (All)
+Aliases:
+Accepted values: SByte, Byte, Short, Int16, UShort, UInt16, Int, Int32, UInt, UInt32, Long, Int64, ULong, UInt64
+
+Required: True
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### System.Int64
+
+### Convert-ADTValueType will accept any value type as a signed 64-bit integer, then cast to the requested type.
+## OUTPUTS
+
+### System.ValueType
+
+### Convert-ADTValueType will convert the piped input to this type if specified by the caller.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt
+Website: https://psappdeploytoolkit.com
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
