@@ -20,7 +20,7 @@ using PSADT.WTSSession;
 
 namespace PSADT.Module
 {
-    public sealed class DeploymentSession
+    public class DeploymentSession
     {
         #region Constructors.
 
