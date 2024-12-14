@@ -228,7 +228,7 @@ function Copy-ADTFile
                         $ParentPath = Split-Path -Path $srcPath -Parent
                         $robocopySource = if ([System.String]::IsNullOrWhiteSpace($ParentPath))
                         {
-                            $PWD
+                            $ExecutionContext.SessionState.Path.CurrentLocation.Path
                         }
                         else
                         {

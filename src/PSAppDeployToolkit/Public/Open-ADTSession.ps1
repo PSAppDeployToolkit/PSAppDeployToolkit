@@ -344,7 +344,7 @@ function Open-ADTSession
             }
             else
             {
-                $PWD.Path
+                $ExecutionContext.SessionState.Path.CurrentLocation.Path
             }
         }
     }

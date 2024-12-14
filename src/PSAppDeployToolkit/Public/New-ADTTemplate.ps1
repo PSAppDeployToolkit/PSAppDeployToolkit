@@ -68,7 +68,7 @@ function New-ADTTemplate
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Destination = $PWD,
+        [System.String]$Destination = $ExecutionContext.SessionState.Path.CurrentLocation.Path,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
