@@ -64,13 +64,13 @@ function Set-ADTPreferenceVariables
     )
 
     # Get the callstack so we can enumerate bound parameters of our callers.
-    $psCallstack = Get-PSCallStack
+    $stackParams = (Get-PSCallStack).InvocationInfo.BoundParameters.GetEnumerator().GetEnumerator()
 
     # Loop through each common parameter and get the first bound value.
     foreach ($pref in $Script:PreferenceVariableTable.GetEnumerator())
     {
         # Return early if we have nothing.
-        if (!($param = $psCallstack | & { process { $_.InvocationInfo.BoundParameters.GetEnumerator() | & { process { if ($_.Key.Equals($pref.Key)) { return @{ Name = $pref.Value; Value = $_.Value } } } } } } | Select-Object -First 1))
+        if (!($param = $stackParams | & { process { if ($_.Key.Equals($pref.Key)) { return @{ Name = $pref.Value; Value = $_.Value } } } } | Select-Object -First 1))
         {
             continue
         }
