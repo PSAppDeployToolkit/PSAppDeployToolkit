@@ -990,8 +990,8 @@ namespace PSADT.Module
                     }
                 }
 
-                // Return the exit code to the caller.
-                return !NoExitOnClose ? ExitCode : null;
+                // Return the module's cached exit code to the caller.
+                return !NoExitOnClose ? (int)adtData.Properties["LastExitCode"].Value : null;
             }
             catch
             {
