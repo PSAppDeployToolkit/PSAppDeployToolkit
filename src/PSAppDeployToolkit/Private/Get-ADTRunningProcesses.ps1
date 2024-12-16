@@ -21,7 +21,7 @@ function Get-ADTRunningProcesses
     None. You cannot pipe objects to this function.
 
     .OUTPUTS
-    PSADT.UserInterface.Services.AppProcessInfo. Returns a custom object representing each app's process info.
+    System.Diagnostics.Process. Returns one or more process objects representing each running process found.
 
     .EXAMPLE
     Get-ADTRunningProcesses -ProcessObjects $processObjects
@@ -39,7 +39,7 @@ function Get-ADTRunningProcesses
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
-    [OutputType([PSADT.UserInterface.Services.AppProcessInfo])]
+    [OutputType([System.Diagnostics.Process])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -58,21 +58,10 @@ function Get-ADTRunningProcesses
     $runningProcesses = Get-Process -Name $ProcessObjects.Name -ErrorAction Ignore | & {
         process
         {
-            # Get icon so we can convert it into a media image for the UI.
-            $icon = try
+            if (!$_.HasExited)
             {
-                [PSADT.UserInterface.Utilities.ProcessExtensions]::GetIcon($_, $true)
-            }
-            catch
-            {
-                $null = $null
-            }
-
-            # Instantiate and return a new AppProcessInfo object.
-            return [PSADT.UserInterface.Services.AppProcessInfo]::new(
-                $_.Name,
-                $(
-                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -First 1 -ExpandProperty Description -ErrorAction Ignore)))
+                return $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
+                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
                     {
                         # The description of the process provided with the object.
                         $objDescription
@@ -87,13 +76,8 @@ function Get-ADTRunningProcesses
                         # Fall back on the process name if no description is provided by the process or as a parameter to the function.
                         $_.ProcessName
                     }
-                ),
-                $_.Product,
-                $_.Company,
-                $(if ($icon) { [PSADT.UserInterface.Utilities.BitmapExtensions]::ConvertToImageSource($icon.ToBitmap()) }),
-                $_.StartTime,
-                $_.MainWindowHandle
-            )
+                )
+            }
         }
     }
 

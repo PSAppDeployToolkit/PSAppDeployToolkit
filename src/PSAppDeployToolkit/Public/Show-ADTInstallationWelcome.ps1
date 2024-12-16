@@ -494,33 +494,40 @@ function Show-ADTInstallationWelcome
                             }
 
                             # Update the process list right before closing, in case it changed.
-                            $AllOpenWindows = Get-ADTWindowTitle -GetAllWindowTitles -InformationAction SilentlyContinue
                             $PromptToSaveTimeout = [System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)
-                            $PromptToSaveStopWatch = [System.Diagnostics.StopWatch]::new()
                             foreach ($runningProcess in ($welcomeState.RunningProcesses = Get-ADTRunningProcesses -ProcessObject $CloseProcesses -InformationAction SilentlyContinue))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
-                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = $AllOpenWindows | & { process { if ($_.ParentProcess -eq $runningProcess.ProcessName) { return $_ } } } | Select-Object -First 1) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
+                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = Get-ADTWindowTitle -ParentProcess $runningProcess.ProcessName -InformationAction SilentlyContinue | Select-Object -First 1) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
                                 {
                                     foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
                                     {
                                         try
                                         {
+                                            # Try to bring the window to the front before closing. This doesn't always work.
                                             Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
-                                            $null = [PSADT.GUI.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
+                                            $null = try
+                                            {
+                                                [PSADT.GUI.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
+                                            }
+                                            catch
+                                            {
+                                                $null
+                                            }
+
+                                            # Close out the main window and spin until completion.
                                             if ($runningProcess.CloseMainWindow())
                                             {
-                                                $PromptToSaveStopWatch.Reset()
-                                                $PromptToSaveStopWatch.Start()
+                                                $promptToSaveStart = [System.DateTime]::Now
                                                 do
                                                 {
-                                                    if (!($IsWindowOpen = $AllOpenWindows | & { process { if ($_.WindowHandle -eq $OpenWindow.WindowHandle) { return $_ } } } | Select-Object -First 1))
+                                                    if (!($IsWindowOpen = Get-ADTWindowTitle -WindowHandle $OpenWindow.WindowHandle -InformationAction SilentlyContinue | Select-Object -First 1))
                                                     {
                                                         break
                                                     }
                                                     [System.Threading.Thread]::Sleep(3000)
                                                 }
-                                                while (($IsWindowOpen) -and ($PromptToSaveStopWatch.Elapsed -lt $PromptToSaveTimeout))
+                                                while (($IsWindowOpen) -and (([System.DateTime]::Now - $promptToSaveStart) -lt $PromptToSaveTimeout))
 
                                                 if ($IsWindowOpen)
                                                 {
@@ -539,6 +546,10 @@ function Show-ADTInstallationWelcome
                                         catch
                                         {
                                             Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                                        }
+                                        finally
+                                        {
+                                            $runningProcess.Refresh()
                                         }
                                     }
                                 }

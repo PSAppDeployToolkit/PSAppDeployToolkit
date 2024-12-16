@@ -13,6 +13,10 @@ function Show-ADTWelcomePromptFluent
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [PSADT.Types.WelcomeState]$WelcomeState,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Title,
 
         [Parameter(Mandatory = $true)]
@@ -38,6 +42,38 @@ function Show-ADTWelcomePromptFluent
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
 
+    # Convert the incoming ProcessObject objects into AppProcessInfo objects.
+    $appsToClose = if ($WelcomeState.RunningProcesses)
+    {
+        $WelcomeState.RunningProcesses | & {
+            process
+            {
+                $_.Refresh(); if (!$_.HasExited)
+                {
+                    # Get icon so we can convert it into a media image for the UI.
+                    $icon = try
+                    {
+                        [PSADT.UserInterface.Utilities.ProcessExtensions]::GetIcon($_, $true)
+                    }
+                    catch
+                    {
+                        $null = $null
+                    }
+
+                    # Instantiate and return a new AppProcessInfo object.
+                    return [PSADT.UserInterface.Services.AppProcessInfo]::new(
+                        $_.ProcessName,
+                        $_.ProcessDescription,
+                        $_.Product,
+                        $_.Company,
+                        $(if ($icon) { [PSADT.UserInterface.Utilities.BitmapExtensions]::ConvertToImageSource($icon.ToBitmap()) }),
+                        $_.StartTime
+                    )
+                }
+            }
+        }
+    }
+
     # Minimize all other windows.
     if (!$NoMinimizeWindows)
     {
@@ -51,7 +87,7 @@ function Show-ADTWelcomePromptFluent
         $Subtitle,
         !$NotTopMost,
         $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes + 1 }),
-        $WelcomeState.RunningProcesses,
+        $appsToClose,
         $adtConfig.Assets.Logo,
         $adtStrings.WelcomePrompt.Fluent.DialogMessage,
         $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses,

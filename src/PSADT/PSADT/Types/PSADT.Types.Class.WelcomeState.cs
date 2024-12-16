@@ -10,7 +10,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets/sets the running processes. Untyped as the type is in another assembly.
         /// </summary>
-        public object[]? RunningProcesses { get; set; }
+        public System.Diagnostics.Process[]? RunningProcesses { get; set; }
 
         /// <summary>
         /// Gets/sets the classic WelcomePrompt's starting position.
