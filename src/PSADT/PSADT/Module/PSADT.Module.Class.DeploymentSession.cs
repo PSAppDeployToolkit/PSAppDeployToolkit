@@ -428,7 +428,7 @@ namespace PSADT.Module
                 {
                     _installName = $"{_appVendor}_{_appName}_{_appVersion}_{_appArch}_{_appLang}_{_appRevision}";
                 }
-                _installName = Regex.Replace(_installName.Trim('_').Replace(" ", null), "_+", "_");
+                _installName = Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_");
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $"{configToolkit["RegPath"]}\\{ADTEnv["appDeployToolkitName"]}\\DeferHistory";
