@@ -14,7 +14,19 @@ Search for an open window title and return details about the window.
 ### SearchWinTitle
 
 ```powershell
-Get-ADTWindowTitle -WindowTitle <String> [<CommonParameters>]
+Get-ADTWindowTitle -WindowTitle <String[]> [<CommonParameters>]
+```
+
+### SearchWinHandle
+
+```powershell
+Get-ADTWindowTitle -WindowHandle <IntPtr[]> [<CommonParameters>]
+```
+
+### SearchParentProcess
+
+```powershell
+Get-ADTWindowTitle -ParentProcess <String[]> [<CommonParameters>]
 ```
 
 ### GetAllWinTitles
@@ -67,11 +79,43 @@ Get details for all windows belonging to Microsoft Word process with name "WINWO
 
 ### -WindowTitle
 
-The title of the application window to search for using regex matching.
+One or more titles of the application window to search for using regex matching.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: SearchWinTitle
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WindowHandle
+
+One or more window handles of the application window to search for.
+
+```yaml
+Type: IntPtr[]
+Parameter Sets: SearchWinHandle
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ParentProcess
+
+One or more process names of the application window to search for.
+
+```yaml
+Type: String[]
+Parameter Sets: SearchParentProcess
 Aliases:
 
 Required: True

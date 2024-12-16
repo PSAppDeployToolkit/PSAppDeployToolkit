@@ -23,7 +23,13 @@ function Get-ADTWindowTitle
         Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
     .PARAMETER WindowTitle
-        The title of the application window to search for using regex matching.
+        One or more titles of the application window to search for using regex matching.
+
+    .PARAMETER WindowHandle
+        One or more window handles of the application window to search for.
+
+    .PARAMETER ParentProcess
+        One or more process names of the application window to search for.
 
     .PARAMETER GetAllWindowTitles
         Get titles for all open windows on the system.
@@ -72,13 +78,25 @@ function Get-ADTWindowTitle
         https://psappdeploytoolkit.com
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WindowTitle', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WindowHandle', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ParentProcess', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'GetAllWindowTitles', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     [OutputType([PSADT.Types.WindowInfo])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
         [AllowEmptyString()]
-        [System.String]$WindowTitle,
+        [System.String[]]$WindowTitle,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinHandle')]
+        [AllowEmptyString()]
+        [System.IntPtr[]]$WindowHandle,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'SearchParentProcess')]
+        [AllowEmptyString()]
+        [System.String[]]$ParentProcess,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'GetAllWinTitles')]
         [System.Management.Automation.SwitchParameter]$GetAllWindowTitles
@@ -92,13 +110,29 @@ function Get-ADTWindowTitle
 
     process
     {
-        if ($GetAllWindowTitles)
+        # Announce commencement.
+        switch ($PSCmdlet.ParameterSetName)
         {
-            Write-ADTLogEntry -Message 'Finding all open window title(s).'
-        }
-        else
-        {
-            Write-ADTLogEntry -Message "Finding open window title(s) [$WindowTitle] using regex matching."
+            GetAllWinTitles
+            {
+                Write-ADTLogEntry -Message 'Finding all open window title(s).'
+                break
+            }
+            SearchWinTitle
+            {
+                Write-ADTLogEntry -Message "Finding open windows matching the specified title(s)."
+                break
+            }
+            SearchWinHandle
+            {
+                Write-ADTLogEntry -Message "Finding open windows matching the specified handle(s)."
+                break
+            }
+            SearchWinHandle
+            {
+                Write-ADTLogEntry -Message "Finding open windows matching the specified parent process(es)."
+                break
+            }
         }
 
         try
@@ -106,7 +140,20 @@ function Get-ADTWindowTitle
             try
             {
                 # Cache all running processes.
-                $processes = [System.Diagnostics.Process]::GetProcesses()
+                $processes = [System.Diagnostics.Process]::GetProcesses() | & {
+                    process
+                    {
+                        if ($WindowHandle -and ($_.MainWindowHandle -notin $WindowHandle))
+                        {
+                            return
+                        }
+                        if ($ParentProcess -and ($_.ProcessName -notin $ParentProcess))
+                        {
+                            return
+                        }
+                        return $_
+                    }
+                }
 
                 # Get all window handles for visible windows and loop through the visible ones.
                 [PSADT.GUI.UiAutomation]::EnumWindows() | & {
@@ -130,8 +177,8 @@ function Get-ADTWindowTitle
                             return
                         }
 
-                        # Return early if the window title doesn't match the search criteria.
-                        if (!$GetAllWindowTitles -or ($VisibleWindowTitle -notmatch $WindowTitle))
+                        # Return early if the visible window title doesn't match our filter.
+                        if ($WindowTitle -and ($VisibleWindowTitle -notmatch "($([System.String]::Join('|', $WindowTitle)))"))
                         {
                             return
                         }
