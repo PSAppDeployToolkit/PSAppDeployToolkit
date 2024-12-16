@@ -33,10 +33,10 @@ namespace PSADT.Module
         /// <param name="adtConfig">The ADT configuration.</param>
         /// <param name="adtStrings">The ADT strings.</param>
         /// <param name="moduleSessionState">The module session state.</param>
-        /// <param name="runspaceOrigin">Indicates if the origin is a runspace.</param>
+        /// <param name="noExitOnClose">Indicates that the shell shouldn't exit on the last session closure.</param>
         /// <param name="callerSessionState">The caller session state.</param>
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
-        public DeploymentSession(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, SessionState moduleSessionState, bool? runspaceOrigin = null, SessionState? callerSessionState = null, Dictionary<string, object>? parameters = null)
+        public DeploymentSession(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, SessionState moduleSessionState, bool? noExitOnClose = null, SessionState? callerSessionState = null, Dictionary<string, object>? parameters = null)
         {
             try
             {
@@ -64,9 +64,9 @@ namespace PSADT.Module
                 var configToolkit = (Hashtable)ADTConfig["Toolkit"]!;
 
                 // Set up other variable values based on incoming dictionary.
-                if (null != runspaceOrigin)
+                if (null != noExitOnClose)
                 {
-                    RunspaceOrigin = (bool)runspaceOrigin;
+                    NoExitOnClose = (bool)noExitOnClose;
                 }
                 if (null != parameters)
                 {
@@ -891,7 +891,7 @@ namespace PSADT.Module
         /// Closes the session and releases resources.
         /// </summary>
         /// <returns>The exit code.</returns>
-        public int Close()
+        public int? Close()
         {
             // Abort if the caller isn't coming in via our module's Close-ADTSession function.
             if (!(new StackFrame(1, false).GetMethod()!.Name.Equals(".ctor")) && !GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Close-ADTSession"))
@@ -1001,7 +1001,7 @@ namespace PSADT.Module
             }
 
             // Return the exit code to the caller.
-            return ExitCode;
+            return !NoExitOnClose ? ExitCode : null;
         }
 
         /// <summary>
@@ -1355,15 +1355,6 @@ namespace PSADT.Module
         }
 
         /// <summary>
-        /// Determines whether the origin is a runspace.
-        /// </summary>
-        /// <returns>True if the origin is a runspace; otherwise, false.</returns>
-        public bool IsRunspaceOrigin()
-        {
-            return RunspaceOrigin;
-        }
-
-        /// <summary>
         /// Determines whether the mode is non-interactive.
         /// </summary>
         /// <returns>True if the mode is non-interactive; otherwise, false.</returns>
@@ -1502,7 +1493,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets whether this deployment session was instantiated via a script or the command line.
         /// </summary>
-        private bool RunspaceOrigin { get; }
+        private bool NoExitOnClose { get; }
 
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.

@@ -325,7 +325,8 @@ function Open-ADTSession
 
         # Determine whether this session is to be in compatibility mode.
         $compatibilityMode = Test-ADTNonNativeCaller
-        $runspaceOrigin = !(Get-PSCallStack)[1].InvocationInfo.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
+        $callerInvocation = (Get-PSCallStack)[1].InvocationInfo
+        $noExitOnClose = !$callerInvocation.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
 
         # Set up the ScriptDirectory if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))
@@ -351,7 +352,7 @@ function Open-ADTSession
     process
     {
         # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialization.
-        if ($runspaceOrigin -or $compatibilityMode)
+        if (([System.String]::IsNullOrWhiteSpace($callerInvocation.InvocationName) -and [System.String]::IsNullOrWhiteSpace($callerInvocation.Line)) -or $compatibilityMode)
         {
             $Script:ADT.Sessions.Clear()
             $Script:ADT.Initialized = $false
@@ -368,7 +369,7 @@ function Open-ADTSession
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
-                $Script:ADT.Sessions.Add(($adtSession = [PSADT.Module.DeploymentSession]::new($Script:ADT, (Get-ADTEnvironmentTable), (Get-ADTConfig), (Get-ADTStringTable), $ExecutionContext.SessionState, $runspaceOrigin, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
+                $Script:ADT.Sessions.Add(($adtSession = [PSADT.Module.DeploymentSession]::new($Script:ADT, (Get-ADTEnvironmentTable), (Get-ADTConfig), (Get-ADTStringTable), $ExecutionContext.SessionState, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }), $PSBoundParameters)))
 
                 # Invoke all callbacks.
                 foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))
@@ -418,7 +419,7 @@ function Open-ADTSession
             {
                 if (!$adtSession)
                 {
-                    Exit-ADTInvocation -ExitCode 60008 -BypassShellExit:$runspaceOrigin
+                    Exit-ADTInvocation -ExitCode $(if (!$noExitOnClose) { 60008 })
                 }
                 else
                 {

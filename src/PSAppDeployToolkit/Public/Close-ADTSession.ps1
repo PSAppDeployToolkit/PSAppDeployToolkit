@@ -112,7 +112,7 @@ function Close-ADTSession
         {
             try
             {
-                $ExitCode = $adtSession.Close()
+                New-Variable -Name ExitCode -Value $adtSession.Close() -Force -Confirm:$false
             }
             catch
             {
@@ -131,7 +131,7 @@ function Close-ADTSession
         # Hand over to our backend closure routine if this was the last session.
         if (!$Script:ADT.Sessions.Count)
         {
-            Exit-ADTInvocation -ExitCode $ExitCode -BypassShellExit:($adtSession.IsRunspaceOrigin()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
+            Exit-ADTInvocation -ExitCode $ExitCode -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and $callbackErrors))
         }
     }
 

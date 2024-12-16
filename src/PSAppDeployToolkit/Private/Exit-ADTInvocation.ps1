@@ -10,11 +10,8 @@ function Exit-ADTInvocation
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Int32]$ExitCode,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$BypassShellExit,
+        [AllowNull()]
+        [System.Nullable[System.Int32]]$ExitCode,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force
@@ -37,7 +34,7 @@ function Exit-ADTInvocation
     $Script:ADT.Initialized = $false
 
     # Return early if this function was called from the command line.
-    if ($BypassShellExit)
+    if ($null -eq $ExitCode)
     {
         return
     }
