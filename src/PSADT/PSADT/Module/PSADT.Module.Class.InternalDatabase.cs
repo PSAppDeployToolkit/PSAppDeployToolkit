@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Management.Automation;
 
@@ -38,9 +40,20 @@ namespace PSADT.Module
             return (Hashtable)((PSObject)_database!.Properties["Strings"].Value).BaseObject;
         }
 
+        internal static List<DeploymentSession> GetSessionList()
+        {
+            return (List<DeploymentSession>)_database!.Properties["Sessions"].Value;
+        }
+
         internal static SessionState GetSessionState()
         {
             return (SessionState)_database!.Properties["SessionState"].Value;
+        }
+
+        internal static Collection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args)
+        {
+            var sessionState = GetSessionState();
+            return sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args);
         }
     }
 }
