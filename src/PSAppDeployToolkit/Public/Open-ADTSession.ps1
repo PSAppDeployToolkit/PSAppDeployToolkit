@@ -325,7 +325,7 @@ function Open-ADTSession
 
         # Determine whether this session is to be in compatibility mode.
         $compatibilityMode = Test-ADTNonNativeCaller
-        $runspaceOrigin = !(Get-PSCallStack)[1].InvocationInfo.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -match '^-NonInteractive$')
+        $runspaceOrigin = !(Get-PSCallStack)[1].InvocationInfo.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
 
         # Set up the ScriptDirectory if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))

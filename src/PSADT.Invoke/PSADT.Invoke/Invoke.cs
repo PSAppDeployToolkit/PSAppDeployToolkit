@@ -80,7 +80,7 @@ namespace PSADT
                 string adtToolkitPath = Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : !string.IsNullOrWhiteSpace(psGalleryPath) ? psGalleryPath : null;
                 string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
-                string pwshArguments = "-ExecutionPolicy Bypass -NoProfile -NoLogo -WindowStyle Hidden";
+                string pwshArguments = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
                 var cliArguments = Environment.GetCommandLineArgs().ToList().ConvertAll(x => x.Trim());
                 bool isForceX86Mode = false;
                 bool isRequireAdmin = false;
