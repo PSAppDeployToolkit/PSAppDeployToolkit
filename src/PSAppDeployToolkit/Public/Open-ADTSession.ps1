@@ -369,7 +369,9 @@ function Open-ADTSession
                 {
                     Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
                 }
-                $Script:ADT.Sessions.Add(($adtSession = [PSADT.Module.DeploymentSession]::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))))
+
+                # Instantiate the new session. The constructor will handle adding the session to the module's list.
+                $adtSession = [PSADT.Module.DeploymentSession]::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))
 
                 # Invoke all callbacks.
                 foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))

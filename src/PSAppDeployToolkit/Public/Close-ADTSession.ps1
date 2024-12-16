@@ -123,10 +123,6 @@ function Close-ADTSession
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
         }
-        finally
-        {
-            $null = $Script:ADT.Sessions.Remove($adtSession)
-        }
 
         # Hand over to our backend closure routine if this was the last session.
         if (!$Script:ADT.Sessions.Count)
