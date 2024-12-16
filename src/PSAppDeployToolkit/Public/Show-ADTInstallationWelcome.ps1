@@ -508,11 +508,7 @@ function Show-ADTInstallationWelcome
                                         {
                                             Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
                                             $null = [PSADT.GUI.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
-                                            if (!$runningProcess.CloseMainWindow())
-                                            {
-                                                Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
-                                            }
-                                            else
+                                            if ($runningProcess.CloseMainWindow())
                                             {
                                                 $PromptToSaveStopWatch.Reset()
                                                 $PromptToSaveStopWatch.Start()
@@ -534,6 +530,10 @@ function Show-ADTInstallationWelcome
                                                 {
                                                     Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed."
                                                 }
+                                            }
+                                            else
+                                            {
+                                                Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
                                             }
                                         }
                                         catch
