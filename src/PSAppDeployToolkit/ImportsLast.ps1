@@ -33,6 +33,7 @@
             ModuleInit = $null
         }
         Sessions = [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new()
+        SessionState = $ExecutionContext.SessionState
         TerminalServerMode = $false
         Environment = $null
         Language = $null
@@ -169,6 +170,9 @@ $Dialogs.Classic.ProgressWindow.XamlCode = [System.IO.StringReader]::new(@'
     </Grid>
 </Window>
 '@)
+
+# Send the module's database into the C# code for internal access.
+[PSADT.Module.InternalDatabase]::Init($ADT)
 
 # Determine how long the import took.
 $ADT.Durations.ModuleImport = [System.DateTime]::Now - $ModuleImportStart

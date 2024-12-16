@@ -28,15 +28,10 @@ namespace PSADT.Module
         /// <summary>
         /// Initializes a new instance of the <see cref="DeploymentSession"/> class.
         /// </summary>
-        /// <param name="adtData">The ADT data.</param>
-        /// <param name="adtEnv">The ADT environment.</param>
-        /// <param name="adtConfig">The ADT configuration.</param>
-        /// <param name="adtStrings">The ADT strings.</param>
-        /// <param name="moduleSessionState">The module session state.</param>
+        /// <param name="parameters">All parameters from Open-ADTSession.</param>
         /// <param name="noExitOnClose">Indicates that the shell shouldn't exit on the last session closure.</param>
         /// <param name="callerSessionState">The caller session state.</param>
-        /// <param name="parameters">All parameters from Open-ADTSession.</param>
-        public DeploymentSession(PSObject adtData, OrderedDictionary adtEnv, Hashtable adtConfig, Hashtable adtStrings, SessionState moduleSessionState, bool? noExitOnClose = null, SessionState? callerSessionState = null, Dictionary<string, object>? parameters = null)
+        public DeploymentSession(Dictionary<string, object>? parameters = null, bool ? noExitOnClose = null, SessionState? callerSessionState = null)
         {
             try
             {
@@ -48,11 +43,11 @@ namespace PSADT.Module
                 _currentTime = CurrentDateTime.ToString("HH:mm:ss");
 
                 // Establish initial variable values.
-                ADTEnv = adtEnv;
-                ADTData = adtData;
-                ADTConfig = adtConfig;
-                ADTStrings = adtStrings;
-                ModuleSessionState = moduleSessionState;
+                ADTData = InternalDatabase.Get();
+                ADTEnv = InternalDatabase.GetEnvironment();
+                ADTConfig = InternalDatabase.GetConfig();
+                ADTStrings = InternalDatabase.GetStrings();
+                ModuleSessionState = InternalDatabase.GetSessionState();
 
                 // Abort if the caller isn't coming in via our module's Open-ADTSession function.
                 if (!GetPowerShellCallStackFrameCommand(GetLogEntryCallerInternal()).Equals("Open-ADTSession"))
