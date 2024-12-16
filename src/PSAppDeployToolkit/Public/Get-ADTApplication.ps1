@@ -40,15 +40,21 @@ function Get-ADTApplication
         PSADT.Types.InstalledApplication
 
         Returns a custom type with information about an installed application:
-        - Publisher
+        - UninstallKey
+        - UninstallParentKey
+        - UninstallSubKey
+        - ProductCode
         - DisplayName
         - DisplayVersion
-        - ProductCode
         - UninstallString
+        - QuietUninstallString
         - InstallSource
         - InstallLocation
         - InstallDate
-        - Architecture
+        - Publisher
+        - SystemComponent
+        - WindowsInstaller
+        - Is64BitApplication
 
     .EXAMPLE
         Get-ADTApplication
