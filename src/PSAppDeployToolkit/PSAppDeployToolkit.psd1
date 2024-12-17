@@ -58,8 +58,6 @@
         'PresentationCore'
         'PresentationFramework'
         'WindowsBase'
-        'lib\PSADT.dll'
-        'lib\PSADT.UserInterface.dll'
     )
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.

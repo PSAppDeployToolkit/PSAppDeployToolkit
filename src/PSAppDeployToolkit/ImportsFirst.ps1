@@ -73,15 +73,10 @@ if (& $CommandTable.'Get-Module' -FullyQualifiedName @{ ModuleName = 'PSADT'; Gu
     & $CommandTable.'Write-Warning' -Message "This module should not be used while the unofficial v3 PSADT module is installed."
 }
 
-# Import this module's manifest via the language parser. This allows us to test with potential extra variables that are permitted in manifests.
-# https://github.com/PowerShell/PowerShell/blob/7ca7aae1d13d19e38c7c26260758f474cb9bef7f/src/System.Management.Automation/engine/Modules/ModuleCmdletBase.cs#L509-L512
-$Module = [System.Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\PSAppDeployToolkit.psd1", [ref]$null, [ref]$null).GetScriptBlock()
-$Module.CheckRestrictedLanguage([System.String[]]$null, [System.String[]]('PSEdition'), $true); $Module = & $Module
-
 # Store build information pertaining to this module's state.
 & $CommandTable.'New-Variable' -Name Module -Option Constant -Force -Value ([ordered]@{
-        Manifest = $Module
-        Assembly = (& $CommandTable.'Get-Item' -LiteralPath "$($PSScriptRoot)\$($Module.RequiredAssemblies | & { process { if ($_.EndsWith('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1)").FullName
+        Manifest = & $CommandTable.'Import-LocalizedData' -BaseDirectory $PSScriptRoot -FileName 'PSAppDeployToolkit'
+        Assemblies = (& $CommandTable.'Get-ChildItem' -Path $PSScriptRoot\lib\PSADT*.dll).FullName
         Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
         Signed = (& $CommandTable.'Get-AuthenticodeSignature' -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
     }).AsReadOnly()
@@ -89,8 +84,37 @@ $Module.CheckRestrictedLanguage([System.String[]]$null, [System.String[]]('PSEdi
 # Attempt to find the RuntimeAssembly object for PSADT.dll.
 & $CommandTable.'New-Variable' -Name RuntimeAssembly -Option Constant -Force -Value ([System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1)
 
-# Throw hard if PSADT.dll is loaded from a different location.
-if ($RuntimeAssembly -and !$RuntimeAssembly.Location.Equals($Module.Assembly))
+# Import our assemblies, factoring in whether they're on a network share or not.
+if (!$RuntimeAssembly)
+{
+    # Process each assembly.
+    $Module.Assemblies | & {
+        process
+        {
+            # If we're on a compiled build, confirm the DLLs are signed before proceeding.
+            if ($Module.Signed -and !($badFile = & $CommandTable.'Get-AuthenticodeSignature' -LiteralPath $_).Status.Equals([System.Management.Automation.SignatureStatus]::Valid))
+            {
+                & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+                        [System.InvalidOperationException]::new("The assembly [$_] has an invalid digital signature and cannot be loaded."),
+                        'ADTAssemblyFileSignatureError',
+                        [System.Management.Automation.ErrorCategory]::SecurityError,
+                        $badFile
+                    ))
+            }
+
+            # If loading from an SMB path, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
+            if ([System.Uri]::new($_).IsUnc)
+            {
+                [System.Reflection.Assembly]::UnsafeLoadFrom($_)
+            }
+            else
+            {
+                [System.Reflection.Assembly]::LoadFrom($_)
+            }
+        }
+    }
+}
+elseif (!$RuntimeAssembly.Location.Equals(($Module.Assemblies | & { process { if ($_.EndsWith('\PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1)))
 {
     & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
             [System.InvalidOperationException]::new("A duplicate PSAppDeployToolkit module is already loaded. Please restart PowerShell and try again."),
