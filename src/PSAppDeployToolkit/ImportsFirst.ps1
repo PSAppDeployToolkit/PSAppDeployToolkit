@@ -102,8 +102,12 @@ if (!$RuntimeAssembly)
                     ))
             }
 
-            # If loading from an SMB path, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
-            if ([System.Uri]::new($_).IsUnc)
+            # If loading from an SMB path, or a drive mapped to one, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
+            $isMappedDrive = if ($_ -match '^([A-Za-z]:)\\')
+            {
+                (Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DeviceID='$($Matches[1])'" | Select-Object -ExpandProperty ProviderName) -match '^\\\\'
+            }
+            if ([System.Uri]::new($_).IsUnc -or $isMappedDrive)
             {
                 [System.Reflection.Assembly]::UnsafeLoadFrom($_)
             }
