@@ -66,15 +66,15 @@ namespace PSADT.Module
                     {
                         _deployMode = (string)parameters["DeployMode"];
                     }
-                    if (parameters.ContainsKey("AllowRebootPassThru"))
+                    if (parameters.ContainsKey("AllowRebootPassThru") && (SwitchParameter)parameters["AllowRebootPassThru"])
                     {
                         Settings |= DeploymentSettings.AllowRebootPassThru;
                     }
-                    if (parameters.ContainsKey("TerminalServerMode"))
+                    if (parameters.ContainsKey("TerminalServerMode") && (SwitchParameter)parameters["TerminalServerMode"])
                     {
                         Settings |= DeploymentSettings.TerminalServerMode;
                     }
-                    if (parameters.ContainsKey("DisableLogging"))
+                    if (parameters.ContainsKey("DisableLogging") && (SwitchParameter)parameters["DisableLogging"])
                     {
                         Settings |= DeploymentSettings.DisableLogging;
                     }
