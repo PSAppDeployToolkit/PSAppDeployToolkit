@@ -122,7 +122,6 @@ function Close-ADTSession
         catch
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
-            if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Sessions.Clear() }
             $ExitCode = 60001
         }
 

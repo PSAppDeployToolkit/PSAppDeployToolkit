@@ -884,16 +884,16 @@ namespace PSADT.Module
         /// <returns>The exit code.</returns>
         public int? Close()
         {
-            // Throw if this object has already been disposed.
-            if (Settings.HasFlag(DeploymentSettings.Disposed))
-            {
-                throw new ObjectDisposedException(this.GetType().Name, "This object has already been disposed.");
-            }
-
             try
             {
+                // Throw if this object has already been disposed.
+                if (Settings.HasFlag(DeploymentSettings.Disposed))
+                {
+                    throw new ObjectDisposedException(this.GetType().Name, "This object has already been disposed.");
+                }
+
                 // Establish initial variable values.
-                var adtData = InternalDatabase.Get();
+                var adtExitCode = InternalDatabase.Get().Properties["LastExitCode"];
 
                 // If terminal server mode was specified, revert the installation mode to support it.
                 if (TerminalServerMode)
@@ -935,7 +935,7 @@ namespace PSADT.Module
                 // Update the module's last tracked exit code.
                 if (ExitCode != 0)
                 {
-                    adtData.Properties["LastExitCode"].Value = ExitCode;
+                    adtExitCode.Value = ExitCode;
                 }
 
                 // Remove any subst paths if created in the zero-config WIM code.
@@ -991,7 +991,7 @@ namespace PSADT.Module
                 }
 
                 // Return the module's cached exit code to the caller.
-                return !Settings.HasFlag(DeploymentSettings.NoExitOnClose) ? (int)adtData.Properties["LastExitCode"].Value : null;
+                return !Settings.HasFlag(DeploymentSettings.NoExitOnClose) ? (int)adtExitCode.Value : null;
             }
             catch
             {
