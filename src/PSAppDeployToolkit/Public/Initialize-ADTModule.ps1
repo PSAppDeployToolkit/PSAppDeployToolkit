@@ -113,15 +113,11 @@ function Initialize-ADTModule
                 }
 
                 # Initialize the module's global state.
-                $Script:ADT.Callbacks.Starting.Clear()
-                $Script:ADT.Callbacks.Opening.Clear()
-                $Script:ADT.Callbacks.Closing.Clear()
-                $Script:ADT.Callbacks.Finishing.Clear()
-                $Script:ADT.Sessions.Clear()
                 $Script:ADT.Environment = New-ADTEnvironmentTable
                 $Script:ADT.Config = Import-ADTConfig -BaseDirectory $Script:ADT.Directories.Config
                 $Script:ADT.Language = Get-ADTStringLanguage
                 $Script:ADT.Strings = Import-ADTModuleDataFile -BaseDirectory $Script:ADT.Directories.Strings -FileName strings.psd1 -UICulture $Script:ADT.Language -IgnorePolicy
+                $Script:ADT.Sessions.Clear()
                 $Script:ADT.TerminalServerMode = $false
                 $Script:ADT.LastExitCode = 0
 
