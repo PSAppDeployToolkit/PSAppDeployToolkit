@@ -204,7 +204,7 @@ namespace PSADT.Module
                         WriteZeroConfigDivider(); ZeroConfigInitiated = true;
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                         string mountPath = Path.Combine(_dirFiles, Path.GetRandomFileName());
-                        ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1").InvokeReturnAsIs(wimFile, mountPath);
+                        InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
                         AddMountedWimFile(new FileInfo(wimFile)); _dirFiles = mountPath;
                         WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
@@ -213,7 +213,7 @@ namespace PSADT.Module
                         if ((new string[] {"Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"}).Where(l => !usedLetters.Contains(l)).FirstOrDefault() is string availLetter)
                         {
                             availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{_dirFiles}].");
-                            ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Path $args[1]").InvokeReturnAsIs(availLetter, _dirFiles);
+                            InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Path $args[1]"), availLetter, _dirFiles);
                             _dirFiles = DirFilesSubstDrive = availLetter;
                         }
                         WriteLogEntry($"Using [{_dirFiles}] as the base DirFiles directory.");
@@ -316,7 +316,7 @@ namespace PSADT.Module
                         // Read the MSI and get the installation details.
                         if (((bool)parameters?.ContainsKey("DisableDefaultMsiProcessList")! && (SwitchParameter)parameters["DisableDefaultMsiProcessList"]))
                         {
-                            var exeProps = (ReadOnlyDictionary<string, object>)((PSObject)ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File").InvokeReturnAsIs(DefaultMsiFile, DefaultMstFile)).BaseObject;
+                            var exeProps = (ReadOnlyDictionary<string, object>)InternalDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
                             List<ProcessObject> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
 
                             // Generate list of MSI executables for testing later on.
@@ -328,7 +328,7 @@ namespace PSADT.Module
                         }
 
                         // Update our app variables with new values.
-                        var msiProps = (ReadOnlyDictionary<string, object>)((PSObject)ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property").InvokeReturnAsIs(DefaultMsiFile, DefaultMstFile)).BaseObject;
+                        var msiProps = (ReadOnlyDictionary<string, object>)InternalDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
                         _appName = (string)msiProps["ProductName"];
                         _appVersion = (string)msiProps["ProductVersion"];
                         WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
@@ -597,7 +597,7 @@ namespace PSADT.Module
 
                 // Log details for all currently logged on users.
                 WriteLogDivider();
-                WriteLogEntry($"Display session information for all logged on users:\n{ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)").InvokeReturnAsIs(adtEnv["LoggedOnUserSessions"])}", false);
+                WriteLogEntry($"Display session information for all logged on users:\n{InternalDatabase.InvokeScript(ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), adtEnv["LoggedOnUserSessions"]!)}", false);
 
                 // Provide detailed info about current process state.
                 if ((adtEnv["usersLoggedOn"] is var usersLoggedOn) && (null != usersLoggedOn))
@@ -788,7 +788,7 @@ namespace PSADT.Module
                 // If terminal server mode was specified, change the installation mode to support it.
                 if (_terminalServerMode)
                 {
-                    ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'").InvokeReturnAsIs();
+                    InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'"));
                 }
 
                 // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
@@ -898,7 +898,7 @@ namespace PSADT.Module
                 // If terminal server mode was specified, revert the installation mode to support it.
                 if (TerminalServerMode)
                 {
-                    ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'").InvokeReturnAsIs();
+                    InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
                 }
 
                 // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
@@ -941,13 +941,13 @@ namespace PSADT.Module
                 // Remove any subst paths if created in the zero-config WIM code.
                 if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
                 {
-                    ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Delete").InvokeReturnAsIs(DirFilesSubstDrive);
+                    InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Delete"), DirFilesSubstDrive!);
                 }
 
                 // Unmount any stored WIM file entries.
                 if (MountedWimFiles.Count > 0)
                 {
-                    MountedWimFiles.Reverse(); ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]").InvokeReturnAsIs(MountedWimFiles);
+                    MountedWimFiles.Reverse(); InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
                     MountedWimFiles.Clear();
                 }
 
