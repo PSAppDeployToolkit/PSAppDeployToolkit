@@ -10,6 +10,7 @@ namespace PSADT.Module
     public static class InternalDatabase
     {
         private static PSObject? _database = null;
+        private static SessionState? _sessionState = null;
 
         public static void Init(PSObject database)
         {
@@ -18,6 +19,7 @@ namespace PSADT.Module
                 throw new InvalidOperationException("The InternalDatabase class can only be initialized from within the PSAppDeployToolkit module.");
             }
             _database = database;
+            _sessionState = (SessionState)_database!.Properties["SessionState"].Value;
         }
 
         internal static PSObject Get()
@@ -47,13 +49,12 @@ namespace PSADT.Module
 
         internal static SessionState GetSessionState()
         {
-            return (SessionState)_database!.Properties["SessionState"].Value;
+            return _sessionState!;
         }
 
         internal static Collection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args)
         {
-            var sessionState = GetSessionState();
-            return sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args);
+            return _sessionState!.InvokeCommand.InvokeScript(_sessionState!, scriptBlock, args);
         }
     }
 }
