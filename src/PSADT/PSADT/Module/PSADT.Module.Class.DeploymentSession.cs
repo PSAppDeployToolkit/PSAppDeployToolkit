@@ -905,14 +905,14 @@ namespace PSADT.Module
                 string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentTypeName.ToLower()}" : $"{InternalDatabase.GetEnvironment()["appDeployToolkitName"]} deployment";
 
                 // Process resulting exit code.
-                string deploymentStatus = GetDeploymentStatus();
+                DeploymentStatus deploymentStatus = GetDeploymentStatus();
                 switch (deploymentStatus)
                 {
-                    case "FastRetry":
+                    case DeploymentStatus.FastRetry:
                         // Just advise of the exit code with the appropriate severity.
                         WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 2);
                         break;
-                    case "Error":
+                    case DeploymentStatus.Error:
                         WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 3);
                         break;
                     default:
@@ -1306,26 +1306,26 @@ namespace PSADT.Module
         /// Gets the deployment status.
         /// </summary>
         /// <returns>The deployment status.</returns>
-        public string GetDeploymentStatus()
+        public DeploymentStatus GetDeploymentStatus()
         {
             // Extrapolate the UI options from the config hashtable.
             var configUI = (Hashtable)InternalDatabase.GetConfig()["UI"]!;
 
             if ((ExitCode == (int)configUI["DefaultExitCode"]!) || (ExitCode == (int)configUI["DeferExitCode"]!))
             {
-                return "FastRetry";
+                return DeploymentStatus.FastRetry;
             }
             else if (AppRebootExitCodes.Contains(ExitCode))
             {
-                return "RestartRequired";
+                return DeploymentStatus.RestartRequired;
             }
             else if (AppSuccessExitCodes.Contains(ExitCode))
             {
-                return "Complete";
+                return DeploymentStatus.Complete;
             }
             else
             {
-                return "Error";
+                return DeploymentStatus.Error;
             }
         }
 
