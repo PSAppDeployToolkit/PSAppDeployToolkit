@@ -52,9 +52,9 @@ namespace PSADT.Module
                 var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
 
                 // Set up other variable values based on incoming dictionary.
-                if (null != noExitOnClose)
+                if (noExitOnClose.HasValue && noExitOnClose.Value)
                 {
-                    NoExitOnClose = (bool)noExitOnClose;
+                    Settings |= DeploymentSettings.NoExitOnClose;
                 }
                 if (null != parameters)
                 {
@@ -68,15 +68,15 @@ namespace PSADT.Module
                     }
                     if (parameters.ContainsKey("AllowRebootPassThru"))
                     {
-                        _allowRebootPassThru = (SwitchParameter)parameters["AllowRebootPassThru"];
+                        Settings |= DeploymentSettings.AllowRebootPassThru;
                     }
                     if (parameters.ContainsKey("TerminalServerMode"))
                     {
-                        _terminalServerMode = (SwitchParameter)parameters["TerminalServerMode"];
+                        Settings |= DeploymentSettings.TerminalServerMode;
                     }
                     if (parameters.ContainsKey("DisableLogging"))
                     {
-                        _disableLogging = (SwitchParameter)parameters["DisableLogging"];
+                        Settings |= DeploymentSettings.DisableLogging;
                     }
                     if (parameters.ContainsKey("AppVendor"))
                     {
@@ -201,7 +201,7 @@ namespace PSADT.Module
                     if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
                     {
                         // Mount the WIM file and reset DirFiles to the mount point.
-                        WriteZeroConfigDivider(); ZeroConfigInitiated = true;
+                        WriteZeroConfigDivider(); Settings |= DeploymentSettings.ZeroConfigInitiated;
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                         string mountPath = Path.Combine(_dirFiles, Path.GetRandomFileName());
                         InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
@@ -275,7 +275,7 @@ namespace PSADT.Module
                     // If we have a default MSI file, proceed further with the Zero-Config configuration.
                     if (!string.IsNullOrWhiteSpace(_defaultMsiFile))
                     {
-                        WriteZeroConfigDivider(); ZeroConfigInitiated = true;
+                        WriteZeroConfigDivider(); Settings |= DeploymentSettings.ZeroConfigInitiated;
                         WriteLogEntry($"Discovered Zero-Config MSI installation file [{_defaultMsiFile}].");
 
                         // Discover if there is a zero-config MST file.
@@ -334,7 +334,7 @@ namespace PSADT.Module
                         WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
                         WriteLogEntry($"App Name [{_appName}].");
                         WriteLogEntry($"App Version [{_appVersion}].");
-                        _useDefaultMsi = true;
+                        Settings |= DeploymentSettings.UseDefaultMsi;
                     }
                 }
 
@@ -525,7 +525,7 @@ namespace PSADT.Module
 
 
                 // Announce provided deployment script info.
-                if (!_useDefaultMsi)
+                if (!UseDefaultMsi)
                 {
                     if (null != _appScriptVersion)
                     {
@@ -746,11 +746,11 @@ namespace PSADT.Module
                 switch (_deployMode)
                 {
                     case "Silent":
-                        DeployModeNonInteractive = true;
-                        DeployModeSilent = true;
+                        Settings |= DeploymentSettings.NonInteractive;
+                        Settings |= DeploymentSettings.Silent;
                         break;
                     case "NonInteractive":
-                        DeployModeNonInteractive = true;
+                        Settings |= DeploymentSettings.NonInteractive;
                         break;
                 }
 
@@ -764,7 +764,7 @@ namespace PSADT.Module
 
 
                 // Advise the caller if a zero-config MSI was found.
-                if (_useDefaultMsi)
+                if (UseDefaultMsi)
                 {
                     WriteLogEntry($"Discovered Zero-Config MSI installation file [{_defaultMsiFile}].");
                 }
@@ -786,7 +786,7 @@ namespace PSADT.Module
 
 
                 // If terminal server mode was specified, change the installation mode to support it.
-                if (_terminalServerMode)
+                if (TerminalServerMode)
                 {
                     InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'"));
                 }
@@ -795,15 +795,15 @@ namespace PSADT.Module
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
                 if (null != callerSessionState)
                 {
-                    CallerSessionState = callerSessionState;
                     foreach (PropertyInfo property in this.GetType().GetProperties())
                     {
-                        CallerSessionState.PSVariable.Set(new PSVariable(property.Name, this.GetType().GetProperty($"_{char.ToLower(property.Name[0])}{property.Name.Substring(1)}", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(this)));
+                        callerSessionState.PSVariable.Set(new PSVariable(property.Name, property.GetValue(this)));
                     }
                     foreach (FieldInfo field in this.GetType().GetFields())
                     {
-                        CallerSessionState.PSVariable.Set(new PSVariable(field.Name, field.GetValue(this)));
+                        callerSessionState.PSVariable.Set(new PSVariable(field.Name, field.GetValue(this)));
                     }
+                    CallerSessionState = callerSessionState;
                 }
 
                 // We made it! Add this session to the module's session list for tracking.
@@ -885,7 +885,7 @@ namespace PSADT.Module
         public int? Close()
         {
             // Throw if this object has already been disposed.
-            if (Disposed)
+            if (Settings.HasFlag(DeploymentSettings.Disposed))
             {
                 throw new ObjectDisposedException(this.GetType().Name, "This object has already been disposed.");
             }
@@ -953,7 +953,7 @@ namespace PSADT.Module
 
                 // Write out a log divider to indicate the end of logging.
                 WriteLogDivider();
-                Disposed = true;
+                Settings |= DeploymentSettings.Disposed;
 
                 // Extrapolate the Toolkit options from the config hashtable.
                 var configToolkit = (Hashtable)InternalDatabase.GetConfig()["Toolkit"]!;
@@ -991,7 +991,7 @@ namespace PSADT.Module
                 }
 
                 // Return the module's cached exit code to the caller.
-                return !NoExitOnClose ? (int)adtData.Properties["LastExitCode"].Value : null;
+                return !Settings.HasFlag(DeploymentSettings.NoExitOnClose) ? (int)adtData.Properties["LastExitCode"].Value : null;
             }
             catch
             {
@@ -1223,7 +1223,7 @@ namespace PSADT.Module
         private void WriteZeroConfigDivider()
         {
             // Print an extra divider when we process a Zero-Config setup before the main logging starts.
-            if (!ZeroConfigInitiated)
+            if (!Settings.HasFlag(DeploymentSettings.ZeroConfigInitiated))
             {
                 WriteLogDivider(2);
             }
@@ -1362,7 +1362,7 @@ namespace PSADT.Module
         /// <returns>True if the mode is non-interactive; otherwise, false.</returns>
         public bool IsNonInteractive()
         {
-            return DeployModeNonInteractive;
+            return Settings.HasFlag(DeploymentSettings.NonInteractive);
         }
 
         /// <summary>
@@ -1371,7 +1371,7 @@ namespace PSADT.Module
         /// <returns>True if the mode is silent; otherwise, false.</returns>
         public bool IsSilent()
         {
-            return DeployModeSilent;
+            return Settings.HasFlag(DeploymentSettings.Silent);
         }
 
         /// <summary>
@@ -1438,9 +1438,9 @@ namespace PSADT.Module
         private static readonly UTF8Encoding LogEncoding = new UTF8Encoding(true);
 
         /// <summary>
-        /// Gets/sets the disposal state of this object.
+        /// Bitfield with settings for this deployment.
         /// </summary>
-        private bool Disposed { get; set; }
+        private DeploymentSettings Settings { get; set; }
 
         /// <summary>
         /// Gets the caller's SessionState from value that was supplied during object instantiation.
@@ -1463,16 +1463,6 @@ namespace PSADT.Module
         private ReadOnlyCollection<ProcessObject> DefaultMsiExecutablesList { get; } = new ReadOnlyCollection<ProcessObject>([]);
 
         /// <summary>
-        /// Gets whether this deployment session has finished processing the Zero-Config MSI file detection.
-        /// </summary>
-        private bool ZeroConfigInitiated { get; }
-
-        /// <summary>
-        /// Gets whether this deployment session was instantiated via a script or the command line.
-        /// </summary>
-        private bool NoExitOnClose { get; }
-
-        /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
         /// </summary>
         private string? DirFilesSubstDrive { get; }
@@ -1486,16 +1476,6 @@ namespace PSADT.Module
         /// Gets the registry path used for getting/setting deferral information.
         /// </summary>
         private string RegKeyDeferHistory { get; }
-
-        /// <summary>
-        /// Gets whether this deployment session is in non-interactive mode.
-        /// </summary>
-        private bool DeployModeNonInteractive { get; }
-
-        /// <summary>
-        /// Gets whether this deployment session is in silent mode.
-        /// </summary>
-        private bool DeployModeSilent { get; }
 
         /// <summary>
         /// Gets the deployment session's filesystem log path.
@@ -1515,9 +1495,6 @@ namespace PSADT.Module
         private string _deploymentType { get; } = "Install";
         private string _deploymentTypeName { get; }
         private string _deployMode { get; } = "Interactive";
-        private SwitchParameter _allowRebootPassThru { get; }
-        private SwitchParameter _terminalServerMode { get; }
-        private SwitchParameter _disableLogging { get; }
         private string? _appVendor { get; }
         private string? _appName { get; }
         private string? _appVersion { get; }
@@ -1543,7 +1520,6 @@ namespace PSADT.Module
         private string? _defaultMsiFile { get; }
         private string? _defaultMstFile { get; }
         private ReadOnlyCollection<string> _defaultMspFiles { get; } = new ReadOnlyCollection<string>([]);
-        private bool _useDefaultMsi { get; }
         private string _logTempFolder { get; }
         private string _logName { get; }
 
@@ -1581,7 +1557,7 @@ namespace PSADT.Module
         /// </summary>
         public bool AllowRebootPassThru
         {
-            get => (null != CallerSessionState) ? (SwitchParameter)CallerSessionState.PSVariable.GetValue(nameof(AllowRebootPassThru)) : _allowRebootPassThru;
+            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(AllowRebootPassThru)) : Settings.HasFlag(DeploymentSettings.AllowRebootPassThru);
         }
 
         /// <summary>
@@ -1589,7 +1565,7 @@ namespace PSADT.Module
         /// </summary>
         public bool TerminalServerMode
         {
-            get => (null != CallerSessionState) ? (SwitchParameter)CallerSessionState.PSVariable.GetValue(nameof(TerminalServerMode)) : _terminalServerMode;
+            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(TerminalServerMode)) : Settings.HasFlag(DeploymentSettings.TerminalServerMode);
         }
 
         /// <summary>
@@ -1597,7 +1573,7 @@ namespace PSADT.Module
         /// </summary>
         public bool DisableLogging
         {
-            get => (null != CallerSessionState) ? (SwitchParameter)CallerSessionState.PSVariable.GetValue(nameof(DisableLogging)) : _disableLogging;
+            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(DisableLogging)) : Settings.HasFlag(DeploymentSettings.DisableLogging);
         }
 
 
@@ -1840,7 +1816,7 @@ namespace PSADT.Module
         /// </summary>
         public bool UseDefaultMsi
         {
-            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(UseDefaultMsi)) : _useDefaultMsi;
+            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(UseDefaultMsi)) : Settings.HasFlag(DeploymentSettings.UseDefaultMsi);
         }
 
         /// <summary>
