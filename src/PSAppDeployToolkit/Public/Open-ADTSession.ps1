@@ -106,6 +106,9 @@ function Open-ADTSession
     .PARAMETER LogName
         Specifies an override for the default-generated log file name.
 
+    .PARAMETER SessionClass
+        Specifies an override for PSADT.Module.DeploymentSession class. Use this if you're deriving a class inheriting off PSAppDeployToolkit's base.
+
     .PARAMETER ForceWimDetection
         Specifies that WIM files should be detected and mounted during session initialization, irrespective of whether any App values are provided.
 
@@ -305,6 +308,20 @@ function Open-ADTSession
             })]
         [System.String]$LogName,
 
+        [Parameter(Mandatory = $false, DontShow = $true)]
+        [ValidateScript({
+                if ($null -eq $_)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
+                }
+                if (!$_.BaseType.Equals([PSADT.Module.DeploymentSession]))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SessionClass -ProvidedValue $_ -ExceptionMessage 'The specified type is not derived from the DeploymentSession base class.'))
+                }
+                return $_
+            })]
+        [System.Type]$SessionClass = [PSADT.Module.DeploymentSession],
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceWimDetection,
 
@@ -371,7 +388,7 @@ function Open-ADTSession
                 }
 
                 # Instantiate the new session. The constructor will handle adding the session to the module's list.
-                $adtSession = [PSADT.Module.DeploymentSession]::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))
+                $adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))
 
                 # Invoke all callbacks.
                 foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))
