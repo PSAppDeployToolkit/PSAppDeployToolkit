@@ -21,8 +21,9 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-D
  [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
  [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>]
  [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
- [[-DefaultMspFiles] <String[]>] [-DisableDefaultMsiProcessList] [[-LogName] <String>] [-ForceWimDetection]
- [-PassThru] [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
+ [[-DefaultMspFiles] <String[]>] [-DisableDefaultMsiProcessList] [[-LogName] <String>] [[-SessionClass] <Type>]
+ [-ForceWimDetection] [-PassThru] [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -539,6 +540,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -SessionClass
+
+Specifies an override for PSADT.Module.DeploymentSession class.
+Use this if you're deriving a class inheriting off PSAppDeployToolkit's base.
+
+```yaml
+Type: Type
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 28
+Default value: PSADT.Module.DeploymentSession
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ForceWimDetection
 
 Specifies that WIM files should be detected and mounted during session initialization, irrespective of whether any App values are provided.
@@ -581,7 +599,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 28
+Position: 29
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
