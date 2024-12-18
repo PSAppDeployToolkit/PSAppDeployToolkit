@@ -34,7 +34,7 @@ function Exit-ADTInvocation
     $Script:ADT.Initialized = $false
 
     # Return early if this function was called from the command line.
-    if ($null -eq $ExitCode)
+    if (($null -eq $ExitCode) -and !$Force)
     {
         return
     }
