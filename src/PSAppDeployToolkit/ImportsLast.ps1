@@ -11,9 +11,20 @@ try
     Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
     Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
     New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
+
+    # If we're doing a minimal boot on a non-Windows OS, just export New-ADTTemplate.
     if (!$MinimumStartup)
     {
-        Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
+        if (Get-ADTParentProcesses | & { process { if ($_.Name -eq 'PatchMyPC-ScriptRunner.exe' -and ([System.Diagnostics.FileVersionInfo]::GetVersionInfo($_.ExecutablePath)).LegalCopyright -match 'Patch My PC') { return $true } } })
+        {
+            # Remove all functions that invoke the UI from the export list if executed by Patch My PC ScriptRunner.
+            $restrictedFunctions = @('Block-ADTAppExecution', 'Show-ADTBalloonTip', 'Show-ADTDialogBox', 'Show-ADTHelpConsole', 'Show-ADTInstallationProgress', 'Show-ADTInstallationPrompt', 'Show-ADTInstallationRestartPrompt', 'Show-ADTInstallationWelcome')
+            Export-ModuleMember -Function ($Module.Manifest.FunctionsToExport | & { process { if (!$restrictedFunctions.Contains($_)) { return $_ } } })
+        }
+        else
+        {
+            Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
+        }
     }
     else
     {
