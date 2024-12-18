@@ -103,7 +103,6 @@ module.exports = [
     'commands/Set-ADTServiceStartMode',
     'commands/Set-ADTShortcut',
     'commands/Show-ADTBalloonTip',
-    'commands/Show-ADTBlockedAppDialog',
     'commands/Show-ADTDialogBox',
     'commands/Show-ADTHelpConsole',
     'commands/Show-ADTInstallationProgress',
