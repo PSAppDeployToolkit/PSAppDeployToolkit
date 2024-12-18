@@ -171,7 +171,6 @@
         'Set-ADTServiceStartMode'
         'Set-ADTShortcut'
         'Show-ADTBalloonTip'
-        'Show-ADTBlockedAppDialog'
         'Show-ADTDialogBox'
         'Show-ADTHelpConsole'
         'Show-ADTInstallationProgress'
