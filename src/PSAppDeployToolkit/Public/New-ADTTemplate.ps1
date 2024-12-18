@@ -90,7 +90,18 @@ function New-ADTTemplate
 
     begin
     {
+        # Initialize the function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Resolve the path to handle setups like ".\", etc.
+        # We can't use things like a DirectoryInfo cast as .NET doesn't
+        # track when the current location in PowerShell has been changed.
+        if (($resolvedDest = Resolve-Path -LiteralPath $Destination -ErrorAction Ignore))
+        {
+            $Destination = $resolvedDest.Path
+        }
+
+        # Set up remaining variables.
         $moduleName = $MyInvocation.MyCommand.Module.Name
         $templatePath = Join-Path -Path $Destination -ChildPath $Name
         $templateModulePath = if ($Version.Equals(3))
