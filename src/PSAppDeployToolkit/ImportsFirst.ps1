@@ -89,6 +89,12 @@ if (!$RuntimeAssembly)
 {
     # Process each assembly.
     $Module.Assemblies | & {
+        begin
+        {
+            # Determine whether we're on a network location.
+            $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or ($PSScriptRoot -match '^([A-Za-z]:)\\' -and ((& $CommandTable.'Get-CimInstance' -ClassName Win32_LogicalDisk -Filter "DeviceID='$($Matches[1])'").ProviderName -match '^\\\\'))
+        }
+
         process
         {
             # If we're on a compiled build, confirm the DLLs are signed before proceeding.
@@ -102,12 +108,8 @@ if (!$RuntimeAssembly)
                     ))
             }
 
-            # If loading from an SMB path, or a drive mapped to one, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
-            $isMappedDrive = if ($_ -match '^([A-Za-z]:)\\')
-            {
-                (Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DeviceID='$($Matches[1])'" | Select-Object -ExpandProperty ProviderName) -match '^\\\\'
-            }
-            if ([System.Uri]::new($_).IsUnc -or $isMappedDrive)
+            # If loading from an SMB path, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
+            if ($isNetworkLocation)
             {
                 [System.Reflection.Assembly]::UnsafeLoadFrom($_)
             }
