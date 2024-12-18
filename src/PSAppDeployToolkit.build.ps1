@@ -71,7 +71,9 @@ $buildItems = @(
 
 # Default build.
 $str = @()
-$str = 'Clean', 'ValidateRequirements', 'ImportModuleManifest'
+$str = 'Clean', 'ValidateRequirements'
+$str += 'DotNetBuild'
+$str += 'ImportModuleManifest'
 $str += 'EncodingCheck'
 $str += 'FormattingCheck'
 $str += 'Analyze', 'Test'
@@ -154,7 +156,7 @@ Add-BuildTask ValidateRequirements {
 }
 
 # Synopsis: Compile our defined C# solutions.
-Add-BuildTask DotNetBuild -Before TestModuleManifest {
+Add-BuildTask DotNetBuild {
     # Find Visual Studio on the current device.
     Write-Build White '      Compiling C# projects...'
     if (!($msbuildPath = & "$([System.Environment]::GetFolderPath('ProgramFilesX86'))\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.Component.MSBuild -find MSBuild\Current\Bin\MSBuild.exe))
