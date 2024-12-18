@@ -153,12 +153,12 @@ function Open-ADTSession
         [System.Management.Automation.SessionState]$SessionState,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
-        [ValidateSet('Install', 'Uninstall', 'Repair')]
-        [System.String]$DeploymentType,
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Module.DeploymentType]$DeploymentType,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
-        [ValidateSet('Interactive', 'NonInteractive', 'Silent')]
-        [System.String]$DeployMode,
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Module.DeployMode]$DeployMode,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,

@@ -2,14 +2,6 @@
 
 namespace PSADT.Module
 {
-    public enum DeploymentStatus
-    {
-        Complete,
-        RestartRequired,
-        FastRetry,
-        Error
-    }
-
     [Flags]
     public enum DeploymentSettings
     {
@@ -23,5 +15,27 @@ namespace PSADT.Module
         UseDefaultMsi = 64,
         NonInteractive = 128,
         Silent = 256
+    }
+
+    public enum DeploymentType
+    {
+        Install,
+        Uninstall,
+        Repair
+    }
+
+    public enum DeployMode
+    {
+        Interactive,
+        NonInteractive,
+        Silent
+    }
+
+    public enum DeploymentStatus
+    {
+        Complete,
+        RestartRequired,
+        FastRetry,
+        Error
     }
 }

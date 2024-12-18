@@ -18,7 +18,7 @@ Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-Clos
  [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String> -Subtitle <String>
- -DeploymentType <String> [<CommonParameters>]
+ -DeploymentType <DeploymentType> [<CommonParameters>]
 ```
 
 ### CheckDiskSpace
@@ -28,7 +28,7 @@ Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-Clos
  [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
  [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>]
- [-CustomText] -Title <String> -Subtitle <String> -DeploymentType <String> [<CommonParameters>]
+ [-CustomText] -Title <String> -Subtitle <String> -DeploymentType <DeploymentType> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -418,7 +418,7 @@ The deployment type.
 Default: the session's DeploymentType value.
 
 ```yaml
-Type: String
+Type: DeploymentType
 Parameter Sets: (All)
 Aliases:
 

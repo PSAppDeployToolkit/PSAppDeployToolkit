@@ -60,11 +60,11 @@ namespace PSADT.Module
                 {
                     if (parameters.ContainsKey("DeploymentType"))
                     {
-                        _deploymentType = (string)parameters["DeploymentType"];
+                        _deploymentType = (DeploymentType)parameters["DeploymentType"];
                     }
                     if (parameters.ContainsKey("DeployMode"))
                     {
-                        _deployMode = (string)parameters["DeployMode"];
+                        _deployMode = (DeployMode)parameters["DeployMode"];
                     }
                     if (parameters.ContainsKey("AllowRebootPassThru") && (SwitchParameter)parameters["AllowRebootPassThru"])
                     {
@@ -172,9 +172,8 @@ namespace PSADT.Module
                     }
                 }
 
-                // Ensure DeploymentType is title cased for aesthetics.
-                _deploymentType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(_deploymentType.ToLower());
-                _deploymentTypeName = (string)((Hashtable)InternalDatabase.GetStrings()["DeploymentType"]!)[_deploymentType]!;
+                // Get deployment type name from the strings table.
+                _deploymentTypeName = (string)((Hashtable)InternalDatabase.GetStrings()["DeploymentType"]!)[_deploymentType.ToString()]!;
 
                 // Establish script directories.
                 if (!string.IsNullOrWhiteSpace(_scriptDirectory))
@@ -517,7 +516,7 @@ namespace PSADT.Module
 
                 // Open log file with commencement message.
                 WriteLogDivider(2);
-                WriteLogEntry($"[{_installName}] {_deploymentTypeName.ToLower()} started.");
+                WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLower()} started.");
 
 
                 #endregion
@@ -621,7 +620,7 @@ namespace PSADT.Module
                         if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Utility.IsOOBEComplete())
                         {
                             WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
-                            _deployMode = "Silent";
+                            _deployMode = DeployMode.Silent;
                         }
                         else if (Process.GetProcessesByName("WWAHost").Length > 0)
                         {
@@ -635,7 +634,7 @@ namespace PSADT.Module
                                 if (null == moduleSessionState.InvokeProvider.Property.Get([fsRegKey], null, false).Where(obj => (obj.Properties["IsSyncDone"] is PSPropertyInfo syncDone) && syncDone.Value.Equals(1)).FirstOrDefault())
                                 {
                                     WriteLogEntry("The ESP User Account Setup phase is still in progress as IsSyncDone was not found, changing deployment mode to silent.");
-                                    _deployMode = "Silent";
+                                    _deployMode = DeployMode.Silent;
                                 }
                                 else
                                 {
@@ -704,7 +703,7 @@ namespace PSADT.Module
                 if ((bool)adtEnv["SessionZero"]!)
                 {
                     // If the script was launched with deployment mode set to NonInteractive, then continue.
-                    if (_deployMode != "Interactive")
+                    if (_deployMode != DeployMode.Interactive)
                     {
                         WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{_deployMode}].");
                     }
@@ -713,12 +712,12 @@ namespace PSADT.Module
                         // If the process is not able to display a UI, enable NonInteractive mode.
                         if (!(bool)adtEnv["IsProcessUserInteractive"]!)
                         {
-                            _deployMode = "NonInteractive";
+                            _deployMode = DeployMode.NonInteractive;
                             WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{_deployMode}].");
                         }
                         else if (null == adtEnv["usersLoggedOn"])
                         {
-                            _deployMode = "NonInteractive";
+                            _deployMode = DeployMode.NonInteractive;
                             WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{_deployMode}].");
                         }
                         else
@@ -745,18 +744,18 @@ namespace PSADT.Module
                 WriteLogEntry($"Installation is running in [{_deployMode}] mode.");
                 switch (_deployMode)
                 {
-                    case "Silent":
+                    case DeployMode.Silent:
                         Settings |= DeploymentSettings.NonInteractive;
                         Settings |= DeploymentSettings.Silent;
                         break;
-                    case "NonInteractive":
+                    case DeployMode.NonInteractive:
                         Settings |= DeploymentSettings.NonInteractive;
                         break;
                 }
 
 
                 // Check deployment type (install/uninstall).
-                WriteLogEntry($"Deployment type is [{_deploymentTypeName}].");
+                WriteLogEntry($"Deployment type is [{_deploymentType}].");
 
 
                 #endregion
@@ -902,7 +901,7 @@ namespace PSADT.Module
                 }
 
                 // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
-                string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentTypeName.ToLower()}" : $"{InternalDatabase.GetEnvironment()["appDeployToolkitName"]} deployment";
+                string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentType.ToString().ToLower()}" : $"{InternalDatabase.GetEnvironment()["appDeployToolkitName"]} deployment";
 
                 // Process resulting exit code.
                 DeploymentStatus deploymentStatus = GetDeploymentStatus();
@@ -1492,9 +1491,9 @@ namespace PSADT.Module
         #region Private backing fields.
 
 
-        private string _deploymentType { get; } = "Install";
+        private DeploymentType _deploymentType { get; } = DeploymentType.Install;
         private string _deploymentTypeName { get; }
-        private string _deployMode { get; } = "Interactive";
+        private DeployMode _deployMode { get; } = DeployMode.Interactive;
         private string? _appVendor { get; }
         private string? _appName { get; }
         private string? _appVersion { get; }
@@ -1531,9 +1530,9 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's deployment type.
         /// </summary>
-        public string DeploymentType
+        public DeploymentType DeploymentType
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeploymentType)) : _deploymentType;
+            get => (null != CallerSessionState) ? (DeploymentType)CallerSessionState.PSVariable.GetValue(nameof(DeploymentType)) : _deploymentType;
         }
 
         /// <summary>
@@ -1547,9 +1546,9 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's deployment mode.
         /// </summary>
-        public string DeployMode
+        public DeployMode DeployMode
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeployMode)) : _deployMode;
+            get => (null != CallerSessionState) ? (DeployMode)CallerSessionState.PSVariable.GetValue(nameof(DeployMode)) : _deployMode;
         }
 
         /// <summary>

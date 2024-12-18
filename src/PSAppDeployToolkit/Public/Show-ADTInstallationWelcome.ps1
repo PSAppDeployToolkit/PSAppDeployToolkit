@@ -236,9 +236,9 @@ function Show-ADTInstallationWelcome
                 )
             ))
         $paramDictionary.Add('DeploymentType', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'DeploymentType', [System.String], $(
+                'DeploymentType', [PSADT.Module.DeploymentType], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "The deployment type. Default: the session's DeploymentType value." }
-                    [System.Management.Automation.ValidateSetAttribute]::new($adtStrings.DeploymentType.Keys)
+                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
 

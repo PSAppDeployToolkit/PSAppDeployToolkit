@@ -12,12 +12,13 @@ Opens a new ADT session.
 ## SYNTAX
 
 ```powershell
-Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <String>] [[-DeployMode] <String>]
- [-AllowRebootPassThru] [-TerminalServerMode] [-DisableLogging] [[-AppVendor] <String>] [[-AppName] <String>]
- [[-AppVersion] <String>] [[-AppArch] <String>] [[-AppLang] <String>] [[-AppRevision] <String>]
- [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>] [[-AppScriptAuthor] <String>]
- [[-InstallName] <String>] [[-InstallTitle] <String>] [[-DeployAppScriptFriendlyName] <String>]
- [[-DeployAppScriptVersion] <Version>] [[-DeployAppScriptDate] <DateTime>]
+Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <DeploymentType>]
+ [[-DeployMode] <DeployMode>] [-AllowRebootPassThru] [-TerminalServerMode] [-DisableLogging]
+ [[-AppVendor] <String>] [[-AppName] <String>] [[-AppVersion] <String>] [[-AppArch] <String>]
+ [[-AppLang] <String>] [[-AppRevision] <String>] [[-AppScriptVersion] <Version>] [[-AppScriptDate] <DateTime>]
+ [[-AppScriptAuthor] <String>] [[-InstallName] <String>] [[-InstallTitle] <String>]
+ [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
+ [[-DeployAppScriptDate] <DateTime>]
  [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
  [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>]
  [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
@@ -65,9 +66,10 @@ Accept wildcard characters: False
 Specifies the type of deployment: Install, Uninstall, or Repair.
 
 ```yaml
-Type: String
+Type: DeploymentType
 Parameter Sets: (All)
 Aliases:
+Accepted values: Install, Uninstall, Repair
 
 Required: False
 Position: 2
@@ -81,9 +83,10 @@ Accept wildcard characters: False
 Specifies the deployment mode: Interactive, NonInteractive, or Silent.
 
 ```yaml
-Type: String
+Type: DeployMode
 Parameter Sets: (All)
 Aliases:
+Accepted values: Interactive, NonInteractive, Silent
 
 Required: False
 Position: 3
