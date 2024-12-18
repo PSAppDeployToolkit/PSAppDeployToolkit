@@ -37,7 +37,7 @@ function Import-ADTModuleDataFile
     )
 
     # Internal function to process the imported data.
-    function Update-ImportedDataValues
+    function Update-ADTImportedDataValues
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
         [CmdletBinding()]
@@ -64,7 +64,7 @@ function Import-ADTModuleDataFile
                 }
                 & $MyInvocation.MyCommand -DataFile $DataFile.($section.Key) -NewData $section.Value
             }
-            else
+            elseif (!$DataFile.ContainsKey($section.Key) -or ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
             {
                 $DataFile.($section.Key) = $section.Value
             }
@@ -110,13 +110,13 @@ function Import-ADTModuleDataFile
     if (!$callerDirectory.Equals($moduleDirectory))
     {
         $PSBoundParameters.BaseDirectory = $callerDirectory
-        Update-ImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
+        Update-ADTImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
     }
 
     # Super-impose registry values if they exist.
     if (!$IgnorePolicy -and ($policySettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$([System.IO.Path]::GetFileNameWithoutExtension($FileName))" -ErrorAction Ignore | Convert-RegistryKeyToHashtable))
     {
-        Update-ImportedDataValues -DataFile $importedData -NewData $policySettings
+        Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
     }
 
     # Return the built out data to the caller.
