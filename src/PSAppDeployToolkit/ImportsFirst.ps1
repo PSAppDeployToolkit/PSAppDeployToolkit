@@ -26,6 +26,17 @@ https://psappdeploytoolkit.com
 #
 #-----------------------------------------------------------------------------
 
+# Throw if this psm1 file isn't being imported via our manifest.
+if (!([System.Environment]::StackTrace.Split("`n").Trim() -like 'at Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
+{
+    throw [System.Management.Automation.ErrorRecord]::new(
+        [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for all modules that supply a .psd1 file."),
+        'ModuleImportError',
+        [System.Management.Automation.ErrorCategory]::InvalidOperation,
+        $MyInvocation.MyCommand.ScriptBlock.Module
+    )
+}
+
 # Clock when the module import starts so we can track it.
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'ModuleImportStart', Justification = "This variable is used within ImportsLast.ps1 and therefore cannot be seen here.")]
 $ModuleImportStart = [System.DateTime]::Now
@@ -57,17 +68,6 @@ New-Variable -Name ProgressPreference -Value ([System.Management.Automation.Acti
 
 # Ensure module operates under the strictest of conditions.
 Set-StrictMode -Version 3
-
-# Throw if this psm1 file isn't being imported via our manifest.
-if (!([System.Environment]::StackTrace.Split("`n").Trim() -like 'at Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
-{
-    Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
-            [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for all modules that supply a .psd1 file."),
-            'ModuleImportError',
-            [System.Management.Automation.ErrorCategory]::InvalidOperation,
-            $MyInvocation.MyCommand.ScriptBlock.Module
-        ))
-}
 
 # Throw if any previous version of the unofficial PSADT module is found on the system.
 if (Get-Module -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh)
