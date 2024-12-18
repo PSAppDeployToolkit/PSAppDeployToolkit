@@ -64,6 +64,16 @@ function Close-ADTSession
 
     begin
     {
+        # Get the active session and throw if we don't have it.
+        try
+        {
+            $adtSession = Get-ADTSession
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+
         # Make this function continue on error and ensure the caller doesn't override ErrorAction.
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -71,13 +81,6 @@ function Close-ADTSession
 
     process
     {
-        # Return early if there's no active session to close.
-        if (!(Test-ADTSessionActive))
-        {
-            return
-        }
-        $adtSession = Get-ADTSession
-
         # Change the install phase since we've finished initialising. This should get overwritten shortly.
         $adtSession.InstallPhase = 'Finalization'
 
