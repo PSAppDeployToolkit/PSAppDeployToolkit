@@ -5,13 +5,13 @@
 #-----------------------------------------------------------------------------
 
 # Set all functions as read-only, export all public definitions and finalise the CommandTable.
-& $CommandTable.'Set-Item' -LiteralPath $FunctionPaths -Options ReadOnly
-& $CommandTable.'Get-Item' -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
-& $CommandTable.'New-Variable' -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
-& $CommandTable.'Export-ModuleMember' -Function $Module.Manifest.FunctionsToExport
+Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
+Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
+New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
+Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
 
 # Define object for holding all PSADT variables.
-& $CommandTable.'New-Variable' -Name ADT -Option Constant -Value ([pscustomobject]@{
+New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
         Callbacks = [pscustomobject]@{
             Starting = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
             Opening = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
@@ -44,7 +44,7 @@
     })
 
 # Define object for holding all dialog window variables.
-& $CommandTable.'New-Variable' -Name Dialogs -Option Constant -Value ([ordered]@{
+New-Variable -Name Dialogs -Option Constant -Value ([ordered]@{
         Box = ([ordered]@{
                 Buttons = ([ordered]@{
                         OK = 0
@@ -93,7 +93,7 @@
     }).AsReadOnly()
 
 # Registry path transformation constants used within Convert-ADTRegistryPath.
-& $CommandTable.'New-Variable' -Name Registry -Option Constant -Value ([ordered]@{
+New-Variable -Name Registry -Option Constant -Value ([ordered]@{
         PathMatches = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(
             ':\\'
             ':'
@@ -116,7 +116,7 @@
     }).AsReadOnly()
 
 # Lookup table for preference variables and their associated CommonParameter name.
-& $CommandTable.'New-Variable' -Name PreferenceVariableTable -Option Constant -Value ([ordered]@{
+New-Variable -Name PreferenceVariableTable -Option Constant -Value ([ordered]@{
         'InformationAction' = 'InformationPreference'
         'ProgressAction' = 'ProgressPreference'
         'WarningAction' = 'WarningPreference'
@@ -176,4 +176,4 @@ $Dialogs.Classic.ProgressWindow.XamlCode = [System.IO.StringReader]::new(@'
 
 # Determine how long the import took.
 $ADT.Durations.ModuleImport = [System.DateTime]::Now - $ModuleImportStart
-& $CommandTable.'Remove-Variable' -Name ModuleImportStart -Force -Confirm:$false
+Remove-Variable -Name ModuleImportStart -Force -Confirm:$false

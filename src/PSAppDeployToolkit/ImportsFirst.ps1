@@ -33,7 +33,7 @@ $ModuleImportStart = [System.DateTime]::Now
 # Throw if this psm1 file isn't being imported via our manifest.
 if (!([System.Environment]::StackTrace.Split("`n").Trim() -like 'at Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
 {
-    & $CommandTable.'Write-Error' -ErrorAction Stop -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+    Write-Error -ErrorAction Stop -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
             [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for all modules that supply a .psd1 file."),
             'ModuleImportError',
             [System.Management.Automation.ErrorCategory]::InvalidOperation,
@@ -57,32 +57,32 @@ $RequiredModules = [System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.
 # Build out lookup table for all cmdlets used within module, starting with the core cmdlets.
 $CommandTable = [System.Collections.Generic.Dictionary[System.String, System.Management.Automation.CommandInfo]]::new()
 $ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & { process { if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) { $CommandTable.Add($_.Name, $_) } } }
-(& $CommandTable.'Import-Module' -FullyQualifiedName $RequiredModules -Global -Force -PassThru -ErrorAction Stop).ExportedCommands.Values | & { process { $CommandTable.Add($_.Name, $_) } }
+(Import-Module -FullyQualifiedName $RequiredModules -Global -Force -PassThru -ErrorAction Stop).ExportedCommands.Values | & { process { $CommandTable.Add($_.Name, $_) } }
 
 # Set required variables to ensure module functionality.
-& $CommandTable.'New-Variable' -Name ErrorActionPreference -Value ([System.Management.Automation.ActionPreference]::Stop) -Option Constant -Force
-& $CommandTable.'New-Variable' -Name InformationPreference -Value ([System.Management.Automation.ActionPreference]::Continue) -Option Constant -Force
-& $CommandTable.'New-Variable' -Name ProgressPreference -Value ([System.Management.Automation.ActionPreference]::SilentlyContinue) -Option Constant -Force
+New-Variable -Name ErrorActionPreference -Value ([System.Management.Automation.ActionPreference]::Stop) -Option Constant -Force
+New-Variable -Name InformationPreference -Value ([System.Management.Automation.ActionPreference]::Continue) -Option Constant -Force
+New-Variable -Name ProgressPreference -Value ([System.Management.Automation.ActionPreference]::SilentlyContinue) -Option Constant -Force
 
 # Ensure module operates under the strictest of conditions.
-& $CommandTable.'Set-StrictMode' -Version 3
+Set-StrictMode -Version 3
 
 # Throw if any previous version of the unofficial PSADT module is found on the system.
-if (& $CommandTable.'Get-Module' -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh)
+if (Get-Module -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh)
 {
-    & $CommandTable.'Write-Warning' -Message "This module should not be used while the unofficial v3 PSADT module is installed."
+    Write-Warning -Message "This module should not be used while the unofficial v3 PSADT module is installed."
 }
 
 # Store build information pertaining to this module's state.
-& $CommandTable.'New-Variable' -Name Module -Option Constant -Force -Value ([ordered]@{
-        Manifest = & $CommandTable.'Import-LocalizedData' -BaseDirectory $PSScriptRoot -FileName 'PSAppDeployToolkit'
-        Assemblies = (& $CommandTable.'Get-ChildItem' -Path $PSScriptRoot\lib\PSADT*.dll).FullName
+New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
+        Manifest = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName 'PSAppDeployToolkit'
+        Assemblies = (Get-ChildItem -Path $PSScriptRoot\lib\PSADT*.dll).FullName
         Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
-        Signed = (& $CommandTable.'Get-AuthenticodeSignature' -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
+        Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
     }).AsReadOnly()
 
 # Attempt to find the RuntimeAssembly object for PSADT.dll.
-& $CommandTable.'New-Variable' -Name RuntimeAssembly -Option Constant -Force -Value ([System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1)
+New-Variable -Name RuntimeAssembly -Option Constant -Force -Value ([System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals('PSADT.dll')) { return $_ } } } | Select-Object -First 1)
 
 # Import our assemblies, factoring in whether they're on a network share or not.
 if (!$RuntimeAssembly)
@@ -92,15 +92,15 @@ if (!$RuntimeAssembly)
         begin
         {
             # Determine whether we're on a network location.
-            $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or ($PSScriptRoot -match '^([A-Za-z]:)\\' -and ((& $CommandTable.'Get-CimInstance' -ClassName Win32_LogicalDisk -Filter "DeviceID='$($Matches[1])'").ProviderName -match '^\\\\'))
+            $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or ($PSScriptRoot -match '^([A-Za-z]:)\\' -and ((Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DeviceID='$($Matches[1])'").ProviderName -match '^\\\\'))
         }
 
         process
         {
             # If we're on a compiled build, confirm the DLLs are signed before proceeding.
-            if ($Module.Signed -and !($badFile = & $CommandTable.'Get-AuthenticodeSignature' -LiteralPath $_).Status.Equals([System.Management.Automation.SignatureStatus]::Valid))
+            if ($Module.Signed -and !($badFile = Get-AuthenticodeSignature -LiteralPath $_).Status.Equals([System.Management.Automation.SignatureStatus]::Valid))
             {
-                & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+                Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
                         [System.InvalidOperationException]::new("The assembly [$_] has an invalid digital signature and cannot be loaded."),
                         'ADTAssemblyFileSignatureError',
                         [System.Management.Automation.ErrorCategory]::SecurityError,
@@ -115,14 +115,14 @@ if (!$RuntimeAssembly)
             }
             else
             {
-                & $CommandTable.'Add-Type' -LiteralPath $_
+                Add-Type -LiteralPath $_
             }
         }
     }
 }
-elseif (!$RuntimeAssembly.Location.Equals(($Module.Assemblies | & { process { if ($_.EndsWith('\PSADT.dll')) { return $_ } } } | & $CommandTable.'Select-Object' -First 1)))
+elseif (!$RuntimeAssembly.Location.Equals(($Module.Assemblies | & { process { if ($_.EndsWith('\PSADT.dll')) { return $_ } } } | Select-Object -First 1)))
 {
-    & $CommandTable.'Write-Error' -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
+    Write-Error -ErrorRecord ([System.Management.Automation.ErrorRecord]::new(
             [System.InvalidOperationException]::new("A duplicate PSAppDeployToolkit module is already loaded. Please restart PowerShell and try again."),
             'ConflictingModuleLoaded',
             [System.Management.Automation.ErrorCategory]::InvalidOperation,
@@ -157,7 +157,7 @@ catch
 # Remove any previous functions that may have been defined.
 if ($Module.Compiled)
 {
-    & $CommandTable.'New-Variable' -Name FunctionNames -Option Constant -Value ($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return $_.Name } } })
-    & $CommandTable.'New-Variable' -Name FunctionPaths -Option Constant -Value ($FunctionNames -replace '^', 'Microsoft.PowerShell.Core\Function::')
-    & $CommandTable.'Remove-Item' -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
+    New-Variable -Name FunctionNames -Option Constant -Value ($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return $_.Name } } })
+    New-Variable -Name FunctionPaths -Option Constant -Value ($FunctionNames -replace '^', 'Microsoft.PowerShell.Core\Function::')
+    Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
 }
