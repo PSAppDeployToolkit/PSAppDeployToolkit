@@ -115,7 +115,7 @@ if (!$RuntimeAssembly)
             }
             else
             {
-                [System.Reflection.Assembly]::LoadFrom($_)
+                & $CommandTable.'Add-Type' -LiteralPath $_
             }
         }
     }
