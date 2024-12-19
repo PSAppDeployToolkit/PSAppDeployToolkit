@@ -224,7 +224,7 @@ namespace PSADT
                     exitCode = process.ExitCode;
                     if ((exitCode == 1) || (exitCode == 64) || (exitCode == 255) || ((exitCode >= 60000) && (exitCode <= 79999) && (exitCode != 60012)))
                     {
-                        throw new ApplicationException($"An error occurred while running {Path.GetFileName(adtFrontendPath)}. Exit code: {exitCode}");
+                        throw new ExternalException($"An error occurred while running {Path.GetFileName(adtFrontendPath)}. Exit code: {exitCode}", exitCode);
                     }
                 }
                 catch
