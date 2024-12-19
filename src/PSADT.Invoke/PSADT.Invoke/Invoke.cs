@@ -229,6 +229,9 @@ namespace PSADT
                 var process = new Process();
                 try
                 {
+                    // Null out PSModulePath to prevent any module conflicts.
+                    // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
+                    Environment.SetEnvironmentVariable("PSModulePath", null);
                     process.StartInfo = processStartInfo;
                     process.Start();
                     process.WaitForExit();
