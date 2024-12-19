@@ -266,7 +266,7 @@ try
 {
     $moduleName = if ([System.IO.File]::Exists("$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
     {
-        Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction SilentlyContinue
+        Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction Ignore
         "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
     }
     else
@@ -300,7 +300,7 @@ try
     Get-Item -Path $PSScriptRoot\PSAppDeployToolkit.* | & {
         process
         {
-            Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File
+            Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore
             Import-Module -Name $_.FullName -Force
         }
     }

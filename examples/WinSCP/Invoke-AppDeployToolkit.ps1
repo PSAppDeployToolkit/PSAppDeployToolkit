@@ -283,7 +283,7 @@ try
 {
     $moduleName = if ([System.IO.File]::Exists("$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
     {
-        Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction SilentlyContinue
+        Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction Ignore
         "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
     }
     else
@@ -314,10 +314,12 @@ catch
 
 try
 {
-    if ([System.IO.File]::Exists("$PSScriptRoot\PSAppDeployToolkit.Extensions\PSAppDeployToolkit.Extensions.psd1"))
-    {
-        Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit.Extensions -Recurse -File | Unblock-File
-        Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit.Extensions\PSAppDeployToolkit.Extensions.psd1"; Guid = '55276a4c-9fbb-49a4-8481-159113757c39'; ModuleVersion = '4.0.3' } -Force
+    Get-Item -Path $PSScriptRoot\PSAppDeployToolkit.* | & {
+        process
+        {
+            Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore
+            Import-Module -Name $_.FullName -Force
+        }
     }
     & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession
