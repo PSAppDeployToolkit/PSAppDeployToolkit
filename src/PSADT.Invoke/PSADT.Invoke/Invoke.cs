@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Collections;
 using System.Security.Principal;
@@ -90,7 +91,7 @@ namespace PSADT
                 WriteDebugMessage($"Commencing invocation of {adtFrontendPath}.");
 
                 // Test whether we're running in silent mode.
-                var deployModeIndex = Array.FindIndex(cliArguments.ToArray(), x => x == "-DeployMode");
+                var deployModeIndex = Array.FindIndex(cliArguments.ToArray(), x => x.Equals("-DeployMode", StringComparison.OrdinalIgnoreCase));
                 silentMode = (deployModeIndex != -1) && !cliArguments[deployModeIndex + 1].ToLower().Equals("interactive", StringComparison.OrdinalIgnoreCase);
                 if (silentMode)
                 {
@@ -159,29 +160,30 @@ namespace PSADT
                 }
 
                 // Check for the App Deploy Script file being specified.
-                if (cliArguments.Exists(x => x.StartsWith("-Command ")))
+                if (cliArguments.Exists(x => x.StartsWith("-Command ", StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new Exception("'-Command' parameter was specified on the command-line. Please use the '-File' parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
                 }
 
-                if (cliArguments.Exists(x => x.StartsWith("-File ")))
+                if (cliArguments.Exists(x => x.StartsWith("-File ", StringComparison.OrdinalIgnoreCase)))
                 {
-                    adtFrontendPath = cliArguments.Find(x => x.StartsWith("-File ")).Replace("-File ", null).Replace("\"", null);
+                    adtFrontendPath = cliArguments.Find(x => x.StartsWith("-File ", StringComparison.OrdinalIgnoreCase)).Replace("\"", null);
+                    adtFrontendPath = Regex.Replace(adtFrontendPath, "-File ", "", RegexOptions.IgnoreCase);
                     if (!Path.IsPathRooted(adtFrontendPath))
                     {
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                     }
-                    cliArguments.RemoveAt(cliArguments.FindIndex(x => x.StartsWith("-File")));
+                    cliArguments.RemoveAt(cliArguments.FindIndex(x => x.StartsWith("-File", StringComparison.OrdinalIgnoreCase)));
                     WriteDebugMessage("'-File' parameter specified on command-line. Passing command-line untouched...");
                 }
-                else if (cliArguments.Exists(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")))
+                else if (cliArguments.Exists(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
                 {
-                    adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")).Replace("\"", null);
+                    adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", null);
                     if (!Path.IsPathRooted(adtFrontendPath))
                     {
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                     }
-                    cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1") || x.EndsWith(".ps1\"")));
+                    cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
                     WriteDebugMessage(".ps1 file specified on command-line. Appending '-Command' parameter name...");
                 }
                 else
