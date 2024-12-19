@@ -231,6 +231,7 @@ Add-BuildTask DotNetBuild {
     if ([System.IO.File]::Exists("$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Invoke-AppDeployToolkit.exe"))
     {
         Remove-Item -LiteralPath "$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe" -Force -Confirm:$false
+        Remove-Item -LiteralPath "$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Invoke-AppDeployToolkit.pdb" -Force -Confirm:$false -ErrorAction Ignore
         Rename-Item -LiteralPath "$($Script:RepoRootPath)\src\PSAppDeployToolkit\Frontend\v3\Invoke-AppDeployToolkit.exe" -NewName Deploy-Application.exe -Force -Confirm:$false
     }
     Write-Build Green '      ...C# Compilation Complete!'
