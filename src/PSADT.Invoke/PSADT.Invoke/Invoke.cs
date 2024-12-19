@@ -72,6 +72,7 @@ namespace PSADT
         {
             // Set up exit code.
             int exitCode = 60010;
+            bool silentMode = false;
 
             try
             {
@@ -87,6 +88,14 @@ namespace PSADT
 
                 // Announce commencement
                 WriteDebugMessage($"Commencing invocation of {adtFrontendPath}.");
+
+                // Test whether we're running in silent mode.
+                var deployModeIndex = Array.FindIndex(cliArguments.ToArray(), x => x == "-DeployMode");
+                silentMode = (deployModeIndex != -1) && !cliArguments[deployModeIndex + 1].ToLower().Equals("interactive", StringComparison.OrdinalIgnoreCase);
+                if (silentMode)
+                {
+                    WriteDebugMessage("Silent mode detected. No user interaction will be displayed.");
+                }
 
                 // Test whether we've got a local config before continuing.
                 if ((Path.Combine(currentPath, "Config\\config.psd1") is string adtLocalConfigPath) && File.Exists(adtLocalConfigPath))
@@ -242,7 +251,7 @@ namespace PSADT
             }
             catch (Exception ex)
             {
-                WriteDebugMessage(ex.Message, true, MessageBoxIcon.Error);
+                WriteDebugMessage(ex.Message, !silentMode, MessageBoxIcon.Error);
                 Environment.Exit(exitCode);
             }
         }
