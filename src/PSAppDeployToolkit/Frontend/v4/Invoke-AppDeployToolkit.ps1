@@ -109,13 +109,6 @@ $adtSession = @{
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
     DeployAppScriptVersion = '4.0.3'
     DeployAppScriptParameters = $PSBoundParameters
-
-    # Script parameters.
-    DeploymentType = $DeploymentType
-    DeployMode = $DeployMode
-    AllowRebootPassThru = $AllowRebootPassThru
-    TerminalServerMode = $TerminalServerMode
-    DisableLogging = $DisableLogging
 }
 
 function Install-ADTDeployment
@@ -283,7 +276,7 @@ try
     Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.3' } -Force
     try
     {
-        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession -PassThru
+        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession @PSBoundParameters -PassThru
     }
     catch
     {
