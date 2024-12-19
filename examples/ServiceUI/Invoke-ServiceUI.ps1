@@ -35,10 +35,10 @@ param (
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 Push-Location $PSScriptRoot
 
-if ($env:PROCESSOR_ARCHITECTURE -eq 'AMD64' -or $env:PROCESSOR_ARCHITEW6432 -eq 'AMD64') {
-    $Architecture = 'x64'
+$Architecture = if (($env:PROCESSOR_ARCHITECTURE -match 64) -or ($env:PROCESSOR_ARCHITEW6432 -match 64)) {
+    'x64'
 } else {
-    $Architecture = 'x86'
+    'x86'
 }
 
 $Arguments = $(
