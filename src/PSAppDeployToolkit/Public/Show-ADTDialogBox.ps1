@@ -138,7 +138,7 @@ function Show-ADTDialogBox
     process
     {
         # Bypass if in silent mode.
-        if ($adtSession -and $adtSession.IsSilent())
+        if ($adtSession -and $adtSession.IsNonInteractive())
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.deployMode)]. Text: $Text"
             return
