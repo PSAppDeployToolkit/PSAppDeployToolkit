@@ -32,6 +32,7 @@ param (
     [switch]$DisableLogging
 )
 
+$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 Push-Location $PSScriptRoot
 
 if ($env:PROCESSOR_ARCHITECTURE -eq 'AMD64' -or $env:PROCESSOR_ARCHITEW6432 -eq 'AMD64') {
