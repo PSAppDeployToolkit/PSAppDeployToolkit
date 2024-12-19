@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Collections;
 using System.Security.Principal;
@@ -160,20 +159,21 @@ namespace PSADT
                 }
 
                 // Check for the App Deploy Script file being specified.
-                if (cliArguments.Exists(x => x.StartsWith("-Command ", StringComparison.OrdinalIgnoreCase)))
+                if (cliArguments.Exists(x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new Exception("'-Command' parameter was specified on the command-line. Please use the '-File' parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
                 }
 
-                if (cliArguments.Exists(x => x.StartsWith("-File ", StringComparison.OrdinalIgnoreCase)))
+                var fileIndex = Array.FindIndex(cliArguments.ToArray(), x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
+                if (fileIndex != -1)
                 {
-                    adtFrontendPath = cliArguments.Find(x => x.StartsWith("-File ", StringComparison.OrdinalIgnoreCase)).Replace("\"", null);
-                    adtFrontendPath = Regex.Replace(adtFrontendPath, "-File ", "", RegexOptions.IgnoreCase);
+                    adtFrontendPath = cliArguments[fileIndex + 1].Replace("\"", null);
                     if (!Path.IsPathRooted(adtFrontendPath))
                     {
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                     }
-                    cliArguments.RemoveAt(cliArguments.FindIndex(x => x.StartsWith("-File", StringComparison.OrdinalIgnoreCase)));
+                    cliArguments.RemoveAt(fileIndex + 1);
+                    cliArguments.RemoveAt(fileIndex);
                     WriteDebugMessage("'-File' parameter specified on command-line. Passing command-line untouched...");
                 }
                 else if (cliArguments.Exists(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
@@ -184,7 +184,7 @@ namespace PSADT
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                     }
                     cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
-                    WriteDebugMessage(".ps1 file specified on command-line. Appending '-Command' parameter name...");
+                    WriteDebugMessage(".ps1 file specified on command-line. Appending '-File' parameter name...");
                 }
                 else
                 {
