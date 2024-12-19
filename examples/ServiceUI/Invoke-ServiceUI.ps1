@@ -41,18 +41,42 @@ if ($env:PROCESSOR_ARCHITECTURE -eq 'AMD64' -or $env:PROCESSOR_ARCHITEW6432 -eq 
     $Architecture = 'x86'
 }
 
-if (Get-Process -Name $ProcessName -ErrorAction SilentlyContinue) {
+$Arguments = $(
+    "-DeploymentType $DeploymentType"
+    if (Get-Process -Name $ProcessName -ErrorAction Ignore)
+    {
+        '-DeployMode Interactive'
+    }
+    else
+    {
+        '-DeployMode Silent'
+    }
+    if ($AllowRebootPassThru)
+    {
+        '-AllowRebootPassThru'
+    }
+    if ($TerminalServerMode)
+    {
+        '-TerminalServerMode'
+    }
+    if ($DisableLogging)
+    {
+        '-DisableLogging'
+    }
+)
+
+if ($Arguments -eq '-DeployMode Interactive') {
     if ([Environment]::UserInteractive) {
         # Start-Process is used here otherwise script does not wait for completion
-        $Process = Start-Process -FilePath '.\Invoke-AppDeployToolkit.exe' -ArgumentList "-DeploymentType $DeploymentType -DeployMode Interactive -AllowRebootPassThru:`$$AllowRebootPassThru -TerminalServerMode:`$$TerminalServerMode -DisableLogging:`$$DisableLogging" -NoNewWindow -Wait -PassThru
+        $Process = Start-Process -FilePath '.\Invoke-AppDeployToolkit.exe' -ArgumentList $Arguments -NoNewWindow -Wait -PassThru
         $ExitCode = $Process.ExitCode
     } else {
         # Using Start-Process with ServiceUI results in Error Code 5 (Access Denied)
-        &".\ServiceUI_$Architecture.exe" -process:explorer.exe Invoke-AppDeployToolkit.exe -DeploymentType $DeploymentType -DeployMode Interactive -AllowRebootPassThru:"`$$AllowRebootPassThru" -TerminalServerMode:"`$$TerminalServerMode" -DisableLogging:"`$$DisableLogging"
+        &".\ServiceUI_$Architecture.exe" -process:explorer.exe Invoke-AppDeployToolkit.exe $Arguments
         $ExitCode = $LastExitCode
     }
 } else {
-    $Process = Start-Process -FilePath '.\Invoke-AppDeployToolkit.exe' -ArgumentList "-DeploymentType $DeploymentType -DeployMode Silent -AllowRebootPassThru:`$$AllowRebootPassThru -TerminalServerMode:`$$TerminalServerMode -DisableLogging:`$$DisableLogging" -NoNewWindow -Wait -PassThru
+    $Process = Start-Process -FilePath '.\Invoke-AppDeployToolkit.exe' -ArgumentList $Arguments -NoNewWindow -Wait -PassThru
     $ExitCode = $Process.ExitCode
 }
 
