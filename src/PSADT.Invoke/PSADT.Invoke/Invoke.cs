@@ -280,7 +280,7 @@ namespace PSADT
                 try
                 {
                     MessageBox.Show(
-                        new WindowWrapper(Process.GetCurrentProcess().MainWindowHandle),
+                        new Form { TopMost = true },
                         debugMessage,
                         $"{Application.ProductName} {Application.ProductVersion}",
                         MessageBoxButtons.OK,
@@ -292,16 +292,6 @@ namespace PSADT
                     // Do nothing with this.
                 }
             }
-        }
-
-        private class WindowWrapper : IWin32Window
-        {
-            public WindowWrapper(IntPtr handle)
-            {
-                Handle = handle;
-            }
-
-            public IntPtr Handle { get; }
         }
     }
 }
