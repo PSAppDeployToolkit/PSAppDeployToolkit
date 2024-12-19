@@ -247,7 +247,7 @@ namespace PSADT
             }
         }
 
-        private static void WriteDebugMessage(string debugMessage = null, bool IsDisplayError = false, MessageBoxIcon MsgBoxStyle = MessageBoxIcon.Information)
+        private static void WriteDebugMessage(string debugMessage, bool IsDisplayError = false, MessageBoxIcon MsgBoxStyle = MessageBoxIcon.Information)
         {
             // Output to the log file.
             var logPath = Path.Combine(loggingPath, $"{assemblyName}.exe");
@@ -263,13 +263,20 @@ namespace PSADT
             // If we are to display an error message...
             if (IsDisplayError)
             {
-                MessageBox.Show(
-                    new WindowWrapper(Process.GetCurrentProcess().MainWindowHandle),
-                    debugMessage,
-                    $"{Application.ProductName} {Application.ProductVersion}",
-                    MessageBoxButtons.OK,
-                    MsgBoxStyle,
-                    MessageBoxDefaultButton.Button1);
+                try
+                {
+                    MessageBox.Show(
+                        new WindowWrapper(Process.GetCurrentProcess().MainWindowHandle),
+                        debugMessage,
+                        $"{Application.ProductName} {Application.ProductVersion}",
+                        MessageBoxButtons.OK,
+                        MsgBoxStyle,
+                        MessageBoxDefaultButton.Button1);
+                }
+                catch
+                {
+                    // Do nothing with this.
+                }
             }
         }
 
