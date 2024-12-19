@@ -20,7 +20,7 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <DeploymentTyp
  [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
  [[-DeployAppScriptDate] <DateTime>]
  [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
- [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String>]
+ [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String[]>]
  [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
  [[-DefaultMspFiles] <String[]>] [-DisableDefaultMsiProcessList] [[-LogName] <String>] [[-SessionClass] <Type>]
  [-ForceWimDetection] [-PassThru] [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>]
@@ -420,7 +420,7 @@ Accept wildcard characters: False
 Specifies the base path for Files and SupportFiles.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 

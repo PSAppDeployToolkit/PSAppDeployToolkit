@@ -249,7 +249,7 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$ScriptDirectory,
+        [System.String[]]$ScriptDirectory,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -348,7 +348,7 @@ function Open-ADTSession
         # Set up the ScriptDirectory if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))
         {
-            $PSBoundParameters.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
+            [System.String[]]$PSBoundParameters.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
             {
                 if ($compatibilityMode)
                 {

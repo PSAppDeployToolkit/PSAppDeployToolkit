@@ -144,7 +144,7 @@ namespace PSADT.Module
                     }
                     if (parameters.ContainsKey("ScriptDirectory"))
                     {
-                        _scriptDirectory = (string)parameters["ScriptDirectory"];
+                        _scriptDirectory = (string[])parameters["ScriptDirectory"];
                     }
                     if (parameters.ContainsKey("DirFiles"))
                     {
@@ -176,15 +176,18 @@ namespace PSADT.Module
                 _deploymentTypeName = (string)((Hashtable)InternalDatabase.GetStrings()["DeploymentType"]!)[_deploymentType.ToString()]!;
 
                 // Establish script directories.
-                if (!string.IsNullOrWhiteSpace(_scriptDirectory))
+                if (null != _scriptDirectory)
                 {
-                    if (string.IsNullOrWhiteSpace(_dirFiles) && Directory.Exists(Path.Combine(_scriptDirectory, "Files")))
+                    foreach (var directory in _scriptDirectory)
                     {
-                        _dirFiles = Path.Combine(_scriptDirectory, "Files");
-                    }
-                    if (string.IsNullOrWhiteSpace(_dirSupportFiles) && Directory.Exists(Path.Combine(_scriptDirectory, "SupportFiles")))
-                    {
-                        _dirSupportFiles = Path.Combine(_scriptDirectory, "SupportFiles");
+                        if (string.IsNullOrWhiteSpace(_dirFiles) && Directory.Exists(Path.Combine(directory, "Files")))
+                        {
+                            _dirFiles = Path.Combine(directory, "Files");
+                        }
+                        if (string.IsNullOrWhiteSpace(_dirSupportFiles) && Directory.Exists(Path.Combine(directory, "SupportFiles")))
+                        {
+                            _dirSupportFiles = Path.Combine(directory, "SupportFiles");
+                        }
                     }
                 }
 
@@ -1513,7 +1516,7 @@ namespace PSADT.Module
         private string _installPhase { get; set; } = "Initialization";
         private string _currentDate { get; }
         private string _currentTime { get; }
-        private string? _scriptDirectory { get; }
+        private string[]? _scriptDirectory { get; }
         private string? _dirFiles { get; set; }
         private string? _dirSupportFiles { get; set; }
         private string? _defaultMsiFile { get; }
@@ -1755,9 +1758,9 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public string? ScriptDirectory
+        public string[]? ScriptDirectory
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(ScriptDirectory)) : _scriptDirectory;
+            get => (null != CallerSessionState) ? (string[])CallerSessionState.PSVariable.GetValue(nameof(ScriptDirectory)) : _scriptDirectory;
         }
 
         /// <summary>
