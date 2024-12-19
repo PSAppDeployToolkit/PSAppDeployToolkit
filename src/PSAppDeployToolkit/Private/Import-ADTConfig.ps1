@@ -21,7 +21,7 @@ function Import-ADTConfig
                 }
                 return $_
             })]
-        [System.String]$BaseDirectory
+        [System.String[]]$BaseDirectory
     )
 
     # Internal filter to process asset file paths.
@@ -44,14 +44,28 @@ function Import-ADTConfig
 
             # Get the asset's full path based on the supplied BaseDirectory.
             # Fall back to the module's path if the asset is unable to be found.
-            if ([System.IO.File]::Exists("$BaseDirectory\$($_.($asset.Key))"))
+            $assetPath = foreach ($directory in $($BaseDirectory[($BaseDirectory.Count - 1)..(0)]; $Script:ADT.Directories.Defaults.Config))
             {
-                $_.($asset.Key) = (Get-Item -LiteralPath "$BaseDirectory\$($_.($asset.Key))").FullName
+                if (($assetPath = Get-Item -LiteralPath "$directory\$($_.($asset.Key))" -ErrorAction Ignore))
+                {
+                    $assetPath.FullName
+                    break
+                }
             }
-            else
+
+            # Throw if we found no asset.
+            if (!$assetPath)
             {
-                $_.($asset.Key) = (Get-Item -LiteralPath "$($BaseDirectory -replace '^.+\\', "$Script:PSScriptRoot\")\$($_.($asset.Key))").FullName
+                $naerParams = @{
+                    Exception = [System.IO.FileNotFoundException]::new("Failed to resolve the asset [$($asset.Key)] to a valid file path.", $_.($asset.Key))
+                    Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    ErrorId = 'DialogAssetNotFound'
+                    TargetObject = $_.($asset.Key)
+                    RecommendedAction = "Ensure the file exists and try again."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
+            $_.($asset.Key) = $assetPath
         }
     }
 

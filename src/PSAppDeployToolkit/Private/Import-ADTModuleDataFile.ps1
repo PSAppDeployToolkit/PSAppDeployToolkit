@@ -22,7 +22,7 @@ function Import-ADTModuleDataFile
                 }
                 return $_
             })]
-        [System.String]$BaseDirectory,
+        [System.String[]]$BaseDirectory,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -72,7 +72,7 @@ function Import-ADTModuleDataFile
     }
 
     # Establish directory paths for the specified input.
-    $moduleDirectory = $Script:ADT.Directories.Defaults.([regex]::Replace($BaseDirectory, '^.+\\', [System.String]::Empty))
+    $moduleDirectory = $Script:ADT.Directories.Defaults.([System.IO.Path]::GetFileNameWithoutExtension($FileName))
     $callerDirectory = $BaseDirectory
 
     # If we're running a release module, ensure the psd1 files haven't been tampered with.
@@ -109,8 +109,11 @@ function Import-ADTModuleDataFile
     # Super-impose the caller's data if it's different from default.
     if (!$callerDirectory.Equals($moduleDirectory))
     {
-        $PSBoundParameters.BaseDirectory = $callerDirectory
-        Update-ADTImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
+        foreach ($directory in $callerDirectory)
+        {
+            $PSBoundParameters.BaseDirectory = $directory
+            Update-ADTImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
+        }
     }
 
     # Super-impose registry values if they exist.

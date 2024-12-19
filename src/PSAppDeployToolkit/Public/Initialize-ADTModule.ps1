@@ -58,7 +58,7 @@ function Initialize-ADTModule
                 }
                 return $_
             })]
-        [System.String]$ScriptDirectory
+        [System.String[]]$ScriptDirectory
     )
 
     begin
@@ -101,13 +101,16 @@ function Initialize-ADTModule
                 'Config', 'Strings' | & {
                     process
                     {
-                        $Script:ADT.Directories.$_ = if ([System.IO.File]::Exists([System.IO.Path]::Combine($Script:ADT.Directories.Script, $_, "$($_.ToLower()).psd1")))
+                        $Script:ADT.Directories.$_ = foreach ($directory in $Script:ADT.Directories.Script)
                         {
-                            [System.IO.Path]::Combine($Script:ADT.Directories.Script, $_)
+                            if ([System.IO.File]::Exists([System.IO.Path]::Combine($directory, $_, "$($_.ToLower()).psd1")))
+                            {
+                                [System.IO.Path]::Combine($directory, $_)
+                            }
                         }
-                        else
+                        if ($null -eq $Script:ADT.Directories.$_)
                         {
-                            $Script:ADT.Directories.Defaults.$_
+                            $Script:ADT.Directories.$_ = $Script:ADT.Directories.Defaults.$_
                         }
                     }
                 }
