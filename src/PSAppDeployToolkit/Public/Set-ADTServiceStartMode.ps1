@@ -70,13 +70,13 @@ function Set-ADTServiceStartMode
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Re-write StartMode to suit sc.exe.
-        $StartMode = switch ($StartMode)
-        {
-            'Automatic' { 'Auto'; break }
-            'Automatic (Delayed Start)' { 'Delayed-Auto'; break }
-            'Manual' { 'Demand'; break }
-            default { $_; break }
-        }
+        New-Variable -Name StartMode -Force -Confirm:$false -Value $(switch ($StartMode)
+            {
+                'Automatic' { 'Auto'; break }
+                'Automatic (Delayed Start)' { 'Delayed-Auto'; break }
+                'Manual' { 'Demand'; break }
+                default { $_; break }
+            })
     }
 
     process
