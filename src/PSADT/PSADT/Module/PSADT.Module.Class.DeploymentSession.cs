@@ -559,8 +559,8 @@ namespace PSADT.Module
                 WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
                 WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
                 WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] module path is ['{adtEnv["appDeployToolkitPath"]}'].");
-                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] config path is ['{string.Join("', '", adtDirectories.Properties["Config"].Value)}'].");
-                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] string path is ['{string.Join("', '", adtDirectories.Properties["Strings"].Value)}'].");
+                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] config path is ['{string.Join("', '", (string[])adtDirectories.Properties["Config"].Value)}'].");
+                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] string path is ['{string.Join("', '", (string[])adtDirectories.Properties["Strings"].Value)}'].");
 
                 // Announce session instantiation mode.
                 if (null != callerSessionState)
