@@ -81,7 +81,7 @@ function Close-ADTSession
 
     process
     {
-        # Change the install phase since we've finished initialising. This should get overwritten shortly.
+        # Change the install phase now that we're on the way out.
         $adtSession.InstallPhase = 'Finalization'
 
         # Update the session's exit code with the provided value.
