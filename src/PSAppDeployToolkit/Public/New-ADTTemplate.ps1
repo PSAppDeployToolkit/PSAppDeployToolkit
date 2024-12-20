@@ -188,9 +188,11 @@ function New-ADTTemplate
                 # Process the generated script to ensure the Import-Module is correct.
                 if ($Version.Equals(4))
                 {
-                    $scriptText = [System.IO.File]::ReadAllText(($scriptFile = "$templatePath\Invoke-AppDeployToolkit.ps1"))
-                    $scriptText = $scriptText.Replace("`$PSScriptRoot\..\..\..\$moduleName", "`$PSScriptRoot\$moduleName")
-                    [System.IO.File]::WriteAllText($scriptFile, $scriptText, [System.Text.UTF8Encoding]::new($true))
+                    $params = @{
+                        LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
+                        Encoding = if ($PSVersionTable.PSEdition.Equals('Core')) { 'utf8BOM' } else { 'utf8' }
+                    }
+                    Out-File -InputObject (Get-Content @params -Raw).Replace("`$PSScriptRoot\..\..\..\$moduleName", "`$PSScriptRoot\$moduleName") @params -Width ([System.Int32]::MaxValue) -Force
                 }
 
                 # Display the newly created folder in Windows Explorer.
