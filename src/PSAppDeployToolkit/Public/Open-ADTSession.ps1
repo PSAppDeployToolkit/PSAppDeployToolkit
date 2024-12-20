@@ -364,6 +364,14 @@ function Open-ADTSession
                 $ExecutionContext.SessionState.Path.CurrentLocation.Path
             }
         }
+
+        # Add any unbound arguments into $PSBoundParameters when using a derived class.
+        if ($PSBoundParameters.ContainsKey('UnboundArguments') -and !$SessionClass.Equals([PSADT.Module.DeploymentSession]))
+        {
+            $null = (Convert-ADTValuesFromRemainingArguments -RemainingArguments $UnboundArguments).GetEnumerator().ForEach({
+                    $PSBoundParameters.Add($_.Key, $_.Value)
+                })
+        }
     }
 
     process
