@@ -77,7 +77,7 @@ if (Get-Module -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-844
 
 # Store build information pertaining to this module's state.
 New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
-        Manifest = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName 'PSAppDeployToolkit'
+        Manifest = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName 'PSAppDeployToolkit.psd1'
         Assemblies = (Get-ChildItem -Path $PSScriptRoot\lib\PSADT*.dll).FullName
         Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
         Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
