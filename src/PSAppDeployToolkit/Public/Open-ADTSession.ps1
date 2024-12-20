@@ -397,7 +397,7 @@ function Open-ADTSession
                 }
 
                 # Add any unbound arguments into the $adtSession object as PSNoteProperty objects.
-                if ($PSBoundParameters.ContainsKey('UnboundArguments'))
+                if ($PSBoundParameters.ContainsKey('UnboundArguments') -and $SessionClass.Equals([PSADT.Module.DeploymentSession]))
                 {
                     (Convert-ADTValuesFromRemainingArguments -RemainingArguments $UnboundArguments).GetEnumerator() | & {
                         begin
