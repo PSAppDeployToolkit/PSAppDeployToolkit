@@ -884,7 +884,7 @@ namespace PSADT.Module
         /// Closes the session and releases resources.
         /// </summary>
         /// <returns>The exit code.</returns>
-        public int? Close()
+        public int Close()
         {
             try
             {
@@ -993,7 +993,7 @@ namespace PSADT.Module
                 }
 
                 // Return the module's cached exit code to the caller.
-                return !Settings.HasFlag(DeploymentSettings.NoExitOnClose) ? (int)adtExitCode.Value : null;
+                return (int)adtExitCode.Value;
             }
             catch
             {
@@ -1356,6 +1356,14 @@ namespace PSADT.Module
         public string GetDeploymentTypeName()
         {
             return DeploymentTypeName;
+        }
+
+        /// Determines whether the session is allowed to exit PowerShell on close.
+        /// </summary>
+        /// <returns>True if the session can exit; otherwise, false.</returns>
+        public bool CanExitOnClose()
+        {
+            return !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
         }
 
         /// <summary>

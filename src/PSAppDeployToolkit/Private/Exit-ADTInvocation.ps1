@@ -10,8 +10,11 @@ function Exit-ADTInvocation
     param
     (
         [Parameter(Mandatory = $true)]
-        [AllowNull()]
-        [System.Nullable[System.Int32]]$ExitCode,
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$ExitCode,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoShellExit,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force
@@ -34,9 +37,10 @@ function Exit-ADTInvocation
     $Script:ADT.Initialized = $false
 
     # Return early if this function was called from the command line.
-    if (($null -eq $ExitCode) -and !$Force)
+    if ($NoShellExit -and !$Force)
     {
-        return
+        $Global:LASTEXITCODE = $ExitCode
+        break
     }
 
     # If a callback failed and we're in a proper console, forcibly exit the process.

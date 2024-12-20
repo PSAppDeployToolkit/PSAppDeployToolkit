@@ -446,7 +446,7 @@ function Open-ADTSession
             {
                 if (!$adtSession)
                 {
-                    Exit-ADTInvocation -ExitCode $(if (!$noExitOnClose) { 60008 })
+                    Exit-ADTInvocation -ExitCode 60008 -NoShellExit:$noExitOnClose
                 }
                 else
                 {
