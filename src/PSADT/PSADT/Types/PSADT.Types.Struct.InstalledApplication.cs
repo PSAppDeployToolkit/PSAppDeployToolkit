@@ -24,6 +24,7 @@ namespace PSADT.Types
         /// <param name="installLocation">The location where the application is installed.</param>
         /// <param name="installDate">The date the application was installed (as a string).</param>
         /// <param name="publisher">The publisher of the application.</param>
+        /// <param name="helpLink">The publisher's help link of the application.</param>
         /// <param name="systemComponent">A value indicating whether the application is a system component.</param>
         /// <param name="windowsInstaller">A value indicating whether the application is an MSI.</param>
         /// <param name="is64BitApplication">A value indicating whether the application is a 64-bit application.</param>
@@ -40,6 +41,7 @@ namespace PSADT.Types
             string installLocation,
             string installDate,
             string publisher,
+            Uri? helpLink,
             bool systemComponent,
             bool windowsInstaller,
             bool is64BitApplication)
@@ -55,6 +57,7 @@ namespace PSADT.Types
             InstallSource = installSource;
             InstallLocation = installLocation;
             Publisher = publisher;
+            HelpLink = helpLink;
             SystemComponent = systemComponent;
             WindowsInstaller = windowsInstaller;
             Is64BitApplication = is64BitApplication;
@@ -132,6 +135,11 @@ namespace PSADT.Types
         /// Gets the publisher of the application.
         /// </summary>
         public string Publisher { get; }
+
+        /// <summary>
+        /// Gets the publisher's help link of the application.
+        /// </summary>
+        public Uri? HelpLink { get; }
 
         /// <summary>
         /// Gets a value indicating whether the application is a system component.

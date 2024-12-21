@@ -225,6 +225,7 @@ function Get-ADTApplication
                             ($_ | Select-Object -ExpandProperty InstallLocation -ErrorAction Ignore),
                             ($_ | Select-Object -ExpandProperty InstallDate -ErrorAction Ignore),
                             ($_ | Select-Object -ExpandProperty Publisher -ErrorAction Ignore),
+                            ($_ | Select-Object -ExpandProperty HelpLink -ErrorAction Ignore),
                             !!($_ | Select-Object -ExpandProperty SystemComponent -ErrorAction Ignore),
                             $windowsInstaller,
                             ([System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
