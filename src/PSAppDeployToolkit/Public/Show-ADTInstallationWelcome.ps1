@@ -248,6 +248,12 @@ function Show-ADTInstallationWelcome
 
     begin
     {
+        # Throw if we have duplicated process objects.
+        if (!($CloseProcesses.Name | Measure-Object).Count.Equals($CloseProcesses.Count))
+        {
+            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcesses -ProvidedValue $CloseProcesses -ExceptionMessage 'The specified CloseProcesses array contains duplicate processes.'))
+        }
+
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtEnv = Get-ADTEnvironmentTable
