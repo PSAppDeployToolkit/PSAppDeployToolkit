@@ -16,7 +16,7 @@ namespace PSADT.Types
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("Name", "A mandatory property was null or empty.");
+                throw new ArgumentNullException(nameof(name), "A mandatory property was null or empty.");
             }
             Name = name;
         }
@@ -30,7 +30,7 @@ namespace PSADT.Types
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("Name", "A mandatory property was null or empty.");
+                throw new ArgumentNullException(nameof(name), "A mandatory property was null or empty.");
             }
             Name = name;
 
@@ -49,18 +49,18 @@ namespace PSADT.Types
             // Validate the provided name value.
             if (!properties.ContainsKey("Name"))
             {
-                throw new ArgumentException("A mandatory property was not provided.", "Name");
+                throw new ArgumentException("A mandatory property was not provided.", $"{nameof(properties)}.Name");
             }
-            if (string.IsNullOrWhiteSpace(properties["Name"]?.ToString()))
+            if (string.IsNullOrWhiteSpace((string?)(properties[nameof(Name)])))
             {
-                throw new ArgumentNullException("Name", "A mandatory property was null or empty.");
+                throw new ArgumentNullException($"{nameof(properties)}.Name", "A mandatory property was null or empty.");
             }
-            Name = properties["Name"]!.ToString()!;
+            Name = (string)properties[nameof(Name)]!;
 
             // Add in the description if it's valid.
-            if (!string.IsNullOrWhiteSpace(properties["Description"]?.ToString()))
+            if (!string.IsNullOrWhiteSpace((string?)properties[nameof(Description)]))
             {
-                Description = properties["Description"]!.ToString();
+                Description = (string)properties[nameof(Description)]!;
             }
         }
 
