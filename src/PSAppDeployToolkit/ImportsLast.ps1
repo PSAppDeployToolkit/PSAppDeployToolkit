@@ -4,127 +4,138 @@
 #
 #-----------------------------------------------------------------------------
 
-# Set all functions as read-only, export all public definitions and finalise the CommandTable.
-Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
-Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
-New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
-Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
+# Rethrowing caught exceptions makes the error output from Import-Module look better.
+try
+{
+    # Set all functions as read-only, export all public definitions and finalise the CommandTable.
+    Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
+    Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
+    New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
+    Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
 
-# Define object for holding all PSADT variables.
-New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
-        Callbacks = [pscustomobject]@{
-            Starting = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-            Opening = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-            Closing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-            Finishing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-        }
-        Directories = [pscustomobject]@{
-            Defaults = ([ordered]@{
-                    Script = "$PSScriptRoot"
-                    Config = "$PSScriptRoot\Config"
-                    Strings = "$PSScriptRoot\Strings"
-                }).AsReadOnly()
-            Script = $null
+    # Define object for holding all PSADT variables.
+    New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
+            Callbacks = [pscustomobject]@{
+                Starting = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                Opening = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                Closing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                Finishing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+            }
+            Directories = [pscustomobject]@{
+                Defaults = ([ordered]@{
+                        Script = "$PSScriptRoot"
+                        Config = "$PSScriptRoot\Config"
+                        Strings = "$PSScriptRoot\Strings"
+                    }).AsReadOnly()
+                Script = $null
+                Config = $null
+                Strings = $null
+            }
+            Durations = [pscustomobject]@{
+                ModuleImport = $null
+                ModuleInit = $null
+            }
+            Sessions = [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new()
+            SessionState = $ExecutionContext.SessionState
+            TerminalServerMode = $false
+            Environment = $null
+            Language = $null
             Config = $null
             Strings = $null
-        }
-        Durations = [pscustomobject]@{
-            ModuleImport = $null
-            ModuleInit = $null
-        }
-        Sessions = [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new()
-        SessionState = $ExecutionContext.SessionState
-        TerminalServerMode = $false
-        Environment = $null
-        Language = $null
-        Config = $null
-        Strings = $null
-        LastExitCode = 0
-        Initialized = $false
-    })
+            LastExitCode = 0
+            Initialized = $false
+        })
 
-# Define object for holding all dialog window variables.
-New-Variable -Name Dialogs -Option Constant -Value ([ordered]@{
-        Box = ([ordered]@{
-                Buttons = ([ordered]@{
-                        OK = 0
-                        OKCancel = 1
-                        AbortRetryIgnore = 2
-                        YesNoCancel = 3
-                        YesNo = 4
-                        RetryCancel = 5
-                        CancelTryAgainContinue = 6
-                    }).AsReadOnly()
-                Icons = ([ordered]@{
-                        None = 0
-                        Stop = 16
-                        Question = 32
-                        Exclamation = 48
-                        Information = 64
-                    }).AsReadOnly()
-                DefaultButtons = ([ordered]@{
-                        First = 0
-                        Second = 256
-                        Third = 512
-                    }).AsReadOnly()
-            }).AsReadOnly()
-        Classic = [pscustomobject]@{
-            ProgressWindow = [pscustomobject]@{
-                SyncHash = [System.Collections.Hashtable]::Synchronized(@{})
-                XamlCode = $null
-                PowerShell = $null
-                Invocation = $null
-                Running = $false
+    # Define object for holding all dialog window variables.
+    New-Variable -Name Dialogs -Option Constant -Value ([ordered]@{
+            Box = ([ordered]@{
+                    Buttons = ([ordered]@{
+                            OK = 0
+                            OKCancel = 1
+                            AbortRetryIgnore = 2
+                            YesNoCancel = 3
+                            YesNo = 4
+                            RetryCancel = 5
+                            CancelTryAgainContinue = 6
+                        }).AsReadOnly()
+                    Icons = ([ordered]@{
+                            None = 0
+                            Stop = 16
+                            Question = 32
+                            Exclamation = 48
+                            Information = 64
+                        }).AsReadOnly()
+                    DefaultButtons = ([ordered]@{
+                            First = 0
+                            Second = 256
+                            Third = 512
+                        }).AsReadOnly()
+                }).AsReadOnly()
+            Classic = [pscustomobject]@{
+                ProgressWindow = [pscustomobject]@{
+                    SyncHash = [System.Collections.Hashtable]::Synchronized(@{})
+                    XamlCode = $null
+                    PowerShell = $null
+                    Invocation = $null
+                    Running = $false
+                }
+                Assets = [pscustomobject]@{
+                    Icon = $null
+                    Logo = $null
+                    Banner = $null
+                }
+                Font = [System.Drawing.SystemFonts]::MessageBoxFont
+                BannerHeight = 0
+                Width = 450
             }
-            Assets = [pscustomobject]@{
-                Icon = $null
-                Logo = $null
-                Banner = $null
+            Fluent = [pscustomobject]@{
+                ProgressWindow = [pscustomobject]@{
+                    Running = $false
+                }
             }
-            Font = [System.Drawing.SystemFonts]::MessageBoxFont
-            BannerHeight = 0
-            Width = 450
-        }
-        Fluent = [pscustomobject]@{
-            ProgressWindow = [pscustomobject]@{
-                Running = $false
-            }
-        }
-    }).AsReadOnly()
+        }).AsReadOnly()
 
-# Registry path transformation constants used within Convert-ADTRegistryPath.
-New-Variable -Name Registry -Option Constant -Value ([ordered]@{
-        PathMatches = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(
-            ':\\'
-            ':'
-            '\\'
-        )
-        PathReplacements = ([ordered]@{
-                '^HKLM' = 'HKEY_LOCAL_MACHINE\'
-                '^HKCR' = 'HKEY_CLASSES_ROOT\'
-                '^HKCU' = 'HKEY_CURRENT_USER\'
-                '^HKU' = 'HKEY_USERS\'
-                '^HKCC' = 'HKEY_CURRENT_CONFIG\'
-                '^HKPD' = 'HKEY_PERFORMANCE_DATA\'
-            }).AsReadOnly()
-        WOW64Replacements = ([ordered]@{
-                '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)' = '$1Wow6432Node\$2'
-                '^HKEY_LOCAL_MACHINE\\SOFTWARE\\' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'
-                '^HKEY_LOCAL_MACHINE\\SOFTWARE$' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
-                '^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\' = 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\'
-            }).AsReadOnly()
-    }).AsReadOnly()
+    # Registry path transformation constants used within Convert-ADTRegistryPath.
+    New-Variable -Name Registry -Option Constant -Value ([ordered]@{
+            PathMatches = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(
+                ':\\'
+                ':'
+                '\\'
+            )
+            PathReplacements = ([ordered]@{
+                    '^HKLM' = 'HKEY_LOCAL_MACHINE\'
+                    '^HKCR' = 'HKEY_CLASSES_ROOT\'
+                    '^HKCU' = 'HKEY_CURRENT_USER\'
+                    '^HKU' = 'HKEY_USERS\'
+                    '^HKCC' = 'HKEY_CURRENT_CONFIG\'
+                    '^HKPD' = 'HKEY_PERFORMANCE_DATA\'
+                }).AsReadOnly()
+            WOW64Replacements = ([ordered]@{
+                    '^(HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\|HKEY_CURRENT_USER\\SOFTWARE\\Classes\\|HKEY_CLASSES_ROOT\\)(AppID\\|CLSID\\|DirectShow\\|Interface\\|Media Type\\|MediaFoundation\\|PROTOCOLS\\|TypeLib\\)' = '$1Wow6432Node\$2'
+                    '^HKEY_LOCAL_MACHINE\\SOFTWARE\\' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\'
+                    '^HKEY_LOCAL_MACHINE\\SOFTWARE$' = 'HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node'
+                    '^HKEY_CURRENT_USER\\Software\\Microsoft\\Active Setup\\Installed Components\\' = 'HKEY_CURRENT_USER\Software\Wow6432Node\Microsoft\Active Setup\Installed Components\'
+                }).AsReadOnly()
+        }).AsReadOnly()
 
-# Lookup table for preference variables and their associated CommonParameter name.
-New-Variable -Name PreferenceVariableTable -Option Constant -Value ([ordered]@{
-        'InformationAction' = 'InformationPreference'
-        'ProgressAction' = 'ProgressPreference'
-        'WarningAction' = 'WarningPreference'
-        'Confirm' = 'ConfirmPreference'
-        'Verbose' = 'VerbosePreference'
-        'WhatIf' = 'WhatIfPreference'
-        'Debug' = 'DebugPreference'
-    }).AsReadOnly()
+    # Lookup table for preference variables and their associated CommonParameter name.
+    New-Variable -Name PreferenceVariableTable -Option Constant -Value ([ordered]@{
+            'InformationAction' = 'InformationPreference'
+            'ProgressAction' = 'ProgressPreference'
+            'WarningAction' = 'WarningPreference'
+            'Confirm' = 'ConfirmPreference'
+            'Verbose' = 'VerbosePreference'
+            'WhatIf' = 'WhatIfPreference'
+            'Debug' = 'DebugPreference'
+        }).AsReadOnly()
+
+    # Send the module's database into the C# code for internal access.
+    [PSADT.Module.InternalDatabase]::Init($ADT)
+}
+catch
+{
+    throw
+}
 
 # Import the XML code for the classic progress window.
 $Dialogs.Classic.ProgressWindow.XamlCode = [System.IO.StringReader]::new(@'
@@ -170,9 +181,6 @@ $Dialogs.Classic.ProgressWindow.XamlCode = [System.IO.StringReader]::new(@'
     </Grid>
 </Window>
 '@)
-
-# Send the module's database into the C# code for internal access.
-[PSADT.Module.InternalDatabase]::Init($ADT)
 
 # Determine how long the import took.
 $ADT.Durations.ModuleImport = [System.DateTime]::Now - $ModuleImportStart
