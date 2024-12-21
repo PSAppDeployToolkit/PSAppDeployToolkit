@@ -34,13 +34,13 @@ namespace PSADT.Types
             string uninstallSubKey,
             Guid? productCode,
             string displayName,
-            string displayVersion,
-            string uninstallString,
-            string quietUninstallString,
-            string installSource,
-            string installLocation,
-            string installDate,
-            string publisher,
+            string? displayVersion,
+            string? uninstallString,
+            string? quietUninstallString,
+            string? installSource,
+            string? installLocation,
+            string? installDate,
+            string? publisher,
             Uri? helpLink,
             bool systemComponent,
             bool windowsInstaller,
@@ -104,27 +104,27 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the version of the application.
         /// </summary>
-        public string DisplayVersion { get; }
+        public string? DisplayVersion { get; }
 
         /// <summary>
         /// Gets the uninstall string used to remove the application.
         /// </summary>
-        public string UninstallString { get; }
+        public string? UninstallString { get; }
 
         /// <summary>
         /// Gets the quiet uninstall string used to remove the application.
         /// </summary>
-        public string QuietUninstallString { get; }
+        public string? QuietUninstallString { get; }
 
         /// <summary>
         /// Gets the source from which the application was installed.
         /// </summary>
-        public string InstallSource { get; }
+        public string? InstallSource { get; }
 
         /// <summary>
         /// Gets the location where the application is installed.
         /// </summary>
-        public string InstallLocation { get; }
+        public string? InstallLocation { get; }
 
         /// <summary>
         /// Gets the date the application was installed as a <see cref="DateTime"/> object.
@@ -134,7 +134,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the publisher of the application.
         /// </summary>
-        public string Publisher { get; }
+        public string? Publisher { get; }
 
         /// <summary>
         /// Gets the publisher's help link of the application.

@@ -177,8 +177,12 @@ function Get-ADTApplication
                 $installedApplication = Get-ItemProperty -Path $uninstallKeyPaths -ErrorAction Ignore | & {
                     process
                     {
+                        # Cache all PSProperty names within this pipelined object.
+                        $psPropNames = $_.PSObject.Properties.Name
+                        $defaultGuid = [System.Guid]::Empty
+
                         # Exclude anything without a DisplayName field.
-                        if (!$_.PSObject.Properties.Name.Contains('DisplayName') -or [System.String]::IsNullOrWhiteSpace($_.DisplayName))
+                        if (!$psPropNames.Contains('DisplayName') -or [System.String]::IsNullOrWhiteSpace($_.DisplayName))
                         {
                             return
                         }
@@ -191,14 +195,13 @@ function Get-ADTApplication
                         }
 
                         # Apply application type filter if specified.
-                        $windowsInstaller = !!($_ | Select-Object -ExpandProperty WindowsInstaller -ErrorAction Ignore)
+                        $windowsInstaller = !!$(if ($psPropNames.Contains('WindowsInstaller')) { $_.WindowsInstaller })
                         if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
                         {
                             return
                         }
 
                         # Apply ProductCode filter if specified.
-                        $defaultGuid = [System.Guid]::Empty
                         $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($_.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
                         if ($ProductCode -and (!$appMsiGuid -or ($ProductCode -notcontains $appMsiGuid)))
                         {
@@ -218,15 +221,15 @@ function Get-ADTApplication
                             $_.PSChildName,
                             $appMsiGuid,
                             $_.DisplayName,
-                            ($_ | Select-Object -ExpandProperty DisplayVersion -ErrorAction Ignore),
-                            ($_ | Select-Object -ExpandProperty UninstallString -ErrorAction Ignore),
-                            ($_ | Select-Object -ExpandProperty QuietUninstallString -ErrorAction Ignore),
-                            ($_ | Select-Object -ExpandProperty InstallSource -ErrorAction Ignore),
-                            ($_ | Select-Object -ExpandProperty InstallLocation -ErrorAction Ignore),
-                            ($_ | Select-Object -ExpandProperty InstallDate -ErrorAction Ignore),
-                            ($_ | Select-Object -ExpandProperty Publisher -ErrorAction Ignore),
-                            ($_ | Select-Object -ExpandProperty HelpLink -ErrorAction Ignore),
-                            !!($_ | Select-Object -ExpandProperty SystemComponent -ErrorAction Ignore),
+                            $(if ($psPropNames.Contains('DisplayVersion') -and ![System.String]::IsNullOrWhiteSpace($_.DisplayVersion)) { $_.DisplayVersion }),
+                            $(if ($psPropNames.Contains('UninstallString') -and ![System.String]::IsNullOrWhiteSpace($_.UninstallString)) { $_.UninstallString }),
+                            $(if ($psPropNames.Contains('QuietUninstallString') -and ![System.String]::IsNullOrWhiteSpace($_.QuietUninstallString)) { $_.QuietUninstallString }),
+                            $(if ($psPropNames.Contains('InstallSource') -and ![System.String]::IsNullOrWhiteSpace($_.InstallSource)) { $_.InstallSource }),
+                            $(if ($psPropNames.Contains('InstallLocation') -and ![System.String]::IsNullOrWhiteSpace($_.InstallLocation)) { $_.InstallLocation }),
+                            $(if ($psPropNames.Contains('InstallDate') -and ![System.String]::IsNullOrWhiteSpace($_.InstallDate)) { $_.InstallDate }),
+                            $(if ($psPropNames.Contains('Publisher') -and ![System.String]::IsNullOrWhiteSpace($_.Publisher)) { $_.Publisher }),
+                            $(if ($psPropNames.Contains('HelpLink') -and ![System.String]::IsNullOrWhiteSpace($_.HelpLink)) { $_.HelpLink }),
+                            !!$(if ($psPropNames.Contains('SystemComponent')) { $_.SystemComponent }),
                             $windowsInstaller,
                             ([System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
                         )
