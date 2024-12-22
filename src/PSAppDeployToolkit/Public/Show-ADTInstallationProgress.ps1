@@ -140,15 +140,15 @@ function Show-ADTInstallationProgress
         }
         if (!$PSBoundParameters.ContainsKey('WindowSubtitle'))
         {
-            $PSBoundParameters.Add('WindowSubtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
+            $PSBoundParameters.Add('WindowSubtitle', $adtStrings.Progress.Subtitle.($adtSession.DeploymentType.ToString()))
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessage'))
         {
-            $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress."Message$($adtSession.DeploymentType)")
+            $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress.Message.($adtSession.DeploymentType.ToString()))
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
         {
-            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress."Message$($adtSession.DeploymentType)Detail")
+            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress.MessageDetail.($adtSession.DeploymentType.ToString()))
         }
     }
 
@@ -171,7 +171,7 @@ function Show-ADTInstallationProgress
             {
                 try
                 {
-                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $($adtStrings.BalloonText.Start)"
+                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonText.Start.($adtSession.DeploymentType.ToString())
                 }
                 catch
                 {

@@ -21,6 +21,10 @@ function Show-ADTInstallationRestartPromptFluent
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [System.String]$DeploymentType,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.UInt32]$CountdownSeconds,
 
         [Parameter(Mandatory = $false)]
@@ -47,7 +51,7 @@ function Show-ADTInstallationRestartPromptFluent
         $adtConfig.Assets.Logo,
         $adtStrings.RestartPrompt.TimeRemaining,
         $(if (!$NoCountdown) { [System.TimeSpan]::FromSeconds($CountdownSeconds) }),
-        $adtStrings.RestartPrompt.Message,
+        $adtStrings.RestartPrompt.Message.$DeploymentType,
         $adtStrings.RestartPrompt.MessageRestart,
         $adtStrings.RestartPrompt.ButtonRestartLater,
         $adtStrings.RestartPrompt.ButtonRestartNow

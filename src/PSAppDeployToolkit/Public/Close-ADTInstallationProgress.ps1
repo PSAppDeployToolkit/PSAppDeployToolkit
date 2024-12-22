@@ -84,17 +84,17 @@ function Close-ADTInstallationProgress
                 {
                     ([PSADT.Module.DeploymentStatus]::FastRetry)
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.($_.ToString()))"
+                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText (Get-ADTStringTable).BalloonText.($_.ToString()).($adtSession.DeploymentType.ToString())
                         break
                     }
                     ([PSADT.Module.DeploymentStatus]::Error)
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.($_.ToString()))"
+                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText (Get-ADTStringTable).BalloonText.($_.ToString()).($adtSession.DeploymentType.ToString())
                         break
                     }
                     default
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText "$($adtSession.GetDeploymentTypeName()) $((Get-ADTStringTable).BalloonText.($_.ToString()))"
+                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText (Get-ADTStringTable).BalloonText.($_.ToString()).($adtSession.DeploymentType.ToString())
                         break
                     }
                 }

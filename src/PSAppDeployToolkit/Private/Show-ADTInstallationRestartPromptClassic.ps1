@@ -18,6 +18,10 @@ function Show-ADTInstallationRestartPromptClassic
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [System.String]$DeploymentType,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.UInt32]$CountdownSeconds,
 
         [Parameter(Mandatory = $true)]
@@ -179,13 +183,13 @@ function Show-ADTInstallationRestartPromptClassic
     $labelMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
     $labelMessage.TabStop = $false
     $labelMessage.AutoSize = $true
-    $labelMessage.Text = if ($NoCountdown)
+    $labelMessage.Text = if (!$NoCountdown)
     {
-        $adtStrings.RestartPrompt.Message
+        "$($adtStrings.RestartPrompt.Message.$DeploymentType) $($adtStrings.RestartPrompt.MessageTime)`n`n$($adtStrings.RestartPrompt.MessageRestart)"
     }
     else
     {
-        "$($adtStrings.RestartPrompt.Message) $($adtStrings.RestartPrompt.MessageTime)`n`n$($adtStrings.RestartPrompt.MessageRestart)"
+        $adtStrings.RestartPrompt.Message.$DeploymentType
     }
 
     # Label Countdown.
