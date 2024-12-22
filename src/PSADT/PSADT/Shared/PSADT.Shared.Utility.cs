@@ -130,6 +130,10 @@ namespace PSADT.Shared
         {
             Dictionary<string, object> values = [];
             string currentKey = string.Empty;
+            if ((null == remainingArguments) || (remainingArguments.Count == 0))
+            {
+                return values;
+            }
             try
             {
                 foreach (object argument in remainingArguments)
