@@ -23,8 +23,8 @@ function Invoke-ADTCommandWithRetries
         How long to sleep between retries.
 
     .PARAMETER MaximumElapsedTime
-        The maximum elapsed time allowed to passed while attempting retries.
-        If the maximum elapsted time has passed and there are still attempts remaining they will be disgarded.
+        The maximum elapsed time allowed to passed while attempting retries. If the maximum elapsted time has passed and there are still attempts remaining they will be disgarded.
+
         If this parameter is supplied and the `-Retries` parameter isn't, this command will continue to retry the provided command until the time limit runs out.
 
     .PARAMETER SleepSeconds
@@ -53,14 +53,12 @@ function Invoke-ADTCommandWithRetries
     .EXAMPLE
         Invoke-ADTCommandWithRetries Get-FileHash -Path '\\MyShare\MyFile' -MaximumElapsedTime (New-TimeSpan -Seconds 90) -SleepDuration (New-TimeSpan -Seconds 1)
 
-        Gets the hash of a file on an SMB share.
-        If the connection to the SMB share drops, it will retry the command every 2 seconds until it successfully gets the hash or 90 seconds have passed since the initial attempt.
+        Gets the hash of a file on an SMB share. If the connection to the SMB share drops, it will retry the command every 2 seconds until it successfully gets the hash or 90 seconds have passed since the initial attempt.
 
     .EXAMPLE
         Invoke-ADTCommandWithRetries Copy-ADTFile -Path \\MyShare\MyFile -Destination C:\Windows\Temp -Retries 5 -MaximumElapsedTime (New-TimeSpan -Minutes 5)
 
-        Copies a file from an SMB share to C:\Windows\Temp.
-        If the connection to the SMB share drops, it will retry the command once every 5 seconds until either 5 attempts have been made or 5 minutes have passed since the initial attempt.
+        Copies a file from an SMB share to C:\Windows\Temp. If the connection to the SMB share drops, it will retry the command once every 5 seconds until either 5 attempts have been made or 5 minutes have passed since the initial attempt.
 
     .NOTES
         An active ADT session is NOT required to use this function.
