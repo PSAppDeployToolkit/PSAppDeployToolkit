@@ -10,10 +10,17 @@
 # Dot-source our imports.
 if (!$Module.Compiled)
 {
-    New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
-    New-Variable -Name FunctionPaths -Option Constant -Value ($ModuleFiles | & { process { return "Microsoft.PowerShell.Core\Function::$($_.BaseName)" } })
-    Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
-    $ModuleFiles.FullName | . { process { . $_ } }
+    try
+    {
+        New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
+        New-Variable -Name FunctionPaths -Option Constant -Value ($ModuleFiles | & { process { return "Microsoft.PowerShell.Core\Function::$($_.BaseName)" } })
+        Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
+        $ModuleFiles.FullName | . { process { . $_ } }
+    }
+    catch
+    {
+        throw
+    }
 }
 
 # Dot-source our final imports.
