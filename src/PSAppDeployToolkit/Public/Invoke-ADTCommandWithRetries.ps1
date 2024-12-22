@@ -105,7 +105,7 @@ function Invoke-ADTCommandWithRetries
         [System.TimeSpan]$MaximumElapsedTime,
 
         [Parameter(Mandatory = $false)]
-        [System.Obsolete("This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use [-SleepDuration] instead.")]
+        [System.Obsolete("Please use '-SleepDuration' instead as this will be removed in PSAppDeployToolkit 4.2.0.")]
         [ValidateRange(1, 60)]
         [System.UInt32]$SleepSeconds = 5,
 
