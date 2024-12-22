@@ -132,9 +132,14 @@ function Invoke-ADTCommandWithRetries
                 $boundParams = Convert-ADTValuesFromRemainingArguments -RemainingArguments $Parameters
                 $callerName = (Get-PSCallStack)[1].Command
 
+                # Set up a stopwatch when we're tracking the maximum allowed retry duration.
+                $maxElapsedStopwatch = if ($PSBoundParameters.ContainsKey('MaximumElapsedTime'))
+                {
+                    [System.Diagnostics.Stopwatch]::StartNew()
+                }
+
                 # Perform the request, and retry it as per the configured values.
                 $i = 0
-                $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
                 while ($true)
                 {
                     $i++
@@ -144,22 +149,21 @@ function Invoke-ADTCommandWithRetries
                     }
                     catch
                     {
+                        # Capture the ErrorRecord object to throw at the end.
                         $errorRecord = $_
-                        if ($PSBoundParameters.ContainsKey('MaximumElapsedTime') -and ($stopwatch.Elapsed -ge $MaximumElapsedTime))
+
+                        # Break if we've exceeded our bounds.
+                        if ($maxElapsedStopwatch)
                         {
-                            # Time limit has been reached
-                            break
-                        }
-                        elseif ($PSBoundParameters.ContainsKey('MaximumElapsedTime') -and (!$PSBoundParameters.ContainsKey('Retries')))
-                        {
-                            # Timelimit has not been reached and a maximum retry limit has not been supplied. Will continue to retry until timelimit has been reached.
+                            if (($maxElapsedStopwatch.Elapsed -ge $MaximumElapsedTime) -or ($PSBoundParameters.ContainsKey('Retries') -and ($i -ge $Retries)))
+                            {
+                                break
+                            }
                         }
                         elseif ($i -ge $Retries)
                         {
-                            # Retry limit has been reached
                             break
                         }
-
                         Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $SleepSeconds second$(if (!$SleepSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
                         [System.Threading.Thread]::Sleep($SleepSeconds * 1000)
                     }
