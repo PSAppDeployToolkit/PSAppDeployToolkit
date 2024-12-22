@@ -76,7 +76,7 @@ function Block-ADTAppExecution
             $PSCmdlet.ThrowTerminatingError($_)
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.installName)_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
+        $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.InstallName)_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
     }
 
     process
@@ -119,7 +119,7 @@ function Block-ADTAppExecution
 
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
                 $blockExecRegPath = Convert-ADTRegistryPath -Key (Join-Path -Path $adtConfig.Toolkit.RegPath -ChildPath $adtEnv.appDeployToolkitName)
-                $blockExecCommand = "& (Import-Module -FullyQualifiedName @{ ModuleName = '$("$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1".Replace("'", "''"))'; Guid = '$($MyInvocation.MyCommand.Module.Guid)'; ModuleVersion = '$($MyInvocation.MyCommand.Module.Version)' } -PassThru) { & `$CommandTable.'Initialize-ADTModule' -ScriptDirectory '$($Script:ADT.Directories.Script.Replace("'", "''"))'; `$null = & `$CommandTable.'Show-ADTInstallationPrompt$($adtConfig.UI.DialogStyle)' -Title '$($adtSession.InstallTitle.Replace("'","''"))' -Subtitle '$([System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType).Replace("'", "''"))' -Timeout $($adtConfig.UI.DefaultTimeout) -Message '$($adtStrings.BlockExecution.Message.Replace("'", "''"))' -Icon Warning -ButtonRightText OK }"
+                $blockExecCommand = "& (Import-Module -FullyQualifiedName @{ ModuleName = '$("$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1".Replace("'", "''"))'; Guid = '$($MyInvocation.MyCommand.Module.Guid)'; ModuleVersion = '$($MyInvocation.MyCommand.Module.Version)' } -PassThru) { & `$CommandTable.'Initialize-ADTModule' -ScriptDirectory '$($Script:ADT.Directories.Script.Replace("'", "''"))'; `$null = & `$CommandTable.'Show-ADTInstallationPrompt$($adtConfig.UI.DialogStyle)' -Title '$($adtSession.InstallTitle.Replace("'","''"))' -Subtitle '$($adtStrings.BlockExecution.Subtitle.($adtSession.DeploymentType.ToString()).Replace("'", "''"))' -Timeout $($adtConfig.UI.DefaultTimeout) -Message '$($adtStrings.BlockExecution.Message.($adtSession.DeploymentType.ToString()).Replace("'", "''"))' -Icon Warning -ButtonRightText OK }"
                 $blockExecDbgPath = "conhost.exe --headless $([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -Command & ([scriptblock]::Create([Microsoft.Win32.Registry]::GetValue('$($blockExecRegPath -replace '^Microsoft\.PowerShell\.Core\\Registry::')', 'BlockExecutionCommand', `$null))); #"
                 Set-ADTRegistryKey -Key $blockExecRegPath -Name BlockExecutionCommand -Value $blockExecCommand
 

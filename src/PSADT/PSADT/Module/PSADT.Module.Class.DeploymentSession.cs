@@ -173,9 +173,6 @@ namespace PSADT.Module
                     }
                 }
 
-                // Get deployment type name from the strings table.
-                _deploymentTypeName = (string)((Hashtable)InternalDatabase.GetStrings()["DeploymentType"]!)[_deploymentType.ToString()]!;
-
                 // Establish script directories.
                 if (null != _scriptDirectory)
                 {
@@ -1318,15 +1315,6 @@ namespace PSADT.Module
             return DefaultMsiExecutablesList;
         }
 
-        /// <summary>
-        /// Gets the deployment type name.
-        /// </summary>
-        /// <returns>The deployment type name.</returns>
-        public string GetDeploymentTypeName()
-        {
-            return DeploymentTypeName;
-        }
-
         /// Determines whether the session is allowed to exit PowerShell on close.
         /// </summary>
         /// <returns>True if the session can exit; otherwise, false.</returns>
@@ -1477,7 +1465,6 @@ namespace PSADT.Module
 
 
         private DeploymentType _deploymentType { get; } = DeploymentType.Install;
-        private string _deploymentTypeName { get; }
         private DeployMode _deployMode { get; } = DeployMode.Interactive;
         private string? _appVendor { get; }
         private string? _appName { get; }
@@ -1518,14 +1505,6 @@ namespace PSADT.Module
         public DeploymentType DeploymentType
         {
             get => (null != CallerSessionState) ? (DeploymentType)CallerSessionState.PSVariable.GetValue(nameof(DeploymentType)) : _deploymentType;
-        }
-
-        /// <summary>
-        /// Gets the deployment type name from the language string table for the given DeploymentType.
-        /// </summary>
-        public string DeploymentTypeName
-        {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeploymentTypeName)) : _deploymentTypeName;
         }
 
         /// <summary>

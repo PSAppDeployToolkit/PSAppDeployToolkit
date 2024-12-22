@@ -19,6 +19,10 @@ function Show-ADTWelcomePromptFluent
         [ValidateNotNullOrEmpty()]
         [System.String]$Subtitle,
 
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DeploymentType,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$DeferTimes,
@@ -86,11 +90,11 @@ function Show-ADTWelcomePromptFluent
         $appsToClose,
         $adtConfig.Assets.Logo,
         $adtStrings.WelcomePrompt.Fluent.DialogMessage,
-        $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses,
+        $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses.$DeploymentType,
         $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,
         $adtStrings.WelcomePrompt.Fluent.ButtonLeftText,
-        $adtStrings.WelcomePrompt.Fluent.ButtonRightText,
-        $adtStrings.WelcomePrompt.Fluent.ButtonRightTextNoProcesses,
+        $adtStrings.WelcomePrompt.Fluent.ButtonRightText.$DeploymentType,
+        $adtStrings.WelcomePrompt.Fluent.ButtonRightTextNoProcesses.$DeploymentType,
         $(if ($adtConfig.UI.DynamicProcessEvaluation) { [PSADT.UserInterface.Services.ProcessEvaluationService]::new() })
     )
 

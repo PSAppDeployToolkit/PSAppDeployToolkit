@@ -177,6 +177,16 @@ function Show-ADTInstallationPrompt
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
+        # Set up DeploymentType.
+        $DeploymentType = if ($adtSession)
+        {
+            $adtSession.DeploymentType.ToString()
+        }
+        else
+        {
+            'Install'
+        }
+
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
@@ -184,7 +194,7 @@ function Show-ADTInstallationPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format((Get-ADTStringTable).WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', (Get-ADTStringTable).Prompt.Subtitle.$DeploymentType)
         }
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {

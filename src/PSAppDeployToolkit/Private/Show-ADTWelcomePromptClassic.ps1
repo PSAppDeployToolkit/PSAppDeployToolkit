@@ -300,7 +300,7 @@ function Show-ADTWelcomePromptClassic
     $labelWelcomeMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
     $labelWelcomeMessage.Font = $Script:Dialogs.Classic.Font
     $labelWelcomeMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-    $labelWelcomeMessage.Text = $adtStrings.DeferPrompt.WelcomeMessage
+    $labelWelcomeMessage.Text = $adtStrings.WelcomePrompt.Classic.Defer.WelcomeMessage.$DeploymentType
     $labelWelcomeMessage.Name = 'LabelWelcomeMessage'
     $labelWelcomeMessage.TabStop = $false
     $labelWelcomeMessage.AutoSize = $true
@@ -384,7 +384,7 @@ function Show-ADTWelcomePromptClassic
         $labelCloseProcessesMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
         $labelCloseProcessesMessage.Font = $Script:Dialogs.Classic.Font
         $labelCloseProcessesMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelCloseProcessesMessage.Text = $adtStrings.ClosePrompt.Message
+        $labelCloseProcessesMessage.Text = $adtStrings.WelcomePrompt.Classic.Close.Message.$DeploymentType
         $labelCloseProcessesMessage.Name = 'LabelCloseProcessesMessage'
         $labelCloseProcessesMessage.TabStop = $false
         $labelCloseProcessesMessage.AutoSize = $true
@@ -402,7 +402,7 @@ function Show-ADTWelcomePromptClassic
         $labelDeferExpiryMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
         $labelDeferExpiryMessage.Font = $Script:Dialogs.Classic.Font
         $labelDeferExpiryMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelDeferExpiryMessage.Text = $adtStrings.DeferPrompt.ExpiryMessage
+        $labelDeferExpiryMessage.Text = $adtStrings.WelcomePrompt.Classic.Defer.ExpiryMessage.$DeploymentType
         $labelDeferExpiryMessage.Name = 'LabelDeferExpiryMessage'
         $labelDeferExpiryMessage.TabStop = $false
         $labelDeferExpiryMessage.AutoSize = $true
@@ -420,11 +420,11 @@ function Show-ADTWelcomePromptClassic
         $labelDeferDeadline.AutoSize = $true
         if ($DeferTimes -ge 0)
         {
-            $labelDeferDeadline.Text = "$($adtStrings.DeferPrompt.RemainingDeferrals) $($DeferTimes + 1)"
+            $labelDeferDeadline.Text = "$($adtStrings.WelcomePrompt.Classic.Defer.RemainingDeferrals) $($DeferTimes + 1)"
         }
         if ($deferDeadline)
         {
-            $labelDeferDeadline.Text = "$($adtStrings.DeferPrompt.Deadline) $deferDeadline"
+            $labelDeferDeadline.Text = "$($adtStrings.WelcomePrompt.Classic.Defer.Deadline) $deferDeadline"
         }
         $flowLayoutPanel.Controls.Add($labelDeferDeadline)
 
@@ -435,7 +435,7 @@ function Show-ADTWelcomePromptClassic
         $labelDeferWarningMessage.Padding = [System.Windows.Forms.Padding]::new(10, 0, 10, 0)
         $labelDeferWarningMessage.Font = $Script:Dialogs.Classic.Font
         $labelDeferWarningMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelDeferWarningMessage.Text = $adtStrings.DeferPrompt.WarningMessage
+        $labelDeferWarningMessage.Text = $adtStrings.WelcomePrompt.Classic.Defer.WarningMessage
         $labelDeferWarningMessage.Name = 'LabelDeferWarningMessage'
         $labelDeferWarningMessage.TabStop = $false
         $labelDeferWarningMessage.AutoSize = $true
@@ -456,11 +456,11 @@ function Show-ADTWelcomePromptClassic
         $labelCountdownMessage.AutoSize = $true
         $labelCountdownMessage.Text = if ($ForceCountdown -or !$welcomeState.RunningProcessDescriptions)
         {
-            [System.String]::Format($adtStrings.WelcomePrompt.Classic.CountdownMessage, $adtStrings.DeploymentType.$DeploymentType)
+            $adtStrings.WelcomePrompt.Classic.CountdownMessage.$DeploymentType
         }
         else
         {
-            $adtStrings.ClosePrompt.CountdownMessage
+            $adtStrings.WelcomePrompt.Classic.Close.CountdownMessage
         }
         $flowLayoutPanel.Controls.Add($labelCountdownMessage)
 
@@ -485,7 +485,7 @@ function Show-ADTWelcomePromptClassic
         $buttonCloseProcesses.DialogResult = [System.Windows.Forms.DialogResult]::Yes
         $buttonCloseProcesses.Font = $Script:Dialogs.Classic.Font
         $buttonCloseProcesses.Name = 'ButtonCloseProcesses'
-        $buttonCloseProcesses.Text = $adtStrings.ClosePrompt.ButtonClose
+        $buttonCloseProcesses.Text = $adtStrings.WelcomePrompt.Classic.Close.ButtonClose
         $buttonCloseProcesses.TabIndex = 1
         $buttonCloseProcesses.AutoSize = $true
         $buttonCloseProcesses.UseVisualStyleBackColor = $true
@@ -501,7 +501,7 @@ function Show-ADTWelcomePromptClassic
         $buttonDefer.DialogResult = [System.Windows.Forms.DialogResult]::No
         $buttonDefer.Font = $Script:Dialogs.Classic.Font
         $buttonDefer.Name = 'ButtonDefer'
-        $buttonDefer.Text = $adtStrings.ClosePrompt.ButtonDefer
+        $buttonDefer.Text = $adtStrings.WelcomePrompt.Classic.Close.ButtonDefer
         $buttonDefer.TabIndex = 0
         $buttonDefer.AutoSize = $true
         $buttonDefer.UseVisualStyleBackColor = $true
@@ -516,7 +516,7 @@ function Show-ADTWelcomePromptClassic
     $buttonContinue.DialogResult = [System.Windows.Forms.DialogResult]::OK
     $buttonContinue.Font = $Script:Dialogs.Classic.Font
     $buttonContinue.Name = 'ButtonContinue'
-    $buttonContinue.Text = $adtStrings.ClosePrompt.ButtonContinue
+    $buttonContinue.Text = $adtStrings.WelcomePrompt.Classic.Close.ButtonContinue
     $buttonContinue.TabIndex = 2
     $buttonContinue.AutoSize = $true
     $buttonContinue.UseVisualStyleBackColor = $true
@@ -528,7 +528,7 @@ function Show-ADTWelcomePromptClassic
         $toolTip.IsBalloon = $false
         $toolTip.InitialDelay = 100
         $toolTip.ReshowDelay = 100
-        $toolTip.SetToolTip($buttonContinue, $adtStrings.ClosePrompt.ButtonContinueTooltip)
+        $toolTip.SetToolTip($buttonContinue, $adtStrings.WelcomePrompt.Classic.Close.ButtonContinueTooltip)
     }
     $panelButtons.Controls.Add($buttonContinue)
     $panelButtons.ResumeLayout()
