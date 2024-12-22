@@ -53,31 +53,62 @@ function Get-ADTRunningProcesses
         return
     }
 
-    # Get all running processes and append properties.
-    Write-ADTLogEntry -Message "Checking for running applications: [$($ProcessObjects.Name -join ',')]"
-    $runningProcesses = Get-Process -Name $ProcessObjects.Name -ErrorAction Ignore | & {
+    # Process provided process objects.
+    Write-ADTLogEntry -Message "Checking for running applications: ['$([System.String]::Join("', '", ($processNames = $ProcessObjects.Name)))']"
+    $runningProcesses = $ProcessObjects | & {
+        begin
+        {
+            # Cache all running processes.
+            $allProcesses = Get-Process -Name $processNames -ErrorAction Ignore
+        }
+
         process
         {
-            if (!$_.HasExited)
+            # Get all processes that matches the object and add in extra properties.
+            $processes = foreach ($process in $allProcesses)
             {
-                return $_ | Add-Member -MemberType NoteProperty -Name ProcessDescription -Force -PassThru -Value $(
-                    if (![System.String]::IsNullOrWhiteSpace(($objDescription = $ProcessObjects | Where-Object -Property Name -EQ -Value $_.ProcessName | Select-Object -ExpandProperty Description -ErrorAction Ignore)))
-                    {
-                        # The description of the process provided with the object.
-                        $objDescription
-                    }
-                    elseif ($_.Description)
-                    {
-                        # If the process already has a description field specified, then use it.
-                        $_.Description
-                    }
-                    else
-                    {
-                        # Fall back on the process name if no description is provided by the process or as a parameter to the function.
-                        $_.ProcessName
-                    }
-                )
+                # Continue if this isn't our process.
+                if ($process.Name -ne $_.Name)
+                {
+                    continue
+                }
+
+                # Cache the process object's properties.
+                $procProps = $process.PSObject.Properties
+
+                # Add in our ProcessDescription field.
+                if (![System.String]::IsNullOrWhiteSpace($_.Description))
+                {
+                    # The description of the process provided with the object.
+                    $procProps.Add([System.Management.Automation.PSNoteProperty]::new('ProcessDescription', $_.Description))
+                }
+                elseif (![System.String]::IsNullOrWhiteSpace($process.Description))
+                {
+                    # If the process already has a description field specified, then use it.
+                    $procProps.Add([System.Management.Automation.PSNoteProperty]::new('ProcessDescription', $process.Description))
+                }
+                else
+                {
+                    # Fall back on the process name if no description is provided by the process or as a parameter to the function.
+                    $procProps.Add([System.Management.Automation.PSNoteProperty]::new('ProcessDescription', $process.ProcessName))
+                }
+
+                # Output the process object for collection.
+                $process
             }
+
+            # Return early if we have nothing.
+            if (!$processes)
+            {
+                return
+            }
+
+            # Return filtered list of processes if there is one.
+            if ($null -eq $_.Filter)
+            {
+                return $process
+            }
+            $process | Where-Object -FilterScript $_.Filter
         }
     }
 
