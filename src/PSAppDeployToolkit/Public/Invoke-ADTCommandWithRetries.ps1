@@ -145,7 +145,7 @@ function Invoke-ADTCommandWithRetries
                     catch
                     {
                         $errorRecord = $_
-                        if ($PSBoundParameters.ContainsKey('MaximumElapsedTime') -and ($stopwatch.ElapsedMilliseconds -ge $MaximumElapsedTime.TotalMilliseconds))
+                        if ($PSBoundParameters.ContainsKey('MaximumElapsedTime') -and ($stopwatch.Elapsed -ge $MaximumElapsedTime))
                         {
                             # Time limit has been reached
                             break
