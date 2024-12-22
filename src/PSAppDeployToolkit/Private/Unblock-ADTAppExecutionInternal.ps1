@@ -38,7 +38,7 @@ function Unblock-ADTAppExecutionInternal
     Get-ItemProperty -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -Verbose:$false -ErrorAction Ignore | & {
         process
         {
-            if ($_.Debugger.Contains('Show-ADTBlockedAppDialog'))
+            if ($_.Debugger.Contains('PSAppDeployToolkit'))
             {
                 Write-Verbose -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
                 Remove-ItemProperty -LiteralPath $_.PSPath -Name Debugger -Verbose:$false
