@@ -88,7 +88,13 @@ function Invoke-ADTCommandWithRetries
         [System.UInt32]$SleepSeconds = 5,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({ $_ -gt [System.TimeSpan]::New(0) })]
+        [ValidateScript({
+                if ($_ -le [System.TimeSpan]::Zero)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MaximumElapsedTime -ProvidedValue $_ -ExceptionMessage 'The specified TimeSpan must be greater than zero.'))
+                }
+                return !!$_
+            })]
         [System.TimeSpan]$MaximumElapsedTime,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
