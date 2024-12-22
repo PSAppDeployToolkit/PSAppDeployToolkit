@@ -120,13 +120,24 @@ function Block-ADTAppExecution
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
                 $blockExecRegPath = Convert-ADTRegistryPath -Key (Join-Path -Path $adtConfig.Toolkit.RegPath -ChildPath $adtEnv.appDeployToolkitName)
                 $blockExecCommand = "& (Import-Module -FullyQualifiedName @{ ModuleName = '$("$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1".Replace("'", "''"))'; Guid = '$($MyInvocation.MyCommand.Module.Guid)'; ModuleVersion = '$($MyInvocation.MyCommand.Module.Version)' } -PassThru) { & `$CommandTable.'Initialize-ADTModule' -ScriptDirectory '$($Script:ADT.Directories.Script.Replace("'", "''"))'; `$null = & `$CommandTable.'Show-ADTInstallationPrompt$($adtConfig.UI.DialogStyle)' -Title '$($adtSession.InstallTitle.Replace("'","''"))' -Subtitle '$([System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType).Replace("'", "''"))' -Timeout $($adtConfig.UI.DefaultTimeout) -Message '$($adtStrings.BlockExecution.Message.Replace("'", "''"))' -Icon Warning -ButtonRightText OK }"
+                $blockExecDbgPath = "conhost.exe --headless $([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -NoLogo -Command & ([scriptblock]::Create([Microsoft.Win32.Registry]::GetValue('$($blockExecRegPath -replace '^Microsoft\.PowerShell\.Core\\Registry::')', 'BlockExecutionCommand', `$null)))"
                 Set-ADTRegistryKey -Key $blockExecRegPath -Name BlockExecutionCommand -Value $blockExecCommand
 
                 # Enumerate each process and set the debugger value to block application execution.
-                foreach ($process in ($ProcessName -replace '$', '.exe'))
+                foreach ($process in $ProcessName)
                 {
                     Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
-                    Set-ADTRegistryKey -Key (Join-Path -Path 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options' -ChildPath $process) -Name Debugger -Value "conhost.exe --headless $([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -NoLogo -Command & ([scriptblock]::Create([Microsoft.Win32.Registry]::GetValue('$($blockExecRegPath -replace '^Microsoft\.PowerShell\.Core\\Registry::')', 'BlockExecutionCommand', `$null)))"
+                    if ([System.IO.Path]::IsPathRooted($process))
+                    {
+                        $basePath = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$($process -replace '^.+\\')"
+                        [Microsoft.Win32.Registry]::SetValue("$basePath\MyFilter", 'Debugger', $blockExecDbgPath, [Microsoft.Win32.RegistryValueKind]::String)
+                        [Microsoft.Win32.Registry]::SetValue("$basePath\MyFilter", 'FilterFullPath', $process, [Microsoft.Win32.RegistryValueKind]::String)
+                        [Microsoft.Win32.Registry]::SetValue($basePath, 'UseFilter', $true, [Microsoft.Win32.RegistryValueKind]::DWord)
+                    }
+                    else
+                    {
+                        [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$process.exe", 'Debugger', $blockExecDbgPath, [Microsoft.Win32.RegistryValueKind]::String)
+                    }
                 }
 
                 # Add callback to remove all blocked app executions during the shutdown of the final session.

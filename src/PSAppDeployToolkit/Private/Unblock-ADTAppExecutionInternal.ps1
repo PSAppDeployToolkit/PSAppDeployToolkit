@@ -35,10 +35,22 @@ function Unblock-ADTAppExecutionInternal
     )
 
     # Remove Debugger values to unblock processes.
-    Get-ItemProperty -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger -Verbose:$false -ErrorAction Ignore | & {
+    Get-ItemProperty -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*\MyFilter", "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*" -Name Debugger, FilterFullPath -Verbose:$false -ErrorAction Ignore | & {
         process
         {
-            if ($_.Debugger.Contains('PSAppDeployToolkit'))
+            if (!$_.Debugger.Contains('PSAppDeployToolkit'))
+            {
+                return
+            }
+
+            if ($_.PSObject.Properties.Name.Contains('FilterFullPath'))
+            {
+                Write-Verbose -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.FilterFullPath)]."
+                Remove-ItemProperty -LiteralPath $_.PSParentPath -Name UseFilter -Verbose:$false
+                Remove-ItemProperty -LiteralPath $_.PSPath -Name Debugger -Verbose:$false
+                Remove-Item -LiteralPath "$($_.PSParentPath)\MyFilter" -Verbose:$false
+            }
+            else
             {
                 Write-Verbose -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.PSChildName)]."
                 Remove-ItemProperty -LiteralPath $_.PSPath -Name Debugger -Verbose:$false

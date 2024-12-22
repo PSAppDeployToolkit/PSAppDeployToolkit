@@ -58,11 +58,26 @@ function Get-ADTRunningProcesses
     $runningProcesses = $ProcessObjects | & {
         begin
         {
+            # Process the cached processes into proper process names (i.e. remove paths).
+            $processNames = $processNames | & {
+                process
+                {
+                    if ([System.IO.Path]::IsPathRooted($_))
+                    {
+                        return [System.IO.Path]::GetFileNameWithoutExtension($_)
+                    }
+                    return $_
+                }
+            }
+
             # Cache all running processes.
             $allProcesses = Get-Process -Name $processNames -ErrorAction Ignore
 
             # Cache process info from WMI as it gives us our command line and associated arguments.
             $wmiProcesses = Get-CimInstance -ClassName Win32_Process
+
+            # Member lookup table.
+            $member = 'Name', 'Path'
         }
 
         process
@@ -71,7 +86,7 @@ function Get-ADTRunningProcesses
             $processes = foreach ($process in $allProcesses)
             {
                 # Continue if this isn't our process or it's ended since we cached it.
-                if (($process.Name -ne $_.Name) -or (!$process.Refresh() -and $process.HasExited))
+                if (($process.($member[[System.IO.Path]::IsPathRooted($_.Name)]) -ne $_.Name) -or (!$process.Refresh() -and $process.HasExited))
                 {
                     continue
                 }
