@@ -152,7 +152,6 @@ function Invoke-ADTCommandWithRetries
 
                 # Convert the passed parameters into a dictionary for splatting onto the command.
                 $boundParams = Convert-ADTValuesFromRemainingArguments -RemainingArguments $Parameters
-                $callerName = (Get-PSCallStack)[1].Command
 
                 # Set up a stopwatch when we're tracking the maximum allowed retry duration.
                 $maxElapsedStopwatch = if ($PSBoundParameters.ContainsKey('MaximumElapsedTime'))
@@ -190,7 +189,7 @@ function Invoke-ADTCommandWithRetries
                             }
                             throw
                         }
-                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $($SleepDuration.TotalSeconds) second$(if (!$SleepDuration.TotalSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
+                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $($SleepDuration.TotalSeconds) second$(if (!$SleepDuration.TotalSeconds.Equals(1)) {'s'})." -Severity 2
                         [System.Threading.Thread]::Sleep($SleepDuration)
                     }
                     finally
