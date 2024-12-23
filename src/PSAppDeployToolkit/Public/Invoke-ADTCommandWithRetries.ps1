@@ -164,7 +164,6 @@ function Invoke-ADTCommandWithRetries
                 $i = 0
                 while ($true)
                 {
-                    $i++
                     try
                     {
                         return (& $commandObj @boundParams)
@@ -193,6 +192,10 @@ function Invoke-ADTCommandWithRetries
                         }
                         Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $($SleepDuration.TotalSeconds) second$(if (!$SleepDuration.TotalSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
                         [System.Threading.Thread]::Sleep($SleepDuration)
+                    }
+                    finally
+                    {
+                        $i++
                     }
                 }
             }
