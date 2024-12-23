@@ -153,6 +153,12 @@ function Invoke-ADTCommandWithRetries
                 # Convert the passed parameters into a dictionary for splatting onto the command.
                 $boundParams = Convert-ADTValuesFromRemainingArguments -RemainingArguments $Parameters
 
+                # If the command in question supports supplying an ErrorAction, force it to stop so the logic works.
+                if ($commandObj.Parameters.ContainsKey('ErrorAction'))
+                {
+                    $boundParams.Add('ErrorAction', $ErrorActionPreference)
+                }
+
                 # Set up a stopwatch when we're tracking the maximum allowed retry duration.
                 $maxElapsedStopwatch = if ($PSBoundParameters.ContainsKey('MaximumElapsedTime'))
                 {
