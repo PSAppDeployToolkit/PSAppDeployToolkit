@@ -76,7 +76,7 @@ The solution is composed of several key components:
 2. `PsadtExec.Main.CommandLineParser`: Custom command-line argument parser
 3. `PsadtExec.Process.ProcessLauncher`: Core logic for launching and monitoring processes
 4. `PsadtExec.Process.ProcessExecutionManager.cs`: Manages multiple processes across sessions
-5. `PsadtExec.PInvoke.NativeMethods`: Windows API declarations and structures
+5. `PsadtExec.PInvokes.NativeMethods`: Windows API declarations and structures
 6. `PsadtExec.WtsSession.SessionUtilis.cs`: Utilities for working with user sessions
 
 ## Contributing

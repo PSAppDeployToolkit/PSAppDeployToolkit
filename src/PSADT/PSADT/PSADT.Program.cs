@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.ConsoleEx;
 using PSADT.ProcessEx;
 using PSADT.CommandLine;

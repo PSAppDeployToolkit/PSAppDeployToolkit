@@ -3,7 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using PSADT.Shared;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.OperatingSystem
 {

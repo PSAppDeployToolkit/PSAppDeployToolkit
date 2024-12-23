@@ -1,5 +1,5 @@
 ﻿using System;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.Installer

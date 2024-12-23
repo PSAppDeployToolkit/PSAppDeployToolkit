@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Collections.Generic;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Logging;
 
 namespace PSADT.PathEx

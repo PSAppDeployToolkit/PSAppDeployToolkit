@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.Logging;
 using PSADT.Account;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.OperatingSystem;
 
 namespace PSADT.WTSSession

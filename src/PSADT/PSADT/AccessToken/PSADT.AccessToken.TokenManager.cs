@@ -7,7 +7,7 @@ using System.Security.Principal;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Logging;
 
 namespace PSADT.AccessToken

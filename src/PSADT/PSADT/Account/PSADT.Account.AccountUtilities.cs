@@ -4,7 +4,7 @@ using System.Security.Principal;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using PSADT.Logging;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.Account
 {

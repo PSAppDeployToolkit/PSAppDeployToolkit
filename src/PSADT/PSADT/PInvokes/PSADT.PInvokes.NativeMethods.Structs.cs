@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Win32.SafeHandles;
 
-namespace PSADT.PInvoke
+namespace PSADT.PInvokes
 {
     #region kernel32.dll
 

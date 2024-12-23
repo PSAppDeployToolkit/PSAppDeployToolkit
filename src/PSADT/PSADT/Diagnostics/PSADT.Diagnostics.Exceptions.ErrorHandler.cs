@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.Diagnostics.Exceptions
 {

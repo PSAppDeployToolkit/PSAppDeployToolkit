@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Win32;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.Registry

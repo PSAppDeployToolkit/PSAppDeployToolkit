@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Logging;
 using PSADT.Diagnostics.Validation;
 using PSADT.Diagnostics.Exceptions;

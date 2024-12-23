@@ -6,7 +6,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.Registry

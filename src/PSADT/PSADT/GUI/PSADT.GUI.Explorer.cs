@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.GUI

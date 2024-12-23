@@ -1,4 +1,4 @@
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.LibraryInterfaces
 {

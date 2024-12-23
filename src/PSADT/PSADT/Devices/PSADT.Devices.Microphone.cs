@@ -9,12 +9,12 @@ namespace PSADT.Devices
         public static bool IsMicrophoneInUse()
         {
             // Initialize COM.
-            Windows.Win32.PInvoke.CoInitializeEx(COINIT.COINIT_APARTMENTTHREADED).ThrowOnFailure();
+            PInvoke.CoInitializeEx(COINIT.COINIT_APARTMENTTHREADED).ThrowOnFailure();
             bool micInUse = false;
             try
             {
                 // Create an enumerator for audio devices.
-                Windows.Win32.PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out IMMDeviceEnumerator deviceEnumerator).ThrowOnFailure();
+                PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out IMMDeviceEnumerator deviceEnumerator).ThrowOnFailure();
 
                 // Get the default audio capture device (microphone).
                 deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out var microphoneDevice);
@@ -40,7 +40,7 @@ namespace PSADT.Devices
             finally
             {
                 // Cleanup COM.
-                Windows.Win32.PInvoke.CoUninitialize();
+                PInvoke.CoUninitialize();
             }
 
             return micInUse;

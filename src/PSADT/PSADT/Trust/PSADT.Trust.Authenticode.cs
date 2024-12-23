@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.Trust
 {

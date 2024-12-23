@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Trust;
 using PSADT.PathEx;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Shared;
 using PSADT.Logging;
 

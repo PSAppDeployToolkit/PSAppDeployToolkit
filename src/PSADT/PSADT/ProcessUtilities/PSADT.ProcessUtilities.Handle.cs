@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.ProcessUtilities
 {
