@@ -2736,36 +2736,6 @@ namespace PSADT.PInvoke
 
     #endregion
 
-    #region ole32.dll
-
-    /// <summary>
-    /// Determines the concurrency model used for incoming calls to objects created by this thread. This concurrency model can be either
-    /// apartment-threaded or multithreaded.
-    /// </summary>
-    [Flags]
-    public enum COINIT
-    {
-        /// <summary>Initializes the thread for apartment-threaded object concurrency (see Remarks).</summary>
-        COINIT_APARTMENTTHREADED = 0x2,
-
-        /// <summary>Initializes the thread for multithreaded object concurrency (see Remarks).</summary>
-        COINIT_MULTITHREADED = 0x0,
-
-        /// <summary>Disables DDE for OLE1 support.</summary>
-        COINIT_DISABLE_OLE1DDE = 0x4,
-
-        /// <summary>Increase memory usage in an attempt to increase performance.</summary>
-        COINIT_SPEED_OVER_MEMORY = 0x8
-    }
-
-    #endregion
-
-    #region rstrtmgr.dll
-
-
-
-    #endregion
-
     #region shared_pinvoke
 
     public enum NTSTATUS : uint
