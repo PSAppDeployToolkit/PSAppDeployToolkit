@@ -171,28 +171,30 @@ function Invoke-ADTCommandWithRetries
                     }
                     catch
                     {
-                        # Capture the ErrorRecord object to throw at the end.
-                        $errorRecord = $_
-
                         # Break if we've exceeded our bounds.
                         if ($maxElapsedStopwatch)
                         {
                             if (($maxElapsedStopwatch.Elapsed -ge $MaximumElapsedTime) -or ($PSBoundParameters.ContainsKey('Retries') -and ($i -ge $Retries)))
                             {
-                                break
+                                if ($commandObj.Module -eq $MyInvocation.MyCommand.Module.Name)
+                                {
+                                    $PSCmdlet.ThrowTerminatingError($_)
+                                }
+                                throw
                             }
                         }
                         elseif ($i -ge $Retries)
                         {
-                            break
+                            if ($commandObj.Module -eq $MyInvocation.MyCommand.Module.Name)
+                            {
+                                $PSCmdlet.ThrowTerminatingError($_)
+                            }
+                            throw
                         }
                         Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $($SleepDuration.TotalSeconds) second$(if (!$SleepDuration.TotalSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
                         [System.Threading.Thread]::Sleep($SleepDuration)
                     }
                 }
-
-                # If we're here, we failed too many times. Throw the captured ErrorRecord.
-                throw $errorRecord
             }
             catch
             {
