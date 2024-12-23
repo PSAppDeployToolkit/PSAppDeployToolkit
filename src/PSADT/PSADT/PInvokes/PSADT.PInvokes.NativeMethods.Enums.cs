@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PSADT.PInvoke
+namespace PSADT.PInvokes
 {
     #region kernel32.dll
 

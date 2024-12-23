@@ -1,6 +1,6 @@
 using System;
 
-namespace PSADT.PInvoke
+namespace PSADT.PInvokes
 {
     /// <summary>
     /// Contains native method declarations for Win32 API calls.

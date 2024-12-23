@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using PSADT.Logging;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.ProcessEx;
 
 namespace PSADT.CommandLine

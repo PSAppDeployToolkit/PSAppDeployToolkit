@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.PE
 {

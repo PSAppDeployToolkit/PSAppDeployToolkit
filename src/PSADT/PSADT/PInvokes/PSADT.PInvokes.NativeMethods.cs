@@ -9,7 +9,7 @@ using Microsoft.Win32.SafeHandles;
 // Some Native Method Declarations from:
 // https://github.com/dahall/Vanara
 
-namespace PSADT.PInvoke
+namespace PSADT.PInvokes
 {
     /// <summary>
     /// Contains native method declarations for Win32 API calls.

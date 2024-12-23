@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls.Primitives;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.OperatingSystem;
 using PSADT.Diagnostics.Exceptions;
 

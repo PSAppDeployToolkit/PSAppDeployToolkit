@@ -140,7 +140,7 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
         [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.PInvoke.CREATE_PROCESS]$ProcessCreationFlags,
+        [PSADT.PInvokes.CREATE_PROCESS]$ProcessCreationFlags,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
         [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]

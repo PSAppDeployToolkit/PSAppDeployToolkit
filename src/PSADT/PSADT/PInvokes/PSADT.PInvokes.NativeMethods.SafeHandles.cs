@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-namespace PSADT.PInvoke
+namespace PSADT.PInvokes
 {
     /// <summary>
     /// Represents a safe handle for Windows access tokens.

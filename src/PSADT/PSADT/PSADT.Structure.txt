@@ -1,9 +1,9 @@
 ﻿PSADT/
 ├── PInvoke/
-│   ├── PSADT.PInvoke.NativeMethods.SafeHandles.cs
-│   ├── PSADT.PInvoke.NativeMethods.Structs.cs
-│   ├── PSADT.PInvoke.NativeMethods.cs
-│   └── PSADT.PInvoke.NativeMethods.Enums.cs
+│   ├── PSADT.PInvokes.NativeMethods.SafeHandles.cs
+│   ├── PSADT.PInvokes.NativeMethods.Structs.cs
+│   ├── PSADT.PInvokes.NativeMethods.cs
+│   └── PSADT.PInvokes.NativeMethods.Enums.cs
 ├── PE/
 │   └── PSADT.PE.ExecutableType.cs
 ├── PathEx/

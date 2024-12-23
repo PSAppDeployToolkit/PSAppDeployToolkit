@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.ComponentModel;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Shared;
 
 namespace PSADT.OperatingSystem

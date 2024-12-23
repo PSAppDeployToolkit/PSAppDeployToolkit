@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.ProcessEx
 {

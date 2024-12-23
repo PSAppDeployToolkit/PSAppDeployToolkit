@@ -8,7 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Management.Automation;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.Shared

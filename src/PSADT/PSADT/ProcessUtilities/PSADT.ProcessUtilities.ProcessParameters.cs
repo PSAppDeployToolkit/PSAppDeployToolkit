@@ -3,7 +3,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 
 namespace PSADT.ProcessUtilities
 {

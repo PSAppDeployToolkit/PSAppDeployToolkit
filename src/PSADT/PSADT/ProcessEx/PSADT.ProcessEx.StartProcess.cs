@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.PE;
 using PSADT.PathEx;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Logging;
 using PSADT.WTSSession;
 using PSADT.AccessToken;

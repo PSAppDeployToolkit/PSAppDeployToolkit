@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using PSADT.PInvoke;
+using PSADT.PInvokes;
 using PSADT.Diagnostics.Exceptions;
 
 namespace PSADT.Configuration
