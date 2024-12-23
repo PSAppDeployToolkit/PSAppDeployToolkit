@@ -1,67 +1,152 @@
 ﻿@{
     BalloonText = @{
-        Complete = "elkészült."
-        Error = "sikertelen."
-        FastRetry = "nem lehet befejezni."
-        RestartRequired = "elkészült.Újraindítás szükséges."
-        Start = "elindult."
+        Complete = @{
+            Install = 'A telepítés befejeződött.'
+            Repair = 'Javítás befejeződött.'
+            Uninstall = 'Az eltávolítás befejeződött.'
+        }
+        Error = @{
+            Install = 'Telepítés sikertelen.'
+            Repair = 'A javítás sikertelen.'
+            Uninstall = 'Az eltávolítás sikertelen.'
+        }
+        FastRetry = @{
+            Install = 'Telepítés nem fejeződött be.'
+            Repair = 'Javítás nem fejeződött be.'
+            Uninstall = 'Az eltávolítás nem fejeződött be.'
+        }
+        RestartRequired = @{
+            Install = 'Telepítés befejeződött. Újraindítás szükséges.'
+            Repair = 'Javítás befejeződött. Újraindítás szükséges.'
+            Uninstall = 'Az eltávolítás befejeződött. Újraindítás szükséges.'
+        }
+        Start = @{
+            Install = 'A telepítés megkezdődött.'
+            Repair = 'A javítás megkezdődött.'
+            Uninstall = 'Az eltávolítás megkezdődött.'
+        }
     }
     BlockExecution = @{
-        Message = "A következő alkalmazások blokkolva lesznek, annak érdekében hogy a telepítés problémamentesen végrehajtódjon."
-    }
-    ClosePrompt = @{
-        ButtonClose = "Alkalmazások bezárása"
-        ButtonContinue = "Tovább"
-        ButtonContinueTooltip = "Csak azután kattintson a `"Tovább`"-ra, ha a fentebb látható alkalmazás(oka)t bezárta."
-        ButtonDefer = "Elhalaszt"
-        CountdownMessage = "Megjegyzés: a programok automatikusan bezárásra kerülnek,:"
-        Message = "Az alábbi programokat szíveskedjen bezárni, mielőtt a telepítés elkezdődik.`n`nKérjük mentse munkáját és a folytatáshoz zárja be a futó alkalmazásokat. Vagy Kérjük mentse munkáját és kattintson a `"Programok bezárása`"-ra."
-    }
-    DeferPrompt = @{
-        Deadline = "Időpont:"
-        ExpiryMessage = "A telepítést elhalaszthatja amíg a rendelkezésre álló idő lejár:"
-        RemainingDeferrals = "Fennmaradó halasztás:"
-        WarningMessage = "Amennyiben a rendelkezésre álló idő letelik, nem lesz lehetősége a telepítés elhalasztására."
-        WelcomeMessage = "A következő alkalmazások telepítésre kerülnek:"
-    }
-    DeploymentType = @{
-        Install = "Telepítés"
-        Repair = "Javítás"
-        Uninstall = "Eltávolítás"
+        Message = @{
+            Install = 'Az alkalmazás indítása ideiglenesen blokkolva van, hogy egy telepítési művelet befejeződhessen.'
+            Repair = 'Az alkalmazás indítása ideiglenesen blokkolva van, hogy egy javítási művelet befejeződhessen.'
+            Uninstall = 'Az alkalmazás indítása ideiglenesen blokkolva van, hogy egy eltávolítási művelet befejeződhessen.'
+        }
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
+            Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
+            Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+        }
     }
     DiskSpace = @{
-        Message = "Nincs elég lemezterület a telepítés végrehajtásához:`n{0}`n`nSzükséges lemezterület: {1}MB`nSzabad lemezterület: {2}MB`nKérem szabadítson fel elegendő lemezterületet a telepítés végrehajtásához."
+        Message = @{
+            Install = "Nincs elég lemezterület a telepítés befejezéséhez:`n{0}`n`nSzükséges hely: {1}MB`n`: {2}MB`n`nKérjük, szabadítson fel elegendő lemezterületet a telepítés folytatásához."
+            Repair = "Nincs elég lemezterület a javítás befejezéséhez:`n{0}`n`nSzükséges hely: {1}MB`n`: {2}MB`n`nKérem, szabadítson fel elegendő lemezterületet a javítás folytatásához."
+            Uninstall = "Nincs elég lemezterület a következő eltávolításának befejezéséhez:`n{0}`n`nSzükséges hely: {1}MB`n: {2}MB`n`nKérem, szabadítson fel elegendő lemezterületet az eltávolítás folytatásához."
+        }
     }
     Progress = @{
-        MessageInstall = "Telepítés folyamatban. Kérem várjon..."
-        MessageInstallDetail = "Ez az ablak automatikusan bezáródik, amikor a telepítés befejeződik."
-        MessageRepair = "Javítás folyamatban. Kérem várjon..."
-        MessageRepairDetail = "Ez az ablak automatikusan bezáródik, ha a javítás befejeződött."
-        MessageUninstall = "Eltávolítás folyamatban. Kérem várjon..."
-        MessageUninstallDetail = "Ez az ablak automatikusan bezáródik, amikor az eltávolítás befejeződik."
+        Message = @{
+            Install = 'Telepítés folyamatban. Kérjük várjon...'
+            Repair = 'Javítás folyamatban. Kérjük várjon...'
+            Uninstall = 'Eltávolítás folyamatban. Kérjük várjon...'
+        }
+        MessageDetail = @{
+            Install = 'Ez az ablak automatikusan bezáródik, ha a telepítés befejeződött.'
+            Repair = 'Ez az ablak automatikusan bezáródik, ha a javítás befejeződött.'
+            Uninstall = 'Ez az ablak automatikusan bezáródik, amikor az eltávolítás befejeződött.'
+        }
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
+            Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
+            Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+        }
+    }
+    Prompt = @{
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
+            Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
+            Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+        }
     }
     RestartPrompt = @{
-        ButtonRestartLater = "Minimalizál"
-        ButtonRestartNow = "Újraindítás most"
-        Message = "A telepítés befejezéséhez a számítógépet újraindítása szükséges."
-        MessageRestart = "A hátralévő idő leteltével a számítógép újraindul."
-        MessageTime = "Kérem mentse munkáját, és a megadott időn belül indítsa újra.."
-        TimeRemaining = "Hátralévő idő:"
-        Title = "Újraindítás szükséges"
+        ButtonRestartLater = 'Minimalizálás'
+        ButtonRestartNow = 'Újraindítás most'
+        Message = @{
+            Install = 'A telepítés befejezéséhez újra kell indítania a számítógépet.'
+            Repair = 'A javítás befejezéséhez újra kell indítania a számítógépet.'
+            Uninstall = 'Az eltávolítás befejezéséhez újra kell indítania a számítógépet.'
+        }
+        MessageRestart = 'A visszaszámlálás végén a számítógép automatikusan újraindul.'
+        MessageTime = 'Kérjük, mentse el munkáját, és indítsa újra a megadott időn belül.'
+        TimeRemaining = 'A hátralévő idő:'
+        Title = 'Újraindítás szükséges'
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
+            Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
+            Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+        }
     }
     WelcomePrompt = @{
         Classic = @{
-            CountdownMessage = "A(z) {0} automatikusan folytatódik:"
-            CustomMessage = ""
+            Close = @{
+                ButtonClose = 'Close &Programok bezárása'
+                ButtonContinue = '&Folytatás'
+                ButtonContinueTooltip = 'Csak a fent felsorolt alkalmazás(ok) bezárása után válassza a „Folytatás” lehetőséget.'
+                ButtonDefer = '&Elhalasztás'
+                CountdownMessage = 'MEGJEGYZÉS: A program(ok) automatikusan bezárul(nak):'
+                Message = @{
+                    Install = "A következő programokat be kell zárni, mielőtt a telepítés folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Alternatív megoldásként mentse el a munkáját, és kattintson a „Programok bezárása” gombra."
+                    Repair = "A következő programokat be kell zárni, mielőtt a javítás folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Másik lehetőségként mentse el a munkáját, és kattintson a „Programok bezárása” gombra."
+                    Uninstall = "Az alábbi programokat be kell zárni, mielőtt az eltávolítás folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Másik lehetőségként mentse el a munkáját, és kattintson a „Programok bezárása” gombra."
+                }
+            }
+            Defer = @{
+                Deadline = 'Határidő:'
+                ExpiryMessage = @{
+                    Install = 'A telepítést a halasztás lejártáig elhalaszthatja:'
+                    Repair = 'A javítást a halasztás lejártáig elhalaszthatja:'
+                    Uninstall = 'Az eltávolítást elhalaszthatja a halasztás lejártáig:'
+                }
+                RemainingDeferrals = 'Maradék halasztások:'
+                WarningMessage = 'Ha a halasztás lejár, többé nem lesz lehetősége a halasztásra.'
+                WelcomeMessage = @{
+                    Install = 'A következő alkalmazás telepítése folyamatban van:'
+                    Repair = 'A következő alkalmazás javításra kerül:'
+                    Uninstall = 'A következő alkalmazás eltávolítása folyamatban van:'
+                }
+            }
+            CountdownMessage = @{
+                Install = 'A telepítés automatikusan folytatódik:'
+                Repair = 'A javítás automatikusan folytatódik:'
+                Uninstall = 'Az eltávolítás automatikusan folytatódik:'
+            }
+            CustomMessage = ''
         }
         Fluent = @{
-            Subtitle = 'PSAppDeployToolkit - Alkalmazás {0}'
-            DialogMessage = 'Kérjük, mentse el a munkáját, mielőtt folytatná, mivel a következő alkalmazások automatikusan lezárulnak.'
-            DialogMessageNoProcesses = 'Please select Install to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.'
-            ButtonDeferRemaining = 'maradjon'
-            ButtonLeftText = 'Elhalasztás'
-            ButtonRightText = 'Alkalmazások bezárása és telepítése'
-            ButtonRightTextNoProcesses = 'Telepítse a'
+            Subtitle = @{
+                Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
+                Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
+                Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+            }
+            DialogMessage = 'Kérjük, mentse el munkáját, mielőtt folytatná, mivel a következő alkalmazások automatikusan bezárásra kerülnek.'
+            DialogMessageNoProcesses = @{
+                Install = 'A telepítés folytatásához válassza a Telepítés lehetőséget. Ha van még halasztása, akkor a telepítés elhalasztását is választhatja.'
+                Repair = 'A javítás folytatásához válassza a Repair (Javítás) lehetőséget. Ha van még halasztása, akkor a javítás elhalasztását is választhatja.'
+                Eltávolítás = 'Kérjük, válassza az Eltávolítás lehetőséget az eltávolítás folytatásához. Ha van még halasztása, akkor az eltávolítás elhalasztását is választhatja.'
+            }
+            ButtonDeferRemaining = 'marad'
+            ButtonLeftText = 'Halasztás'
+            ButtonRightText = @{
+                Install = 'Alkalmazások Bezárása és Telepítése'
+                Repair = 'Alkalmazások Bezárása és Javítása'
+                Uninstall = 'Alkalmazások Bezárása és Eltávolítása'
+            }
+            ButtonRightTextNoProcesses = @{
+                Install = 'Telepítés'
+                Repair = 'Javítás'
+                Uninstall = 'Eltávolítás'
+            }
         }
     }
 }
