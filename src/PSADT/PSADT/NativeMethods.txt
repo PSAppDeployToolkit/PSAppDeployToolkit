@@ -3,9 +3,7 @@ CoCreateInstance
 CoUninitialize
 MMDeviceEnumerator
 IMMDeviceEnumerator
-IMMDevice
 IAudioSessionManager2
-IAudioSessionEnumerator
 IAudioSessionControl2
 AudioSessionState
 EDataFlow
