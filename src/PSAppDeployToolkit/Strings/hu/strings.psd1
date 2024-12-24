@@ -96,9 +96,9 @@
                 ButtonDefer = '&Elhalasztás'
                 CountdownMessage = 'MEGJEGYZÉS: A program(ok) automatikusan bezárul(nak):'
                 Message = @{
-                    Install = "A következő programokat be kell zárni, mielőtt a telepítés folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Alternatív megoldásként mentse el a munkáját, és kattintson a „Programok bezárása” gombra."
-                    Repair = "A következő programokat be kell zárni, mielőtt a javítás folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Másik lehetőségként mentse el a munkáját, és kattintson a „Programok bezárása” gombra."
-                    Uninstall = "Az alábbi programokat be kell zárni, mielőtt az eltávolítás folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Másik lehetőségként mentse el a munkáját, és kattintson a „Programok bezárása” gombra."
+                    Install = "A következő programokat be kell zárni, mielőtt a telepítés folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Alternatív megoldásként mentse el a munkáját, és kattintson a `„Programok bezárása`” gombra."
+                    Repair = "A következő programokat be kell zárni, mielőtt a javítás folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Másik lehetőségként mentse el a munkáját, és kattintson a `„Programok bezárása`” gombra."
+                    Uninstall = "Az alábbi programokat be kell zárni, mielőtt az eltávolítás folytatódhat.`n`nKérjük, mentse el munkáját, zárja be a programokat, majd folytassa. Másik lehetőségként mentse el a munkáját, és kattintson a `„Programok bezárása`” gombra."
                 }
             }
             Defer = @{

@@ -92,13 +92,13 @@
             Close = @{
                 ButtonClose = 'Stäng &Program'
                 ButtonContinue = '&Fortsätt'
-                ButtonContinueTooltip = 'Välj ’Fortsätt’ först efter att du har stängt ovanstående program.'
+                ButtonContinueTooltip = "Välj ’Fortsätt’ först efter att du har stängt ovanstående program."
                 ButtonDefer = '&Skjut Upp'
                 CountdownMessage = 'OBS: Programmet/programmen kommer att stängas automatiskt i:'
                 Message = @{
-                    Install = "Följande program måste stängas innan installationen kan fortsätta.”`n`nSpara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på ”Stäng program”."
-                    Repair = "Följande program måste stängas innan reparationen kan fortsätta.n`nVar vänlig spara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på ”Stäng program”."
-                    Uninstall = "Följande program måste stängas innan avinstallationen kan fortsätta.”`n`nSpara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på ”Stäng program”."
+                    Install = "Följande program måste stängas innan installationen kan fortsätta.`n`nSpara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på `”Stäng program`”."
+                    Repair = "Följande program måste stängas innan reparationen kan fortsätta.`n`nVar vänlig spara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på `”Stäng program`”."
+                    Uninstall = "Följande program måste stängas innan avinstallationen kan fortsätta.`n`nSpara ditt arbete, stäng programmen och fortsätt sedan. Alternativt kan du spara ditt arbete och klicka på `”Stäng program`”."
                 }
             }
             Defer = @{

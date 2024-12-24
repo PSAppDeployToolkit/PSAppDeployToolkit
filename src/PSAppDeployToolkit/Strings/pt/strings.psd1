@@ -52,9 +52,9 @@
             Uninstall = 'Desinstalação em curso. Aguarde...'
         }
         MessageDetail = @{
-            Install = 'Esta janela fechar-se-á automaticamente quando a instalação estiver concluída'.
-            Repair = 'Esta janela fechar-se-á automaticamente quando a reparação estiver concluída'.
-            Uninstall = 'Esta janela fechar-se-á automaticamente quando a desinstalação estiver concluída'.
+            Install = 'Esta janela fechar-se-á automaticamente quando a instalação estiver concluída.'
+            Repair = 'Esta janela fechar-se-á automaticamente quando a reparação estiver concluída.'
+            Uninstall = 'Esta janela fechar-se-á automaticamente quando a desinstalação estiver concluída.'
         }
         Subtitle = @{
             Install = 'PSAppDeployToolkit - Instalação de aplicações'
@@ -73,9 +73,9 @@
         ButtonRestartLater = 'Minimizar'
         ButtonRestartNow = 'Reiniciar agora'
         Message = @{
-            Install = 'Para que a instalação seja concluída, tem de reiniciar o computador'.
-            Repair = 'Para que a reparação seja concluída, tem de reiniciar o computador'.
-            Uninstall = 'Para que a desinstalação seja concluída, tem de reiniciar o computador'.
+            Install = 'Para que a instalação seja concluída, tem de reiniciar o computador.'
+            Repair = 'Para que a reparação seja concluída, tem de reiniciar o computador.'
+            Uninstall = 'Para que a desinstalação seja concluída, tem de reiniciar o computador.'
         }
         MessageRestart = 'O seu computador será reiniciado automaticamente no final da contagem decrescente.'
         MessageTime = 'Guarde o seu trabalho e reinicie dentro do tempo previsto.'
@@ -96,9 +96,9 @@
                 ButtonDefer = '&Deferir'
                 CountdownMessage = 'NOTA: O(s) programa(s) será(ão) automaticamente encerrado(s) em:'
                 Message = @{
-                    Install = "Os seguintes programas devem ser fechados antes que a instalação possa prosseguir.`n`nPor favor, guarde o seu trabalho, feche os programas e depois continue. Em alternativa, guarde o seu trabalho e clique em “Fechar programas”."
-                    Repair = "Os seguintes programas devem ser fechados para que a reparação possa prosseguir.`n`nPor favor, guarde o seu trabalho, feche os programas e depois continue. Em alternativa, guarde o seu trabalho e clique em “Fechar programas”."
-                    Uninstall = "Os seguintes programas devem ser fechados antes que a desinstalação possa prosseguir.`n`nPor favor, guarde o seu trabalho, feche os programas e depois continue. Em alternativa, guarde o seu trabalho e clique em “Fechar programas”."
+                    Install = "Os seguintes programas devem ser fechados antes que a instalação possa prosseguir.`n`nPor favor, guarde o seu trabalho, feche os programas e depois continue. Em alternativa, guarde o seu trabalho e clique em `“Fechar programas`”."
+                    Repair = "Os seguintes programas devem ser fechados para que a reparação possa prosseguir.`n`nPor favor, guarde o seu trabalho, feche os programas e depois continue. Em alternativa, guarde o seu trabalho e clique em `“Fechar programas`”."
+                    Uninstall = "Os seguintes programas devem ser fechados antes que a desinstalação possa prosseguir.`n`nPor favor, guarde o seu trabalho, feche os programas e depois continue. Em alternativa, guarde o seu trabalho e clique em `“Fechar programas`”."
                 }
             }
             Defer = @{

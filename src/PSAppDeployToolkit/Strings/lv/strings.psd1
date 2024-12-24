@@ -96,9 +96,9 @@
                 ButtonDefer = '&Atlikt'
                 CountdownMessage = 'PIEZĪME: Programma(-as) tiks automātiski slēgta(-as):'
                 Message = @{
-                    Install = "Pirms instalēšanas turpināšanas ir jāaizver šādas programmas.`n`nLūdzu, saglabājiet savu darbu, aizveriet programmas un pēc tam turpiniet. Vai arī saglabājiet darbu un noklikšķiniet uz “Aizvērt programmas”."
-                    Repair = "Pirms remonta var turpināt remontu, ir jāslēdz šādas programmas.`n`nLūdzu, saglabājiet savu darbu, aizveriet programmas un pēc tam turpiniet. Vai arī saglabājiet darbu un noklikšķiniet uz “Aizvērt programmas”."
-                    Uninstall = "Pirms var turpināt atinstalēšanu, ir jāaizver šādas programmas.`n`nLūdzu, saglabājiet savu darbu, aizveriet programmas un pēc tam turpiniet. Vai arī saglabājiet darbu un noklikšķiniet uz “Aizvērt programmas”."
+                    Install = "Pirms instalēšanas turpināšanas ir jāaizver šādas programmas.`n`nLūdzu, saglabājiet savu darbu, aizveriet programmas un pēc tam turpiniet. Vai arī saglabājiet darbu un noklikšķiniet uz `“Aizvērt programmas`”."
+                    Repair = "Pirms remonta var turpināt remontu, ir jāslēdz šādas programmas.`n`nLūdzu, saglabājiet savu darbu, aizveriet programmas un pēc tam turpiniet. Vai arī saglabājiet darbu un noklikšķiniet uz `“Aizvērt programmas`”."
+                    Uninstall = "Pirms var turpināt atinstalēšanu, ir jāaizver šādas programmas.`n`nLūdzu, saglabājiet savu darbu, aizveriet programmas un pēc tam turpiniet. Vai arī saglabājiet darbu un noklikšķiniet uz `“Aizvērt programmas`”."
                 }
             }
             Defer = @{

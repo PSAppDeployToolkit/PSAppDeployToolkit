@@ -92,13 +92,13 @@
             Close = @{
                 ButtonClose = "Sluit &Programma's"
                 ButtonContinue = '&Doorgaan'
-                ButtonContinueTooltip = 'Selecteer alleen ‘Doorgaan’ na het sluiten van de bovengenoemde toepassing(en).'
+                ButtonContinueTooltip = "Selecteer alleen ‘Doorgaan’ na het sluiten van de bovengenoemde toepassing(en)."
                 ButtonDefer = '&Verwijderen'
                 CountdownMessage = "OPMERKING: De programma's worden automatisch afgesloten in:"
                 Message = @{
-                    Install = "De volgende programma's moeten worden afgesloten voordat de installatie kan doorgaan.`n`nSla uw werk op, sluit de programma's af en ga dan verder. U kunt ook uw werk opslaan en op “Programma's sluiten” klikken."
-                    Repair = "De volgende programma's moeten worden afgesloten voordat de reparatie kan worden uitgevoerd.`n`nSla uw werk op, sluit de programma's af en ga dan verder. U kunt ook uw werk opslaan en op “Programma`s sluiten” klikken."
-                    Uninstall = "De volgende programma's moeten gesloten worden voordat de de-installatie kan doorgaan.`n`nSla uw werk op, sluit de programma's af en ga dan verder. U kunt ook uw werk opslaan en op “Programma's sluiten” klikken."
+                    Install = "De volgende programma's moeten worden afgesloten voordat de installatie kan doorgaan.`n`nSla uw werk op, sluit de programma's af en ga dan verder. U kunt ook uw werk opslaan en op `“Programma's sluiten`” klikken."
+                    Repair = "De volgende programma's moeten worden afgesloten voordat de reparatie kan worden uitgevoerd.`n`nSla uw werk op, sluit de programma's af en ga dan verder. U kunt ook uw werk opslaan en op `“Programma`s sluiten`” klikken."
+                    Uninstall = "De volgende programma's moeten gesloten worden voordat de de-installatie kan doorgaan.`n`nSla uw werk op, sluit de programma's af en ga dan verder. U kunt ook uw werk opslaan en op `“Programma's sluiten`” klikken."
                 }
             }
             Defer = @{
@@ -138,14 +138,14 @@
             ButtonDeferRemaining = 'blijven'
             ButtonLeftText = 'Uitstellen'
             ButtonRightText = @{
-                Install = 'Apps sluiten & installeren'.
-                Repair = 'Apps sluiten & repareren'.
-                Uninstall = 'Apps sluiten & verwijderen'.
+                Install = 'Apps sluiten & installeren.'
+                Repair = 'Apps sluiten & repareren.'
+                Uninstall = 'Apps sluiten & verwijderen.'
             }
             ButtonRightTextNoProcesses = @{
-                Install = 'Installeren'.
-                Repair = 'Repareren'.
-                Uninstall = 'Verwijderen'.
+                Install = 'Installeren.'
+                Repair = 'Repareren.'
+                Uninstall = 'Verwijderen.'
             }
         }
     }

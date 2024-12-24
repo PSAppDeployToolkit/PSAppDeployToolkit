@@ -96,9 +96,9 @@
                 ButtonDefer = '&Adiar'
                 CountdownMessage = 'OBSERVAÇÃO: O(s) programa(s) será(ão) fechado(s) automaticamente em:'
                 Message = @{
-                    Install = "Os programas a seguir devem ser fechados antes que a instalação possa prosseguir.`n`nPor favor, salve seu trabalho, feche os programas e depois continue. Como alternativa, salve seu trabalho e clique em “Close Programs”."
-                    Repair = "Os programas a seguir devem ser fechados para que o reparo possa prosseguir.`n`nPor favor, salve seu trabalho, feche os programas e continue. Como alternativa, salve seu trabalho e clique em “Close Programs”."
-                    Uninstall = "Os seguintes programas devem ser fechados para que a desinstalação possa prosseguir.`n`nPor favor, salve seu trabalho, feche os programas e continue. Como alternativa, salve seu trabalho e clique em “Close Programs”."
+                    Install = "Os programas a seguir devem ser fechados antes que a instalação possa prosseguir.`n`nPor favor, salve seu trabalho, feche os programas e depois continue. Como alternativa, salve seu trabalho e clique em `“Fechar programas`”."
+                    Repair = "Os programas a seguir devem ser fechados para que o reparo possa prosseguir.`n`nPor favor, salve seu trabalho, feche os programas e continue. Como alternativa, salve seu trabalho e clique em `“Fechar programas`”."
+                    Uninstall = "Os seguintes programas devem ser fechados para que a desinstalação possa prosseguir.`n`nPor favor, salve seu trabalho, feche os programas e continue. Como alternativa, salve seu trabalho e clique em `“Fechar programas`”."
                 }
             }
             Defer = @{

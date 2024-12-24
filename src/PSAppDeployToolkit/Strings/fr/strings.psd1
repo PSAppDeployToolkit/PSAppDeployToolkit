@@ -70,7 +70,7 @@
         }
     }
     RestartPrompt = @{
-        ButtonRestartLater = 'Minimize' (Réduire)
+        ButtonRestartLater = 'Réduire'
         ButtonRestartNow = 'Redémarrer maintenant'
         Message = @{
             Install = "Pour que l'installation soit terminée, vous devez redémarrer votre ordinateur."

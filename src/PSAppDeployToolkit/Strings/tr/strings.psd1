@@ -96,9 +96,9 @@
                 ButtonDefer = '&Ertele'
                 CountdownMessage = 'NOT: Program(lar) şu süre içinde otomatik olarak kapatılacaktır:'
                 Message = @{
-                    Install = "Kurulumun devam edebilmesi için aşağıdaki programların kapatılması gerekir.`n`nLütfen çalışmanızı kaydedin, programları kapatın ve sonra devam edin. Alternatif olarak, çalışmanızı kaydedin ve “Programları Kapat” a tıklayın."
-                    Repair = "Onarımın devam edebilmesi için aşağıdaki programların kapatılması gerekir.`n`nLütfen çalışmanızı kaydedin, programları kapatın ve devam edin. Alternatif olarak, çalışmanızı kaydedin ve “Programları Kapat” a tıklayın."
-                    Uninstall = "Kaldırma işleminin devam edebilmesi için aşağıdaki programların kapatılması gerekir.`n`nLütfen çalışmanızı kaydedin, programları kapatın ve devam edin. Alternatif olarak, çalışmanızı kaydedin ve “Programları Kapat” a tıklayın."
+                    Install = "Kurulumun devam edebilmesi için aşağıdaki programların kapatılması gerekir.`n`nLütfen çalışmanızı kaydedin, programları kapatın ve sonra devam edin. Alternatif olarak, çalışmanızı kaydedin ve `“Programları Kapat`” a tıklayın."
+                    Repair = "Onarımın devam edebilmesi için aşağıdaki programların kapatılması gerekir.`n`nLütfen çalışmanızı kaydedin, programları kapatın ve devam edin. Alternatif olarak, çalışmanızı kaydedin ve `“Programları Kapat`” a tıklayın."
+                    Uninstall = "Kaldırma işleminin devam edebilmesi için aşağıdaki programların kapatılması gerekir.`n`nLütfen çalışmanızı kaydedin, programları kapatın ve devam edin. Alternatif olarak, çalışmanızı kaydedin ve `“Programları Kapat`” a tıklayın."
                 }
             }
             Defer = @{

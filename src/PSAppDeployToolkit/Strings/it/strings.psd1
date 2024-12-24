@@ -1,19 +1,19 @@
 ﻿@{
     BalloonText = @{
         Complete = @{
-            Install = 'Installazione completata'.
-            Repair = 'Riparazione completata'.
-            Uninstall = 'Disinstallazione completata'.
+            Install = 'Installazione completata.'
+            Repair = 'Riparazione completata.'
+            Uninstall = 'Disinstallazione completata.'
         }
         Error = @{
-            Install = 'Installazione fallita'.
-            Repair = 'Riparazione fallita'.
-            Uninstall = 'Disinstallazione non riuscita'.
+            Install = 'Installazione fallita.'
+            Repair = 'Riparazione fallita.'
+            Uninstall = 'Disinstallazione non riuscita.'
         }
         FastRetry = @{
-            Install = 'Installazione non completata'.
-            Repair = 'Riparazione non completata'.
-            Uninstall = 'Disinstallazione non completata'.
+            Install = 'Installazione non completata.'
+            Repair = 'Riparazione non completata.'
+            Uninstall = 'Disinstallazione non completata.'
         }
         RestartRequired = @{
             Install = 'Installazione completata. È necessario un riavvio.'
@@ -96,9 +96,9 @@
                 ButtonDefer = '&Rinviare'
                 CountdownMessage = 'NOTA: I programmi verranno chiusi automaticamente in:'
                 Message = @{
-                    Install = "I seguenti programmi devono essere chiusi prima che l'installazione possa procedere.`n'nSalvi il suo lavoro, chiuda i programmi e poi continui. In alternativa, salvi il suo lavoro e clicchi su “Chiudi programmi”."
-                    Repair = "I seguenti programmi devono essere chiusi prima che la riparazione possa procedere.`n'nSalvi il suo lavoro, chiuda i programmi e poi continui. In alternativa, salvi il suo lavoro e clicchi su “Chiudi programmi”."
-                    Uninstall = "I seguenti programmi devono essere chiusi prima di procedere alla disinstallazione.`n'nSalvi il suo lavoro, chiuda i programmi e poi continui. In alternativa, salvi il suo lavoro e clicchi su “Chiudi programmi”."
+                    Install = "I seguenti programmi devono essere chiusi prima che l'installazione possa procedere.`n'nSalvi il suo lavoro, chiuda i programmi e poi continui. In alternativa, salvi il suo lavoro e clicchi su `“Chiudi programmi`”."
+                    Repair = "I seguenti programmi devono essere chiusi prima che la riparazione possa procedere.`n'nSalvi il suo lavoro, chiuda i programmi e poi continui. In alternativa, salvi il suo lavoro e clicchi su `“Chiudi programmi`”."
+                    Uninstall = "I seguenti programmi devono essere chiusi prima di procedere alla disinstallazione.`n'nSalvi il suo lavoro, chiuda i programmi e poi continui. In alternativa, salvi il suo lavoro e clicchi su `“Chiudi programmi`”."
                 }
             }
             Defer = @{

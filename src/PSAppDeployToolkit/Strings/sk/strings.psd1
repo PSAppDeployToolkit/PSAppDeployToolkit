@@ -96,9 +96,9 @@
                 ButtonDefer = '&Odloženie'
                 CountdownMessage = 'POZNÁMKA: Program(-y) sa automaticky ukončí(-ú) v:'
                 Message = @{
-                    Install = "Pred pokračovaním inštalácie je potrebné zatvoriť nasledujúce programy.`n`nProsím, uložte si prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na „Zatvoriť programy“."
-                    Repair = "Pred pokračovaním opravy musia byť nasledujúce programy zatvorené.`n`nProsím, uložte svoju prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na „Zatvoriť programy“."
-                    Uninstall = "Predtým, ako bude možné pokračovať v odinštalovaní, musia byť nasledujúce programy zatvorené.`n`nProsím, uložte svoju prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na „Zavrieť programy“."
+                    Install = "Pred pokračovaním inštalácie je potrebné zatvoriť nasledujúce programy.`n`nProsím, uložte si prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na `„Zatvoriť programy`“."
+                    Repair = "Pred pokračovaním opravy musia byť nasledujúce programy zatvorené.`n`nProsím, uložte svoju prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na `„Zatvoriť programy`“."
+                    Uninstall = "Predtým, ako bude možné pokračovať v odinštalovaní, musia byť nasledujúce programy zatvorené.`n`nProsím, uložte svoju prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na `„Zavrieť programy`“."
                 }
             }
             Defer = @{

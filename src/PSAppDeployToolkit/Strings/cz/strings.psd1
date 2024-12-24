@@ -96,8 +96,8 @@
                 ButtonDefer = '&Odložení'
                 CountdownMessage = 'POZNÁMKA: Program(y) budou automaticky ukončeny za:'
                 Message = @{
-                    Install = "Před pokračováním instalace je nutné ukončit následující programy.`n`nProsím, uložte svou práci, ukončete programy a poté pokračujte. Případně uložte svou práci a klikněte na „Zavřít programy“."
-                    Repair = "Před pokračováním opravy je nutné zavřít následující programy.`n`nProsím, uložte svou práci, zavřete programy a poté pokračujte. Případně uložte svou práci a klikněte na „Zavřít programy“."
+                    Install = "Před pokračováním instalace je nutné ukončit následující programy.`n`nProsím, uložte svou práci, ukončete programy a poté pokračujte. Případně uložte svou práci a klikněte na `„Zavřít programy`“."
+                    Repair = "Před pokračováním opravy je nutné zavřít následující programy.`n`nProsím, uložte svou práci, zavřete programy a poté pokračujte. Případně uložte svou práci a klikněte na `„Zavřít programy`“."
                     Uninstall = "Před pokračováním odinstalace je nutné zavřít následující programy.`n`nProsím, uložte svou práci, zavřete programy a poté pokračujte. Případně uložte svou práci a klikněte na `„Zavřít programy`“."
                 }
             }

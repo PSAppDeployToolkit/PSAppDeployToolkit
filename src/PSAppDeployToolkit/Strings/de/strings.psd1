@@ -96,9 +96,9 @@
                 ButtonDefer = '&Aufschieben'
                 CountdownMessage = 'HINWEIS: Die Programme werden automatisch geschlossen in:'
                 Message = @{
-                    Install = "Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf „Programme schließen“ klicken."
-                    Repair = "Die folgenden Programme müssen geschlossen werden, bevor die Reparatur fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf „Programme schließen“ klicken."
-                    Deinstallieren = "Die folgenden Programme müssen geschlossen werden, bevor die Deinstallation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf „Programme schließen“ klicken."
+                    Install = "Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
+                    Repair = "Die folgenden Programme müssen geschlossen werden, bevor die Reparatur fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
+                    Deinstallieren = "Die folgenden Programme müssen geschlossen werden, bevor die Deinstallation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
                 }
             }
             Defer = @{

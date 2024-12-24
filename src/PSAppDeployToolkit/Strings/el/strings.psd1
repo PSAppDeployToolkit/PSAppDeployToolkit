@@ -40,9 +40,9 @@
     }
     DiskSpace = @{
         Message = @{
-            Install = «No tiene suficiente espacio en disco para completar la instalación de:`n{0}`n`nespacio requerido: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para poder proceder con la instalación.»
-            Repair = «No dispone de suficiente espacio en disco para completar la reparación de:`n{0}`n`nespacio necesario: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para proceder con la reparación.»
-            Uninstall = «No dispone de suficiente espacio en disco para completar la desinstalación de:`n{0}`n`nespacio necesario: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para poder proceder con la desinstalación.»
+            Install = "No tiene suficiente espacio en disco para completar la instalación de:`n{0}`n`nespacio requerido: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para poder proceder con la instalación."
+            Repair = "No dispone de suficiente espacio en disco para completar la reparación de:`n{0}`n`nespacio necesario: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para proceder con la reparación."
+            Uninstall = "No dispone de suficiente espacio en disco para completar la desinstalación de:`n{0}`n`nespacio necesario: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para poder proceder con la desinstalación."
         }
     }
     Progress = @{

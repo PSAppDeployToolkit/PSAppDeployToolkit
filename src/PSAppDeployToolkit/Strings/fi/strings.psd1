@@ -96,9 +96,9 @@
                 ButtonDefer = '&Siirrä'
                 CountdownMessage = 'HUOMAUTUS: Ohjelma(t) suljetaan automaattisesti:'
                 Message = @{
-                    Install = "Seuraavat ohjelmat on suljettava, ennen kuin asennus voi jatkua.`n`nTallenna työsi, sulje ohjelmat ja jatka sitten. Vaihtoehtoisesti tallenna työsi ja napsauta ”Sulje ohjelmat”."
-                    Korjaus = "Seuraavat ohjelmat on suljettava, ennen kuin korjaus voi jatkua.`n`nTallenna työsi, sulje ohjelmat ja jatka sitten. Vaihtoehtoisesti voit tallentaa työsi ja napsauttaa ”Sulje ohjelmat”."
-                    Poista asennus = "Seuraavat ohjelmat on suljettava, ennen kuin asennuksen poisto voi jatkua.`n`nTallenna työsi, sulje ohjelmat ja jatka sitten. Vaihtoehtoisesti voit tallentaa työsi ja napsauttaa ”Sulje ohjelmat”."
+                    Install = "Seuraavat ohjelmat on suljettava, ennen kuin asennus voi jatkua.`n`nTallenna työsi, sulje ohjelmat ja jatka sitten. Vaihtoehtoisesti tallenna työsi ja napsauta `”Sulje ohjelmat`”."
+                    Repair = "Seuraavat ohjelmat on suljettava, ennen kuin korjaus voi jatkua.`n`nTallenna työsi, sulje ohjelmat ja jatka sitten. Vaihtoehtoisesti voit tallentaa työsi ja napsauttaa `”Sulje ohjelmat`”."
+                    Uninstall = "Seuraavat ohjelmat on suljettava, ennen kuin asennuksen poisto voi jatkua.`n`nTallenna työsi, sulje ohjelmat ja jatka sitten. Vaihtoehtoisesti voit tallentaa työsi ja napsauttaa `”Sulje ohjelmat`”."
                 }
             }
             Defer = @{
@@ -133,7 +133,7 @@
             DialogMessageNoProcesses = @{
                 Install = 'Jatka asennusta valitsemalla Install. Jos sinulla on lykkäyksiä jäljellä, voit myös lykätä asennusta.'
                 Repair = 'Jatka korjausta valitsemalla Repair. Jos sinulla on vielä lykkäyksiä jäljellä, voit myös lykätä korjausta.'
-                Poista asennus = 'Jatka asennuksen poistamista valitsemalla Poista. Jos sinulla on vielä lykkäyksiä jäljellä, voit myös lykätä asennuksen poistamista.'
+                Uninstall = 'Jatka asennuksen poistamista valitsemalla Poista. Jos sinulla on vielä lykkäyksiä jäljellä, voit myös lykätä asennuksen poistamista.'
             }
             ButtonDeferRemaining = 'jäljellä'
             ButtonLeftText = 'Lykkää'

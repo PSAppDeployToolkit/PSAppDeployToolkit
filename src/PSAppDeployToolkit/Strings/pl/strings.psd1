@@ -75,7 +75,7 @@
         Message = @{
             Install = 'Aby zakończyć instalację, należy ponownie uruchomić komputer.'
             Repair = 'Aby zakończyć naprawę, należy ponownie uruchomić komputer.'
-            Uninstall = 'Aby zakończyć dezinstalację, należy ponownie uruchomić komputer'.
+            Uninstall = 'Aby zakończyć dezinstalację, należy ponownie uruchomić komputer.'
         }
         MessageRestart = 'Państwa komputer zostanie automatycznie uruchomiony ponownie po zakończeniu odliczania.'
         MessageTime = 'Proszę zapisać swoją pracę i ponownie uruchomić komputer w wyznaczonym czasie.'
@@ -96,9 +96,9 @@
                 ButtonDefer = '&Odroczyć'
                 CountdownMessage = 'UWAGA: Program(y) zostanie(ą) automatycznie zamknięty(e) w:'
                 Message = @{
-                    Install = "Następujące programy muszą zostać zamknięte przed kontynuowaniem instalacji.`n`nProszę zapisać swoją pracę, zamknąć programy, a następnie kontynuować. Alternatywnie, proszę zapisać pracę i kliknąć „Zamknij programy”."
-                    Repair = "Następujące programy muszą zostać zamknięte przed kontynuowaniem naprawy.`n`nProszę zapisać swoją pracę, zamknąć programy, a następnie kontynuować. Alternatywnie, proszę zapisać swoją pracę i kliknąć „Zamknij programy”."
-                    Uninstall = "Następujące programy muszą zostać zamknięte przed przystąpieniem do dezinstalacji.`n`nProszę zapisać pracę, zamknąć programy, a następnie kontynuować. Alternatywnie, proszę zapisać pracę i kliknąć „Zamknij programy”."
+                    Install = "Następujące programy muszą zostać zamknięte przed kontynuowaniem instalacji.`n`nProszę zapisać swoją pracę, zamknąć programy, a następnie kontynuować. Alternatywnie, proszę zapisać pracę i kliknąć `„Zamknij programy`”."
+                    Repair = "Następujące programy muszą zostać zamknięte przed kontynuowaniem naprawy.`n`nProszę zapisać swoją pracę, zamknąć programy, a następnie kontynuować. Alternatywnie, proszę zapisać swoją pracę i kliknąć `„Zamknij programy`”."
+                    Uninstall = "Następujące programy muszą zostać zamknięte przed przystąpieniem do dezinstalacji.`n`nProszę zapisać pracę, zamknąć programy, a następnie kontynuować. Alternatywnie, proszę zapisać pracę i kliknąć `„Zamknij programy`”."
                 }
             }
             Defer = @{
