@@ -1,67 +1,152 @@
 ﻿@{
     BalloonText = @{
-        Complete = "færdig."
-        Error = "fejlet."
-        FastRetry = "ikke færdig."
-        RestartRequired = "færdig. En genstart er nødvendig."
-        Start = "startet."
+        Complete = @{
+            Install = 'Installation fuldført.'
+            Repair = 'Reparation fuldført.'
+            Uninstall = 'Afinstallation fuldført.'
+        }
+        Error = @{
+            Install = 'Installation mislykkedes.'
+            Repair = 'Reparation mislykkedes.'
+            Uninstall = 'Afinstallation mislykkedes.'
+        }
+        FastRetry = @{
+            Install = 'Installation ikke fuldført.'
+            Repair = 'Reparation ikke fuldført.'
+            Uninstall = 'Afinstallation ikke fuldført.'
+        }
+        RestartRequired = @{
+            Install = 'Installationen er fuldført. En genstart er påkrævet.'
+            Repair = 'Reparation fuldført. En genstart er påkrævet.'
+            Uninstall = 'Afinstallation fuldført. En genstart er påkrævet.'
+        }
+        Start = @{
+            Install = 'Installation startet.'
+            Repair = 'Reparation startet.'
+            Uninstall = 'Afinstallation startet.'
+        }
     }
     BlockExecution = @{
-        Message = "Opstart af denne applikation er midlertidigt blokeret da en installationsproces er under afvikling."
-    }
-    ClosePrompt = @{
-        ButtonClose = "Luk Programmer"
-        ButtonContinue = "Fortsæt"
-        ButtonContinueTooltip = "Vælg kun `"Fortsæt`" efter at du har afsluttet de ovenfor nævnte programmer."
-        ButtonDefer = "Udsæt"
-        CountdownMessage = "BEMÆRK: Programmet/Programmerne vil automatisk blive lukket om:"
-        Message = "Følgende programmer skal lukkes før installationen kan fortsætte.`n`nGem dit arbejde, luk programmerne og fortsæt. Alternativt kan du gemme dit arbejde og trykke på `"Luk Programmer`"."
-    }
-    DeferPrompt = @{
-        Deadline = "Deadline:"
-        ExpiryMessage = "Du kan vælge at udsætte installationen indtil udsættelsesperioden udløber:"
-        RemainingDeferrals = "Udsættelser tilbage:"
-        WarningMessage = "Når udsættelsesperioden udløber kan du ikke længere udsætte installationen."
-        WelcomeMessage = "Følgende applikation vil nu blive installeret:"
-    }
-    DeploymentType = @{
-        Install = "Installation"
-        Repair = "Reparere"
-        Uninstall = "Afinstallation"
+        Message = @{
+            Install = 'Start af denne applikation er midlertidigt blokeret, så en installation kan gennemføres.'
+            Repair = 'Start af dette program er midlertidigt blokeret, så en reparation kan gennemføres.'
+            Uninstall = 'Start af dette program er midlertidigt blokeret, så en afinstallationsoperation kan gennemføres.'
+        }
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Installation af App'
+            Repair = 'PSAppDeployToolkit - Reparation af App'
+            Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+        }
     }
     DiskSpace = @{
-        Message = "Du har ikke plads nok til at færdiggøre installationen af:`n{0}`n`nPlads krævet: {1}MB`nPlads tilgængelig: {2}MB`n`nVær venlig at frigøre nok diskplads før du fortsætter installationen."
+        Message = @{
+            Install = "Du har ikke nok diskplads til at fuldføre installationen af:`n{0}`n`nPladsbehov: {1}MB`nPlads til rådighed: {2}MB`n`nFrigør venligst nok diskplads til at fortsætte med installationen."
+            Repair = "Du har ikke nok diskplads til at fuldføre reparationen af:`n{0}`n`nKrævet plads: {1}MB`nPlads til rådighed: {2}MB`n`nFrigør venligst nok diskplads til at kunne fortsætte med reparationen."
+            Uninstall = "Du har ikke nok diskplads til at fuldføre afinstallationen af:`n{0}`n`nPladsbehov: {1}MB`nPlads til rådighed: {2}MB`n`nFrigør venligst nok diskplads til at fortsætte med afinstallationen."
+        }
     }
     Progress = @{
-        MessageInstall = "Installation i gang. Vent venligst..."
-        MessageInstallDetail = "Dette vindue lukker automatisk, når installationen er færdig."
-        MessageRepair = "Reparere i gang. Vent venligst..."
-        MessageRepairDetail = "Dette vindue lukkes automatisk, når reparationen er færdig."
-        MessageUninstall = "Afinstallation i gang. Vent venligst..."
-        MessageUninstallDetail = "Dette vindue lukkes automatisk, når afinstallationen er færdig."
+        Message = @{
+            Install = 'Installation i gang. Vent venligst...'
+            Repair = 'Reparation i gang. Vent venligst...'
+            Uninstall = 'Afinstallation i gang. Vent venligst...'
+        }
+        MessageDetail = @{
+            Install = 'Dette vindue lukkes automatisk, når installationen er færdig.'
+            Repair = 'Dette vindue lukkes automatisk, når reparationen er færdig.'
+            Uninstall = 'Dette vindue lukkes automatisk, når afinstallationen er færdig.'
+        }
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Installation af App'
+            Repair = 'PSAppDeployToolkit - Reparation af App'
+            Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+        }
+    }
+    Prompt = @{
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Installation af App'
+            Repair = 'PSAppDeployToolkit - Reparation af App'
+            Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+        }
     }
     RestartPrompt = @{
-        ButtonRestartLater = "Minimere"
-        ButtonRestartNow = "Genstart Nu"
-        Message = "For at færdiggøre installationen skal du genstarte din computer."
-        MessageRestart = "Din computer vil automatisk blive genstartet når nedtællingen er færdig."
-        MessageTime = "Du bør venligst gemme dit arbejde og genstarte indenfor det givne tidsrum."
-        TimeRemaining = "Tid tilbage:"
-        Title = "Genstart Nødvendig"
+        ButtonRestartLater = 'Minimér'
+        ButtonRestartNow = 'Genstart nu'
+        Message = @{
+            Install = 'For at installationen kan gennemføres, skal du genstarte din computer.'
+            Repair = 'For at reparationen kan gennemføres, skal du genstarte din computer.'
+            Uninstall = 'For at afinstallationen kan gennemføres, skal du genstarte computeren.'
+        }
+        MessageRestart = 'Din computer genstartes automatisk, når nedtællingen er slut.'
+        MessageTime = 'Gem venligst dit arbejde, og genstart inden for den tildelte tid.'
+        TimeRemaining = 'Resterende tid:'
+        Title = 'Genstart påkrævet'
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Installation af App'
+            Repair = 'PSAppDeployToolkit - Reparation af App'
+            Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+        }
     }
     WelcomePrompt = @{
         Classic = @{
-            CountdownMessage = "{0} vil automatisk fortsætte i:"
-            CustomMessage = ""
+            Close = @{
+                ButtonClose = 'Luk &Programmer'
+                ButtonContinue = '&Fortsæt'
+                ButtonContinueTooltip = 'Vælg kun »Fortsæt«, når du har lukket ovenstående program(mer).'
+                ButtonDefer = '&Udskyde'
+                CountdownMessage = 'BEMÆRK: Programmet/programmerne lukkes automatisk i:'
+                Message = @{
+                    Install = 'Følgende programmer skal lukkes, før installationen kan fortsætte.« Gem venligst dit arbejde, luk programmerne, og fortsæt derefter. Alternativt kan du gemme dit arbejde og klikke på »Luk programmer«.'
+                    Reparation = 'Følgende programmer skal lukkes, før reparationen kan fortsætte.« Gem venligst dit arbejde, luk programmerne, og fortsæt derefter. Alternativt kan du gemme dit arbejde og klikke på »Luk programmer«.'
+                    Uninstall = 'Følgende programmer skal lukkes, før afinstallationen kan fortsætte.« Gem venligst dit arbejde, luk programmerne, og fortsæt derefter. Alternativt kan du gemme dit arbejde og klikke på »Luk programmer«.'
+                }
+            }
+            Defer = @{
+                Deadline = 'Tidsfrist:'
+                ExpiryMessage = @{
+                    Install = 'Du kan vælge at udskyde installationen, indtil udskydelsen udløber:'
+                    Repair = 'Du kan vælge at udskyde reparationen, indtil udskydelsen udløber:'
+                    Uninstall = 'Du kan vælge at udskyde afinstallationen, indtil udsættelsen udløber:'
+                }
+                RemainingDeferrals = 'Resterende udsættelser:'
+                WarningMessage = 'Når udsættelsen er udløbet, har du ikke længere mulighed for at udskyde.'
+                WelcomeMessage = @{
+                    Install = 'Følgende program er ved at blive installeret:'
+                    Repair = 'Følgende applikation er ved at blive repareret:'
+                    Uninstall = 'Følgende applikation er ved at blive afinstalleret:'
+                }
+            }
+            CountdownMessage = @{
+                Install = 'Installationen fortsætter automatisk om:'
+                Repair = 'Reparationen fortsætter automatisk i:'
+                Uninstall = 'Afinstallationen fortsætter automatisk om:'
+            }
+            CustomMessage = ''
         }
         Fluent = @{
-            Subtitle = 'PSAppDeployToolkit - App {0}'
-            DialogMessage = 'Gem venligst dit arbejde, før du fortsætter, da de følgende applikationer lukkes automatisk.'
-            DialogMessageNoProcesses = 'Vælg Installer for at fortsætte med installationen. Hvis du har udsættelser tilbage, kan du også vælge at udskyde installationen.'
+            Subtitle = @{
+                Install = 'PSAppDeployToolkit - Installation af App'
+                Repair = 'PSAppDeployToolkit - Reparation af App'
+                Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+            }
+            DialogMessage = 'Gem venligst dit arbejde, før du fortsætter, da de følgende programmer lukkes automatisk.'
+            DialogMessageNoProcesses = @{
+                Install = 'Vælg Install for at fortsætte med installationen. Hvis du har udsættelser tilbage, kan du også vælge at udskyde installationen.'
+                Repair = 'Vælg Repair for at fortsætte med reparationen. Hvis du har udsættelser tilbage, kan du også vælge at udskyde reparationen.'
+                Uninstall = 'Vælg Afinstallation for at fortsætte med afinstallationen. Hvis du har udsættelser tilbage, kan du også vælge at udskyde afinstallationen.'
+            }
             ButtonDeferRemaining = 'forblive'
-            ButtonLeftText = 'Udskyde'
-            ButtonRightText = 'Luk apps og installer'
-            ButtonRightTextNoProcesses = 'Installer'
+            ButtonLeftText = 'Udskyd'
+            ButtonRightText = @{
+                Install = 'Luk Apps og Installer'
+                Repair = 'Luk Apps og Reparer'
+                Uninstall = 'Luk Apps og Afinstaller'
+            }
+            ButtonRightTextNoProcesses = @{
+                Install = 'Installer'
+                Repair = 'Reparation'
+                Uninstall = 'Afinstaller'
+            }
         }
     }
 }

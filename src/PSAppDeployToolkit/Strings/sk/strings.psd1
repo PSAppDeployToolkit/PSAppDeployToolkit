@@ -1,67 +1,152 @@
 ﻿@{
     BalloonText = @{
-        Complete = "ukončená."
-        Error = "sa nepodarila."
-        FastRetry = "nedokončená."
-        RestartRequired = "ukončená. Je nutný reštart."
-        Start = "spustená."
+        Complete = @{
+            Install = 'Inštalácia dokončená.'
+            Repair = 'Oprava dokončená.'
+            Uninstall = 'Odinštalovanie dokončené.'
+        }
+        Error = @{
+            Install = 'Inštalácia zlyhala.'
+            Repair = 'Oprava zlyhala.'
+            Uninstall = 'Odinštalovanie zlyhalo.'
+        }
+        FastRetry = @{
+            Install = 'Inštalácia nebola dokončená.'
+            Repair = 'Oprava nebola dokončená.'
+            Uninstall = 'Odinštalovanie nebolo dokončené.'
+        }
+        RestartRequired = @{
+            Install = 'Inštalácia dokončená. Vyžaduje sa reštart.'
+            Repair = 'Oprava dokončená. Vyžaduje sa reštart.'
+            Uninstall = 'Odinštalovanie dokončené. Vyžaduje sa reštart.'
+        }
+        Start = @{
+            Install = 'Inštalácia sa začala.'
+            Repair = 'Začala sa oprava.'
+            Uninstall = 'Začala sa odinštalácia.'
+        }
     }
     BlockExecution = @{
-        Message = "Spustenie tejto aplikácie bolo dočasne zablokované, aby mohla byť inštalácia dokončená úspešne."
-    }
-    ClosePrompt = @{
-        ButtonClose = "Ukončiť programy"
-        ButtonContinue = "Pokračovať"
-        ButtonContinueTooltip = "Kliknite na `"Pokračovať`", keď zavriete vyššie uvedené aplikácie."
-        ButtonDefer = "Oddialiť"
-        CountdownMessage = "Poznámka: Programy budú automaticky ukončené za:"
-        Message = "Nasledujúce programy musia byť zatvorené, než bude inštalácia pokračovať.`n`nProsím, uložte svoju prácu, zatvorte dané programy a potom kliknite na pokračovať. Prípadne môžete uložiť svoju prácu a potom kliknite na tlačidlo `"Ukončiť programy`"."
-    }
-    DeferPrompt = @{
-        Deadline = "Termín:"
-        ExpiryMessage = "Inštaláciu môžete niekoľkokrát odložiť:"
-        RemainingDeferrals = "Zostávajúce odklady:"
-        WarningMessage = "Akonáhle odklady uplynú, už nebudete mať možnosť odložiť inštaláciu."
-        WelcomeMessage = "Nasledujúca aplikácia bude nainštalovaná:"
-    }
-    DeploymentType = @{
-        Install = "Inštalácia"
-        Repair = "Oprava"
-        Uninstall = "Odinštalácia"
+        Message = @{
+            Install = 'Spustenie tejto aplikácie bolo dočasne zablokované, aby sa mohla dokončiť inštalačná operácia.'
+            Repair = 'Spustenie tejto aplikácie bolo dočasne zablokované, aby sa mohla dokončiť operácia opravy.'
+            Uninstall = 'Spustenie tejto aplikácie bolo dočasne zablokované, aby sa mohla dokončiť operácia odinštalovania.'
+        }
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Inštalácia Aplikácie'
+            Repair = 'PSAppDeployToolkit - Oprava Aplikácií'
+            Uninstall = 'PSAppDeployToolkit - Odinštalovanie Aplikácie'
+        }
     }
     DiskSpace = @{
-        Message = "Nemáte dostatok voľného miesta na dokončenie inštalácie:`n{0}`n`nPotrebné miesto: {1}MB`nVoľné miesto: {2}MB`n`nProsím, uvoľnite dostatok miesta pre pokračovanie inštalácie."
+        Message = @{
+            Install = "Nemáte dostatok miesta na disku na dokončenie inštalácie:`n{0}`n`nPotrebné miesto: {1}MB`nDostupné miesto: {2}`n`nUvoľnite, prosím, dostatok miesta na disku, aby ste mohli pokračovať v inštalácii."
+            Oprava = "Nemáte dostatok miesta na disku na dokončenie opravy:`n{0}`n`Potrebné miesto: {1}MB`nPriestor je k dispozícii: {2}`n`nUvoľnite, prosím, dostatok miesta na disku, aby ste mohli pokračovať v oprave."
+            Uninstall = "You do not have enough disk space to complete the uninstallation of:`n{0}`n`nSpace required: {1}MB`nPriestor je k dispozícii: {2}`n`nUvoľnite, prosím, dostatok miesta na disku, aby ste mohli pokračovať v odinštalácii."
+        }
     }
     Progress = @{
-        MessageInstall = "Inštalácia sa vykonáva. Prosím čakajte..."
-        MessageInstallDetail = "Toto okno sa po dokončení inštalácie automaticky zatvorí."
-        MessageRepair = "Vykonáva sa oprava. Prosím čakajte..."
-        MessageRepairDetail = "Toto okno sa po dokončení opravy automaticky zatvorí."
-        MessageUninstall = "Prebieha odinštalácia. Prosím čakajte..."
-        MessageUninstallDetail = "Toto okno sa po dokončení odinštalovania automaticky zatvorí."
+        Message = @{
+            Install = 'Inštalácia prebieha. Počkajte prosím...'
+            Repair = 'Prebieha oprava. Počkajte prosím...'
+            Uninstall = 'Prebieha odinštalovanie. Prosím, počkajte...'
+        }
+        MessageDetail = @{
+            Install = 'Toto okno sa po dokončení inštalácie automaticky zatvorí.'
+            Repair = 'Toto okno sa automaticky zatvorí po dokončení opravy.'
+            Uninstall = 'Toto okno sa automaticky zatvorí po dokončení odinštalovania.'
+        }
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Inštalácia Aplikácie'
+            Repair = 'PSAppDeployToolkit - Oprava Aplikácií'
+            Uninstall = 'PSAppDeployToolkit - Odinštalovanie Aplikácie'
+        }
+    }
+    Prompt = @{
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Inštalácia Aplikácie'
+            Repair = 'PSAppDeployToolkit - Oprava Aplikácií'
+            Uninstall = 'PSAppDeployToolkit - Odinštalovanie Aplikácie'
+        }
     }
     RestartPrompt = @{
-        ButtonRestartLater = "Minimalizovať"
-        ButtonRestartNow = "Reštartovať Teraz"
-        Message = "Na dokončenie inštalácie musíte váš počítač reštartovať."
-        MessageRestart = "Na konci odpočítavania, bude váš počítač automaticky reštartovaný."
-        MessageTime = "Prosím, uložte si prácu a reštartujte počítač v stanovenej lehote."
-        TimeRemaining = "Zostávajúci čas:"
-        Title = "Je nutný reštart."
+        ButtonRestartLater = 'Minimalizovať'
+        ButtonRestartNow = 'Reštartovať Teraz'
+        Message = @{
+            Install = 'Aby sa inštalácia dokončila, musíte reštartovať počítač.'
+            Repair = 'Aby sa oprava dokončila, musíte reštartovať počítač.'
+            Uninstall = 'Aby sa odinštalovanie dokončilo, musíte reštartovať počítač.'
+        }
+        MessageRestart = 'Váš počítač sa automaticky reštartuje na konci odpočítavania.'
+        MessageTime = 'Uložte si svoju prácu a reštartujte ju v stanovenom čase.'
+        TimeRemaining = 'Zostávajúci čas:'
+        Title = 'Vyžaduje sa Reštart'
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - Inštalácia Aplikácie'
+            Repair = 'PSAppDeployToolkit - Oprava Aplikácií'
+            Uninstall = 'PSAppDeployToolkit - Odinštalovanie Aplikácie'
+        }
     }
     WelcomePrompt = @{
         Classic = @{
-            CountdownMessage = "{0} bude automaticky pokračovať za:"
-            CustomMessage = ""
+            Close = @{
+                ButtonClose = 'Zatvoriť &Programy'
+                ButtonContinue = '&Pokračovať'
+                ButtonContinueTooltip = 'Vyberte „Pokračovať“ až po zatvorení vyššie uvedených aplikácií.'
+                ButtonDefer = '&Odloženie'
+                CountdownMessage = 'POZNÁMKA: Program(-y) sa automaticky ukončí(-ú) v:'
+                Message = @{
+                    Install = "Pred pokračovaním inštalácie je potrebné zatvoriť nasledujúce programy.`n`nProsím, uložte si prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na `„Zatvoriť programy`“."
+                    Repair = "Pred pokračovaním opravy musia byť nasledujúce programy zatvorené.`n`nProsím, uložte svoju prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na `„Zatvoriť programy`“."
+                    Uninstall = "Predtým, ako bude možné pokračovať v odinštalovaní, musia byť nasledujúce programy zatvorené.`n`nProsím, uložte svoju prácu, zatvorte programy a potom pokračujte. Prípadne uložte svoju prácu a kliknite na `„Zavrieť programy`“."
+                }
+            }
+            Defer = @{
+                Deadline = 'Termín:'
+                ExpiryMessage = @{
+                    Install = 'Môžete sa rozhodnúť odložiť inštaláciu až do uplynutia odkladu:'
+                    Repair = 'Môžete sa rozhodnúť odložiť opravu až do uplynutia odkladu:'
+                    Uninstall = 'Môžete sa rozhodnúť odložiť odinštalovanie až do uplynutia odkladu:'
+                }
+                RemainingDeferrals = 'Zostávajúce odklady:'
+                WarningMessage = 'Po uplynutí odkladu už nebudete mať možnosť odložiť.'
+                WelcomeMessage = @{
+                    Install = 'Nasledujúca aplikácia sa práve inštaluje:'
+                    Repair = 'Nasledujúca aplikácia bude opravená:'
+                    Uninstall = 'Nasledujúca aplikácia bude odinštalovaná:'
+                }
+            }
+            CountdownMessage = @{
+                Install = 'Inštalácia bude automaticky pokračovať v:'
+                Repair = 'Oprava bude automaticky pokračovať za:'
+                Uninstall = 'Odinštalovanie bude automaticky pokračovať za:'
+            }
+            CustomMessage = ''
         }
         Fluent = @{
-            Subtitle = 'PSAppDeployToolkit - Aplikácia {0}'
-            DialogMessage = 'Pred pokračovaním uložte svoju prácu, pretože nasledujúce aplikácie sa automaticky zatvoria.'
-            DialogMessageNoProcesses = 'Ak chcete pokračovať v inštalácii, vyberte možnosť Inštalovať. Ak máte ešte nejaké odklady, môžete tiež zvoliť odloženie inštalácie.'
+            Subtitle = @{
+                Install = 'PSAppDeployToolkit - Inštalácia Aplikácie'
+                Repair = 'PSAppDeployToolkit - Oprava Aplikácií'
+                Uninstall = 'PSAppDeployToolkit - Odinštalovanie Aplikácie'
+            }
+            DialogMessage = 'Pred pokračovaním uložte svoju prácu, pretože nasledujúce aplikácie budú automaticky ukončené.'
+            DialogMessageNoProcesses = @{
+                Install = 'Prosím, vyberte Install, aby ste mohli pokračovať v inštalácii. Ak máte ešte nejaké odklady, môžete tiež zvoliť odloženie inštalácie.'
+                Repair = 'Prosím, vyberte Repair (Opraviť), ak chcete pokračovať v oprave. Ak máte ešte nejaké odklady, môžete opravu odložiť.'
+                Uninstall = 'Vyberte Uninstall (Odinštalovať), ak chcete pokračovať v odinštalovaní. Ak máte ešte nejaké odklady, môžete tiež odložiť odinštalovanie.'
+            }
             ButtonDeferRemaining = 'zostať'
-            ButtonLeftText = 'Odloženie'
-            ButtonRightText = 'Zatvoriť aplikácie a nainštalovať'
-            ButtonRightTextNoProcesses = 'Inštalácia stránky'
+            ButtonLeftText = 'Odložiť'
+            ButtonRightText = @{
+                Install = 'Zavrieť aplikácie a Nainštalovať'
+                Repair = 'Zatvoriť aplikácie a Opraviť'
+                Uninstall = 'Zatvoriť aplikácie a Odinštalovať'
+            }
+            ButtonRightTextNoProcesses = @{
+                Install = 'Inštalovať'
+                Repair = 'Opraviť'
+                Uninstall = 'Odinštalovať'
+            }
         }
     }
 }
