@@ -110,11 +110,24 @@ function Import-ADTConfig
     if (!$Script:Dialogs.Contains($config.UI.DialogStyle))
     {
         $naerParams = @{
-            Exception = [System.NotSupportedException]::new("The specified dialog style [$($config.UI.DialogStyle)] is not supported. Valid styles are ['$($Script:Dialogs.Keys -join "', '")'].")
+            Exception = [System.NotSupportedException]::new("The specified dialog style [$($config.UI.DialogStyle)] is not valid. Valid styles are ['$($Script:Dialogs.Keys -join "', '")'].")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidData
+            ErrorId = 'DialogStyleInvalid'
+            TargetObject = $config
+            RecommendedAction = "Please review the supplied configuration file and try again."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+
+    # Throw if attempting to use classic dialogs on Server Core.
+    if (($config.UI.DialogStyle -eq 'Classic') -and [Microsoft.Win32.Registry]::GetValue('HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion', 'InstallationType', $null).Equals('Server Core'))
+    {
+        $naerParams = @{
+            Exception = [System.NotSupportedException]::new("The dialog style [$($config.UI.DialogStyle)] is not supported on Server Core. Please use [Fluent] instead.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidData
             ErrorId = 'DialogStyleNotSupported'
             TargetObject = $config
-            RecommendedAction = "Please review the supplied configuration file and try again."
+            RecommendedAction = "Please change the dialog style to Fluent and try again."
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
