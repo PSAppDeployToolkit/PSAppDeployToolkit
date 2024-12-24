@@ -17,7 +17,15 @@ namespace PSADT.Devices
                 PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out IMMDeviceEnumerator deviceEnumerator).ThrowOnFailure();
 
                 // Get the default audio capture device (microphone).
-                deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out var microphoneDevice);
+                IMMDevice microphoneDevice;
+                try
+                {
+                    deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture, ERole.eConsole, out microphoneDevice);
+                }
+                catch
+                {
+                    return micInUse;
+                }
 
                 // Activate the session manager for the capture device.
                 microphoneDevice.Activate(typeof(IAudioSessionManager2).GUID, CLSCTX.CLSCTX_ALL, null, out var sessionManagerObj);
