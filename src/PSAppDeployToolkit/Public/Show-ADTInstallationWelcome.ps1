@@ -522,7 +522,7 @@ function Show-ADTInstallationWelcome
                                             # Close out the main window and spin until completion.
                                             if ($runningProcess.CloseMainWindow())
                                             {
-                                                $promptToSaveStart = [System.DateTime]::Now
+                                                $promptToSaveStart = [System.Diagnostics.Stopwatch]::StartNew()
                                                 do
                                                 {
                                                     if (!($IsWindowOpen = Get-ADTWindowTitle -WindowHandle $OpenWindow.WindowHandle -InformationAction SilentlyContinue | Select-Object -First 1))
@@ -531,7 +531,7 @@ function Show-ADTInstallationWelcome
                                                     }
                                                     [System.Threading.Thread]::Sleep(3000)
                                                 }
-                                                while (($IsWindowOpen) -and (([System.DateTime]::Now - $promptToSaveStart) -lt $PromptToSaveTimeout))
+                                                while ($IsWindowOpen -and ($promptToSaveStart.Elapsed -lt $PromptToSaveTimeout))
 
                                                 if ($IsWindowOpen)
                                                 {
