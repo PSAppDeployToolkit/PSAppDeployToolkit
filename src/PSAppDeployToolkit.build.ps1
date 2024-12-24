@@ -280,7 +280,7 @@ Add-BuildTask EncodingCheck {
             # Throw if the byte order mark doesn't match utf8-bom.
             if (!(($bom[0] -eq 0xEF) -and ($bom[1] -eq 0xBB) -and ($bom[2] -eq 0xBF)))
             {
-                throw "The file encoding for [$($_.Name)] is not UTF-8 with BOM."
+                throw "The file encoding for [$($_.FullName)] is not UTF-8 with BOM."
             }
         }
     }
