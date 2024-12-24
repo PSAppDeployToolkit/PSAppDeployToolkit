@@ -1,4 +1,4 @@
-@{
+﻿@{
     BalloonText = @{
         Complete = @{
             Install = '安裝完成。'
