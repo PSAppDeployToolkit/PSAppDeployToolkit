@@ -1540,7 +1540,7 @@ namespace PSADT.Module
         /// </summary>
         public string? AppVendor
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppVendor)) : _appVendor;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppVendor)) : _appVendor;
         }
 
         /// <summary>
@@ -1548,7 +1548,7 @@ namespace PSADT.Module
         /// </summary>
         public string? AppName
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppName)) : _appName;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppName)) : _appName;
         }
 
         /// <summary>
@@ -1556,7 +1556,7 @@ namespace PSADT.Module
         /// </summary>
         public string? AppVersion
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppVersion)) : _appVersion;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppVersion)) : _appVersion;
         }
 
         /// <summary>
@@ -1564,7 +1564,7 @@ namespace PSADT.Module
         /// </summary>
         public string? AppArch
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppArch)) : _appArch;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppArch)) : _appArch;
         }
 
         /// <summary>
@@ -1572,7 +1572,7 @@ namespace PSADT.Module
         /// </summary>
         public string? AppLang
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppLang)) : _appLang;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppLang)) : _appLang;
         }
 
         /// <summary>
@@ -1580,7 +1580,7 @@ namespace PSADT.Module
         /// </summary>
         public string? AppRevision
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppRevision)) : _appRevision;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppRevision)) : _appRevision;
         }
 
         /// <summary>
@@ -1604,7 +1604,7 @@ namespace PSADT.Module
         /// </summary>
         public Version? AppScriptVersion
         {
-            get => (null != CallerSessionState) ? new Version((string)CallerSessionState.PSVariable.GetValue(nameof(AppScriptVersion))) : _appScriptVersion;
+            get => (null != CallerSessionState) ? (Version?)CallerSessionState.PSVariable.GetValue(nameof(AppScriptVersion)) : _appScriptVersion;
         }
 
         /// <summary>
@@ -1612,7 +1612,7 @@ namespace PSADT.Module
         /// </summary>
         public DateTime? AppScriptDate
         {
-            get => (null != CallerSessionState) ? DateTime.ParseExact((string)CallerSessionState.PSVariable.GetValue(nameof(AppScriptDate)), CultureInfo.InvariantCulture.DateTimeFormat.ShortDatePattern, CultureInfo.InvariantCulture) : _appScriptDate;
+            get => (null != CallerSessionState) ? (DateTime?)CallerSessionState.PSVariable.GetValue(nameof(AppScriptDate)) : _appScriptDate;
         }
 
         /// <summary>
@@ -1620,7 +1620,7 @@ namespace PSADT.Module
         /// </summary>
         public string? AppScriptAuthor
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(AppScriptAuthor)) : _appScriptAuthor;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppScriptAuthor)) : _appScriptAuthor;
         }
 
         /// <summary>
@@ -1644,7 +1644,7 @@ namespace PSADT.Module
         /// </summary>
         public string? DeployAppScriptFriendlyName
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptFriendlyName)) : _deployAppScriptFriendlyName;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptFriendlyName)) : _deployAppScriptFriendlyName;
         }
 
         /// <summary>
@@ -1660,7 +1660,7 @@ namespace PSADT.Module
         /// </summary>
         public Dictionary<string, object>? DeployAppScriptParameters
         {
-            get => (null != CallerSessionState) ? (Dictionary<string, object>)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptParameters)) : _deployAppScriptParameters;
+            get => (null != CallerSessionState) ? (Dictionary<string, object>?)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptParameters)) : _deployAppScriptParameters;
         }
 
         /// <summary>
@@ -1712,7 +1712,7 @@ namespace PSADT.Module
         /// </summary>
         public string[]? ScriptDirectory
         {
-            get => (null != CallerSessionState) ? (string[])CallerSessionState.PSVariable.GetValue(nameof(ScriptDirectory)) : _scriptDirectory;
+            get => (null != CallerSessionState) ? (string[]?)CallerSessionState.PSVariable.GetValue(nameof(ScriptDirectory)) : _scriptDirectory;
         }
 
         /// <summary>
@@ -1720,7 +1720,7 @@ namespace PSADT.Module
         /// </summary>
         public string? DirFiles
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DirFiles)) : _dirFiles;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DirFiles)) : _dirFiles;
             set
             {
                 _dirFiles = value;
@@ -1733,7 +1733,7 @@ namespace PSADT.Module
         /// </summary>
         public string? DirSupportFiles
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DirSupportFiles)) : _dirSupportFiles;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DirSupportFiles)) : _dirSupportFiles;
             set
             {
                 _dirSupportFiles = value;
@@ -1746,7 +1746,7 @@ namespace PSADT.Module
         /// </summary>
         public string? DefaultMsiFile
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DefaultMsiFile)) : _defaultMsiFile;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DefaultMsiFile)) : _defaultMsiFile;
         }
 
         /// <summary>
@@ -1754,7 +1754,7 @@ namespace PSADT.Module
         /// </summary>
         public string? DefaultMstFile
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DefaultMstFile)) : _defaultMstFile;
+            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DefaultMstFile)) : _defaultMstFile;
         }
 
         /// <summary>
