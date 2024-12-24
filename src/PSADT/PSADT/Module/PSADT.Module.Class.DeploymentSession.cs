@@ -829,15 +829,6 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the caller of the log entry from the call stack frames.
         /// </summary>
-        /// <returns>The call stack frame of the log entry caller.</returns>
-        private CallStackFrame GetLogEntryCallerInternal()
-        {
-            return GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
-        }
-
-        /// <summary>
-        /// Gets the caller of the log entry from the call stack frames.
-        /// </summary>
         /// <param name="stackFrames">The call stack frames.</param>
         /// <returns>The call stack frame of the log entry caller.</returns>
         public static CallStackFrame GetLogEntryCaller(IEnumerable<CallStackFrame> stackFrames)
@@ -1034,7 +1025,7 @@ namespace PSADT.Module
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
             string logTime = dateNow.ToString("HH\\:mm\\:ss.fff");
-            CallStackFrame invoker = GetLogEntryCallerInternal();
+            CallStackFrame invoker = GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
 
             // Determine the log file name; either a proper script/function, or a caller directly from the console.
             string logFile = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
