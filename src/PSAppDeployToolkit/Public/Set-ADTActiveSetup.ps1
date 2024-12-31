@@ -190,6 +190,7 @@ function Set-ADTActiveSetup
         }
 
         # Define initial variables.
+        $ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath)
         $runAsActiveUser = Get-ADTRunAsActiveUser
         $CUStubExePath = $null
         $CUArguments = $null
@@ -430,7 +431,7 @@ function Set-ADTActiveSetup
                 $StubExePath = [System.Environment]::ExpandEnvironmentVariables($StubExePath)
                 if ($adtSession -and $adtSession.DirFiles)
                 {
-                    $StubExeFile = Join-Path -Path $adtSession.DirFiles -ChildPath ($ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath))
+                    $StubExeFile = Join-Path -Path $adtSession.DirFiles -ChildPath $ActiveSetupFileName
                     if (Test-Path -LiteralPath $StubExeFile -PathType Leaf)
                     {
                         # This will overwrite the StubPath file if $StubExePath already exists on target.
