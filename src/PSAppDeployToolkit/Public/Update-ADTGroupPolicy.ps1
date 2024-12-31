@@ -65,7 +65,7 @@ function Update-ADTGroupPolicy
                     $gpUpdateResult = & "$([System.Environment]::SystemDirectory)\cmd.exe" /c "echo N | gpupdate.exe /Target:$target /Force" 2>&1
                     if (!$Global:LASTEXITCODE)
                     {
-                        return
+                        continue
                     }
 
                     # If we're here, we had a bad exit code.
