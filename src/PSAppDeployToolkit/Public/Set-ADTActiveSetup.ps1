@@ -267,82 +267,31 @@ function Set-ADTActiveSetup
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
-            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } } | Select-Object -First 1))))
+            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } }))))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
-            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } } | Select-Object -First 1))))
+            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } }))))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
             }
 
             # Both entries present, with a Version property. Compare the Versions.
-            try
+            if (([System.Version]$HKLMValidVer.Replace(',', '.')) -gt ([System.Version]$HKCUValidVer.Replace(',', '.')))
             {
-                # Convert the version property to Version type and compare.
-                if (([System.Version]$HKLMValidVer.Replace(',', '.')) -gt ([System.Version]$HKCUValidVer.Replace(',', '.')))
-                {
-                    # HKLM is greater, run the StubPath.
-                    Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
-                    return $true
-                }
-                else
-                {
-                    # The HKCU version is equal or higher than HKLM version, Nothing to run.
-                    Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.'
-                    return $false
-                }
-            }
-            catch
-            {
-                # Failed to convert version property to Version type.
-                $null = $null
-            }
-
-            # Check whether the Versions were split into the same number of strings. Split the version by commas.
-            if (($SplitHKLMValidVer = $HKLMValidVer.Split(',')).Count -ne ($SplitHKCUValidVer = $HKCUValidVer.Split(',')).Count)
-            {
-                # The versions are different length - more commas
-                if ($SplitHKLMValidVer.Count -gt $SplitHKCUValidVer.Count)
-                {
-                    # HKLM is longer, Run the StubPath.
-                    Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKLM Version has more version fields."
-                    return $true
-                }
-                else
-                {
-                    # HKCU is longer, Nothing to run.
-                    Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties. However, the HKCU Version has more version fields."
-                    return $false
-                }
-            }
-
-            # The Versions have the same number of strings. Compare them
-            try
-            {
-                for ($i = 0; $i -lt $SplitHKLMValidVer.Count; $i++)
-                {
-                    # Parse the version is UINT64.
-                    if ([UInt64]::Parse($SplitHKCUValidVer[$i]) -lt [UInt64]::Parse($SplitHKLMValidVer[$i]))
-                    {
-                        # The HKCU ver is lower, Run the StubPath.
-                        Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, HKCU Version property is lower.'
-                        return $true
-                    }
-                }
-                # The HKCU version is equal or higher than HKLM version, Nothing to run.
-                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, they are either the same or HKCU Version property is higher.'
-                return $false
-            }
-            catch
-            {
-                # Failed to parse strings as UInt64, Run the StubPath.
-                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both Version properties are present and valid. However, parsing string numerics to 64-bit integers failed.' -Severity 2
+                # HKLM is greater, run the StubPath.
+                Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
                 return $true
+            }
+            else
+            {
+                # The HKCU version is equal or higher than HKLM version, Nothing to run.
+                Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. Both contain Version properties. However, they are either the same or the HKCU Version property is higher.'
+                return $false
             }
         }
 
