@@ -922,7 +922,7 @@ namespace PSADT.Module
                         ResetDeferHistory();
 
                         // Handle reboot prompts on successful script completion.
-                        if (deploymentStatus.Equals("RestartRequired") && AllowRebootPassThru)
+                        if (deploymentStatus.Equals(DeploymentStatus.RestartRequired) && AllowRebootPassThru)
                         {
                             WriteLogEntry("A restart has been flagged as required.");
                         }
