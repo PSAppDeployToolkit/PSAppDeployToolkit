@@ -58,9 +58,13 @@ namespace PSADT
             return nameof(sysInfo.wProcessorArchitecture).EndsWith("64");
         }
 
+        #nullable enable
+        private static readonly string? pwshCorePath = Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault();
+        private static readonly string? psGalleryPath = PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First()!.Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault();
+        #nullable disable
+
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
-        private static readonly string psGalleryPath = PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First().Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault();
         private static readonly string v3ToolkitPath = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
         private static readonly string v4ToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit");
         private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
@@ -83,11 +87,44 @@ namespace PSADT
                 string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 string pwshArguments = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
                 var cliArguments = Environment.GetCommandLineArgs().ToList().ConvertAll(x => x.Trim());
-                bool isForceX86Mode = false;
                 bool isRequireAdmin = false;
 
                 // Announce commencement
                 WriteDebugMessage($"Commencing invocation of {adtFrontendPath}.");
+
+                // Remove first command-line argument as this is always the executable name.
+                cliArguments.RemoveAt(0);
+
+                // Confirm /32 and /Core both haven't been passed as it's not supported.
+                bool x32Specified = cliArguments.Exists(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+                bool coreSpecified = cliArguments.Exists(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+                if (x32Specified && coreSpecified)
+                {
+                    throw new ArgumentException("The use of both '/32' and '/Core' on the command line is not supported.");
+                }
+
+                // Check if we're using PowerShell Core (7).
+                if (coreSpecified)
+                {
+                    if (null == pwshCorePath)
+                    {
+                        throw new InvalidOperationException("The '/Core' parameter was specified, but PowerShell Core was not found on this system.");
+                    }
+                    cliArguments.RemoveAll(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+                    pwshExecutablePath = pwshCorePath;
+                }
+
+                // Check if x86 PowerShell mode was specified on command line.
+                if (x32Specified)
+                {
+                    // Remove the /32 command line argument so that it is not passed to PowerShell script
+                    WriteDebugMessage("The '/32' parameter was specified on the command line. Running in forced x86 PowerShell mode...");
+                    cliArguments.RemoveAll(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+                    if (is64BitOS)
+                    {
+                        pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "WindowsPowerShell\\v1.0\\PowerShell.exe");
+                    }
+                }
 
                 // Test whether we're running in silent mode.
                 var deployModeIndex = Array.FindIndex(cliArguments.ToArray(), x => x.Equals("-DeployMode", StringComparison.OrdinalIgnoreCase));
@@ -146,18 +183,6 @@ namespace PSADT
                     WriteDebugMessage("Administrator rights are required. The verb 'RunAs' will be used with the invocation.");
                 }
 
-                // Remove first command-line argument as this is always the executable name.
-                cliArguments.RemoveAt(0);
-
-                // Check if x86 PowerShell mode was specified on command line.
-                if (cliArguments.Exists(x => x == "/32"))
-                {
-                    // Remove the /32 command line argument so that it is not passed to PowerShell script
-                    WriteDebugMessage("'/32' parameter was specified on the command-line. Running in forced x86 PowerShell mode...");
-                    cliArguments.RemoveAll(x => x == "/32");
-                    isForceX86Mode = true;
-                }
-
                 // Check for the App Deploy Script file being specified.
                 if (cliArguments.Exists(x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -196,12 +221,6 @@ namespace PSADT
                 if (cliArguments.Count > 0)
                 {
                     pwshArguments += $" {string.Join(" ", cliArguments)}";
-                }
-
-                // Switch to x86 PowerShell if requested.
-                if (is64BitOS && isForceX86Mode)
-                {
-                    pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "WindowsPowerShell\\v1.0\\PowerShell.exe");
                 }
 
                 // Define PowerShell process.
