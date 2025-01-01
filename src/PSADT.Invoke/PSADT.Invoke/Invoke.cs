@@ -177,8 +177,7 @@ namespace PSADT
                 }
 
                 // Determine whether we require admin rights or not.
-                Hashtable toolkitConfig = (Hashtable)((Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue())["Toolkit"];
-                if (isRequireAdmin = (bool)toolkitConfig["RequireAdmin"])
+                if (isRequireAdmin = (bool)((Hashtable)((Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue())["Toolkit"])["RequireAdmin"])
                 {
                     WriteDebugMessage("Administrator rights are required. The verb 'RunAs' will be used with the invocation.");
                 }
