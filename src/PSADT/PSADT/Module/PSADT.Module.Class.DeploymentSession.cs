@@ -703,7 +703,7 @@ namespace PSADT.Module
                 if ((bool)adtEnv["SessionZero"]!)
                 {
                     // If the script was launched with deployment mode set to NonInteractive, then continue.
-                    if (_deployMode != DeployMode.Interactive)
+                    if ((null != parameters) && parameters.ContainsKey("DeployMode"))
                     {
                         WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{_deployMode}].");
                     }
@@ -712,12 +712,12 @@ namespace PSADT.Module
                         // If the process is not able to display a UI, enable NonInteractive mode.
                         if (!(bool)adtEnv["IsProcessUserInteractive"]!)
                         {
-                            _deployMode = DeployMode.NonInteractive;
+                            _deployMode = DeployMode.Silent;
                             WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{_deployMode}].");
                         }
                         else if (null == adtEnv["usersLoggedOn"])
                         {
-                            _deployMode = DeployMode.NonInteractive;
+                            _deployMode = DeployMode.Silent;
                             WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{_deployMode}].");
                         }
                         else
