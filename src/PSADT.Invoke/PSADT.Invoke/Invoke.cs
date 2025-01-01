@@ -12,9 +12,9 @@ using System.Windows.Forms;
 
 namespace PSADT
 {
-    internal static class Invoke
+    internal static class NativeSystemInfo
     {
-        private enum ProcessorArchitecture : ushort
+        public enum ProcessorArchitecture : ushort
         {
             PROCESSOR_ARCHITECTURE_INTEL = 0,
             PROCESSOR_ARCHITECTURE_MIPS = 1,
@@ -34,7 +34,7 @@ namespace PSADT
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
-        private struct SYSTEM_INFO
+        public struct SYSTEM_INFO
         {
             public ProcessorArchitecture wProcessorArchitecture;
             public ushort wReserved;
@@ -52,12 +52,15 @@ namespace PSADT
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
         private static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
 
-        private static bool Is64BitOS()
+        public static SYSTEM_INFO GetNativeSystemInfo()
         {
             GetNativeSystemInfo(out SYSTEM_INFO sysInfo);
-            return nameof(sysInfo.wProcessorArchitecture).EndsWith("64");
+            return sysInfo;
         }
+    }
 
+    internal static class Invoke
+    {
         #nullable enable
         private static readonly string? pwshCorePath = Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault();
         private static readonly string? psGalleryPath = PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First()!.Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault();
@@ -70,7 +73,6 @@ namespace PSADT
         private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
         private static readonly string timeStamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
         private static readonly Encoding LogEncoding = new UTF8Encoding(true);
-        private static readonly bool is64BitOS = Is64BitOS();
 
         private static void Main()
         {
@@ -120,7 +122,7 @@ namespace PSADT
                     // Remove the /32 command line argument so that it is not passed to PowerShell script
                     WriteDebugMessage("The '/32' parameter was specified on the command line. Running in forced x86 PowerShell mode...");
                     cliArguments.RemoveAll(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
-                    if (is64BitOS)
+                    if (NativeSystemInfo.GetNativeSystemInfo().wProcessorArchitecture.ToString().EndsWith("64"))
                     {
                         pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "WindowsPowerShell\\v1.0\\PowerShell.exe");
                     }
