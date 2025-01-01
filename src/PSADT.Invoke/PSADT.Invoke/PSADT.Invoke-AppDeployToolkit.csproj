@@ -60,6 +60,9 @@
   <PropertyGroup>
     <ApplicationIcon>appIcon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
