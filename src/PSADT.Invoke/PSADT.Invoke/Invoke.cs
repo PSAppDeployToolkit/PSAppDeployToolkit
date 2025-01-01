@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Management.Automation;
@@ -12,6 +14,86 @@ using System.Windows.Forms;
 
 namespace PSADT
 {
+    /// <summary>
+    /// A utility class to determine a process parent.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ParentProcessUtilities
+    {
+        // These members must match PROCESS_BASIC_INFORMATION
+        internal IntPtr Reserved1;
+        internal IntPtr PebBaseAddress;
+        internal IntPtr Reserved2_0;
+        internal IntPtr Reserved2_1;
+        internal IntPtr UniqueProcessId;
+        internal IntPtr InheritedFromUniqueProcessId;
+
+        [DllImport("ntdll.dll")]
+        private static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ParentProcessUtilities processInformation, int processInformationLength, out int returnLength);
+
+        /// <summary>
+        /// Gets the parent process of the current process.
+        /// </summary>
+        /// <returns>An instance of the Process class.</returns>
+        public static Process GetParentProcess()
+        {
+            return GetParentProcess(Process.GetCurrentProcess().Handle);
+        }
+
+        /// <summary>
+        /// Gets the parent process of specified process.
+        /// </summary>
+        /// <param name="id">The process id.</param>
+        /// <returns>An instance of the Process class.</returns>
+        public static Process GetParentProcess(int id)
+        {
+            Process process = Process.GetProcessById(id);
+            return GetParentProcess(process.Handle);
+        }
+
+        /// <summary>
+        /// Gets the parent process of a specified process.
+        /// </summary>
+        /// <param name="handle">The process handle.</param>
+        /// <returns>An instance of the Process class.</returns>
+        public static Process GetParentProcess(IntPtr handle)
+        {
+            ParentProcessUtilities pbi = new ParentProcessUtilities();
+            int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out var returnLength);
+            if (status != 0)
+            {
+                throw new Win32Exception(status);
+            }
+            return Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
+        }
+
+        /// <summary>
+        /// Gets a list of all parent processes of this one.
+        /// </summary>
+        /// <returns>An list of instances of the Process class.</returns>
+        public static List<Process> GetParentProcesses()
+        {
+            List<Process> procs = [];
+            var proc = Process.GetCurrentProcess();
+            while (true)
+            {
+                try
+                {
+                    if (procs.Contains((proc = GetParentProcess(proc.Handle))))
+                    {
+                        break;
+                    }
+                    procs.Add(proc);
+                }
+                catch
+                {
+                    break;
+                }
+            }
+            return procs;
+        }
+    }
+
     internal static class NativeSystemInfo
     {
         public enum ProcessorArchitecture : ushort
@@ -62,10 +144,12 @@ namespace PSADT
     internal static class Invoke
     {
         #nullable enable
+        private static readonly string? pwshParentProcessPath = ParentProcessUtilities.GetParentProcesses().Where(p => p.ProcessName.Equals("pwsh") || p.ProcessName.Equals("powershell")).Select(p => p.MainModule.FileName).FirstOrDefault();
         private static readonly string? pwshCorePath = Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault();
         private static readonly string? psGalleryPath = PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First()!.Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault();
         #nullable disable
 
+        private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
         private static readonly string v3ToolkitPath = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
@@ -86,7 +170,7 @@ namespace PSADT
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
                 string adtToolkitPath = Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : !string.IsNullOrWhiteSpace(psGalleryPath) ? psGalleryPath : null;
                 string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
-                string pwshExecutablePath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
+                string pwshExecutablePath = pwshDefaultPath;
                 string pwshArguments = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
                 var cliArguments = Environment.GetCommandLineArgs().ToList().ConvertAll(x => x.Trim());
                 bool isRequireAdmin = false;
@@ -126,6 +210,12 @@ namespace PSADT
                     {
                         pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "WindowsPowerShell\\v1.0\\PowerShell.exe");
                     }
+                }
+
+                // If the PowerShell mode hasn't been explicitly specified, override it with a PowerShell parent process if available.
+                if (pwshExecutablePath.Equals(pwshDefaultPath) && null != pwshParentProcessPath)
+                {
+                    pwshExecutablePath = pwshParentProcessPath;
                 }
 
                 // Test whether we're running in silent mode.
