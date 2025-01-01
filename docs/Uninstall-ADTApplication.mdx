@@ -267,7 +267,7 @@ Accept wildcard characters: False
 
 ### -PassThru
 
-Returns ExitCode, STDOut, and STDErr output from the process.
+Returns a PSADT.Types.ProcessResult object, providing the ExitCode, StdOut, and StdErr output from the uninstallation.
 
 ```yaml
 Type: SwitchParameter
@@ -287,9 +287,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
+### PSADT.Types.InstalledApplication
 
-### You cannot pipe objects to this function.
+### This function can receive one or more InstalledApplication objects for uninstallation.
 ## OUTPUTS
 
 ### PSADT.Types.ProcessResult
