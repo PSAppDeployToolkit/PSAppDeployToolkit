@@ -54,12 +54,12 @@ function Uninstall-ADTApplication
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
     .PARAMETER PassThru
-        Returns ExitCode, STDOut, and STDErr output from the process.
+        Returns a PSADT.Types.ProcessResult object, providing the ExitCode, StdOut, and StdErr output from the uninstallation.
 
     .INPUTS
-        None
+        PSADT.Types.InstalledApplication
 
-        You cannot pipe objects to this function.
+        This function can receive one or more InstalledApplication objects for uninstallation.
 
     .OUTPUTS
         PSADT.Types.ProcessResult
