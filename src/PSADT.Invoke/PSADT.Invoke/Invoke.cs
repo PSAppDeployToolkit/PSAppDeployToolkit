@@ -143,12 +143,6 @@ namespace PSADT
 
     internal static class Invoke
     {
-        #nullable enable
-        private static readonly string? pwshParentProcessPath = ParentProcessUtilities.GetParentProcesses().Where(p => p.ProcessName.Equals("pwsh") || p.ProcessName.Equals("powershell")).Select(p => p.MainModule.FileName).FirstOrDefault();
-        private static readonly string? pwshCorePath = Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault();
-        private static readonly string? psGalleryPath = PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First()!.Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault();
-        #nullable disable
-
         private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
@@ -168,7 +162,7 @@ namespace PSADT
             {
                 // Set up variables.
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-                string adtToolkitPath = Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : !string.IsNullOrWhiteSpace(psGalleryPath) ? psGalleryPath : null;
+                string adtToolkitPath = Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : (PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First()!.Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault() is string psGalleryPath) ? psGalleryPath : null;
                 string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = pwshDefaultPath;
                 string pwshArguments = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
@@ -192,7 +186,7 @@ namespace PSADT
                 // Check if we're using PowerShell Core (7).
                 if (coreSpecified)
                 {
-                    if (null == pwshCorePath)
+                    if (!(Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault() is string pwshCorePath))
                     {
                         throw new InvalidOperationException("The '/Core' parameter was specified, but PowerShell Core was not found on this system.");
                     }
@@ -213,9 +207,12 @@ namespace PSADT
                 }
 
                 // If the PowerShell mode hasn't been explicitly specified, override it with a PowerShell parent process if available.
-                if (pwshExecutablePath.Equals(pwshDefaultPath) && null != pwshParentProcessPath)
+                if (pwshExecutablePath.Equals(pwshDefaultPath))
                 {
-                    pwshExecutablePath = pwshParentProcessPath;
+                    if (ParentProcessUtilities.GetParentProcesses().Where(p => p.ProcessName.Equals("pwsh") || p.ProcessName.Equals("powershell")).Select(p => p.MainModule.FileName).FirstOrDefault() is string pwshParentProcessPath)
+                    {
+                        pwshExecutablePath = pwshParentProcessPath;
+                    }
                 }
 
                 // Test whether we're running in silent mode.
