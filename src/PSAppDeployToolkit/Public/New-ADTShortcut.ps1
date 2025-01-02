@@ -54,7 +54,7 @@ function New-ADTShortcut
         This function does not return any output.
 
     .EXAMPLE
-        New-ADTShortcut -Path "$env:ProgramData\Microsoft\Windows\Start Menu\My Shortcut.lnk" -TargetPath "$env:WinDir\System32\notepad.exe" -IconLocation "$env:WinDir\System32\notepad.exe" -Description 'Notepad' -WorkingDirectory "$env:HomeDrive\$env:HomePath"
+        New-ADTShortcut -Path "$envCommonStartMenuPrograms\My Shortcut.lnk" -TargetPath "$envWinDir\notepad.exe" -IconLocation "$envWinDir\notepad.exe" -Description 'Notepad' -WorkingDirectory '%HOMEDRIVE%\%HOMEPATH%'
 
         Creates a new shortcut for Notepad with the specified parameters.
 
