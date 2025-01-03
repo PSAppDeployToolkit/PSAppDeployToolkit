@@ -58,8 +58,7 @@ function Export-ADTEnvironmentTableToSessionState
 
     begin
     {
-        # Initialize function and store the environment table on the stack.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        # Store the environment table on the stack and initialize function.
         try
         {
             $adtEnv = Get-ADTEnvironmentTable
@@ -68,6 +67,7 @@ function Export-ADTEnvironmentTableToSessionState
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
