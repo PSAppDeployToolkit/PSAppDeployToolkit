@@ -40,7 +40,7 @@
     }
     DiskSpace = @{
         Message = @{
-            Install = "Du har inte tillräckligt med diskutrymme för att slutföra installationen av:`n{0}`n`n`Krävt utrymme: {1}MB`nTillgängligt utrymme: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta med installationen."
+            Install = "Du har inte tillräckligt med diskutrymme för att slutföra installationen av:`n{0}`n`nKrävt utrymme: {1}MB`nTillgängligt utrymme: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta med installationen."
             Repair = "Du har inte tillräckligt med diskutrymme för att slutföra reparationen av:`n{0}`n`nKrävt utrymme: {1}MB`nTillgängligt utrymme: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta med reparationen."
             Uninstall = "Du har inte tillräckligt med diskutrymme för att slutföra avinstallationen av:`n{0}`n`nKrävt utrymme: {1}MB`nTillgängligt utrymme: {2}MB`n`nVar vänlig frigör tillräckligt med diskutrymme för att kunna fortsätta avinstallationen."
         }
