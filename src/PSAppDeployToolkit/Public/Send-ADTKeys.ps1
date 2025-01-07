@@ -79,7 +79,7 @@ function Send-ADTKeys
         [ValidateNotNull()]
         [System.String]$WindowTitle,
 
-        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'AllWindowTitles')]
+        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'GetAllWindowTitles')]
         [System.Management.Automation.SwitchParameter]$GetAllWindowTitles,
 
         [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'WindowHandle')]
@@ -87,77 +87,96 @@ function Send-ADTKeys
         [System.IntPtr]$WindowHandle,
 
         [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'WindowTitle')]
-        [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'AllWindowTitles')]
+        [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'GetAllWindowTitles')]
         [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Keys,
 
         [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowTitle')]
-        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'AllWindowTitles')]
+        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'GetAllWindowTitles')]
+        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowHandle')]
+        [System.Obsolete("Please use 'WaitDuration' instead as this will be removed in PSAppDeployToolkit 4.2.0.")]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32]$WaitSeconds,
+
+        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowTitle')]
+        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'GetAllWindowTitles')]
         [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$WaitSeconds
+        [System.TimeSpan]$WaitDuration
     )
 
     begin
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        $gawtParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
 
-        # Internal worker filter.
-        filter Send-ADTKeysToWindow
+        # Log the deprecation of -WaitSeconds to the log.
+        if ($PSBoundParameters.ContainsKey('WaitSeconds'))
         {
-            [CmdletBinding()]
-            param
-            (
-                [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.IntPtr]$WindowHandle,
+            Write-ADTLogEntry -Message "The parameter [-WaitSeconds] is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use [-WaitDuration] instead." -Severity 2
+            if (!$PSBoundParameters.ContainsKey('WaitDuration'))
+            {
+                $WaitDuration = [System.TimeSpan]::FromSeconds($WaitSeconds)
+            }
+        }
+    }
 
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.String]$Keys,
+    process
+    {
+        # Get the specified windows.
+        try
+        {
+            if (!($Windows = Get-ADTWindowTitle @gawtParams))
+            {
+                Write-ADTLogEntry -Message "No windows matching the specified input were discovered." -Severity 2
+                return
+            }
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
 
-                [Parameter(Mandatory = $false)]
-                [ValidateNotNullOrEmpty()]
-                [System.Int32]$WaitSeconds
-            )
-
+        # Process each found window.
+        foreach ($window in $Windows)
+        {
             try
             {
                 try
                 {
                     # Bring the window to the foreground and make sure it's enabled.
-                    if (![PSADT.GUI.UiAutomation]::BringWindowToFront($WindowHandle))
+                    if (![PSADT.GUI.UiAutomation]::BringWindowToFront($window.WindowHandle))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new('Failed to bring window to foreground.')
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                             ErrorId = 'WindowHandleForegroundError'
-                            TargetObject = $WindowHandle
+                            TargetObject = $window
                             RecommendedAction = "Please check the status of this window and try again."
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
-                    if (![PSADT.LibraryInterfaces.User32]::IsWindowEnabled($WindowHandle))
+                    if (![PSADT.LibraryInterfaces.User32]::IsWindowEnabled($window.WindowHandle))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new('Unable to send keys to window because it may be disabled due to a modal dialog being shown.')
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                             ErrorId = 'WindowHandleDisabledError'
-                            TargetObject = $WindowHandle
+                            TargetObject = $window
                             RecommendedAction = "Please check the status of this window and try again."
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
 
                     # Send the Key sequence.
-                    Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($Window.WindowTitle)] with window handle [$WindowHandle]."
+                    Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]."
                     [System.Windows.Forms.SendKeys]::SendWait($Keys)
-                    if ($WaitSeconds)
+                    if ($WaitDuration)
                     {
-                        Write-ADTLogEntry -Message "Sleeping for [$WaitSeconds] seconds."
-                        Start-Sleep -Seconds $WaitSeconds
+                        Write-ADTLogEntry -Message "Sleeping for [$($WaitDuration.TotalSeconds)] seconds."
+                        [System.Threading.Thread]::Sleep($WaitDuration)
                     }
                 }
                 catch
@@ -167,48 +186,8 @@ function Send-ADTKeys
             }
             catch
             {
-                Write-ADTLogEntry -Message "Failed to send keys to window title [$($Window.WindowTitle)] with window handle [$WindowHandle].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to send keys to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]." -ErrorAction SilentlyContinue
             }
-        }
-
-        # Set up parameter splat for worker filter.
-        $sktwParams = @{ Keys = $Keys }; if ($PSBoundParameters.ContainsKey('Keys')) { $sktwParams.Add('WaitSeconds', $WaitSeconds) }
-    }
-
-    process
-    {
-        try
-        {
-            try
-            {
-                # Process the specified input.
-                if ($WindowHandle)
-                {
-                    if (!($Window = Get-ADTWindowTitle -GetAllWindowTitles | & { process { if ($_.WindowHandle -eq $WindowHandle) { return $_ } } } | Select-Object -First 1))
-                    {
-                        Write-ADTLogEntry -Message "No windows with Window Handle [$WindowHandle] were discovered." -Severity 2
-                        return
-                    }
-                    Send-ADTKeysToWindow -WindowHandle $Window.WindowHandle @sktwParams
-                }
-                else
-                {
-                    if (!($AllWindows = if ($GetAllWindowTitles) { Get-ADTWindowTitle -GetAllWindowTitles $GetAllWindowTitles } else { Get-ADTWindowTitle -WindowTitle $WindowTitle } ))
-                    {
-                        Write-ADTLogEntry -Message 'No windows with the specified details were discovered.' -Severity 2
-                        return
-                    }
-                    $AllWindows | Send-ADTKeysToWindow @sktwParams
-                }
-            }
-            catch
-            {
-                Write-Error -ErrorRecord $_
-            }
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to send keys to specified window."
         }
     }
 
