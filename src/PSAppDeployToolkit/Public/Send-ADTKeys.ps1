@@ -28,7 +28,10 @@ function Send-ADTKeys
         The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
 
     .PARAMETER WaitSeconds
-        An optional number of seconds to wait after the sending of the keys.
+        This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use `-WaitDuration` instead.
+
+    .PARAMETER WaitDuration
+        An optional amount of time to wait after the sending of the keys.
 
     .INPUTS
         None
@@ -46,7 +49,7 @@ function Send-ADTKeys
         Send the sequence of keys "Hello world" to the application titled "foobar - Notepad".
 
     .EXAMPLE
-        Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world' -WaitSeconds 5
+        Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world' WaitDuration (New-TimeSpan -Seconds 5)
 
         Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
 
