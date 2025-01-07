@@ -795,48 +795,6 @@ namespace PSADT.Module
 
 
         /// <summary>
-        /// Gets the caller of the log entry from the call stack frames.
-        /// </summary>
-        /// <param name="stackFrames">The call stack frames.</param>
-        /// <returns>The call stack frame of the log entry caller.</returns>
-        public static CallStackFrame GetLogEntryCaller(IEnumerable<CallStackFrame> stackFrames)
-        {
-            foreach (CallStackFrame frame in stackFrames)
-            {
-                // Get the command from the frame and test its validity.
-                string command = GetPowerShellCallStackFrameCommand(frame);
-                if (!string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, "^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\\w+>)?)$") || (Regex.IsMatch(command, "^(<ScriptBlock>(<\\w+>)?)$") && frame.GetScriptLocation().Equals("<No file>"))))
-                {
-                    return frame;
-                }
-            }
-            return null!;
-        }
-
-        /// <summary>
-        /// Gets the PowerShell call stack frame command.
-        /// </summary>
-        /// <param name="frame">The call stack frame.</param>
-        /// <returns>The PowerShell call stack frame command.</returns>
-        private static string GetPowerShellCallStackFrameCommand(CallStackFrame frame)
-        {
-            // We must re-create the "Command" ScriptProperty as it's only available in PowerShell.
-            if (null == frame.InvocationInfo)
-            {
-                return frame.FunctionName;
-            }
-            if (null == frame.InvocationInfo.MyCommand)
-            {
-                return frame.InvocationInfo.InvocationName;
-            }
-            if (frame.InvocationInfo.MyCommand.Name != string.Empty)
-            {
-                return frame.InvocationInfo.MyCommand.Name;
-            }
-            return frame.FunctionName;
-        }
-
-        /// <summary>
         /// Closes the session and releases resources.
         /// </summary>
         /// <returns>The exit code.</returns>
@@ -994,7 +952,7 @@ namespace PSADT.Module
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
             string logTime = dateNow.ToString("HH\\:mm\\:ss.fff");
-            CallStackFrame invoker = GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
+            CallStackFrame invoker = LoggingUtilities.GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).ToArray());
 
             // Determine the log file name; either a proper script/function, or a caller directly from the console.
             string logFile = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
@@ -1006,7 +964,7 @@ namespace PSADT.Module
             }
             if (string.IsNullOrWhiteSpace(source))
             {
-                source = GetPowerShellCallStackFrameCommand(invoker);
+                source = LoggingUtilities.GetPowerShellCallStackFrameCommand(invoker);
             }
             if (string.IsNullOrWhiteSpace(scriptSection))
             {
