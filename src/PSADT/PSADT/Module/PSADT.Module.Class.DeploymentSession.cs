@@ -773,9 +773,6 @@ namespace PSADT.Module
                     CallerSessionState = callerSessionState;
                 }
 
-                // We made it! Add this session to the module's session list for tracking.
-                InternalDatabase.GetSessionList().Add(this);
-
 
                 #endregion
             }
@@ -913,10 +910,6 @@ namespace PSADT.Module
             catch
             {
                 throw;
-            }
-            finally
-            {
-                InternalDatabase.GetSessionList().Remove(this);
             }
         }
 

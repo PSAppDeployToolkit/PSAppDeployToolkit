@@ -396,7 +396,7 @@ function Open-ADTSession
                 }
 
                 # Instantiate the new session. The constructor will handle adding the session to the module's list.
-                $adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))
+                $Script:ADT.Sessions.Add(($adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))))
 
                 # Invoke all callbacks.
                 foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))
