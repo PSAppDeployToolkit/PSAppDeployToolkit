@@ -918,19 +918,24 @@ namespace PSADT.Module
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the log entry.</param>
         /// <param name="scriptSection">The script section.</param>
-        /// <param name="writeHost">Whether to write to the host.</param>
-        /// <param name="logType">The type of log.</param>
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
-        public void WriteLogEntry(string[] message, bool debugMessage, uint? severity = null, string? source = null, string? scriptSection = null, bool? writeHost = null, string? logType = null, string? logFileDirectory = null, string? logFileName = null)
+        /// <param name="logType">The type of log.</param>
+        /// <param name="hostLogStream">What stream to write the message to.</param>
+        public void WriteLogEntry(string[] message, bool debugMessage, uint? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
         {
+            if (null == hostLogStream)
+            {
+                var configToolkit = (Hashtable)InternalDatabase.GetConfig()["Toolkit"]!;
+                hostLogStream = (bool)configToolkit["LogWriteToHost"]! ? (bool)configToolkit["LogHostOutputToStdStreams"]! ? HostLogStream.Console : HostLogStream.Host : HostLogStream.None;
+            }
             if (!DisableLogging)
             {
-                LoggingUtilities.WriteLogEntry(message, debugMessage, severity, source, scriptSection ?? InstallPhase, writeHost, logType, (logFileDirectory ?? LogPath), (logFileName ?? LogName));
+                LoggingUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, (logFileDirectory ?? LogPath), (logFileName ?? LogName), logType);
             }
             else
             {
-                LoggingUtilities.WriteLogEntry(message, debugMessage, severity, source, scriptSection ?? InstallPhase, writeHost, logType, null, null);
+                LoggingUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, null, null, logType);
             }
         }
 
@@ -957,7 +962,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
-        public void WriteLogEntry(string message, uint? severity)
+        public void WriteLogEntry(string message, uint severity)
         {
             WriteLogEntry([message], false, severity, null, null, null, null, null, null);
         }
@@ -969,7 +974,7 @@ namespace PSADT.Module
         /// <param name="writeHost">Whether to write to the host.</param>
         public void WriteLogEntry(string message, bool writeHost)
         {
-            WriteLogEntry([message], false, null, null, null, writeHost, null, null, null);
+            WriteLogEntry([message], false, null, null, null, null, null, null, (writeHost && (bool)((Hashtable)InternalDatabase.GetConfig()["Toolkit"]!)["LogWriteToHost"]! ? HostLogStream.Host : HostLogStream.None));
         }
 
         /// <summary>
