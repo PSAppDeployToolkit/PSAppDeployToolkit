@@ -184,7 +184,17 @@ function Start-ADTMsiProcess
         [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ([System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogFileName -ProvidedValue $_ -ExceptionMessage 'The specified input is null or white space.'))
+                }
+                if ([System.IO.Path]::GetExtension($_) -match '^\.(log|txt)$')
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogFileName -ProvidedValue $_ -ExceptionMessage 'The specified input cannot have an extension.'))
+                }
+                return $true
+            })]
         [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
@@ -369,7 +379,7 @@ function Start-ADTMsiProcess
                 # Set up the log file to use.
                 $logFile = if ($PSBoundParameters.ContainsKey('LogFileName'))
                 {
-                    [System.IO.Path]::GetFileNameWithoutExtension($LogFileName)
+                    $LogFileName.Trim()
                 }
                 elseif ($InstalledApplication)
                 {
