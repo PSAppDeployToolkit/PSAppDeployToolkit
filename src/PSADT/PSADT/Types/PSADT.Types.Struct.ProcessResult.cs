@@ -11,11 +11,11 @@
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
-        public ProcessResult(int exitCode, string stdOut, string stdErr)
+        public ProcessResult(int exitCode, string? stdOut, string? stdErr)
         {
             ExitCode = exitCode;
-            StdOut = stdOut ?? string.Empty;
-            StdErr = stdErr ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(stdOut)) StdOut = stdOut;
+            if (!string.IsNullOrWhiteSpace(stdErr)) StdErr = stdErr;
         }
 
         /// <summary>
@@ -26,12 +26,12 @@
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        public string StdOut { get; }
+        public string? StdOut { get; }
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        public string StdErr { get; }
+        public string? StdErr { get; }
 
         /// <summary>
         /// Returns a string that represents the current <see cref="ProcessResult"/> object.
