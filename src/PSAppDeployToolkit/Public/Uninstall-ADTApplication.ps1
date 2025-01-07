@@ -196,6 +196,11 @@ function Uninstall-ADTApplication
             CreateNoWindow = $true
             PassThru = $PassThru
         }
+
+        # Build out regex for determining valid exe uninstall strings.
+        $invalidFileNameChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidFileNameChars()))
+        $invalidPathChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidPathChars()))
+        $validUninstallString = "^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$"
     }
 
     process
@@ -247,10 +252,7 @@ function Uninstall-ADTApplication
                         continue
                     }
 
-                    $invalidFileNameChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidFileNameChars()))
-                    $invalidPathChars = [System.Text.RegularExpressions.Regex]::Escape([System.String]::Join($null, [System.IO.Path]::GetInvalidPathChars()))
-
-                    if ($uninstallString -match "^`"?([^$invalidFileNameChars\s]+(?=\s|$)|[^$invalidPathChars]+?\.(?:exe|cmd|bat|vbs))`"?(?:\s(.*))?$")
+                    if ($uninstallString -match $validUninstallString)
                     {
                         $sapParams.FilePath = [System.Environment]::ExpandEnvironmentVariables($matches[1])
                         if (![System.IO.File]::Exists($sapParams.FilePath) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
