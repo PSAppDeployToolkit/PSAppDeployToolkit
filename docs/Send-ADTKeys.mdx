@@ -14,19 +14,22 @@ Send a sequence of keys to one or more application windows.
 ### WindowTitle
 
 ```powershell
-Send-ADTKeys [-WindowTitle] <String> [-Keys] <String> [[-WaitSeconds] <Int32>] [<CommonParameters>]
+Send-ADTKeys [-WindowTitle] <String> [-Keys] <String> [[-WaitSeconds] <Int32>] [[-WaitDuration] <TimeSpan>]
+ [<CommonParameters>]
 ```
 
-### AllWindowTitles
+### GetAllWindowTitles
 
 ```powershell
-Send-ADTKeys [-GetAllWindowTitles] [-Keys] <String> [[-WaitSeconds] <Int32>] [<CommonParameters>]
+Send-ADTKeys [-GetAllWindowTitles] [-Keys] <String> [[-WaitSeconds] <Int32>] [[-WaitDuration] <TimeSpan>]
+ [<CommonParameters>]
 ```
 
 ### WindowHandle
 
 ```powershell
-Send-ADTKeys [-WindowHandle] <IntPtr> [-Keys] <String> [[-WaitSeconds] <Int32>] [<CommonParameters>]
+Send-ADTKeys [-WindowHandle] <IntPtr> [-Keys] <String> [[-WaitSeconds] <Int32>] [[-WaitDuration] <TimeSpan>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -49,7 +52,7 @@ Send the sequence of keys "Hello world" to the application titled "foobar - Note
 ### EXAMPLE 2
 
 ```powershell
-Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world' -WaitSeconds 5
+Send-ADTKeys -WindowTitle 'foobar - Notepad' -Keys 'Hello world' WaitDuration (New-TimeSpan -Seconds 5)
 ```
 
 Send the sequence of keys "Hello world" to the application titled "foobar - Notepad" and wait 5 seconds.
@@ -86,7 +89,7 @@ Get titles for all open windows on the system.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: AllWindowTitles
+Parameter Sets: GetAllWindowTitles
 Aliases:
 
 Required: True
@@ -131,7 +134,8 @@ Accept wildcard characters: False
 
 ### -WaitSeconds
 
-An optional number of seconds to wait after the sending of the keys.
+This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.
+Please use `-WaitDuration` instead.
 
 ```yaml
 Type: Int32
@@ -141,6 +145,22 @@ Aliases:
 Required: False
 Position: 5
 Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WaitDuration
+
+An optional amount of time to wait after the sending of the keys.
+
+```yaml
+Type: TimeSpan
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
