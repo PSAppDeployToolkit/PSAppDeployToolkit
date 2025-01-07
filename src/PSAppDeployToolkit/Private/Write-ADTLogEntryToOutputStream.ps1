@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Write-ADTLogEntryToInformationStream
+# MARK: Write-ADTLogEntryToOutputStream
 #
 #-----------------------------------------------------------------------------
 
-function Write-ADTLogEntryToInformationStream
+function Write-ADTLogEntryToOutputStream
 {
     [CmdletBinding()]
     param
@@ -33,6 +33,7 @@ function Write-ADTLogEntryToInformationStream
     begin
     {
         # Remove parameters that aren't used to generate an InformationRecord object.
+        $null = $PSBoundParameters.Remove('Verbose')
         $null = $PSBoundParameters.Remove('Source')
         $null = $PSBoundParameters.Remove('Format')
 
@@ -44,6 +45,13 @@ function Write-ADTLogEntryToInformationStream
     {
         # Update the message for piped operations and write out to the InformationStream.
         $infoRecord.MessageData.Message = [System.String]::Format($Format, $Message)
-        $PSCmdlet.WriteInformation($infoRecord)
+        if ($VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue))
+        {
+            $PSCmdlet.WriteVerbose($infoRecord.MessageData.Message)
+        }
+        else
+        {
+            $PSCmdlet.WriteInformation($infoRecord)
+        }
     }
 }

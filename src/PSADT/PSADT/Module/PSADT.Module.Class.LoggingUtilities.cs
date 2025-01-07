@@ -19,27 +19,21 @@ namespace PSADT.Module
         /// Writes a log entry with detailed parameters.
         /// </summary>
         /// <param name="message">The log message.</param>
+        /// <param name="hostLogStream">What stream to write the message to.</param>
+        /// <param name="debugMessage">Whether it is a debug message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the log entry.</param>
         /// <param name="scriptSection">The script section.</param>
-        /// <param name="writeHost">Whether to write to the host.</param>
-        /// <param name="debugMessage">Whether it is a debug message.</param>
-        /// <param name="logType">The type of log.</param>
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
-        public static void WriteLogEntry(string[] message, bool debugMessage, uint? severity = null, string? source = null, string? scriptSection = null, bool? writeHost = null, string? logType = null, string? logFileDirectory = null, string? logFileName = null)
+        /// <param name="logType">The type of log.</param>
+        public static void WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, uint? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
         {
-            // Extrapolate the Toolkit options from the config hashtable.
-            var configToolkit = (Hashtable)InternalDatabase.GetConfig()["Toolkit"]!;
-
-            // Determine whether we can write to the console.
-            if (null == writeHost)
-            {
-                writeHost = (bool)configToolkit["LogWriteToHost"]!;
-            }
+            // Determine whether we're able to log to disk.
+            bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
 
             // Perform early return checks before wasting time.
-            if (((string.IsNullOrWhiteSpace(logFileDirectory) || string.IsNullOrWhiteSpace(logFileName)) && (bool)!writeHost) || (debugMessage && !(bool)configToolkit["LogDebugMessage"]!))
+            if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)((Hashtable)InternalDatabase.GetConfig()["Toolkit"]!)["LogDebugMessage"]!))
             {
                 return;
             }
@@ -61,9 +55,9 @@ namespace PSADT.Module
             {
                 source = GetPowerShellCallStackFrameCommand(invoker);
             }
-            if (string.IsNullOrWhiteSpace(logType))
+            if (canLogToDisk && string.IsNullOrWhiteSpace(logType))
             {
-                logType = (string)configToolkit["LogStyle"]!;
+                logType = (string)((Hashtable)InternalDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
             }
             if ((null != logFileDirectory) && !Directory.Exists(logFileDirectory))
             {
@@ -73,16 +67,16 @@ namespace PSADT.Module
             // Store log string to format with message.
             StringDictionary logFormats = new StringDictionary()
             {
-                { "Legacy", $"[{dateNow.ToString("O").Split('T')[0]} {logTime}] [{scriptSection}] [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}" },
-                { "CMTrace", $"<![LOG[[{scriptSection}] :: {{0}}]LOG]!><time=\"{logTime}{LogTimeOffset}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">" },
+                { "Legacy", $"[{dateNow.ToString("O").Split('T')[0]} {logTime}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}" },
+                { "CMTrace", $"<![LOG[{(null != scriptSection ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{logTime}{LogTimeOffset}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">" },
             };
 
             // Write out all messages to disk if configured/permitted to do so.
-            if (!string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName))
+            if (canLogToDisk)
             {
-                using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(logFileDirectory, logFileName!), true, LogEncoding))
+                using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding))
                 {
-                    string logLine = logFormats[logType]!;
+                    string logLine = logFormats[logType!]!;
                     switch (logType)
                     {
                         case "CMTrace":
@@ -101,10 +95,10 @@ namespace PSADT.Module
             }
 
             // Write out all messages to host if configured/permitted to do so.
-            if ((bool)writeHost!)
+            if (!hostLogStream.Equals(HostLogStream.None))
             {
                 ReadOnlyDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
-                if ((bool)configToolkit["LogHostOutputToStdStreams"]!)
+                if (hostLogStream.Equals(HostLogStream.Console))
                 {
                     // Colour the console if we're not informational.
                     if (severity != 1)
@@ -130,7 +124,7 @@ namespace PSADT.Module
                 else
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    InternalDatabase.InvokeScript(WriteLogEntryDelegate, message, sevCols, source!, logFormats["Legacy"]!);
+                    InternalDatabase.InvokeScript(WriteLogEntryDelegate, message, sevCols, source!, logFormats["Legacy"]!, hostLogStream.Equals(HostLogStream.Verbose));
                 }
             }
         }
@@ -140,7 +134,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="stackFrames">The call stack frames.</param>
         /// <returns>The call stack frame of the log entry caller.</returns>
-        public static CallStackFrame GetLogEntryCaller(CallStackFrame[] stackFrames)
+        private static CallStackFrame GetLogEntryCaller(CallStackFrame[] stackFrames)
         {
             foreach (CallStackFrame frame in stackFrames)
             {
@@ -196,7 +190,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the Write-LogEntry delegate script block.
         /// </summary>
-        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $args[2] -Format $args[3]");
+        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Format $args[3] -Verbose:($args[4])");
 
         /// <summary>
         /// Gets the current timezone bias for the CMTrace log formatted string.

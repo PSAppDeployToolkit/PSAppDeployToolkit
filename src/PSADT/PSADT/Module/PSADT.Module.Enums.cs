@@ -38,4 +38,12 @@ namespace PSADT.Module
         FastRetry,
         Error
     }
+
+    public enum HostLogStream
+    {
+        None,
+        Host,
+        Console,
+        Verbose
+    }
 }

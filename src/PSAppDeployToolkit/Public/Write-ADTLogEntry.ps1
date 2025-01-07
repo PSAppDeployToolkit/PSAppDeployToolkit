@@ -158,19 +158,29 @@ function Write-ADTLogEntry
                 $Severity,
                 $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),
                 $(if ($PSBoundParameters.ContainsKey('ScriptSection')) { $ScriptSection }),
-                $null,
-                $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),
-                $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName })
+                $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName }),
+                $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType }),
+                $null
             )
         }
         elseif (!$DebugMessage)
         {
-            if ([System.String]::IsNullOrWhiteSpace($Source))
+            if ($PSBoundParameters.ContainsKey('LogFileDirectory') -and $PSBoundParameters.ContainsKey('LogFileName') -and !$PSBoundParameters.ContainsKey('LogType') -and !(Test-ADTModuleInitialized))
             {
-                $Source = [PSADT.Module.LoggingUtilities]::GetLogEntryCaller((Get-PSCallStack)).Command
+                Initialize-ADTModule
             }
-            $messages -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
+            [PSADT.Module.LoggingUtilities]::WriteLogEntry(
+                $messages,
+                ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)],
+                $false,
+                $Severity,
+                $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),
+                $(if ($PSBoundParameters.ContainsKey('ScriptSection')) { $ScriptSection }),
+                $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),
+                $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName }),
+                $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType })
+            )
         }
 
         # Return the provided message if PassThru is true.
