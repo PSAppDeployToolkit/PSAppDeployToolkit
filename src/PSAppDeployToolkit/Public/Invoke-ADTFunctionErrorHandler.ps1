@@ -25,6 +25,12 @@ function Invoke-ADTFunctionErrorHandler
     .PARAMETER LogMessage
         The error message to write to the active ADTSession's log file.
 
+    .PARAMETER ResolveErrorProperties
+        If specified, the specific ErrorRecord properties to print during resolution.
+
+    .PARAMETER AdditionalResolveErrorProperties
+        If specified, a list of additional ErrorRecord properties to print during resolution.
+
     .PARAMETER DisableErrorResolving
         If specified, the function will not append the resolved error record to the log message.
 
@@ -80,7 +86,16 @@ function Invoke-ADTFunctionErrorHandler
         [ValidateNotNullOrEmpty()]
         [System.String]$LogMessage,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'LogMessage')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ResolveErrorProperties')]
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
+        [System.String[]]$ResolveErrorProperties,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'AdditionalResolveErrorProperties')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$AdditionalResolveErrorProperties,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'DisableErrorResolving')]
         [System.Management.Automation.SwitchParameter]$DisableErrorResolving
     )
 
@@ -114,7 +129,15 @@ function Invoke-ADTFunctionErrorHandler
     # Write out the error to the log file.
     if (!$DisableErrorResolving)
     {
-        $LogMessage += "`n$(Resolve-ADTErrorRecord -ErrorRecord $ErrorRecord)"
+        $raerProps = @{ ErrorRecord = $ErrorRecord }; if ($PSCmdlet.ParameterSetName.Equals('AdditionalResolveErrorProperties'))
+        {
+            $raerProps.Add('Property', $($Script:CommandTable.'Resolve-ADTErrorRecord'.ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value; $AdditionalResolveErrorProperties))
+        }
+        elseif ($PSCmdlet.ParameterSetName.Equals('ResolveErrorProperties'))
+        {
+            $raerProps.Add('Property', $ResolveErrorProperties)
+        }
+        $LogMessage += "`n$(Resolve-ADTErrorRecord @raerProps)"
     }
     Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
 

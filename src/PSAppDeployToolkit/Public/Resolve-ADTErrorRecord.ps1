@@ -84,8 +84,8 @@ function Resolve-ADTErrorRecord
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
         [Parameter(Mandatory = $false)]
-        [SupportsWildcards()]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [System.String[]]$Property = ('Message', 'InnerException', 'FullyQualifiedErrorId', 'ScriptStackTrace', 'PositionMessage'),
 
         [Parameter(Mandatory = $false)]

@@ -22,7 +22,28 @@ Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- -LogMessage <String> [-DisableErrorResolving] [<CommonParameters>]
+ -LogMessage <String> [<CommonParameters>]
+```
+
+### ResolveErrorProperties
+
+```powershell
+Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
+ -ResolveErrorProperties <String[]> [<CommonParameters>]
+```
+
+### AdditionalResolveErrorProperties
+
+```powershell
+Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
+ -AdditionalResolveErrorProperties <String[]> [<CommonParameters>]
+```
+
+### DisableErrorResolving
+
+```powershell
+Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
+ [-DisableErrorResolving] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -116,16 +137,48 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ResolveErrorProperties
+
+If specified, the specific ErrorRecord properties to print during resolution.
+
+```yaml
+Type: String[]
+Parameter Sets: ResolveErrorProperties
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: True
+```
+
+### -AdditionalResolveErrorProperties
+
+If specified, a list of additional ErrorRecord properties to print during resolution.
+
+```yaml
+Type: String[]
+Parameter Sets: AdditionalResolveErrorProperties
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -DisableErrorResolving
 
 If specified, the function will not append the resolved error record to the log message.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: LogMessage
+Parameter Sets: DisableErrorResolving
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: False
 Accept pipeline input: False
