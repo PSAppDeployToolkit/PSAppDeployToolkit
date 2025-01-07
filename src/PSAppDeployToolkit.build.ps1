@@ -108,10 +108,7 @@ Enter-Build {
     $Script:BuildModuleRoot = Join-Path -Path $Script:ArtifactsPath -ChildPath "Module\$Script:ModuleName"
     $Script:BuildModuleRootFile = Join-Path -Path $Script:BuildModuleRoot -ChildPath "$($Script:ModuleName).psm1"
 
-    # Import this module's manifest via the language parser. This allows us to test with potential extra variables that are permitted in manifests.
-    # https://github.com/PowerShell/PowerShell/blob/7ca7aae1d13d19e38c7c26260758f474cb9bef7f/src/System.Management.Automation/engine/Modules/ModuleCmdletBase.cs#L509-L512
-    $manifestInfo = [System.Management.Automation.Language.Parser]::ParseFile($Script:ModuleManifestFile, [ref]$null, [ref]$null).GetScriptBlock()
-    $manifestInfo.CheckRestrictedLanguage([System.String[]]$null, [System.String[]]('PSEdition'), $true); $manifestInfo = $manifestInfo.InvokeReturnAsIs()
+    $manifestInfo = Import-LocalizedData -BaseDirectory $Script:ModuleSourcePath -FileName "$($Script:ModuleName).psd1"
     $Script:ModuleVersion = $manifestInfo.ModuleVersion
     $Script:ModuleDescription = $manifestInfo.Description
     $Script:FunctionsToExport = $manifestInfo.FunctionsToExport
