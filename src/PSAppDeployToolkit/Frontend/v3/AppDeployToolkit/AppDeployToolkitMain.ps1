@@ -3942,6 +3942,11 @@ function Send-Keys
     Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
+    if ($PSBoundParameters.ContainsKey('WaitSeconds'))
+    {
+        $PSBoundParameters.WaitDuration = [System.TimeSpan]::FromSeconds($WaitSeconds)
+        $null = $PSBoundParameters.Remove('WaitSeconds')
+    }
     try
     {
         Send-ADTKeys @PSBoundParameters
