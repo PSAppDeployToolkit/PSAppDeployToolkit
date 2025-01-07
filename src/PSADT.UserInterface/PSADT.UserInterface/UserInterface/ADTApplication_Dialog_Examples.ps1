@@ -7,7 +7,8 @@ $processEvaluationService = New-Object PSADT.UserInterface.Services.ProcessEvalu
 # Define functions to demonstrate each dialog using UnifiedAdtApplication
 
 # Example 1: Show Welcome Dialog
-function Show-WelcomeDialogExample {
+function Show-WelcomeDialogExample
+{
     $params = @{
         DialogExpiryDuration = [System.TimeSpan]::FromMinutes(55)
         AppTitle           = "Welcome Dialog Example"
@@ -33,7 +34,8 @@ function Show-WelcomeDialogExample {
         AltContinueButtonText = "Install"
     }
 
-    try {
+    try
+    {
         # Show Welcome Dialog using UnifiedAdtApplication with alternative texts
         $result = [PSADT.UserInterface.UnifiedAdtApplication]::ShowWelcomeDialog(
             $params.DialogExpiryDuration,
@@ -44,23 +46,25 @@ function Show-WelcomeDialogExample {
             $params.AppsToClose,
             $params.AppIconImage,
             $params.CloseAppMessage,
-            $params.AltCloseAppMessage,        # **New Parameter**
+            $params.AltCloseAppMessage, # **New Parameter**
             $params.DeferRemainText,
             $params.DeferButtonText,
             $params.ContinueButtonText,
-            $params.AltContinueButtonText,     # **New Parameter**
+            $params.AltContinueButtonText, # **New Parameter**
             $processEvaluationService
         )
 
         Write-Host "Welcome Dialog Result: $result"
     }
-    catch {
+    catch
+    {
         Write-Error "Error in Welcome Dialog: $_"
     }
 }
 
 # Example 2: Show Progress Dialog with updates
-function Show-ProgressDialogExample {
+function Show-ProgressDialogExample
+{
     $params = @{
         DialogExpiryDuration  = [System.TimeSpan]::FromMinutes(55)
         AppTitle              = "Progress Dialog Example"
@@ -71,7 +75,8 @@ function Show-ProgressDialogExample {
         ProgressMessageDetail = "Preparing for installation."
     }
 
-    try {
+    try
+    {
         # Show the Progress Dialog using UnifiedAdtApplication
         [PSADT.UserInterface.UnifiedAdtApplication]::ShowProgressDialog(
             $params.DialogExpiryDuration,
@@ -92,7 +97,8 @@ function Show-ProgressDialogExample {
             @{ Percent = 100; Message = "Installation complete!"; Detail = "Step 5 of 5" }
         )
 
-        foreach ($step in $steps) {
+        foreach ($step in $steps)
+        {
             # Update progress
             [PSADT.UserInterface.UnifiedAdtApplication]::UpdateProgress(
                 $step.Percent,
@@ -104,17 +110,20 @@ function Show-ProgressDialogExample {
             # Note: Removed SetIndeterminateProgress as it's not implemented in UnifiedAdtApplication
         }
     }
-    catch {
+    catch
+    {
         Write-Error "Error in Progress Dialog: $_"
     }
-    finally {
+    finally
+    {
         # Ensure the Progress Dialog is closed
         [PSADT.UserInterface.UnifiedAdtApplication]::CloseCurrentDialog()
     }
 }
 
 # Example 3: Show Custom Dialog
-function Show-CustomDialogExample {
+function Show-CustomDialogExample
+{
     $params = @{
         DialogExpiryDuration = [System.TimeSpan]::FromMinutes(55)
         AppTitle         = "Custom Dialog Example"
@@ -127,7 +136,8 @@ function Show-CustomDialogExample {
         Button3Text      = "More Info"
     }
 
-    try {
+    try
+    {
         # Show Custom Dialog using UnifiedAdtApplication
         $result = [PSADT.UserInterface.UnifiedAdtApplication]::ShowCustomDialog(
             $params.DialogExpiryDuration,
@@ -143,7 +153,8 @@ function Show-CustomDialogExample {
 
         Write-Host "Custom Dialog Result: $result"
 
-        if ($result -eq "More Info") {
+        if ($result -eq "More Info")
+        {
             $additionalInfo = "This installation will update your software to the latest version. It may take up to 10 minutes."
             [PSADT.UserInterface.UnifiedAdtApplication]::ShowCustomDialog(
                 $params.DialogExpiryDuration,
@@ -156,13 +167,15 @@ function Show-CustomDialogExample {
             )
         }
     }
-    catch {
+    catch
+    {
         Write-Error "Error in Custom Dialog: $_"
     }
 }
 
 # Example 4: Show Restart Dialog
-function Show-RestartDialogExample {
+function Show-RestartDialogExample
+{
     $params = @{
         AppTitle             = "Restart Dialog Example"
         Subtitle             = "PSADT User Interface"
@@ -174,7 +187,8 @@ function Show-RestartDialogExample {
         RestartButtonText    = "Restart Now"
     }
 
-    try {
+    try
+    {
         # Show Restart Dialog using UnifiedAdtApplication
         $result = [PSADT.UserInterface.UnifiedAdtApplication]::ShowRestartDialog(
             $params.AppTitle,
@@ -189,24 +203,29 @@ function Show-RestartDialogExample {
 
         Write-Host "Restart Dialog Result: $result"
 
-        if ($result -eq "Restart") {
+        if ($result -eq "Restart")
+        {
             Write-Host "Proceeding with installation after restart."
             # Implement actual restart logic here, e.g., triggering a system restart
             # Example:
             # Start-Process "shutdown.exe" -ArgumentList "/r /t 0" -NoNewWindow -Wait
         }
-        elseif ($result -eq "Defer") {
+        elseif ($result -eq "Defer")
+        {
             Write-Host "Installation deferred by the user."
         }
     }
-    catch {
+    catch
+    {
         Write-Error "Error in Restart Dialog: $_"
     }
 }
 
 # Example 5: Complex scenario combining multiple dialogs
-function Show-ComplexScenario {
-    try {
+function Show-ComplexScenario
+{
+    try
+    {
         # Show Welcome Dialog
         $welcomeResult = [PSADT.UserInterface.UnifiedAdtApplication]::ShowWelcomeDialog(
             55,
@@ -234,7 +253,8 @@ function Show-ComplexScenario {
             $processEvaluationService
         )
 
-        if ($welcomeResult -eq "Defer") {
+        if ($welcomeResult -eq "Defer")
+        {
             Write-Host "Installation deferred."
             return
         }
@@ -263,14 +283,18 @@ function Show-ComplexScenario {
             "This may take several minutes."
         )
 
-        switch ($customResult) {
-            "Full" {
+        switch ($customResult)
+        {
+            "Full"
+            {
                 Invoke-Installation -TotalSteps 100 -StepSize 1 -Prefix "Full"
             }
-            "Minimal" {
+            "Minimal"
+            {
                 Invoke-Installation -TotalSteps 50 -StepSize 2 -Prefix "Minimal"
             }
-            "Custom" {
+            "Custom"
+            {
                 Invoke-Installation -TotalSteps 20 -StepSize 5 -Prefix "Custom"
             }
         }
@@ -288,12 +312,14 @@ function Show-ComplexScenario {
             "OK", "", ""
         )
     }
-    catch {
+    catch
+    {
         Write-Error "Error in Complex Scenario: $_"
     }
 }
 
-function Invoke-Installation {
+function Invoke-Installation
+{
     param (
         [int]$TotalSteps,
         [int]$StepSize,
@@ -307,7 +333,8 @@ function Invoke-Installation {
         "This may take up to $([math]::Ceiling($TotalSteps / 10)) minutes"
     )
 
-    for ($i = 1; $i -le 100; $i += $StepSize) {
+    for ($i = 1; $i -le 100; $i += $StepSize)
+    {
         $stepNumber = [math]::Ceiling($i / $StepSize)
         [PSADT.UserInterface.UnifiedAdtApplication]::UpdateProgress(
             $i,
@@ -319,17 +346,20 @@ function Invoke-Installation {
 }
 
 # Run the examples
-try {
+try
+{
     Show-WelcomeDialogExample
     Show-ProgressDialogExample
     Show-CustomDialogExample
     Show-RestartDialogExample
     Show-ComplexScenario
 }
-catch {
+catch
+{
     Write-Error "An error occurred during script execution: $_"
 }
-finally {
+finally
+{
     # Dispose of the UnifiedAdtApplication to shut down the WPF Application
     [PSADT.UserInterface.UnifiedAdtApplication]::Dispose()
 }

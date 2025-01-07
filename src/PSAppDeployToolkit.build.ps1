@@ -44,7 +44,6 @@ $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 Set-StrictMode -Version 3
 $ModuleName = [System.Text.RegularExpressions.Regex]::Match((Get-Item $BuildFile).Name, '^(.*)\.build\.ps1$').Groups[1].Value
-$BuildScriptPath = $MyInvocation.MyCommand.Path
 [System.Version]$requiredPSVersion = '5.1.0'
 
 # Define our C# solutions to compile.
@@ -287,7 +286,7 @@ Add-BuildTask EncodingCheck {
 # Synopsis: Analyze scripts to verify if they adhere to desired coding format (Stroustrup / OTBS / Allman).
 Add-BuildTask FormattingCheck {
     Write-Build White '      Performing script formatting checks...'
-    if (($scriptAnalyzerResults = $Script:BuildScriptPath, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -Setting CodeFormattingAllman -ExcludeRule PSAlignAssignmentStatement -Recurse -Fix:($env:GITHUB_ACTIONS -ne 'true') -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
+    if (($scriptAnalyzerResults = $Script:BuildRoot, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -Setting CodeFormattingAllman -ExcludeRule PSAlignAssignmentStatement -Recurse -Fix:($env:GITHUB_ACTIONS -ne 'true') -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      PSScriptAnalyzer code formatting check did not adhere to defined standards'
@@ -298,26 +297,12 @@ Add-BuildTask FormattingCheck {
 # Synopsis: Invokes PSScriptAnalyzer against the Module source path.
 Add-BuildTask Analyze {
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    if (($scriptAnalyzerResults = $Script:BuildScriptPath, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
+    if (($scriptAnalyzerResults = $Script:BuildRoot, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      One or more PSScriptAnalyzer errors/warnings where found.'
     }
     Write-Build Green '      ...Module Analyze Complete!'
-}
-
-# Synopsis: Invokes Script Analyzer against the Tests path if it exists.
-Add-BuildTask AnalyzeTests -After Analyze {
-    if (Test-Path -Path $Script:TestsPath)
-    {
-        Write-Build White '      Performing Test ScriptAnalyzer checks...'
-        if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:TestsPath -ExcludeRule PSUseDeclaredVarsMoreThanAssignments -Recurse -Verbose:$false))
-        {
-            $scriptAnalyzerResults | Format-Table
-            throw '      One or more PSScriptAnalyzer errors/warnings where found.'
-        }
-        Write-Build Green '      ...Test Analyze Complete!'
-    }
 }
 
 # Synopsis: Invokes all Pester Unit Tests in the Tests\Unit folder (if it exists).

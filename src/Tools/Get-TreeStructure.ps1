@@ -27,6 +27,7 @@
     This example excludes any files with a .bin or .obj extension, and any folders named "bin" or "obj".
 #>
 
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Excludes', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
 param
 (
     [Parameter(Mandatory = $true)]
@@ -44,8 +45,7 @@ function Get-TreeStructure
     param
     (
         [string]$Path,
-        [int]$Indent = 0,
-        [bool]$IsLast = $false
+        [int]$Indent = 0
     )
 
     # Define variables for the Unicode characters using code points
@@ -85,7 +85,7 @@ function Get-TreeStructure
         {
             # Directory: Append to output file with a slash at the end
             [System.IO.File]::AppendAllText($OutputFile, "$Indentation$Connector$($Item.Name)/" + [Environment]::NewLine, [System.Text.Encoding]::UTF8)
-            Get-TreeStructure -Path $Item.FullName -Indent ($Indent + 1) -IsLast $IsLastItem
+            Get-TreeStructure -Path $Item.FullName -Indent ($Indent + 1)
         }
         else
         {

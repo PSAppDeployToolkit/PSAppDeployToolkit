@@ -5,7 +5,10 @@
     Get-Module $ModuleName -ErrorAction SilentlyContinue | Remove-Module -Force
     Import-Module $PathToManifest -Force
     $manifestContent = Test-ModuleManifest -Path $PathToManifest
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'moduleExported', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
     $moduleExported = Get-Command -Module $ModuleName | Select-Object -ExpandProperty Name
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manifestExported', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
     $manifestExported = ($manifestContent.ExportedFunctions).Keys
 }
 BeforeDiscovery {
@@ -13,7 +16,10 @@ BeforeDiscovery {
     $ModuleName = 'PSAppDeployToolkit'
     $PathToManifest = [System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psd1")
     $manifestContent = Test-ModuleManifest -Path $PathToManifest
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'moduleExported', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
     $moduleExported = Get-Command -Module $ModuleName | Select-Object -ExpandProperty Name
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manifestExported', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
     $manifestExported = ($manifestContent.ExportedFunctions).Keys
 }
 Describe $ModuleName {
@@ -38,9 +44,10 @@ Describe $ModuleName {
     } #context_ExportedCommands
 
     Context 'Command Help' -Fixture {
-        Context '<_>' -Foreach $moduleExported {
+        Context '<_>' -ForEach $moduleExported {
 
             BeforeEach {
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'help', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
                 $help = Get-Help -Name $_ -Full
             }
 

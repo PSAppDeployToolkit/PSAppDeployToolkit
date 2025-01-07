@@ -1,6 +1,6 @@
 ﻿function Find-RegexMatch
 {
-<#
+    <#
 .SYNOPSIS
 
     Performs regex match or replace operations on a given text using a specified pattern.
@@ -305,7 +305,7 @@
         # Compile the regex pattern with timeout
         [regex]$regex = [regex]::new($Pattern, $options, [timespan]::FromMilliseconds($Timeout))
     }
-    
+
     process
     {
         if ($PSCmdlet.ParameterSetName -eq 'Replace')
@@ -314,11 +314,11 @@
             if ($null -ne $MatchEvaluator)
             {
                 # Use MatchEvaluator delegate
-                $regex.Replace($Text, [System.Text.RegularExpressions.MatchEvaluator]{
-                    param ([System.Text.RegularExpressions.Match]$match)
+                $regex.Replace($Text, [System.Text.RegularExpressions.MatchEvaluator] {
+                        param ([System.Text.RegularExpressions.Match]$match)
 
-                    & $MatchEvaluator $match
-                }, $ReplaceLimit, $StartingPosition)
+                        & $MatchEvaluator $match
+                    }, $ReplaceLimit, $StartingPosition)
             }
             else
             {
@@ -330,7 +330,7 @@
         {
             # Perform first match operation
             [System.Text.RegularExpressions.Match]$match = $regex.Match($Text, $StartingPosition)
-            
+
             if ($Detailed)
             {
                 [PSCustomObject]@{
@@ -390,7 +390,7 @@
         {
             # Perform matches operation
             [System.Text.RegularExpressions.MatchCollection]$patternMatches = $regex.Matches($Text, $StartingPosition)
-            
+
             if ($Detailed)
             {
                 foreach ($match in $patternMatches)

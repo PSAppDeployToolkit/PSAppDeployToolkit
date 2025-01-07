@@ -1,4 +1,9 @@
-﻿# Import the SecureIPC and PSHost assemblies
+﻿[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = "This is just a demo script.")]
+[CmdletBinding()]
+param
+()
+
+# Import the SecureIPC and PSHost assemblies
 Add-Type -Path "path\to\PSADT.dll"
 
 # Configure server options
@@ -20,7 +25,8 @@ $serverOptions.ImpersonationOptions = $impersonationOptions
 $server = [PSADT.SecureIPC.NamedPipeServer]::new($serverOptions)
 $server.Start()
 
-try {
+try
+{
     Write-Host "Waiting for client connection..."
     $server.WaitForConnectionAsync().Wait()
     Write-Host "Client connected"
@@ -47,16 +53,16 @@ try {
     $executionOptions.PowerShellVersion = [PSADT.PowerShellHost.PSEdition]::Default
 
     # Create an ExecutionContext object
-    $executionContext = [PSADT.PowerShellHost.ExecutionContext]::new($executionOptions, $impersonator)
+    $execContext = [PSADT.PowerShellHost.ExecutionContext]::new($executionOptions, $impersonator)
 
     # Execute the script synchronously
     Write-Host "Executing script synchronously:"
-    $result = [PSADT.PowerShellHost.PSADTShell]::Execute($executionContext)
+    $result = [PSADT.PowerShellHost.PSADTShell]::Execute($execContext)
     $result | ForEach-Object { $_.BaseObject | Format-Table -AutoSize | Out-String -Width 4096 }
 
     # Execute the script asynchronously
     Write-Host "Executing script asynchronously:"
-    $task = [PSADT.PowerShellHost.PSADTShell]::ExecuteAsync($executionContext)
+    $task = [PSADT.PowerShellHost.PSADTShell]::ExecuteAsync($execContext)
 
     # Do some other work while the script is running
     Write-Host "Doing some other work while the script is running..."
@@ -72,13 +78,13 @@ try {
     # Demonstrate PowerShell's native asynchronous capabilities
     Write-Host "Demonstrating PowerShell's native asynchronous capabilities:"
     $asyncResult = $null
-    $task = [PSADT.PowerShellHost.PSADTShell]::ExecuteAsync($executionContext)
+    $task = [PSADT.PowerShellHost.PSADTShell]::ExecuteAsync($execContext)
 
     # Register a continuation action
     $task.ContinueWith({
-        param($task)
-        $script:asyncResult = $task.Result
-    }, [System.Threading.Tasks.TaskContinuationOptions]::OnlyOnRanToCompletion)
+            param($task)
+            $script:asyncResult = $task.Result
+        }, [System.Threading.Tasks.TaskContinuationOptions]::OnlyOnRanToCompletion)
 
     # Do other work while waiting for the result
     Write-Host "Doing other work while waiting for the async result..."
@@ -88,7 +94,8 @@ try {
     }
 
     # Wait for and process the async result
-    while ($null -eq $asyncResult) {
+    while ($null -eq $asyncResult)
+    {
         Start-Sleep -Milliseconds 100
     }
 
@@ -105,7 +112,8 @@ try {
     $message = $reader.ReadLine()
     Write-Host "Received message: $message"
 }
-finally {
+finally
+{
     # Disconnect and dispose of the server
     $server.Disconnect()
     $server.Dispose()
