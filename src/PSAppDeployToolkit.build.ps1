@@ -71,6 +71,7 @@ $buildItems = @(
 # Default build.
 $str = @()
 $str = 'Clean', 'ValidateRequirements'
+$str += 'TestModuleManifest'
 $str += 'DotNetBuild'
 $str += 'ImportModuleManifest'
 $str += 'EncodingCheck'
@@ -234,10 +235,12 @@ Add-BuildTask DotNetBuild {
 }
 
 # Synopsis: Import the current module manifest file for processing.
-Add-BuildTask TestModuleManifest -Before ImportModuleManifest {
+Add-BuildTask TestModuleManifest {
     Write-Build White '      Running module manifest tests...'
     Assert-Build (Test-Path $Script:ModuleManifestFile) 'Unable to locate the module manifest file.'
     Assert-Build (Get-ChildItem $Script:ModuleManifestFile | Test-ModuleManifest -ErrorAction Ignore) 'Module Manifest test did not pass verification.'
+    Assert-Build (!(Get-Module -Name $Script:ModuleName)) 'Conflicting module already imported.'
+    Assert-Build (!(Get-ChildItem -LiteralPath $env:PSModulePath.Split(';') -Filter $Script:ModuleName)) 'Conflicting module within a PSModulePath directory.'
     Write-Build Green '      ...Module Manifest Verification Complete!'
 }
 
