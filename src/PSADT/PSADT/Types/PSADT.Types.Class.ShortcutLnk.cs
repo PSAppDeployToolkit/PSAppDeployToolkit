@@ -60,7 +60,7 @@ namespace PSADT.Types
         /// <param name="windowStyle">Window style (e.g., normal, minimized, maximized).</param>
         /// <param name="hotkey">Hotkey associated with the shortcut.</param>
         /// <param name="runAsAdmin">Indicates if the shortcut requires administrative privileges.</param>
-        public ShortcutLnk(string? arguments, string? description, string? workingDirectory, string? windowStyle, string? hotkey, bool runAsAdmin)
+        public ShortcutLnk(string? path, string? targetPath, string? iconIndex, string? iconLocation, string? arguments, string? description, string? workingDirectory, string? windowStyle, string? hotkey, bool runAsAdmin) : base(path, targetPath, iconIndex, iconLocation)
         {
             Arguments = arguments;
             Description = description;
