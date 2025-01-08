@@ -965,10 +965,11 @@ namespace PSADT.Module
                 {
                     // Archive the log files to zip format and then delete the temporary logs folder.
                     string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
+                    var destArchiveFilePath = Directory.CreateDirectory((string)configToolkit["LogPath"]!);
                     try
                     {
                         // Get all archive files sorted by last write time.
-                        IOrderedEnumerable<FileInfo> archiveFiles = Directory.GetFiles((string)configToolkit["LogPath"]!, string.Format(destArchiveFileName, "*")).Select(static f => new FileInfo(f)).OrderBy(static f => f.LastWriteTime);
+                        IOrderedEnumerable<FileInfo> archiveFiles = destArchiveFilePath.GetFiles(string.Format(destArchiveFileName, "*")).OrderBy(static f => f.LastWriteTime);
                         destArchiveFileName = string.Format(destArchiveFileName, DateTime.Now.ToString("O").Split('.')[0].Replace(":", null));
 
                         // Keep only the max number of archive files
@@ -983,8 +984,8 @@ namespace PSADT.Module
                         }
 
                         // Compression of the log files.
-                        ZipFile.CreateFromDirectory(LogTempFolder, destArchiveFileName, CompressionLevel.Optimal, false);
-                        Directory.Delete(LogTempFolder, true);
+                        ZipFile.CreateFromDirectory(LogPath, Path.Combine(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
+                        Directory.Delete(LogPath, true);
                     }
                     catch (Exception ex)
                     {
