@@ -74,7 +74,7 @@ function Get-ADTRunningProcesses
             $allProcesses = Get-Process -Name $processNames -ErrorAction Ignore
 
             # Cache process info from WMI as it gives us our command line and associated arguments.
-            $wmiProcesses = Get-CimInstance -ClassName Win32_Process
+            $wmiProcesses = Get-CimInstance -ClassName Win32_Process -Verbose:$false
 
             # Member lookup table.
             $member = 'Name', 'Path'
@@ -86,7 +86,7 @@ function Get-ADTRunningProcesses
             $processes = foreach ($process in $allProcesses)
             {
                 # Continue if this isn't our process or it's ended since we cached it.
-                if (($process.($member[[System.IO.Path]::IsPathRooted($_.Name)]) -ne $_.Name) -or (!$process.Refresh() -and $process.HasExited))
+                if (($process.($member[[System.IO.Path]::IsPathRooted($_.Name)]) -notlike $_.Name) -or (!$process.Refresh() -and $process.HasExited))
                 {
                     continue
                 }
