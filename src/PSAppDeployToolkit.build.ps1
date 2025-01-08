@@ -240,7 +240,7 @@ Add-BuildTask TestModuleManifest {
     Assert-Build (Test-Path $Script:ModuleManifestFile) 'Unable to locate the module manifest file.'
     Assert-Build (Get-ChildItem $Script:ModuleManifestFile | Test-ModuleManifest -ErrorAction Ignore) 'Module Manifest test did not pass verification.'
     Assert-Build (!(Get-Module -Name $Script:ModuleName)) 'Conflicting module already imported.'
-    Assert-Build (!(Get-ChildItem -LiteralPath $env:PSModulePath.Split(';') -Filter $Script:ModuleName)) 'Conflicting module within a PSModulePath directory.'
+    Assert-Build (!(Get-ChildItem -LiteralPath $env:PSModulePath.Split(';') -Filter $Script:ModuleName -ErrorAction Ignore)) 'Conflicting module within a PSModulePath directory.'
     Write-Build Green '      ...Module Manifest Verification Complete!'
 }
 
