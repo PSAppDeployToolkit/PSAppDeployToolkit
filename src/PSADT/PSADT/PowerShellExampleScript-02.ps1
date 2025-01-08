@@ -1,11 +1,18 @@
-﻿# Import the PSADT assembly
+﻿[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = "This is just a demo script.")]
+[CmdletBinding()]
+param
+()
+
+# Import the PSADT assembly
 Add-Type -Path "path\to\PSADT.dll"
 
 # SYSTEM Process Script
-function Start-SystemProcess {
+function Start-SystemProcess
+{
     # Ensure this script is running as SYSTEM
     $currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    if ($currentIdentity.User -ne 'S-1-5-18') {
+    if ($currentIdentity.User -ne 'S-1-5-18')
+    {
         throw "This script must be run as SYSTEM"
     }
 
@@ -20,7 +27,8 @@ function Start-SystemProcess {
     $server = [PSADT.SecureIPC.NamedPipeServer]::new($serverOptions)
     $server.Start()
 
-    try {
+    try
+    {
         # Start the user process asynchronously
         $userProcessTask = Start-UserProcessAsync
 
@@ -40,12 +48,14 @@ function Start-SystemProcess {
             "exit"
         )
 
-        foreach ($command in $commands) {
+        foreach ($command in $commands)
+        {
             Write-Host "Sending command: $command"
             $writer.WriteLine($command)
             $writer.Flush()
 
-            if ($command -ne "exit") {
+            if ($command -ne "exit")
+            {
                 $response = $reader.ReadLine()
                 Write-Host "Received response: $response"
             }
@@ -54,14 +64,16 @@ function Start-SystemProcess {
         # Wait for the user process to complete
         $userProcessTask.Wait()
     }
-    finally {
+    finally
+    {
         $server.Disconnect()
         $server.Dispose()
     }
 }
 
 # Function to start the user process asynchronously
-function Start-UserProcessAsync {
+function Start-UserProcessAsync
+{
     $userScript = @"
     Add-Type -Path "path\to\PSADT.dll"
 
@@ -106,14 +118,14 @@ function Start-UserProcessAsync {
     # You may need to modify this part to get the appropriate user token
     $userToken = [System.Security.Principal.WindowsIdentity]::GetCurrent().Token
     [System.Security.Principal.WindowsIdentity]::RunImpersonated($userToken, {
-        $impersonator.ImpersonateNamedPipeClient([Microsoft.Win32.SafeHandles.SafePipeHandle]::new(0, $true))
-    })
+            $impersonator.ImpersonateNamedPipeClient([Microsoft.Win32.SafeHandles.SafePipeHandle]::new(0, $true))
+        })
 
     # Create an ExecutionContext object
-    $executionContext = [PSADT.PowerShellHost.ExecutionContext]::new($executionOptions, $impersonator)
+    $execContext = [PSADT.PowerShellHost.ExecutionContext]::new($executionOptions, $impersonator)
 
     # Start the user process asynchronously
-    return [PSADT.PowerShellHost.PSADTShell]::ExecuteAsync($executionContext)
+    return [PSADT.PowerShellHost.PSADTShell]::ExecuteAsync($execContext)
 }
 
 # Run the SYSTEM process

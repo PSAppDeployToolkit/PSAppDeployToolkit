@@ -4,12 +4,11 @@ Add-Type -Path "C:\path\to\your\CSharpLibrary.dll"
 # Define the log options
 $logOptions = [PSADT.Logging.LogOptions]::CreateBuilder()
 $logOptions = $logOptions.SetLogDirectory("C:\logs")
-                         .SetLogFileNamePrefix("PowerShellLog_")
-                         .SetLogFileNameTimestamp([DateTime]::Now)
-                         .SetLogFileNameTimestampFormat("yyyy-MM-dd-HH-mm")
-                         .SetLogFileExtension("log")
-                         .SetLogFormat([PSADT.Logging.TextLogFormat]::Default)
-                         .Build()
+.SetLogFileNamePrefix("PowerShellLog_")
+.SetLogFileNameTimestamp([DateTime]::Now)
+.SetLogFileNameTimestampFormat("yyyy-MM-dd-HH-mm")
+.SetLogFileExtension("log")
+.SetLogFormat([PSADT.Logging.TextLogFormat]::Default).Build()
 
 # Create a FileLogDestination
 $fileLogDestination = New-Object PSADT.Logging.FileLogDestination($logOptions)
@@ -21,9 +20,11 @@ $fileLogDestination = New-Object PSADT.Logging.FileLogDestination($logOptions)
 [PSADT.Logging.EnhancedLog]::LogInformation("This is a log message from PowerShell.")
 
 # Call a C# method that may log errors or throw exceptions
-try {
+try
+{
     [YourNamespace.YourClass]::SomeMethod()
 }
-catch {
+catch
+{
     Write-Error "Caught an exception from the C# method: $_"
 }

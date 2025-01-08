@@ -3,7 +3,10 @@
     Set-Location -Path $PSScriptRoot
     #-------------------------------------------------------------------------
     $ModuleName = 'PSAppDeployToolkit'
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PathToManifest', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
     $PathToManifest = [System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psd1")
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PathToModule', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
     $PathToModule = [System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psm1")
     #-------------------------------------------------------------------------
 }
@@ -20,7 +23,7 @@ Describe 'Module Tests' -Tag Unit {
         } #psm1Exists
         It 'manifest should contain PSAppDeployToolkit.psm1' {
             $PathToManifest |
-            Should -FileContentMatchExactly "PSAppDeployToolkit.psm1"
+                Should -FileContentMatchExactly "PSAppDeployToolkit.psm1"
         } #validPSM1
         It 'should have a matching module name in the manifest' {
             $script:manifestEval.Name | Should -BeExactly $ModuleName
@@ -38,7 +41,8 @@ Describe 'Module Tests' -Tag Unit {
             { [guid]::Parse($script:manifestEval.Guid) } | Should -Not -Throw
         } #guid
         It 'should not have any spaces in the tags' {
-            foreach ($tag in $script:manifestEval.Tags) {
+            foreach ($tag in $script:manifestEval.Tags)
+            {
                 $tag | Should -Not -Match '\s'
             }
         } #tagSpaces

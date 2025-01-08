@@ -10,7 +10,8 @@
     modified from source: https://github.com/PowerShell/platyPS/issues/595#issuecomment-1820971702
 #>
 
-function Remove-CommonParameterFromMarkdown {
+function Remove-CommonParameterFromMarkdown
+{
     <#
     .SYNOPSIS
         Remove a PlatyPS generated parameter block.
@@ -27,11 +28,14 @@ function Remove-CommonParameterFromMarkdown {
         $ParameterName = @('ProgressAction')
     )
     $ErrorActionPreference = 'Stop'
-    foreach ($p in $Path) {
+    foreach ($p in $Path)
+    {
         $content = (Get-Content -Path $p -Raw).TrimEnd()
         $updateFile = $false
-        foreach ($param in $ParameterName) {
-            if (-not ($Param.StartsWith('-'))) {
+        foreach ($param in $ParameterName)
+        {
+            if (-not ($Param.StartsWith('-')))
+            {
                 $param = "-$($param)"
             }
             # Remove the parameter block
@@ -40,7 +44,8 @@ function Remove-CommonParameterFromMarkdown {
             # Remove the parameter from the syntax block
             $pattern = " \[$param\s?.*?]"
             $newContent = $newContent -replace $pattern, ''
-            if ($null -ne (Compare-Object -ReferenceObject $content -DifferenceObject $newContent)) {
+            if ($null -ne (Compare-Object -ReferenceObject $content -DifferenceObject $newContent))
+            {
                 Write-Verbose "Added $param to $p"
                 # Update file content
                 $content = $newContent
@@ -48,7 +53,8 @@ function Remove-CommonParameterFromMarkdown {
             }
         }
         # Save file if content has changed
-        if ($updateFile) {
+        if ($updateFile)
+        {
             $newContent | Out-File -Encoding utf8 -FilePath $p
             Write-Verbose "Updated file: $p"
         }
@@ -56,7 +62,8 @@ function Remove-CommonParameterFromMarkdown {
     return
 }
 
-function Add-MissingCommonParameterToMarkdown {
+function Add-MissingCommonParameterToMarkdown
+{
     param(
         [Parameter(Mandatory)]
         [string[]]
@@ -67,46 +74,57 @@ function Add-MissingCommonParameterToMarkdown {
         $ParameterName = @('ProgressAction')
     )
     $ErrorActionPreference = 'Stop'
-    foreach ($p in $Path) {
+    foreach ($p in $Path)
+    {
         $content = (Get-Content -Path $p -Raw).TrimEnd()
         $updateFile = $false
-        foreach ($NewParameter in $ParameterName) {
-            if (-not ($NewParameter.StartsWith('-'))) {
+        foreach ($NewParameter in $ParameterName)
+        {
+            if (-not ($NewParameter.StartsWith('-')))
+            {
                 $NewParameter = "-$($NewParameter)"
             }
             $pattern = '(?m)^This cmdlet supports the common parameters:(.+?)\.'
             $replacement = {
                 $Params = $_.Groups[1].Captures[0].ToString() -split ' '
                 $CommonParameters = @()
-                foreach ($CommonParameter in $Params) {
-                    if ($CommonParameter.StartsWith('-')) {
-                        if ($CommonParameter.EndsWith(',')) {
+                foreach ($CommonParameter in $Params)
+                {
+                    if ($CommonParameter.StartsWith('-'))
+                    {
+                        if ($CommonParameter.EndsWith(','))
+                        {
                             $CleanParam = $CommonParameter.Substring(0, $CommonParameter.Length - 1)
                         }
-                        elseif ($p.EndsWith('.')) {
+                        elseif ($p.EndsWith('.'))
+                        {
                             $CleanParam = $CommonParameter.Substring(0, $CommonParameter.Length - 1)
                         }
-                        else {
+                        else
+                        {
                             $CleanParam = $CommonParameter
                         }
                         $CommonParameters += $CleanParam
                     }
                 }
-                if ($NewParameter -notin $CommonParameters) {
+                if ($NewParameter -notin $CommonParameters)
+                {
                     $CommonParameters += $NewParameter
                 }
                 $CommonParameters[-1] = "and $($CommonParameters[-1]). "
                 return "This cmdlet supports the common parameters: " + (($CommonParameters | Sort-Object) -join ', ')
             }
             $newContent = $content -replace $pattern, $replacement
-            if ($null -ne (Compare-Object -ReferenceObject $content -DifferenceObject $newContent)) {
+            if ($null -ne (Compare-Object -ReferenceObject $content -DifferenceObject $newContent))
+            {
                 Write-Verbose "Added $NewParameter to $p"
                 $updateFile = $true
                 $content = $newContent
             }
         }
         # Save file if content has changed
-        if ($updateFile) {
+        if ($updateFile)
+        {
             $newContent | Out-File -Encoding utf8 -FilePath $p
             Write-Verbose "Updated file: $p"
         }
@@ -114,7 +132,8 @@ function Add-MissingCommonParameterToMarkdown {
     return
 }
 
-function Repair-PlatyPSMarkdown {
+function Repair-PlatyPSMarkdown
+{
     param(
         [Parameter(Mandatory)]
         [string[]]
