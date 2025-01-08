@@ -138,7 +138,7 @@ function Get-ADTUserProfiles
                         }
 
                         # Return early for accounts that have a null NTAccount.
-                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName))
+                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName -InformationAction SilentlyContinue))
                         {
                             return
                         }
@@ -159,7 +159,7 @@ function Get-ADTUserProfiles
                         # Append additional info if requested.
                         if ($LoadProfilePaths)
                         {
-                            $userProfile = Invoke-ADTAllUsersRegistryAction -UserProfiles $userProfile -ScriptBlock {
+                            $userProfile = Invoke-ADTAllUsersRegistryAction -UserProfiles $userProfile -InformationAction SilentlyContinue -ScriptBlock {
                                 [PSADT.Types.UserProfile]::new(
                                     $_.NTAccount,
                                     $_.SID,
@@ -195,14 +195,14 @@ function Get-ADTUserProfiles
                             'Default',
                             [System.Security.Principal.SecurityIdentifier]::new([System.Security.Principal.WellKnownSidType]::NullSid, $null),
                             $defaultUserProfilePath,
-                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'AppData' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
-                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Local AppData' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
-                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Desktop' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
-                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Personal' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
-                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Start Menu' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
-                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Environment' -Name 'TEMP' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
-                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Environment' -Name 'OneDrive' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath),
-                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Environment' -Name 'OneDriveCommercial' -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $defaultUserProfilePath)
+                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'AppData' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath),
+                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Local AppData' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath),
+                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Desktop' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath),
+                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Personal' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath),
+                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Start Menu' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath),
+                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Environment' -Name 'TEMP' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath),
+                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Environment' -Name 'OneDrive' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath),
+                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_USERS\.DEFAULT\Environment' -Name 'OneDriveCommercial' -DoNotExpandEnvironmentNames -InformationAction SilentlyContinue) -replace '%USERPROFILE%', $defaultUserProfilePath)
                         )
                     }
                     return [PSADT.Types.UserProfile]::new(
