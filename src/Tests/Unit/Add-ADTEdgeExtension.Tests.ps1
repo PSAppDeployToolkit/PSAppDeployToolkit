@@ -25,7 +25,7 @@ Describe 'Add-ADTEdgeExtension' {
             $updateUrl = 'https://edge.microsoft.com/blah'
             $installationMode = 'force_installed'
             $minimumVersionRequired = '1.0'
-            Add-ADTEdgeExtension -ExtensionId $extensionId -UpdateUrl $updateUrl -InstallationMode $installationMode -MinimumVersionRequired $minimumVersionRequired
+            Add-ADTEdgeExtension -ExtensionID $extensionId -UpdateUrl $updateUrl -InstallationMode $installationMode -MinimumVersionRequired $minimumVersionRequired
 
             $Extensions = Get-ItemPropertyValue -Path $RedirectedEdgeKey -Name 'ExtensionSettings' | ConvertFrom-Json
             $Extensions.$extensionId.update_url | Should -Be $updateUrl
@@ -43,7 +43,7 @@ Describe 'Add-ADTEdgeExtension' {
             $updateUrl = 'https://edge.microsoft.com/blah'
             $installationMode = 'force_installed'
 
-            Add-ADTEdgeExtension -ExtensionId $extensionId -UpdateUrl $updateUrl -InstallationMode $installationMode
+            Add-ADTEdgeExtension -ExtensionID $extensionId -UpdateUrl $updateUrl -InstallationMode $installationMode
 
             $Extensions = Get-ItemPropertyValue -Path $RedirectedEdgeKey -Name 'ExtensionSettings' | ConvertFrom-Json
             $Extensions.$extensionId.update_url | Should -Be $updateUrl
@@ -61,7 +61,7 @@ Describe 'Add-ADTEdgeExtension' {
             $updateUrl = 'https://edge.microsoft.com/blah'
             $installationMode = 'force_installed'
 
-            Add-ADTEdgeExtension -ExtensionId $extensionId -UpdateUrl $updateUrl -InstallationMode $installationMode
+            Add-ADTEdgeExtension -ExtensionID $extensionId -UpdateUrl $updateUrl -InstallationMode $installationMode
 
             $Extensions = Get-ItemPropertyValue -Path $RedirectedEdgeKey -Name 'ExtensionSettings' | ConvertFrom-Json
             $Extensions.$extensionId.update_url | Should -Be $updateUrl
@@ -78,15 +78,15 @@ Describe 'Add-ADTEdgeExtension' {
         It 'Should only accept InstallationMode as: blocked, allowed, removed, force_installed, normal_installed' {
             foreach ($mode in 'blocked', 'allowed', 'removed', 'force_installed', 'normal_installed')
             {
-                { Add-ADTEdgeExtension -ExtensionId 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode $mode } | Should -Not -Throw
+                { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode $mode } | Should -Not -Throw
             }
 
-            { Add-ADTEdgeExtension -ExtensionId 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode 'invalid' } | Should -Throw
+            { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode 'invalid' } | Should -Throw
         }
 
         It 'Should only accept valid URLs for UpdateUrl' {
-            { Add-ADTEdgeExtension -ExtensionId 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode 'force_installed' } | Should -Not -Throw
-            { Add-ADTEdgeExtension -ExtensionId 'abc123' -UpdateUrl 'invalid' -InstallationMode 'force_installed' } | Should -Throw
+            { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode 'force_installed' } | Should -Not -Throw
+            { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'invalid' -InstallationMode 'force_installed' } | Should -Throw
         }
     }
 }
