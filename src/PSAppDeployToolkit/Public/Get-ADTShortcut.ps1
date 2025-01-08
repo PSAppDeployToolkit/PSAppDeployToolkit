@@ -102,9 +102,9 @@ function Get-ADTShortcut
             try
             {
                 # Build out remainder of object.
-                if ($Path -match '\.url$')
+                if ($Output.Path -match '\.url$')
                 {
-                    [System.IO.File]::ReadAllLines($Path) | & {
+                    [System.IO.File]::ReadAllLines($Output.Path) | & {
                         process
                         {
                             switch ($_)
@@ -124,7 +124,7 @@ function Get-ADTShortcut
                 }
                 else
                 {
-                    $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($FullPath)
+                    $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($Output.Path)
                     $Output.IconLocation, $Output.IconIndex = $shortcut.IconLocation.Split(',')
                     return [PSADT.Types.ShortcutLnk]::new(
                         $Output.Path,
@@ -142,7 +142,7 @@ function Get-ADTShortcut
                                 default { 'Normal'; break }
                             }),
                         $shortcut.Hotkey,
-                        !!([Systen.IO.FIle]::ReadAllBytes($FullPath)[21] -band 32)
+                        !!([System.IO.File]::ReadAllBytes($Output.Path)[21] -band 32)
                     )
                 }
             }
@@ -153,7 +153,7 @@ function Get-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read the shortcut [$Path]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read the shortcut [$($Output.Path)]."
         }
     }
 
