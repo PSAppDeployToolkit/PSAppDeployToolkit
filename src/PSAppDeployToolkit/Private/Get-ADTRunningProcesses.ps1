@@ -131,9 +131,9 @@ function Get-ADTRunningProcesses
             # Return filtered list of processes if there is one.
             if ($null -eq $_.Filter)
             {
-                return $process
+                return $processes
             }
-            $process | Where-Object -FilterScript $_.Filter
+            return $processes | Where-Object -FilterScript $_.Filter
         }
     }
 
