@@ -289,7 +289,7 @@ Add-BuildTask EncodingCheck {
 # Synopsis: Analyze scripts to verify if they adhere to desired coding format (Stroustrup / OTBS / Allman).
 Add-BuildTask FormattingCheck {
     Write-Build White '      Performing script formatting checks...'
-    if (($scriptAnalyzerResults = $Script:BuildRoot, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -Setting CodeFormattingAllman -ExcludeRule PSAlignAssignmentStatement -Recurse -Fix:($env:GITHUB_ACTIONS -ne 'true') -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
+    if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:BuildRoot -Setting CodeFormattingAllman -ExcludeRule PSAlignAssignmentStatement -Recurse -Fix:($env:GITHUB_ACTIONS -ne 'true') -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      PSScriptAnalyzer code formatting check did not adhere to defined standards'
@@ -300,7 +300,7 @@ Add-BuildTask FormattingCheck {
 # Synopsis: Invokes PSScriptAnalyzer against the Module source path.
 Add-BuildTask Analyze {
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    if (($scriptAnalyzerResults = $Script:BuildRoot, $Script:ModuleSourcePath | Invoke-ScriptAnalyzer -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
+    if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:BuildRoot -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      One or more PSScriptAnalyzer errors/warnings where found.'
