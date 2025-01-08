@@ -115,6 +115,9 @@ function Initialize-ADTModule
                     }
                 }
 
+                # De-init the classic dialog assets.
+                $Script:Dialogs.Classic.BannerHeight = $null
+
                 # Initialize the module's global state.
                 $Script:ADT.Environment = New-ADTEnvironmentTable
                 $Script:ADT.Config = Import-ADTConfig -BaseDirectory $Script:ADT.Directories.Config

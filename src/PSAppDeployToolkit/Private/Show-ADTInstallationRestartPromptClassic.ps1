@@ -39,6 +39,9 @@ function Show-ADTInstallationRestartPromptClassic
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
 
+    # Initalise the classic assets.
+    Initialize-ADTClassicAssets
+
     # Define starting counters.
     $startTime = [System.DateTime]::Now
     $countdownTime = $startTime

@@ -68,6 +68,9 @@ function Show-ADTInstallationPromptClassic
     $adtEnv = Get-ADTEnvironmentTable
     $adtConfig = Get-ADTConfig
 
+    # Initalise the classic assets.
+    Initialize-ADTClassicAssets
+
     # Define events for form windows.
     $installPromptTimer_Tick = {
         Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.'

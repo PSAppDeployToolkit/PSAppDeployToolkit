@@ -77,7 +77,6 @@ function Show-ADTBalloonTip
     {
         # Initialize the module first if needed.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -98,6 +97,10 @@ function Show-ADTBalloonTip
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $adtConfig = Get-ADTConfig
+
+        # Initalise the classic assets.
+        Initialize-ADTClassicAssets
 
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
