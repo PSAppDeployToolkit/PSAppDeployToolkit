@@ -593,7 +593,8 @@ namespace PSADT.Module
 
                 // Log details for all currently logged on users.
                 WriteLogDivider();
-                WriteLogEntry($"Display session information for all logged on users:\n{InternalDatabase.InvokeScript(ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), adtEnv["LoggedOnUserSessions"]!)}", false);
+                var loggedOnUsers = (string)InternalDatabase.InvokeScript(ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), adtEnv["LoggedOnUserSessions"]!).First().BaseObject;
+                WriteLogEntry($"Display session information for all logged on users:{(!string.IsNullOrWhiteSpace(loggedOnUsers) ? $"\n{loggedOnUsers}" : $" There are currently no logged on users.")}", false);
 
                 // Provide detailed info about current process state.
                 if ((adtEnv["usersLoggedOn"] is var usersLoggedOn) && (null != usersLoggedOn))
