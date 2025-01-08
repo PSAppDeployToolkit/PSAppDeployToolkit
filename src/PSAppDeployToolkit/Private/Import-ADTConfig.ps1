@@ -119,28 +119,9 @@ function Import-ADTConfig
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
-    # Throw if attempting to use classic dialogs on Server Core.
-    if (($config.UI.DialogStyle -eq 'Classic') -and [Microsoft.Win32.Registry]::GetValue('HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion', 'InstallationType', $null).Equals('Server Core'))
-    {
-        $naerParams = @{
-            Exception = [System.NotSupportedException]::new("The dialog style [$($config.UI.DialogStyle)] is not supported on Server Core. Please use [Fluent] instead.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidData
-            ErrorId = 'DialogStyleNotSupported'
-            TargetObject = $config
-            RecommendedAction = "Please change the dialog style to Fluent and try again."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-    }
-
     # Expand out environment variables and asset file paths.
     ($adtEnv = Get-ADTEnvironmentTable).GetEnumerator() | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { $config | Expand-ADTVariablesInConfig } }
     $config.Assets | Update-ADTAssetFilePath
-
-    # Process the classic assets by grabbing the bytes of each image asset, storing them into a memory stream, then as an image for WinForms to use.
-    $Script:Dialogs.Classic.Assets.Logo = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Logo)))
-    $Script:Dialogs.Classic.Assets.Icon = [PSADT.Shared.Utility]::ConvertImageToIcon($Script:Dialogs.Classic.Assets.Logo)
-    $Script:Dialogs.Classic.Assets.Banner = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($config.Assets.Banner)))
-    $Script:Dialogs.Classic.BannerHeight = [System.Math]::Ceiling($Script:Dialogs.Classic.Width * ($Script:Dialogs.Classic.Assets.Banner.Height / $Script:Dialogs.Classic.Assets.Banner.Width))
 
     # Set the app's AUMID so it doesn't just say "Windows PowerShell".
     if ($config.UI.BalloonNotifications -and ![PSADT.LibraryInterfaces.Shell32]::SetCurrentProcessExplicitAppUserModelID($config.UI.BalloonTitle))
