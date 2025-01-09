@@ -101,7 +101,10 @@ function ConvertTo-ADTNTAccountOrSID
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+
+        # Pre-calculate the domain SID.
         $DomainSid = if ($PSCmdlet.ParameterSetName.Equals('WellKnownName') -and !$LocalHost)
         {
             try
@@ -117,57 +120,50 @@ function ConvertTo-ADTNTAccountOrSID
 
     process
     {
-        switch ($PSCmdlet.ParameterSetName)
+        try
         {
-            SIDToNTAccount
+            try
             {
-                Write-ADTLogEntry -Message "Converting $(($msg = "the SID [$SID] to an NT Account name"))."
-                try
+                switch ($PSCmdlet.ParameterSetName)
                 {
-                    return $SID.Translate([System.Security.Principal.NTAccount])
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
-                }
-                break
-            }
-            NTAccountToSID
-            {
-                Write-ADTLogEntry -Message "Converting $(($msg = "the NT Account [$AccountName] to a SID"))."
-                try
-                {
-                    return $AccountName.Translate([System.Security.Principal.SecurityIdentifier])
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Unable to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 2
-                }
-                break
-            }
-            WellKnownName
-            {
-                Write-ADTLogEntry -Message "Converting $(($msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"))."
-                try
-                {
-                    $NTAccountSID = [System.Security.Principal.SecurityIdentifier]::new($WellKnownSIDName, $DomainSid)
-                    if ($WellKnownToNTAccount)
+                    SIDToNTAccount
                     {
-                        return $NTAccountSID.Translate([System.Security.Principal.NTAccount])
+                        Write-ADTLogEntry -Message "Converting $(($msg = "the SID [$SID] to an NT Account name"))."
+                        return $SID.Translate([System.Security.Principal.NTAccount])
                     }
-                    return $NTAccountSID
+                    NTAccountToSID
+                    {
+                        Write-ADTLogEntry -Message "Converting $(($msg = "the NT Account [$AccountName] to a SID"))."
+                        return $AccountName.Translate([System.Security.Principal.SecurityIdentifier])
+                    }
+                    WellKnownName
+                    {
+                        Write-ADTLogEntry -Message "Converting $(($msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"))."
+                        $NTAccountSID = [System.Security.Principal.SecurityIdentifier]::new($WellKnownSIDName, $DomainSid)
+                        if ($WellKnownToNTAccount)
+                        {
+                            return $NTAccountSID.Translate([System.Security.Principal.NTAccount])
+                        }
+                        return $NTAccountSID
+                    }
                 }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to convert $msg. It may not be a valid account anymore or there is some other problem.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                }
-                break
             }
+            catch
+            {
+                # Re-writing the ErrorRecord with Write-Error ensures the correct PositionMessage is used.
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            # Process the caught error, log it and throw depending on the specified ErrorAction.
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to convert $msg. It may not be a valid account anymore or there is some other problem."
         }
     }
 
     end
     {
+        # Finalize function.
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
