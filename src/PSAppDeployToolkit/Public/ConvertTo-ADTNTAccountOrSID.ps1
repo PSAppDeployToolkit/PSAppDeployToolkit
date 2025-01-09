@@ -102,6 +102,17 @@ function ConvertTo-ADTNTAccountOrSID
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $DomainSid = if ($PSCmdlet.ParameterSetName.Equals('WellKnownName') -and !$LocalHost)
+        {
+            try
+            {
+                [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("LDAP://$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
+            }
+            catch
+            {
+                Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
+            }
+        }
     }
 
     process
@@ -136,21 +147,7 @@ function ConvertTo-ADTNTAccountOrSID
             }
             WellKnownName
             {
-                # Get the SID for the root domain.
                 Write-ADTLogEntry -Message "Converting $(($msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"))."
-                $DomainSid = if (!$LocalHost)
-                {
-                    try
-                    {
-                        [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("LDAP://$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
-                    }
-                    catch
-                    {
-                        Write-ADTLogEntry -Message 'Unable to get Domain SID from Active Directory. Setting Domain SID to $null.' -Severity 2
-                    }
-                }
-
-                # Get the SID for the well known SID name.
                 try
                 {
                     $NTAccountSID = [System.Security.Principal.SecurityIdentifier]::new($WellKnownSIDName, $DomainSid)
