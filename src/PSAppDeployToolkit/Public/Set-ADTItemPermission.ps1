@@ -20,27 +20,34 @@ function Set-ADTItemPermission
         One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to. If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)
 
     .PARAMETER Permission
-        Permission or list of permissions to be set/added/removed/replaced. To see all the possible permissions go to 'http://technet.microsoft.com/fr-fr/library/ff730951.aspx'.
-
-        Permission DeleteSubdirectoriesAndFiles does not apply to files.
+        Permission or list of permissions to be set/added/removed/replaced. Permission DeleteSubdirectoriesAndFiles does not apply to files.
 
     .PARAMETER PermissionType
-        Sets Access Control Type of the permissions. Allowed options: Allow, Deny
+        Sets Access Control Type of the permissions.
 
     .PARAMETER Inheritance
-        Sets permission inheritance. Does not apply to files. Multiple options can be specified. Allowed options: ObjectInherit, ContainerInherit, None
+        Sets permission inheritance. Does not apply to files. Multiple options can be specified.
 
-        None - The permission entry is not inherited by child objects, ObjectInherit - The permission entry is inherited by child leaf objects. ContainerInherit - The permission entry is inherited by child container objects.
+        None - The permission entry is not inherited by child objects.
+        ObjectInherit - The permission entry is inherited by child leaf objects.
+        ContainerInherit - The permission entry is inherited by child container objects.
 
     .PARAMETER Propagation
-        Sets how to propagate inheritance. Does not apply to files. Allowed options: None, InheritOnly, NoPropagateInherit
+        Sets how to propagate inheritance. Does not apply to files.
 
-        None - Specifies that no inheritance flags are set. NoPropagateInherit - Specifies that the permission entry is not propagated to child objects. InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
+        None - Specifies that no inheritance flags are set.
+        NoPropagateInherit - Specifies that the permission entry is not propagated to child objects.
+        InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
 
     .PARAMETER Method
-        Specifies which method will be used to apply the permissions. Allowed options: Add, Set, Reset.
+        Specifies which method will be used to apply the permissions.
 
-        Add - adds permissions rules but it does not remove previous permissions, Set - overwrites matching permission rules with new ones, Reset - removes matching permissions rules and then adds permission rules, Remove - Removes matching permission rules, RemoveSpecific - Removes specific permissions, RemoveAll - Removes all permission rules for specified user/s
+        AddAccessRule - Adds permissions rules but it does not remove previous permissions.
+        SetAccessRule - Overwrites matching permission rules with new ones.
+        ResetAccessRule - Removes matching permissions rules and then adds permission rules.
+        RemoveAccessRule - Removes matching permission rules.
+        RemoveAccessRuleAll - Removes all permission rules for specified user/s.
+        RemoveAccessRuleSpecific - Removes specific permissions.
 
     .PARAMETER EnableInheritance
         Enables inheritance on the files/folders.
@@ -125,7 +132,7 @@ function Set-ADTItemPermission
         [System.Security.AccessControl.PropagationFlags]$Propagation = [System.Security.AccessControl.PropagationFlags]::None,
 
         [Parameter(Mandatory = $false, Position = 6, HelpMessage = 'Specifies which method will be used to add/remove/replace permissions.', ParameterSetName = 'DisableInheritance')]
-        [ValidateSet('AddAccessRule', 'SetAccessRule', 'ResetAccessRule', 'RemoveAccessRule', 'RemoveAccessRuleSpecific', 'RemoveAccessRuleAll')]
+        [ValidateSet('AddAccessRule', 'SetAccessRule', 'ResetAccessRule', 'RemoveAccessRule', 'RemoveAccessRuleAll', 'RemoveAccessRuleSpecific')]
         [Alias('ApplyMethod', 'ApplicationMethod')]
         [System.String]$Method = 'AddAccessRule',
 
