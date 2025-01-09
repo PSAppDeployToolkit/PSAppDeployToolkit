@@ -91,8 +91,6 @@ function Set-ADTItemPermission
         https://psappdeploytoolkit.com
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PermissionType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Method', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -176,38 +174,23 @@ function Set-ADTItemPermission
                 $Acl = Get-Acl -Path $Path
 
                 # Apply permissions on each user.
-                $User.Trim() | & {
-                    process
+                foreach ($Username in $User.Trim())
+                {
+                    # Return early if the string is empty.
+                    if ([System.String]::IsNullOrWhiteSpace($Username))
                     {
-                        # Return early if the string is empty.
-                        if (!$_.Length)
-                        {
-                            return
-                        }
-
-                        # Set Username.
-                        [System.Security.Principal.NTAccount]$Username = if ($_.StartsWith('*'))
-                        {
-                            try
-                            {
-                                # Translate the SID.
-                                ConvertTo-ADTNTAccountOrSID -SID ($sid = $_.Remove(0, 1))
-                            }
-                            catch
-                            {
-                                Write-ADTLogEntry "Failed to translate SID [$sid]. Skipping..." -Severity 2
-                                continue
-                            }
-                        }
-                        else
-                        {
-                            $_
-                        }
-
-                        # Set/Add/Remove/Replace permissions and log the changes.
-                        Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
-                        $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
+                        continue
                     }
+
+                    # Translate a SID to NTAccount.
+                    if ($Username.StartsWith('*') -and !($Username = ConvertTo-ADTNTAccountOrSID -SID $Username.Remove(0, 1)))
+                    {
+                        continue
+                    }
+
+                    # Set/Add/Remove/Replace permissions and log the changes.
+                    Write-ADTLogEntry -Message "Changing permissions [Permissions:$Permission, InheritanceFlags:$Inheritance, PropagationFlags:$Propagation, AccessControlType:$PermissionType, Method:$Method] on path [$Path] for user [$Username]."
+                    $Acl.$Method([System.Security.AccessControl.FileSystemAccessRule]::new($Username, $Permission, $Inheritance, $Propagation, $PermissionType))
                 }
 
                 # Use the prepared ACL.
