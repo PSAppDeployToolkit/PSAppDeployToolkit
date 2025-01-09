@@ -74,14 +74,6 @@ function Set-ADTEnvironmentVariable
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $logSuffix = if ($Target)
-        {
-            "the environment variable [$Variable] for [$Target] to [$Value]"
-        }
-        else
-        {
-            "the environment variable [$Variable] to [$Value]"
-        }
     }
 
     process
@@ -92,10 +84,10 @@ function Set-ADTEnvironmentVariable
             {
                 if ($Target)
                 {
-                    Write-ADTLogEntry -Message "Setting $logSuffix."
+                    Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$Target] to [$Value]"))."
                     return [System.Environment]::SetEnvironmentVariable($Variable, $Value, $Target)
                 }
-                Write-ADTLogEntry -Message "Setting $logSuffix."
+                Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] to [$Value]"))."
                 return [System.Environment]::SetEnvironmentVariable($Variable, $Value)
             }
             catch

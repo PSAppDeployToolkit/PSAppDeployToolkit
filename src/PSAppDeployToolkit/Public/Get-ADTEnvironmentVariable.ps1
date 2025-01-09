@@ -85,14 +85,6 @@ function Get-ADTEnvironmentVariable
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $logSuffix = if ($Target)
-        {
-            "the environment variable [$($PSBoundParameters.Variable)] for [$Target]"
-        }
-        else
-        {
-            "the environment variable [$($PSBoundParameters.Variable)]"
-        }
     }
 
     process
@@ -103,10 +95,10 @@ function Get-ADTEnvironmentVariable
             {
                 if ($Target)
                 {
-                    Write-ADTLogEntry -Message "Getting $logSuffix."
+                    Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($PSBoundParameters.Variable)] for [$Target]"))."
                     return [System.Environment]::GetEnvironmentVariable($PSBoundParameters.Variable, $Target)
                 }
-                Write-ADTLogEntry -Message "Getting $logSuffix."
+                Write-ADTLogEntry -Message "Getting $(($logSuffix = "the environment variable [$($PSBoundParameters.Variable)]"))."
                 return [System.Environment]::GetEnvironmentVariable($PSBoundParameters.Variable)
             }
             catch
