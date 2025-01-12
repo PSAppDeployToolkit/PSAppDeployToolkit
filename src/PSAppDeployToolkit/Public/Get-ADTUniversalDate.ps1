@@ -69,7 +69,7 @@ function Get-ADTUniversalDate
             {
                 # Remove any tailing Z, otherwise it could get converted to a different time zone. Then, convert the date to a universal sortable date time pattern based on the current culture.
                 Write-ADTLogEntry -Message "Converting the date [$DateTime] to a universal sortable date time pattern based on the current culture [$($Host.CurrentCulture.Name)]."
-                return [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Host.CurrentCulture).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern)
+                return [System.DateTime]::Parse($DateTime.TrimEnd('Z'), $Host.CurrentCulture).ToUniversalTime().ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern)
             }
             catch
             {
