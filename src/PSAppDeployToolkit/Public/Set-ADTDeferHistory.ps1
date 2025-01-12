@@ -19,6 +19,13 @@ function Set-ADTDeferHistory
     .PARAMETER DeferDeadline
         Specify the deadline for the deferral.
 
+    .PARAMETER DeferRunInterval
+        Specifies the number of minutes that must elapse before prompting the user again if a process listed in 'CloseProcesses' is still running after a deferral.
+
+        This helps address the issue where Intune retries installations shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
+
+        This parameter is specifically utilized within the `Show-ADTInstallationWelcome` function, and if specified, the current date and time will be used for the DeferRunIntervalLastTime.
+
     .INPUTS
         None
 
@@ -54,12 +61,16 @@ function Set-ADTDeferHistory
 
         [Parameter(Mandatory = $false)]
         [AllowEmptyString()]
-        [System.String]$DeferDeadline
+        [System.String]$DeferDeadline,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$DeferRunInterval
     )
 
     try
     {
-        (Get-ADTSession).SetDeferHistory($(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }), $DeferDeadline)
+        (Get-ADTSession).SetDeferHistory($(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }), $DeferDeadline, $(if ($PSBoundParameters.ContainsKey('DeferRunInterval')) { $DeferRunInterval }), $(if ($PSBoundParameters.ContainsKey('DeferRunInterval')) { (Get-ADTUniversalDate) }))
     }
     catch
     {
