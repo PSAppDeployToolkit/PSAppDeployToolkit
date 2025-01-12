@@ -1043,7 +1043,9 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="deferDeadline">The deferral deadline.</param>
         /// <param name="deferTimesRemaining">The deferral times remaining.</param>
-        public void SetDeferHistory(int? deferTimesRemaining, string deferDeadline)
+        /// <param name="deferRunInterval">The interval in minutes before prompting the user again after a deferral.</param>
+        /// <param name="deferRunIntervalLastTime">The timestamp of the last deferRunInterval.</param>
+        public void SetDeferHistory(int? deferTimesRemaining, string deferDeadline, int? deferRunInterval = null, string deferRunIntervalLastTime = null)
         {
             // Get the module's session state before proceeding.
             var moduleSessionState = InternalDatabase.GetSessionState();
@@ -1065,6 +1067,24 @@ namespace PSADT.Module
                     CreateDeferHistoryPath();
                 }
                 moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", "String", deferDeadline, true, true);
+            }
+            if (null != deferRunInterval)
+            {
+                WriteLogEntry($"Setting deferral history: [DeferRunInterval = {deferRunInterval}].");
+                if (!TestDeferHistoryPath())
+                {
+                    CreateDeferHistoryPath();
+                }
+                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunInterval", "String", deferRunInterval.ToString(), true, true);
+            }
+            if (!string.IsNullOrWhiteSpace(deferRunIntervalLastTime))
+            {
+                WriteLogEntry($"Setting deferral history: [DeferRunIntervalLastTime = {deferRunIntervalLastTime}].");
+                if (!TestDeferHistoryPath())
+                {
+                    CreateDeferHistoryPath();
+                }
+                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunIntervalLastTime", "String", deferRunIntervalLastTime, true, true);
             }
         }
 

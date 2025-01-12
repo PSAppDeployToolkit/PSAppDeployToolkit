@@ -61,6 +61,11 @@ function Show-ADTInstallationWelcome
 
         The deadline date will be displayed to the user in the format of their culture.
 
+    .PARAMETER DeferRunInterval
+        Specifies the number of minutes that must elapse before prompting the user again if a process listed in 'CloseProcesses' is still running after a deferral.
+
+        This helps address the issue where Intune retries installations shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
+
     .PARAMETER CheckDiskSpace
         Specify whether to check if there is enough disk space for the installation to proceed.
 
@@ -190,6 +195,10 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Specifies the number of minutes that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$DeferRunInterval,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.', ParameterSetName = 'CheckDiskSpace')]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
@@ -346,6 +355,7 @@ function Show-ADTInstallationWelcome
                     $deferHistory = if ($adtSession) { Get-ADTDeferHistory }
                     $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
                     $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
+                    $deferHistoryRunIntervalLastTime = $deferHistory | Select-Object -ExpandProperty DeferRunIntervalLastTime -ErrorAction Ignore
 
                     # Reset switches.
                     $checkDeferDays = $DeferDays -ne 0
@@ -462,6 +472,22 @@ function Show-ADTInstallationWelcome
                             {
                                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
                                 $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }; if ($deferDeadlineUniversal) { $deferParams.Add('DeferDeadline', $deferDeadlineUniversal) }
+
+                                # Exit gracefully if DeferRunInterval is set, a last deferral time exists, and the interval has not yet elapsed.
+                                if ($DeferRunInterval -gt 0)
+                                {
+                                    Write-ADTLogEntry -Message "DeferRunInterval of [$DeferRunInterval] minutes is specified. Checking deferral interval."
+                                    if (-not ([String]::IsNullOrEmpty($deferHistoryRunIntervalLastTime)))
+                                    {
+                                        $deferRunIntervalLastTime = Get-ADTUniversalDate -DateTime $deferHistoryRunIntervalLastTime
+                                        $deferRunIntervalNextTime = Get-ADTUniversalDate -DateTime ([System.DateTime]::Parse($deferRunIntervalLastTime).AddMinutes($DeferRunInterval).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
+                                        if ([System.DateTime]::Parse($deferRunIntervalNextTime) -gt [System.DateTime]::Parse((Get-ADTUniversalDate)))
+                                        {
+                                            Write-ADTLogEntry -Message "DeferRunInterval has not elapsed. Exiting gracefully."
+                                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                                        }
+                                    }
+                                }
                                 $promptResult = & $Script:CommandTable."Show-ADTWelcomePrompt$($adtConfig.UI.DialogStyle)" @promptParams @deferParams
                             }
                         }
@@ -603,7 +629,16 @@ function Show-ADTInstallationWelcome
                             #  Stop the script (user chose to defer)
                             Write-ADTLogEntry -Message 'Installation deferred by the user.'
                             $BlockExecution = $false
-                            Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
+
+                            # Update defer history, including DeferRunInterval if specified.
+                            if ($DeferRunInterval)
+                            {
+                                Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal -DeferRunInterval $DeferRunInterval
+                            }
+                            else
+                            {
+                                Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
+                            }
 
                             # Restore minimized windows.
                             if (!$NoMinimizeWindows)
