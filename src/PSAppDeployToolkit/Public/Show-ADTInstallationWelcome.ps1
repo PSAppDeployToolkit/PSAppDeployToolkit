@@ -62,9 +62,13 @@ function Show-ADTInstallationWelcome
         The deadline date will be displayed to the user in the format of their culture.
 
     .PARAMETER DeferRunInterval
-        Specifies the number of minutes that must elapse before prompting the user again if a process listed in 'CloseProcesses' is still running after a deferral.
+        Specifies the time span that must elapse before prompting the user again if a process listed in 'CloseProcesses' is still running after a deferral.
 
-        This helps address the issue where Intune retries installations shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
+        This addresses the issue where Intune retries installations shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
+
+        Example:
+        - To specify 30 minutes, use: `[System.TimeSpan]::FromMinutes(30)`.
+        - To specify 24 hours, use: `[System.TimeSpan]::FromHours(24)`.
 
     .PARAMETER CheckDiskSpace
         Specify whether to check if there is enough disk space for the installation to proceed.
@@ -196,9 +200,9 @@ function Show-ADTInstallationWelcome
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specifies the number of minutes that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$DeferRunInterval,
+        [System.TimeSpan]$DeferRunInterval,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.', ParameterSetName = 'CheckDiskSpace')]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
@@ -476,13 +480,13 @@ function Show-ADTInstallationWelcome
                                 $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }; if ($deferDeadlineUniversal) { $deferParams.Add('DeferDeadline', $deferDeadlineUniversal) }
 
                                 # Exit gracefully if DeferRunInterval is set, a last deferral time exists, and the interval has not yet elapsed.
-                                if ($DeferRunInterval -gt 0)
+                                if ($DeferRunInterval)
                                 {
-                                    Write-ADTLogEntry -Message "DeferRunInterval of [$DeferRunInterval] minutes is specified. Checking deferral interval."
+                                    Write-ADTLogEntry -Message "DeferRunInterval of [$DeferRunInterval] is specified. Checking DeferRunIntervalLastTime."
                                     if (-not ([String]::IsNullOrEmpty($deferHistoryRunIntervalLastTime)))
                                     {
                                         $deferRunIntervalLastTime = Get-ADTUniversalDate -DateTime $deferHistoryRunIntervalLastTime
-                                        $deferRunIntervalNextTime = Get-ADTUniversalDate -DateTime ([System.DateTime]::Parse($deferRunIntervalLastTime).AddMinutes($DeferRunInterval).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
+                                        $deferRunIntervalNextTime = Get-ADTUniversalDate -DateTime ([System.DateTime]::Parse($deferRunIntervalLastTime).Add($DeferRunInterval).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
                                         if ([System.DateTime]::Parse($deferRunIntervalNextTime) -gt [System.DateTime]::Parse((Get-ADTUniversalDate)))
                                         {
                                             Write-ADTLogEntry -Message "DeferRunInterval has not elapsed. Exiting gracefully."
