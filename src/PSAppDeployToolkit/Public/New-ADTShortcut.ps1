@@ -174,7 +174,7 @@ function New-ADTShortcut
                     try
                     {
                         Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]."
-                        $null = New-Item -LiteralPath $PathDirectory -ItemType Directory -Force
+                        $null = New-Item -Path $PathDirectory -ItemType Directory -Force
                     }
                     catch
                     {
