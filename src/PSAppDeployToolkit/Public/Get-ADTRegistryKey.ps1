@@ -160,7 +160,7 @@ function Get-ADTRegistryKey
                             }
                             if ($DoNotExpandEnvironmentNames)
                             {
-                                return $_.GetValue($(if ($Name -ne '(Default)') {$Name}), $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                                return $_.GetValue($(if ($Name -ne '(Default)') { $Name }), $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
                             }
                             elseif ($Name -like '(Default)')
                             {
