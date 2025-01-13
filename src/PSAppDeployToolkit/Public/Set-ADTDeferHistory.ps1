@@ -70,7 +70,14 @@ function Set-ADTDeferHistory
 
     try
     {
-        (Get-ADTSession).SetDeferHistory($(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }), $DeferDeadline, $(if ($PSBoundParameters.ContainsKey('DeferRunInterval')) { $DeferRunInterval }), $(if ($PSBoundParameters.ContainsKey('DeferRunInterval')) { (Get-ADTUniversalDate) }))
+        if ($PSBoundParameters.ContainsKey('DeferRunInterval'))
+        {
+            (Get-ADTSession).SetDeferHistory($(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }), $DeferDeadline, $DeferRunInterval, (Get-ADTUniversalDate))
+        }
+        else
+        {
+            (Get-ADTSession).SetDeferHistory($(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }), $DeferDeadline, $null, $null)
+        }
     }
     catch
     {
