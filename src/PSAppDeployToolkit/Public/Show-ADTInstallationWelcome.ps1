@@ -67,8 +67,8 @@ function Show-ADTInstallationWelcome
         This addresses the issue where Intune retries installations shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
 
         Example:
-        - To specify 30 minutes, use: `[System.TimeSpan]::FromMinutes(30)`.
-        - To specify 24 hours, use: `[System.TimeSpan]::FromHours(24)`.
+        - To specify 30 minutes, use: `([System.TimeSpan]::FromMinutes(30))`.
+        - To specify 24 hours, use: `([System.TimeSpan]::FromHours(24))`.
 
     .PARAMETER CheckDiskSpace
         Specify whether to check if there is enough disk space for the installation to proceed.
