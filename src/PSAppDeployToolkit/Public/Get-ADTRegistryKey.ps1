@@ -86,6 +86,7 @@ function Get-ADTRegistryKey
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
@@ -129,7 +130,7 @@ function Get-ADTRegistryKey
                 }
 
                 # Check if the registry key exists before continuing.
-                if (!(Test-Path -LiteralPath $Key))
+                if (!(Test-Path -Path $Key))
                 {
                     Write-ADTLogEntry -Message "Registry key [$Key] does not exist. Return `$null." -Severity 2
                     return
@@ -144,57 +145,51 @@ function Get-ADTRegistryKey
                     Write-ADTLogEntry -Message "Getting registry key [$Key] and all property values."
                 }
 
-                # Get all property values for registry key.
-                $regKeyValue = Get-ItemProperty -LiteralPath $Key
-                $regKeyValuePropertyCount = $regKeyValue | Measure-Object | Select-Object -ExpandProperty Count
+                # Get all property values for registry key and enumerate.
+                Get-Item -Path $Key | & {
+                    process
+                    {
+                        # Select requested property.
+                        if (![System.String]::IsNullOrWhiteSpace($Name))
+                        {
+                            # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
+                            if ($_.Property -notcontains $Name)
+                            {
+                                Write-ADTLogEntry -Message "Registry key value [$($_.PSPath)] [$Name] does not exist. Return `$null."
+                                return
+                            }
+                            if ($DoNotExpandEnvironmentNames)
+                            {
+                                return $_.GetValue($(if ($Name -ne '(Default)') { $Name }), $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                            }
+                            elseif ($Name -like '(Default)')
+                            {
+                                return $_.GetValue($null)
+                            }
+                            else
+                            {
+                                return Get-ItemProperty -LiteralPath $_.PSPath | Select-Object -ExpandProperty $Name
+                            }
+                        }
+                        elseif ($_.Property.Count -eq 0)
+                        {
+                            # Select all properties or return empty key object.
+                            if ($ReturnEmptyKeyIfExists)
+                            {
+                                Write-ADTLogEntry -Message "No property values found for [$($_.PSPath)]. Return empty registry key object."
+                                return $_
+                            }
+                            else
+                            {
+                                Write-ADTLogEntry -Message "No property values found for [$($_.PSPath)]. Return `$null."
+                                return
+                            }
+                        }
 
-                # Select requested property.
-                if ($PSBoundParameters.ContainsKey('Name'))
-                {
-                    # Get the Value (do not make a strongly typed variable because it depends entirely on what kind of value is being read)
-                    if ((Get-Item -LiteralPath $Key | Select-Object -ExpandProperty Property -ErrorAction Ignore) -notcontains $Name)
-                    {
-                        Write-ADTLogEntry -Message "Registry key value [$Key] [$Name] does not exist. Return `$null."
-                        return
-                    }
-                    if ($DoNotExpandEnvironmentNames)
-                    {
-                        # Only useful on 'ExpandString' values.
-                        if ($Name -like '(Default)')
-                        {
-                            return (Get-Item -LiteralPath $Key).GetValue($null, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
-                        }
-                        else
-                        {
-                            return (Get-Item -LiteralPath $Key).GetValue($Name, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
-                        }
-                    }
-                    elseif ($Name -like '(Default)')
-                    {
-                        return (Get-Item -LiteralPath $Key).GetValue($null)
-                    }
-                    else
-                    {
-                        return $regKeyValue | Select-Object -ExpandProperty $Name
+                        # Return the populated registry key to the caller.
+                        return Get-ItemProperty -LiteralPath $_.PSPath
                     }
                 }
-                elseif ($regKeyValuePropertyCount -eq 0)
-                {
-                    # Select all properties or return empty key object.
-                    if ($ReturnEmptyKeyIfExists)
-                    {
-                        Write-ADTLogEntry -Message "No property values found for registry key. Return empty registry key object [$Key]."
-                        return (Get-Item -LiteralPath $Key -Force)
-                    }
-                    else
-                    {
-                        Write-ADTLogEntry -Message "No property values found for registry key. Return `$null."
-                        return
-                    }
-                }
-
-                # Return the populated registry key to the caller.
-                return $regKeyValue
             }
             catch
             {
