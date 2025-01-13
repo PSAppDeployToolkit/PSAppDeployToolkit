@@ -1045,7 +1045,7 @@ namespace PSADT.Module
         /// <param name="deferTimesRemaining">The deferral times remaining.</param>
         /// <param name="deferRunInterval">The interval in minutes before prompting the user again after a deferral.</param>
         /// <param name="deferRunIntervalLastTime">The timestamp of the last deferRunInterval.</param>
-        public void SetDeferHistory(int? deferTimesRemaining, string deferDeadline, int? deferRunInterval = null, string deferRunIntervalLastTime = null)
+        public void SetDeferHistory(int? deferTimesRemaining, string deferDeadline, int? deferRunInterval = null, string? deferRunIntervalLastTime = null)
         {
             // Get the module's session state before proceeding.
             var moduleSessionState = InternalDatabase.GetSessionState();
