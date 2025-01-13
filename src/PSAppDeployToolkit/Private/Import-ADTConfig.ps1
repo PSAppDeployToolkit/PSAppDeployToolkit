@@ -134,19 +134,19 @@ function Import-ADTConfig
     # Change paths to user accessible ones if user isn't an admin.
     if (!$adtEnv.IsAdmin)
     {
-        if ($config.Toolkit.TempPathNoAdminRights)
+        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.TempPathNoAdminRights))
         {
             $config.Toolkit.TempPath = $config.Toolkit.TempPathNoAdminRights
         }
-        if ($config.Toolkit.RegPathNoAdminRights)
+        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.RegPathNoAdminRights))
         {
             $config.Toolkit.RegPath = $config.Toolkit.RegPathNoAdminRights
         }
-        if ($config.Toolkit.LogPathNoAdminRights)
+        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.LogPathNoAdminRights))
         {
             $config.Toolkit.LogPath = $config.Toolkit.LogPathNoAdminRights
         }
-        if ($config.MSI.LogPathNoAdminRights)
+        if (![System.String]::IsNullOrWhiteSpace($config.MSI.LogPathNoAdminRights))
         {
             $config.MSI.LogPath = $config.MSI.LogPathNoAdminRights
         }
