@@ -486,7 +486,7 @@ function Show-ADTInstallationWelcome
                                     if (-not ([String]::IsNullOrEmpty($deferHistoryRunIntervalLastTime)))
                                     {
                                         $deferRunIntervalLastTime = Get-ADTUniversalDate -DateTime $deferHistoryRunIntervalLastTime
-                                        $deferRunIntervalNextTime = Get-ADTUniversalDate -DateTime ([System.DateTime]::Parse($deferRunIntervalLastTime).Add($DeferRunInterval).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
+                                        $deferRunIntervalNextTime = Get-ADTUniversalDate -DateTime ([System.DateTime]::Parse($deferRunIntervalLastTime).ToUniversalTime().Add($DeferRunInterval).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
                                         if ([System.DateTime]::Parse($deferRunIntervalNextTime) -gt [System.DateTime]::Parse((Get-ADTUniversalDate)))
                                         {
                                             Write-ADTLogEntry -Message "DeferRunInterval has not elapsed. Exiting gracefully."
