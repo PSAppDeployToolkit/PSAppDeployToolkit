@@ -40,7 +40,7 @@ function Test-ADTServiceExists
         Checks if the service 'wuauserv' exists.
 
     .EXAMPLE
-        Test-ADTServiceExists -Name 'testservice' -PassThru | Where-Object { $_ } | ForEach-Object { $_.Delete() }
+        Test-ADTServiceExists -Name testservice -UseCIM -PassThru | Invoke-CimMethod -MethodName Delete
 
         Checks if a service exists and then deletes it by using the -PassThru parameter.
 
