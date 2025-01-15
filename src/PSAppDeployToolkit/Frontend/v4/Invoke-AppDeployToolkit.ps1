@@ -276,7 +276,8 @@ try
     Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.4' } -Force
     try
     {
-        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession @PSBoundParameters -PassThru
+        $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
+        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession @iadtParams -PassThru
     }
     catch
     {
