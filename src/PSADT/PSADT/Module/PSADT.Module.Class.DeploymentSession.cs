@@ -1077,8 +1077,8 @@ namespace PSADT.Module
             // Store log string to format with message.
             StringDictionary logFormats = new StringDictionary()
             {
-                { "Legacy", $"[{dateNow.ToString("O").Split('T')[0]} {logTime}] [{scriptSection}] [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}".Replace("{", "{{").Replace("}", "}}") },
-                { "CMTrace", $"<![LOG[[{scriptSection}] :: {{0}}]LOG]!><time=\"{logTime}{LogTimeOffset}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">".Replace("{", "{{").Replace("}", "}}") },
+                { "Legacy", $"[{dateNow.ToString("O").Split('T')[0]} {logTime}] [{scriptSection}] [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
+                { "CMTrace", $"<![LOG[[{scriptSection}] :: {{0}}]LOG]!><time=\"{logTime}{LogTimeOffset}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
             };
 
             // Add this log message to the session's buffer.
