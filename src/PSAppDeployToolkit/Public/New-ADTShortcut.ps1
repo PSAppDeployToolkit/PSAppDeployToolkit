@@ -99,7 +99,7 @@ function New-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$IconIndex,
+        [System.UInt32]$IconIndex,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -195,7 +195,7 @@ function New-ADTShortcut
                 if ([System.IO.Path]::GetExtension($Path) -eq '.url')
                 {
                     [String[]]$URLFile = '[InternetShortcut]', "URL=$TargetPath"
-                    if ($null -ne $IconIndex)
+                    if ($PSBoundParameters.ContainsKey('IconIndex'))
                     {
                         $URLFile += "IconIndex=$IconIndex"
                     }

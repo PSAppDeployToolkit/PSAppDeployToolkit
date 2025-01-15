@@ -94,7 +94,7 @@ function Set-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$IconIndex,
+        [System.UInt32]$IconIndex,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -186,10 +186,10 @@ function Set-ADTShortcut
 
                     # Handle icon, starting with retrieval previous value and split the path from the index.
                     $TempIconLocation, $TempIconIndex = $shortcut.IconLocation.Split(',')
-                    $IconLocation = if ($IconLocation)
+                    $newIconLocation = if ($IconLocation)
                     {
                         # New icon path was specified. Check whether new icon index was also specified.
-                        if ($null -ne $IconIndex)
+                        if ($PSBoundParameters.ContainsKey('IconIndex'))
                         {
                             # Create new icon path from new icon path and new icon index.
                             $IconLocation + ",$IconIndex"
@@ -200,14 +200,14 @@ function Set-ADTShortcut
                             $IconLocation + ",$TempIconIndex"
                         }
                     }
-                    elseif ($null -ne $IconIndex)
+                    elseif ($PSBoundParameters.ContainsKey('IconIndex'))
                     {
                         # New icon index was specified, but not the icon location. Append it to the icon path from the shortcut.
                         $IconLocation = $TempIconLocation + ",$IconIndex"
                     }
-                    if ($IconLocation)
+                    if ($newIconLocation)
                     {
-                        $shortcut.IconLocation = $IconLocation
+                        $shortcut.IconLocation = $newIconLocation
                     }
 
                     # Save the changes.
