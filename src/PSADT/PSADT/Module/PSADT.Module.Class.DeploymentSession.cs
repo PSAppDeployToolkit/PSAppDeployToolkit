@@ -368,33 +368,6 @@ namespace PSADT.Module
                     }
                 }
 
-                // Sanitize the application details, as they can cause issues in the script.
-                string invalidChars = string.Join(null, Path.GetInvalidFileNameChars());
-                if (!string.IsNullOrWhiteSpace(_appVendor))
-                {
-                    _appVendor = Regex.Replace(_appVendor, invalidChars, string.Empty).Trim();
-                }
-                if (!string.IsNullOrWhiteSpace(_appName))
-                {
-                    _appName = Regex.Replace(_appName, invalidChars, string.Empty).Trim();
-                }
-                if (!string.IsNullOrWhiteSpace(_appVersion))
-                {
-                    _appVersion = Regex.Replace(_appVersion, invalidChars, string.Empty).Trim();
-                }
-                if (!string.IsNullOrWhiteSpace(_appArch))
-                {
-                    _appArch = Regex.Replace(_appArch, invalidChars, string.Empty).Trim();
-                }
-                if (!string.IsNullOrWhiteSpace(_appLang))
-                {
-                    _appLang = Regex.Replace(_appLang, invalidChars, string.Empty).Trim();
-                }
-                if (!string.IsNullOrWhiteSpace(_appRevision))
-                {
-                    _appRevision = Regex.Replace(_appRevision, invalidChars, string.Empty).Trim();
-                }
-
                 // If we're left with a blank AppName, throw a terminating error.
                 if (string.IsNullOrWhiteSpace(_appName))
                 {
@@ -418,7 +391,8 @@ namespace PSADT.Module
                 {
                     _installName = $"{_appVendor}_{_appName}_{_appVersion}_{_appArch}_{_appLang}_{_appRevision}";
                 }
-                _installName = Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_");
+                string invalidChars = (string)adtEnv["invalidFileNameCharsRegExPattern"]!;
+                _installName = Regex.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_"), invalidChars, string.Empty);
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $"{configToolkit["RegPath"]}\\{adtEnv["appDeployToolkitName"]}\\DeferHistory";
