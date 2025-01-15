@@ -192,7 +192,7 @@ function New-ADTShortcut
 
                 # Build out the shortcut.
                 Write-ADTLogEntry -Message "Creating shortcut [$FullPath]."
-                if ($Path -match '\.url$')
+                if ([System.IO.Path]::GetExtension($Path) -eq '.url')
                 {
                     [String[]]$URLFile = '[InternetShortcut]', "URL=$TargetPath"
                     if ($null -ne $IconIndex)

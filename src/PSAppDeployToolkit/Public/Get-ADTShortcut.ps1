@@ -102,7 +102,7 @@ function Get-ADTShortcut
             try
             {
                 # Build out remainder of object.
-                if ($Output.Path -match '\.url$')
+                if ([System.IO.Path]::GetExtension($Output.Path) -eq '.url')
                 {
                     [System.IO.File]::ReadAllLines($Output.Path) | & {
                         process
