@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<policyDefinitionResources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" revision="1.0" schemaVersion="1.0" xmlns="http://www.microsoft.com/GroupPolicy/PolicyDefinitions">
+	<displayName>PSAppDeployToolkit</displayName>
+	<description>Configuration settings for PSAppDeployToolkit. Enforced over a deployment's default settings.</description>
+	<resources>
+		<stringTable>
+			<string id="PSAppDeployToolkit_Category">PSAppDeployToolkit</string>
+			<string id="SUPPORTED_Windows_10_0_RS1_Definition">At least Windows Server 2016, Windows 10 Version 1607</string>
+			<string id="Assets_Category">Assets</string>
+			<string id="Logo_Display">Logo</string>
+			<string id="Logo_Explain">Specify filename of the logo.</string>
+			<string id="Banner_Display">Banner</string>
+			<string id="Banner_Explain">Specify filename of the banner (Classic-only).</string>
+			<string id="MSI_Category">MSI</string>
+			<string id="InstallParams_Display">InstallParams</string>
+			<string id="InstallParams_Explain">Installation parameters used for non-silent MSI actions.</string>
+			<string id="LoggingOptions_Display">LoggingOptions</string>
+			<string id="LoggingOptions_Explain">Logging level used for MSI logging.</string>
+			<string id="LogPath_MSI_Display">LogPath</string>
+			<string id="LogPath_MSI_Explain">Log path used for MSI logging.</string>
+			<string id="LogPathNoAdminRights_MSI_Display">LogPathNoAdminRights</string>
+			<string id="LogPathNoAdminRights_MSI_Explain">Log path used for MSI logging when RequireAdmin is False.</string>
+			<string id="MutexWaitTime_Display">MutexWaitTime</string>
+			<string id="MutexWaitTime_Explain">The length of time in seconds to wait for the MSI installer service to become available.</string>
+			<string id="SilentParams_Display">SilentParams</string>
+			<string id="SilentParams_Explain">Installation parameters used for silent MSI actions.</string>
+			<string id="UninstallParams_Display">UninstallParams</string>
+			<string id="UninstallParams_Explain">Installation parameters used for MSI uninstall actions.</string>
+			<string id="Toolkit_Category">Toolkit</string>
+			<string id="CachePath_Display">CachePath</string>
+			<string id="CachePath_Explain">Specify the path for the cache folder.</string>
+			<string id="CompressLogs_Display">CompressLogs</string>
+			<string id="CompressLogs_Explain">Specify if the log files should be bundled together in a compressed zip file.</string>
+			<string id="FileCopyMode_Display">FileCopyMode</string>
+			<string id="FileCopyMode_Explain">Choose from either 'Native' for native PowerShell file copy via Copy-ADTItem, or 'Robocopy' to use robocopy.exe.</string>
+			<string id="LogAppend_Display">LogAppend</string>
+			<string id="LogAppend_Explain">Specify if an existing log file should be appended to.</string>
+			<string id="LogDebugMessage_Display">LogDebugMessage</string>
+			<string id="LogDebugMessage_Explain">Specify if debug messages such as bound parameters passed to a function should be logged.</string>
+			<string id="LogMaxHistory_Display">LogMaxHistory</string>
+			<string id="LogMaxHistory_Explain">Specify maximum number of previous log files to retain.</string>
+			<string id="LogMaxSize_Display">LogMaxSize</string>
+			<string id="LogMaxSize_Explain">Specify maximum file size limit for log file in megabytes (MB).</string>
+			<string id="LogPath_Display">LogPath</string>
+			<string id="LogPath_Explain">Log path used for Toolkit logging.</string>
+			<string id="LogPathNoAdminRights_Display">LogPathNoAdminRights</string>
+			<string id="LogPathNoAdminRights_Explain">Same as LogPath but used when RequireAdmin is False.</string>
+			<string id="LogToSubfolder_Display">LogToSubfolder</string>
+			<string id="LogToSubfolder_Explain">Specifies that a subfolder based on InstallName should be used for all log capturing.</string>
+			<string id="LogStyle_Display">LogStyle</string>
+			<string id="LogStyle_Explain">Specify if log file should be a CMTrace compatible log file or a Legacy text log file.</string>
+			<string id="LogWriteToHost_Display">LogWriteToHost</string>
+			<string id="LogWriteToHost_Explain">Specify if log messages should be written to the console.</string>
+			<string id="LogHostOutputToStdStreams_Display">LogHostOutputToStdStreams</string>
+			<string id="LogHostOutputToStdStreams_Explain">Specify if console log messages should bypass PowerShell's subsystems and be sent direct to stdout/stderr.
+
+This only applies if "LogWriteToHost" is true, and the script is being ran in a ConsoleHost (not the ISE, or another host).</string>
+			<string id="OobeDetection_Display">OobeDetection</string>
+			<string id="OobeDetection_Explain">Automatically changes DeployMode to Silent during the OOBE.</string>
+			<string id="RegPath_Display">RegPath</string>
+			<string id="RegPath_Explain">Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.</string>
+			<string id="RegPathNoAdminRights_Display">RegPathNoAdminRights</string>
+			<string id="RegPathNoAdminRights_Explain">Same as RegPath but used when RequireAdmin is False. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.</string>
+			<string id="RequireAdmin_Display">RequireAdmin</string>
+			<string id="RequireAdmin_Explain">Specify if Administrator Rights are required. Note: Some functions won't work if this is set to false, such as deferral, block execution, file &amp; registry RW access and potentially logging.</string>
+			<string id="SessionDetection_Display">SessionDetection</string>
+			<string id="SessionDetection_Explain">Automatically changes DeployMode for session zero (SYSTEM) operations.</string>
+			<string id="TempPath_Display">TempPath</string>
+			<string id="TempPath_Explain">Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability.</string>
+			<string id="TempPathNoAdminRights_Display">TempPathNoAdminRights</string>
+			<string id="TempPathNoAdminRights_Explain">Same as TempPath but used when RequireAdmin is False.</string>
+			<string id="UI_Category">UI</string>
+			<string id="BalloonNotifications_Display">BalloonNotifications</string>
+			<string id="BalloonNotifications_Explain">Used to turn automatic balloon notifications on or off.</string>
+			<string id="BalloonTitle_Display">BalloonTitle</string>
+			<string id="BalloonTitle_Explain">The name to show by default for all balloon notifications.</string>
+			<string id="DialogStyle_Display">DialogStyle</string>
+			<string id="DialogStyle_Explain">Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.</string>
+			<string id="DefaultExitCode_Display">DefaultExitCode</string>
+			<string id="DefaultExitCode_Explain">Exit code used when a UI prompt times out.</string>
+			<string id="DefaultPromptPersistInterval_Display">DefaultPromptPersistInterval</string>
+			<string id="DefaultPromptPersistInterval_Explain">Time in seconds after which the prompt should be repositioned centre screen when the -PersistPrompt parameter is used.</string>
+			<string id="DefaultTimeout_Display">DefaultTimeout</string>
+			<string id="DefaultTimeout_Explain">Time in seconds to automatically timeout installation dialogs.</string>
+			<string id="DeferExitCode_Display">DeferExitCode</string>
+			<string id="DeferExitCode_Explain">Exit code used when a user opts to defer.</string>
+			<string id="DynamicProcessEvaluation_Display">DynamicProcessEvaluation</string>
+			<string id="DynamicProcessEvaluation_Explain">Specify whether to re-enumerate running processes dynamically while displaying Show-ADTInstallationWelcome.
+
+If the CloseProcesses items were not running when the prompt was displayed, and are subsequently detected to be running, the prompt will be updated with the apps to close.
+
+If the CloseProcesses items were running when the prompt was displayed and are subsequently detected not to be running then the installation will automatically continue if deferral is not available.
+
+If the running applications change (new CloseProcesses launched or running processes closed), the list box will dynamically update to reflect the currently running applications.</string>
+			<string id="DynamicProcessEvaluationInterval_Display">DynamicProcessEvaluationInterval</string>
+			<string id="DynamicProcessEvaluationInterval_Explain">Time in seconds after which to re-enumerate running processes while displaying the Show-ADTInstallationWelcome prompt.</string>
+			<string id="LanguageOverride_Display">LanguageOverride</string>
+			<string id="LanguageOverride_Explain">Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.</string>
+			<string id="PromptToSaveTimeout_Display">PromptToSaveTimeout</string>
+			<string id="PromptToSaveTimeout_Explain">Time in seconds after which to re-prompt the user to close applications in case they ignore the prompt or they cancel the application's save prompt.</string>
+			<string id="RestartPromptPersistInterval_Display">RestartPromptPersistInterval</string>
+			<string id="RestartPromptPersistInterval_Explain">Time in seconds after which the restart prompt should be re-displayed/repositioned when the -NoCountdown parameter is specified.</string>
+			<string id="FileCopyModeNative">Native</string>
+			<string id="FileCopyModeRobocopy">Robocopy</string>
+			<string id="LogStyleCMTrace">CMTrace</string>
+			<string id="LogStyleLegacy">Legacy</string>
+			<string id="DialogStyleFluent">Fluent</string>
+			<string id="DialogStyleClassic">Classic</string>
+			<string id="LanguageOverrideArabic">Arabic</string>
+			<string id="LanguageOverrideCzech">Czech</string>
+			<string id="LanguageOverrideDanish">Danish</string>
+			<string id="LanguageOverrideGerman">German</string>
+			<string id="LanguageOverrideEnglish">English</string>
+			<string id="LanguageOverrideGreek">Greek</string>
+			<string id="LanguageOverrideSpanish">Spanish</string>
+			<string id="LanguageOverrideFinnish">Finnish</string>
+			<string id="LanguageOverrideFrench">French</string>
+			<string id="LanguageOverrideHebrew">Hebrew</string>
+			<string id="LanguageOverrideHungarian">Hungarian</string>
+			<string id="LanguageOverrideItalian">Italian</string>
+			<string id="LanguageOverrideJapanese">Japanese</string>
+			<string id="LanguageOverrideKorean">Korean</string>
+			<string id="LanguageOverrideDutch">Dutch</string>
+			<string id="LanguageOverrideNorwegian">Norwegian (Bokmål)</string>
+			<string id="LanguageOverridePolish">Polish</string>
+			<string id="LanguageOverridePortuguesePortugal">Portuguese (Portugal)</string>
+			<string id="LanguageOverridePortugueseBrazil">Portuguese (Brazil)</string>
+			<string id="LanguageOverrideRussian">Russian</string>
+			<string id="LanguageOverrideSlovak">Slovak</string>
+			<string id="LanguageOverrideSwedish">Swedish</string>
+			<string id="LanguageOverrideTurkish">Turkish</string>
+			<string id="LanguageOverrideChineseSimplified">Chinese (Simplified)</string>
+			<string id="LanguageOverrideChineseTraditional">Chinese (Traditional)</string>
+		</stringTable>
+		<presentationTable>
+			<presentation id="Logo">
+				<textBox refId="Logo">
+					<label>Logo</label>
+				</textBox>
+			</presentation>
+			<presentation id="Banner">
+				<textBox refId="Banner">
+					<label>Banner</label>
+				</textBox>
+			</presentation>
+			<presentation id="InstallParams">
+				<textBox refId="InstallParams">
+					<label>InstallParams</label>
+				</textBox>
+			</presentation>
+			<presentation id="LoggingOptions">
+				<textBox refId="LoggingOptions">
+					<label>LoggingOptions</label>
+				</textBox>
+			</presentation>
+			<presentation id="LogPath_MSI">
+				<textBox refId="LogPath">
+					<label>LogPath</label>
+				</textBox>
+			</presentation>
+			<presentation id="LogPathNoAdminRights_MSI">
+				<textBox refId="LogPathNoAdminRights">
+					<label>LogPathNoAdminRights</label>
+				</textBox>
+			</presentation>
+			<presentation id="MutexWaitTime">
+				<decimalTextBox refId="MutexWaitTime">MutexWaitTime</decimalTextBox>
+			</presentation>
+			<presentation id="SilentParams">
+				<textBox refId="SilentParams">
+					<label>SilentParams</label>
+				</textBox>
+			</presentation>
+			<presentation id="UninstallParams">
+				<textBox refId="UninstallParams">
+					<label>UninstallParams</label>
+				</textBox>
+			</presentation>
+			<presentation id="CachePath">
+				<textBox refId="CachePath">
+					<label>CachePath</label>
+				</textBox>
+			</presentation>
+			<presentation id="FileCopyMode">
+				<dropdownList refId="FileCopyMode" noSort="true" defaultItem="0">FileCopyMode</dropdownList>
+			</presentation>
+			<presentation id="LogMaxHistory">
+				<decimalTextBox refId="LogMaxHistory">LogMaxHistory</decimalTextBox>
+			</presentation>
+			<presentation id="LogMaxSize">
+				<decimalTextBox refId="LogMaxSize">LogMaxSize</decimalTextBox>
+			</presentation>
+			<presentation id="LogPath">
+				<textBox refId="LogPath">
+					<label>LogPath</label>
+				</textBox>
+			</presentation>
+			<presentation id="LogPathNoAdminRights">
+				<textBox refId="LogPathNoAdminRights">
+					<label>LogPathNoAdminRights</label>
+				</textBox>
+			</presentation>
+			<presentation id="LogStyle">
+				<dropdownList refId="LogStyle" noSort="true" defaultItem="0">LogStyle</dropdownList>
+			</presentation>
+			<presentation id="RegPath">
+				<textBox refId="RegPath">
+					<label>RegPath</label>
+				</textBox>
+			</presentation>
+			<presentation id="RegPathNoAdminRights">
+				<textBox refId="RegPathNoAdminRights">
+					<label>RegPathNoAdminRights</label>
+				</textBox>
+			</presentation>
+			<presentation id="TempPath">
+				<textBox refId="TempPath">
+					<label>TempPath</label>
+				</textBox>
+			</presentation>
+			<presentation id="TempPathNoAdminRights">
+				<textBox refId="TempPathNoAdminRights">
+					<label>TempPathNoAdminRights</label>
+				</textBox>
+			</presentation>
+			<presentation id="BalloonTitle">
+				<textBox refId="BalloonTitle">
+					<label>BalloonTitle</label>
+				</textBox>
+			</presentation>
+			<presentation id="DefaultExitCode">
+				<decimalTextBox refId="DefaultExitCode">DefaultExitCode</decimalTextBox>
+			</presentation>
+			<presentation id="DefaultPromptPersistInterval">
+				<decimalTextBox refId="DefaultPromptPersistInterval">DefaultPromptPersistInterval</decimalTextBox>
+			</presentation>
+			<presentation id="DefaultTimeout">
+				<decimalTextBox refId="DefaultTimeout">DefaultTimeout</decimalTextBox>
+			</presentation>
+			<presentation id="DeferExitCode">
+				<decimalTextBox refId="DeferExitCode">DeferExitCode</decimalTextBox>
+			</presentation>
+			<presentation id="DialogStyle">
+				<dropdownList refId="DialogStyle" noSort="true" defaultItem="0">DialogStyle</dropdownList>
+			</presentation>
+			<presentation id="DynamicProcessEvaluation">
+				<textBox refId="DynamicProcessEvaluation">
+					<label>DynamicProcessEvaluation</label>
+				</textBox>
+			</presentation>
+			<presentation id="DynamicProcessEvaluationInterval">
+				<decimalTextBox refId="DynamicProcessEvaluationInterval">DynamicProcessEvaluationInterval</decimalTextBox>
+			</presentation>
+			<presentation id="LanguageOverride">
+				<dropdownList refId="LanguageOverride" noSort="false">LanguageOverride</dropdownList>
+			</presentation>
+			<presentation id="PromptToSaveTimeout">
+				<decimalTextBox refId="PromptToSaveTimeout">PromptToSaveTimeout</decimalTextBox>
+			</presentation>
+			<presentation id="RestartPromptPersistInterval">
+				<decimalTextBox refId="RestartPromptPersistInterval">RestartPromptPersistInterval</decimalTextBox>
+			</presentation>
+		</presentationTable>
+	</resources>
+</policyDefinitionResources>

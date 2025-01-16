@@ -1,0 +1,505 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<policyDefinitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" revision="1.0" schemaVersion="1.0" xmlns="http://www.microsoft.com/GroupPolicy/PolicyDefinitions">
+	<policyNamespaces>
+		<target prefix="PSAppDeployToolkit" namespace="PSAppDeployToolkit" />
+	</policyNamespaces>
+	<resources minRequiredRevision="1.0" />
+	<supportedOn>
+		<definitions>
+			<definition name="SUPPORTED_Windows_10_0_RS1" displayName="$(string.SUPPORTED_Windows_10_0_RS1_Definition)" />
+		</definitions>
+	</supportedOn>
+	<categories>
+		<category name="PSAppDeployToolkit" displayName="$(string.PSAppDeployToolkit_Category)" />
+		<category name="Assets" displayName="$(string.Assets_Category)">
+			<parentCategory ref="PSAppDeployToolkit" />
+		</category>
+		<category name="MSI" displayName="$(string.MSI_Category)">
+			<parentCategory ref="PSAppDeployToolkit" />
+		</category>
+		<category name="Toolkit" displayName="$(string.Toolkit_Category)">
+			<parentCategory ref="PSAppDeployToolkit" />
+		</category>
+		<category name="UI" displayName="$(string.UI_Category)">
+			<parentCategory ref="PSAppDeployToolkit" />
+		</category>
+	</categories>
+	<policies>
+		<policy name="Logo" class="Machine" displayName="$(string.Logo_Display)" explainText="$(string.Logo_Explain)" presentation="$(presentation.Logo)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets">
+			<parentCategory ref="Assets" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="Logo" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets" valueName="Logo" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="Banner" class="Machine" displayName="$(string.Banner_Display)" explainText="$(string.Banner_Explain)" presentation="$(presentation.Banner)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets">
+			<parentCategory ref="Assets" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="Banner" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Assets" valueName="Banner" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="InstallParams" class="Machine" displayName="$(string.InstallParams_Display)" explainText="$(string.InstallParams_Explain)" presentation="$(presentation.InstallParams)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
+			<parentCategory ref="MSI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="InstallParams" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="InstallParams" required="true" />
+			</elements>
+		</policy>
+		<policy name="LoggingOptions" class="Machine" displayName="$(string.LoggingOptions_Display)" explainText="$(string.LoggingOptions_Explain)" presentation="$(presentation.LoggingOptions)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
+			<parentCategory ref="MSI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="LoggingOptions" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="LoggingOptions" required="true" />
+			</elements>
+		</policy>
+		<policy name="LogPath_MSI" class="Machine" displayName="$(string.LogPath_MSI_Display)" explainText="$(string.LogPath_MSI_Explain)" presentation="$(presentation.LogPath_MSI)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
+			<parentCategory ref="MSI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="LogPath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="LogPath" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="LogPathNoAdminRights_MSI" class="Machine" displayName="$(string.LogPathNoAdminRights_MSI_Display)" explainText="$(string.LogPathNoAdminRights_MSI_Explain)" presentation="$(presentation.LogPathNoAdminRights_MSI)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
+			<parentCategory ref="MSI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="LogPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="LogPathNoAdminRights" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="MutexWaitTime" class="Machine" displayName="$(string.MutexWaitTime_Display)" explainText="$(string.MutexWaitTime_Explain)" presentation="$(presentation.MutexWaitTime)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
+			<parentCategory ref="MSI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="MutexWaitTime" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="MutexWaitTime" required="true" />
+			</elements>
+		</policy>
+		<policy name="SilentParams" class="Machine" displayName="$(string.SilentParams_Display)" explainText="$(string.SilentParams_Explain)" presentation="$(presentation.SilentParams)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
+			<parentCategory ref="MSI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="SilentParams" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="SilentParams" required="true" />
+			</elements>
+		</policy>
+		<policy name="UninstallParams" class="Machine" displayName="$(string.UninstallParams_Display)" explainText="$(string.UninstallParams_Explain)" presentation="$(presentation.UninstallParams)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI">
+			<parentCategory ref="MSI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="UninstallParams" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\MSI" valueName="UninstallParams" required="true" />
+			</elements>
+		</policy>
+		<policy name="CachePath" class="Machine" displayName="$(string.CachePath_Display)" explainText="$(string.CachePath_Explain)" presentation="$(presentation.CachePath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="CachePath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="CachePath" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="CompressLogs" class="Machine" displayName="$(string.CompressLogs_Display)" explainText="$(string.CompressLogs_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="CompressLogs">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="FileCopyMode" class="Machine" displayName="$(string.FileCopyMode_Display)" explainText="$(string.FileCopyMode_Explain)" presentation="$(presentation.FileCopyMode)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<enum id="FileCopyMode" valueName="FileCopyMode" required="true">
+					<item displayName="$(string.FileCopyModeNative)">
+						<value>
+							<string>Native</string>
+						</value>
+					</item>
+					<item displayName="$(string.FileCopyModeRobocopy)">
+						<value>
+							<string>Robocopy</string>
+						</value>
+					</item>
+				</enum>
+			</elements>
+		</policy>
+		<policy name="LogAppend" class="Machine" displayName="$(string.LogAppend_Display)" explainText="$(string.LogAppend_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogAppend">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="LogDebugMessage" class="Machine" displayName="$(string.LogDebugMessage_Display)" explainText="$(string.LogDebugMessage_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogDebugMessage">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="LogMaxHistory" class="Machine" displayName="$(string.LogMaxHistory_Display)" explainText="$(string.LogMaxHistory_Explain)" presentation="$(presentation.LogMaxHistory)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="LogMaxHistory" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogMaxHistory" required="true" />
+			</elements>
+		</policy>
+		<policy name="LogMaxSize" class="Machine" displayName="$(string.LogMaxSize_Display)" explainText="$(string.LogMaxSize_Explain)" presentation="$(presentation.LogMaxSize)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="LogMaxSize" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogMaxSize" required="true" />
+			</elements>
+		</policy>
+		<policy name="LogPath" class="Machine" displayName="$(string.LogPath_Display)" explainText="$(string.LogPath_Explain)" presentation="$(presentation.LogPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="LogPath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogPath" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="LogPathNoAdminRights" class="Machine" displayName="$(string.LogPathNoAdminRights_Display)" explainText="$(string.LogPathNoAdminRights_Explain)" presentation="$(presentation.LogPathNoAdminRights)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="LogPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogPathNoAdminRights" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="LogToSubfolder" class="Machine" displayName="$(string.LogToSubfolder_Display)" explainText="$(string.LogToSubfolder_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogToSubfolder">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="LogStyle" class="Machine" displayName="$(string.LogStyle_Display)" explainText="$(string.LogStyle_Explain)" presentation="$(presentation.LogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<enum id="LogStyle" valueName="LogStyle" required="true">
+					<item displayName="$(string.LogStyleCMTrace)">
+						<value>
+							<string>CMTrace</string>
+						</value>
+					</item>
+					<item displayName="$(string.LogStyleLegacy)">
+						<value>
+							<string>Legacy</string>
+						</value>
+					</item>
+				</enum>
+			</elements>
+		</policy>
+		<policy name="LogWriteToHost" class="Machine" displayName="$(string.LogWriteToHost_Display)" explainText="$(string.LogWriteToHost_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogWriteToHost">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="LogHostOutputToStdStreams" class="Machine" displayName="$(string.LogHostOutputToStdStreams_Display)" explainText="$(string.LogHostOutputToStdStreams_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogHostOutputToStdStreams">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="OobeDetection" class="Machine" displayName="$(string.OobeDetection_Display)" explainText="$(string.OobeDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="OobeDetection">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="RegPath" class="Machine" displayName="$(string.RegPath_Display)" explainText="$(string.RegPath_Explain)" presentation="$(presentation.RegPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="RegPath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="RegPath" required="true" />
+			</elements>
+		</policy>
+		<policy name="RegPathNoAdminRights" class="Machine" displayName="$(string.RegPathNoAdminRights_Display)" explainText="$(string.RegPathNoAdminRights_Explain)" presentation="$(presentation.RegPathNoAdminRights)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="RegPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="RegPathNoAdminRights" required="true" />
+			</elements>
+		</policy>
+		<policy name="RequireAdmin" class="Machine" displayName="$(string.RequireAdmin_Display)" explainText="$(string.RequireAdmin_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="RequireAdmin">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="SessionDetection" class="Machine" displayName="$(string.SessionDetection_Display)" explainText="$(string.SessionDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="SessionDetection">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="TempPath" class="Machine" displayName="$(string.TempPath_Display)" explainText="$(string.TempPath_Explain)" presentation="$(presentation.TempPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="TempPath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="TempPath" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="TempPathNoAdminRights" class="Machine" displayName="$(string.TempPathNoAdminRights_Display)" explainText="$(string.TempPathNoAdminRights_Explain)" presentation="$(presentation.TempPathNoAdminRights)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="TempPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="TempPathNoAdminRights" required="true" expandable="true" />
+			</elements>
+		</policy>
+		<policy name="BalloonNotifications" class="Machine" displayName="$(string.BalloonNotifications_Display)" explainText="$(string.BalloonNotifications_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="BalloonNotifications">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
+		</policy>
+		<policy name="BalloonTitle" class="Machine" displayName="$(string.BalloonTitle_Display)" explainText="$(string.BalloonTitle_Explain)" presentation="$(presentation.BalloonTitle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="BalloonTitle" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="BalloonTitle" required="true" />
+			</elements>
+		</policy>
+		<policy name="DialogStyle" class="Machine" displayName="$(string.DialogStyle_Display)" explainText="$(string.DialogStyle_Explain)" presentation="$(presentation.DialogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<enum id="DialogStyle" valueName="DialogStyle" required="true">
+					<item displayName="$(string.DialogStyleFluent)">
+						<value>
+							<string>Fluent</string>
+						</value>
+					</item>
+					<item displayName="$(string.DialogStyleClassic)">
+						<value>
+							<string>Classic</string>
+						</value>
+					</item>
+				</enum>
+			</elements>
+		</policy>
+		<policy name="DefaultExitCode" class="Machine" displayName="$(string.DefaultExitCode_Display)" explainText="$(string.DefaultExitCode_Explain)" presentation="$(presentation.DefaultExitCode)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="DefaultExitCode" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DefaultExitCode" required="true" />
+			</elements>
+		</policy>
+		<policy name="DefaultPromptPersistInterval" class="Machine" displayName="$(string.DefaultPromptPersistInterval_Display)" explainText="$(string.DefaultPromptPersistInterval_Explain)" presentation="$(presentation.DefaultPromptPersistInterval)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="DefaultPromptPersistInterval" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DefaultPromptPersistInterval" required="true" />
+			</elements>
+		</policy>
+		<policy name="DefaultTimeout" class="Machine" displayName="$(string.DefaultTimeout_Display)" explainText="$(string.DefaultTimeout_Explain)" presentation="$(presentation.DefaultTimeout)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="DefaultTimeout" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DefaultTimeout" required="true" />
+			</elements>
+		</policy>
+		<policy name="DeferExitCode" class="Machine" displayName="$(string.DeferExitCode_Display)" explainText="$(string.DeferExitCode_Explain)" presentation="$(presentation.DeferExitCode)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="DeferExitCode" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DeferExitCode" required="true" />
+			</elements>
+		</policy>
+		<policy name="DynamicProcessEvaluation" class="Machine" displayName="$(string.DynamicProcessEvaluation_Display)" explainText="$(string.DynamicProcessEvaluation_Explain)" presentation="$(presentation.DynamicProcessEvaluation)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="DynamicProcessEvaluation" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DynamicProcessEvaluation" required="true" />
+			</elements>
+		</policy>
+		<policy name="DynamicProcessEvaluationInterval" class="Machine" displayName="$(string.DynamicProcessEvaluationInterval_Display)" explainText="$(string.DynamicProcessEvaluationInterval_Explain)" presentation="$(presentation.DynamicProcessEvaluationInterval)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="DynamicProcessEvaluationInterval" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DynamicProcessEvaluationInterval" required="true" />
+			</elements>
+		</policy>
+		<policy name="LanguageOverride" class="Machine" displayName="$(string.LanguageOverride_Display)" explainText="$(string.LanguageOverride_Explain)" presentation="$(presentation.LanguageOverride)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<enum id="LanguageOverride" valueName="LanguageOverride" required="true">
+					<item displayName="$(string.LanguageOverrideArabic)">
+						<value>
+							<string>AR</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideCzech)">
+						<value>
+							<string>CZ</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideDanish)">
+						<value>
+							<string>DA</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideGerman)">
+						<value>
+							<string>DE</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideEnglish)">
+						<value>
+							<string>EN</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideGreek)">
+						<value>
+							<string>EL</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideSpanish)">
+						<value>
+							<string>ES</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideFinnish)">
+						<value>
+							<string>FI</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideFrench)">
+						<value>
+							<string>FR</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideHebrew)">
+						<value>
+							<string>HE</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideHungarian)">
+						<value>
+							<string>HU</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideItalian)">
+						<value>
+							<string>IT</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideJapanese)">
+						<value>
+							<string>JA</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideKorean)">
+						<value>
+							<string>KO</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideDutch)">
+						<value>
+							<string>NL</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideNorwegian)">
+						<value>
+							<string>NB</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverridePolish)">
+						<value>
+							<string>PL</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverridePortuguesePortugal)">
+						<value>
+							<string>PT</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverridePortugueseBrazil)">
+						<value>
+							<string>PT-BR</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideRussian)">
+						<value>
+							<string>RU</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideSlovak)">
+						<value>
+							<string>SK</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideSwedish)">
+						<value>
+							<string>SV</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideTurkish)">
+						<value>
+							<string>TR</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideChineseSimplified)">
+						<value>
+							<string>ZH-Hans</string>
+						</value>
+					</item>
+					<item displayName="$(string.LanguageOverrideChineseTraditional)">
+						<value>
+							<string>ZH-Hant</string>
+						</value>
+					</item>
+				</enum>
+			</elements>
+		</policy>
+		<policy name="PromptToSaveTimeout" class="Machine" displayName="$(string.PromptToSaveTimeout_Display)" explainText="$(string.PromptToSaveTimeout_Explain)" presentation="$(presentation.PromptToSaveTimeout)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="PromptToSaveTimeout" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="PromptToSaveTimeout" required="true" />
+			</elements>
+		</policy>
+		<policy name="RestartPromptPersistInterval" class="Machine" displayName="$(string.RestartPromptPersistInterval_Display)" explainText="$(string.RestartPromptPersistInterval_Explain)" presentation="$(presentation.RestartPromptPersistInterval)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<decimal id="RestartPromptPersistInterval" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="RestartPromptPersistInterval" required="true" />
+			</elements>
+		</policy>
+	</policies>
+</policyDefinitions>
