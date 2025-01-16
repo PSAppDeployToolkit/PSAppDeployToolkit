@@ -42,7 +42,7 @@ try
                 ModuleImport = $null
                 ModuleInit = $null
             }
-            Sessions = $(if (!$MinimumStartup) { [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new() })
+            Sessions = $null
             SessionState = $ExecutionContext.SessionState
             TerminalServerMode = $false
             Environment = $null
@@ -52,6 +52,16 @@ try
             LastExitCode = 0
             Initialized = $false
         })
+
+    # Create empty list for sessions.
+    if (!$MinimumStartup)
+    {
+        $ADT.Sessions = [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new()
+    }
+    else
+    {
+        $ADT.Sessions = @()
+    }
 
     # Define object for holding all dialog window variables.
     New-Variable -Name Dialogs -Option Constant -Value ([ordered]@{
