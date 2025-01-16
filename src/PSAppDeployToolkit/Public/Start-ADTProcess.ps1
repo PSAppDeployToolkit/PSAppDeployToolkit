@@ -480,7 +480,7 @@ function Start-ADTProcess
                     $errorMessage = $null
 
                     # Check to see whether we should ignore exit codes.
-                    if ($IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($returnCode)))
+                    if (($ignoreExitCode = $IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($returnCode))))
                     {
                         Write-ADTLogEntry -Message "Execution completed and the exit code [$returnCode] is being ignored."
                     }
@@ -537,7 +537,7 @@ function Start-ADTProcess
                     }
 
                     # Update the session's last exit code with the value if externally called.
-                    if ($adtSession -and $extInvoker)
+                    if ($adtSession -and $extInvoker -and !$ignoreExitCode)
                     {
                         $adtSession.SetExitCode($returnCode)
                     }
