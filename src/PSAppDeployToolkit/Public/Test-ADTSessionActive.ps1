@@ -40,5 +40,5 @@ function Test-ADTSessionActive
         https://psappdeploytoolkit.com
     #>
 
-    return !!$Script:ADT.Sessions.Count
+    return !!($Script:ADT.Sessions | Measure-Object).Count
 }

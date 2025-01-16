@@ -11,7 +11,14 @@ try
     Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
     Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
     New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
-    Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
+    if (!$MinimumStartup)
+    {
+        Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
+    }
+    else
+    {
+        Export-ModuleMember -Function New-ADTTemplate
+    }
 
     # Define object for holding all PSADT variables.
     New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
@@ -23,9 +30,9 @@ try
             }
             Directories = [pscustomobject]@{
                 Defaults = ([ordered]@{
-                        Script = "$PSScriptRoot"
-                        Config = "$PSScriptRoot\Config"
-                        Strings = "$PSScriptRoot\Strings"
+                        Script = $PSScriptRoot
+                        Config = [System.IO.Path]::Combine($PSScriptRoot, 'Config')
+                        Strings = [System.IO.Path]::Combine($PSScriptRoot, 'Strings')
                     }).AsReadOnly()
                 Script = $null
                 Config = $null
@@ -35,7 +42,7 @@ try
                 ModuleImport = $null
                 ModuleInit = $null
             }
-            Sessions = [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new()
+            Sessions = $(if (!$MinimumStartup) { [System.Collections.Generic.List[PSADT.Module.DeploymentSession]]::new() })
             SessionState = $ExecutionContext.SessionState
             TerminalServerMode = $false
             Environment = $null
@@ -84,7 +91,7 @@ try
                     Logo = $null
                     Banner = $null
                 }
-                Font = [System.Drawing.SystemFonts]::MessageBoxFont
+                Font = $(if (!$MinimumStartup) { [System.Drawing.SystemFonts]::MessageBoxFont })
                 BannerHeight = 0
                 Width = 450
             }
@@ -130,7 +137,10 @@ try
         }).AsReadOnly()
 
     # Send the module's database into the C# code for internal access.
-    [PSADT.Module.InternalDatabase]::Init($ADT)
+    if (!$MinimumStartup)
+    {
+        [PSADT.Module.InternalDatabase]::Init($ADT)
+    }
 }
 catch
 {

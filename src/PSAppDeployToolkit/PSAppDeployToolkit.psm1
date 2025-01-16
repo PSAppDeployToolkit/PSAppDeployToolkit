@@ -5,14 +5,14 @@
 #-----------------------------------------------------------------------------
 
 # Dot-source our initial imports.
-. "$PSScriptRoot\ImportsFirst.ps1"
+. ([System.IO.Path]::Combine($PSScriptRoot, 'ImportsFirst.ps1'))
 
 # Dot-source our imports.
 if (!$Module.Compiled)
 {
     try
     {
-        New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles("$PSScriptRoot\Private"); [System.IO.Directory]::GetFiles("$PSScriptRoot\Public")))
+        New-Variable -Name ModuleFiles -Option Constant -Value ([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles([System.IO.Path]::Combine($PSScriptRoot, 'Private')); [System.IO.Directory]::GetFiles([System.IO.Path]::Combine($PSScriptRoot, 'Public'))))
         New-Variable -Name FunctionPaths -Option Constant -Value ($ModuleFiles | & { process { return "Microsoft.PowerShell.Core\Function::$($_.BaseName)" } })
         Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
         $ModuleFiles.FullName | . { process { . $_ } }
@@ -24,4 +24,4 @@ if (!$Module.Compiled)
 }
 
 # Dot-source our final imports.
-. "$PSScriptRoot\ImportsLast.ps1"
+. ([System.IO.Path]::Combine($PSScriptRoot, 'ImportsLast.ps1'))
