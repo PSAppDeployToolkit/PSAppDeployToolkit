@@ -363,7 +363,7 @@ function Show-ADTWelcomePromptClassic
     $flowLayoutPanel.WrapContents = $true
     $flowLayoutPanel.Controls.Add($labelWelcomeMessage)
     $flowLayoutPanel.Controls.Add($labelAppName)
-    if ($CustomText -and $adtStrings.WelcomePrompt.CustomMessage)
+    if ($CustomText -and $adtStrings.WelcomePrompt.Classic.CustomMessage)
     {
         # Label CustomMessage.
         $labelCustomMessage = [System.Windows.Forms.Label]::new()
@@ -373,7 +373,7 @@ function Show-ADTWelcomePromptClassic
         $labelCustomMessage.Anchor = [System.Windows.Forms.AnchorStyles]::Top
         $labelCustomMessage.Font = $Script:Dialogs.Classic.Font
         $labelCustomMessage.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-        $labelCustomMessage.Text = $adtStrings.WelcomePrompt.CustomMessage
+        $labelCustomMessage.Text = $adtStrings.WelcomePrompt.Classic.CustomMessage
         $labelCustomMessage.Name = 'LabelCustomMessage'
         $labelCustomMessage.TabStop = $false
         $labelCustomMessage.AutoSize = $true
@@ -461,7 +461,7 @@ function Show-ADTWelcomePromptClassic
         $labelCountdownMessage.AutoSize = $true
         $labelCountdownMessage.Text = if ($ForceCountdown -or !$WelcomeState.RunningProcessDescriptions)
         {
-            [System.String]::Format($adtStrings.WelcomePrompt.CountdownMessage, $adtStrings.DeploymentType.$DeploymentType)
+            [System.String]::Format($adtStrings.WelcomePrompt.Classic.CountdownMessage, $adtStrings.DeploymentType.$DeploymentType)
         }
         else
         {
