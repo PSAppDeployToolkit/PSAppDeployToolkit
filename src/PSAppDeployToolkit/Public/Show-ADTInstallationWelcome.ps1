@@ -158,7 +158,7 @@ function Show-ADTInstallationWelcome
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [ValidateNotNullOrEmpty()]
-        [System.Double]$CloseProcessesCountdown,
+        [System.UInt32]$CloseProcessesCountdown,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
@@ -432,11 +432,9 @@ function Show-ADTInstallationWelcome
 
                         # Define parameters for welcome prompt.
                         $promptParams = @{
-                            WelcomeState = $welcomeState
                             Title = $PSBoundParameters.Title
                             Subtitle = $PSBoundParameters.Subtitle
                             DeploymentType = $PSBoundParameters.DeploymentType
-                            CloseProcessesCountdown = $welcomeState.CloseProcessesCountdown
                             ForceCloseProcessesCountdown = !!$ForceCloseProcessesCountdown
                             ForceCountdown = !!$ForceCountdown
                             PersistPrompt = $PersistPrompt
