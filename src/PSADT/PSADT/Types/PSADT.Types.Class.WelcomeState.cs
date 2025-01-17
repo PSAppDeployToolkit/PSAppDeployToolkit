@@ -1,6 +1,4 @@
-using System;
-
-namespace PSADT.Types
+﻿namespace PSADT.Types
 {
     /// <summary>
     /// Represents all data needed by a Show-ADTInstallationWelcome invocation.
@@ -20,7 +18,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets/sets the InstallationWelcome's CloseProcesses countdown.
         /// </summary>
-        public double CloseProcessesCountdown { get; set; }
+        public System.Diagnostics.Stopwatch? CloseProcessesCountdown { get; set; }
 
         /// <summary>
         /// Gets/sets the running process descriptions.

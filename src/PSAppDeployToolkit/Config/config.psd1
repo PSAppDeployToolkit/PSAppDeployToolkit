@@ -101,7 +101,7 @@
         BalloonTitle = 'PSAppDeployToolkit'
 
         # Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.
-        DialogStyle = 'Fluent'
+        DialogStyle = 'Classic'
 
         # Exit code used when a UI prompt times out.
         DefaultExitCode = 1618

@@ -423,7 +423,6 @@ function Show-ADTInstallationWelcome
                     {
                         $CloseProcessesCountdown = $ForceCountdown
                     }
-                    $welcomeState.CloseProcessesCountdown = $CloseProcessesCountdown
 
                     while (($welcomeState.RunningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
@@ -435,6 +434,7 @@ function Show-ADTInstallationWelcome
                             Title = $PSBoundParameters.Title
                             Subtitle = $PSBoundParameters.Subtitle
                             DeploymentType = $PSBoundParameters.DeploymentType
+                            CloseProcessesCountdown = [System.TimeSpan]::FromSeconds($CloseProcessesCountdown)
                             ForceCloseProcessesCountdown = !!$ForceCloseProcessesCountdown
                             ForceCountdown = !!$ForceCountdown
                             PersistPrompt = $PersistPrompt
