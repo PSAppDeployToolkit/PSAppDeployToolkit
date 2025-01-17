@@ -213,7 +213,7 @@ namespace PSADT.Module
 
                         // Subst the new DirFiles path to eliminate any potential path length issues.
                         IEnumerable<string> usedLetters = DriveInfo.GetDrives().Select(static d => d.Name);
-                        if ((new string[] {"Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"}).Where(l => !usedLetters.Contains(l)).FirstOrDefault() is string availLetter)
+                        if (DriveLetters.Where(l => !usedLetters.Contains(l)).FirstOrDefault() is string availLetter)
                         {
                             availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{_dirFiles}].");
                             InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Path $args[1]"), availLetter, _dirFiles);
@@ -243,21 +243,13 @@ namespace PSADT.Module
                             var formattedOSArch = string.Empty;
 
                             // Build out the OS architecture string.
-                            switch (envOSArchitecture)
+                            formattedOSArch = envOSArchitecture switch
                             {
-                                case "X86":
-                                    formattedOSArch = "x86";
-                                    break;
-                                case "AMD64":
-                                    formattedOSArch = "x64";
-                                    break;
-                                case "ARM64":
-                                    formattedOSArch = "arm64";
-                                    break;
-                                default:
-                                    formattedOSArch = envOSArchitecture;
-                                    break;
-                            }
+                                "X86" => "x86",
+                                "AMD64" => "x64",
+                                "ARM64" => "arm64",
+                                _ => envOSArchitecture,
+                            };
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
                             if (msiFiles.Where(f => !f.EndsWith($".{formattedOSArch}.msi", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() is string msiFile)
@@ -372,7 +364,7 @@ namespace PSADT.Module
                 // If we're left with a blank AppName, throw a terminating error.
                 if (string.IsNullOrWhiteSpace(_appName))
                 {
-                    throw new ArgumentNullException("AppName", "The application name was not specified.");
+                    throw new ArgumentNullException(nameof(AppName), "The application name was not specified.");
                 }
 
 
@@ -441,7 +433,7 @@ namespace PSADT.Module
                 }
                 _logName = Regex.Replace(_logName, invalidChars, string.Empty);
                 string logFile = Path.Combine(LogPath, _logName);
-                FileInfo logFileInfo = new FileInfo(logFile);
+                FileInfo logFileInfo = new(logFile);
                 var logMaxSize = (int)configToolkit["LogMaxSize"]!;
                 bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
 
@@ -1423,6 +1415,11 @@ namespace PSADT.Module
         /// Gets the session's default log file encoding.
         /// </summary>
         private static readonly UTF8Encoding LogEncoding = new UTF8Encoding(true);
+
+        /// <summary>
+        /// Array of all possible drive letters in reverse order.
+        /// </summary>
+        private static readonly string[] DriveLetters = ["Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"];
 
         /// <summary>
         /// Bitfield with settings for this deployment.
