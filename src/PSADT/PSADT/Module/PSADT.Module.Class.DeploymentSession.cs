@@ -47,6 +47,7 @@ namespace PSADT.Module
                 var adtEnv = InternalDatabase.GetEnvironment();
                 var adtConfig = InternalDatabase.GetConfig();
                 var moduleSessionState = InternalDatabase.GetSessionState();
+                object? paramValue = null;
 
                 // Extrapolate the Toolkit options from the config hashtable.
                 var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
@@ -58,117 +59,117 @@ namespace PSADT.Module
                 }
                 if (null != parameters)
                 {
-                    if (parameters.ContainsKey("DeploymentType"))
+                    if (parameters.TryGetValue("DeploymentType", out paramValue))
                     {
-                        _deploymentType = (DeploymentType)parameters["DeploymentType"];
+                        _deploymentType = (DeploymentType)paramValue;
                     }
-                    if (parameters.ContainsKey("DeployMode"))
+                    if (parameters.TryGetValue("DeployMode", out paramValue))
                     {
-                        _deployMode = (DeployMode)parameters["DeployMode"];
+                        _deployMode = (DeployMode)paramValue;
                     }
-                    if (parameters.ContainsKey("AllowRebootPassThru") && (SwitchParameter)parameters["AllowRebootPassThru"])
+                    if (parameters.TryGetValue("AllowRebootPassThru", out paramValue) && (SwitchParameter)paramValue)
                     {
                         Settings |= DeploymentSettings.AllowRebootPassThru;
                     }
-                    if (parameters.ContainsKey("TerminalServerMode") && (SwitchParameter)parameters["TerminalServerMode"])
+                    if (parameters.TryGetValue("TerminalServerMode", out paramValue) && (SwitchParameter)paramValue)
                     {
                         Settings |= DeploymentSettings.TerminalServerMode;
                     }
-                    if (parameters.ContainsKey("DisableLogging") && (SwitchParameter)parameters["DisableLogging"])
+                    if (parameters.TryGetValue("DisableLogging", out paramValue) && (SwitchParameter)paramValue)
                     {
                         Settings |= DeploymentSettings.DisableLogging;
                     }
-                    if (parameters.ContainsKey("AppVendor"))
+                    if (parameters.TryGetValue("AppVendor", out paramValue))
                     {
-                        _appVendor = (string)parameters["AppVendor"];
+                        _appVendor = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("AppName"))
+                    if (parameters.TryGetValue("AppName", out paramValue))
                     {
-                        _appName = (string)parameters["AppName"];
+                        _appName = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("AppVersion"))
+                    if (parameters.TryGetValue("AppVersion", out paramValue))
                     {
-                        _appVersion = (string)parameters["AppVersion"];
+                        _appVersion = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("AppArch"))
+                    if (parameters.TryGetValue("AppArch", out paramValue))
                     {
-                        _appArch = (string)parameters["AppArch"];
+                        _appArch = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("AppLang"))
+                    if (parameters.TryGetValue("AppLang", out paramValue))
                     {
-                        _appLang = (string)parameters["AppLang"];
+                        _appLang = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("AppRevision"))
+                    if (parameters.TryGetValue("AppRevision", out paramValue))
                     {
-                        _appRevision = (string)parameters["AppRevision"];
+                        _appRevision = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("AppScriptVersion"))
+                    if (parameters.TryGetValue("AppScriptVersion", out paramValue))
                     {
-                        _appScriptVersion = (Version)parameters["AppScriptVersion"];
+                        _appScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.ContainsKey("AppScriptDate"))
+                    if (parameters.TryGetValue("AppScriptDate", out paramValue))
                     {
-                        _appScriptDate = (DateTime)parameters["AppScriptDate"];
+                        _appScriptDate = (DateTime)paramValue;
                     }
-                    if (parameters.ContainsKey("AppScriptAuthor"))
+                    if (parameters.TryGetValue("AppScriptAuthor", out paramValue))
                     {
-                        _appScriptAuthor = (string)parameters["AppScriptAuthor"];
+                        _appScriptAuthor = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("InstallName"))
+                    if (parameters.TryGetValue("InstallName", out paramValue))
                     {
-                        _installName = (string)parameters["InstallName"];
+                        _installName = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("InstallTitle"))
+                    if (parameters.TryGetValue("InstallTitle", out paramValue))
                     {
-                        _installTitle = (string)parameters["InstallTitle"];
+                        _installTitle = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("DeployAppScriptFriendlyName"))
+                    if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue))
                     {
-                        _deployAppScriptFriendlyName = (string)parameters["DeployAppScriptFriendlyName"];
+                        _deployAppScriptFriendlyName = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("DeployAppScriptVersion"))
+                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue))
                     {
-                        _deployAppScriptVersion = (Version)parameters["DeployAppScriptVersion"];
+                        _deployAppScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.ContainsKey("DeployAppScriptParameters"))
+                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue))
                     {
-                        _deployAppScriptParameters = (Dictionary<string, object>)parameters["DeployAppScriptParameters"];
+                        _deployAppScriptParameters = (Dictionary<string, object>)paramValue;
                     }
-                    if (parameters.ContainsKey("AppSuccessExitCodes"))
+                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue))
                     {
-                        _appSuccessExitCodes = new ReadOnlyCollection<int>((int[])parameters["AppSuccessExitCodes"]);
+                        _appSuccessExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
-                    if (parameters.ContainsKey("AppRebootExitCodes"))
+                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue))
                     {
-                        _appRebootExitCodes = new ReadOnlyCollection<int>((int[])parameters["AppRebootExitCodes"]);
+                        _appRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
-                    if (parameters.ContainsKey("ScriptDirectory"))
+                    if (parameters.TryGetValue("ScriptDirectory", out paramValue))
                     {
-                        _scriptDirectory = (string[])parameters["ScriptDirectory"];
+                        _scriptDirectory = (string[])paramValue;
                     }
-                    if (parameters.ContainsKey("DirFiles"))
+                    if (parameters.TryGetValue("DirFiles", out paramValue))
                     {
-                        _dirFiles = (string)parameters["DirFiles"];
+                        _dirFiles = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("DirSupportFiles"))
+                    if (parameters.TryGetValue("DirSupportFiles", out paramValue))
                     {
-                        _dirSupportFiles = (string)parameters["DirSupportFiles"];
+                        _dirSupportFiles = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("DefaultMsiFile"))
+                    if (parameters.TryGetValue("DefaultMsiFile", out paramValue))
                     {
-                        _defaultMsiFile = (string)parameters["DefaultMsiFile"];
+                        _defaultMsiFile = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("DefaultMstFile"))
+                    if (parameters.TryGetValue("DefaultMstFile", out paramValue))
                     {
-                        _defaultMstFile = (string)parameters["DefaultMstFile"];
+                        _defaultMstFile = (string)paramValue;
                     }
-                    if (parameters.ContainsKey("DefaultMspFiles"))
+                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue))
                     {
-                        _defaultMspFiles = new ReadOnlyCollection<string>((string[])parameters["DefaultMspFiles"]);
+                        _defaultMspFiles = new ReadOnlyCollection<string>((string[])paramValue);
                     }
-                    if (parameters.ContainsKey("LogName"))
+                    if (parameters.TryGetValue("LogName", out paramValue))
                     {
-                        _logName = (string)parameters["LogName"];
+                        _logName = (string)paramValue;
                     }
                 }
 
@@ -197,7 +198,7 @@ namespace PSADT.Module
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(_appName) || ((bool)parameters?.ContainsKey("ForceWimDetection")! && (SwitchParameter)parameters["ForceWimDetection"]))
+                if (string.IsNullOrWhiteSpace(_appName) || ((bool)parameters?.TryGetValue("ForceWimDetection", out paramValue)! && (SwitchParameter)paramValue!))
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
                     if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
@@ -316,7 +317,7 @@ namespace PSADT.Module
                         }
 
                         // Read the MSI and get the installation details.
-                        if (((bool)parameters?.ContainsKey("DisableDefaultMsiProcessList")! && (SwitchParameter)parameters["DisableDefaultMsiProcessList"]))
+                        if (((bool)parameters?.TryGetValue("DisableDefaultMsiProcessList", out paramValue)! && (SwitchParameter)paramValue!))
                         {
                             var exeProps = (ReadOnlyDictionary<string, object>)InternalDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
                             List<ProcessObject> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
