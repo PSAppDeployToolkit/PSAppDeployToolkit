@@ -181,7 +181,7 @@ function Show-ADTInstallationWelcome
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of times the deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$DeferTimes,
+        [System.UInt32]$DeferTimes,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
@@ -347,7 +347,7 @@ function Show-ADTInstallationWelcome
 
                     if ($DeferTimes -ne 0)
                     {
-                        $DeferTimes = if ($deferHistoryTimes -ge 0)
+                        [System.Int32]$DeferTimes = if ($deferHistoryTimes -ge 0)
                         {
                             Write-ADTLogEntry -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
                             $deferHistory.DeferTimesRemaining - 1
