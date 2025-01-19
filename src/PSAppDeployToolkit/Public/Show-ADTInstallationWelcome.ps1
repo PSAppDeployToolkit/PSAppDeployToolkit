@@ -155,74 +155,220 @@ function Show-ADTInstallationWelcome
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'None')]
+    [CmdletBinding(DefaultParameterSetName = 'Interactive')]
     param
     (
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SilentCloseProcesses', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]
         [ValidateNotNullOrEmpty()]
         [PSADT.Types.ProcessObject[]]$CloseProcesses,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to prompt user or force close the applications.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
+        [System.Management.Automation.SwitchParameter]$AllowDefer,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
+        [System.Management.Automation.SwitchParameter]$AllowDeferCloseProcesses,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Silent', HelpMessage = 'Specify whether to prompt user or force close the applications.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SilentCloseProcesses', HelpMessage = 'Specify whether to prompt user or force close the applications.')]
         [System.Management.Automation.SwitchParameter]$Silent,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$CloseProcessesCountdown,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$ForceCloseProcessesCountdown,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
-        [System.Management.Automation.SwitchParameter]$PromptToSave,
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = 'Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.')]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$ForceCountdown,
 
-        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
-        [System.Management.Automation.SwitchParameter]$PersistPrompt,
-
-        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to block execution of the processes during installation.')]
-        [System.Management.Automation.SwitchParameter]$BlockExecution,
-
-        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to enable the optional defer button on the dialog box.')]
-        [System.Management.Automation.SwitchParameter]$AllowDefer,
-
-        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to enable the optional defer button on the dialog box only if an app needs to be closed.')]
-        [System.Management.Automation.SwitchParameter]$AllowDeferCloseProcesses,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify the number of times the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify the number of times the deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$DeferTimes,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify the number of days since first run that the deferral is allowed.')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$DeferDays,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify the deadline (in format dd/mm/yyyy) for which deferral will expire as an option.')]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in "CloseProcesses" is still running after a deferral.')]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$DeferRunInterval,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentCloseProcesses', HelpMessage = 'Specify whether to block execution of the processes during installation.')]
+        [System.Management.Automation.SwitchParameter]$BlockExecution,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
+        [System.Management.Automation.SwitchParameter]$PromptToSave,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [System.Management.Automation.SwitchParameter]$PersistPrompt,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specifies whether the window is the topmost window.')]
+        [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcesses', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
+        [System.Management.Automation.SwitchParameter]$CustomText,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.', ParameterSetName = 'CheckDiskSpace')]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify required disk space in MB, used in combination with $CheckDiskSpace.', ParameterSetName = 'CheckDiskSpace')]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$RequiredDiskSpace,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
-        [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Specifies whether the window is the topmost window.')]
-        [System.Management.Automation.SwitchParameter]$NotTopMost,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.')]
-        [ValidateNotNullOrEmpty()]
-        [System.UInt32]$ForceCountdown,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.')]
-        [System.Management.Automation.SwitchParameter]$CustomText
+        [System.UInt32]$RequiredDiskSpace
     )
 
     dynamicparam
