@@ -33,7 +33,7 @@ function Show-ADTInstallationWelcome
         Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
     .PARAMETER PersistPrompt
-        Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+        Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the config.psd1. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
     .PARAMETER BlockExecution
         Option to prevent the user from launching processes/applications, specified in -CloseProcesses, during the deployment.
@@ -114,7 +114,7 @@ function Show-ADTInstallationWelcome
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
 
-        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
+        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the config.psd1, so the user cannot ignore it by dragging it aside.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '25/08/2013'
@@ -167,7 +167,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
         [System.Management.Automation.SwitchParameter]$PromptToSave,
 
-        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1 file.')]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
 
         [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to block execution of the processes during deployment.')]
