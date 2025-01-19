@@ -35,7 +35,7 @@ function Show-ADTInstallationPrompt
         Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
 
     .PARAMETER PersistPrompt
-        Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt - resistance is futile!
+        Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1 file. The user will have no option but to respond to the prompt.
 
     .PARAMETER MinimizeWindows
         Specifies whether to minimize other windows when displaying prompt.
