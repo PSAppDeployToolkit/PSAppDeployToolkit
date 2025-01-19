@@ -495,69 +495,59 @@ function Show-ADTInstallationWelcome
                     Write-ADTLogEntry -Message 'Successfully passed minimum disk space requirement check.'
                 }
 
-                # Check Deferral history and calculate remaining deferrals.
-                if ($AllowDefer -or $AllowDeferCloseProcesses)
+                # Prompt the user to close running applications and optionally defer if enabled.
+                if (!$Silent -and (!$adtSession -or !$adtSession.IsSilent()))
                 {
-                    # Set $AllowDefer to true if $AllowDeferCloseProcesses is true.
-                    $AllowDefer = $true
-
-                    # Get the deferral history from the registry.
-                    $deferHistory = if ($adtSession) { Get-ADTDeferHistory }
-                    $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
-                    $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
-                    $deferHistoryRunIntervalLastTime = $deferHistory | Select-Object -ExpandProperty DeferRunIntervalLastTime -ErrorAction Ignore
-
-                    # Reset switches.
-                    $checkDeferDays = $DeferDays -ne 0
-                    $checkDeferDeadline = !!$DeferDeadline
-
-                    if ($DeferTimes -ne 0)
+                    # Check Deferral history and calculate remaining deferrals.
+                    if ($AllowDefer -or $AllowDeferCloseProcesses)
                     {
-                        [System.Int32]$DeferTimes = if ($deferHistoryTimes -ge 0)
+                        # Set $AllowDefer to true if $AllowDeferCloseProcesses is true.
+                        $AllowDefer = $true
+
+                        # Get the deferral history from the registry.
+                        $deferHistory = if ($adtSession) { Get-ADTDeferHistory }
+                        $deferHistoryTimes = $deferHistory | Select-Object -ExpandProperty DeferTimesRemaining -ErrorAction Ignore
+                        $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
+                        $deferHistoryRunIntervalLastTime = $deferHistory | Select-Object -ExpandProperty DeferRunIntervalLastTime -ErrorAction Ignore
+
+                        # Reset switches.
+                        $checkDeferDays = $DeferDays -ne 0
+                        $checkDeferDeadline = !!$DeferDeadline
+
+                        # Process deferrals.
+                        if ($DeferTimes -ne 0)
                         {
-                            Write-ADTLogEntry -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
-                            $deferHistory.DeferTimesRemaining - 1
-                        }
-                        else
-                        {
-                            Write-ADTLogEntry -Message "The user has [$DeferTimes] deferrals remaining."
-                            $DeferTimes - 1
+                            [System.Int32]$DeferTimes = if ($deferHistoryTimes -ge 0)
+                            {
+                                Write-ADTLogEntry -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
+                                $deferHistory.DeferTimesRemaining - 1
+                            }
+                            else
+                            {
+                                Write-ADTLogEntry -Message "The user has [$DeferTimes] deferrals remaining."
+                                $DeferTimes - 1
+                            }
+
+                            if ($DeferTimes -lt 0)
+                            {
+                                Write-ADTLogEntry -Message 'Deferral has expired.'
+                                $AllowDefer = $false
+                            }
                         }
 
-                        if ($DeferTimes -lt 0)
+                        # Check deferral days before deadline.
+                        if ($checkDeferDays -and $AllowDefer)
                         {
-                            Write-ADTLogEntry -Message 'Deferral has expired.'
-                            $AllowDefer = $false
-                        }
-                    }
-
-                    if ($checkDeferDays -and $AllowDefer)
-                    {
-                        $deferDeadlineUniversal = if ($deferHistoryDeadline)
-                        {
-                            Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
-                            Get-ADTUniversalDate -DateTime $deferHistoryDeadline
-                        }
-                        else
-                        {
-                            Get-ADTUniversalDate -DateTime ([System.DateTime]::Now.AddDays($DeferDays).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
-                        }
-                        Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
-
-                        if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
-                        {
-                            Write-ADTLogEntry -Message 'Deferral has expired.'
-                            $AllowDefer = $false
-                        }
-                    }
-
-                    if ($checkDeferDeadline -and $AllowDefer)
-                    {
-                        # Validate date.
-                        try
-                        {
-                            $deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
-                            Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
+                            $deferDeadlineUniversal = if ($deferHistoryDeadline)
+                            {
+                                Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
+                                Get-ADTUniversalDate -DateTime $deferHistoryDeadline
+                            }
+                            else
+                            {
+                                Get-ADTUniversalDate -DateTime ([System.DateTime]::Now.AddDays($DeferDays).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
+                            }
+                            Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
 
                             if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
                             {
@@ -565,21 +555,35 @@ function Show-ADTInstallationWelcome
                                 $AllowDefer = $false
                             }
                         }
-                        catch
+
+                        # Check deferral deadlines.
+                        if ($checkDeferDeadline -and $AllowDefer)
                         {
-                            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'."
+                            # Validate date.
+                            try
+                            {
+                                $deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
+                                Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
+
+                                if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
+                                {
+                                    Write-ADTLogEntry -Message 'Deferral has expired.'
+                                    $AllowDefer = $false
+                                }
+                            }
+                            catch
+                            {
+                                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'."
+                            }
                         }
                     }
-                }
 
-                if (($DeferTimes -lt 0) -and !$deferDeadlineUniversal)
-                {
-                    $AllowDefer = $false
-                }
+                    # Check if all deferrals have expired.
+                    if (($DeferTimes -lt 0) -and !$deferDeadlineUniversal)
+                    {
+                        $AllowDefer = $false
+                    }
 
-                # Prompt the user to close running applications and optionally defer if enabled.
-                if (!$Silent -and (!$adtSession -or !$adtSession.IsSilent()))
-                {
                     # Keep the same variable for countdown to simplify the code.
                     if ($ForceCloseProcessesCountdown -gt 0)
                     {
