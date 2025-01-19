@@ -279,7 +279,7 @@ function Show-ADTInstallationWelcome
             try
             {
                 # If running in NonInteractive mode, force the processes to close silently.
-                if ($adtSession -and $adtSession.IsNonInteractive())
+                if (!$PSBoundParameters.ContainsKey('Silent') -and $adtSession -and ($adtSession.IsNonInteractive() -or $adtSession.IsSilent()))
                 {
                     $Silent = $true
                 }
@@ -613,7 +613,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Force the processes to close silently, without prompting the user.
-                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
+                if ($Silent -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
                 {
                     Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
                     Stop-Process -InputObject $runningProcesses -Force -ErrorAction Ignore
