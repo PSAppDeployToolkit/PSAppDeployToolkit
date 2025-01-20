@@ -5067,7 +5067,7 @@ else
     'PSAppDeployToolkit'
 }
 Remove-Module -Name PSAppDeployToolkit* -Force
-$adtModule = Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.4' } -Force -PassThru -ErrorAction Stop
+$adtModule = Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.5' } -Force -PassThru -ErrorAction Stop
 
 # Get all parameters from Open-ADTSession that are considered frontend params/variables.
 $sessionVars = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
