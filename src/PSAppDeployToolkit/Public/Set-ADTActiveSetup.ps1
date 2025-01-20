@@ -360,17 +360,16 @@ function Set-ADTActiveSetup
                 # Delete Active Setup registry entry from the HKLM hive and for all logon user registry hives on the system.
                 if ($PurgeActiveSetupKey)
                 {
+                    # HLKM first.
                     Write-ADTLogEntry -Message "Removing Active Setup entry [$HKLMRegKey]."
                     Remove-ADTRegistryKey -Key $HKLMRegKey -Recurse
 
-                    if ($runAsActiveUser)
-                    {
-                        Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
-                        Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & { process { if ($_.SID -eq $runAsActiveUser.SID) { return $_ } } } | Select-Object -First 1) -ScriptBlock {
-                            if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
-                            {
-                                Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse
-                            }
+                    # All remaining users thereafter.
+                    Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
+                    Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser | & { process { if ($_.SID -eq $runAsActiveUser.SID) { return $_ } } } | Select-Object -First 1) -ScriptBlock {
+                        if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
+                        {
+                            Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse
                         }
                     }
                     return
