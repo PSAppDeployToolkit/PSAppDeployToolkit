@@ -51,7 +51,7 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: [System.DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern)
+Default value: [System.DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern).TrimEnd('Z')
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

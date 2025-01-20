@@ -16,7 +16,7 @@ Show a welcome dialog prompting the user with information about the installation
 ```powershell
 Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseProcessesCountdown <UInt32>]
  [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
- [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+ [-AllowDeferCloseProcesses] [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>] [-CustomText] -Title <String> -Subtitle <String>
  -DeploymentType <DeploymentType> [<CommonParameters>]
 ```
@@ -26,7 +26,7 @@ Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-Clos
 ```powershell
 Show-ADTInstallationWelcome [-CloseProcesses <ProcessObject[]>] [-Silent] [-CloseProcessesCountdown <UInt32>]
  [-ForceCloseProcessesCountdown <UInt32>] [-PromptToSave] [-PersistPrompt] [-BlockExecution] [-AllowDefer]
- [-AllowDeferCloseProcesses] [-DeferTimes <Int32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+ [-AllowDeferCloseProcesses] [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] [-NoMinimizeWindows] [-NotTopMost] [-ForceCountdown <UInt32>]
  [-CustomText] -Title <String> -Subtitle <String> -DeploymentType <DeploymentType> [<CommonParameters>]
 ```
@@ -260,7 +260,7 @@ Accept wildcard characters: False
 Specify the number of times the installation can be deferred.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 

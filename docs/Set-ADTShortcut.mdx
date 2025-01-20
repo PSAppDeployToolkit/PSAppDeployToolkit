@@ -13,7 +13,7 @@ Modifies a .lnk or .url type shortcut.
 
 ```powershell
 Set-ADTShortcut [-Path] <String> [-TargetPath <String>] [-Arguments <String>] [-IconLocation <String>]
- [-IconIndex <String>] [-Description <String>] [-WorkingDirectory <String>] [-WindowStyle <String>]
+ [-IconIndex <UInt32>] [-Description <String>] [-WorkingDirectory <String>] [-WindowStyle <String>]
  [-RunAsAdmin] [-Hotkey <String>] [<CommonParameters>]
 ```
 
@@ -106,13 +106,13 @@ This parameter is an Integer.
 The first index is 0.
 
 ```yaml
-Type: String
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

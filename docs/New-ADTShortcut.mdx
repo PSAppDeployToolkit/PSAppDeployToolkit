@@ -13,7 +13,7 @@ Creates a new .lnk or .url type shortcut.
 
 ```powershell
 New-ADTShortcut [-Path] <String> -TargetPath <String> [-Arguments <String>] [-IconLocation <String>]
- [-IconIndex <Int32>] [-Description <String>] [-WorkingDirectory <String>] [-WindowStyle <String>]
+ [-IconIndex <UInt32>] [-Description <String>] [-WorkingDirectory <String>] [-WindowStyle <String>]
  [-RunAsAdmin] [-Hotkey <String>] [<CommonParameters>]
 ```
 
@@ -106,7 +106,7 @@ This parameter is an Integer.
 The first index is 0.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
