@@ -12,7 +12,8 @@ Set the history of deferrals in the registry for the current application.
 ## SYNTAX
 
 ```powershell
-Set-ADTDeferHistory [[-DeferTimesRemaining] <Int32>] [[-DeferDeadline] <String>] [<CommonParameters>]
+Set-ADTDeferHistory [[-DeferTimesRemaining] <Int32>] [[-DeferDeadline] <String>]
+ [[-DeferRunInterval] <TimeSpan>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -56,6 +57,26 @@ Aliases:
 
 Required: False
 Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeferRunInterval
+
+Specifies the time span that must elapse before prompting the user again if a process listed in 'CloseProcesses' is still running after a deferral.
+
+This helps address the issue where Intune retries installations shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
+
+This parameter is specifically utilized within the `Show-ADTInstallationWelcome` function, and if specified, the current date and time will be used for the DeferRunIntervalLastTime.
+
+```yaml
+Type: TimeSpan
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
