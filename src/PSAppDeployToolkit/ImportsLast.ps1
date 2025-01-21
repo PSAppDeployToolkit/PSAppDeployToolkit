@@ -18,8 +18,17 @@ try
         if (Get-ADTParentProcesses | & { process { if ($_.Name -eq 'PatchMyPC-ScriptRunner.exe' -and ([System.Diagnostics.FileVersionInfo]::GetVersionInfo($_.ExecutablePath)).LegalCopyright -match 'Patch My PC') { return $true } } })
         {
             # Remove all functions that invoke the UI from the export list if executed by Patch My PC ScriptRunner.
-            $restrictedFunctions = @('Block-ADTAppExecution', 'Show-ADTBalloonTip', 'Show-ADTDialogBox', 'Show-ADTHelpConsole', 'Show-ADTInstallationProgress', 'Show-ADTInstallationPrompt', 'Show-ADTInstallationRestartPrompt', 'Show-ADTInstallationWelcome')
-            Export-ModuleMember -Function ($Module.Manifest.FunctionsToExport | & { process { if (!$restrictedFunctions.Contains($_)) { return $_ } } })
+            Export-ModuleMember -Function ($Module.Manifest.FunctionsToExport | & {
+                    begin
+                    {
+                        $restrictedFunctions = @('Block-ADTAppExecution', 'Show-ADTBalloonTip', 'Show-ADTDialogBox', 'Show-ADTHelpConsole', 'Show-ADTInstallationProgress', 'Show-ADTInstallationPrompt', 'Show-ADTInstallationRestartPrompt', 'Show-ADTInstallationWelcome')
+                    }
+
+                    process
+                    {
+                        if (!$restrictedFunctions.Contains($_)) { return $_ }
+                    }
+                })
         }
         else
         {
