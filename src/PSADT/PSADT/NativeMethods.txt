@@ -1,0 +1,11 @@
+﻿CoInitializeEx
+CoCreateInstance
+CoUninitialize
+MMDeviceEnumerator
+IMMDeviceEnumerator
+IAudioSessionManager2
+IAudioSessionControl2
+AudioSessionState
+EDataFlow
+ERole
+CLSCTX
