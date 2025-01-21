@@ -152,13 +152,23 @@ function Write-ADTLogEntry
         # If we don't have an active session, write the message to the verbose stream (4).
         if (Test-ADTSessionActive)
         {
-            (Get-ADTSession).WriteLogEntry($messages, $Severity, $Source, $ScriptSection, $null, $DebugMessage, $LogType, $LogFileDirectory, $LogFileName)
+            (Get-ADTSession).WriteLogEntry(
+                $messages,
+                $DebugMessage,
+                $Severity,
+                $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),
+                $(if ($PSBoundParameters.ContainsKey('ScriptSection')) { $ScriptSection }),
+                $null,
+                $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType }),
+                $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),
+                $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName })
+            )
         }
         elseif (!$DebugMessage)
         {
             if ([System.String]::IsNullOrWhiteSpace($Source))
             {
-                $Source = [PSADT.Module.DeploymentSession]::GetLogEntryCaller((Get-PSCallStack)).Command
+                $Source = [PSADT.Module.LoggingUtilities]::GetLogEntryCaller((Get-PSCallStack)).Command
             }
             $messages -replace '^', "[$([System.DateTime]::Now.ToString('O'))] [$Source] :: " | Write-Verbose
         }
