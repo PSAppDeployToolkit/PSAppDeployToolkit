@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Management.Automation;
 
 namespace PSADT.Types
 {
@@ -25,6 +26,21 @@ namespace PSADT.Types
         /// Initializes a new instance of the <see cref="ProcessObject"/> struct.
         /// </summary>
         /// <param name="name">The name of the process.</param>
+        /// <param name="filter">A filter for the specified process.</param>
+        public ProcessObject(string name, ScriptBlock filter)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException(nameof(name), "A mandatory property was null or empty.");
+            }
+            Name = name;
+            Filter = filter;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessObject"/> struct.
+        /// </summary>
+        /// <param name="name">The name of the process.</param>
         /// <param name="description">The description of the process.</param>
         public ProcessObject(string name, string description)
         {
@@ -38,6 +54,27 @@ namespace PSADT.Types
             {
                 Description = description;
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessObject"/> struct.
+        /// </summary>
+        /// <param name="name">The name of the process.</param>
+        /// <param name="description">The description of the process.</param>
+        /// <param name="filter">A filter for the specified process.</param>
+        public ProcessObject(string name, string description, ScriptBlock filter)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException(nameof(name), "A mandatory property was null or empty.");
+            }
+            Name = name;
+
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                Description = description;
+            }
+            Filter = filter;
         }
 
         /// <summary>
@@ -62,6 +99,12 @@ namespace PSADT.Types
             {
                 Description = (string)properties[nameof(Description)]!;
             }
+
+            // Add in the filter if it's valid.
+            if (!string.IsNullOrWhiteSpace(properties[nameof(Filter)]?.ToString()))
+            {
+                Filter = (ScriptBlock)properties[nameof(Filter)]!;
+            }
         }
 
         /// <summary>
@@ -73,6 +116,11 @@ namespace PSADT.Types
         /// Gets the description of the process.
         /// </summary>
         public string? Description { get; }
+
+        /// <summary>
+        /// Gets the filter script for the process.
+        /// </summary>
+        public ScriptBlock? Filter { get; }
 
         /// <summary>
         /// Returns a string that represents the current <see cref="ProcessObject"/> object.
