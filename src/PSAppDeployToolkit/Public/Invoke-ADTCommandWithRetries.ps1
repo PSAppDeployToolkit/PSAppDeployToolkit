@@ -19,13 +19,16 @@ function Invoke-ADTCommandWithRetries
     .PARAMETER Retries
         How many retries to perform before throwing.
 
-    .PARAMETER SleepSeconds
-        How many seconds to sleep between retries.
+    .PARAMETER SleepDuration
+        How long to sleep between retries.
 
     .PARAMETER MaximumElapsedTime
         The maximum elapsed time allowed to passed while attempting retries.
         If the maximum elapsted time has passed and there are still attempts remaining they will be disgarded.
         If this parameter is supplied and the `-Retries` parameter isn't, this command will continue to retry the provided command until the time limit runs out.
+
+    .PARAMETER SleepSeconds
+        This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use `-SleepDuration` instead.
 
     .PARAMETER Parameters
         A 'ValueFromRemainingArguments' parameter to collect the parameters as would be passed to the provided Command.
@@ -48,7 +51,7 @@ function Invoke-ADTCommandWithRetries
         Downloads the latest WinGet installer to the SupportFiles directory. If the command fails, it will retry 3 times with 5 seconds between each attempt.
 
     .EXAMPLE
-        Invoke-ADTCommandWithRetries Get-FileHash -Path '\\MyShare\MyFile' -MaximumElapsedTime (New-TimeSpan -Seconds 90) -SleepSeconds 1
+        Invoke-ADTCommandWithRetries Get-FileHash -Path '\\MyShare\MyFile' -MaximumElapsedTime (New-TimeSpan -Seconds 90) -SleepDuration (New-TimeSpan -Seconds 1)
 
         Gets the hash of a file on an SMB share.
         If the connection to the SMB share drops, it will retry the command every 2 seconds until it successfully gets the hash or 90 seconds have passed since the initial attempt.
@@ -84,8 +87,14 @@ function Invoke-ADTCommandWithRetries
         [System.UInt32]$Retries = 3,
 
         [Parameter(Mandatory = $false)]
-        [ValidateRange(1, 60)]
-        [System.UInt32]$SleepSeconds = 5,
+        [ValidateScript({
+                if ($_ -le [System.TimeSpan]::Zero)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SleepDuration -ProvidedValue $_ -ExceptionMessage 'The specified TimeSpan must be greater than zero.'))
+                }
+                return !!$_
+            })]
+        [System.TimeSpan]$SleepDuration = [System.TimeSpan]::FromSeconds(5),
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -97,6 +106,11 @@ function Invoke-ADTCommandWithRetries
             })]
         [System.TimeSpan]$MaximumElapsedTime,
 
+        [Parameter(Mandatory = $false)]
+        [System.Obsolete("Please use 'SleepDuration' instead as this will be removed in PSAppDeployToolkit 4.2.0.")]
+        [ValidateRange(1, 60)]
+        [System.UInt32]$SleepSeconds = 5,
+
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Collections.Generic.List[System.Object]]$Parameters
@@ -106,6 +120,16 @@ function Invoke-ADTCommandWithRetries
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Log the deprecation of -SleepSeconds to the log.
+        if ($PSBoundParameters.ContainsKey('SleepSeconds'))
+        {
+            Write-ADTLogEntry -Message "The parameter [-SleepSeconds] is obsolete and will be removed in PSAppDeployToolkit 4.2.0. Please use [-SleepDuration] instead." -Severity 2
+            if (!$PSBoundParameters.ContainsKey('SleepDuration'))
+            {
+                $SleepDuration = [System.TimeSpan]::FromSeconds($SleepSeconds)
+            }
+        }
     }
 
     process
@@ -164,8 +188,8 @@ function Invoke-ADTCommandWithRetries
                         {
                             break
                         }
-                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $SleepSeconds second$(if (!$SleepSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
-                        [System.Threading.Thread]::Sleep($SleepSeconds * 1000)
+                        Write-ADTLogEntry -Message "The invocation to '$($commandObj.Name)' failed with message: $($_.Exception.Message.TrimEnd('.')). Trying again in $($SleepDuration.TotalSeconds) second$(if (!$SleepDuration.TotalSeconds.Equals(1)) {'s'})." -Severity 2 -Source $callerName
+                        [System.Threading.Thread]::Sleep($SleepDuration)
                     }
                 }
 
