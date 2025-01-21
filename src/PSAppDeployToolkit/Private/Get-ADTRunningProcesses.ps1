@@ -1,18 +1,18 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Get-ADTRunningProcesses
+# MARK: Get-ADTRunningApplications
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTRunningProcesses
+function Get-ADTRunningApplications
 {
     <#
 
     .SYNOPSIS
-    Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
+    Gets the processes that are running from a custom list of process objects.
 
     .DESCRIPTION
-    Gets the processes that are running from a custom list of process objects and also adds a property called ProcessDescription.
+    Gets the processes that are running from a custom list of process objects.
 
     .PARAMETER ProcessObjects
     Custom object containing the process objects to search for.
@@ -21,10 +21,10 @@ function Get-ADTRunningProcesses
     None. You cannot pipe objects to this function.
 
     .OUTPUTS
-    System.Diagnostics.Process. Returns one or more process objects representing each running process found.
+    PSADT.Types.RunningApplication. Returns one or more RunningApplication objects representing each running application.
 
     .EXAMPLE
-    Get-ADTRunningProcesses -ProcessObjects $processObjects
+    Get-ADTRunningApplications -ProcessObjects $processObjects
 
     .NOTES
     This is an internal script function and should typically not be called directly.
@@ -39,7 +39,7 @@ function Get-ADTRunningProcesses
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
-    [OutputType([System.Diagnostics.Process])]
+    [OutputType([PSADT.Types.RunningApplication])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -55,7 +55,7 @@ function Get-ADTRunningProcesses
 
     # Process provided process objects.
     Write-ADTLogEntry -Message "Checking for running applications: ['$([System.String]::Join("', '", ($processNames = $ProcessObjects.Name)))']"
-    $runningProcesses = $ProcessObjects | & {
+    $runningApps = $ProcessObjects | & {
         begin
         {
             # Process the cached processes into proper process names (i.e. remove paths).
@@ -91,35 +91,31 @@ function Get-ADTRunningProcesses
                     continue
                 }
 
-                # Find the correspoding WMI process object.
-                $wmiProcess = $wmiProcesses | & { process { if ($_.ProcessId -eq $process.Id) { return $_ } } } | Select-Object -First 1
-
-                # Cache the process object's properties.
-                $procProps = $process.PSObject.Properties
-
-                # Add in our ProcessDescription field.
-                if (![System.String]::IsNullOrWhiteSpace($_.Description))
+                # Calculate a description for the running application.
+                $appDesc = if (![System.String]::IsNullOrWhiteSpace($_.Description))
                 {
                     # The description of the process provided with the object.
-                    $procProps.Add([System.Management.Automation.PSNoteProperty]::new('ProcessDescription', $_.Description))
+                    $_.Description
                 }
                 elseif (![System.String]::IsNullOrWhiteSpace($process.Description))
                 {
                     # If the process already has a description field specified, then use it.
-                    $procProps.Add([System.Management.Automation.PSNoteProperty]::new('ProcessDescription', $process.Description))
+                    $process.Description
                 }
                 else
                 {
                     # Fall back on the process name if no description is provided by the process or as a parameter to the function.
-                    $procProps.Add([System.Management.Automation.PSNoteProperty]::new('ProcessDescription', $process.ProcessName))
+                    $process.ProcessName
                 }
 
-                # Add in Arguments and the full CommandLine property from WMI.
-                $procProps.Add([System.Management.Automation.PSNoteProperty]::new('Arguments', $(if (![System.String]::IsNullOrWhiteSpace(($procArgs = $wmiProcess.CommandLine.Replace($wmiProcess.ExecutablePath, $null).TrimStart('"').Trim()))) { $procArgs } )))
-                $procProps.Add([System.Management.Automation.PSNoteProperty]::new('CommandLine', $wmiProcess.CommandLine.Trim()))
-
-                # Output the process object for collection.
-                $process
+                # Output a RunningApplication object for collection.
+                [PSADT.Types.RunningApplication]::new(
+                    $process,
+                    ($wmiProcess = $wmiProcesses | & { process { if ($_.ProcessId -eq $process.Id) { return $_ } } } | Select-Object -First 1),
+                    $appDesc,
+                    $wmiProcess.CommandLine.Trim(),
+                    $wmiProcess.CommandLine.Replace($wmiProcess.ExecutablePath, $null).TrimStart('"').Trim()
+                )
             }
 
             # Return early if we have nothing.
@@ -138,10 +134,10 @@ function Get-ADTRunningProcesses
     }
 
     # Return output if there's any.
-    if ($runningProcesses)
+    if ($runningApps)
     {
-        Write-ADTLogEntry -Message "The following processes are running: [$(($runningProcesses.ProcessName | Select-Object -Unique) -join ',')]."
-        return ($runningProcesses | Sort-Object -Property ProcessDescription)
+        Write-ADTLogEntry -Message "The following processes are running: [$(($runningApps.Process.ProcessName | Select-Object -Unique) -join ',')]."
+        return ($runningApps | Sort-Object -Property Description)
     }
     Write-ADTLogEntry -Message 'Specified applications are not running.'
 }

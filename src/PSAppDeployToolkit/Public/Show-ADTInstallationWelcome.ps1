@@ -430,10 +430,10 @@ function Show-ADTInstallationWelcome
                         $CloseProcessesCountdown = $ForceCountdown
                     }
 
-                    while (($welcomeState.RunningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($welcomeState.RunningApps = Get-ADTRunningApplications -ProcessObjects $CloseProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Get all unique running process descriptions.
-                        $welcomeState.RunningProcessDescriptions = $welcomeState.RunningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
+                        $welcomeState.RunningAppDescriptions = $welcomeState.RunningApps | Select-Object -ExpandProperty Description | Sort-Object -Unique
 
                         # Define parameters for welcome prompt.
                         $promptParams = @{
@@ -454,18 +454,18 @@ function Show-ADTInstallationWelcome
                         if ($AllowDefer)
                         {
                             # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
-                            if ($AllowDeferCloseProcesses -and !$welcomeState.RunningProcessDescriptions)
+                            if ($AllowDeferCloseProcesses -and !$welcomeState.RunningAppDescriptions)
                             {
                                 break
                             }
-                            elseif (($promptResult -ne 'Close') -or ($welcomeState.RunningProcessDescriptions -and ($promptResult -ne 'Continue')))
+                            elseif (($promptResult -ne 'Close') -or ($welcomeState.RunningAppDescriptions -and ($promptResult -ne 'Continue')))
                             {
                                 # Otherwise, as long as the user has not selected to close the apps or the processes are still running and the user has not selected to continue, prompt user to close running processes with deferral.
                                 $deferParams = @{ AllowDefer = $true; DeferTimes = $DeferTimes }; if ($deferDeadlineUniversal) { $deferParams.Add('DeferDeadline', $deferDeadlineUniversal) }
                                 $promptResult = & $Script:CommandTable."Show-ADTWelcomePrompt$($adtConfig.UI.DialogStyle)" @promptParams @deferParams
                             }
                         }
-                        elseif ($welcomeState.RunningProcessDescriptions -or !!$forceCountdown)
+                        elseif ($welcomeState.RunningAppDescriptions -or !!$forceCountdown)
                         {
                             # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
                             $promptResult = & $Script:CommandTable."Show-ADTWelcomePrompt$($adtConfig.UI.DialogStyle)" @promptParams
@@ -481,7 +481,7 @@ function Show-ADTInstallationWelcome
                         {
                             # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
                             Write-ADTLogEntry -Message 'The user selected to continue...'
-                            if (!$welcomeState.RunningProcesses)
+                            if (!$welcomeState.RunningApps)
                             {
                                 # Break the while loop if there are no processes to close and the user has clicked OK to continue.
                                 break
@@ -499,17 +499,17 @@ function Show-ADTInstallationWelcome
 
                             # Update the process list right before closing, in case it changed.
                             $PromptToSaveTimeout = [System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)
-                            foreach ($runningProcess in ($welcomeState.RunningProcesses = Get-ADTRunningProcesses -ProcessObject $CloseProcesses -InformationAction SilentlyContinue))
+                            foreach ($runningApp in ($welcomeState.RunningApps = Get-ADTRunningApplications -ProcessObject $CloseProcesses -InformationAction SilentlyContinue))
                             {
                                 # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
-                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = Get-ADTWindowTitle -ParentProcess $runningProcess.ProcessName -InformationAction SilentlyContinue | Select-Object -First 1) -and ($runningProcess.MainWindowHandle -ne [IntPtr]::Zero))
+                                if ($PromptToSave -and !($adtEnv.SessionZero -and !$adtEnv.IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = Get-ADTWindowTitle -ParentProcess $runningApp.Process.ProcessName -InformationAction SilentlyContinue | Select-Object -First 1) -and ($runningApp.Process.MainWindowHandle -ne [IntPtr]::Zero))
                                 {
                                     foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
                                     {
                                         try
                                         {
                                             # Try to bring the window to the front before closing. This doesn't always work.
-                                            Write-ADTLogEntry -Message "Stopping process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
+                                            Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
                                             $null = try
                                             {
                                                 [PSADT.GUI.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
@@ -520,7 +520,7 @@ function Show-ADTInstallationWelcome
                                             }
 
                                             # Close out the main window and spin until completion.
-                                            if ($runningProcess.CloseMainWindow())
+                                            if ($runningApp.Process.CloseMainWindow())
                                             {
                                                 $promptToSaveStart = [System.Diagnostics.Stopwatch]::StartNew()
                                                 do
@@ -535,36 +535,36 @@ function Show-ADTInstallationWelcome
 
                                                 if ($IsWindowOpen)
                                                 {
-                                                    Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
+                                                    Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
                                                 }
                                                 else
                                                 {
-                                                    Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)] was successfully closed."
+                                                    Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningApp.Process.ProcessName)] was successfully closed."
                                                 }
                                             }
                                             else
                                             {
-                                                Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningProcess.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
+                                                Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
                                             }
                                         }
                                         catch
                                         {
-                                            Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningProcess.ProcessName)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                                            Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningApp.Process.ProcessName)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
                                         }
                                         finally
                                         {
-                                            $runningProcess.Refresh()
+                                            $runningApp.Process.Refresh()
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    Write-ADTLogEntry -Message "Stopping process $($runningProcess.ProcessName)..."
-                                    Stop-Process -Name $runningProcess.ProcessName -Force -ErrorAction Ignore
+                                    Write-ADTLogEntry -Message "Stopping process $($runningApp.Process.ProcessName)..."
+                                    Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
                                 }
                             }
 
-                            if ($welcomeState.RunningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue)
+                            if ($welcomeState.RunningApps = Get-ADTRunningApplications -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue)
                             {
                                 # Apps are still running, give them 2s to close. If they are still running, the Welcome Window will be displayed again.
                                 Write-ADTLogEntry -Message 'Sleeping for 2 seconds because the processes are still not closed...'
@@ -619,10 +619,10 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Force the processes to close silently, without prompting the user.
-                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
+                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningApps = Get-ADTRunningApplications -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
                 {
-                    Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
-                    Stop-Process -InputObject $runningProcesses -Force -ErrorAction Ignore
+                    Write-ADTLogEntry -Message "Force closing application(s) [$(($runningApps.Description | Sort-Object -Unique) -join ',')] without prompting user."
+                    Stop-Process -InputObject $runningApps.Process -Force -ErrorAction Ignore
                     [System.Threading.Thread]::Sleep(2000)
                 }
 

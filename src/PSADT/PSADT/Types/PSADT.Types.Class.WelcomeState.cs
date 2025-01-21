@@ -6,9 +6,9 @@
     public class WelcomeState
     {
         /// <summary>
-        /// Gets/sets the running processes. Untyped as the type is in another assembly.
+        /// Gets/sets the running applications.
         /// </summary>
-        public System.Diagnostics.Process[]? RunningProcesses { get; set; }
+        public RunningApplication[]? RunningApps { get; set; }
 
         /// <summary>
         /// Gets/sets the classic WelcomePrompt's starting position.
@@ -23,7 +23,7 @@
         /// <summary>
         /// Gets/sets the running process descriptions.
         /// </summary>
-        public string[]? RunningProcessDescriptions { get; set; }
+        public string[]? RunningAppDescriptions { get; set; }
 
         /// <summary>
         /// Gets/sets the WelcomePrompt's timer.

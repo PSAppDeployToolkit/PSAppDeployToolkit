@@ -43,17 +43,17 @@ function Show-ADTWelcomePromptFluent
     $adtStrings = Get-ADTStringTable
 
     # Convert the incoming ProcessObject objects into AppProcessInfo objects.
-    $appsToClose = if ($welcomeState.RunningProcesses)
+    $appsToClose = if ($welcomeState.RunningApps)
     {
-        $welcomeState.RunningProcesses | & {
+        $welcomeState.RunningApps | & {
             process
             {
-                $_.Refresh(); if (!$_.HasExited)
+                $_.Process.Refresh(); if (!$_.Process.HasExited)
                 {
                     # Get icon so we can convert it into a media image for the UI.
                     $icon = try
                     {
-                        [PSADT.UserInterface.Utilities.ProcessExtensions]::GetIcon($_, $true)
+                        [PSADT.UserInterface.Utilities.ProcessExtensions]::GetIcon($_.Process, $true)
                     }
                     catch
                     {
@@ -62,12 +62,12 @@ function Show-ADTWelcomePromptFluent
 
                     # Instantiate and return a new AppProcessInfo object.
                     return [PSADT.UserInterface.Services.AppProcessInfo]::new(
-                        $_.ProcessName,
-                        $_.ProcessDescription,
-                        $_.Product,
-                        $_.Company,
+                        $_.Process.ProcessName,
+                        $_.Description,
+                        $_.Process.Product,
+                        $_.Process.Company,
                         $(if ($icon) { [PSADT.UserInterface.Utilities.BitmapExtensions]::ConvertToImageSource($icon.ToBitmap()) }),
-                        $_.StartTime
+                        $_.Process.StartTime
                     )
                 }
             }

@@ -109,6 +109,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Reference Include="Microsoft.Management.Infrastructure" Condition="'$(TargetFramework)' == 'net462'">
+			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\Microsoft.Management.Infrastructure\v4.0_1.0.0.0__31bf3856ad364e35\Microsoft.Management.Infrastructure.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 		<Reference Include="System.Management.Automation" Condition="'$(TargetFramework)' == 'net462'">
 			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
 			<Private>False</Private>
