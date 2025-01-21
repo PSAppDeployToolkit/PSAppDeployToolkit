@@ -9,7 +9,7 @@
     RootModule = 'PSAppDeployToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion = '4.0.5'
+    ModuleVersion = '4.1.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -236,7 +236,7 @@
             ReleaseNotes = 'https://github.com/psappdeploytoolkit/psappdeploytoolkit/releases/latest'
 
             # Prerelease tag for PSGallery.
-            # Prerelease = 'beta1'
+            Prerelease = 'alpha1'
 
         } # End of PSData hashtable
 

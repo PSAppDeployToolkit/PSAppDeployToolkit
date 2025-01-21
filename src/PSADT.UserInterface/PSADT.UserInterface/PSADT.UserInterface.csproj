@@ -19,10 +19,10 @@
 	  <Company>PSAppDeployToolkit Team</Company>
 		<Description>PSAppDeployToolkit User Interface Library</Description>
 		<Copyright>Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.</Copyright>
-		<AssemblyVersion>4.0.5.0</AssemblyVersion>
-		<FileVersion>4.0.5</FileVersion>
-		<InformationalVersion>4.0.5</InformationalVersion>
-		<ApplicationVersion>4.0.5</ApplicationVersion>
+		<AssemblyVersion>4.1.0.0</AssemblyVersion>
+		<FileVersion>4.1.0</FileVersion>
+		<InformationalVersion>4.1.0</InformationalVersion>
+		<ApplicationVersion>4.1.0</ApplicationVersion>
 		<ApplicationIcon>Resources\appIcon.ico</ApplicationIcon>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
