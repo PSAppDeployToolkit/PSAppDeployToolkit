@@ -459,11 +459,11 @@ function Set-ADTActiveSetup
                         $CUStubExePath = Get-ADTPowerShellProcessPath
                         $CUArguments = if ([System.String]::IsNullOrWhiteSpace($Arguments))
                         {
-                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $ExecutionPolicy" })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
+                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $ExecutionPolicy " })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`""
                         }
                         else
                         {
-                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $ExecutionPolicy" })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
+                            "$(if ($PSBoundParameters.ContainsKey('ExecutionPolicy')) { "-ExecutionPolicy $ExecutionPolicy " })-NoProfile -NoLogo -WindowStyle Hidden -File `"$StubExePath`" $Arguments"
                         }
                         $StubPath = "`"$CUStubExePath`" $CUArguments"
                         break
