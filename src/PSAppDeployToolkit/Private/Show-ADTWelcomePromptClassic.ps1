@@ -182,7 +182,7 @@ function Show-ADTWelcomePromptClassic
             # If the countdown is complete, close the application(s) or continue.
             if ($welcomeState.CloseProcessesCountdown.Elapsed -gt $CloseProcessesCountdown)
             {
-                if ($ForceCountdown -and !$welcomeState.RunningAppDescriptions)
+                if ($ForceCountdown -and !$welcomeState.RunningProcessDescriptions)
                 {
                     Write-ADTLogEntry -Message 'Countdown timer has elapsed and no processes running. Force continue.'
                     $buttonContinue.PerformClick()
