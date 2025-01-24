@@ -129,11 +129,11 @@ function Get-ADTApplication
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $updatesSkippedCounter = 0
         $uninstallKeyPaths = $(
-            'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
-            'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+            'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
+            'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
             if ([System.Environment]::Is64BitProcess)
             {
-                'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+                'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
             }
         )
 
@@ -168,110 +168,115 @@ function Get-ADTApplication
 
     process
     {
+        # Create a custom object with the desired properties for the installed applications and sanitize property details.
         Write-ADTLogEntry -Message "Getting information for installed applications$(if ($FilterScript) {' matching the provided FilterScript'})..."
-        try
+        $installedApplication = foreach ($item in (Get-ChildItem -LiteralPath $uninstallKeyPaths -ErrorAction Ignore))
         {
             try
             {
-                # Create a custom object with the desired properties for the installed applications and sanitize property details.
-                $installedApplication = Get-ItemProperty -Path $uninstallKeyPaths -ErrorAction Ignore | & {
-                    process
-                    {
-                        # Cache all PSProperty names within this pipelined object.
-                        $psPropNames = $_.PSObject.Properties.Name
-                        $defaultGuid = [System.Guid]::Empty
-
-                        # Exclude anything without a DisplayName field.
-                        if (!$psPropNames.Contains('DisplayName') -or [System.String]::IsNullOrWhiteSpace($_.DisplayName))
-                        {
-                            return
-                        }
-
-                        # Bypass any updates or hotfixes.
-                        if (!$IncludeUpdatesAndHotfixes -and ($_.DisplayName -match '((?i)kb\d+|(Cumulative|Security) Update|Hotfix)'))
-                        {
-                            $updatesSkippedCounter++
-                            return
-                        }
-
-                        # Apply application type filter if specified.
-                        $windowsInstaller = !!$(if ($psPropNames.Contains('WindowsInstaller')) { $_.WindowsInstaller })
-                        if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
-                        {
-                            return
-                        }
-
-                        # Apply ProductCode filter if specified.
-                        $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($_.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
-                        if ($ProductCode -and (!$appMsiGuid -or ($ProductCode -notcontains $appMsiGuid)))
-                        {
-                            return
-                        }
-
-                        # Apply name filter if specified.
-                        if ($nameFilterScript -and !(& $nameFilterScript))
-                        {
-                            return
-                        }
-
-                        # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
-                        $app = [PSADT.Types.InstalledApplication]::new(
-                            $_.PSPath,
-                            $_.PSParentPath,
-                            $_.PSChildName,
-                            $appMsiGuid,
-                            $_.DisplayName,
-                            $(if ($psPropNames.Contains('DisplayVersion') -and ![System.String]::IsNullOrWhiteSpace($_.DisplayVersion)) { $_.DisplayVersion }),
-                            $(if ($psPropNames.Contains('UninstallString') -and ![System.String]::IsNullOrWhiteSpace($_.UninstallString)) { $_.UninstallString }),
-                            $(if ($psPropNames.Contains('QuietUninstallString') -and ![System.String]::IsNullOrWhiteSpace($_.QuietUninstallString)) { $_.QuietUninstallString }),
-                            $(if ($psPropNames.Contains('InstallSource') -and ![System.String]::IsNullOrWhiteSpace($_.InstallSource)) { $_.InstallSource }),
-                            $(if ($psPropNames.Contains('InstallLocation') -and ![System.String]::IsNullOrWhiteSpace($_.InstallLocation)) { $_.InstallLocation }),
-                            $(if ($psPropNames.Contains('InstallDate') -and ![System.String]::IsNullOrWhiteSpace($_.InstallDate)) { $_.InstallDate }),
-                            $(if ($psPropNames.Contains('Publisher') -and ![System.String]::IsNullOrWhiteSpace($_.Publisher)) { $_.Publisher }),
-                            $(if ($psPropNames.Contains('HelpLink') -and ![System.String]::IsNullOrWhiteSpace($_.HelpLink)) { $_.HelpLink }),
-                            !!$(if ($psPropNames.Contains('SystemComponent')) { $_.SystemComponent }),
-                            $windowsInstaller,
-                            ([System.Environment]::Is64BitProcess -and ($_.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
-                        )
-
-                        # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
-                        if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
-                        {
-                            Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)]$(if ($app.DisplayVersion) {" version [$($app.DisplayVersion)]"})."
-                            return $app
-                        }
-                    }
-                }
-
-                # Write to log the number of entries skipped due to them being considered updates.
-                if (!$IncludeUpdatesAndHotfixes -and $updatesSkippedCounter)
+                try
                 {
-                    if ($updatesSkippedCounter -eq 1)
-                    {
-                        Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
-                    }
-                    else
-                    {
-                        Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
-                    }
-                }
+                    # Set up initial variables.
+                    $appRegProps = Get-ItemProperty -LiteralPath $item.PSPath
+                    $psPropNames = $appRegProps.PSObject.Properties | Select-Object -ExpandProperty Name
+                    $defaultGuid = [System.Guid]::Empty
 
-                # Return any accumulated apps to the caller.
-                if ($installedApplication)
-                {
-                    return $installedApplication
+                    # Exclude anything without any properties.
+                    if (!$psPropNames)
+                    {
+                        continue
+                    }
+
+                    # Exclude anything without a DisplayName field.
+                    if (!$psPropNames.Contains('DisplayName') -or [System.String]::IsNullOrWhiteSpace($appRegProps.DisplayName))
+                    {
+                        continue
+                    }
+
+                    # Bypass any updates or hotfixes.
+                    if (!$IncludeUpdatesAndHotfixes -and ($appRegProps.DisplayName -match '((?i)kb\d+|(Cumulative|Security) Update|Hotfix)'))
+                    {
+                        $updatesSkippedCounter++
+                        continue
+                    }
+
+                    # Apply application type filter if specified.
+                    $windowsInstaller = !!$(if ($psPropNames.Contains('WindowsInstaller')) { $appRegProps.WindowsInstaller })
+                    if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
+                    {
+                        continue
+                    }
+
+                    # Apply ProductCode filter if specified.
+                    $appMsiGuid = if ($windowsInstaller -and [System.Guid]::TryParse($appRegProps.PSChildName, [ref]$defaultGuid)) { $defaultGuid }
+                    if ($ProductCode -and (!$appMsiGuid -or ($ProductCode -notcontains $appMsiGuid)))
+                    {
+                        continue
+                    }
+
+                    # Apply name filter if specified.
+                    if ($nameFilterScript -and !(& $nameFilterScript))
+                    {
+                        continue
+                    }
+
+                    # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
+                    $app = [PSADT.Types.InstalledApplication]::new(
+                        $appRegProps.PSPath,
+                        $appRegProps.PSParentPath,
+                        $appRegProps.PSChildName,
+                        $appMsiGuid,
+                        $appRegProps.DisplayName,
+                        $(if ($psPropNames.Contains('DisplayVersion') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.DisplayVersion)) { $appRegProps.DisplayVersion }),
+                        $(if ($psPropNames.Contains('UninstallString') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.UninstallString)) { $appRegProps.UninstallString }),
+                        $(if ($psPropNames.Contains('QuietUninstallString') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.QuietUninstallString)) { $appRegProps.QuietUninstallString }),
+                        $(if ($psPropNames.Contains('InstallSource') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallSource)) { $appRegProps.InstallSource }),
+                        $(if ($psPropNames.Contains('InstallLocation') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallLocation)) { $appRegProps.InstallLocation }),
+                        $(if ($psPropNames.Contains('InstallDate') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallDate)) { $appRegProps.InstallDate }),
+                        $(if ($psPropNames.Contains('Publisher') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.Publisher)) { $appRegProps.Publisher }),
+                        $(if ($psPropNames.Contains('HelpLink') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.HelpLink)) { $appRegProps.HelpLink }),
+                        !!$(if ($psPropNames.Contains('SystemComponent')) { $appRegProps.SystemComponent }),
+                        $windowsInstaller,
+                        ([System.Environment]::Is64BitProcess -and ($appRegProps.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
+                    )
+
+                    # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
+                    if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
+                    {
+                        Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)]$(if ($app.DisplayVersion) {" version [$($app.DisplayVersion)]"})."
+                        $app
+                    }
                 }
-                Write-ADTLogEntry -Message 'Found no application based on the supplied FilterScript.'
+                catch
+                {
+                    Write-Error -ErrorRecord $_
+                }
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to process the uninstall data [$item]: $($_.Exception.Message)." -ErrorAction SilentlyContinue
             }
         }
-        catch
+
+        # Write to log the number of entries skipped due to them being considered updates.
+        if (!$IncludeUpdatesAndHotfixes -and $updatesSkippedCounter)
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+            if ($updatesSkippedCounter -eq 1)
+            {
+                Write-ADTLogEntry -Message 'Skipped 1 entry while searching, because it was considered a Microsoft update.'
+            }
+            else
+            {
+                Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
+            }
         }
+
+        # Return any accumulated apps to the caller.
+        if ($installedApplication)
+        {
+            return $installedApplication
+        }
+        Write-ADTLogEntry -Message 'Found no application based on the supplied FilterScript.'
     }
 
     end
