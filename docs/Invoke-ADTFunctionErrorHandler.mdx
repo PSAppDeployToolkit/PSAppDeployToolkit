@@ -15,13 +15,6 @@ Handles errors within ADT functions by logging and optionally passing through th
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- [<CommonParameters>]
-```
-
-### LogMessage
-
-```powershell
-Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
  -LogMessage <String> [<CommonParameters>]
 ```
 
@@ -29,21 +22,21 @@ Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- -ResolveErrorProperties <String[]> [<CommonParameters>]
+ -LogMessage <String> -ResolveErrorProperties <String[]> [<CommonParameters>]
 ```
 
 ### AdditionalResolveErrorProperties
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- -AdditionalResolveErrorProperties <String[]> [<CommonParameters>]
+ -LogMessage <String> -AdditionalResolveErrorProperties <String[]> [<CommonParameters>]
 ```
 
 ### DisableErrorResolving
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- [-DisableErrorResolving] [<CommonParameters>]
+ -LogMessage <String> [-DisableErrorResolving] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -127,7 +120,7 @@ The error message to write to the active ADTSession's log file.
 
 ```yaml
 Type: String
-Parameter Sets: LogMessage
+Parameter Sets: (All)
 Aliases:
 
 Required: True
