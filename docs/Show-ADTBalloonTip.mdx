@@ -36,10 +36,10 @@ Displays a balloon tip with the text 'Installation Started' and the title 'Appli
 ### EXAMPLE 2
 
 ```powershell
-Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
+Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
 ```
 
-Displays a balloon tip with the info icon, the text 'Installation Started', the title 'Application Name', and a display duration of 1000 milliseconds.
+Displays a balloon tip with the info icon, the text 'Installation Started', and the title 'Application Name'
 
 ## PARAMETERS
 
@@ -80,8 +80,7 @@ Accept wildcard characters: False
 
 ### -BalloonTipTime
 
-Time in milliseconds to display the balloon tip.
-Default: 10000.
+This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.
 
 ```yaml
 Type: UInt32
