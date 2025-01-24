@@ -131,7 +131,7 @@ function Show-ADTWelcomePromptClassic
     # Set up some default values.
     $controlSize = [System.Drawing.Size]::new($Script:Dialogs.Classic.Width, 0)
     $paddingNone = [System.Windows.Forms.Padding]::new(0, 0, 0, 0)
-    $buttonSize = [System.Drawing.Size]::new(130, 24)
+    $buttonSize = [System.Drawing.Size]::new(138, 24)
 
     # Add the timer if it doesn't already exist - this avoids the timer being reset if the continue button is clicked.
     if (!$welcomeState.WelcomeTimer)
@@ -497,7 +497,7 @@ function Show-ADTWelcomePromptClassic
         $buttonDefer = [System.Windows.Forms.Button]::new()
         $buttonDefer.MinimumSize = $buttonDefer.ClientSize = $buttonDefer.MaximumSize = $buttonSize
         $buttonDefer.Margin = $buttonDefer.Padding = $paddingNone
-        $buttonDefer.Location = [System.Drawing.Point]::new((14, 160)[$showCloseProcesses], 4)
+        $buttonDefer.Location = [System.Drawing.Point]::new((14, 154)[$showCloseProcesses], 4)
         $buttonDefer.DialogResult = [System.Windows.Forms.DialogResult]::No
         $buttonDefer.Font = $Script:Dialogs.Classic.Font
         $buttonDefer.Name = 'ButtonDefer'
@@ -512,7 +512,7 @@ function Show-ADTWelcomePromptClassic
     $buttonContinue = [System.Windows.Forms.Button]::new()
     $buttonContinue.MinimumSize = $buttonContinue.ClientSize = $buttonContinue.MaximumSize = $buttonSize
     $buttonContinue.Margin = $buttonContinue.Padding = $paddingNone
-    $buttonContinue.Location = [System.Drawing.Point]::new(306, 4)
+    $buttonContinue.Location = [System.Drawing.Point]::new(294, 4)
     $buttonContinue.DialogResult = [System.Windows.Forms.DialogResult]::OK
     $buttonContinue.Font = $Script:Dialogs.Classic.Font
     $buttonContinue.Name = 'ButtonContinue'
