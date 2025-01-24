@@ -82,7 +82,7 @@ function Invoke-ADTFunctionErrorHandler
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'LogMessage')]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$LogMessage,
 
