@@ -22,7 +22,7 @@ function Show-ADTBalloonTip
         Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
 
     .PARAMETER BalloonTipTime
-        Time in milliseconds to display the balloon tip. Default: 10000.
+        This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.
 
     .INPUTS
         None
@@ -40,9 +40,9 @@ function Show-ADTBalloonTip
         Displays a balloon tip with the text 'Installation Started' and the title 'Application Name'.
 
     .EXAMPLE
-        Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name' -BalloonTipTime 1000
+        Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
 
-        Displays a balloon tip with the info icon, the text 'Installation Started', the title 'Application Name', and a display duration of 1000 milliseconds.
+        Displays a balloon tip with the info icon, the text 'Installation Started', and the title 'Application Name'
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -69,6 +69,7 @@ function Show-ADTBalloonTip
         [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
 
         [Parameter(Mandatory = $false)]
+        [System.Obsolete("This parameter will be removed in PSAppDeployToolkit 4.2.0.")]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$BalloonTipTime = 10000
     )
@@ -107,6 +108,13 @@ function Show-ADTBalloonTip
         {
             $PSBoundParameters.Add('BalloonTipTitle', $adtSession.InstallTitle)
         }
+
+        # Log the deprecation of -WaitSeconds to the log.
+        if ($PSBoundParameters.ContainsKey('BalloonTipTime'))
+        {
+            Write-ADTLogEntry -Message "The parameter [BalloonTipTime] is obsolete and will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
+            $null = $PSBoundParameters.Remove('BalloonTipTime')
+        }
     }
 
     process
@@ -140,13 +148,13 @@ function Show-ADTBalloonTip
 
                 # Set up the balloon tip.
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude BalloonTipTime
+                $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
                 $nabtParams.Add('Icon', $Script:Dialogs.Classic.Assets.Icon); $nabtParams.Add('Visible', $true)
                 $notifyIcon = [System.Windows.Forms.NotifyIcon]$nabtParams
 
                 # Add an event to manage disposal of the object before displaying.
                 $null = Register-ObjectEvent -InputObject $notifyIcon -EventName BalloonTipShown -Action { $Sender.Dispose() }
-                $notifyIcon.ShowBalloonTip($BalloonTipTime)
+                $notifyIcon.ShowBalloonTip($null)
             }
             catch
             {
