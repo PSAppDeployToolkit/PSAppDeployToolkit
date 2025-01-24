@@ -98,13 +98,13 @@
                 Message = @{
                     Install = "Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
                     Repair = "Die folgenden Programme müssen geschlossen werden, bevor die Reparatur fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
-                    Deinstallieren = "Die folgenden Programme müssen geschlossen werden, bevor die Deinstallation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
+                    Uninstall = "Die folgenden Programme müssen geschlossen werden, bevor die Deinstallation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
                 }
             }
             Defer = @{
                 Deadline = 'Frist:'
                 ExpiryMessage = @{
-                    Installieren = 'Sie können die Installation zurückstellen, bis die Zurückstellung abläuft:'
+                    Install = 'Sie können die Installation zurückstellen, bis die Zurückstellung abläuft:'
                     Repair = 'Sie können die Reparatur verschieben, bis die Verschiebung abläuft:'
                     Uninstall = 'Sie können die Deinstallation verschieben, bis die Verschiebung abläuft:'
                 }
@@ -132,8 +132,8 @@
             DialogMessage = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
             DialogMessageNoProcesses = @{
                 Install = 'Wählen Sie Installieren aus, um mit der Installation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie die Installation auch verschieben.'
-                Reparieren = 'Wählen Sie Reparieren aus, um mit der Reparatur fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Reparatur aufschieben.'
-                Deinstallieren = 'Wählen Sie Deinstallieren aus, um mit der Deinstallation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Deinstallation aufschieben.'
+                Repair = 'Wählen Sie Reparieren aus, um mit der Reparatur fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Reparatur aufschieben.'
+                Uninstall = 'Wählen Sie Deinstallieren aus, um mit der Deinstallation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Deinstallation aufschieben.'
             }
             ButtonDeferRemaining = 'bleiben'
             ButtonLeftText = 'Aufschieben'
