@@ -95,43 +95,34 @@ function Get-ADTPendingReboot
                 $IsAppVRebootPending = Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Software\Microsoft\AppV\Client\PendingTasks'
 
                 # Get the value of PendingFileRenameOperations.
-                $PendingFileRenameOperations = if ($IsFileRenameRebootPending = Test-ADTRegistryValue -Key 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' -Name 'PendingFileRenameOperations')
+                $IsFileRenameRebootPending = !!($PendingFileRenameOperations = Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | Select-Object -ExpandProperty PendingFileRenameOperations -ErrorAction Ignore)
+
+                # Determine SCCM 2012 Client reboot pending status.
+                $IsSCCMClientRebootPending = if ((Get-CimInstance -Namespace root -ClassName __NAMESPACE -Verbose:$false).Name.Contains('CCM'))
                 {
                     try
                     {
-                        Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | Select-Object -ExpandProperty PendingFileRenameOperations
+                        if (($SCCMClientRebootStatus = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending -Verbose:$false).ReturnValue -ne 0)
+                        {
+                            $naerParams = @{
+                                Exception = [System.InvalidOperationException]::new("The 'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)].")
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                ErrorId = 'DetermineIfRebootPendingInvalidReturn'
+                                TargetObject = $SCCMClientRebootStatus
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
+                        }
+                        $SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending
                     }
                     catch
                     {
-                        Write-ADTLogEntry -Message "Failed to get PendingFileRenameOperations.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                        $null = $PendRebootErrorMsg.Add("Failed to get PendingFileRenameOperations: $($_.Exception.Message)")
+                        Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                        $null = $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
                     }
-                }
-
-                # Determine SCCM 2012 Client reboot pending status.
-                $IsSCCMClientRebootPending = try
-                {
-                    if (($SCCMClientRebootStatus = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending).ReturnValue -eq 0)
-                    {
-                        $SCCMClientRebootStatus.IsHardRebootPending -or $SCCMClientRebootStatus.RebootPending
-                    }
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                    $null = $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
                 }
 
                 # Determine Intune Management Extension reboot pending status.
-                $IsIntuneClientRebootPending = try
-                {
-                    !!(Get-Item -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\RebootSettings\RebootFlag')
-                }
-                catch
-                {
-                    Write-ADTLogEntry -Message "Failed to get IsIntuneClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                    $null = $PendRebootErrorMsg.Add("Failed to get IsIntuneClientRebootPending: $($_.Exception.Message)")
-                }
+                $IsIntuneClientRebootPending = Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\RebootSettings\RebootFlag'
 
                 # Create a custom object containing pending reboot information for the system.
                 $PendingRebootInfo = [PSADT.Types.RebootInfo]::new(
