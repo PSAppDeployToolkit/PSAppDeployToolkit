@@ -113,7 +113,6 @@ function Show-ADTBalloonTip
         if ($PSBoundParameters.ContainsKey('BalloonTipTime'))
         {
             Write-ADTLogEntry -Message "The parameter [BalloonTipTime] is obsolete and will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
-            $null = $PSBoundParameters.Remove('BalloonTipTime')
         }
     }
 
@@ -148,7 +147,7 @@ function Show-ADTBalloonTip
 
                 # Set up the balloon tip.
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
+                $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude BalloonTipTime
                 $nabtParams.Add('Icon', $Script:Dialogs.Classic.Assets.Icon); $nabtParams.Add('Visible', $true)
                 $notifyIcon = [System.Windows.Forms.NotifyIcon]$nabtParams
 
