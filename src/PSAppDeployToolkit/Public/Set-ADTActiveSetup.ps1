@@ -267,21 +267,21 @@ function Set-ADTActiveSetup
             }
 
             # After cleanup, the HKLM Version property is empty. Considering it missing. HKCU is present so nothing to run.
-            if (!($HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } }))))
+            if (!([System.Object]$HKLMValidVer = [System.String]::Join($null, ($HKLMVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_)) { return $_ } elseif ($_ -eq ',') { return '.' } } }))) -or ![System.Version]::TryParse($HKLMValidVer, [ref]$HKLMValidVer))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKLM Version property is invalid.'
                 return $false
             }
 
             # After cleanup, the HKCU Version property is empty while HKLM Version property is not. Run the StubPath.
-            if (!($HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_) -or ($_ -eq ',')) { return $_ } } }))))
+            if (!([System.Object]$HKCUValidVer = [System.String]::Join($null, ($HKCUVer.GetEnumerator() | & { process { if ([System.Char]::IsDigit($_)) { return $_ } elseif ($_ -eq ',') { return '.' } } }))) -or ![System.Version]::TryParse($HKCUValidVer, [ref]$HKCUValidVer))
             {
                 Write-ADTLogEntry 'HKLM and HKCU active setup entries are present. HKCU Version property is invalid.'
                 return $true
             }
 
             # Both entries present, with a Version property. Compare the Versions.
-            if (([System.Version]$HKLMValidVer.Replace(',', '.')) -gt ([System.Version]$HKCUValidVer.Replace(',', '.')))
+            if ($HKLMValidVer -gt $HKCUValidVer)
             {
                 # HKLM is greater, run the StubPath.
                 Write-ADTLogEntry "HKLM and HKCU active setup entries are present. Both contain Version properties, and the HKLM Version is greater."
