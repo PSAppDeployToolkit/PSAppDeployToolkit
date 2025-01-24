@@ -94,7 +94,7 @@ jobs:
         if-no-files-found: error
         overwrite: true
     - name: Update Website Docs
-      if: github.ref == 'refs/heads/develop'
+      if: github.ref == 'refs/heads/4.0.x'
       shell: powershell
       env:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
