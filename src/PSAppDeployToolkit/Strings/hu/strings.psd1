@@ -90,7 +90,7 @@
     WelcomePrompt = @{
         Classic = @{
             Close = @{
-                ButtonClose = 'Close &Programok bezárása'
+                ButtonClose = 'Alkalmazások bezárása'
                 ButtonContinue = '&Folytatás'
                 ButtonContinueTooltip = 'Csak a fent felsorolt alkalmazás(ok) bezárása után válassza a „Folytatás” lehetőséget.'
                 ButtonDefer = '&Elhalasztás'

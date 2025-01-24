@@ -90,7 +90,7 @@
     WelcomePrompt = @{
         Classic = @{
             Close = @{
-                ButtonClose = 'Schließen &Programme'
+                ButtonClose = 'Programme &schließen'
                 ButtonContinue = '&Weiter'
                 ButtonContinueTooltip = 'Wählen Sie erst „Weiter“, nachdem Sie die oben aufgeführten Anwendungen geschlossen haben.'
                 ButtonDefer = '&Aufschieben'
