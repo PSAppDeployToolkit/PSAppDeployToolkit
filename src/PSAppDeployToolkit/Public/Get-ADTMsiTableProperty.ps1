@@ -39,9 +39,9 @@ function Get-ADTMsiTableProperty
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Management.Automation.PSObject
+        System.Collections.ObjectModel.ReadOnlyDictionary`2[[System.String],[System.Object]]
 
-        Returns a custom object with the following properties: 'Name' and 'Value'.
+        Returns a readonly dictionary with the properties as key/value pairs.
 
     .EXAMPLE
         Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst'
@@ -49,9 +49,9 @@ function Get-ADTMsiTableProperty
         Retrieve all of the properties from the default 'Property' table.
 
     .EXAMPLE
-        Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property' | Select-Object -ExpandProperty ProductCode
+        (Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property').ProductCode
 
-        Retrieve all of the properties from the 'Property' table and then pipe to Select-Object to select the ProductCode property.
+        Retrieve all of the properties from the 'Property' table, then retrieves just the 'ProductCode' member.
 
     .EXAMPLE
         Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -GetSummaryInformation
