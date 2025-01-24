@@ -329,7 +329,7 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
-        [ValidateNotNullOrEmpty()]
+        [AllowNull()][AllowEmptyCollection()]
         [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
