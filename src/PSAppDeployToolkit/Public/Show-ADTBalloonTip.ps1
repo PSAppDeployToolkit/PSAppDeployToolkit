@@ -138,11 +138,15 @@ function Show-ADTBalloonTip
                     return
                 }
 
-                # Display the balloon tip to the user. As all assets are in memory, there's nothing to dispose.
+                # Set up the balloon tip.
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
                 $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude BalloonTipTime
                 $nabtParams.Add('Icon', $Script:Dialogs.Classic.Assets.Icon); $nabtParams.Add('Visible', $true)
-                ([System.Windows.Forms.NotifyIcon]$nabtParams).ShowBalloonTip($BalloonTipTime)
+                $notifyIcon = [System.Windows.Forms.NotifyIcon]$nabtParams
+
+                # Add an event to manage disposal of the object before displaying.
+                $null = Register-ObjectEvent -InputObject $notifyIcon -EventName BalloonTipShown -Action { $Sender.Dispose() }
+                $notifyIcon.ShowBalloonTip($BalloonTipTime)
             }
             catch
             {
