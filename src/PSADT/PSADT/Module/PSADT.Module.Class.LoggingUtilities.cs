@@ -67,7 +67,7 @@ namespace PSADT.Module
             // Store log string to format with message.
             StringDictionary logFormats = new StringDictionary()
             {
-                { "Legacy", $"[{dateNow.ToString("O").Split('T')[0]} {logTime}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
+                { "Legacy", $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
                 { "CMTrace", $"<![LOG[{(null != scriptSection ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{logTime}{LogTimeOffset}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
             };
 
