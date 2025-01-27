@@ -545,7 +545,7 @@
              <code lang="csharp">
              IContentDialogService contentDialogService = new ContentDialogService();
              contentDialogService.SetContentPresenter(RootContentDialogPresenter);
-          <br />
+
              await _contentDialogService.ShowAsync(
                  new ContentDialog(){
                      Title = "The cake?",
@@ -1279,17 +1279,17 @@
              </code>
              <code lang="csharp">
              var contentDialog = new ContentDialog(RootContentDialogPresenter);
-          <br />
+
              contentDialog.SetCurrentValue(ContentDialog.TitleProperty, "Hello World");
              contentDialog.SetCurrentValue(ContentControl.ContentProperty, "This is a message");
              contentDialog.SetCurrentValue(ContentDialog.CloseButtonTextProperty, "Close this dialog");
-          <br />
+
              await contentDialog.ShowAsync(cancellationToken);
              </code>
              <code lang="csharp">
              var contentDialogService = new ContentDialogService();
              contentDialogService.SetContentPresenter(RootContentDialogPresenter);
-          <br />
+
              await _contentDialogService.ShowSimpleDialogAsync(
                  new SimpleContentDialogCreateOptions()
                      {
@@ -6303,7 +6303,7 @@
              <code lang="csharp">
              IContentDialogService contentDialogService = new ContentDialogService();
              contentDialogService.SetContentPresenter(RootContentDialogPresenter);
-          <br />
+
              await _contentDialogService.ShowAsync(
                  new ContentDialog(){
                      Title = "The cake?",
@@ -9860,7 +9860,7 @@
              When one or more valid methods
              with this attribute are found in a compilation, the compiler will
              emit a module initializer which calls each of the attributed methods.
-          <br />
+
              Certain requirements are imposed on any method targeted with this attribute:
              - The method must be `static`.
              - The method must be an ordinary member method, as opposed to a property accessor, constructor, local function, etc.
@@ -9868,7 +9868,7 @@
              - The method must return `void`.
              - The method must not be generic or be contained in a generic type.
              - The method's effective accessibility must be `internal` or `public`.
-          <br />
+
              The specification for module initializers in the .NET runtime can be found here:
              https://github.com/dotnet/runtime/blob/main/docs/design/specs/Ecma-335-Augments.md#module-initializer
              </remarks>
