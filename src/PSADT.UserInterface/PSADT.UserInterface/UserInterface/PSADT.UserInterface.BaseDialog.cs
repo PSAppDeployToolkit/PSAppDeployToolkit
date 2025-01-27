@@ -61,7 +61,7 @@ namespace PSADT.UserInterface
         /// <param name="e"></param>
         protected override void OnSourceInitialized(EventArgs e)
         {
-            
+
             base.OnSourceInitialized(e);
 
             // Force layout update

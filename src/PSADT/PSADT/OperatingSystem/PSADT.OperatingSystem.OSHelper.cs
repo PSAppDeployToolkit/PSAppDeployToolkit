@@ -40,7 +40,7 @@ namespace PSADT.OperatingSystem
         public static int? GetOsRevision()
         {
             string? OSVersionRevision = String.Empty;
-            
+
             if (TestValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR"))
             {
                 OSVersionRevision = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR");
@@ -99,7 +99,7 @@ namespace PSADT.OperatingSystem
 
             return OSReleaseIdName;
         }
-        
+
         public static bool GetIsWindowsIoTCore(PRODUCT_SKU ProductType)
         {
             if ((ProductType == PRODUCT_SKU.PRODUCT_IOTENTERPRISE) || (ProductType == PRODUCT_SKU.PRODUCT_IOTUAP))
@@ -148,7 +148,7 @@ namespace PSADT.OperatingSystem
                 string? editionId = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID");
 
                 string? productName = GetValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName");
-                
+
 
 
                 // Typical EditionID values for multi-session workstations

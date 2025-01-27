@@ -49,7 +49,7 @@
        DPIs. Windows Presentation Foundation (WPF) applications are automatically DPI-aware and do not need 
        to opt in. Windows Forms applications targeting .NET Framework 4.6 that opt into this setting, should 
        also set the 'EnableWindowsFormsHighDpiAutoResizing' setting to 'true' in their app.config. 
-       
+
        Makes the application long-path aware. See https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation -->
 
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
