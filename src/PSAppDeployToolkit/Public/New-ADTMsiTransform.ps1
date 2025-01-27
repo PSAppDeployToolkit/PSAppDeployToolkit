@@ -24,8 +24,8 @@ function New-ADTMsiTransform
 
         Default is:
 
-        1. If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
-        2. If only -MsiPath was specified, then <MsiPath>.mst
+        1) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
+        2) If only -MsiPath was specified, then <MsiPath>.mst
 
     .PARAMETER TransformProperties
         Hashtable which contains calls to Set-ADTMsiProperty for configuring the desired properties which should be included in the new transform file.
