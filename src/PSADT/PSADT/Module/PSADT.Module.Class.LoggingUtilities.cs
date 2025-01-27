@@ -67,7 +67,7 @@ namespace PSADT.Module
             StringDictionary logFormats = new StringDictionary()
             {
                 { "Legacy", $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-                { "CMTrace", $"<![LOG[{(null != scriptSection ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString("HH\\:mm\\:ss.fff")}{LogTimeOffset}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
+                { "CMTrace", $"<![LOG[{(null != scriptSection ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString("HH\\:mm\\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
             };
 
             // Write out all messages to disk if configured/permitted to do so.
@@ -190,11 +190,6 @@ namespace PSADT.Module
         /// Gets the Write-LogEntry delegate script block.
         /// </summary>
         private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Format $args[3] -Verbose:($args[4])");
-
-        /// <summary>
-        /// Gets the current timezone bias for the CMTrace log formatted string.
-        /// </summary>
-        private static readonly string LogTimeOffset = TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString();
 
         /// <summary>
         /// Gets the current process ID.
