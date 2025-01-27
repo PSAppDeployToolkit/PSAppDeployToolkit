@@ -14,15 +14,32 @@ Show a welcome dialog prompting the user with information about the deployment a
 ### Interactive (Default)
 
 ```powershell
-Show-ADTInstallationWelcome [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] [-CheckDiskSpace]
- -Title <String> -Subtitle <String> [<CommonParameters>]
+Show-ADTInstallationWelcome [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] -Title <String>
+ -Subtitle <String> [<CommonParameters>]
+```
+
+### SilentCloseProcessesCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-Silent] [-BlockExecution] [-CheckDiskSpace]
+ [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### SilentCloseProcesses
 
 ```powershell
-Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-Silent] [-BlockExecution] [-CheckDiskSpace]
- -Title <String> -Subtitle <String> [<CommonParameters>]
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-Silent] [-BlockExecution] -Title <String>
+ -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseProcesses]
+ -ForceCloseProcessesCountdown <UInt32> [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+ [-DeferRunInterval <TimeSpan>] [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows]
+ [-NotTopMost] [-CustomText] [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown
@@ -31,7 +48,17 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-Silent] [-BlockE
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseProcesses]
  -ForceCloseProcessesCountdown <UInt32> [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-DeferRunInterval <TimeSpan>] [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows]
- [-NotTopMost] [-CustomText] [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-NotTopMost] [-CustomText] -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseProcesses]
+ -CloseProcessesCountdown <UInt32> [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+ [-DeferRunInterval <TimeSpan>] [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows]
+ [-NotTopMost] [-CustomText] [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown
@@ -40,7 +67,17 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseP
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseProcesses]
  -CloseProcessesCountdown <UInt32> [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-DeferRunInterval <TimeSpan>] [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows]
- [-NotTopMost] [-CustomText] [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-NotTopMost] [-CustomText] -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseProcesses]
+ -ForceCountdown <UInt32> [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+ [-DeferRunInterval <TimeSpan>] [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows]
+ [-NotTopMost] [-CustomText] [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown
@@ -49,7 +86,16 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseP
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseProcesses]
  -ForceCountdown <UInt32> [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-DeferRunInterval <TimeSpan>] [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows]
- [-NotTopMost] [-CustomText] [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-NotTopMost] [-CustomText] -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseProcesses]
+ [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>]
+ [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
+ [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesAllowDeferCloseProcesses
@@ -58,7 +104,17 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseP
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseProcesses]
  [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>]
  [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
- [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer]
+ -ForceCloseProcessesCountdown <UInt32> [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
+ [-DeferRunInterval <TimeSpan>] [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows]
+ [-NotTopMost] [-CustomText] [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown
@@ -67,7 +123,16 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDeferCloseP
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer]
  -ForceCloseProcessesCountdown <UInt32> [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>]
  [-DeferRunInterval <TimeSpan>] [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows]
- [-NotTopMost] [-CustomText] [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-NotTopMost] [-CustomText] -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] -CloseProcessesCountdown <UInt32>
+ [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>]
+ [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
+ [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesAllowDeferCloseProcessesCountdown
@@ -76,7 +141,16 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer]
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] -CloseProcessesCountdown <UInt32>
  [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>]
  [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
- [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] -ForceCountdown <UInt32>
+ [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>]
+ [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
+ [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesAllowDeferForceCountdown
@@ -85,7 +159,16 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] -Clo
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] -ForceCountdown <UInt32>
  [-DeferTimes <UInt32>] [-DeferDays <UInt32>] [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>]
  [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
- [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesAllowDeferCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] [-DeferTimes <UInt32>]
+ [-DeferDays <UInt32>] [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>] [-BlockExecution]
+ [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] [-CheckDiskSpace]
+ [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesAllowDefer
@@ -93,8 +176,16 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] -For
 ```powershell
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] [-DeferTimes <UInt32>]
  [-DeferDays <UInt32>] [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>] [-BlockExecution]
- [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] [-CheckDiskSpace]
- -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] -Title <String>
+ -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> -ForceCloseProcessesCountdown <UInt32>
+ [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
+ [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesForceCloseProcessesCountdown
@@ -102,7 +193,15 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-AllowDefer] [-De
 ```powershell
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> -ForceCloseProcessesCountdown <UInt32>
  [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
- [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> -CloseProcessesCountdown <UInt32>
+ [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
+ [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcessesCloseProcessesCountdown
@@ -110,22 +209,47 @@ Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> -ForceCloseProcess
 ```powershell
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> -CloseProcessesCountdown <UInt32>
  [-BlockExecution] [-PromptToSave] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText]
- [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveCloseProcessesCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-BlockExecution] [-PromptToSave]
+ [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] [-CheckDiskSpace]
+ [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### InteractiveCloseProcesses
 
 ```powershell
 Show-ADTInstallationWelcome -CloseProcesses <ProcessObject[]> [-BlockExecution] [-PromptToSave]
- [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] [-CheckDiskSpace] -Title <String>
- -Subtitle <String> [<CommonParameters>]
+ [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
+```
+
+### InteractiveAllowDeferForceCountdownCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome [-AllowDefer] -ForceCountdown <UInt32> [-PersistPrompt] [-NoMinimizeWindows]
+ [-NotTopMost] [-CustomText] [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ### InteractiveAllowDeferForceCountdown
 
 ```powershell
 Show-ADTInstallationWelcome [-AllowDefer] -ForceCountdown <UInt32> [-PersistPrompt] [-NoMinimizeWindows]
- [-NotTopMost] [-CustomText] [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-NotTopMost] [-CustomText] -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### InteractiveAllowDeferCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome [-AllowDefer] [-DeferTimes <UInt32>] [-DeferDays <UInt32>]
+ [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost]
+ [-CustomText] [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ### InteractiveAllowDefer
@@ -133,20 +257,27 @@ Show-ADTInstallationWelcome [-AllowDefer] -ForceCountdown <UInt32> [-PersistProm
 ```powershell
 Show-ADTInstallationWelcome [-AllowDefer] [-DeferTimes <UInt32>] [-DeferDays <UInt32>]
  [-DeferDeadline <String>] [-DeferRunInterval <TimeSpan>] [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost]
- [-CustomText] [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-CustomText] -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### SilentCheckDiskSpace
+
+```powershell
+Show-ADTInstallationWelcome [-Silent] [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String>
+ -Subtitle <String> [<CommonParameters>]
 ```
 
 ### Silent
 
 ```powershell
-Show-ADTInstallationWelcome [-Silent] [-CheckDiskSpace] -Title <String> -Subtitle <String> [<CommonParameters>]
+Show-ADTInstallationWelcome [-Silent] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
-### CheckDiskSpace
+### InteractiveCheckDiskSpace
 
 ```powershell
-Show-ADTInstallationWelcome [-CheckDiskSpace] [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String>
- [<CommonParameters>]
+Show-ADTInstallationWelcome [-PersistPrompt] [-NoMinimizeWindows] [-NotTopMost] [-CustomText] [-CheckDiskSpace]
+ [-RequiredDiskSpace <UInt32>] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -226,11 +357,11 @@ When deferral expires, prompt the user to close the applications and automatical
 
 Name of the process to stop (do not include the .exe).
 Specify multiple processes separated by a comma.
-Specify custom descriptions like this: @\{ Name = 'winword'; Description = 'Microsoft Office Word'\},@\{ Name = 'excel'; Description = 'Microsoft Office Excel'\}
+Specify custom descriptions like this: `@\{ Name = 'winword'; Description = 'Microsoft Office Word' \}, @\{ Name = 'excel'; Description = 'Microsoft Office Excel' \}`
 
 ```yaml
 Type: ProcessObject[]
-Parameter Sets: SilentCloseProcesses, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcesses
+Parameter Sets: SilentCloseProcessesCheckDiskSpace, SilentCloseProcesses, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesCheckDiskSpace, InteractiveCloseProcesses
 Aliases:
 
 Required: True
@@ -246,7 +377,7 @@ Enables an optional defer button to allow the user to defer the deployment.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveAllowDeferForceCountdown, InteractiveAllowDefer
+Parameter Sets: InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveAllowDeferForceCountdownCheckDiskSpace, InteractiveAllowDeferForceCountdown, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer
 Aliases:
 
 Required: True
@@ -259,11 +390,11 @@ Accept wildcard characters: False
 ### -AllowDeferCloseProcesses
 
 Enables an optional defer button to allow the user to defer the deployment only if there are running applications that need to be closed.
-This parameter automatically enables -AllowDefer
+This parameter automatically enables `-AllowDefer`.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses
 Aliases:
 
 Required: True
@@ -279,7 +410,7 @@ Stop processes without prompting the user.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: SilentCloseProcesses, Silent
+Parameter Sets: SilentCloseProcessesCheckDiskSpace, SilentCloseProcesses, SilentCheckDiskSpace, Silent
 Aliases:
 
 Required: True
@@ -296,7 +427,7 @@ This only takes effect if deferral is not allowed or has expired.
 
 ```yaml
 Type: UInt32
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdown
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdown
 Aliases:
 
 Required: True
@@ -312,7 +443,7 @@ Option to provide a countdown in seconds until the specified applications are au
 
 ```yaml
 Type: UInt32
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesForceCloseProcessesCountdown
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdown
 Aliases:
 
 Required: True
@@ -328,7 +459,7 @@ Specify a countdown to display before automatically proceeding with the deployme
 
 ```yaml
 Type: UInt32
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveAllowDeferForceCountdown
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveAllowDeferForceCountdownCheckDiskSpace, InteractiveAllowDeferForceCountdown
 Aliases:
 
 Required: True
@@ -344,7 +475,7 @@ Specify the number of times the deployment can be deferred.
 
 ```yaml
 Type: UInt32
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveAllowDefer
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer
 Aliases:
 
 Required: False
@@ -361,7 +492,7 @@ This is converted to a deadline.
 
 ```yaml
 Type: UInt32
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveAllowDefer
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer
 Aliases:
 
 Required: False
@@ -377,15 +508,15 @@ Specify the deadline date until which the deployment can be deferred.
 
 Specify the date in the local culture if the script is intended for that same culture.
 
-If the script is intended to run on EN-US machines, specify the date in the format: "08/25/2013" or "08-25-2013" or "08-25-2013 18:00:00"
+If the script is intended to run on en-US machines, specify the date in the format: `08/25/2013`, or `08-25-2013`, or `08-25-2013 18:00:00`.
 
-If the script is intended for multiple cultures, specify the date in the universal sortable date/time format: "2013-08-22 11:51:52Z"
+If the script is intended for multiple cultures, specify the date in the universal sortable date/time format: `2013-08-22 11:51:52Z`.
 
 The deadline date will be displayed to the user in the format of their culture.
 
 ```yaml
 Type: String
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveAllowDefer
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer
 Aliases:
 
 Required: False
@@ -407,7 +538,7 @@ Example:
 
 ```yaml
 Type: TimeSpan
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveAllowDefer
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer
 Aliases:
 
 Required: False
@@ -423,7 +554,7 @@ Option to prevent the user from launching processes/applications, specified in -
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: SilentCloseProcesses, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcesses
+Parameter Sets: SilentCloseProcessesCheckDiskSpace, SilentCloseProcesses, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesCheckDiskSpace, InteractiveCloseProcesses
 Aliases:
 
 Required: False
@@ -440,7 +571,7 @@ Option does not work in SYSTEM context unless toolkit launched with "psexec.exe 
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcesses
+Parameter Sets: InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesCheckDiskSpace, InteractiveCloseProcesses
 Aliases:
 
 Required: False
@@ -458,7 +589,7 @@ This only takes effect if deferral is not allowed or has expired.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Interactive, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcesses, InteractiveAllowDeferForceCountdown, InteractiveAllowDefer
+Parameter Sets: Interactive, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesCheckDiskSpace, InteractiveCloseProcesses, InteractiveAllowDeferForceCountdownCheckDiskSpace, InteractiveAllowDeferForceCountdown, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer, InteractiveCheckDiskSpace
 Aliases:
 
 Required: False
@@ -471,11 +602,10 @@ Accept wildcard characters: False
 ### -NoMinimizeWindows
 
 Specifies whether to minimize other windows when displaying prompt.
-Default: $false.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Interactive, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcesses, InteractiveAllowDeferForceCountdown, InteractiveAllowDefer
+Parameter Sets: Interactive, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesCheckDiskSpace, InteractiveCloseProcesses, InteractiveAllowDeferForceCountdownCheckDiskSpace, InteractiveAllowDeferForceCountdown, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer, InteractiveCheckDiskSpace
 Aliases:
 
 Required: False
@@ -487,11 +617,11 @@ Accept wildcard characters: False
 
 ### -NotTopMost
 
-Specifies whether the window is the topmost window.
+Specifies whether the windows is the topmost window.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Interactive, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcesses, InteractiveAllowDeferForceCountdown, InteractiveAllowDefer
+Parameter Sets: Interactive, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesCheckDiskSpace, InteractiveCloseProcesses, InteractiveAllowDeferForceCountdownCheckDiskSpace, InteractiveAllowDeferForceCountdown, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer, InteractiveCheckDiskSpace
 Aliases:
 
 Required: False
@@ -503,12 +633,12 @@ Accept wildcard characters: False
 
 ### -CustomText
 
-Specify whether to display a custom message specified in the string.psd1 file.
-Custom message must be populated for each language section in the string.psd1 file.
+Specify whether to display a custom message specified in the `strings.psd1` file.
+Custom message must be populated for each language section in the `strings.psd1` file.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Interactive, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcesses, InteractiveAllowDeferForceCountdown, InteractiveAllowDefer
+Parameter Sets: Interactive, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcesses, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdown, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdown, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesAllowDefer, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdown, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdown, InteractiveCloseProcessesCheckDiskSpace, InteractiveCloseProcesses, InteractiveAllowDeferForceCountdownCheckDiskSpace, InteractiveAllowDeferForceCountdown, InteractiveAllowDeferCheckDiskSpace, InteractiveAllowDefer, InteractiveCheckDiskSpace
 Aliases:
 
 Required: False
@@ -526,10 +656,10 @@ If this parameter is specified without the RequiredDiskSpace parameter, the requ
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: SilentCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCheckDiskSpace, InteractiveAllowDeferForceCountdownCheckDiskSpace, InteractiveAllowDeferCheckDiskSpace, SilentCheckDiskSpace, InteractiveCheckDiskSpace
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: False
 Accept pipeline input: False
@@ -542,7 +672,7 @@ Specify required disk space in MB, used in combination with CheckDiskSpace.
 
 ```yaml
 Type: UInt32
-Parameter Sets: CheckDiskSpace
+Parameter Sets: SilentCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace, InteractiveCloseProcessesAllowDeferCheckDiskSpace, InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace, InteractiveCloseProcessesCheckDiskSpace, InteractiveAllowDeferForceCountdownCheckDiskSpace, InteractiveAllowDeferCheckDiskSpace, SilentCheckDiskSpace, InteractiveCheckDiskSpace
 Aliases:
 
 Required: False
