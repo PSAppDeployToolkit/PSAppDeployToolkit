@@ -800,7 +800,7 @@ namespace PSADT.Module
         /// <returns>The call stack frame of the log entry caller.</returns>
         private CallStackFrame GetLogEntryCallerInternal()
         {
-            return GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
+            return GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
         }
 
         /// <summary>
@@ -1387,7 +1387,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the Write-LogEntry delegate script block.
         /// </summary>
-        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $args[2] -Format $args[3]");
+        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $args[2] -Format $args[3]");
 
         /// <summary>
         /// Gets the current timezone bias for the CMTrace log formatted string.
