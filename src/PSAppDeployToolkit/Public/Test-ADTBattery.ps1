@@ -14,13 +14,13 @@ function Test-ADTBattery
         Tests whether the local machine is running on AC power and returns true/false. For detailed information, use the -PassThru option to get a hashtable containing various battery and power status properties.
 
     .PARAMETER PassThru
-        Outputs a hashtable containing the following properties:
-        - IsLaptop
-        - IsUsingACPower
-        - ACPowerLineStatus
-        - BatteryChargeStatus
-        - BatteryLifePercent
-        - BatteryLifeRemaining
+        Outputs an object containing the following properties:
+        - IsLaptop<br />
+        - IsUsingACPower<br />
+        - ACPowerLineStatus<br />
+        - BatteryChargeStatus<br />
+        - BatteryLifePercent<br />
+        - BatteryLifeRemaining<br />
         - BatteryFullLifetime
 
     .INPUTS
@@ -31,7 +31,7 @@ function Test-ADTBattery
     .OUTPUTS
         PSADT.Types.BatteryInfo
 
-        Returns a hashtable containing the following properties:
+        Returns an object containing the following properties:
         - IsLaptop
         - IsUsingACPower
         - ACPowerLineStatus
@@ -53,9 +53,9 @@ function Test-ADTBattery
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

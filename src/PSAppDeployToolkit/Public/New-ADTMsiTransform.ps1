@@ -23,13 +23,13 @@ function New-ADTMsiTransform
         Specify the path where the new transform file with the desired properties will be created. If a transform file of the same name already exists, it will be deleted before a new one is created.
 
         Default is:
-        a) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
-        b) If only -MsiPath was specified, then <MsiPath>.mst
+            a) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst<br />
+            b) If only -MsiPath was specified, then <MsiPath>.mst
 
     .PARAMETER TransformProperties
         Hashtable which contains calls to Set-ADTMsiProperty for configuring the desired properties which should be included in the new transform file.
 
-        Example hashtable: [Hashtable]$TransformProperties = @{ 'ALLUSERS' = '1' }
+        Example hashtable: @{ 'ALLUSERS' = '1' }
 
     .INPUTS
         None
@@ -55,9 +55,9 @@ function New-ADTMsiTransform
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

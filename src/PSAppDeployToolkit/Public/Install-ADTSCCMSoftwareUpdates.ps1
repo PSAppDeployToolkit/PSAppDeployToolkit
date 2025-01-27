@@ -12,6 +12,7 @@ function Install-ADTSCCMSoftwareUpdates
 
     .DESCRIPTION
         Scans for outstanding SCCM updates to be installed and installs the pending updates.
+
         Only compatible with SCCM 2012 Client or higher. This function can take several minutes to run.
 
     .PARAMETER SoftwareUpdatesScanWaitInSeconds
@@ -38,9 +39,9 @@ function Install-ADTSCCMSoftwareUpdates
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

@@ -18,10 +18,10 @@ function Set-ADTActiveSetup
         If the "Version" value of the Active Setup entry in HKLM is higher than the version value in HKCU, the file referenced in "StubPath" is executed.
 
         This Function:
-            - Creates the registry entries in "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\$($adtSession.InstallName)".
-            - Creates StubPath value depending on the file extension of the $StubExePath parameter.
-            - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
-            - Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
+            - Creates the registry entries in "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\$($adtSession.InstallName)".<br />
+            - Creates StubPath value depending on the file extension of the $StubExePath parameter.<br />
+            - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.<br />
+            - Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.<br />
             - Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
 
     .PARAMETER StubExePath
@@ -83,9 +83,9 @@ function Set-ADTActiveSetup
 
         Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

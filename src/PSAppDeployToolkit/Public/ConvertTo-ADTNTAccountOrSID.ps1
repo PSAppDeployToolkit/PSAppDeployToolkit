@@ -63,9 +63,9 @@ function ConvertTo-ADTNTAccountOrSID
 
         The conversion can return an empty result if the user account does not exist anymore or if translation fails Refer to: http://blogs.technet.com/b/askds/archive/2011/07/28/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious.aspx
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

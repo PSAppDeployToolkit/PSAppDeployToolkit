@@ -35,7 +35,7 @@ function Show-ADTHelpConsoleInternal
     $helpListBox.ClientSize = [System.Drawing.Size]::new(261, 675)
     $helpListBox.Font = [System.Drawing.SystemFonts]::MessageBoxFont
     $helpListBox.Location = [System.Drawing.Point]::new(3, 0)
-    $helpListBox.add_SelectedIndexChanged({ $helpTextBox.Text = [System.String]::Join("`n", ((Get-Help -Name $helpListBox.SelectedItem -Full | Out-String -Stream -Width ([System.Int32]::MaxValue)) -replace '^\s+$').TrimEnd()).Trim() })
+    $helpListBox.add_SelectedIndexChanged({ $helpTextBox.Text = [System.String]::Join("`n", ((Get-Help -Name $helpListBox.SelectedItem -Full | Out-String -Stream -Width ([System.Int32]::MaxValue)) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', $null) })
     $null = $helpListBox.Items.AddRange(($module.ExportedCommands.Keys | Sort-Object))
 
     # Build out the form's textbox.

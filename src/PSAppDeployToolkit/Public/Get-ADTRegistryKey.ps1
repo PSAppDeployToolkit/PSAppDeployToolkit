@@ -11,8 +11,8 @@ function Get-ADTRegistryKey
         Retrieves value names and value data for a specified registry key or optionally, a specific value.
 
     .DESCRIPTION
-        Retrieves value names and value data for a specified registry key or optionally, a specific value.
-        If the registry key does not exist or contain any values, the function will return $null by default.
+        Retrieves value names and value data for a specified registry key or optionally, a specific value. If the registry key does not exist or contain any values, the function will return $null by default.
+
         To test for existence of a registry key path, use built-in Test-Path cmdlet.
 
     .PARAMETER Key
@@ -26,6 +26,7 @@ function Get-ADTRegistryKey
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
+
         Specify this parameter from the Invoke-ADTAllUsersRegistryAction function to read/edit HKCU registry settings for all users on the system.
 
     .PARAMETER ReturnEmptyKeyIfExists
@@ -72,9 +73,9 @@ function Get-ADTRegistryKey
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

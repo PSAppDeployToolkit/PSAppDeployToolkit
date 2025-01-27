@@ -14,10 +14,10 @@ function Get-ADTWindowTitle
         Search for a window title. If window title searched for returns more than one result, then details for each window will be displayed.
 
         Returns the following properties for each window:
-        - WindowTitle
-        - WindowHandle
-        - ParentProcess
-        - ParentProcessMainWindowHandle
+        - WindowTitle<br />
+        - WindowHandle<br />
+        - ParentProcess<br />
+        - ParentProcessMainWindowHandle<br />
         - ParentProcessId
 
         Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
@@ -69,9 +69,9 @@ function Get-ADTWindowTitle
 
         Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
