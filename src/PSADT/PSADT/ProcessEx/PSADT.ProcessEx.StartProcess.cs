@@ -29,7 +29,7 @@ namespace PSADT.ProcessEx
     {
         private readonly ExecutionManager _executionManager;
         private bool _disposed;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StartProcess"/> class.
         /// </summary>
