@@ -20,10 +20,10 @@ function Show-ADTInstallationRestartPrompt
         Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
 
     .PARAMETER SilentCountdownSeconds
-        Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false. Default: 5
+        Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and `-SilentRestart` isn't specified. Default: 5
 
     .PARAMETER SilentRestart
-        Specifies whether the restart should be triggered when Deploy mode is silent or very silent.
+        Specifies whether the restart should be triggered when DeployMode is silent or very silent.
 
     .PARAMETER NoCountdown
         Specifies whether the user should receive a prompt to immediately restart their workstation.
@@ -47,7 +47,7 @@ function Show-ADTInstallationRestartPrompt
         Displays a restart prompt without a countdown.
 
     .EXAMPLE
-        Show-ADTInstallationRestartPrompt -Countdownseconds 300
+        Show-ADTInstallationRestartPrompt -CountdownSeconds 300
 
         Displays a restart prompt with a 300-second countdown.
 
@@ -68,26 +68,26 @@ function Show-ADTInstallationRestartPrompt
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Countdown')]
     param
     (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'NoCountdown')]
+        [System.Management.Automation.SwitchParameter]$NoCountdown,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$CountdownSeconds = 60,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$CountdownNoHideSeconds = 30,
 
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.UInt32]$SilentCountdownSeconds = 5,
-
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
         [System.Management.Automation.SwitchParameter]$SilentRestart,
 
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoCountdown,
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [ValidateNotNullOrEmpty()]
+        [System.UInt32]$SilentCountdownSeconds = 5,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost
@@ -166,12 +166,12 @@ function Show-ADTInstallationRestartPrompt
                 {
                     if ($SilentRestart)
                     {
-                        Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.DeployMode)] and [NoSilentRestart] is disabled. Timeout is set to [$SilentCountdownSeconds] seconds."
+                        Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
                         Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($adtSession.DeployMode)] and [SilentRestart] is false."
+                        Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
                     }
                     return
                 }

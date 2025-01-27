@@ -11,10 +11,25 @@ Displays a restart prompt with a countdown to a forced restart.
 
 ## SYNTAX
 
+### Countdown (Default)
+
 ```powershell
-Show-ADTInstallationRestartPrompt [[-CountdownSeconds] <UInt32>] [[-CountdownNoHideSeconds] <UInt32>]
- [[-SilentCountdownSeconds] <UInt32>] [-SilentRestart] [-NoCountdown] [-NotTopMost] -Title <String>
- -Subtitle <String> [<CommonParameters>]
+Show-ADTInstallationRestartPrompt [-CountdownSeconds <UInt32>] [-CountdownNoHideSeconds <UInt32>] [-NotTopMost]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
+```
+
+### NoCountdown
+
+```powershell
+Show-ADTInstallationRestartPrompt [-NoCountdown] [-NotTopMost] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
+```
+
+### SilentRestart
+
+```powershell
+Show-ADTInstallationRestartPrompt [-SilentRestart] [-SilentCountdownSeconds <UInt32>] [-NotTopMost]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -36,7 +51,7 @@ Displays a restart prompt without a countdown.
 ### EXAMPLE 2
 
 ```powershell
-Show-ADTInstallationRestartPrompt -Countdownseconds 300
+Show-ADTInstallationRestartPrompt -CountdownSeconds 300
 ```
 
 Displays a restart prompt with a 300-second countdown.
@@ -51,6 +66,22 @@ Displays a restart prompt with a 600-second countdown and triggers a silent rest
 
 ## PARAMETERS
 
+### -NoCountdown
+
+Specifies whether the user should receive a prompt to immediately restart their workstation.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: NoCountdown
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -CountdownSeconds
 
 Specifies the number of seconds to display the restart prompt.
@@ -58,11 +89,11 @@ Default: 60
 
 ```yaml
 Type: UInt32
-Parameter Sets: (All)
+Parameter Sets: Countdown
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: 60
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -75,61 +106,45 @@ Default: 30
 
 ```yaml
 Type: UInt32
-Parameter Sets: (All)
+Parameter Sets: Countdown
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: 30
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SilentCountdownSeconds
-
-Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and NoSilentRestart is $false.
-Default: 5
-
-```yaml
-Type: UInt32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: 5
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -SilentRestart
 
-Specifies whether the restart should be triggered when Deploy mode is silent or very silent.
+Specifies whether the restart should be triggered when DeployMode is silent or very silent.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: SilentRestart
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoCountdown
+### -SilentCountdownSeconds
 
-Specifies whether the user should receive a prompt to immediately restart their workstation.
+Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and `-SilentRestart` isn't specified.
+Default: 5
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
+Type: UInt32
+Parameter Sets: SilentRestart
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: 5
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
