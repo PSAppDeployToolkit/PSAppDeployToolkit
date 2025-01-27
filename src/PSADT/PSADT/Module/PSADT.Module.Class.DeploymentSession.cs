@@ -59,11 +59,11 @@ namespace PSADT.Module
                 }
                 if (null != parameters)
                 {
-                    if (parameters.TryGetValue("DeploymentType", out paramValue))
+                    if (parameters.TryGetValue("DeploymentType", out paramValue) && (null != paramValue))
                     {
                         _deploymentType = (DeploymentType)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployMode", out paramValue))
+                    if (parameters.TryGetValue("DeployMode", out paramValue) && (null != paramValue))
                     {
                         _deployMode = (DeployMode)paramValue;
                     }
@@ -79,95 +79,95 @@ namespace PSADT.Module
                     {
                         Settings |= DeploymentSettings.DisableLogging;
                     }
-                    if (parameters.TryGetValue("AppVendor", out paramValue))
+                    if (parameters.TryGetValue("AppVendor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appVendor = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppName", out paramValue))
+                    if (parameters.TryGetValue("AppName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppVersion", out paramValue))
+                    if (parameters.TryGetValue("AppVersion", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appVersion = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppArch", out paramValue))
+                    if (parameters.TryGetValue("AppArch", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appArch = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppLang", out paramValue))
+                    if (parameters.TryGetValue("AppLang", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appLang = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppRevision", out paramValue))
+                    if (parameters.TryGetValue("AppRevision", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appRevision = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptVersion", out paramValue))
+                    if (parameters.TryGetValue("AppScriptVersion", out paramValue) && (null != paramValue))
                     {
                         _appScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptDate", out paramValue))
+                    if (parameters.TryGetValue("AppScriptDate", out paramValue) && (null != paramValue))
                     {
                         _appScriptDate = (DateTime)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptAuthor", out paramValue))
+                    if (parameters.TryGetValue("AppScriptAuthor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appScriptAuthor = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("InstallName", out paramValue))
+                    if (parameters.TryGetValue("InstallName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _installName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("InstallTitle", out paramValue))
+                    if (parameters.TryGetValue("InstallTitle", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _installTitle = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _deployAppScriptFriendlyName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue) && (null != paramValue))
                     {
                         _deployAppScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue) && (null != paramValue))
                     {
                         _deployAppScriptParameters = (Dictionary<string, object>)paramValue;
                     }
-                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue))
+                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (null != paramValue))
                     {
                         _appSuccessExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
-                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue))
+                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (null != paramValue))
                     {
                         _appRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
-                    if (parameters.TryGetValue("ScriptDirectory", out paramValue))
+                    if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (null != paramValue))
                     {
                         _scriptDirectory = (string[])paramValue;
                     }
-                    if (parameters.TryGetValue("DirFiles", out paramValue))
+                    if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _dirFiles = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DirSupportFiles", out paramValue))
+                    if (parameters.TryGetValue("DirSupportFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _dirSupportFiles = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DefaultMsiFile", out paramValue))
+                    if (parameters.TryGetValue("DefaultMsiFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _defaultMsiFile = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DefaultMstFile", out paramValue))
+                    if (parameters.TryGetValue("DefaultMstFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _defaultMstFile = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue))
+                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (null != paramValue))
                     {
                         _defaultMspFiles = new ReadOnlyCollection<string>((string[])paramValue);
                     }
-                    if (parameters.TryGetValue("LogName", out paramValue))
+                    if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _logName = (string)paramValue;
                     }
