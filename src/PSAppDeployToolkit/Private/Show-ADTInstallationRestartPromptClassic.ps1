@@ -67,13 +67,13 @@ function Show-ADTInstallationRestartPromptClassic
 
         # Initialize the countdown timer.
         $currentTime = [System.DateTime]::Now
-        $countdownTime = $startTime.AddSeconds($countdownSeconds)
+        $countdownTime = $startTime.AddSeconds($CountdownSeconds)
         $timerCountdown.Start()
 
         # Set up the form.
         $remainingTime = $countdownTime.Subtract($currentTime)
         $labelCountdown.Text = [System.String]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-        if ($remainingTime.TotalSeconds -le $countdownNoHideSeconds)
+        if ($remainingTime.TotalSeconds -le $CountdownNoHideSeconds)
         {
             $buttonRestartLater.Enabled = $false
         }
@@ -109,7 +109,7 @@ function Show-ADTInstallationRestartPromptClassic
     $timerCountdown_Tick = {
         # Get the time information.
         $currentTime = Get-Date
-        $countdownTime = $startTime.AddSeconds($countdownSeconds)
+        $countdownTime = $startTime.AddSeconds($CountdownSeconds)
         $remainingTime = $countdownTime.Subtract($currentTime)
 
         # If the countdown is complete, restart the machine.
@@ -121,7 +121,7 @@ function Show-ADTInstallationRestartPromptClassic
         {
             # Update the form.
             $labelCountdown.Text = [String]::Format('{0}:{1:d2}:{2:d2}', $remainingTime.Days * 24 + $remainingTime.Hours, $remainingTime.Minutes, $remainingTime.Seconds)
-            if ($remainingTime.TotalSeconds -le $countdownNoHideSeconds)
+            if ($remainingTime.TotalSeconds -le $CountdownNoHideSeconds)
             {
                 $buttonRestartLater.Enabled = $false
 
