@@ -12,10 +12,11 @@ function Show-ADTInstallationWelcome
 
     .DESCRIPTION
         The following prompts can be included in the welcome dialog:
-            a) Close the specified running applications, or optionally close the applications without showing a prompt (using the -Silent switch).
-            b) Defer the deployment a certain number of times, for a certain number of days or until a deadline is reached.
-            c) Countdown until applications are automatically closed.
-            d) Prevent users from launching the specified applications while the deployment is in progress.
+
+        * Close the specified running applications, or optionally close the applications without showing a prompt (using the `-Silent` switch).
+        * Defer the deployment a certain number of times, for a certain number of days or until a deadline is reached.
+        * Countdown until applications are automatically closed.
+        * Prevent users from launching the specified applications while the deployment is in progress.
 
     .PARAMETER CloseProcesses
         Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{ Name = 'winword'; Description = 'Microsoft Office Word'},@{ Name = 'excel'; Description = 'Microsoft Office Excel'}
@@ -137,9 +138,9 @@ function Show-ADTInstallationWelcome
 
         The dialog box will timeout after the timeout specified in the config.psd1 file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

@@ -12,6 +12,7 @@ function Get-ADTUserProfiles
 
     .DESCRIPTION
         Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine and also the Default User (which does not log on).
+
         Please note that the NTAccount property may be empty for some user profiles but the SID and ProfilePath properties will always be populated.
 
     .PARAMETER ExcludeNTAccount
@@ -63,9 +64,9 @@ function Get-ADTUserProfiles
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

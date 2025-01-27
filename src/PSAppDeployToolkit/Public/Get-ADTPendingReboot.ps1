@@ -12,11 +12,12 @@ function Get-ADTPendingReboot
 
     .DESCRIPTION
         Check WMI and the registry to determine if the system has a pending reboot operation from any of the following:
-        a) Component Based Servicing (Vista, Windows 2008)
-        b) Windows Update / Auto Update (XP, Windows 2003 / 2008)
-        c) SCCM 2012 Clients (DetermineIfRebootPending WMI method)
-        d) App-V Pending Tasks (global based Appv 5.0 SP2)
-        e) Pending File Rename Operations (XP, Windows 2003 / 2008)
+
+        - Component Based Servicing (Vista, Windows 2008)
+        - Windows Update / Auto Update (XP, Windows 2003 / 2008)
+        - SCCM 2012 Clients (DetermineIfRebootPending WMI method)
+        - App-V Pending Tasks (global based Appv 5.0 SP2)
+        - Pending File Rename Operations (XP, Windows 2003 / 2008)
 
     .INPUTS
         None
@@ -27,6 +28,7 @@ function Get-ADTPendingReboot
         PSADT.Types.RebootInfo
 
         Returns a custom object with the following properties:
+
         - ComputerName
         - LastBootUpTime
         - IsSystemRebootPending
@@ -53,9 +55,9 @@ function Get-ADTPendingReboot
 
         ErrorMsg only contains something if an error occurred.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

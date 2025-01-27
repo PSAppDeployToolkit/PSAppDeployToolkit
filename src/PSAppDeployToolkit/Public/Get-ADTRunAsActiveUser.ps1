@@ -12,6 +12,7 @@ function Get-ADTRunAsActiveUser
 
     .DESCRIPTION
         The Get-ADTRunAsActiveUser function determines the account that will be used to execute commands in the user session when the toolkit is running under the SYSTEM account.
+
         The active console user will be chosen first. If no active console user is found, for multi-session operating systems, the first logged-on user will be used instead.
 
     .PARAMETER UserSessionInfo
@@ -35,9 +36,9 @@ function Get-ADTRunAsActiveUser
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK

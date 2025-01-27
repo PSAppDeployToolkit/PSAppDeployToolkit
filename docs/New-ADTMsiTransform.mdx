@@ -79,8 +79,9 @@ Specify the path where the new transform file with the desired properties will b
 If a transform file of the same name already exists, it will be deleted before a new one is created.
 
 Default is:
-a) If -ApplyTransformPath was specified but not -NewTransformPath, then &lt;ApplyTransformPath&gt;.new.mst
-b) If only -MsiPath was specified, then &lt;MsiPath&gt;.mst
+
+1) If -ApplyTransformPath was specified but not -NewTransformPath, then &lt;ApplyTransformPath&gt;.new.mst
+2) If only -MsiPath was specified, then &lt;MsiPath&gt;.mst
 
 ```yaml
 Type: String
@@ -98,7 +99,7 @@ Accept wildcard characters: False
 
 Hashtable which contains calls to Set-ADTMsiProperty for configuring the desired properties which should be included in the new transform file.
 
-Example hashtable: [Hashtable]$TransformProperties = @\{ 'ALLUSERS' = '1' \}
+Example hashtable: @\{ 'ALLUSERS' = '1' \}
 
 ```yaml
 Type: Hashtable
@@ -129,9 +130,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 An active ADT session is NOT required to use this function.
 
-Tags: psadt
-Website: https://psappdeploytoolkit.com
-Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+Tags: psadt<br />
+Website: https://psappdeploytoolkit.com<br />
+Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
 License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS

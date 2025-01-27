@@ -300,7 +300,7 @@ Add-BuildTask FormattingCheck {
 # Synopsis: Invokes PSScriptAnalyzer against the Module source path.
 Add-BuildTask Analyze {
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:BuildRoot -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
+    if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:BuildRoot -ExcludeRule PSUseShouldProcessForStateChangingFunctions, PSAvoidTrailingWhitespace -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      One or more PSScriptAnalyzer errors/warnings where found.'
@@ -485,6 +485,15 @@ Add-BuildTask CreateDocusaurusHelp -After CreateMarkdownHelp {
     Write-Build Gray '           Generating docusaurus files...'
     New-DocusaurusHelp -PlatyPSMarkdownPath $Script:MarkdownExportPath -DocsFolder $Script:DocusaurusExportPath -NoPlaceHolderExamples | Where-Object { $_ -isnot [System.IO.DirectoryInfo] }
     Write-Build Gray '           ...Docusaurus generation complete.'
+    Write-Build Gray '           Unescape forced line break elements...'
+    Get-ChildItem -Path "$($Script:DocusaurusExportPath)Commands\*.mdx" | ForEach-Object {
+        # Trim the file, fix multi-line EXAMPLES, and unescape tilde characters.
+        if (($content = [System.IO.File]::ReadAllText($_.FullName)) -ne ($newContent = $content.Trim().Replace('&lt;br /&gt;', '<br />')))
+        {
+            [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").TrimEnd())
+        }
+    }
+    Write-Build Gray '           ...Forced line break unescaping complete.'
 }
 
 Add-BuildTask CreateHelpComplete -After CreateExternalHelp {
