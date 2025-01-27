@@ -15,12 +15,13 @@ function Test-ADTBattery
 
     .PARAMETER PassThru
         Outputs an object containing the following properties:
-        - IsLaptop<br />
-        - IsUsingACPower<br />
-        - ACPowerLineStatus<br />
-        - BatteryChargeStatus<br />
-        - BatteryLifePercent<br />
-        - BatteryLifeRemaining<br />
+
+        - IsLaptop
+        - IsUsingACPower
+        - ACPowerLineStatus
+        - BatteryChargeStatus
+        - BatteryLifePercent
+        - BatteryLifeRemaining
         - BatteryFullLifetime
 
     .INPUTS
@@ -32,6 +33,7 @@ function Test-ADTBattery
         PSADT.Types.BatteryInfo
 
         Returns an object containing the following properties:
+
         - IsLaptop
         - IsUsingACPower
         - ACPowerLineStatus

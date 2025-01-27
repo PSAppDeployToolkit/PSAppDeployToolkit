@@ -79,8 +79,11 @@ Specify the path where the new transform file with the desired properties will b
 If a transform file of the same name already exists, it will be deleted before a new one is created.
 
 Default is:
-    a) If -ApplyTransformPath was specified but not -NewTransformPath, then &lt;ApplyTransformPath&gt;.new.mst<br />
-    b) If only -MsiPath was specified, then &lt;MsiPath&gt;.mst
+
+1.
+If -ApplyTransformPath was specified but not -NewTransformPath, then &lt;ApplyTransformPath&gt;.new.mst
+2.
+If only -MsiPath was specified, then &lt;MsiPath&gt;.mst
 
 ```yaml
 Type: String

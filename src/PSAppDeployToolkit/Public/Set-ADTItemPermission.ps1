@@ -28,26 +28,26 @@ function Set-ADTItemPermission
     .PARAMETER Inheritance
         Sets permission inheritance. Does not apply to files. Multiple options can be specified.
 
-        None - The permission entry is not inherited by child objects.<br />
-        ObjectInherit - The permission entry is inherited by child leaf objects.<br />
-        ContainerInherit - The permission entry is inherited by child container objects.
+        * None - The permission entry is not inherited by child objects.
+        * ObjectInherit - The permission entry is inherited by child leaf objects.
+        * ContainerInherit - The permission entry is inherited by child container objects.
 
     .PARAMETER Propagation
         Sets how to propagate inheritance. Does not apply to files.
 
-        None - Specifies that no inheritance flags are set.<br />
-        NoPropagateInherit - Specifies that the permission entry is not propagated to child objects.<br />
-        InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
+        * None - Specifies that no inheritance flags are set.
+        * NoPropagateInherit - Specifies that the permission entry is not propagated to child objects.
+        * InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
 
     .PARAMETER Method
         Specifies which method will be used to apply the permissions.
 
-        AddAccessRule - Adds permissions rules but it does not remove previous permissions.<br />
-        SetAccessRule - Overwrites matching permission rules with new ones.<br />
-        ResetAccessRule - Removes matching permissions rules and then adds permission rules.<br />
-        RemoveAccessRule - Removes matching permission rules.<br />
-        RemoveAccessRuleAll - Removes all permission rules for specified user/s.<br />
-        RemoveAccessRuleSpecific - Removes specific permissions.
+        * AddAccessRule - Adds permissions rules but it does not remove previous permissions.
+        * SetAccessRule - Overwrites matching permission rules with new ones.
+        * ResetAccessRule - Removes matching permissions rules and then adds permission rules.
+        * RemoveAccessRule - Removes matching permission rules.
+        * RemoveAccessRuleAll - Removes all permission rules for specified user/s.
+        * RemoveAccessRuleSpecific - Removes specific permissions.
 
     .PARAMETER EnableInheritance
         Enables inheritance on the files/folders.
