@@ -332,7 +332,7 @@ function Start-ADTMsiProcess
                 # If the provided MSI was a file path, get the Property table and store it.
                 $msiPropertyTable = if ([System.IO.Path]::GetExtension($msiProduct) -eq '.msi')
                 {
-                    $gmtpParams = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $gmtpParams.Add('TransformPath', $transforms) }
+                    $gmtpParams = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $gmtpParams.Add('TransformPath', $Transforms) }
                     Get-ADTMsiTableProperty @gmtpParams
                 }
 
