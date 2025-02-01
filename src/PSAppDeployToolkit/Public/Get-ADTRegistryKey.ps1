@@ -15,8 +15,11 @@ function Get-ADTRegistryKey
 
         To test for existence of a registry key path, use built-in Test-Path cmdlet.
 
-    .PARAMETER Key
-        Path of the registry key.
+    .PARAMETER Path
+        Path of the registry key, wildcards permitted.
+
+    .PARAMETER LiteralPath
+        Literal path of the registry key.
 
     .PARAMETER Name
         Value name to retrieve (optional).
@@ -85,10 +88,15 @@ function Get-ADTRegistryKey
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
-        [System.String]$Key,
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
+        [ValidateNotNullOrEmpty()]
+        [Alias('Key')]
+        [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -112,6 +120,7 @@ function Get-ADTRegistryKey
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        $pathParam = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
     }
 
     process
@@ -121,33 +130,33 @@ function Get-ADTRegistryKey
             try
             {
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-                $Key = if ($PSBoundParameters.ContainsKey('SID'))
+                $pathParam.($PSCmdlet.ParameterSetName) = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node -SID $SID
+                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    Convert-ADTRegistryPath -Key $Key -Wow6432Node:$Wow6432Node
+                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -Wow6432Node:$Wow6432Node
                 }
 
                 # Check if the registry key exists before continuing.
-                if (!(Test-Path -Path $Key))
+                if (!(Test-Path @pathParam))
                 {
-                    Write-ADTLogEntry -Message "Registry key [$Key] does not exist. Return `$null." -Severity 2
+                    Write-ADTLogEntry -Message "Registry key [$($pathParam.($PSCmdlet.ParameterSetName))] does not exist. Return `$null." -Severity 2
                     return
                 }
 
                 if ($PSBoundParameters.ContainsKey('Name'))
                 {
-                    Write-ADTLogEntry -Message "Getting registry key [$Key] value [$Name]."
+                    Write-ADTLogEntry -Message "Getting registry key [$($pathParam.($PSCmdlet.ParameterSetName))] value [$Name]."
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Getting registry key [$Key] and all property values."
+                    Write-ADTLogEntry -Message "Getting registry key [$($pathParam.($PSCmdlet.ParameterSetName))] and all property values."
                 }
 
                 # Get all property values for registry key and enumerate.
-                Get-Item -Path $Key | & {
+                Get-Item @pathParam | & {
                     process
                     {
                         # Select requested property.
@@ -199,7 +208,7 @@ function Get-ADTRegistryKey
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read registry key [$Key]$(if ($Name) {" value [$Name]"})."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read registry key [$($pathParam.($PSCmdlet.ParameterSetName))]$(if ($Name) {" value [$Name]"})."
         }
     }
 
