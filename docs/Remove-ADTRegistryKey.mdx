@@ -11,8 +11,16 @@ Deletes the specified registry key or value.
 
 ## SYNTAX
 
+### Path
+
 ```powershell
-Remove-ADTRegistryKey [-Key] <String> [[-Name] <String>] [-Recurse] [[-SID] <String>] [<CommonParameters>]
+Remove-ADTRegistryKey -Path <String> [-Name <String>] [-Recurse] [-SID <String>] [<CommonParameters>]
+```
+
+### LiteralPath
+
+```powershell
+Remove-ADTRegistryKey -LiteralPath <String> [-Name <String>] [-Recurse] [-SID <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -49,17 +57,33 @@ Deletes the default registry value in the specified key.
 
 ## PARAMETERS
 
-### -Key
+### -Path
 
-Path of the registry key to delete.
+Path of the registry key to delete, wildcards permitted.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: Path
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: True
+```
+
+### -LiteralPath
+
+Literal path of the registry key to delete.
+
+```yaml
+Type: String
+Parameter Sets: LiteralPath
+Aliases: Key
+
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -75,7 +99,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -110,7 +134,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
