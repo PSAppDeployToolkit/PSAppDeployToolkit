@@ -112,6 +112,9 @@ function Open-ADTSession
     .PARAMETER ForceWimDetection
         Specifies that WIM files should be detected and mounted during session initialization, irrespective of whether any App values are provided.
 
+    .PARAMETER ForceMsiDetection
+        Specifies that MSI files should be detected and parsed during session initialization, irrespective of whether any App values are provided.
+
     .PARAMETER PassThru
         Passes the session object through the pipeline.
 
@@ -324,6 +327,9 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceWimDetection,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ForceMsiDetection,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,

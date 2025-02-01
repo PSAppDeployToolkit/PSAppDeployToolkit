@@ -23,8 +23,8 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <DeploymentTyp
  [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String[]>]
  [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
  [[-DefaultMspFiles] <String[]>] [-DisableDefaultMsiProcessList] [[-LogName] <String>] [[-SessionClass] <Type>]
- [-ForceWimDetection] [-PassThru] [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>]
- [<CommonParameters>]
+ [-ForceWimDetection] [-ForceMsiDetection] [-PassThru]
+ [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -563,6 +563,22 @@ Accept wildcard characters: False
 ### -ForceWimDetection
 
 Specifies that WIM files should be detected and mounted during session initialization, irrespective of whether any App values are provided.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ForceMsiDetection
+
+Specifies that MSI files should be detected and parsed during session initialization, irrespective of whether any App values are provided.
 
 ```yaml
 Type: SwitchParameter

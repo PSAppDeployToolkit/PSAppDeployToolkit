@@ -223,7 +223,7 @@ namespace PSADT.Module
 
 
                 // If the default frontend hasn't been modified, check for MSI / MST and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(_appName))
+                if (string.IsNullOrWhiteSpace(_appName) || ((bool)parameters?.TryGetValue("ForceMsiDetection", out paramValue)! && (SwitchParameter)paramValue!))
                 {
                     // Find the first MSI file in the Files folder and use that as our install.
                     if (string.IsNullOrWhiteSpace(_defaultMsiFile))
@@ -318,11 +318,17 @@ namespace PSADT.Module
 
                         // Update our app variables with new values.
                         var msiProps = (ReadOnlyDictionary<string, object>)InternalDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
-                        _appName = (string)msiProps["ProductName"];
-                        _appVersion = (string)msiProps["ProductVersion"];
+                        if (string.IsNullOrWhiteSpace(_appName))
+                        {
+                            _appName = (string)msiProps["ProductName"];
+                        }
+                        if (string.IsNullOrWhiteSpace(_appVersion))
+                        {
+                            _appVersion = (string)msiProps["ProductVersion"];
+                        }
                         WriteLogEntry($"App Vendor [{(string)msiProps["Manufacturer"]}].");
-                        WriteLogEntry($"App Name [{_appName}].");
-                        WriteLogEntry($"App Version [{_appVersion}].");
+                        WriteLogEntry($"App Name [{(string)msiProps["ProductName"]}].");
+                        WriteLogEntry($"App Version [{(string)msiProps["ProductVersion"]}].");
                         Settings |= DeploymentSettings.UseDefaultMsi;
                     }
                 }
