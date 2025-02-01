@@ -1058,10 +1058,10 @@ namespace PSADT.Module
                             // spaces. As such, replace all spaces and empty lines with a punctuation space.
                             // C# identifies this character as whitespace but OneTrace does not so it works.
                             // The empty line feed at the end is required by OneTrace to format correctly.
-                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Contains((char)10) ? (string.Join("\n", msg.Replace("\r", null).Trim().Replace(' ', (char)0x2008).Split((char)10).Select(static m => Regex.Replace(m, "^$", $"{(char)0x2008}"))).Replace("\n", "\r\n") + "\r\n") : msg))));
+                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty).Contains((char)10) ? (string.Join("\n", msg.Replace("\r", null).Trim().Replace(' ', (char)0x2008).Split((char)10).Select(static m => Regex.Replace(m, "^$", $"{(char)0x2008}"))).Replace("\n", "\r\n") + "\r\n") : msg))));
                             break;
                         case "Legacy":
-                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg))));
+                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
                             break;
                     }
                 }
@@ -1084,11 +1084,11 @@ namespace PSADT.Module
                     string logLine = logFormats["Legacy"]!;
                     if (severity == 3)
                     {
-                        Console.Error.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg))));
+                        Console.Error.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
                     }
                     else
                     {
-                        Console.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg))));
+                        Console.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
                     }
 
                     // Reset the console colours back to default.
