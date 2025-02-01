@@ -119,7 +119,7 @@ function Install-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close VLC if required, allow up to 3 deferrals, and persist the prompt
-    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'vlc'; Description = $adtSession.AppName } -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
+    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'vlc'; Description = $adtSession.AppName } -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

@@ -119,7 +119,7 @@ function Install-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close WinSCP if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'WinSCP'; Description = $adtSession.AppName } -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
+    Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'WinSCP'; Description = $adtSession.AppName } -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

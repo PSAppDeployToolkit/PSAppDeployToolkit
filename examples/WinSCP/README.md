@@ -10,7 +10,7 @@ This application requires registry keys to be set for every user to disable auto
 
 ```ps
 ## Show Welcome Message, close WinSCP if required, allow up to 3 deferrals, and persist the prompt
-Show-InstallationWelcome -CloseProcesses 'WinSCP' -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
+Show-InstallationWelcome -CloseProcesses 'WinSCP' -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt
 ```
 
 If WinSCP is running, the user will be prompted to either close the app or defer the installation.

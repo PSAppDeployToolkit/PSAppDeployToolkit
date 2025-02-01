@@ -54,7 +54,7 @@ function Show-ADTWelcomePromptClassic
         [System.Management.Automation.SwitchParameter]$AllowDefer,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
+        [System.Management.Automation.SwitchParameter]$MinimizeWindows,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
@@ -600,7 +600,7 @@ function Show-ADTWelcomePromptClassic
     $formWelcome.ResumeLayout()
 
     # Minimize all other windows.
-    if (!$NoMinimizeWindows)
+    if ($MinimizeWindows)
     {
         $null = (Get-ADTEnvironmentTable).ShellApp.MinimizeAll()
     }

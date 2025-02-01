@@ -28,7 +28,7 @@ function Show-ADTWelcomePromptFluent
         [System.Int32]$DeferTimes,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
+        [System.Management.Automation.SwitchParameter]$MinimizeWindows,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
@@ -75,7 +75,7 @@ function Show-ADTWelcomePromptFluent
     }
 
     # Minimize all other windows.
-    if (!$NoMinimizeWindows)
+    if ($MinimizeWindows)
     {
         $null = (Get-ADTEnvironmentTable).ShellApp.MinimizeAll()
     }
