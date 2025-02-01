@@ -378,7 +378,7 @@ namespace PSADT
             }
             using (StreamWriter sw = new StreamWriter(Path.Combine(logPath, $"{assemblyName}.exe_{timeStamp}.log"), true, LogEncoding))
             {
-                sw.WriteLine(debugMessage);
+                sw.WriteLine(debugMessage.Replace("\n", " "));
             }
 
             // If we are to display an error message...
