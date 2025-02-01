@@ -609,6 +609,12 @@ function Show-ADTInstallationWelcome
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtEnv = Get-ADTEnvironmentTable
 
+        # Log the deprecation of -NoMinimizeWindows to the log.
+        if ($PSBoundParameters.ContainsKey('NoMinimizeWindows'))
+        {
+            Write-ADTLogEntry -Message "The parameter [-NoMinimizeWindows] is obsolete and will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
+        }
+
         # Set up DeploymentType if not specified.
         $DeploymentType = if ($adtSession)
         {
