@@ -494,20 +494,17 @@ namespace PSADT.Module
 
 
                 // Announce provided deployment script info.
-                if (!UseDefaultMsi)
+                if (null != _appScriptVersion)
                 {
-                    if (null != _appScriptVersion)
-                    {
-                        WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
-                    }
-                    if ((_appScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && !appScriptDate.Equals("2000-12-31"))
-                    {
-                        WriteLogEntry($"[{_installName}] script date is [{appScriptDate}].");
-                    }
-                    if (!string.IsNullOrWhiteSpace(_appScriptAuthor) && !_appScriptAuthor!.Equals("<author name>"))
-                    {
-                        WriteLogEntry($"[{_installName}] script author is [{_appScriptAuthor}].");
-                    }
+                    WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
+                }
+                if ((_appScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && !appScriptDate.Equals("2000-12-31"))
+                {
+                    WriteLogEntry($"[{_installName}] script date is [{appScriptDate}].");
+                }
+                if (!string.IsNullOrWhiteSpace(_appScriptAuthor) && !_appScriptAuthor!.Equals("<author name>"))
+                {
+                    WriteLogEntry($"[{_installName}] script author is [{_appScriptAuthor}].");
                 }
                 if (!string.IsNullOrWhiteSpace(_deployAppScriptFriendlyName))
                 {
