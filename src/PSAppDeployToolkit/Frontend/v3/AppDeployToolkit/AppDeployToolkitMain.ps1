@@ -1379,15 +1379,14 @@ function Show-InstallationWelcome
                 $PSBoundParameters.Remove($oldParam)
             }
         })
-    if ($PSBoundParameters.ContainsKey('MinimizeWindows'))
-    {
-        $PSBoundParameters.Add('NoMinimizeWindows', !$PSBoundParameters.MinimizeWindows)
-        $null = $PSBoundParameters.Remove('MinimizeWindows')
-    }
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
         $null = $PSBoundParameters.Remove('TopMost')
+    }
+    if ($MinimizeWindows)
+    {
+        $PSBoundParameters.Add('MinimizeWindows', $MinimizeWindows)
     }
 
     # Invoke function with amended parameters.

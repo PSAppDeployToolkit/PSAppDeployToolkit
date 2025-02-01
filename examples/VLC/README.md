@@ -10,7 +10,7 @@ This application requires a config file to be placed in each user's AppData\Roam
 
 ```ps
 ## Show Welcome Message, close VLC if required, allow up to 3 deferrals, and persist the prompt
-Show-InstallationWelcome -CloseProcesses 'vlc' -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt -NoMinimizeWindows
+Show-InstallationWelcome -CloseProcesses 'vlc' -AllowDeferCloseProcesses -DeferTimes 3 -PersistPrompt
 ```
 
 If VLC is running, the user will be prompted to either close the app or defer the installation.

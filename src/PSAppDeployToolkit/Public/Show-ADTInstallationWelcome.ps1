@@ -74,8 +74,11 @@ function Show-ADTInstallationWelcome
     .PARAMETER PersistPrompt
         Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the config.psd1. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
-    .PARAMETER NoMinimizeWindows
+    .PARAMETER MinimizeWindows
         Specifies whether to minimize other windows when displaying prompt.
+
+    .PARAMETER NoMinimizeWindows
+        This parameter will be removed in PSAppDeployToolkit 4.2.0.
 
     .PARAMETER NotTopMost
         Specifies whether the windows is the topmost window.
@@ -435,6 +438,37 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'Specify whether to minimize other windows when displaying prompt.')]
+        [System.Management.Automation.SwitchParameter]$MinimizeWindows,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferForceCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.')]
+        [System.Obsolete("This parameter will be removed in PSAppDeployToolkit 4.2.0.")]
         [System.Management.Automation.SwitchParameter]$NoMinimizeWindows,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
@@ -772,7 +806,7 @@ function Show-ADTInstallationWelcome
                             ForceCloseProcessesCountdown = !!$ForceCloseProcessesCountdown
                             ForceCountdown = !!$ForceCountdown
                             PersistPrompt = $PersistPrompt
-                            NoMinimizeWindows = $NoMinimizeWindows
+                            MinimizeWindows = $MinimizeWindows
                             CustomText = $CustomText
                             NotTopMost = $NotTopMost
                         }
@@ -933,7 +967,7 @@ function Show-ADTInstallationWelcome
                             }
 
                             # Restore minimized windows.
-                            if (!$NoMinimizeWindows)
+                            if ($MinimizeWindows)
                             {
                                 $null = $adtEnv.ShellApp.UndoMinimizeAll()
                             }
@@ -959,7 +993,7 @@ function Show-ADTInstallationWelcome
                             }
 
                             # Restore minimized windows.
-                            if (!$NoMinimizeWindows)
+                            if ($MinimizeWindows)
                             {
                                 $null = $adtEnv.ShellApp.UndoMinimizeAll()
                             }
