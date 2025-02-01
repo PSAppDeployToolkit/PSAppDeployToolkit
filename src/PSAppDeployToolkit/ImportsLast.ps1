@@ -90,7 +90,7 @@ try
                 }).AsReadOnly()
             Classic = [pscustomobject]@{
                 ProgressWindow = [pscustomobject]@{
-                    SyncHash = [System.Collections.Concurrent.ConcurrentDictionary[[System.String], [System.Object]]]::new()
+                    SyncHash = [System.Collections.Hashtable]::Synchronized(@{})
                     XamlCode = $null
                     PowerShell = $null
                     Invocation = $null
