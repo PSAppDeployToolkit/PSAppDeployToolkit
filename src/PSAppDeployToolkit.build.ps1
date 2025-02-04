@@ -417,6 +417,11 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
 
         # Trim the file, fix multi-line EXAMPLES, and unescape tilde characters.
         $newContent = ($content.Trim() -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6').Replace('PS C:\\\>', $null).Replace('\`', '`')
+
+        # Escape and slashes within a parameter's `Default value` yaml property.
+        $newContent = [System.Text.RegularExpressions.Regex]::Replace($newContent, '(?<=^Default value: .*?)(\\)', '\\', [System.Text.RegularExpressions.RegexOptions]::Multiline)
+
+        # Write the content back to disk if there's changes.
         if ($newContent -ne $content)
         {
             [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").TrimEnd())
