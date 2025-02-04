@@ -26,13 +26,13 @@ function Remove-ADTFileFromUserProfiles
         Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
     .PARAMETER ExcludeDefaultUser
-        Exclude the Default User. Default is: $false.
+        Exclude the Default User.
 
     .PARAMETER IncludeSystemProfiles
-        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
+        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
 
     .PARAMETER IncludeServiceProfiles
-        Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
+        Include service profiles where NTAccount begins with NT SERVICE.
 
     .INPUTS
         None

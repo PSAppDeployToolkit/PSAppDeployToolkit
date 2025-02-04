@@ -102,7 +102,6 @@ Accept wildcard characters: False
 ### -Wow6432Node
 
 Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter
@@ -118,8 +117,7 @@ Accept wildcard characters: False
 
 ### -ExecutionPolicy
 
-Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script.
-Default is: system's ExecutionPolicy.
+Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script..
 
 ```yaml
 Type: ExecutionPolicy
@@ -129,7 +127,7 @@ Accepted values: Unrestricted, RemoteSigned, AllSigned, Restricted, Default, Byp
 
 Required: False
 Position: Named
-Default value: None
+Default value: (Get-ExecutionPolicy)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -155,7 +153,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: ((Get-Date -Format 'yyMM,ddHH,mmss').ToString())
+Default value: [System.DateTime]::Now.ToString('yyMM,ddHH,mmss')
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

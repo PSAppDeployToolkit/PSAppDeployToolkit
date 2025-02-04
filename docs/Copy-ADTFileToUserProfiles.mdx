@@ -94,8 +94,6 @@ Accept wildcard characters: False
 ### -BasePath
 
 The base path to append the destination folder to.
-Default is: Profile.
-Options are: Profile, AppData, LocalAppData, Desktop, Documents, StartMenu, Temp, OneDrive, OneDriveCommercial.
 
 ```yaml
 Type: String
@@ -162,7 +160,6 @@ Accept wildcard characters: False
 ### -RobocopyParams
 
 Override the default Robocopy parameters.
-Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
 ```yaml
 Type: String
@@ -179,7 +176,6 @@ Accept wildcard characters: False
 ### -RobocopyAdditionalParams
 
 Append to the default Robocopy parameters.
-Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
 
 ```yaml
 Type: String
@@ -212,7 +208,6 @@ Accept wildcard characters: False
 ### -IncludeSystemProfiles
 
 Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter
@@ -229,7 +224,6 @@ Accept wildcard characters: False
 ### -IncludeServiceProfiles
 
 Include service profiles where NTAccount begins with NT SERVICE.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter
@@ -246,7 +240,6 @@ Accept wildcard characters: False
 ### -ExcludeDefaultUser
 
 Exclude the Default User.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter

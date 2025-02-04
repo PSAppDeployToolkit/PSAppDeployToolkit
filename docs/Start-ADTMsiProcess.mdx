@@ -183,8 +183,6 @@ Accept wildcard characters: False
 ### -ArgumentList
 
 Overrides the default parameters specified in the config.psd1 file.
-The install default is: "REBOOT=ReallySuppress /QB!".
-The uninstall default is: "REBOOT=ReallySuppress /QN".
 
 ```yaml
 Type: String[]
@@ -193,7 +191,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: Install (Normal): (Get-ADTConfig).MSI.InstallParams; Install (Silent): (Get-ADTConfig).MSI.SilentParams; Uninstall (Normal): (Get-ADTConfig).MSI.UninstallParams; Uninstall (Silent): (Get-ADTConfig).MSI.SilentParams
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -201,8 +199,6 @@ Accept wildcard characters: False
 ### -AdditionalArgumentList
 
 Adds additional parameters to the default set specified in the config.psd1 file.
-The install default is: "REBOOT=ReallySuppress /QB!".
-The uninstall default is: "REBOOT=ReallySuppress /QN".
 
 ```yaml
 Type: String[]
@@ -305,7 +301,6 @@ Accept wildcard characters: False
 ### -SkipMSIAlreadyInstalledCheck
 
 Skips the check to determine if the MSI is already installed on the system.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter

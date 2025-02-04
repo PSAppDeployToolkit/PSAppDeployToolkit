@@ -18,10 +18,12 @@ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FI
 for more details. You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 .PARAMETER DeploymentType
-The type of deployment to perform. Default is: Install.
+The type of deployment to perform.
 
 .PARAMETER DeployMode
-Specifies whether the installation should be run in Interactive, Silent, or NonInteractive mode. Default is: Interactive. Options: Interactive = Shows dialogs, Silent = No dialogs, NonInteractive = Very silent, i.e. no blocking apps. NonInteractive mode is automatically set if it is detected that the process is not user interactive.
+Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), or NonInteractive (dialogs without prompts) mode.
+
+NonInteractive mode is automatically set if it is detected that the process is not user interactive.
 
 .PARAMETER AllowRebootPassThru
 Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
@@ -30,7 +32,7 @@ Allows the 3010 return code (requires restart) to be passed back to the parent p
 Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Desktop Session Hosts/Citrix servers.
 
 .PARAMETER DisableLogging
-Disables logging to file for the script. Default is: $false.
+Disables logging to file for the script.
 
 .EXAMPLE
 powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
@@ -64,12 +66,14 @@ https://psappdeploytoolkit.com
 [CmdletBinding()]
 param
 (
-    [Parameter(Mandatory = $false, HelpMessage = "Defaults to [Install] if unspecified.")]
+    [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
+    [PSDefaultValue(Help = 'Install', Value = 'Install')]
     [System.String]$DeploymentType,
 
-    [Parameter(Mandatory = $false, HelpMessage = "Defaults to [Interactive] if unspecified.")]
+    [Parameter(Mandatory = $false)]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
+    [PSDefaultValue(Help = 'Interactive', Value = 'Interactive')]
     [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]

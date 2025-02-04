@@ -32,10 +32,10 @@ function Copy-ADTFile
         Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.
 
     .PARAMETER RobocopyParams
-        Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Override the default Robocopy parameters.
 
     .PARAMETER RobocopyAdditionalParams
-        Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Append to the default Robocopy parameters.
 
     .INPUTS
         None
@@ -91,7 +91,7 @@ function Copy-ADTFile
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Recurse = $false,
+        [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Flatten,

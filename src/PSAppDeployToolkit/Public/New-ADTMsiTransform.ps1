@@ -22,15 +22,10 @@ function New-ADTMsiTransform
     .PARAMETER NewTransformPath
         Specify the path where the new transform file with the desired properties will be created. If a transform file of the same name already exists, it will be deleted before a new one is created.
 
-        Default is:
-
-        1) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
-        2) If only -MsiPath was specified, then <MsiPath>.mst
-
     .PARAMETER TransformProperties
-        Hashtable which contains calls to Set-ADTMsiProperty for configuring the desired properties which should be included in the new transform file.
+        Hashtable which contains calls to `Set-ADTMsiProperty` for configuring the desired properties which should be included in the new transform file.
 
-        Example hashtable: @{ 'ALLUSERS' = '1' }
+        Example hashtable: @{ ALLUSERS = 1 }
 
     .INPUTS
         None
@@ -44,11 +39,11 @@ function New-ADTMsiTransform
 
     .EXAMPLE
         New-ADTMsiTransform -MsiPath 'C:\Temp\PSADTInstall.msi' -TransformProperties @{
-            'ALLUSERS' = '1'
-            'AgreeToLicense' = 'Yes'
-            'REBOOT' = 'ReallySuppress'
-            'RebootYesNo' = 'No'
-            'ROOTDRIVE' = 'C:'
+            ALLUSERS = 1
+            AgreeToLicense = 'Yes'
+            REBOOT = 'ReallySuppress'
+            RebootYesNo = 'No'
+            ROOTDRIVE = 'C:'
         }
 
         Creates a new transform file for the specified MSI with the given properties.
@@ -91,6 +86,7 @@ function New-ADTMsiTransform
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'If `-ApplyTransformPath` was specified: `<ApplyTransformPath>.new.mst`; If only `-MsiPath` was specified: `<MsiPath>.mst`')]
         [System.String]$NewTransformPath,
 
         [Parameter(Mandatory = $true)]
