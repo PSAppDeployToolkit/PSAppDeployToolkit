@@ -545,7 +545,7 @@
              <code lang="csharp">
              IContentDialogService contentDialogService = new ContentDialogService();
              contentDialogService.SetContentPresenter(RootContentDialogPresenter);
-
+            
              await _contentDialogService.ShowAsync(
                  new ContentDialog(){
                      Title = "The cake?",
@@ -1279,17 +1279,17 @@
              </code>
              <code lang="csharp">
              var contentDialog = new ContentDialog(RootContentDialogPresenter);
-
+            
              contentDialog.SetCurrentValue(ContentDialog.TitleProperty, "Hello World");
              contentDialog.SetCurrentValue(ContentControl.ContentProperty, "This is a message");
              contentDialog.SetCurrentValue(ContentDialog.CloseButtonTextProperty, "Close this dialog");
-
+            
              await contentDialog.ShowAsync(cancellationToken);
              </code>
              <code lang="csharp">
              var contentDialogService = new ContentDialogService();
              contentDialogService.SetContentPresenter(RootContentDialogPresenter);
-
+            
              await _contentDialogService.ShowSimpleDialogAsync(
                  new SimpleContentDialogCreateOptions()
                      {
@@ -1672,6 +1672,18 @@
         <member name="F:Wpf.Ui.Controls.DataGrid.CheckBoxColumnEditingElementStyleProperty">
             <summary>Identifies the <see cref="P:Wpf.Ui.Controls.DataGrid.CheckBoxColumnEditingElementStyle"/> dependency property.</summary>
         </member>
+        <member name="F:Wpf.Ui.Controls.DataGrid.ComboBoxColumnElementStyleProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Controls.DataGrid.ComboBoxColumnElementStyle"/> dependency property.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Controls.DataGrid.ComboBoxColumnEditingElementStyleProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Controls.DataGrid.ComboBoxColumnEditingElementStyle"/> dependency property.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Controls.DataGrid.TextColumnElementStyleProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Controls.DataGrid.TextColumnElementStyle"/> dependency property.</summary>
+        </member>
+        <member name="F:Wpf.Ui.Controls.DataGrid.TextColumnEditingElementStyleProperty">
+            <summary>Identifies the <see cref="P:Wpf.Ui.Controls.DataGrid.TextColumnEditingElementStyle"/> dependency property.</summary>
+        </member>
         <member name="P:Wpf.Ui.Controls.DataGrid.CheckBoxColumnElementStyle">
             <summary>
             Gets or sets the style which is applied to all checkbox column in the DataGrid
@@ -1680,6 +1692,26 @@
         <member name="P:Wpf.Ui.Controls.DataGrid.CheckBoxColumnEditingElementStyle">
             <summary>
             Gets or sets the style for all the column checkboxes in the DataGrid
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Controls.DataGrid.ComboBoxColumnElementStyle">
+            <summary>
+            Gets or sets the style which is applied to all combobox column in the DataGrid
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Controls.DataGrid.ComboBoxColumnEditingElementStyle">
+            <summary>
+            Gets or sets the style for all the column comboboxes in the DataGrid
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Controls.DataGrid.TextColumnElementStyle">
+            <summary>
+            Gets or sets the style which is applied to all textbox column in the DataGrid
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Controls.DataGrid.TextColumnEditingElementStyle">
+            <summary>
+            Gets or sets the style for all the column textboxes in the DataGrid
             </summary>
         </member>
         <member name="T:Wpf.Ui.Controls.DropDownButton">
@@ -3860,16 +3892,16 @@
             Occurs after the user triggers evaluation of new input by pressing the Enter key, clicking a spin button, or by changing focus.
             </summary>
         </member>
-        <member name="M:Wpf.Ui.Controls.NumberBox.OnKeyUp(System.Windows.Input.KeyEventArgs)">
+        <member name="M:Wpf.Ui.Controls.NumberBox.OnPreviewKeyDown(System.Windows.Input.KeyEventArgs)">
             <inheritdoc />
         </member>
-        <member name="M:Wpf.Ui.Controls.NumberBox.OnTemplateButtonClick(System.String)">
+        <member name="M:Wpf.Ui.Controls.NumberBox.OnPreviewKeyUp(System.Windows.Input.KeyEventArgs)">
             <inheritdoc />
         </member>
         <member name="M:Wpf.Ui.Controls.NumberBox.OnLostFocus(System.Windows.RoutedEventArgs)">
             <inheritdoc />
         </member>
-        <member name="M:Wpf.Ui.Controls.NumberBox.OnTemplateChanged(System.Windows.Controls.ControlTemplate,System.Windows.Controls.ControlTemplate)">
+        <member name="M:Wpf.Ui.Controls.NumberBox.OnApplyTemplate">
             <inheritdoc />
         </member>
         <member name="M:Wpf.Ui.Controls.NumberBox.OnValueChanged(System.Windows.DependencyObject,System.Nullable{System.Double})">
@@ -3916,6 +3948,36 @@
             <summary>
             Invalid input is replaced by <see cref="T:Wpf.Ui.Controls.NumberBox"/> PlaceholderText text.
             </summary>
+        </member>
+        <member name="T:Wpf.Ui.Controls.NumberBoxValueChangedEventArgs">
+            <summary>
+            Provides information for the <see cref="E:Wpf.Ui.Controls.NumberBox.ValueChanged" /> event.
+            </summary>
+        </member>
+        <member name="M:Wpf.Ui.Controls.NumberBoxValueChangedEventArgs.#ctor(System.Nullable{System.Double},System.Nullable{System.Double},System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Wpf.Ui.Controls.NumberBoxValueChangedEventArgs" /> class. />
+            </summary>
+            <param name="oldValue">
+                The value of the <see cref="P:Wpf.Ui.Controls.NumberBox.Value"/> property before the change
+                reported by the relevant event or state change.
+            </param>
+            <param name="newValue">
+                The value of the <see cref="P:Wpf.Ui.Controls.NumberBox.Value"/> property after the change
+                reported by the relevant event or state change.
+            </param>
+            <param name="source">
+                An alternate source that will be reported when the event is handled. This pre-populates
+                the <see cref="P:System.Windows.RoutedEventArgs.Source" /> property.
+            </param>
+        </member>
+        <member name="P:Wpf.Ui.Controls.NumberBoxValueChangedEventArgs.OldValue">
+            <summary>Gets the value of the <see cref="P:Wpf.Ui.Controls.NumberBox.Value"/> property before the change.</summary>
+            <returns>The property value before the change.</returns>
+        </member>
+        <member name="P:Wpf.Ui.Controls.NumberBoxValueChangedEventArgs.NewValue">
+            <summary>Gets the value of the <see cref="P:Wpf.Ui.Controls.NumberBox.Value"/> property after the change.</summary>
+            <returns>The property value after the change.</returns>
         </member>
         <member name="T:Wpf.Ui.Controls.ValidateNumberFormatter">
             <summary>
@@ -4414,7 +4476,7 @@
         </member>
         <member name="T:Wpf.Ui.Controls.SymbolFilled">
             <summary>
-            Represents a list of filled Fluent System Icons <c>v.1.1.233</c>.
+            Represents a list of filled Fluent System Icons <c>v.1.1.271</c>.
             <para>May be converted to <see langword="char"/> using <c>GetGlyph()</c> or to <see langword="string"/> using <c>GetString()</c></para>
             </summary>
         </member>
@@ -4452,7 +4514,7 @@
         </member>
         <member name="T:Wpf.Ui.Controls.SymbolRegular">
             <summary>
-            Represents a list of regular Fluent System Icons <c>v.1.1.233</c>.
+            Represents a list of regular Fluent System Icons <c>v.1.1.271</c>.
             <para>May be converted to <see langword="char"/> using <c>GetGlyph()</c> or to <see langword="string"/> using <c>GetString()</c></para>
             </summary>
         </member>
@@ -4757,7 +4819,14 @@
             <summary>Identifies the <see cref="P:Wpf.Ui.Controls.TitleBar.Title"/> dependency property.</summary>
         </member>
         <member name="F:Wpf.Ui.Controls.TitleBar.HeaderProperty">
-            <summary>Identifies the <see cref="P:Wpf.Ui.Controls.TitleBar.Header"/> dependency property.</summary>
+            <summary>
+            Property for <see cref="P:Wpf.Ui.Controls.TitleBar.Header"/>.
+            </summary>
+        </member>
+        <member name="F:Wpf.Ui.Controls.TitleBar.TrailingContentProperty">
+            <summary>
+            Property for <see cref="P:Wpf.Ui.Controls.TitleBar.TrailingContent"/>.
+            </summary>
         </member>
         <member name="F:Wpf.Ui.Controls.TitleBar.ButtonsForegroundProperty">
             <summary>Identifies the <see cref="P:Wpf.Ui.Controls.TitleBar.ButtonsForeground"/> dependency property.</summary>
@@ -4817,7 +4886,12 @@
         </member>
         <member name="P:Wpf.Ui.Controls.TitleBar.Header">
             <summary>
-            Gets or sets the content displayed in the <see cref="T:Wpf.Ui.Controls.TitleBar"/>.
+            Gets or sets the content displayed in the left side of the <see cref="T:Wpf.Ui.Controls.TitleBar"/>.
+            </summary>
+        </member>
+        <member name="P:Wpf.Ui.Controls.TitleBar.TrailingContent">
+            <summary>
+            Gets or sets the content displayed in right side of the <see cref="T:Wpf.Ui.Controls.TitleBar"/>.
             </summary>
         </member>
         <member name="P:Wpf.Ui.Controls.TitleBar.ButtonsForeground">
@@ -6093,6 +6167,15 @@
             <param name="icon">Additional icon on the left.</param>
             <param name="timeout">The time after which the snackbar should disappear.</param>
         </member>
+        <member name="M:Wpf.Ui.Extensions.StringExtensions.Contains(System.String,System.String,System.StringComparison)">
+            <summary>
+                Returns a value indicating whether a specified string occurs within this string, using the specified comparison rules.
+            </summary>
+            <param name="source">Source string.</param>
+            <param name="value">The string to seek.</param>
+            <param name="comparison">One of the enumeration values that specifies the rules to use in the comparison.</param>
+            <returns>true if the value parameter occurs within this string, or if value is the empty string (""); otherwise, false.</returns>
+        </member>
         <member name="T:Wpf.Ui.Extensions.SymbolExtensions">
             <summary>
             Set of extensions for the enumeration of icons to facilitate their management and replacement.
@@ -6303,7 +6386,7 @@
              <code lang="csharp">
              IContentDialogService contentDialogService = new ContentDialogService();
              contentDialogService.SetContentPresenter(RootContentDialogPresenter);
-
+            
              await _contentDialogService.ShowAsync(
                  new ContentDialog(){
                      Title = "The cake?",
@@ -9860,7 +9943,7 @@
              When one or more valid methods
              with this attribute are found in a compilation, the compiler will
              emit a module initializer which calls each of the attributed methods.
-
+            
              Certain requirements are imposed on any method targeted with this attribute:
              - The method must be `static`.
              - The method must be an ordinary member method, as opposed to a property accessor, constructor, local function, etc.
@@ -9868,7 +9951,7 @@
              - The method must return `void`.
              - The method must not be generic or be contained in a generic type.
              - The method's effective accessibility must be `internal` or `public`.
-
+            
              The specification for module initializers in the .NET runtime can be found here:
              https://github.com/dotnet/runtime/blob/main/docs/design/specs/Ecma-335-Augments.md#module-initializer
              </remarks>
