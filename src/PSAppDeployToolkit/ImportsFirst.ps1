@@ -53,7 +53,7 @@ try
 
     # Expand command lookup table with cmdlets used through this module.
     & {
-        $RequiredModules = [System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.PowerShell.Commands.ModuleSpecification]]$(
+        $RequiredModules = [System.Collections.Generic.IReadOnlyList[Microsoft.PowerShell.Commands.ModuleSpecification]][System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.PowerShell.Commands.ModuleSpecification]]$(
             if (!$MinimumStartup)
             {
                 @{ ModuleName = 'CimCmdlets'; Guid = 'fb6cc51d-c096-4b38-b78d-0fed6277096a'; ModuleVersion = '1.0' }

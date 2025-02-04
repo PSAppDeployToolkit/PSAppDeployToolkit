@@ -10,7 +10,7 @@ try
     # Set all functions as read-only, export all public definitions and finalise the CommandTable.
     Set-Item -LiteralPath $FunctionPaths -Options ReadOnly
     Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
-    New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
+    New-Variable -Name CommandTable -Value ([System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
     if (!$MinimumStartup)
     {
         Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
@@ -114,7 +114,7 @@ try
 
     # Registry path transformation constants used within Convert-ADTRegistryPath.
     New-Variable -Name Registry -Option Constant -Value ([ordered]@{
-            PathMatches = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(
+            PathMatches = [System.Collections.Generic.IReadOnlyList[System.String]][System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(
                 ':\\'
                 ':'
                 '\\'

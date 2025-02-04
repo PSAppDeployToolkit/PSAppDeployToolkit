@@ -120,7 +120,7 @@ function Import-ADTConfig
     }
 
     # Expand out environment variables and asset file paths.
-    ($adtEnv = Get-ADTEnvironmentTable).GetEnumerator() | & { process { New-Variable -Name $_.Name -Value $_.Value -Option Constant } end { $config | Expand-ADTVariablesInConfig } }
+    ($adtEnv = Get-ADTEnvironmentTable).GetEnumerator() | & { process { New-Variable -Name $_.Key -Value $_.Value -Option Constant } end { $config | Expand-ADTVariablesInConfig } }
     $config.Assets | Update-ADTAssetFilePath
 
     # Set the app's AUMID so it doesn't just say "Windows PowerShell".

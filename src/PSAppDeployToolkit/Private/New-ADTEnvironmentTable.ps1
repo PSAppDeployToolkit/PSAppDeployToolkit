@@ -12,7 +12,7 @@ function New-ADTEnvironmentTable
     )
 
     # Perform initial setup.
-    $variables = [ordered]@{}
+    $variables = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
 
     ## Variables: Toolkit Info
     $variables.Add('appDeployToolkitName', $MyInvocation.MyCommand.Module.Name)
@@ -319,5 +319,5 @@ function New-ADTEnvironmentTable
     $variables.Add('ShellApp', [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('Shell.Application')))
 
     # Return variables for use within the module.
-    return $variables.AsReadOnly()
+    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$variables
 }

@@ -39,7 +39,7 @@ function Get-ADTMsiTableProperty
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.ObjectModel.ReadOnlyDictionary`2[[System.String],[System.Object]]
+        System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]
 
         Returns a readonly dictionary with the properties as key/value pairs.
 
@@ -71,7 +71,7 @@ function Get-ADTMsiTableProperty
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
-    [OutputType([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]])]
+    [OutputType([System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]])]
     [OutputType([PSADT.Types.MsiSummaryInfo])]
     param
     (
@@ -215,7 +215,7 @@ function Get-ADTMsiTableProperty
                 # We also can't use a pscustomobject accelerator here as the MSI may have the same keys with different casing, necessitating the use of a dictionary for storage.
                 if ($TableProperties.Count)
                 {
-                    return [System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$TableProperties
+                    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$TableProperties
                 }
             }
             catch

@@ -28,7 +28,7 @@ namespace PSADT.Module
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
         /// <param name="noExitOnClose">Indicates that the shell shouldn't exit on the last session closure.</param>
         /// <param name="callerSessionState">The caller session state.</param>
-        public DeploymentSession(Dictionary<string, object>? parameters = null, bool? noExitOnClose = null, SessionState? callerSessionState = null)
+        public DeploymentSession(IReadOnlyDictionary<string, object>? parameters = null, bool? noExitOnClose = null, SessionState? callerSessionState = null)
         {
             try
             {
@@ -130,7 +130,7 @@ namespace PSADT.Module
                     }
                     if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue) && (null != paramValue))
                     {
-                        _deployAppScriptParameters = (Dictionary<string, object>)paramValue;
+                        _deployAppScriptParameters = new ReadOnlyDictionary<string, object>((Dictionary<string, object>)paramValue);
                     }
                     if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (null != paramValue))
                     {
@@ -305,7 +305,7 @@ namespace PSADT.Module
                         // Read the MSI and get the installation details.
                         if (((bool)parameters?.TryGetValue("DisableDefaultMsiProcessList", out paramValue)! && (SwitchParameter)paramValue!))
                         {
-                            var exeProps = (ReadOnlyDictionary<string, object>)InternalDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
+                            var exeProps = (IReadOnlyDictionary<string, object>)InternalDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
                             List<ProcessObject> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
 
                             // Generate list of MSI executables for testing later on.
@@ -317,7 +317,7 @@ namespace PSADT.Module
                         }
 
                         // Update our app variables with new values.
-                        var msiProps = (ReadOnlyDictionary<string, object>)InternalDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
+                        var msiProps = (IReadOnlyDictionary<string, object>)InternalDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table Property"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
                         if (string.IsNullOrWhiteSpace(_appName))
                         {
                             _appName = (string)msiProps["ProductName"];
@@ -514,7 +514,7 @@ namespace PSADT.Module
                     }
                     if ((null != _deployAppScriptParameters) && (_deployAppScriptParameters.Count > 0))
                     {
-                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters).Replace("''", "'")}].");
+                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)).Replace("''", "'")}].");
                     }
                 }
                 var adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
@@ -1143,7 +1143,7 @@ namespace PSADT.Module
         /// Gets the default MSI executables list.
         /// </summary>
         /// <returns>An array of default MSI executables.</returns>
-        public ReadOnlyCollection<ProcessObject> GetDefaultMsiExecutablesList()
+        public IReadOnlyList<ProcessObject> GetDefaultMsiExecutablesList()
         {
             return DefaultMsiExecutablesList;
         }
@@ -1219,7 +1219,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the list of executables found within a Zero-Config MSI file.
         /// </summary>
-        private ReadOnlyCollection<ProcessObject> DefaultMsiExecutablesList { get; } = new ReadOnlyCollection<ProcessObject>([]);
+        private IReadOnlyList<ProcessObject> DefaultMsiExecutablesList { get; } = new ReadOnlyCollection<ProcessObject>([]);
 
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
@@ -1259,8 +1259,8 @@ namespace PSADT.Module
         private string? _appArch { get; }
         private string? _appLang { get; }
         private string? _appRevision { get; }
-        private ReadOnlyCollection<int> _appSuccessExitCodes { get; } = new ReadOnlyCollection<int>([0]);
-        private ReadOnlyCollection<int> _appRebootExitCodes { get; } = new ReadOnlyCollection<int>([1641, 3010]);
+        private IReadOnlyList<int> _appSuccessExitCodes { get; } = new ReadOnlyCollection<int>([0]);
+        private IReadOnlyList<int> _appRebootExitCodes { get; } = new ReadOnlyCollection<int>([1641, 3010]);
         private Version? _appScriptVersion { get; }
         private DateTime? _appScriptDate { get; }
         private string? _appScriptAuthor { get; }
@@ -1268,7 +1268,7 @@ namespace PSADT.Module
         private string _installTitle { get; }
         private string? _deployAppScriptFriendlyName { get; }
         private Version? _deployAppScriptVersion { get; }
-        private Dictionary<string, object>? _deployAppScriptParameters { get; }
+        private IReadOnlyDictionary<string, object>? _deployAppScriptParameters { get; }
         private string _installPhase { get; set; } = "Initialization";
         private string _currentDate { get; }
         private string _currentTime { get; }
@@ -1277,7 +1277,7 @@ namespace PSADT.Module
         private string? _dirSupportFiles { get; set; }
         private string? _defaultMsiFile { get; }
         private string? _defaultMstFile { get; }
-        private ReadOnlyCollection<string> _defaultMspFiles { get; } = new ReadOnlyCollection<string>([]);
+        private IReadOnlyList<string> _defaultMspFiles { get; } = new ReadOnlyCollection<string>([]);
         private string _logTempFolder { get; }
         private string _logName { get; }
 
@@ -1382,7 +1382,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a successful deployment.
         /// </summary>
-        public ReadOnlyCollection<int> AppSuccessExitCodes
+        public IReadOnlyList<int> AppSuccessExitCodes
         {
             get => (null != CallerSessionState) ? (ReadOnlyCollection<int>)CallerSessionState.PSVariable.GetValue(nameof(AppSuccessExitCodes)) : _appSuccessExitCodes;
         }
@@ -1390,7 +1390,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a reboot is required.
         /// </summary>
-        public ReadOnlyCollection<int> AppRebootExitCodes
+        public IReadOnlyList<int> AppRebootExitCodes
         {
             get => (null != CallerSessionState) ? (ReadOnlyCollection<int>)CallerSessionState.PSVariable.GetValue(nameof(AppRebootExitCodes)) : _appRebootExitCodes;
         }
@@ -1454,9 +1454,9 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's frontend script parameters.
         /// </summary>
-        public Dictionary<string, object>? DeployAppScriptParameters
+        public IReadOnlyDictionary<string, object>? DeployAppScriptParameters
         {
-            get => (null != CallerSessionState) ? (Dictionary<string, object>?)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptParameters)) : _deployAppScriptParameters;
+            get => (null != CallerSessionState) ? (ReadOnlyDictionary<string, object>?)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptParameters)) : _deployAppScriptParameters;
         }
 
         /// <summary>
@@ -1556,7 +1556,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public ReadOnlyCollection<string> DefaultMspFiles
+        public IReadOnlyList<string> DefaultMspFiles
         {
             get => (null != CallerSessionState) ? (ReadOnlyCollection<string>)CallerSessionState.PSVariable.GetValue(nameof(DefaultMspFiles)) : _defaultMspFiles;
         }

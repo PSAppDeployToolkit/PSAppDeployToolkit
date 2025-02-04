@@ -678,7 +678,7 @@ namespace PSADT.WTSSession
             return sessionInfo;
         }
 
-        public static ReadOnlyCollection<CompatibilitySessionInfo> GetCompatibilitySessionInfo()
+        public static IReadOnlyList<CompatibilitySessionInfo> GetCompatibilitySessionInfo()
         {
             // Open collector for all compatibility session objects.
             List<CompatibilitySessionInfo> compatibilitySessionInfos = [];

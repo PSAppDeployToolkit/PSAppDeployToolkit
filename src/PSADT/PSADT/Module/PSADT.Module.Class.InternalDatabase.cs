@@ -28,9 +28,9 @@ namespace PSADT.Module
             return _database ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
         }
 
-        internal static OrderedDictionary GetEnvironment()
+        internal static IReadOnlyDictionary<string, object> GetEnvironment()
         {
-            return (OrderedDictionary?)_database?.Properties["Environment"].Value ?? throw new InvalidOperationException(errorMessage);
+            return (IReadOnlyDictionary<string, object>?)_database?.Properties["Environment"].Value ?? throw new InvalidOperationException(errorMessage);
         }
 
         internal static Hashtable GetConfig()

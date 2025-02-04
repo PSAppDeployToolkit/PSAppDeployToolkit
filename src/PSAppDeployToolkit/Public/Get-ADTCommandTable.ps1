@@ -21,7 +21,7 @@ function Get-ADTCommandTable
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]
+        System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]
 
         Returns PSAppDeployTookit's safe command lookup table as a ReadOnlyDictionary.
 

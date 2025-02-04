@@ -86,7 +86,7 @@ function Get-ADTLoggedOnUser
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Collections.ObjectModel.ReadOnlyCollection[PSADT.WTSSession.CompatibilitySessionInfo]])]
+    [OutputType([System.Collections.Generic.IReadOnlyList[PSADT.WTSSession.CompatibilitySessionInfo]])]
     param
     (
     )
