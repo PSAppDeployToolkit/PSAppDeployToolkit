@@ -64,13 +64,13 @@ https://psappdeploytoolkit.com
 [CmdletBinding()]
 param
 (
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false, HelpMessage = "Defaults to [Install] if unspecified.")]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
-    [System.String]$DeploymentType = 'Install',
+    [System.String]$DeploymentType,
 
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false, HelpMessage = "Defaults to [Interactive] if unspecified.")]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
-    [System.String]$DeployMode = 'Interactive',
+    [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
