@@ -38,10 +38,10 @@ function Start-ADTMsiProcess
         The name(s) of the patch (MSP) file(s) to be applied to the MSI for the "Install" action. The patch files should be in the same directory as the MSI file.
 
     .PARAMETER ArgumentList
-        Overrides the default parameters specified in the config.psd1 file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
+        Overrides the default parameters specified in the config.psd1 file.
 
     .PARAMETER AdditionalArgumentList
-        Adds additional parameters to the default set specified in the config.psd1 file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
+        Adds additional parameters to the default set specified in the config.psd1 file.
 
     .PARAMETER SecureArgumentList
         Hides all parameters passed to the MSI or MSP file from the toolkit log file.
@@ -58,7 +58,7 @@ function Start-ADTMsiProcess
         Overrides the working directory. The working directory is set to the location of the MSI file.
 
     .PARAMETER SkipMSIAlreadyInstalledCheck
-        Skips the check to determine if the MSI is already installed on the system. Default is: $false.
+        Skips the check to determine if the MSI is already installed on the system.
 
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
@@ -166,6 +166,7 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'Install (Normal): (Get-ADTConfig).MSI.InstallParams; Install (Silent): (Get-ADTConfig).MSI.SilentParams; Uninstall (Normal): (Get-ADTConfig).MSI.UninstallParams; Uninstall (Silent): (Get-ADTConfig).MSI.SilentParams')]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]

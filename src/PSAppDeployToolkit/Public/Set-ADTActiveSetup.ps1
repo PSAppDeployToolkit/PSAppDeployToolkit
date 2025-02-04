@@ -34,10 +34,10 @@ function Set-ADTActiveSetup
         Arguments to pass to the file being executed.
 
     .PARAMETER Wow6432Node
-        Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS. Default is: $false.
+        Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS.
 
     .PARAMETER ExecutionPolicy
-        Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script. Default is: system's ExecutionPolicy.
+        Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script..
 
     .PARAMETER Version
         Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
@@ -115,11 +115,12 @@ function Set-ADTActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = '(Get-ExecutionPolicy)')]
         [Microsoft.PowerShell.ExecutionPolicy]$ExecutionPolicy,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Version = ((Get-Date -Format 'yyMM,ddHH,mmss').ToString()), # Ex: 1405,1515,0522
+        [System.String]$Version = [System.DateTime]::Now.ToString('yyMM,ddHH,mmss'), # Ex: 1405,1515,0522
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [ValidateNotNullOrEmpty()]

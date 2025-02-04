@@ -19,7 +19,7 @@ function Show-ADTBalloonTip
         Text of the balloon tip.
 
     .PARAMETER BalloonTipIcon
-        Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
+        Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'.
 
     .PARAMETER BalloonTipTime
         This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.

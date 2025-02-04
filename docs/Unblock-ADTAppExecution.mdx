@@ -43,7 +43,7 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: (Get-ScheduledTask -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
+Default value: All scheduled tasks wildcard matching [PSAppDeployToolkit_*_BlockedApps].
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

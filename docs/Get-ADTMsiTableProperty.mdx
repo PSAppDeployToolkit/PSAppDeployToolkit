@@ -93,7 +93,6 @@ Accept wildcard characters: False
 ### -Table
 
 The name of the the MSI table from which all of the properties must be retrieved.
-Default is: 'Property'.
 
 ```yaml
 Type: String
@@ -102,7 +101,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: MSI file: "Property"; MSP file: "MsiPatchMetadata"
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -110,7 +109,6 @@ Accept wildcard characters: False
 ### -TablePropertyNameColumnNum
 
 Specify the table column number which contains the name of the properties.
-Default is: 1 for MSIs and 2 for MSPs.
 
 ```yaml
 Type: Int32
@@ -119,7 +117,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: 0
+Default value: MSI file: 1; MSP file: 2
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -127,7 +125,6 @@ Accept wildcard characters: False
 ### -TablePropertyValueColumnNum
 
 Specify the table column number which contains the value of the properties.
-Default is: 2 for MSIs and 3 for MSPs.
 
 ```yaml
 Type: Int32
@@ -136,7 +133,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: 0
+Default value: MSI file: 2; MSP file: 3
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

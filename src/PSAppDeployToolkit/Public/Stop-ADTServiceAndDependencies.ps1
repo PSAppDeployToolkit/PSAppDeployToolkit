@@ -17,7 +17,7 @@ function Stop-ADTServiceAndDependencies
         Specify the name of the service.
 
     .PARAMETER SkipDependentServices
-        Choose to skip checking for and stopping dependent services. Default is: $false.
+        Choose to skip checking for and stopping dependent services.
 
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.

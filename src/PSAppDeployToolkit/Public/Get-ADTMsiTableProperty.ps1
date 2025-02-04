@@ -20,13 +20,13 @@ function Get-ADTMsiTableProperty
         The fully qualified path to a list of MST file(s) which should be applied to the MSI file.
 
     .PARAMETER Table
-        The name of the the MSI table from which all of the properties must be retrieved. Default is: 'Property'.
+        The name of the the MSI table from which all of the properties must be retrieved.
 
     .PARAMETER TablePropertyNameColumnNum
-        Specify the table column number which contains the name of the properties. Default is: 1 for MSIs and 2 for MSPs.
+        Specify the table column number which contains the name of the properties.
 
     .PARAMETER TablePropertyValueColumnNum
-        Specify the table column number which contains the value of the properties. Default is: 2 for MSIs and 3 for MSPs.
+        Specify the table column number which contains the value of the properties.
 
     .PARAMETER GetSummaryInformation
         Retrieves the Summary Information for the Windows Installer database.
@@ -97,14 +97,17 @@ function Get-ADTMsiTableProperty
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'MSI file: "Property"; MSP file: "MsiPatchMetadata"')]
         [System.String]$Table,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'MSI file: 1; MSP file: 2')]
         [System.Int32]$TablePropertyNameColumnNum,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'MSI file: 2; MSP file: 3')]
         [System.Int32]$TablePropertyValueColumnNum,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]

@@ -19,7 +19,7 @@ function Test-ADTMutexAvailability
         The name of the system mutex.
 
     .PARAMETER MutexWaitTime
-        The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex. Default is: 1 millisecond.
+        The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex.
 
         A wait time of -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
 
@@ -93,7 +93,7 @@ function Test-ADTMutexAvailability
         try
         {
             # Open the specified named mutex, if it already exists, without acquiring an exclusive lock on it. If the system mutex does not exist, this method throws an exception instead of creating the system object.
-            $OpenExistingMutex = [Threading.Mutex]::OpenExisting($MutexName)
+            $OpenExistingMutex = [System.Threading.Mutex]::OpenExisting($MutexName)
 
             # Attempt to acquire an exclusive lock on the mutex. Use a Timespan to specify a timeout value after which no further attempt is made to acquire a lock on the mutex.
             $IsMutexFree = $OpenExistingMutex.WaitOne($MutexWaitTime, $false)

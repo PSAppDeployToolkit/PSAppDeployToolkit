@@ -24,7 +24,7 @@ function Write-ADTLogEntry
         The source of the message being logged.
 
     .PARAMETER ScriptSection
-        The heading for the portion of the script that is being executed. Default is: "$($adtSession.InstallPhase)".
+        The heading for the portion of the script that is being executed.
 
     .PARAMETER LogType
         Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.

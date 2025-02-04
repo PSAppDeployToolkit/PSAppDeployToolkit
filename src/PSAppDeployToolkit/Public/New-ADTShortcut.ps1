@@ -35,7 +35,7 @@ function New-ADTShortcut
         Working Directory to be used for the target path.
 
     .PARAMETER WindowStyle
-        Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
+        Windows style of the application. Options: Normal, Maximized, Minimized.
 
     .PARAMETER RunAsAdmin
         Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
@@ -111,7 +111,7 @@ function New-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized')]
-        [System.String]$WindowStyle,
+        [System.String]$WindowStyle = 'Normal',
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RunAsAdmin,
@@ -234,7 +234,6 @@ function New-ADTShortcut
                         Normal { 1; break }
                         Maximized { 3; break }
                         Minimized { 7; break }
-                        default { 1; break }
                     }
 
                     # Save the changes.

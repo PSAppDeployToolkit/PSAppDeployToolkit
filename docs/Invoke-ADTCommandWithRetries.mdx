@@ -44,7 +44,7 @@ If the connection to the SMB share drops, it will retry the command every 2 seco
 ### EXAMPLE 3
 
 ```powershell
-Invoke-ADTCommandWithRetries Copy-ADTFile -Path \\MyShare\MyFile -Destination C:\Windows\Temp -Retries 5 -MaximumElapsedTime (New-TimeSpan -Minutes 5)
+Invoke-ADTCommandWithRetries Copy-ADTFile -Path '\\MyShare\MyFile' -Destination 'C:\Windows\Temp' -Retries 5 -MaximumElapsedTime (New-TimeSpan -Minutes 5)
 ```
 
 Copies a file from an SMB share to C:\Windows\Temp.

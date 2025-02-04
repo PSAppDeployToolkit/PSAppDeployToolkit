@@ -28,11 +28,11 @@ If the new transform file already exists, it will be deleted before creating a n
 
 ```powershell
 New-ADTMsiTransform -MsiPath 'C:\Temp\PSADTInstall.msi' -TransformProperties @{
-    'ALLUSERS' = '1'
-    'AgreeToLicense' = 'Yes'
-    'REBOOT' = 'ReallySuppress'
-    'RebootYesNo' = 'No'
-    'ROOTDRIVE' = 'C:'
+    ALLUSERS = 1
+    AgreeToLicense = 'Yes'
+    REBOOT = 'ReallySuppress'
+    RebootYesNo = 'No'
+    ROOTDRIVE = 'C:'
 }
 ```
 
@@ -78,11 +78,6 @@ Accept wildcard characters: False
 Specify the path where the new transform file with the desired properties will be created.
 If a transform file of the same name already exists, it will be deleted before a new one is created.
 
-Default is:
-
-1) If -ApplyTransformPath was specified but not -NewTransformPath, then &lt;ApplyTransformPath&gt;.new.mst
-2) If only -MsiPath was specified, then &lt;MsiPath&gt;.mst
-
 ```yaml
 Type: String
 Parameter Sets: (All)
@@ -90,16 +85,16 @@ Aliases:
 
 Required: False
 Position: 3
-Default value: None
+Default value: If `-ApplyTransformPath` was specified: `<ApplyTransformPath>.new.mst`; If only `-MsiPath` was specified: `<MsiPath>.mst`
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -TransformProperties
 
-Hashtable which contains calls to Set-ADTMsiProperty for configuring the desired properties which should be included in the new transform file.
+Hashtable which contains calls to `Set-ADTMsiProperty` for configuring the desired properties which should be included in the new transform file.
 
-Example hashtable: @\{ 'ALLUSERS' = '1' \}
+Example hashtable: @\{ ALLUSERS = 1 \}
 
 ```yaml
 Type: Hashtable

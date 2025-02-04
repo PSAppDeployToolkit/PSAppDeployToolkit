@@ -33,10 +33,10 @@ function Get-ADTRegistryKey
         Specify this parameter from the Invoke-ADTAllUsersRegistryAction function to read/edit HKCU registry settings for all users on the system.
 
     .PARAMETER ReturnEmptyKeyIfExists
-        Return the registry key if it exists but it has no property/value pairs underneath it. Default is: $false.
+        Return the registry key if it exists but it has no property/value pairs underneath it.
 
     .PARAMETER DoNotExpandEnvironmentNames
-        Return unexpanded REG_EXPAND_SZ values. Default is: $false.
+        Return unexpanded REG_EXPAND_SZ values.
 
     .INPUTS
         None
