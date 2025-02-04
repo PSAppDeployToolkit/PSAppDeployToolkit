@@ -22,6 +22,9 @@ function Remove-ADTRegistryKey
     .PARAMETER Name
         Name of the registry value to delete.
 
+    .PARAMETER Wow6432Node
+        Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
+
     .PARAMETER Recurse
         Delete registry key recursively.
 
@@ -85,6 +88,9 @@ function Remove-ADTRegistryKey
         [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Wow6432Node,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false)]
@@ -108,11 +114,11 @@ function Remove-ADTRegistryKey
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
                 $pathParam.($PSCmdlet.ParameterSetName) = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -SID $SID
+                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName)
+                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -Wow6432Node:$Wow6432Node
                 }
 
                 if (!$Name)
