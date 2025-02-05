@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Management.Automation;
 using System.Management.Automation.Host;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
@@ -1011,6 +1012,36 @@ namespace PSADT.Module
         }
 
         /// <summary>
+        /// Gets the value of a property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
+        {
+            if (CallerSessionState != null)
+            {
+                return (T)CallerSessionState.PSVariable.GetValue(propertyName);
+            }
+            return (T)(Enum.TryParse<DeploymentSettings>(propertyName, out DeploymentSettings flag) ? Settings.HasFlag(flag) : BackingFields[propertyName!].GetValue(this)!);
+        }
+
+        /// <summary>
+        /// Sets the value of a property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="propertyName"></param>
+        private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
+        {
+            if (CallerSessionState != null)
+            {
+                CallerSessionState.PSVariable.Set(new PSVariable(propertyName, value));
+            }
+            BackingFields[propertyName!].SetValue(this, value);
+        }
+
+        /// <summary>
         /// Tests the deferral history path.
         /// </summary>
         /// <returns>True if the deferral history path exists; otherwise, false.</returns>
@@ -1197,6 +1228,11 @@ namespace PSADT.Module
 
 
         /// <summary>
+        /// Read-only list of all backing fields in the DeploymentSession class.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, FieldInfo> BackingFields = new ReadOnlyDictionary<string, FieldInfo> (typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("<_") && field.Name.EndsWith("k__BackingField")).ToDictionary(static field => char.ToUpper(field.Name[2]) + field.Name.Substring(3, field.Name.IndexOf(">") - 3), static field => field));
+
+        /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
         private static readonly IReadOnlyList<string> DriveLetters = new ReadOnlyCollection<string>(["Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"]);
@@ -1289,42 +1325,27 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's deployment type.
         /// </summary>
-        public DeploymentType DeploymentType
-        {
-            get => (null != CallerSessionState) ? (DeploymentType)CallerSessionState.PSVariable.GetValue(nameof(DeploymentType)) : _deploymentType;
-        }
+        public DeploymentType DeploymentType => GetPropertyValue<DeploymentType>();
 
         /// <summary>
         /// Gets the deployment session's deployment mode.
         /// </summary>
-        public DeployMode DeployMode
-        {
-            get => (null != CallerSessionState) ? (DeployMode)CallerSessionState.PSVariable.GetValue(nameof(DeployMode)) : _deployMode;
-        }
+        public DeployMode DeployMode => GetPropertyValue<DeployMode>();
 
         /// <summary>
         /// Gets whether this deployment session is allowed to exit with a reboot exit code.
         /// </summary>
-        public bool AllowRebootPassThru
-        {
-            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(AllowRebootPassThru)) : Settings.HasFlag(DeploymentSettings.AllowRebootPassThru);
-        }
+        public bool AllowRebootPassThru => GetPropertyValue<bool>();
 
         /// <summary>
         /// Gets whether this deployment session should enable terminal services install mode.
         /// </summary>
-        public bool TerminalServerMode
-        {
-            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(TerminalServerMode)) : Settings.HasFlag(DeploymentSettings.TerminalServerMode);
-        }
+        public bool TerminalServerMode => GetPropertyValue<bool>();
 
         /// <summary>
         /// Gets whether this deployment session should disable logging for the operation.
         /// </summary>
-        public bool DisableLogging
-        {
-            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(DisableLogging)) : Settings.HasFlag(DeploymentSettings.DisableLogging);
-        }
+        public bool DisableLogging => GetPropertyValue<bool>();
 
 
         #endregion
@@ -1334,142 +1355,90 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's application vendor.
         /// </summary>
-        public string? AppVendor
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppVendor)) : _appVendor;
-        }
+        public string? AppVendor => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's application name.
         /// </summary>
-        public string? AppName
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppName)) : _appName;
-        }
+        public string? AppName => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's application version.
         /// </summary>
-        public string? AppVersion
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppVersion)) : _appVersion;
-        }
+        public string? AppVersion => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's application architecture.
         /// </summary>
-        public string? AppArch
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppArch)) : _appArch;
-        }
+        public string? AppArch => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's application language.
         /// </summary>
-        public string? AppLang
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppLang)) : _appLang;
-        }
+        public string? AppLang => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's application package revision.
         /// </summary>
-        public string? AppRevision
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppRevision)) : _appRevision;
-        }
+        public string? AppRevision => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a successful deployment.
         /// </summary>
-        public IReadOnlyList<int> AppSuccessExitCodes
-        {
-            get => (null != CallerSessionState) ? (ReadOnlyCollection<int>)CallerSessionState.PSVariable.GetValue(nameof(AppSuccessExitCodes)) : _appSuccessExitCodes;
-        }
+        public IReadOnlyList<int> AppSuccessExitCodes => GetPropertyValue<IReadOnlyList<int>>();
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a reboot is required.
         /// </summary>
-        public IReadOnlyList<int> AppRebootExitCodes
-        {
-            get => (null != CallerSessionState) ? (ReadOnlyCollection<int>)CallerSessionState.PSVariable.GetValue(nameof(AppRebootExitCodes)) : _appRebootExitCodes;
-        }
+        public IReadOnlyList<int> AppRebootExitCodes => GetPropertyValue<IReadOnlyList<int>>();
 
         /// <summary>
         /// Gets the deployment session's application package version.
         /// </summary>
-        public Version? AppScriptVersion
-        {
-            get => (null != CallerSessionState) ? (Version?)CallerSessionState.PSVariable.GetValue(nameof(AppScriptVersion)) : _appScriptVersion;
-        }
+        public Version? AppScriptVersion => GetPropertyValue<Version?>();
 
         /// <summary>
         /// Gets the deployment session's application package date.
         /// </summary>
-        public DateTime? AppScriptDate
-        {
-            get => (null != CallerSessionState) ? (DateTime?)CallerSessionState.PSVariable.GetValue(nameof(AppScriptDate)) : _appScriptDate;
-        }
+        public DateTime? AppScriptDate => GetPropertyValue<DateTime?>();
 
         /// <summary>
         /// Gets the deployment session's application package author.
         /// </summary>
-        public string? AppScriptAuthor
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(AppScriptAuthor)) : _appScriptAuthor;
-        }
+        public string? AppScriptAuthor => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets an override to the deployment session's installation name.
         /// </summary>
-        public string InstallName
-        {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(InstallName)) : _installName;
-        }
+        public string InstallName => GetPropertyValue<string>();
 
         /// <summary>
         /// Gets an override to the deployment session's installation title.
         /// </summary>
-        public string InstallTitle
-        {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(InstallTitle)) : _installTitle;
-        }
+        public string InstallTitle => GetPropertyValue<string>();
 
         /// <summary>
         /// Gets the deployment session's frontend script name.
         /// </summary>
-        public string? DeployAppScriptFriendlyName
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptFriendlyName)) : _deployAppScriptFriendlyName;
-        }
+        public string? DeployAppScriptFriendlyName => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's frontend script version.
         /// </summary>
-        public Version? DeployAppScriptVersion
-        {
-            get => (null != CallerSessionState) ? (Version?)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptVersion)) : _deployAppScriptVersion;
-        }
+        public Version? DeployAppScriptVersion => GetPropertyValue<Version?>();
 
         /// <summary>
         /// Gets the deployment session's frontend script parameters.
         /// </summary>
-        public IReadOnlyDictionary<string, object>? DeployAppScriptParameters
-        {
-            get => (null != CallerSessionState) ? (ReadOnlyDictionary<string, object>?)CallerSessionState.PSVariable.GetValue(nameof(DeployAppScriptParameters)) : _deployAppScriptParameters;
-        }
+        public IReadOnlyDictionary<string, object>? DeployAppScriptParameters => GetPropertyValue<IReadOnlyDictionary<string, object>?>();
 
         /// <summary>
-        /// Gets/sets the deployment session's installation phase'.
+        /// Gets/sets the deployment session's installation phase.
         /// </summary>
         public string InstallPhase
         {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(InstallPhase)) : _installPhase;
-            set
-            {
-                _installPhase = value;
-                CallerSessionState?.PSVariable.Set(new PSVariable(nameof(InstallPhase), value));
-            }
+            get => GetPropertyValue<string>();
+            set => SetPropertyValue(value);
         }
 
 
@@ -1485,18 +1454,12 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the deployment session's starting date as a string.
         /// </summary>
-        public string CurrentDate
-        {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(CurrentDate)) : _currentDate;
-        }
+        public string CurrentDate => GetPropertyValue<string>();
 
         /// <summary>
         /// Gets the deployment session's starting time as a string.
         /// </summary>
-        public string CurrentTime
-        {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(CurrentTime)) : _currentTime;
-        }
+        public string CurrentTime => GetPropertyValue<string>();
 
         /// <summary>
         /// Gets the deployment session's UTC offset from GMT 0.
@@ -1506,22 +1469,15 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public IReadOnlyList<string>? ScriptDirectory
-        {
-            get => (null != CallerSessionState) ? (IReadOnlyList<string>?)CallerSessionState.PSVariable.GetValue(nameof(ScriptDirectory)) : _scriptDirectory;
-        }
+        public IReadOnlyList<string>? ScriptDirectory => GetPropertyValue<IReadOnlyList<string>?>();
 
         /// <summary>
         /// Gets the specified or determined path to the Files folder.
         /// </summary>
         public string? DirFiles
         {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DirFiles)) : _dirFiles;
-            set
-            {
-                _dirFiles = value;
-                CallerSessionState?.PSVariable.Set(new PSVariable(nameof(DirFiles), value));
-            }
+            get => GetPropertyValue<string?>();
+            set => SetPropertyValue(value);
         }
 
         /// <summary>
@@ -1529,61 +1485,39 @@ namespace PSADT.Module
         /// </summary>
         public string? DirSupportFiles
         {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DirSupportFiles)) : _dirSupportFiles;
-            set
-            {
-                _dirSupportFiles = value;
-                CallerSessionState?.PSVariable.Set(new PSVariable(nameof(DirSupportFiles), value));
-            }
+            get => GetPropertyValue<string?>();
+            set => SetPropertyValue(value);
         }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSI file path.
         /// </summary>
-        public string? DefaultMsiFile
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DefaultMsiFile)) : _defaultMsiFile;
-        }
+        public string? DefaultMsiFile => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MST file path.
         /// </summary>
-        public string? DefaultMstFile
-        {
-            get => (null != CallerSessionState) ? (string?)CallerSessionState.PSVariable.GetValue(nameof(DefaultMstFile)) : _defaultMstFile;
-        }
+        public string? DefaultMstFile => GetPropertyValue<string?>();
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public IReadOnlyList<string> DefaultMspFiles
-        {
-            get => (null != CallerSessionState) ? (ReadOnlyCollection<string>)CallerSessionState.PSVariable.GetValue(nameof(DefaultMspFiles)) : _defaultMspFiles;
-        }
+        public IReadOnlyList<string> DefaultMspFiles => GetPropertyValue<IReadOnlyList<string>>();
 
         /// <summary>
         /// Gets whether this deployment session found a valid Zero-Config MSI file.
         /// </summary>
-        public bool UseDefaultMsi
-        {
-            get => (null != CallerSessionState) ? (bool)CallerSessionState.PSVariable.GetValue(nameof(UseDefaultMsi)) : Settings.HasFlag(DeploymentSettings.UseDefaultMsi);
-        }
+        public bool UseDefaultMsi => GetPropertyValue<bool>();
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public string LogTempFolder
-        {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(LogTempFolder)) : _logTempFolder;
-        }
+        public string LogTempFolder => GetPropertyValue<string>();
 
         /// <summary>
         /// Gets the deployment session's log filename.
         /// </summary>
-        public string LogName
-        {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(LogName)) : _logName;
-        }
+        public string LogName => GetPropertyValue<string>();
 
 
         #endregion
