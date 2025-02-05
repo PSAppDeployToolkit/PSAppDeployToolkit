@@ -96,7 +96,7 @@ namespace PSADT.Module
             // Write out all messages to host if configured/permitted to do so.
             if (!hostLogStream.Equals(HostLogStream.None))
             {
-                ReadOnlyDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
+                var sevCols = LogSeverityColors[(int)severity];
                 if (hostLogStream.Equals(HostLogStream.Console))
                 {
                     // Colour the console if we're not informational.
@@ -173,18 +173,18 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the log severity colors.
         /// </summary>
-        private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(new[]
+        private static readonly IReadOnlyList<IReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new List<IReadOnlyDictionary<string, ConsoleColor>>()
         {
             new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green }, { "BackgroundColor", ConsoleColor.Black } }),
             new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor>()),
             new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow }, { "BackgroundColor", ConsoleColor.Black } }),
             new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red }, { "BackgroundColor", ConsoleColor.Black } })
-        });
+        }.AsReadOnly();
 
         /// <summary>
         /// Gets the log severity names.
         /// </summary>
-        private static readonly ReadOnlyCollection<string> LogSeverityNames = new(["Success", "Info", "Warning", "Error"]);
+        private static readonly IReadOnlyList<string> LogSeverityNames = new List<string>(["Success", "Info", "Warning", "Error"]).AsReadOnly();
 
         /// <summary>
         /// Gets the Write-LogEntry delegate script block.

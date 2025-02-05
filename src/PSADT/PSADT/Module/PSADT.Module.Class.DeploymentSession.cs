@@ -142,7 +142,7 @@ namespace PSADT.Module
                     }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (null != paramValue))
                     {
-                        _scriptDirectory = (string[])paramValue;
+                        _scriptDirectory = new ReadOnlyCollection<string>((string[])paramValue);
                     }
                     if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
@@ -1199,7 +1199,7 @@ namespace PSADT.Module
         /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
-        private static readonly string[] DriveLetters = ["Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"];
+        private static readonly IReadOnlyList<string> DriveLetters = new ReadOnlyCollection<string>(["Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"]);
 
         /// <summary>
         /// Bitfield with settings for this deployment.
@@ -1272,7 +1272,7 @@ namespace PSADT.Module
         private string _installPhase { get; set; } = "Initialization";
         private string _currentDate { get; }
         private string _currentTime { get; }
-        private string[]? _scriptDirectory { get; }
+        private IReadOnlyList<string>? _scriptDirectory { get; }
         private string? _dirFiles { get; set; }
         private string? _dirSupportFiles { get; set; }
         private string? _defaultMsiFile { get; }
@@ -1506,9 +1506,9 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public string[]? ScriptDirectory
+        public IReadOnlyList<string>? ScriptDirectory
         {
-            get => (null != CallerSessionState) ? (string[]?)CallerSessionState.PSVariable.GetValue(nameof(ScriptDirectory)) : _scriptDirectory;
+            get => (null != CallerSessionState) ? (IReadOnlyList<string>?)CallerSessionState.PSVariable.GetValue(nameof(ScriptDirectory)) : _scriptDirectory;
         }
 
         /// <summary>
