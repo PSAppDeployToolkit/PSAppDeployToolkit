@@ -12,7 +12,7 @@ Creates or sets a registry key name, value, and value data.
 ## SYNTAX
 
 ```powershell
-Set-ADTRegistryKey [-Key] <String> [[-Name] <String>] [[-Value] <Object>] [[-Type] <RegistryValueKind>]
+Set-ADTRegistryKey [-LiteralPath] <String> [[-Name] <String>] [[-Value] <Object>] [[-Type] <RegistryValueKind>]
  [-Wow6432Node] [[-SID] <String>] [<CommonParameters>]
 ```
 
@@ -65,14 +65,14 @@ Creates or sets the default value in the specified registry key.
 
 ## PARAMETERS
 
-### -Key
+### -LiteralPath
 
 The registry key path.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases:
+Aliases: Key
 
 Required: True
 Position: 1
@@ -116,8 +116,6 @@ Accept wildcard characters: False
 ### -Type
 
 The type of registry value to create or set.
-Options: 'Binary','DWord','ExpandString','MultiString','None','QWord','String','Unknown'.
-Default: String.
 
 DWord should be specified as a decimal.
 
@@ -129,7 +127,7 @@ Accepted values: Unknown, String, ExpandString, Binary, DWord, MultiString, QWor
 
 Required: False
 Position: 4
-Default value: String
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -3041,7 +3041,7 @@ function Set-RegistryKey
         [System.Object]$Value,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Binary', 'DWord', 'ExpandString', 'MultiString', 'None', 'QWord', 'String', 'Unknown')]
+        [ValidateNotNullOrEmpty()]
         [Microsoft.Win32.RegistryValueKind]$Type,
 
         [Parameter(Mandatory = $false)]
