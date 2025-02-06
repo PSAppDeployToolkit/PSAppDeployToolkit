@@ -25,7 +25,7 @@ function Start-ADTProcess
         Hides all parameters passed to the executable from the Toolkit log file.
 
     .PARAMETER WindowStyle
-        Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Default: Normal. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
+        Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
 
         Note: Not all processes honor WindowStyle. WindowStyle is a recommendation passed to the process. They can choose to ignore it.
 
@@ -45,7 +45,7 @@ function Start-ADTProcess
         Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
 
     .PARAMETER MsiExecWaitTime
-        Specify the length of time in seconds to wait for the msiexec engine to become available. Default: 600 seconds (10 minutes).
+        Specify the length of time in seconds to wait for the msiexec engine to become available.
 
     .PARAMETER SuccessExitCodes
         List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
@@ -57,7 +57,7 @@ function Start-ADTProcess
         List the exit codes to ignore or * to ignore all exit codes.
 
     .PARAMETER PriorityClass
-        Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
+        Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
     .PARAMETER UseShellExecute
         Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
@@ -156,6 +156,7 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = '(Get-ADTConfig).MSI.MutexWaitTime')]
         [System.UInt32]$MsiExecWaitTime,
 
         [Parameter(Mandatory = $false)]

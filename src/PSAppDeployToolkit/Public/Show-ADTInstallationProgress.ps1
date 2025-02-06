@@ -16,16 +16,16 @@ function Show-ADTInstallationProgress
         The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the config.psd1 file).
 
     .PARAMETER WindowLocation
-        The location of the progress window. Default: center of the screen.
+        The location of the progress window.
 
     .PARAMETER MessageAlignment
-        The text alignment to use for the status message. Default: center.
+        The text alignment to use for the status message.
 
     .PARAMETER NotTopMost
-        Specifies whether the progress window shouldn't be topmost. Default: $false.
+        Specifies whether the progress window shouldn't be topmost.
 
     .PARAMETER NoRelocation
-        Specifies whether to not reposition the window upon updating the message. Default: $false.
+        Specifies whether to not reposition the window upon updating the message.
 
     .INPUTS
         None
@@ -74,10 +74,12 @@ function Show-ADTInstallationProgress
     (
         [Parameter(Mandatory = $false)]
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-        [System.String]$WindowLocation = 'Default',
+        [PSDefaultValue(Help = 'Center')]
+        [System.String]$WindowLocation,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'Center')]
         [System.Windows.TextAlignment]$MessageAlignment,
 
         [Parameter(Mandatory = $false)]

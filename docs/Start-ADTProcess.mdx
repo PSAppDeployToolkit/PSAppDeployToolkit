@@ -125,7 +125,6 @@ Accept wildcard characters: False
 
 Style of the window of the process executed.
 Options: Normal, Hidden, Maximized, Minimized.
-Default: Normal.
 Only works for native Windows GUI applications.
 If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
 
@@ -236,7 +235,6 @@ Accept wildcard characters: False
 ### -MsiExecWaitTime
 
 Specify the length of time in seconds to wait for the msiexec engine to become available.
-Default: 600 seconds (10 minutes).
 
 ```yaml
 Type: UInt32
@@ -245,7 +243,7 @@ Aliases:
 
 Required: False
 Position: 5
-Default value: 0
+Default value: (Get-ADTConfig).MSI.MutexWaitTime
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -304,7 +302,6 @@ Accept wildcard characters: True
 
 Specifies priority class for the process.
 Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
-Default: Normal
 
 ```yaml
 Type: ProcessPriorityClass

@@ -40,11 +40,11 @@ function Set-ADTActiveSetup
         Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script..
 
     .PARAMETER Version
-        Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation. Default: YYYYMMDDHHMMSS
+        Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation.
 
         Note:
             - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
-            - In Windows 10, Scripts and EXEs might be blocked by AppLocker. Ensure that the path given to -StubExePath will permit end users to run Scripts and EXEs unelevated.
+            - In Windows 10, scripts and executables might be blocked by AppLocker. Ensure that the path given to -StubExePath will permit end users to run scripts and executables unelevated.
 
     .PARAMETER Locale
         Optional. Arbitrary string used to specify the installation language of the file being executed. Not replicated to HKCU.

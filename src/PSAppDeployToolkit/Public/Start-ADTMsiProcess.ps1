@@ -79,10 +79,10 @@ function Start-ADTMsiProcess
         List the exit codes to ignore or * to ignore all exit codes.
 
     .PARAMETER PriorityClass
-        Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime. Default: Normal
+        Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
     .PARAMETER RepairFromSource
-        Specifies whether we should repair from source. Also rewrites local cache. Default: $false
+        Specifies whether we should repair from source. Also rewrites local cache.
 
     .INPUTS
         None

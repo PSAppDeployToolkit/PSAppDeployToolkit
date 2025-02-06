@@ -14,13 +14,13 @@ function Show-ADTInstallationRestartPrompt
         Displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. It also supports silent mode where the restart can be triggered without user interaction.
 
     .PARAMETER CountdownSeconds
-        Specifies the number of seconds to display the restart prompt. Default: 60
+        Specifies the number of seconds to display the restart prompt.
 
     .PARAMETER CountdownNoHideSeconds
-        Specifies the number of seconds to display the restart prompt without allowing the window to be hidden. Default: 30
+        Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
 
     .PARAMETER SilentCountdownSeconds
-        Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and `-SilentRestart` isn't specified. Default: 5
+        Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and `-SilentRestart` isn't specified.
 
     .PARAMETER SilentRestart
         Specifies whether the restart should be triggered when DeployMode is silent or very silent.
@@ -105,14 +105,18 @@ function Show-ADTInstallationRestartPrompt
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Title', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the prompt. Default: the application installation name.' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the prompt.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    ($defaultValue = [System.Management.Automation.PSDefaultValueAttribute]::new())
+                    $defaultValue.Help = "(Get-ADTSession).InstallTitle"
                 )
             ))
         $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Subtitle', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Subtitle of the prompt. Default: the application deployment type.' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Subtitle of the prompt.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    ($defaultValue = [System.Management.Automation.PSDefaultValueAttribute]::new())
+                    $defaultValue.Help = "(Get-ADTStringTable).Prompt.Subtitle.((Get-ADTSession).DeploymentType.ToString())"
                 )
             ))
 

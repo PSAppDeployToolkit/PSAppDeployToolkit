@@ -17,7 +17,7 @@ function Show-ADTInstallationPrompt
         The message text to be displayed on the prompt.
 
     .PARAMETER MessageAlignment
-        Alignment of the message text. Options: Left, Center, Right. Default: Center.
+        Alignment of the message text.
 
     .PARAMETER ButtonLeftText
         Show a button on the left of the prompt with the specified text.
@@ -29,7 +29,7 @@ function Show-ADTInstallationPrompt
         Show a button in the middle of the prompt with the specified text.
 
     .PARAMETER Icon
-        Show a system icon in the prompt. Options: Application, Asterisk, Error, Exclamation, Hand, Information, None, Question, Shield, Warning, WinLogo. Default: None.
+        Show a system icon in the prompt.
 
     .PARAMETER NoWait
         Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
@@ -132,14 +132,18 @@ function Show-ADTInstallationPrompt
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Title', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the prompt. Default: the application installation name.' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the prompt.' } 
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    ($defaultValue = [System.Management.Automation.PSDefaultValueAttribute]::new())
+                    $defaultValue.Help = "(Get-ADTSession).InstallTitle"
                 )
             ))
         $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Subtitle', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Subtitle of the prompt. Default: the application deployment type.' }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Subtitle of the prompt.' } 
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                    ($defaultValue = [System.Management.Automation.PSDefaultValueAttribute]::new())
+                    $defaultValue.Help = "(Get-ADTStringTable).Prompt.Subtitle.((Get-ADTSession).DeploymentType.ToString())"
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(

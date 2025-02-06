@@ -63,7 +63,6 @@ Displays a progress dialog with the status message 'Installation in Progress...'
 ### -WindowLocation
 
 The location of the progress window.
-Default: center of the screen.
 
 ```yaml
 Type: String
@@ -72,7 +71,7 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: Default
+Default value: Center
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -80,7 +79,6 @@ Accept wildcard characters: False
 ### -MessageAlignment
 
 The text alignment to use for the status message.
-Default: center.
 
 ```yaml
 Type: TextAlignment
@@ -90,7 +88,7 @@ Accepted values: Left, Right, Center, Justify
 
 Required: False
 Position: 2
-Default value: None
+Default value: Center
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -98,7 +96,6 @@ Accept wildcard characters: False
 ### -NotTopMost
 
 Specifies whether the progress window shouldn't be topmost.
-Default: $false.
 
 ```yaml
 Type: SwitchParameter
@@ -115,7 +112,6 @@ Accept wildcard characters: False
 ### -NoRelocation
 
 Specifies whether to not reposition the window upon updating the message.
-Default: $false.
 
 ```yaml
 Type: SwitchParameter
