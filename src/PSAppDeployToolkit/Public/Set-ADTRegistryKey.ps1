@@ -157,7 +157,7 @@ function Set-ADTRegistryKey
                     {
                         Write-ADTLogEntry -Message "Updating registry key value: [$LiteralPath] [$Name = $Value]."
                         if (!$ipParams.ContainsKey('Value')) { $ipParams.Add('Value', $null) }
-                        Set-ItemProperty @ipParams
+                        Set-ItemProperty @ipParams -Force
                     }
                 }
             }
