@@ -134,16 +134,11 @@ function Set-ADTRegistryKey
                 # Create registry key if it doesn't exist.
                 if (!(Test-Path -LiteralPath $LiteralPath))
                 {
-                    # Use reg.exe if the path contains a forward slash.
                     Write-ADTLogEntry -Message "Creating registry key [$LiteralPath]."
-                    $null = if (($LiteralPath.Split('/').Count - 1) -ne 0)
-                    {
-                        & "$([System.Environment]::SystemDirectory)\reg.exe" ADD "$($LiteralPath.Substring($LiteralPath.IndexOf('::') + 2))" /f (('/reg:32', '/reg:64')[[System.Environment]::Is64BitProcess -and !$Wow6432Node]) 2>&1
-                    }
-                    else
-                    {
-                        New-Item -Path $LiteralPath -ItemType Registry -Force
-                    }
+                    $provider, $subkey = [System.Text.RegularExpressions.Regex]::Matches($LiteralPath, '^(.+::[a-zA-Z_]+)\\(.+)$').Groups[1..2].Value
+                    $regKey = Get-Item -LiteralPath $provider
+                    $regKey.CreateSubKey($subkey)
+                    $regKey.Close()
                 }
 
                 # If a name was provided, set the appropriate ItemProperty up.
