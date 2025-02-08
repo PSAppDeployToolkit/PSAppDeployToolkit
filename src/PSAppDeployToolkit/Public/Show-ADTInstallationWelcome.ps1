@@ -947,8 +947,47 @@ function Show-ADTInstallationWelcome
                                 }
                                 else
                                 {
-                                    Write-ADTLogEntry -Message "Stopping process $($runningApp.Process.ProcessName)..."
-                                    Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
+                                    try
+                                    {
+                                        $runningAppProcessName = $runningApp.Process.ProcessName
+
+                                        # Close out the main window
+                                        if ($runningApp.Process.CloseMainWindow())
+                                        {
+                                            $closeTimeout = [System.Diagnostics.Stopwatch]::StartNew()
+                                            $maxWaitTime = [System.TimeSpan]::FromSeconds(2)
+
+                                            do
+                                            {
+                                                [System.Threading.Thread]::Sleep(500)
+                                                $runningApp.Process.Refresh()
+                                            }
+                                            while (!$runningApp.Process.HasExited -and $closeTimeout.Elapsed -lt $maxWaitTime)
+
+                                            if ($runningApp.Process.HasExited)
+                                            {
+                                                Write-ADTLogEntry -Message "Process $runningAppProcessName closed gracefully."
+                                            }
+                                            else
+                                            {
+                                                Write-ADTLogEntry -Message "Process $($runningApp.Process.ProcessName) did not close in time. Forcing termination." -Severity 2
+                                                Stop-Process -Id $runningApp.Process.Id -Force -ErrorAction Ignore
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Write-ADTLogEntry -Message "Stopping process $($runningApp.Process.ProcessName)..."
+                                            Stop-Process -Id $runningApp.Process.Id -Force -ErrorAction Ignore
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        Write-ADTLogEntry -Message "Failed to close process $($runningApp.Process.ProcessName).`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                                    }
+                                    finally
+                                    {
+                                        $runningApp.Process.Refresh()
+                                    }
                                 }
                             }
 
