@@ -140,7 +140,7 @@ function Show-ADTInstallationProgress
         }
         if (!$PSBoundParameters.ContainsKey('WindowSubtitle'))
         {
-            $PSBoundParameters.Add('WindowSubtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
+            $PSBoundParameters.Add('WindowSubtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.GetDeploymentTypeName()))
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessage'))
         {

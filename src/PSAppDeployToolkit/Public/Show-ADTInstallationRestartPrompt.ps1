@@ -133,7 +133,7 @@ function Show-ADTInstallationRestartPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.GetDeploymentTypeName()))
         }
         if (!$PSBoundParameters.ContainsKey('CountdownSeconds'))
         {

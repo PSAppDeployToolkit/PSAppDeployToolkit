@@ -264,7 +264,7 @@ function Show-ADTInstallationWelcome
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $PSBoundParameters.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.GetDeploymentTypeName()))
         }
 
         # Instantiate new object to hold all data needed within this call.

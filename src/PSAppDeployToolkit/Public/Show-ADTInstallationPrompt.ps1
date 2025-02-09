@@ -184,7 +184,7 @@ function Show-ADTInstallationPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format((Get-ADTStringTable).WelcomePrompt.Fluent.Subtitle, $adtSession.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format((Get-ADTStringTable).WelcomePrompt.Fluent.Subtitle, $adtSession.GetDeploymentTypeName()))
         }
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
