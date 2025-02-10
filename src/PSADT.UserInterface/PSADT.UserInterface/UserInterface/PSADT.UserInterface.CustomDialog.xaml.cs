@@ -104,7 +104,7 @@ namespace PSADT.UserInterface
 
         private void CloseDialog()
         {
-
+            _canClose = true;
             Close();
             Dispose();
         }

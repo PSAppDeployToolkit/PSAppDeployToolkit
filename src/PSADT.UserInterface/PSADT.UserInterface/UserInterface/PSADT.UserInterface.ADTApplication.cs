@@ -386,6 +386,10 @@ namespace PSADT.UserInterface
 
             _app!.Dispatcher.Invoke(() =>
             {
+                if (_currentWindow is ProgressDialog progressDialog)
+                {
+                    progressDialog.AllowToClose();
+                }
                 _currentWindow?.Close();
                 _currentWindow = null;
             });
