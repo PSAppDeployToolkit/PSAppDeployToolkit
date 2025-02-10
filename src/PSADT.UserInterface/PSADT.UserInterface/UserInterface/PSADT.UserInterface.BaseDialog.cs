@@ -5,6 +5,7 @@ using Microsoft.Win32;
 using PSADT.UserInterface.Utilities;
 using System.Windows.Interop;
 using Wpf.Ui.Controls;
+using System.ComponentModel;
 
 namespace PSADT.UserInterface
 {
@@ -16,6 +17,7 @@ namespace PSADT.UserInterface
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Timer? _timer;
         private bool _disposed = false;
+        protected bool _canClose = false;
 
         /// <summary>
         /// Constructor for BaseDialog
@@ -38,6 +40,7 @@ namespace PSADT.UserInterface
             Loaded += BaseDialog_Loaded;
 
             SizeChanged += BaseDialog_SizeChanged;
+            Closing += BaseDialog_Closing;
 
         }
 
@@ -46,8 +49,14 @@ namespace PSADT.UserInterface
         /// </summary>
         protected CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
+        private void BaseDialog_Closing(object? sender, CancelEventArgs e)
+        {
+            e.Cancel = !_canClose; // Prevent the window from closing
+        }
+
         private void CloseDialog(object? state)
         {
+            _canClose = true;
             Dispatcher.Invoke(() =>
             {
                 _cancellationTokenSource.Cancel();
@@ -183,6 +192,7 @@ namespace PSADT.UserInterface
             {
                 Loaded -= BaseDialog_Loaded;
                 SizeChanged -= BaseDialog_SizeChanged;
+                Closing += BaseDialog_Closing;
             }
 
             _disposed = true;

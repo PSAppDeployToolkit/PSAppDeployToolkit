@@ -143,6 +143,7 @@ namespace PSADT.UserInterface
 
         private void CloseDialog()
         {
+            _canClose = true;
             _timer.Stop();
             Close();
             Dispose();
