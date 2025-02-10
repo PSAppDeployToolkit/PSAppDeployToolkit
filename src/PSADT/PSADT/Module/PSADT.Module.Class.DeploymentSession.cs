@@ -972,6 +972,27 @@ namespace PSADT.Module
         }
 
         /// <summary>
+        /// Writes a log entry with a single message and source.
+        /// </summary>
+        /// <param name="message">The log message.</param>
+        /// <param name="source">The source of the message.</param>
+        public void WriteLogEntry(string message, string source)
+        {
+            WriteLogEntry([message], false, null, source, null, null, null, null, null);
+        }
+
+        /// <summary>
+        /// Writes a log entry with a single message, severity, and source.
+        /// </summary>
+        /// <param name="message">The log message.</param>
+        /// <param name="severity">The severity level.</param>
+        /// <param name="source">The source of the message.</param>
+        public void WriteLogEntry(string message, uint severity, string source)
+        {
+            WriteLogEntry([message], false, severity, source, null, null, null, null, null);
+        }
+
+        /// <summary>
         /// Writes a log entry with a single message and host write option.
         /// </summary>
         /// <param name="message">The log message.</param>
