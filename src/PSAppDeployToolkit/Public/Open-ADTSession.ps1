@@ -348,8 +348,8 @@ function Open-ADTSession
 
         # Determine whether this session is to be in compatibility mode.
         $compatibilityMode = Test-ADTNonNativeCaller
-        $callerInvocation = (Get-PSCallStack)[1].InvocationInfo
-        $noExitOnClose = !$callerInvocation.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
+        $callerInvocation = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo } }
+        $noExitOnClose = $callerInvocation -and !$callerInvocation.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
 
         # Set up the ScriptDirectory if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))
@@ -386,7 +386,7 @@ function Open-ADTSession
     process
     {
         # If this function is being called from the console or by AppDeployToolkitMain.ps1, clear all previous sessions and go for full re-initialization.
-        if (([System.String]::IsNullOrWhiteSpace($callerInvocation.InvocationName) -and [System.String]::IsNullOrWhiteSpace($callerInvocation.Line)) -or $compatibilityMode)
+        if (($callerInvocation -and [System.String]::IsNullOrWhiteSpace($callerInvocation.InvocationName) -and [System.String]::IsNullOrWhiteSpace($callerInvocation.Line)) -or $compatibilityMode)
         {
             $Script:ADT.Sessions.Clear()
             $Script:ADT.Initialized = $false
