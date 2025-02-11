@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 
 namespace PSADT.Module
 {
@@ -29,8 +30,12 @@ namespace PSADT.Module
         /// <param name="logType">The type of log.</param>
         public static void WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, uint? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
         {
+            // Establish logging date/time vars.
+            DateTime dateNow = DateTime.Now;
+
             // Determine whether we're able to log to disk.
             bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
+            bool noRunspace = (null == Runspace.DefaultRunspace) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
 
             // Perform early return checks before wasting time.
             if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)((Hashtable)InternalDatabase.GetConfig()["Toolkit"]!)["LogDebugMessage"]!))
@@ -38,12 +43,23 @@ namespace PSADT.Module
                 return;
             }
 
-            // Establish logging date/time vars.
-            DateTime dateNow = DateTime.Now;
-            CallStackFrame invoker = GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).ToArray());
+            // Variables used to determine the caller's source and filename.
+            string callerFileName = string.Empty;
+            string callerSource = string.Empty;
 
-            // Determine the log file name; either a proper script/function, or a caller directly from the console.
-            string logFile = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
+            // Handle situations where we might be calling this function without an active runspace.
+            if (noRunspace)
+            {
+                var invoker = new StackTrace(true).GetFrames().Skip(1).Where(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT")).First(); var method = invoker.GetMethod()!;
+                callerFileName = invoker.GetFileName()!;
+                callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
+            }
+            else
+            {
+                CallStackFrame invoker = GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).ToArray());
+                callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
+                callerSource = GetPowerShellCallStackFrameCommand(invoker);
+            }
 
             // Set up default values if not specified.
             if (null == severity)
@@ -52,7 +68,7 @@ namespace PSADT.Module
             }
             if (string.IsNullOrWhiteSpace(source))
             {
-                source = GetPowerShellCallStackFrameCommand(invoker);
+                source = callerSource;
             }
             if (canLogToDisk && string.IsNullOrWhiteSpace(logType))
             {
@@ -64,11 +80,11 @@ namespace PSADT.Module
             }
 
             // Store log string to format with message.
-            StringDictionary logFormats = new StringDictionary()
+            IReadOnlyDictionary<string, string> logFormats = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()
             {
                 { "Legacy", $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-                { "CMTrace", $"<![LOG[{(null != scriptSection ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString("HH\\:mm\\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-            };
+                { "CMTrace", $"<![LOG[{(null != scriptSection ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString("HH\\:mm\\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
+            });
 
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
@@ -97,7 +113,7 @@ namespace PSADT.Module
             if (!hostLogStream.Equals(HostLogStream.None))
             {
                 var sevCols = LogSeverityColors[(int)severity];
-                if (hostLogStream.Equals(HostLogStream.Console))
+                if (hostLogStream.Equals(HostLogStream.Console) || noRunspace)
                 {
                     // Colour the console if we're not informational.
                     if (severity != 1)
