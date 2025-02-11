@@ -205,7 +205,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the Write-LogEntry delegate script block.
         /// </summary>
-        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Format $args[3] -Verbose:($args[4])");
+        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0].Replace(\"`0\", $null) | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Format $args[3] -Verbose:($args[4])");
 
         /// <summary>
         /// Gets the current process ID.
