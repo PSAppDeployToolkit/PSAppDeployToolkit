@@ -398,15 +398,15 @@ namespace PSADT.Module
 
 
                 // Generate log paths from our installation properties.
-                _logTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{_installName}_{_deploymentType}");
+                LogTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{_installName}_{_deploymentType}");
                 if ((bool)configToolkit["CompressLogs"]!)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                    if (Directory.Exists(_logTempFolder))
+                    if (Directory.Exists(LogTempFolder))
                     {
-                        Directory.Delete(_logTempFolder, true);
+                        Directory.Delete(LogTempFolder, true);
                     }
-                    LogPath = Directory.CreateDirectory(_logTempFolder).FullName;
+                    LogPath = Directory.CreateDirectory(LogTempFolder).FullName;
                 }
                 else
                 {
@@ -1200,12 +1200,22 @@ namespace PSADT.Module
             return DefaultMsiExecutablesList;
         }
 
+        /// <summary>
         /// Determines whether the session is allowed to exit PowerShell on close.
         /// </summary>
         /// <returns>True if the session can exit; otherwise, false.</returns>
         public bool CanExitOnClose()
         {
             return !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
+        }
+
+        /// <summary>
+        /// Returns the pre-calculated log file path during session instantiation.
+        /// </summary>
+        /// <returns>The log path as a DirectoryInfo object.</returns>
+        public DirectoryInfo GetLogPath()
+        {
+            return new DirectoryInfo(LogPath);
         }
 
         /// <summary>
@@ -1294,6 +1304,11 @@ namespace PSADT.Module
         private string RegKeyDeferHistory { get; }
 
         /// <summary>
+        /// Gets the deployment session's temporary filesystem log path when compressing logs.
+        /// </summary>
+        private string LogTempFolder { get; }
+
+        /// <summary>
         /// Gets the deployment session's filesystem log path.
         /// </summary>
         private string LogPath { get; }
@@ -1335,7 +1350,6 @@ namespace PSADT.Module
         private string? _defaultMsiFile { get; }
         private string? _defaultMstFile { get; }
         private IReadOnlyList<string> _defaultMspFiles { get; } = new ReadOnlyCollection<string>([]);
-        private string _logTempFolder { get; }
         private string _logName { get; }
 
 
@@ -1529,11 +1543,6 @@ namespace PSADT.Module
         /// Gets whether this deployment session found a valid Zero-Config MSI file.
         /// </summary>
         public bool UseDefaultMsi => GetPropertyValue<bool>();
-
-        /// <summary>
-        /// Gets the deployment session's Zero-Config MSP file paths.
-        /// </summary>
-        public string LogTempFolder => GetPropertyValue<string>();
 
         /// <summary>
         /// Gets the deployment session's log filename.

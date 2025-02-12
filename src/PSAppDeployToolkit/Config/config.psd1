@@ -14,11 +14,11 @@
         # Logging level used for MSI logging.
         LoggingOptions = '/L*V'
 
-        # Log path used for MSI logging.
-        LogPath = '$envWinDir\Logs\Software'
+        # Log path used for MSI logging. Uses the same path as Toolkit when null or empty.
+        LogPath = ''
 
-        # Log path used for MSI logging when RequireAdmin is False.
-        LogPathNoAdminRights = '$envProgramData\Logs\Software'
+        # Log path used for MSI logging when RequireAdmin is False. Uses the same path as Toolkit when null or empty.
+        LogPathNoAdminRights = ''
 
         # The length of time in seconds to wait for the MSI installer service to become available. Default is 600 seconds (10 minutes).
         MutexWaitTime = 600

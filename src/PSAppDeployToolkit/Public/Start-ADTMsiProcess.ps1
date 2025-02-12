@@ -394,11 +394,8 @@ function Start-ADTMsiProcess
                 # Build the log path to use.
                 $logPath = if ($logFile)
                 {
-                    if ($adtSession -and $adtConfig.Toolkit.CompressLogs)
-                    {
-                        Join-Path -Path $adtSession.LogTempFolder -ChildPath $logFile
-                    }
-                    else
+                    # A defined MSI log path is considered an override.
+                    if (![System.String]::IsNullOrWhiteSpace($adtConfig.MSI.LogPath))
                     {
                         # Create the Log directory if it doesn't already exist.
                         if (![System.IO.Directory]::Exists($adtConfig.MSI.LogPath))
@@ -407,7 +404,13 @@ function Start-ADTMsiProcess
                         }
 
                         # Build the log file path.
-                        Join-Path -Path $adtConfig.MSI.LogPath -ChildPath $logFile
+                        [System.IO.Path]::Combine($adtConfig.MSI.LogPath, $logFile)
+                    }
+                    elseif ($adtSession)
+                    {
+                        # Get the log directory from the session. This will factor in
+                        # whether we're compressing logs, or logging to a subfolder.
+                        [System.IO.Path]::Combine($adtSession.GetLogPath().FullName, $logFile)
                     }
                 }
 
