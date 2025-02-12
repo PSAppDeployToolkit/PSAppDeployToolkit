@@ -704,7 +704,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Prompt the user to close running applications and optionally defer if enabled.
-                if (!$Silent -and (!$adtSession -or !$adtSession.IsSilent()))
+                if (!$Silent)
                 {
                     # Check Deferral history and calculate remaining deferrals.
                     if ($AllowDefer -or $AllowDeferCloseProcesses)
@@ -1014,10 +1014,9 @@ function Show-ADTInstallationWelcome
                         }
                     }
                 }
-
-                # Force the processes to close silently, without prompting the user.
-                if ($Silent -and ($runningApps = Get-ADTRunningApplications -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
+                elseif (($runningApps = Get-ADTRunningApplications -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
                 {
+                    # Force the processes to close silently, without prompting the user.
                     Write-ADTLogEntry -Message "Force closing application(s) [$(($runningApps.Description | Sort-Object -Unique) -join ',')] without prompting user."
                     Stop-Process -InputObject $runningApps.Process -Force -ErrorAction Ignore
                     [System.Threading.Thread]::Sleep(2000)
