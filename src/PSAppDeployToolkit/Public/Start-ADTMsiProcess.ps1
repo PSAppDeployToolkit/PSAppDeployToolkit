@@ -412,6 +412,17 @@ function Start-ADTMsiProcess
                         # whether we're compressing logs, or logging to a subfolder.
                         [System.IO.Path]::Combine($adtSession.GetLogPath().FullName, $logFile)
                     }
+                    else
+                    {
+                        # Fall back to the toolkit's LogPath.
+                        if (![System.IO.Directory]::Exists($adtConfig.Toolkit.LogPath))
+                        {
+                            $null = [System.IO.Directory]::CreateDirectory($adtConfig.Toolkit.LogPath)
+                        }
+
+                        # Build the log file path.
+                        [System.IO.Path]::Combine($adtConfig.Toolkit.LogPath, $logFile)
+                    }
                 }
 
                 # Set the installation parameters.
