@@ -37,7 +37,7 @@ function Test-ADTCallerIsAdmin
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTCallerIsAdmin
     #>
 
     return [System.Security.Principal.WindowsPrincipal]::new([System.Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([System.Security.Principal.WindowsBuiltinRole]::Administrator)

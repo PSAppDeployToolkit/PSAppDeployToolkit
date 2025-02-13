@@ -53,7 +53,7 @@ function Show-ADTBalloonTip
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTBalloonTip
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'BalloonTipIcon', Justification = "This parameter is used via the function's PSBoundParameters dictionary, which is not something PSScriptAnalyzer understands. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]

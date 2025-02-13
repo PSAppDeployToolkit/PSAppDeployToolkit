@@ -63,7 +63,7 @@ function Remove-ADTFileFromUserProfiles
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTFileFromUserProfiles
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]

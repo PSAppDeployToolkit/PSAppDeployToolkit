@@ -37,7 +37,7 @@ function Show-ADTHelpConsole
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTHelpConsole
     #>
 
     # Run this via a new PowerShell window so it doesn't stall the main thread.

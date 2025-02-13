@@ -50,7 +50,7 @@ function Test-ADTMutexAvailability
         http://msdn.microsoft.com/en-us/library/aa372909(VS.85).asp
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTMutexAvailability
     #>
 
     [CmdletBinding()]

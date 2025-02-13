@@ -55,7 +55,7 @@ function Convert-ADTRegistryPath
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Convert-ADTRegistryPath
     #>
 
     [CmdletBinding()]
