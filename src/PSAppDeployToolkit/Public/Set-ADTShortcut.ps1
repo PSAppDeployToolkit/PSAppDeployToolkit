@@ -65,6 +65,9 @@ function Set-ADTShortcut
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
+
+    .LINK
+        https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTShortcut
     #>
 
     [CmdletBinding()]

@@ -39,7 +39,7 @@ function Get-ADTCommandTable
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTCommandTable
     #>
 
     # Return the module's read-only CommandTable to the caller.

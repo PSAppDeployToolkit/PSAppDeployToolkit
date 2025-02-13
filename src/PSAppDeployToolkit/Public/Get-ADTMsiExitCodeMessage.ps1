@@ -41,7 +41,7 @@ function Get-ADTMsiExitCodeMessage
         http://msdn.microsoft.com/en-us/library/aa368542(v=vs.85).aspx
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTMsiExitCodeMessage
     #>
 
     [CmdletBinding()]

@@ -37,7 +37,7 @@ function Get-ADTPowerShellProcessPath
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTPowerShellProcessPath
     #>
 
     return "$PSHOME\$(('powershell.exe', 'pwsh.exe')[$PSVersionTable.PSEdition.Equals('Core')])"

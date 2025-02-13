@@ -41,7 +41,7 @@ function Test-ADTPowerPoint
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTPowerPoint
     #>
 
     [CmdletBinding()]
