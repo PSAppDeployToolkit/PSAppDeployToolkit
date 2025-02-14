@@ -36,18 +36,22 @@ function Exit-ADTInvocation
     # Flag the module as uninitialized upon last session closure.
     $Script:ADT.Initialized = $false
 
-    # Return early if this function was called from the command line.
-    if ($NoShellExit -and !$Force)
-    {
-        $Global:LASTEXITCODE = $ExitCode
-        break
-    }
-
     # If a callback failed and we're in a proper console, forcibly exit the process.
     # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
     if ($Force -or ($Host.Name.Equals('ConsoleHost') -and $progressOpen))
     {
         [System.Environment]::Exit($ExitCode)
+    }
+
+    # Forcibly set the LASTEXITCODE so it's available if we're breaking
+    # or running Close-ADTSession from a PowerShell runspace, etc.
+    $Global:LASTEXITCODE = $ExitCode
+
+    # If we're not to exit the shell (i.e. we're running from the command line),
+    # break instead of exit so the window stays open but an exit is simulated.
+    if ($NoShellExit)
+    {
+        break
     }
     exit $ExitCode
 }
