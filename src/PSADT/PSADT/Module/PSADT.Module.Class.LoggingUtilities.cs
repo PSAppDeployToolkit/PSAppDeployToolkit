@@ -44,13 +44,14 @@ namespace PSADT.Module
             }
 
             // Variables used to determine the caller's source and filename.
+            var stackFrames = new StackTrace(true).GetFrames().Skip(1);
             string callerFileName = string.Empty;
             string callerSource = string.Empty;
 
             // Handle situations where we might be calling this function without an active runspace.
-            if (noRunspace)
+            if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
             {
-                var invoker = new StackTrace(true).GetFrames().Skip(1).Where(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT")).First(); var method = invoker.GetMethod()!;
+                var invoker = stackFrames.Where(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT")).First(); var method = invoker.GetMethod()!;
                 callerFileName = invoker.GetFileName()!;
                 callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
             }
