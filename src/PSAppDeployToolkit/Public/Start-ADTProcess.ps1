@@ -528,7 +528,7 @@ function Start-ADTProcess
                     if ($errorMessage)
                     {
                         $naerParams = @{
-                            Exception = [System.ApplicationException]::new($errorMessage)
+                            Exception = [System.Runtime.InteropServices.ExternalException]::new($errorMessage, $returnCode)
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                             ErrorId = 'ProcessExitCodeError'
                             TargetObject = $passthruObj
