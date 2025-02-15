@@ -489,7 +489,7 @@ function Set-ADTActiveSetup
                     return
                 }
 
-                if (![System.Diagnostics.Process]::GetCurrentProcess().SessionId)
+                if ([System.Security.Principal.WindowsIdentity]::GetCurrent().User.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
                 {
                     if (!$runAsActiveUser)
                     {
