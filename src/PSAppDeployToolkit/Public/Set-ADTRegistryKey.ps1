@@ -137,7 +137,7 @@ function Set-ADTRegistryKey
                     Write-ADTLogEntry -Message "Creating registry key [$LiteralPath]."
                     $provider, $subkey = [System.Text.RegularExpressions.Regex]::Matches($LiteralPath, '^(.+::[a-zA-Z_]+)\\(.+)$').Groups[1..2].Value
                     $regKey = Get-Item -LiteralPath $provider
-                    $regKey.CreateSubKey($subkey)
+                    $null = $regKey.CreateSubKey($subkey)
                     $regKey.Close()
                 }
 
