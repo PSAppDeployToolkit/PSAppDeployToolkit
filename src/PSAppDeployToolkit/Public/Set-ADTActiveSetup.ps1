@@ -529,6 +529,10 @@ function Set-ADTActiveSetup
                     Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
                     if ($CUArguments)
                     {
+                        if ($StubExeExt -eq '.ps1')
+                        {
+                            $CUArguments.Replace("-WindowStyle Hidden ", $null)
+                        }
                         Start-ADTProcess -FilePath $CUStubExePath -ArgumentList $CUArguments
                     }
                     else
