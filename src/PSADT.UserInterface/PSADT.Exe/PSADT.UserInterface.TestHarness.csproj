@@ -18,7 +18,7 @@
       <Authors>PSAppDeployToolkit Team</Authors>
       <Company>PSAppDeployToolkit Team</Company>
       <Description>PSAppDeployToolkit User Interface Test Harness</Description>
-      <Copyright>Copyright © 2024 PSAppDeployToolkit Team</Copyright>
+      <Copyright>Copyright © 2025 PSAppDeployToolkit Team</Copyright>
       <ApplicationIcon>..\PSADT.UserInterface\Resources\appIcon.ico</ApplicationIcon>
       <GenerateDocumentationFile>False</GenerateDocumentationFile>
       <SignAssembly>False</SignAssembly>
