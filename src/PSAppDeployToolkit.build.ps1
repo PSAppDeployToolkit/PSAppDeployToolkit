@@ -667,8 +667,8 @@ Add-BuildTask Build {
         Write-Build Gray '        ...Docs output completed.'
     }
 
-    # Sign our files if we're running on main.
-    if (($canSign = ($env:GITHUB_ACTIONS -eq 'true') -and ($env:GITHUB_REF_NAME -match '^(main|develop)$')))
+    # Sign our files if we're running on a branch enabled for code-signing.
+    if (($canSign = ($env:GITHUB_ACTIONS -eq 'true') -and ($env:GITHUB_REF_NAME -match '^(main|develop|4.0.x)$')))
     {
         if (!(Get-Command -Name 'azuresigntool' -ErrorAction Ignore))
         {
