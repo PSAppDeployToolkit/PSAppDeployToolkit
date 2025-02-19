@@ -49,7 +49,7 @@ jobs:
     - name: Install AzureSignTool
       run: dotnet tool install --global azuresigntool
     - name: Azure Login
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/4.0.x'
       uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
