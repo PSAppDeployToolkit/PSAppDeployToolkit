@@ -12,8 +12,8 @@ Stop a Windows service and its dependencies.
 ## SYNTAX
 
 ```powershell
-Stop-ADTServiceAndDependencies [-Service] <ServiceController> [-SkipDependentServices]
- [[-PendingStatusWait] <TimeSpan>] [-PassThru] [<CommonParameters>]
+Stop-ADTServiceAndDependencies [-Name] <String> [-SkipDependentServices] [[-PendingStatusWait] <TimeSpan>]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -26,21 +26,21 @@ It provides options to skip stopping dependent services, wait for a service to g
 ### EXAMPLE 1
 
 ```powershell
-Stop-ADTServiceAndDependencies -Service 'wuauserv'
+Stop-ADTServiceAndDependencies -Name 'wuauserv'
 ```
 
 Stops the Windows Update service and its dependencies.
 
 ## PARAMETERS
 
-### -Service
+### -Name
 
 Specify the name of the service.
 
 ```yaml
-Type: ServiceController
+Type: String
 Parameter Sets: (All)
-Aliases:
+Aliases: Service
 
 Required: True
 Position: 1

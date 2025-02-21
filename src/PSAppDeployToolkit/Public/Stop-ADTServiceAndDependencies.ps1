@@ -13,7 +13,7 @@ function Stop-ADTServiceAndDependencies
     .DESCRIPTION
         This function stops a specified Windows service and its dependencies. It provides options to skip stopping dependent services, wait for a service to get out of a pending state, and return the service object.
 
-    .PARAMETER Service
+    .PARAMETER Name
         Specify the name of the service.
 
     .PARAMETER SkipDependentServices
@@ -36,7 +36,7 @@ function Stop-ADTServiceAndDependencies
         Returns the service object.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -Service 'wuauserv'
+        Stop-ADTServiceAndDependencies -Name 'wuauserv'
 
         Stops the Windows Update service and its dependencies.
 
@@ -57,14 +57,9 @@ function Stop-ADTServiceAndDependencies
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({
-                if (!$_.Name)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
-                }
-                return !!$_
-            })]
-        [System.ServiceProcess.ServiceController]$Service,
+        [ValidateNotNullOrEmpty()]
+        [Alias('Service')]
+        [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,

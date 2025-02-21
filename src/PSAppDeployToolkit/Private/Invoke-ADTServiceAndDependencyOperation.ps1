@@ -14,7 +14,7 @@ function Invoke-ADTServiceAndDependencyOperation
     .DESCRIPTION
     Process Windows service and its dependencies.
 
-    .PARAMETER Service
+    .PARAMETER Name
     Specify the name of the service.
 
     .PARAMETER SkipDependentServices
@@ -33,10 +33,10 @@ function Invoke-ADTServiceAndDependencyOperation
     System.ServiceProcess.ServiceController. Returns the service object.
 
     .EXAMPLE
-    Invoke-ADTServiceAndDependencyOperation -Service wuauserv -Operation Start
+    Invoke-ADTServiceAndDependencyOperation -Name wuauserv -Operation Start
 
     .EXAMPLE
-    Invoke-ADTServiceAndDependencyOperation -Service wuauserv -Operation Stop
+    Invoke-ADTServiceAndDependencyOperation -Name wuauserv -Operation Stop
 
     .LINK
     https://psappdeploytoolkit.com
@@ -48,14 +48,8 @@ function Invoke-ADTServiceAndDependencyOperation
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({
-                if (!$_.Name)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
-                }
-                return !!$_
-            })]
-        [System.ServiceProcess.ServiceController]$Service,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Name,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Start', 'Stop')]
@@ -102,6 +96,9 @@ function Invoke-ADTServiceAndDependencyOperation
             }
         }
     }
+
+    # Get the service object before continuing.
+    $Service = Get-Service -Name $Name
 
     # Wait up to 60 seconds if service is in a pending state.
     if (($desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }.($Service.Status)))
