@@ -664,7 +664,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Check disk space requirements if specified
-                if ($adtSession -and $CheckDiskSpace)
+                if ($adtSession -and $CheckDiskSpace -and ($scriptDir = try { Get-ADTSessionCacheScriptDirectory } catch { $null = $null }))
                 {
                     Write-ADTLogEntry -Message 'Evaluating disk space requirements.'
                     if (!$PSBoundParameters.ContainsKey('RequiredDiskSpace'))
@@ -673,7 +673,7 @@ function Show-ADTInstallationWelcome
                         {
                             # Determine the size of the Files folder
                             $fso = New-Object -ComObject Scripting.FileSystemObject
-                            $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.ScriptDirectory).Size / 1MB)
+                            $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($scriptDir).Size / 1MB)
                         }
                         catch
                         {
