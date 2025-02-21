@@ -43,6 +43,7 @@ function Invoke-ADTServiceAndDependencyOperation
 
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'SkipDependentServices', Justification = "This parameter is used within a child function that isn't immediately visible to PSScriptAnalyzer.")]
     [CmdletBinding()]
     param
     (
@@ -74,6 +75,11 @@ function Invoke-ADTServiceAndDependencyOperation
     # Internal worker function.
     function Invoke-ADTDependentServiceOperation
     {
+        if (!$SkipDependentServices)
+        {
+            return
+        }
+
         # Discover all dependent services.
         Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Service] which are not '$(($status = if ($Operation -eq 'Start') {'Running'} else {'Stopped'}))'."
         if (!($dependentServices = Get-Service -Name $Service.ServiceName -DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } }))
@@ -98,7 +104,7 @@ function Invoke-ADTServiceAndDependencyOperation
     }
 
     # Wait up to 60 seconds if service is in a pending state.
-    if (($desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }[$Service.Status]))
+    if (($desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }.($Service.Status)))
     {
         Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$([System.ServiceProcess.ServiceControllerStatus]$desiredStatus)]."
         $Service.WaitForStatus($desiredStatus, $PendingStatusWait)
@@ -110,10 +116,7 @@ function Invoke-ADTServiceAndDependencyOperation
     if (($Operation -eq 'Stop') -and ($Service.Status -ne 'Stopped'))
     {
         # Process all dependent services.
-        if (!$SkipDependentServices)
-        {
-            Invoke-ADTDependentServiceOperation
-        }
+        Invoke-ADTDependentServiceOperation
 
         # Stop the parent service.
         Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
@@ -126,10 +129,7 @@ function Invoke-ADTServiceAndDependencyOperation
         $Service = $Service | Start-Service -PassThru -WarningAction Ignore
 
         # Process all dependent services.
-        if (!$SkipDependentServices)
-        {
-            Invoke-ADTDependentServiceOperation
-        }
+        Invoke-ADTDependentServiceOperation
     }
 
     # Return the service object if option selected.
