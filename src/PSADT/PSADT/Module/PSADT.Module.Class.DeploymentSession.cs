@@ -594,26 +594,55 @@ namespace PSADT.Module
                         else if (Process.GetProcessesByName("WWAHost").Length > 0)
                         {
                             // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
-                            WriteLogEntry("The WWAHost process is running, confirming the device Autopilot-enrolled.");
+                            WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
                             var apRegKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Provisioning\\Diagnostics\\AutoPilot";
                             if (!string.IsNullOrWhiteSpace((string)moduleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
                             {
-                                WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account Setup phase.");
-                                var fsRegKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync";
-                                if (null == moduleSessionState.InvokeProvider.Property.Get([fsRegKey], null, false).Where(obj => (obj.Properties["IsSyncDone"] is PSPropertyInfo syncDone) && syncDone.Value.Equals(1)).FirstOrDefault())
+                                WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
+                                if (((CompatibilitySessionInfo)adtEnv["RunAsActiveUser"])?.SID is string userSid)
                                 {
-                                    WriteLogEntry("The ESP User Account Setup phase is still in progress as IsSyncDone was not found, changing deployment mode to silent.");
-                                    _deployMode = DeployMode.Silent;
+                                    var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$"Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync\\{userSid}"], null, false).FirstOrDefault();
+                                    if (null != fsRegData)
+                                    {
+                                        if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo syncDone)
+                                        {
+                                            if (syncDone.Value.Equals(0))
+                                            {
+                                                WriteLogEntry("The ESP User Account Setup phase is still in progress, changing deployment mode to silent.");
+                                                _deployMode = DeployMode.Silent;
+                                            }
+                                            else if (syncDone.Value.Equals(1))
+                                            {
+                                                WriteLogEntry("The ESP User Account Setup phase is already complete.");
+                                            }
+                                            else
+                                            {
+                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDone.Value}].", 2);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", 2);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
+                                    }
                                 }
                                 else
                                 {
-                                    WriteLogEntry("The ESP User Account Setup phase is already complete.");
+                                    WriteLogEntry("The device currently has no users logged on.");
                                 }
                             }
                             else
                             {
                                 WriteLogEntry("The device is not Autopilot-enrolled.");
                             }
+                        }
+                        else
+                        {
+                            WriteLogEntry("Device has completed the OOBE and toolkit is not running with an active ESP in progress.");
                         }
                     }
 
