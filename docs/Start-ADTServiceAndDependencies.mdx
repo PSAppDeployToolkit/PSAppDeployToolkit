@@ -12,8 +12,8 @@ Start a Windows service and its dependencies.
 ## SYNTAX
 
 ```powershell
-Start-ADTServiceAndDependencies [-Service] <ServiceController> [-SkipDependentServices]
- [[-PendingStatusWait] <TimeSpan>] [-PassThru] [<CommonParameters>]
+Start-ADTServiceAndDependencies [-Name] <String> [-SkipDependentServices] [[-PendingStatusWait] <TimeSpan>]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -26,21 +26,21 @@ It provides options to skip starting dependent services, wait for a service to g
 ### EXAMPLE 1
 
 ```powershell
-Start-ADTServiceAndDependencies -Service 'wuauserv'
+Start-ADTServiceAndDependencies -Name 'wuauserv'
 ```
 
 Starts the Windows Update service and its dependencies.
 
 ## PARAMETERS
 
-### -Service
+### -Name
 
 Specify the name of the service.
 
 ```yaml
-Type: ServiceController
+Type: String
 Parameter Sets: (All)
-Aliases:
+Aliases: Service
 
 Required: True
 Position: 1
