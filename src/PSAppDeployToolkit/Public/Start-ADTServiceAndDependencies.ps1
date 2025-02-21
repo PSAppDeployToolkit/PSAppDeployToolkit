@@ -16,6 +16,9 @@ function Start-ADTServiceAndDependencies
     .PARAMETER Name
         Specify the name of the service.
 
+    .PARAMETER InputObject
+        A ServiceController object to start.
+
     .PARAMETER SkipDependentServices
         Choose to skip checking for and starting dependent services.
 
@@ -56,10 +59,20 @@ function Start-ADTServiceAndDependencies
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
         [ValidateNotNullOrEmpty()]
         [Alias('Service')]
         [System.String]$Name,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'InputObject')]
+        [ValidateScript({
+                if (!$_.Name)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                }
+                return !!$_
+            })]
+        [System.ServiceProcess.ServiceController]$InputObject,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
@@ -75,6 +88,10 @@ function Start-ADTServiceAndDependencies
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        if ($pipelining = $PSCmdlet.ParameterSetName.Equals('InputObject'))
+        {
+            $null = $PSBoundParameters.Remove('InputObject')
+        }
     }
 
     process
@@ -83,6 +100,10 @@ function Start-ADTServiceAndDependencies
         {
             try
             {
+                if ($pipelining)
+                {
+                    $PSBoundParameters.Name = $InputObject.Name
+                }
                 Invoke-ADTServiceAndDependencyOperation -Operation Start @PSBoundParameters
             }
             catch
@@ -92,7 +113,17 @@ function Start-ADTServiceAndDependencies
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to start the service [$($Service.Name)]."
+            $iafehParams = @{
+                Cmdlet = $PSCmdlet
+                SessionState = $ExecutionContext.SessionState
+                ErrorRecord = $_
+                LogMessage = "Failed to start the service [$($Service.Name)]."
+            }
+            if ($pipelining)
+            {
+                $iafehParams.Add('ErrorAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
+            }
+            Invoke-ADTFunctionErrorHandler @iafehParams
         }
     }
 

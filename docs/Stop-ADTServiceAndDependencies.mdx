@@ -11,9 +11,18 @@ Stop a Windows service and its dependencies.
 
 ## SYNTAX
 
+### Name
+
 ```powershell
-Stop-ADTServiceAndDependencies [-Name] <String> [-SkipDependentServices] [[-PendingStatusWait] <TimeSpan>]
+Stop-ADTServiceAndDependencies -Name <String> [-SkipDependentServices] [-PendingStatusWait <TimeSpan>]
  [-PassThru] [<CommonParameters>]
+```
+
+### InputObject
+
+```powershell
+Stop-ADTServiceAndDependencies -InputObject <ServiceController> [-SkipDependentServices]
+ [-PendingStatusWait <TimeSpan>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -39,11 +48,27 @@ Specify the name of the service.
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: Name
 Aliases: Service
 
 Required: True
-Position: 1
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InputObject
+
+A ServiceController object to stop.
+
+```yaml
+Type: ServiceController
+Parameter Sets: InputObject
+Aliases:
+
+Required: True
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -76,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
