@@ -531,7 +531,7 @@ function Set-ADTActiveSetup
                     {
                         if ($StubExeExt -eq '.ps1')
                         {
-                            $CUArguments.Replace("-WindowStyle Hidden ", $null)
+                            $CUArguments = $CUArguments.Replace("-WindowStyle Hidden ", $null)
                         }
                         Start-ADTProcess -FilePath $CUStubExePath -ArgumentList $CUArguments
                     }
