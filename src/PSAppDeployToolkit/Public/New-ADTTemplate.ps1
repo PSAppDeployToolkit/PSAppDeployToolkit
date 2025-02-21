@@ -193,7 +193,7 @@ function New-ADTTemplate
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = if ($PSVersionTable.PSEdition.Equals('Core')) { 'utf8BOM' } else { 'utf8' }
                     }
-                    Out-File -InputObject (Get-Content @params -Raw).Replace("`$PSScriptRoot\..\..\..\$moduleName", "`$PSScriptRoot\$moduleName") @params -Width ([System.Int32]::MaxValue) -Force
+                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\', $null) @params -Width ([System.Int32]::MaxValue) -Force
                 }
 
                 # Display the newly created folder in Windows Explorer.
