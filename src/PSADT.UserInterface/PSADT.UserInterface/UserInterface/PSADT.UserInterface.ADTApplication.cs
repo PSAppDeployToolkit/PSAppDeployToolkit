@@ -57,8 +57,8 @@ namespace PSADT.UserInterface
                     ShutdownMode = ShutdownMode.OnExplicitShutdown
                 };
 
-               _app.Resources.MergedDictionaries.Add(new ControlsDictionary());
-               _app.Resources.MergedDictionaries.Add(new ThemesDictionary());
+                _app.Resources.MergedDictionaries.Add(new ControlsDictionary());
+                _app.Resources.MergedDictionaries.Add(new ThemesDictionary());
 
                 // Signal that the application is ready
                 _initEvent.Set();
@@ -368,6 +368,7 @@ namespace PSADT.UserInterface
             {
                 if (_currentWindow is ProgressDialog progressDialog)
                 {
+                    progressDialog.AllowToClose();
                     _currentWindow.Close();
                     _currentWindow = null;
                 }
@@ -389,9 +390,9 @@ namespace PSADT.UserInterface
                 if (_currentWindow is ProgressDialog progressDialog)
                 {
                     progressDialog.AllowToClose();
+                    _currentWindow?.Close();
+                    _currentWindow = null;
                 }
-                _currentWindow?.Close();
-                _currentWindow = null;
             });
         }
 
