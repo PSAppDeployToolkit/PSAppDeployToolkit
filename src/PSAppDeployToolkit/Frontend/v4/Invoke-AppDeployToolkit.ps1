@@ -111,7 +111,7 @@ $adtSession = @{
 
     # Script variables.
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
-    DeployAppScriptVersion = '4.0.5'
+    DeployAppScriptVersion = '4.0.6'
     DeployAppScriptParameters = $PSBoundParameters
 }
 
@@ -277,7 +277,7 @@ try
     {
         'PSAppDeployToolkit'
     }
-    Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.5' } -Force
+    Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.6' } -Force
     try
     {
         $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
