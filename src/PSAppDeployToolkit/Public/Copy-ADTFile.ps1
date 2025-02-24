@@ -210,12 +210,12 @@ function Copy-ADTFile
                     }
 
                     # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native PowerShell.
-                    if (Test-Path -LiteralPath $srcPath -PathType Container)
+                    if (Test-Path -Path $srcPath -PathType Container)
                     {
                         # Trim ending backslash from paths which can cause problems with Robocopy.
                         # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
-                        $robocopySource = (Resolve-Path -LiteralPath $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                        $robocopySource = (Resolve-Path -Path $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         $robocopyDestination = Join-Path ((Resolve-Path -LiteralPath $Destination).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (Split-Path -Path $srcPath -Leaf)
                         $robocopyFile = '*'
                     }
