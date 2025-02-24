@@ -310,7 +310,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Transforms.Length; $i++)
                         {
-                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $Transforms[$i].Replace('.\', ''))))
+                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -LiteralPath $msiProduct -Parent) -ChildPath $Transforms[$i].Replace('.\', ''))))
                             {
                                 $Transforms[$i] = $fullPath
                             }
@@ -322,7 +322,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Patches.Length; $i++)
                         {
-                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $Patches[$i].Replace('.\', ''))))
+                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -LiteralPath $msiProduct -Parent) -ChildPath $Patches[$i].Replace('.\', ''))))
                             {
                                 $Patches[$i] = $fullPath
                             }

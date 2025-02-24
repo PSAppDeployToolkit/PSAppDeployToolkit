@@ -302,7 +302,7 @@ catch
 
 try
 {
-    Get-Item -Path $PSScriptRoot\PSAppDeployToolkit.* | & {
+    Get-ChildItem -LiteralPath $PSScriptRoot -Directory -Filter PSAppDeployToolkit.* | & {
         process
         {
             Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore

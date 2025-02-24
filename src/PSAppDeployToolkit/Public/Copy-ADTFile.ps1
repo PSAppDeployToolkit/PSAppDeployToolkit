@@ -127,7 +127,7 @@ function Copy-ADTFile
         if ($FileCopyMode -eq 'Robocopy')
         {
             # Check if Robocopy is on the system.
-            if (Test-Path -Path "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
+            if (Test-Path -LiteralPath "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
             {
                 # Disable Robocopy if $Path has a folder containing a * wildcard.
                 if ($Path -match '\*.*\\')
@@ -259,7 +259,7 @@ function Copy-ADTFile
                         Copy-ADTFile @copyFileSplat -Path ((Join-Path $robocopySource $robocopyFile))
 
                         # Copy all files from subfolders, appending file name to subfolder path and repeat Copy-ADTFile.
-                        Get-ChildItem -Path $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
+                        Get-ChildItem -LiteralPath $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
                             process
                             {
                                 Copy-ADTFile @copyFileSplat -Path (Join-Path $_.FullName $robocopyFile)
