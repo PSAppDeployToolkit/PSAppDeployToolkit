@@ -117,7 +117,7 @@ function Start-ADTServiceAndDependencies
                 Cmdlet = $PSCmdlet
                 SessionState = $ExecutionContext.SessionState
                 ErrorRecord = $_
-                LogMessage = "Failed to start the service [$($Service.Name)]."
+                LogMessage = "Failed to start the service [$($Name)]."
             }
             if ($pipelining)
             {

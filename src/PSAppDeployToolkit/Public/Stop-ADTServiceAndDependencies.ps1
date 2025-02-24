@@ -117,7 +117,7 @@ function Stop-ADTServiceAndDependencies
                 Cmdlet = $PSCmdlet
                 SessionState = $ExecutionContext.SessionState
                 ErrorRecord = $_
-                LogMessage = "Failed to stop the service [$($Service.Name)]."
+                LogMessage = "Failed to stop the service [$($Name)]."
             }
             if ($pipelining)
             {
