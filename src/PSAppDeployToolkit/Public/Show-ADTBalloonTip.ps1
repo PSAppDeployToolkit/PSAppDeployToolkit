@@ -19,7 +19,7 @@ function Show-ADTBalloonTip
         Text of the balloon tip.
 
     .PARAMETER BalloonTipIcon
-        Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'. Default is: Info.
+        Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'.
 
     .PARAMETER BalloonTipTime
         Time in milliseconds to display the balloon tip. Default: 10000.
@@ -47,13 +47,13 @@ function Show-ADTBalloonTip
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTBalloonTip
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'BalloonTipIcon', Justification = "This parameter is used via the function's PSBoundParameters dictionary, which is not something PSScriptAnalyzer understands. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
@@ -138,11 +138,15 @@ function Show-ADTBalloonTip
                     return
                 }
 
-                # Display the balloon tip to the user. As all assets are in memory, there's nothing to dispose.
+                # Set up the balloon tip.
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
                 $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude BalloonTipTime
                 $nabtParams.Add('Icon', $Script:Dialogs.Classic.Assets.Icon); $nabtParams.Add('Visible', $true)
-                ([System.Windows.Forms.NotifyIcon]$nabtParams).ShowBalloonTip($BalloonTipTime)
+                $notifyIcon = [System.Windows.Forms.NotifyIcon]$nabtParams
+
+                # Add an event to manage disposal of the object before displaying.
+                $null = Register-ObjectEvent -InputObject $notifyIcon -EventName BalloonTipShown -Action { $Sender.Dispose() }
+                $notifyIcon.ShowBalloonTip($BalloonTipTime)
             }
             catch
             {

@@ -44,13 +44,13 @@ function Copy-ADTContentToCache
 
         This can be done using `Remove-ADTFile -Path "(Get-ADTConfig).Toolkit.CachePath\$($adtSession.InstallName)" -Recurse -ErrorAction Ignore`.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTContentToCache
     #>
 
     [CmdletBinding()]
@@ -58,7 +58,7 @@ function Copy-ADTContentToCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).installName)"
+        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
     )
 
     begin
@@ -66,6 +66,7 @@ function Copy-ADTContentToCache
         try
         {
             $adtSession = Get-ADTSession
+            $scriptDir = Get-ADTSessionCacheScriptDirectory
         }
         catch
         {
@@ -108,9 +109,9 @@ function Copy-ADTContentToCache
         {
             try
             {
-                Copy-ADTFile -Path (Join-Path $adtSession.ScriptDirectory '*') -Destination $Path -Recurse
-                $adtSession.DirFiles = "$Path\Files"
-                $adtSession.DirSupportFiles = "$Path\SupportFiles"
+                Copy-ADTFile -Path ([System.IO.Path]::Combine($scriptDir, '*')) -Destination $Path -Recurse
+                $adtSession.DirFiles = [System.IO.Path]::Combine($scriptDir, 'Files')
+                $adtSession.DirSupportFiles = [System.IO.Path]::Combine($scriptDir, 'SupportFiles')
             }
             catch
             {

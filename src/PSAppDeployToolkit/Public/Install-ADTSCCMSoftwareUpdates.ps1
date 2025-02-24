@@ -12,13 +12,14 @@ function Install-ADTSCCMSoftwareUpdates
 
     .DESCRIPTION
         Scans for outstanding SCCM updates to be installed and installs the pending updates.
+
         Only compatible with SCCM 2012 Client or higher. This function can take several minutes to run.
 
     .PARAMETER SoftwareUpdatesScanWaitInSeconds
-        The amount of time to wait in seconds for the software updates scan to complete. Default is: 180 seconds.
+        The amount of time to wait in seconds for the software updates scan to complete.
 
     .PARAMETER WaitForPendingUpdatesTimeout
-        The amount of time to wait for missing and pending updates to install before exiting the function. Default is: 45 minutes.
+        The amount of time to wait for missing and pending updates to install before exiting the function.
 
     .INPUTS
         None
@@ -38,13 +39,13 @@ function Install-ADTSCCMSoftwareUpdates
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Install-ADTSCCMSoftwareUpdates
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]

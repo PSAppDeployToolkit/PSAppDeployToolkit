@@ -126,9 +126,9 @@ namespace PSADT.Shared
         /// </summary>
         /// <param name="remainingArguments">A list of remaining arguments to convert.</param>
         /// <returns>A dictionary of key-value pairs representing the remaining arguments.</returns>
-        public static Dictionary<string, object> ConvertValuesFromRemainingArguments(List<object> remainingArguments)
+        public static Dictionary<string, object?> ConvertValuesFromRemainingArguments(List<object> remainingArguments)
         {
-            Dictionary<string, object> values = [];
+            Dictionary<string, object?> values = [];
             string currentKey = string.Empty;
             if ((null == remainingArguments) || (remainingArguments.Count == 0))
             {
@@ -149,7 +149,7 @@ namespace PSADT.Shared
                     }
                     else if (!string.IsNullOrWhiteSpace(currentKey))
                     {
-                        values[currentKey] = argument;
+                        values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null;
                         currentKey = string.Empty;
                     }
                 }

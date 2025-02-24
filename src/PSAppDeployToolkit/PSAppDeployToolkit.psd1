@@ -9,7 +9,7 @@
     RootModule = 'PSAppDeployToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion = '4.0.5'
+    ModuleVersion = '4.0.6'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -24,7 +24,7 @@
     CompanyName = 'PSAppDeployToolkit Team'
 
     # Copyright statement for this module
-    Copyright = 'Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.'
+    Copyright = 'Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.'
 
     # Description of the functionality provided by this module
     Description = 'Enterprise App Deployment, Simplified.'

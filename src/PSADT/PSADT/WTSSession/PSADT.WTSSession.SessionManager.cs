@@ -167,13 +167,13 @@ namespace PSADT.WTSSession
                     if (typeof(T) == typeof(string))
                     {
                         string? result = Marshal.PtrToStringUni(ppBuffer.DangerousGetHandle(), (int)pBytesReturned / sizeof(char));
-                        
+
                         return (T?)(object?)result;
                     }
                     else if (typeof(T) == typeof(bool))
                     {
                         bool result = Marshal.ReadInt32(ppBuffer.DangerousGetHandle()) != 0;
-                        
+
                         return (T?)(object)result;
                     }
                     else if (typeof(T).IsEnum)

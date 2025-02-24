@@ -59,11 +59,11 @@ namespace PSADT.Module
                 }
                 if (null != parameters)
                 {
-                    if (parameters.TryGetValue("DeploymentType", out paramValue))
+                    if (parameters.TryGetValue("DeploymentType", out paramValue) && (null != paramValue))
                     {
                         _deploymentType = (DeploymentType)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployMode", out paramValue))
+                    if (parameters.TryGetValue("DeployMode", out paramValue) && (null != paramValue))
                     {
                         _deployMode = (DeployMode)paramValue;
                     }
@@ -79,95 +79,95 @@ namespace PSADT.Module
                     {
                         Settings |= DeploymentSettings.DisableLogging;
                     }
-                    if (parameters.TryGetValue("AppVendor", out paramValue))
+                    if (parameters.TryGetValue("AppVendor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appVendor = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppName", out paramValue))
+                    if (parameters.TryGetValue("AppName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppVersion", out paramValue))
+                    if (parameters.TryGetValue("AppVersion", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appVersion = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppArch", out paramValue))
+                    if (parameters.TryGetValue("AppArch", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appArch = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppLang", out paramValue))
+                    if (parameters.TryGetValue("AppLang", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appLang = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppRevision", out paramValue))
+                    if (parameters.TryGetValue("AppRevision", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appRevision = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptVersion", out paramValue))
+                    if (parameters.TryGetValue("AppScriptVersion", out paramValue) && (null != paramValue))
                     {
                         _appScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptDate", out paramValue))
+                    if (parameters.TryGetValue("AppScriptDate", out paramValue) && (null != paramValue))
                     {
                         _appScriptDate = (DateTime)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptAuthor", out paramValue))
+                    if (parameters.TryGetValue("AppScriptAuthor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _appScriptAuthor = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("InstallName", out paramValue))
+                    if (parameters.TryGetValue("InstallName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _installName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("InstallTitle", out paramValue))
+                    if (parameters.TryGetValue("InstallTitle", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _installTitle = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _deployAppScriptFriendlyName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue) && (null != paramValue))
                     {
                         _deployAppScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue) && (null != paramValue))
                     {
                         _deployAppScriptParameters = (Dictionary<string, object>)paramValue;
                     }
-                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue))
+                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (null != paramValue))
                     {
                         _appSuccessExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
-                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue))
+                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (null != paramValue))
                     {
                         _appRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
-                    if (parameters.TryGetValue("ScriptDirectory", out paramValue))
+                    if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (null != paramValue))
                     {
                         _scriptDirectory = (string[])paramValue;
                     }
-                    if (parameters.TryGetValue("DirFiles", out paramValue))
+                    if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _dirFiles = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DirSupportFiles", out paramValue))
+                    if (parameters.TryGetValue("DirSupportFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _dirSupportFiles = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DefaultMsiFile", out paramValue))
+                    if (parameters.TryGetValue("DefaultMsiFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _defaultMsiFile = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DefaultMstFile", out paramValue))
+                    if (parameters.TryGetValue("DefaultMstFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _defaultMstFile = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue))
+                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (null != paramValue))
                     {
                         _defaultMspFiles = new ReadOnlyCollection<string>((string[])paramValue);
                     }
-                    if (parameters.TryGetValue("LogName", out paramValue))
+                    if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         _logName = (string)paramValue;
                     }
@@ -494,20 +494,17 @@ namespace PSADT.Module
 
 
                 // Announce provided deployment script info.
-                if (!UseDefaultMsi)
+                if (null != _appScriptVersion)
                 {
-                    if (null != _appScriptVersion)
-                    {
-                        WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
-                    }
-                    if ((_appScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && !appScriptDate.Equals("2000-12-31"))
-                    {
-                        WriteLogEntry($"[{_installName}] script date is [{appScriptDate}].");
-                    }
-                    if (!string.IsNullOrWhiteSpace(_appScriptAuthor) && !_appScriptAuthor!.Equals("<author name>"))
-                    {
-                        WriteLogEntry($"[{_installName}] script author is [{_appScriptAuthor}].");
-                    }
+                    WriteLogEntry($"[{_installName}] script version is [{_appScriptVersion}].");
+                }
+                if ((_appScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && !appScriptDate.Equals("2000-12-31"))
+                {
+                    WriteLogEntry($"[{_installName}] script date is [{appScriptDate}].");
+                }
+                if (!string.IsNullOrWhiteSpace(_appScriptAuthor) && !_appScriptAuthor!.Equals("<author name>"))
+                {
+                    WriteLogEntry($"[{_installName}] script author is [{_appScriptAuthor}].");
                 }
                 if (!string.IsNullOrWhiteSpace(_deployAppScriptFriendlyName))
                 {
@@ -596,26 +593,55 @@ namespace PSADT.Module
                         else if (Process.GetProcessesByName("WWAHost").Length > 0)
                         {
                             // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
-                            WriteLogEntry("The WWAHost process is running, confirming the device Autopilot-enrolled.");
+                            WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
                             var apRegKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Provisioning\\Diagnostics\\AutoPilot";
                             if (!string.IsNullOrWhiteSpace((string)moduleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
                             {
-                                WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account Setup phase.");
-                                var fsRegKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync";
-                                if (null == moduleSessionState.InvokeProvider.Property.Get([fsRegKey], null, false).Where(obj => (obj.Properties["IsSyncDone"] is PSPropertyInfo syncDone) && syncDone.Value.Equals(1)).FirstOrDefault())
+                                WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
+                                if (((CompatibilitySessionInfo)adtEnv["RunAsActiveUser"])?.SID is string userSid)
                                 {
-                                    WriteLogEntry("The ESP User Account Setup phase is still in progress as IsSyncDone was not found, changing deployment mode to silent.");
-                                    _deployMode = DeployMode.Silent;
+                                    var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$"Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync\\{userSid}"], null, false).FirstOrDefault();
+                                    if (null != fsRegData)
+                                    {
+                                        if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo syncDone)
+                                        {
+                                            if (syncDone.Value.Equals(0))
+                                            {
+                                                WriteLogEntry("The ESP User Account Setup phase is still in progress, changing deployment mode to silent.");
+                                                _deployMode = DeployMode.Silent;
+                                            }
+                                            else if (syncDone.Value.Equals(1))
+                                            {
+                                                WriteLogEntry("The ESP User Account Setup phase is already complete.");
+                                            }
+                                            else
+                                            {
+                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDone.Value}].", 2);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", 2);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
+                                    }
                                 }
                                 else
                                 {
-                                    WriteLogEntry("The ESP User Account Setup phase is already complete.");
+                                    WriteLogEntry("The device currently has no users logged on.");
                                 }
                             }
                             else
                             {
                                 WriteLogEntry("The device is not Autopilot-enrolled.");
                             }
+                        }
+                        else
+                        {
+                            WriteLogEntry("Device has completed the OOBE and toolkit is not running with an active ESP in progress.");
                         }
                     }
 
@@ -776,9 +802,6 @@ namespace PSADT.Module
                     CallerSessionState = callerSessionState;
                 }
 
-                // We made it! Add this session to the module's session list for tracking.
-                InternalDatabase.GetSessionList().Add(this);
-
 
                 #endregion
             }
@@ -803,7 +826,7 @@ namespace PSADT.Module
         /// <returns>The call stack frame of the log entry caller.</returns>
         private CallStackFrame GetLogEntryCallerInternal()
         {
-            return GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
+            return GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
         }
 
         /// <summary>
@@ -968,10 +991,6 @@ namespace PSADT.Module
             {
                 throw;
             }
-            finally
-            {
-                InternalDatabase.GetSessionList().Remove(this);
-            }
         }
 
         /// <summary>
@@ -1045,7 +1064,7 @@ namespace PSADT.Module
             StringDictionary logFormats = new StringDictionary()
             {
                 { "Legacy", $"[{dateNow.ToString("O").Split('T')[0]} {logTime}] [{scriptSection}] [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-                { "CMTrace", $"<![LOG[[{scriptSection}] :: {{0}}]LOG]!><time=\"{logTime}{LogTimeOffset}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
+                { "CMTrace", $"<![LOG[[{scriptSection}] :: {{0}}]LOG]!><time=\"{logTime}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{logFile}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
             };
 
             // Add this log message to the session's buffer.
@@ -1068,10 +1087,10 @@ namespace PSADT.Module
                             // spaces. As such, replace all spaces and empty lines with a punctuation space.
                             // C# identifies this character as whitespace but OneTrace does not so it works.
                             // The empty line feed at the end is required by OneTrace to format correctly.
-                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Contains((char)10) ? (string.Join("\n", msg.Replace("\r", null).Trim().Replace(' ', (char)0x2008).Split((char)10).Select(static m => Regex.Replace(m, "^$", $"{(char)0x2008}"))).Replace("\n", "\r\n") + "\r\n") : msg))));
+                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Contains((char)10) ? (string.Join(Environment.NewLine, msg.Trim().Split((char)10).Select(static m => Regex.Replace(m.Replace("\0", string.Empty).Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : msg.Replace("\0", string.Empty)))));
                             break;
                         case "Legacy":
-                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg))));
+                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
                             break;
                     }
                 }
@@ -1094,11 +1113,11 @@ namespace PSADT.Module
                     string logLine = logFormats["Legacy"]!;
                     if (severity == 3)
                     {
-                        Console.Error.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg))));
+                        Console.Error.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
                     }
                     else
                     {
-                        Console.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg))));
+                        Console.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
                     }
 
                     // Reset the console colours back to default.
@@ -1394,12 +1413,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the Write-LogEntry delegate script block.
         /// </summary>
-        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $args[2] -Format $args[3]");
-
-        /// <summary>
-        /// Gets the current timezone bias for the CMTrace log formatted string.
-        /// </summary>
-        private static readonly string LogTimeOffset = TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString();
+        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToInformationStream' @colours -Source $args[2] -Format $args[3]");
 
         /// <summary>
         /// Gets the current process ID.

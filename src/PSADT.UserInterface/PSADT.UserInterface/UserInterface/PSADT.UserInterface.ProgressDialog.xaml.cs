@@ -97,6 +97,11 @@ namespace PSADT.UserInterface
             });
         }
 
+        public void AllowToClose()
+        {
+            _canClose = true;
+        }
+
         /// <summary>
         /// Override the OnClosed event to dispose of the dialog
         /// </summary>

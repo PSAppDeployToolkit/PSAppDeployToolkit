@@ -20,7 +20,7 @@ function Copy-ADTFileToUserProfiles
         The path of the destination folder to append to the root of the user profile.
 
     .PARAMETER BasePath
-        The base path to append the destination folder to. Default is: Profile. Options are: Profile, AppData, LocalAppData, Desktop, Documents, StartMenu, Temp, OneDrive, OneDriveCommercial.
+        The base path to append the destination folder to.
 
     .PARAMETER Recurse
         Copy files in subdirectories.
@@ -35,22 +35,22 @@ function Copy-ADTFileToUserProfiles
         Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.
 
     .PARAMETER RobocopyParams
-        Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Override the default Robocopy parameters.
 
     .PARAMETER RobocopyAdditionalParams
-        Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Append to the default Robocopy parameters.
 
     .PARAMETER ExcludeNTAccount
         Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
     .PARAMETER IncludeSystemProfiles
-        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
+        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
 
     .PARAMETER IncludeServiceProfiles
-        Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
+        Include service profiles where NTAccount begins with NT SERVICE.
 
     .PARAMETER ExcludeDefaultUser
-        Exclude the Default User. Default is: $false.
+        Exclude the Default User.
 
     .INPUTS
         System.String[]
@@ -85,13 +85,13 @@ function Copy-ADTFileToUserProfiles
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTFileToUserProfiles
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]

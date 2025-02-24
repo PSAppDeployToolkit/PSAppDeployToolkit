@@ -42,13 +42,13 @@ function Close-ADTSession
     .NOTES
         An active ADT session is required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Close-ADTSession
     #>
 
     [CmdletBinding()]
@@ -126,6 +126,10 @@ function Close-ADTSession
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
             $ExitCode = 60001
+        }
+        finally
+        {
+            $null = $Script:ADT.Sessions.Remove($adtSession)
         }
 
         # Hand over to our backend closure routine if this was the last session.

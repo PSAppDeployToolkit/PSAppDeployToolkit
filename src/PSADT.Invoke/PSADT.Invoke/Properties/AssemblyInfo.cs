@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("PSAppDeployToolkit Team")]
 [assembly: AssemblyProduct("Invoke-AppDeployToolkit")]
-[assembly: AssemblyCopyright("Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -25,5 +25,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("4.0.5.0")]
-[assembly: AssemblyFileVersion("4.0.5")]
+[assembly: AssemblyVersion("4.0.6.0")]
+[assembly: AssemblyFileVersion("4.0.6")]

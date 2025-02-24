@@ -42,10 +42,10 @@ Retrieve all of the properties from the default 'Property' table.
 ### EXAMPLE 2
 
 ```powershell
-Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property' | Select-Object -ExpandProperty ProductCode
+(Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property').ProductCode
 ```
 
-Retrieve all of the properties from the 'Property' table and then pipe to Select-Object to select the ProductCode property.
+Retrieve all of the properties from the 'Property' table, then retrieves just the 'ProductCode' member.
 
 ### EXAMPLE 3
 
@@ -93,7 +93,6 @@ Accept wildcard characters: False
 ### -Table
 
 The name of the the MSI table from which all of the properties must be retrieved.
-Default is: 'Property'.
 
 ```yaml
 Type: String
@@ -102,7 +101,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: MSI file: "Property"; MSP file: "MsiPatchMetadata"
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -110,7 +109,6 @@ Accept wildcard characters: False
 ### -TablePropertyNameColumnNum
 
 Specify the table column number which contains the name of the properties.
-Default is: 1 for MSIs and 2 for MSPs.
 
 ```yaml
 Type: Int32
@@ -119,7 +117,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: 0
+Default value: MSI file: 1; MSP file: 2
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -127,7 +125,6 @@ Accept wildcard characters: False
 ### -TablePropertyValueColumnNum
 
 Specify the table column number which contains the value of the properties.
-Default is: 2 for MSIs and 3 for MSPs.
 
 ```yaml
 Type: Int32
@@ -136,7 +133,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: 0
+Default value: MSI file: 2; MSP file: 3
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -170,17 +167,17 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### System.Management.Automation.PSObject
+### System.Collections.ObjectModel.ReadOnlyDictionary`2[[System.String],[System.Object]]
 
-### Returns a custom object with the following properties: 'Name' and 'Value'.
+### Returns a readonly dictionary with the properties as key/value pairs.
 ## NOTES
 An active ADT session is NOT required to use this function.
 
-Tags: psadt
-Website: https://psappdeploytoolkit.com
-Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+Tags: psadt<br />
+Website: https://psappdeploytoolkit.com<br />
+Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
 License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
+[https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTMsiTableProperty](https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTMsiTableProperty)

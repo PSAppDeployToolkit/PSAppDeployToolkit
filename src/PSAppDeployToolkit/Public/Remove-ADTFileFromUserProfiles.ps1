@@ -26,13 +26,13 @@ function Remove-ADTFileFromUserProfiles
         Specify NT account names in Domain\Username format to exclude from the list of user profiles.
 
     .PARAMETER ExcludeDefaultUser
-        Exclude the Default User. Default is: $false.
+        Exclude the Default User.
 
     .PARAMETER IncludeSystemProfiles
-        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE. Default is: $false.
+        Include system profiles: SYSTEM, LOCAL SERVICE, NETWORK SERVICE.
 
     .PARAMETER IncludeServiceProfiles
-        Include service profiles where NTAccount begins with NT SERVICE. Default is: $false.
+        Include service profiles where NTAccount begins with NT SERVICE.
 
     .INPUTS
         None
@@ -57,13 +57,13 @@ function Remove-ADTFileFromUserProfiles
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTFileFromUserProfiles
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]

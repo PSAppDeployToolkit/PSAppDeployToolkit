@@ -138,20 +138,20 @@ function Show-ADTInstallationProgressClassic
         # Allow the thread to be spun up safely before invoking actions against it.
         while (!($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Window') -and $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.IsInitialized -and $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window.Dispatcher.Thread.ThreadState.Equals([System.Threading.ThreadState]::Running)))
         {
-            if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Error'))
+            if ($Script:Dialogs.Classic.ProgressWindow.Invocation.IsCompleted)
             {
-                $PSCmdlet.ThrowTerminatingError($Script:Dialogs.Classic.ProgressWindow.SyncHash.Error)
-            }
-            elseif ($Script:Dialogs.Classic.ProgressWindow.Invocation.IsCompleted)
-            {
-                $naerParams = @{
-                    Exception = [System.InvalidOperationException]::new("The separate thread completed without presenting the progress dialog.")
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                    ErrorId = 'InstallationProgressDialogFailure'
-                    TargetObject = $(if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Window')) { $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window })
-                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                if (!$Script:Dialogs.Classic.ProgressWindow.PowerShell.HadErrors)
+                {
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("The separate thread completed without presenting the progress dialog.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'InstallationProgressDialogFailure'
+                        TargetObject = $(if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Window')) { $Script:Dialogs.Classic.ProgressWindow.SyncHash.Window })
+                        RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
-                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                $Script:Dialogs.Classic.ProgressWindow.PowerShell.Runspace.SessionStateProxy.PSVariable.GetValue('Error') | & { process { if ($_ -is [System.Management.Automation.ErrorRecord]) { $PSCmdlet.ThrowTerminatingError($_) } } }
             }
         }
 

@@ -54,13 +54,13 @@ function New-ADTTemplate
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/New-ADTTemplate
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]
@@ -72,6 +72,7 @@ function New-ADTTemplate
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = "PSAppDeployToolkit_<ModuleVersion>")]
         [System.String]$Name = "$($MyInvocation.MyCommand.Module.Name)_$($MyInvocation.MyCommand.Module.Version)",
 
         [Parameter(Mandatory = $false)]
@@ -157,13 +158,13 @@ function New-ADTTemplate
                 $null = New-Item -Name 'Add Supporting Files Here.txt' -Path "$templatePath\SupportFiles" -ItemType File -Force
 
                 # Copy in the frontend files and the config/assets/strings.
-                Copy-Item -Path "$Script:PSScriptRoot\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
+                Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot\Frontend\v$Version"))\*" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$Script:PSScriptRoot\Assets" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$Script:PSScriptRoot\Config" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$Script:PSScriptRoot\Strings" -Destination $templatePath -Recurse -Force
 
                 # Remove any digital signatures from the ps*1 files.
-                Get-ChildItem -Path "$templatePath\*.ps*1" -Recurse | & {
+                Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {
                     process
                     {
                         if (($sigLine = $(($fileLines = [System.IO.File]::ReadAllLines($_.FullName)) -match '^# SIG # Begin signature block$')))
@@ -175,7 +176,7 @@ function New-ADTTemplate
 
                 # Copy in the module files.
                 $null = New-Item -Path $templateModulePath -ItemType Directory -Force
-                Copy-Item -Path "$Script:PSScriptRoot\*" -Destination $templateModulePath -Recurse -Force
+                Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot"))\*" -Destination $templateModulePath -Recurse -Force
 
                 # Make the shipped module and its files read-only.
                 $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
@@ -192,7 +193,7 @@ function New-ADTTemplate
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = if ($PSVersionTable.PSEdition.Equals('Core')) { 'utf8BOM' } else { 'utf8' }
                     }
-                    Out-File -InputObject (Get-Content @params -Raw).Replace("`$PSScriptRoot\..\..\..\$moduleName", "`$PSScriptRoot\$moduleName") @params -Width ([System.Int32]::MaxValue) -Force
+                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\', $null) @params -Width ([System.Int32]::MaxValue) -Force
                 }
 
                 # Display the newly created folder in Windows Explorer.

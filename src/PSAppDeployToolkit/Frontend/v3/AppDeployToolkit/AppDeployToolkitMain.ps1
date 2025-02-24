@@ -8,7 +8,7 @@ The script can be called directly to dot-source the toolkit functions for testin
 
 The script can usually be updated to the latest version without impacting your per-application Deploy-Application scripts. Please check release notes before upgrading.
 
-PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
@@ -5067,7 +5067,7 @@ else
     'PSAppDeployToolkit'
 }
 Remove-Module -Name PSAppDeployToolkit* -Force
-$adtModule = Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.5' } -Force -PassThru -ErrorAction Stop
+$adtModule = Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.0.6' } -Force -PassThru -ErrorAction Stop
 
 # Get all parameters from Open-ADTSession that are considered frontend params/variables.
 $sessionVars = $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
@@ -5140,12 +5140,12 @@ if ((Test-Path -LiteralPath "$PSScriptRoot\AppDeployToolkitExtensions.ps1" -Path
     $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
     {
         # If this script was invoked by another script.
-        Split-Path -Path $invokingScript -Parent
+        Split-Path -LiteralPath $invokingScript -Parent
     }
     else
     {
         # If this script was not invoked by another script, fall back to the directory one level above this script.
-        (Get-Item -LiteralPath (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent)).Parent.FullName
+        (Get-Item -LiteralPath (Split-Path -LiteralPath $MyInvocation.MyCommand.Definition -Parent)).Parent.FullName
     }
     . "$PSScriptRoot\AppDeployToolkitExtensions.ps1"
 }

@@ -22,14 +22,10 @@ function New-ADTMsiTransform
     .PARAMETER NewTransformPath
         Specify the path where the new transform file with the desired properties will be created. If a transform file of the same name already exists, it will be deleted before a new one is created.
 
-        Default is:
-        a) If -ApplyTransformPath was specified but not -NewTransformPath, then <ApplyTransformPath>.new.mst
-        b) If only -MsiPath was specified, then <MsiPath>.mst
-
     .PARAMETER TransformProperties
-        Hashtable which contains calls to Set-ADTMsiProperty for configuring the desired properties which should be included in the new transform file.
+        Hashtable which contains calls to `Set-ADTMsiProperty` for configuring the desired properties which should be included in the new transform file.
 
-        Example hashtable: [Hashtable]$TransformProperties = @{ 'ALLUSERS' = '1' }
+        Example hashtable: @{ ALLUSERS = 1 }
 
     .INPUTS
         None
@@ -43,11 +39,11 @@ function New-ADTMsiTransform
 
     .EXAMPLE
         New-ADTMsiTransform -MsiPath 'C:\Temp\PSADTInstall.msi' -TransformProperties @{
-            'ALLUSERS' = '1'
-            'AgreeToLicense' = 'Yes'
-            'REBOOT' = 'ReallySuppress'
-            'RebootYesNo' = 'No'
-            'ROOTDRIVE' = 'C:'
+            ALLUSERS = 1
+            AgreeToLicense = 'Yes'
+            REBOOT = 'ReallySuppress'
+            RebootYesNo = 'No'
+            ROOTDRIVE = 'C:'
         }
 
         Creates a new transform file for the specified MSI with the given properties.
@@ -55,13 +51,13 @@ function New-ADTMsiTransform
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/New-ADTMsiTransform
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
@@ -70,7 +66,7 @@ function New-ADTMsiTransform
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!(Test-Path -Path $_ -PathType Leaf))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MsiPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
@@ -80,7 +76,7 @@ function New-ADTMsiTransform
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-                if (!(Test-Path -Path $_ -PathType Leaf))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ApplyTransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
@@ -90,6 +86,7 @@ function New-ADTMsiTransform
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'If `-ApplyTransformPath` was specified: `<ApplyTransformPath>.new.mst`; If only `-MsiPath` was specified: `<MsiPath>.mst`')]
         [System.String]$NewTransformPath,
 
         [Parameter(Mandatory = $true)]
@@ -123,7 +120,7 @@ function New-ADTMsiTransform
             try
             {
                 # Create a second copy of the MSI database.
-                $MsiParentFolder = Split-Path -Path $MsiPath -Parent
+                $MsiParentFolder = Split-Path -LiteralPath $MsiPath -Parent
                 $TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetRandomFileName())
                 Write-ADTLogEntry -Message "Copying MSI database in path [$MsiPath] to destination [$TempMsiPath]."
                 $null = Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force

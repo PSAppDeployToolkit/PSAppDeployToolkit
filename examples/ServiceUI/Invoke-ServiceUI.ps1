@@ -43,7 +43,7 @@ $Architecture = if (($env:PROCESSOR_ARCHITECTURE -match 64) -or ($env:PROCESSOR_
 
 $Arguments = $(
     "-DeploymentType $DeploymentType"
-    if (Get-Process -Name $ProcessName -ErrorAction Ignore)
+    if (Get-Process -Name $(if ($ProcessName.Count.Equals(1)) { $($ProcessName).Split(',') } else { $ProcessName }) -ErrorAction Ignore)
     {
         '-DeployMode Interactive'
     }

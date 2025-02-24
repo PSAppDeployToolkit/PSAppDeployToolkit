@@ -126,7 +126,7 @@ namespace PSADT.ProcessUtilities
 
                     pebAddress = pbi.PebBaseAddress.ToInt64();
                     var pp = new SafeHGlobalHandle(IntPtr.Size);
-                    
+
                     try
                     {
                         if (!NativeMethods.ReadProcessMemory(processHandle, pebAddress + processParametersOffset, ref pp, IntPtr.Size, out _))

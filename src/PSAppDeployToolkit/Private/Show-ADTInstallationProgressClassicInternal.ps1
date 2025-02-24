@@ -59,7 +59,6 @@ function Show-ADTInstallationProgressClassicInternal
     }
     catch
     {
-        $SyncHash.Add('Error', $_)
         $PSCmdlet.ThrowTerminatingError($_)
     }
 }

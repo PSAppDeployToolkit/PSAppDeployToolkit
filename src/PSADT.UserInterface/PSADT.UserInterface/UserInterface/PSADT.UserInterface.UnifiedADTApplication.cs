@@ -11,7 +11,7 @@ namespace PSADT.UserInterface
         private static AdtApplication? _instance;
         private static readonly object _lock = new();
 
-        
+
         /// <summary>
         /// Ensures that the AdtApplication instance is initialized and not disposed.
         /// If disposed or null, creates a new instance.

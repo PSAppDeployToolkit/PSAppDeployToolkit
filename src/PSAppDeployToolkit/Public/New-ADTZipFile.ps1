@@ -50,13 +50,13 @@ function New-ADTZipFile
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/New-ADTZipFile
     #>
 
     [CmdletBinding()]
@@ -161,7 +161,7 @@ function New-ADTZipFile
                 Write-ADTLogEntry -Message "If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users. Apply permissions from parent folder [$parentPath] to file [$DestinationPath]."
                 try
                 {
-                    Set-Acl -LiteralPath $DestinationPath -AclObject (Get-Acl -Path $parentPath)
+                    Set-Acl -LiteralPath $DestinationPath -AclObject (Get-Acl -LiteralPath $parentPath)
                 }
                 catch
                 {

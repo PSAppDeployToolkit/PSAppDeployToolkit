@@ -17,7 +17,7 @@ Unblock-ADTAppExecution [[-Tasks] <CimInstance[]>] [<CommonParameters>]
 
 ## DESCRIPTION
 
-This function is called by the Close-ADTSession function or when the script itself is called with the parameters -CleanupBlockedApps.
+This function is called by the Close-ADTSession function.
 It undoes the actions performed by Block-ADTAppExecution, allowing previously blocked applications to execute.
 
 ## EXAMPLES
@@ -43,7 +43,7 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: (Get-ScheduledTask -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
+Default value: All scheduled tasks wildcard matching [PSAppDeployToolkit_*_BlockedApps].
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -67,11 +67,11 @@ An active ADT session is NOT required to use this function.
 
 It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to undo the actions performed by Block-ADTAppExecution.
 
-Tags: psadt
-Website: https://psappdeploytoolkit.com
-Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+Tags: psadt<br />
+Website: https://psappdeploytoolkit.com<br />
+Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
 License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
+[https://psappdeploytoolkit.com/docs/reference/functions/Unblock-ADTAppExecution](https://psappdeploytoolkit.com/docs/reference/functions/Unblock-ADTAppExecution)

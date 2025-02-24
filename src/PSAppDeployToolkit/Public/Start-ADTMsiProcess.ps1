@@ -38,10 +38,10 @@ function Start-ADTMsiProcess
         The name(s) of the patch (MSP) file(s) to be applied to the MSI for the "Install" action. The patch files should be in the same directory as the MSI file.
 
     .PARAMETER ArgumentList
-        Overrides the default parameters specified in the config.psd1 file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
+        Overrides the default parameters specified in the config.psd1 file.
 
     .PARAMETER AdditionalArgumentList
-        Adds additional parameters to the default set specified in the config.psd1 file. The install default is: "REBOOT=ReallySuppress /QB!". The uninstall default is: "REBOOT=ReallySuppress /QN".
+        Adds additional parameters to the default set specified in the config.psd1 file.
 
     .PARAMETER SecureArgumentList
         Hides all parameters passed to the MSI or MSP file from the toolkit log file.
@@ -58,7 +58,7 @@ function Start-ADTMsiProcess
         Overrides the working directory. The working directory is set to the location of the MSI file.
 
     .PARAMETER SkipMSIAlreadyInstalledCheck
-        Skips the check to determine if the MSI is already installed on the system. Default is: $false.
+        Skips the check to determine if the MSI is already installed on the system.
 
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
@@ -125,13 +125,13 @@ function Start-ADTMsiProcess
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcess
     #>
 
     [CmdletBinding()]
@@ -166,6 +166,7 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'Install (Normal): (Get-ADTConfig).MSI.InstallParams; Install (Silent): (Get-ADTConfig).MSI.SilentParams; Uninstall (Normal): (Get-ADTConfig).MSI.UninstallParams; Uninstall (Silent): (Get-ADTConfig).MSI.SilentParams')]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
@@ -309,7 +310,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Transforms.Length; $i++)
                         {
-                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $Transforms[$i].Replace('.\', ''))))
+                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -LiteralPath $msiProduct -Parent) -ChildPath $Transforms[$i].Replace('.\', ''))))
                             {
                                 $Transforms[$i] = $fullPath
                             }
@@ -321,7 +322,7 @@ function Start-ADTMsiProcess
                     {
                         for ($i = 0; $i -lt $Patches.Length; $i++)
                         {
-                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -Path $msiProduct -Parent) -ChildPath $Patches[$i].Replace('.\', ''))))
+                            if ([System.IO.File]::Exists(($fullPath = Join-Path -Path (Split-Path -LiteralPath $msiProduct -Parent) -ChildPath $Patches[$i].Replace('.\', ''))))
                             {
                                 $Patches[$i] = $fullPath
                             }
@@ -332,7 +333,7 @@ function Start-ADTMsiProcess
                 # If the provided MSI was a file path, get the Property table and store it.
                 $msiPropertyTable = if ([System.IO.Path]::GetExtension($msiProduct) -eq '.msi')
                 {
-                    $gmtpParams = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $gmtpParams.Add('TransformPath', $transforms) }
+                    $gmtpParams = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $gmtpParams.Add('TransformPath', $Transforms) }
                     Get-ADTMsiTableProperty @gmtpParams
                 }
 

@@ -136,13 +136,13 @@ function Open-ADTSession
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Open-ADTSession
     #>
 
     [CmdletBinding()]
@@ -329,7 +329,7 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$PassThru,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
-        [ValidateNotNullOrEmpty()]
+        [AllowNull()][AllowEmptyCollection()]
         [System.Collections.Generic.List[System.Object]]$UnboundArguments
     )
 
@@ -372,6 +372,9 @@ function Open-ADTSession
                     $PSBoundParameters.Add($_.Key, $_.Value)
                 })
         }
+
+        # Remove any values from $PSBoundParameters that are null (empty strings, mostly).
+        $null = ($PSBoundParameters.GetEnumerator().Where({ [System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)) })).ForEach({ $PSBoundParameters.Remove($_.Key) })
     }
 
     process
@@ -396,7 +399,7 @@ function Open-ADTSession
                 }
 
                 # Instantiate the new session. The constructor will handle adding the session to the module's list.
-                $adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))
+                $Script:ADT.Sessions.Add(($adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))))
 
                 # Invoke all callbacks.
                 foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))

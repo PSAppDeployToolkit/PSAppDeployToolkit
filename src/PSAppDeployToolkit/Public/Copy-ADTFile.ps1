@@ -32,10 +32,10 @@ function Copy-ADTFile
         Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.
 
     .PARAMETER RobocopyParams
-        Override the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Override the default Robocopy parameters.
 
     .PARAMETER RobocopyAdditionalParams
-        Append to the default Robocopy parameters. Default is: /NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1
+        Append to the default Robocopy parameters.
 
     .INPUTS
         None
@@ -70,13 +70,13 @@ function Copy-ADTFile
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTFile
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]
@@ -91,7 +91,7 @@ function Copy-ADTFile
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Recurse = $false,
+        [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Flatten,
@@ -127,7 +127,7 @@ function Copy-ADTFile
         if ($FileCopyMode -eq 'Robocopy')
         {
             # Check if Robocopy is on the system.
-            if (Test-Path -Path "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
+            if (Test-Path -LiteralPath "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
             {
                 # Disable Robocopy if $Path has a folder containing a * wildcard.
                 if ($Path -match '\*.*\\')
@@ -210,12 +210,12 @@ function Copy-ADTFile
                     }
 
                     # If source exists as a folder, append the last subfolder to the destination, so that Robocopy produces similar results to native PowerShell.
-                    if (Test-Path -LiteralPath $srcPath -PathType Container)
+                    if (Test-Path -Path $srcPath -PathType Container)
                     {
                         # Trim ending backslash from paths which can cause problems with Robocopy.
                         # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
-                        $robocopySource = (Resolve-Path -LiteralPath $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                        $robocopySource = (Resolve-Path -Path $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         $robocopyDestination = Join-Path ((Resolve-Path -LiteralPath $Destination).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (Split-Path -Path $srcPath -Leaf)
                         $robocopyFile = '*'
                     }
@@ -259,7 +259,7 @@ function Copy-ADTFile
                         Copy-ADTFile @copyFileSplat -Path ((Join-Path $robocopySource $robocopyFile))
 
                         # Copy all files from subfolders, appending file name to subfolder path and repeat Copy-ADTFile.
-                        Get-ChildItem -Path $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
+                        Get-ChildItem -LiteralPath $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
                             process
                             {
                                 Copy-ADTFile @copyFileSplat -Path (Join-Path $_.FullName $robocopyFile)
@@ -417,9 +417,9 @@ function Copy-ADTFile
                         }
 
                         # Measure success.
-                        if ($ContinueFileCopyOnError -and (Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::FileCopyError))
+                        if ($ContinueFileCopyOnError -and $FileCopyError.Count)
                         {
-                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n$FileCopyError" -Severity 2
+                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n`n$([System.String]::Join("`n", $FileCopyError.Exception.Message))" -Severity 2
                         }
                         else
                         {

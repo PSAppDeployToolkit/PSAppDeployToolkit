@@ -19,7 +19,7 @@ function Test-ADTMutexAvailability
         The name of the system mutex.
 
     .PARAMETER MutexWaitTime
-        The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex. Default is: 1 millisecond.
+        The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex.
 
         A wait time of -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
 
@@ -41,16 +41,16 @@ function Test-ADTMutexAvailability
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
         http://msdn.microsoft.com/en-us/library/aa372909(VS.85).asp
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTMutexAvailability
     #>
 
     [CmdletBinding()]
@@ -93,7 +93,7 @@ function Test-ADTMutexAvailability
         try
         {
             # Open the specified named mutex, if it already exists, without acquiring an exclusive lock on it. If the system mutex does not exist, this method throws an exception instead of creating the system object.
-            $OpenExistingMutex = [Threading.Mutex]::OpenExisting($MutexName)
+            $OpenExistingMutex = [System.Threading.Mutex]::OpenExisting($MutexName)
 
             # Attempt to acquire an exclusive lock on the mutex. Use a Timespan to specify a timeout value after which no further attempt is made to acquire a lock on the mutex.
             $IsMutexFree = $OpenExistingMutex.WaitOne($MutexWaitTime, $false)

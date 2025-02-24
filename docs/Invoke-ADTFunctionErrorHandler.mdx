@@ -15,35 +15,28 @@ Handles errors within ADT functions by logging and optionally passing through th
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- [<CommonParameters>]
-```
-
-### LogMessage
-
-```powershell
-Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- -LogMessage <String> [<CommonParameters>]
+ [-LogMessage <String>] [<CommonParameters>]
 ```
 
 ### ResolveErrorProperties
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- -ResolveErrorProperties <String[]> [<CommonParameters>]
+ [-LogMessage <String>] -ResolveErrorProperties <String[]> [<CommonParameters>]
 ```
 
 ### AdditionalResolveErrorProperties
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- -AdditionalResolveErrorProperties <String[]> [<CommonParameters>]
+ [-LogMessage <String>] -AdditionalResolveErrorProperties <String[]> [<CommonParameters>]
 ```
 
 ### DisableErrorResolving
 
 ```powershell
 Invoke-ADTFunctionErrorHandler -Cmdlet <PSCmdlet> -SessionState <SessionState> -ErrorRecord <ErrorRecord>
- [-DisableErrorResolving] [<CommonParameters>]
+ [-LogMessage <String>] [-DisableErrorResolving] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -127,10 +120,10 @@ The error message to write to the active ADTSession's log file.
 
 ```yaml
 Type: String
-Parameter Sets: LogMessage
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -202,11 +195,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 An active ADT session is NOT required to use this function.
 
-Tags: psadt
-Website: https://psappdeploytoolkit.com
-Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+Tags: psadt<br />
+Website: https://psappdeploytoolkit.com<br />
+Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
 License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
+[https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTFunctionErrorHandler](https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTFunctionErrorHandler)

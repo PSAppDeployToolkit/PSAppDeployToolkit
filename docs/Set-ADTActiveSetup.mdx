@@ -34,11 +34,12 @@ A registry key is created in the HKLM registry hive which gets replicated to the
 If the "Version" value of the Active Setup entry in HKLM is higher than the version value in HKCU, the file referenced in "StubPath" is executed.
 
 This Function:
-    - Creates the registry entries in "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\$($adtSession.InstallName)".
-    - Creates StubPath value depending on the file extension of the $StubExePath parameter.
-    - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
-    - Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
-    - Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
+
+- Creates the registry entries in "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\$($adtSession.InstallName)".
+- Creates StubPath value depending on the file extension of the $StubExePath parameter.
+- Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
+- Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
+- Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
 
 ## EXAMPLES
 
@@ -101,7 +102,6 @@ Accept wildcard characters: False
 ### -Wow6432Node
 
 Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS.
-Default is: $false.
 
 ```yaml
 Type: SwitchParameter
@@ -117,8 +117,7 @@ Accept wildcard characters: False
 
 ### -ExecutionPolicy
 
-Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script.
-Default is: system's ExecutionPolicy.
+Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script..
 
 ```yaml
 Type: ExecutionPolicy
@@ -128,7 +127,7 @@ Accepted values: Unrestricted, RemoteSigned, AllSigned, Restricted, Default, Byp
 
 Required: False
 Position: Named
-Default value: None
+Default value: (Get-ExecutionPolicy)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -154,7 +153,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: ((Get-Date -Format 'yyMM,ddHH,mmss').ToString())
+Default value: [System.DateTime]::Now.ToString('yyMM,ddHH,mmss')
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -283,11 +282,11 @@ An active ADT session is NOT required to use this function.
 
 Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
 
-Tags: psadt
-Website: https://psappdeploytoolkit.com
-Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+Tags: psadt<br />
+Website: https://psappdeploytoolkit.com<br />
+Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
 License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com](https://psappdeploytoolkit.com)
+[https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTActiveSetup](https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTActiveSetup)

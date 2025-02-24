@@ -11,7 +11,7 @@ function Unblock-ADTAppExecution
         Unblocks the execution of applications performed by the Block-ADTAppExecution function.
 
     .DESCRIPTION
-        This function is called by the Close-ADTSession function or when the script itself is called with the parameters -CleanupBlockedApps. It undoes the actions performed by Block-ADTAppExecution, allowing previously blocked applications to execute.
+        This function is called by the Close-ADTSession function. It undoes the actions performed by Block-ADTAppExecution, allowing previously blocked applications to execute.
 
     .PARAMETER Tasks
         Specify the scheduled tasks to unblock.
@@ -36,13 +36,13 @@ function Unblock-ADTAppExecution
 
         It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to undo the actions performed by Block-ADTAppExecution.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Unblock-ADTAppExecution
     #>
 
     [CmdletBinding()]
@@ -50,6 +50,7 @@ function Unblock-ADTAppExecution
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = "All scheduled tasks wildcard matching [PSAppDeployToolkit_*_BlockedApps].")]
         [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (Get-ScheduledTask -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
     )
 

@@ -1,10 +1,14 @@
-# ![AppDeployToolkitLogo](https://github.com/user-attachments/assets/7766bcb3-fa87-496e-9b19-7a8e194dcd97)
+# ![PSAppDeployToolkit](https://github.com/user-attachments/assets/acfafa06-75ef-4988-aea6-5711fd9b6fc4)
 
-## Enterprise App Deployment, Simplified.
+![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/psappdeploytoolkit?logoSize=auto&label=PowerShell%20Gallery)
+![GitHub](https://img.shields.io/github/downloads/psappdeploytoolkit/psappdeploytoolkit/total?label=GitHub)
+![Main Branch Status](https://img.shields.io/github/check-runs/psappdeploytoolkit/psappdeploytoolkit/main?label=main)
+![Develop Branch Status](https://img.shields.io/github/check-runs/psappdeploytoolkit/psappdeploytoolkit/develop?label=develop)
+![#psappdeploytoolkit Discord Chat](https://img.shields.io/discord/618712310185197588?label=Discord%20Chat)
 
-PSAppDeployToolkit is a versatile solution that streamlines and standardizes the process of software deployment, making it easier than ever to manage your IT environment. It has a comprehensive set of features, such as dynamic logging, user interaction capabilities, and customizable functionality.
+PSAppDeployToolkit is a framework for deploying applications in a business / corporate environment. It provides a set of well-defined functions for common application deployment tasks, as well as user interface elements for end user interaction during a deployment. It simplifies the complex scripting challenges of deploying applications in the enterprise, provides a consistent deployment experience for your end users and as a result of this, improves the overall success rate of your deployments.
 
-### Standardize and enhance every software deployment
+### Features
 
 PSAppDeployToolkit allows you to encapsulate a typical Windows Installer MSI or Setup executable to provide it with enhanced capabilities.
 
@@ -17,24 +21,54 @@ PSAppDeployToolkit allows you to encapsulate a typical Windows Installer MSI or 
 - Run post-installation configuration tasks to customize for your environment
 - Prompt the user to restart their computer if required, immediately, on a timer and with a deadline
 
-## Getting Started
+## Screenshots
 
--> [System Requirements](https://psappdeploytoolkit.com/docs/getting-started/requirements)
--> [Downloading](https://psappdeploytoolkit.com/docs/getting-started/download)
+<img src="https://github.com/user-attachments/assets/e74f905a-9999-480a-90ba-78f1dfcd41f9" width="49%" height="49%">
+<img src="https://github.com/user-attachments/assets/41299581-3b63-49f0-a9de-6852c1c17257" width="49%" height="49%"">
 
-### PSAppDeployToolkit Links
+## What's New in v4
 
--> [Homepage](https://psappdeploytoolkit.com)
--> [Documentation](https://psappdeploytoolkit.com/docs)
--> [Function & Variable References](https://psappdeploytoolkit.com/docs/reference)
--> [Download Latest Release](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases)
--> [News](https://psappdeploytoolkit.com/blog)
+- Modern Fluent user interface
+- Digitally signed PowerShell module
+- All C# code is now compiled
+- Codebase completely refactored and optimized
+- Complete removal of VBScript code
+- Strongly typed and defined object types, no more PSCustomObjects, etc
+- Defensively coded to ensure security and reliability
+- Now provides PowerShell 7 and ARM support
+- Extensions supported as supplemental modules
+- Custom action support for extensions on deployment start/finish
+- Support for overriding config via the registry
+- Backwards-compatibility with v3 deployment scripts
 
-### Community Links
+## Getting Started / Downloading
 
--> [Discourse Forum](https://discourse.psappdeploytoolkit.com/)
--> [Discord Chat](https://discord.com/channels/618712310185197588/627204361545842688)
--> [Reddit](https://reddit.com/r/psadt)
+- [Getting Started Guidance](https://psappdeploytoolkit.com/docs/getting-started/download)
+- [PowerShell Gallery](https://www.powershellgallery.com/packages/PSAppDeployToolkit)
+- [GitHub Latest Release](https://github.com/psappdeploytoolkit/psappdeploytoolkit/releases)
+
+## Important Links
+
+### PSAppDeployToolkit
+
+- [Homepage](https://psappdeploytoolkit.com)
+- [Latest News](https://psappdeploytoolkit.com/blog)
+
+- [Documentation](https://psappdeploytoolkit.com/docs)
+- [Function & Variable References](https://psappdeploytoolkit.com/docs/reference)
+- [GitHub Latest Release](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases)
+
+### Community
+
+- [Discourse Forum](https://discourse.psappdeploytoolkit.com/)
+- [Discord Chat](https://discord.com/channels/618712310185197588/627204361545842688)
+- [Reddit](https://reddit.com/r/psadt)
+
+### GitHub
+
+- [Issues](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues)
+- [Security Policy](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/security)
+- [Contributer Guidelines](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/.github/CONTRIBUTING.md)
 
 ## License
 

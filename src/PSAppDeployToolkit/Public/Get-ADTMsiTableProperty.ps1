@@ -20,13 +20,13 @@ function Get-ADTMsiTableProperty
         The fully qualified path to a list of MST file(s) which should be applied to the MSI file.
 
     .PARAMETER Table
-        The name of the the MSI table from which all of the properties must be retrieved. Default is: 'Property'.
+        The name of the the MSI table from which all of the properties must be retrieved.
 
     .PARAMETER TablePropertyNameColumnNum
-        Specify the table column number which contains the name of the properties. Default is: 1 for MSIs and 2 for MSPs.
+        Specify the table column number which contains the name of the properties.
 
     .PARAMETER TablePropertyValueColumnNum
-        Specify the table column number which contains the value of the properties. Default is: 2 for MSIs and 3 for MSPs.
+        Specify the table column number which contains the value of the properties.
 
     .PARAMETER GetSummaryInformation
         Retrieves the Summary Information for the Windows Installer database.
@@ -39,9 +39,9 @@ function Get-ADTMsiTableProperty
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Management.Automation.PSObject
+        System.Collections.ObjectModel.ReadOnlyDictionary`2[[System.String],[System.Object]]
 
-        Returns a custom object with the following properties: 'Name' and 'Value'.
+        Returns a readonly dictionary with the properties as key/value pairs.
 
     .EXAMPLE
         Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst'
@@ -49,9 +49,9 @@ function Get-ADTMsiTableProperty
         Retrieve all of the properties from the default 'Property' table.
 
     .EXAMPLE
-        Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property' | Select-Object -ExpandProperty ProductCode
+        (Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst' -Table 'Property').ProductCode
 
-        Retrieve all of the properties from the 'Property' table and then pipe to Select-Object to select the ProductCode property.
+        Retrieve all of the properties from the 'Property' table, then retrieves just the 'ProductCode' member.
 
     .EXAMPLE
         Get-ADTMsiTableProperty -Path 'C:\Package\AppDeploy.msi' -GetSummaryInformation
@@ -61,13 +61,13 @@ function Get-ADTMsiTableProperty
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTMsiTableProperty
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
@@ -77,7 +77,7 @@ function Get-ADTMsiTableProperty
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!(Test-Path -Path $_ -PathType Leaf))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
@@ -87,7 +87,7 @@ function Get-ADTMsiTableProperty
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-                if (!(Test-Path -Path $_ -PathType Leaf))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName TransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
@@ -97,14 +97,17 @@ function Get-ADTMsiTableProperty
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'MSI file: "Property"; MSP file: "MsiPatchMetadata"')]
         [System.String]$Table,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'MSI file: 1; MSP file: 2')]
         [System.Int32]$TablePropertyNameColumnNum,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
+        [PSDefaultValue(Help = 'MSI file: 2; MSP file: 3')]
         [System.Int32]$TablePropertyValueColumnNum,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]

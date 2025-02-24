@@ -7,19 +7,19 @@
 		<NoWarn>$(NoWarn);CA1416;CS4014</NoWarn>
 		<UseWindowsForms>true</UseWindowsForms>
 
-		<AssemblyVersion>4.0.5.0</AssemblyVersion>
-		<FileVersion>4.0.5</FileVersion>
-		<InformationalVersion>4.0.5</InformationalVersion>
-		<ApplicationVersion>4.0.5</ApplicationVersion>
+		<AssemblyVersion>4.0.6.0</AssemblyVersion>
+		<FileVersion>4.0.6</FileVersion>
+		<InformationalVersion>4.0.6</InformationalVersion>
+		<ApplicationVersion>4.0.6</ApplicationVersion>
 		<Authors>PSAppDeployToolkit Team</Authors>
 		<Company>PSAppDeployToolkit Team</Company>
 		<Description>PSAppDeployToolkit Support Library</Description>
 		<Title>PSAppDeployToolkit Support Libray</Title>
-		<Copyright>Copyright © 2024 PSAppDeployToolkit Team. All rights reserved.</Copyright>
+		<Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
 		<PackageProjectUrl>https://psappdeploytoolkit.com/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
 		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
-		
+
 		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
 		<TargetFrameworks>net462;net8.0-windows10.0.17763</TargetFrameworks>
 		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
@@ -28,7 +28,7 @@
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 		<Nullable>enable</Nullable>
-		
+
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<PublishTrimmed>false</PublishTrimmed>

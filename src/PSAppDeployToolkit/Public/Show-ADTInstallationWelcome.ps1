@@ -8,14 +8,15 @@ function Show-ADTInstallationWelcome
 {
     <#
     .SYNOPSIS
-        Show a welcome dialog prompting the user with information about the installation and actions to be performed before the installation can begin.
+        Show a welcome dialog prompting the user with information about the deployment and actions to be performed before the deployment can begin.
 
     .DESCRIPTION
         The following prompts can be included in the welcome dialog:
-            a) Close the specified running applications, or optionally close the applications without showing a prompt (using the -Silent switch).
-            b) Defer the installation a certain number of times, for a certain number of days or until a deadline is reached.
-            c) Countdown until applications are automatically closed.
-            d) Prevent users from launching the specified applications while the installation is in progress.
+
+        * Close the specified running applications, or optionally close the applications without showing a prompt (using the `-Silent` switch).
+        * Defer the deployment a certain number of times, for a certain number of days or until a deadline is reached.
+        * Countdown until applications are automatically closed.
+        * Prevent users from launching the specified applications while the deployment is in progress.
 
     .PARAMETER CloseProcesses
         Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: @{ Name = 'winword'; Description = 'Microsoft Office Word'},@{ Name = 'excel'; Description = 'Microsoft Office Excel'}
@@ -33,25 +34,25 @@ function Show-ADTInstallationWelcome
         Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
     .PARAMETER PersistPrompt
-        Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+        Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the config.psd1. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
     .PARAMETER BlockExecution
-        Option to prevent the user from launching processes/applications, specified in -CloseProcesses, during the installation.
+        Option to prevent the user from launching processes/applications, specified in -CloseProcesses, during the deployment.
 
     .PARAMETER AllowDefer
-        Enables an optional defer button to allow the user to defer the installation.
+        Enables an optional defer button to allow the user to defer the deployment.
 
     .PARAMETER AllowDeferCloseProcesses
-        Enables an optional defer button to allow the user to defer the installation only if there are running applications that need to be closed. This parameter automatically enables -AllowDefer
+        Enables an optional defer button to allow the user to defer the deployment only if there are running applications that need to be closed. This parameter automatically enables -AllowDefer
 
     .PARAMETER DeferTimes
-        Specify the number of times the installation can be deferred.
+        Specify the number of times the deployment can be deferred.
 
     .PARAMETER DeferDays
-        Specify the number of days since first run that the installation can be deferred. This is converted to a deadline.
+        Specify the number of days since first run that the deployment can be deferred. This is converted to a deadline.
 
     .PARAMETER DeferDeadline
-        Specify the deadline date until which the installation can be deferred.
+        Specify the deadline date until which the deployment can be deferred.
 
         Specify the date in the local culture if the script is intended for that same culture.
 
@@ -62,7 +63,7 @@ function Show-ADTInstallationWelcome
         The deadline date will be displayed to the user in the format of their culture.
 
     .PARAMETER CheckDiskSpace
-        Specify whether to check if there is enough disk space for the installation to proceed.
+        Specify whether to check if there is enough disk space for the deployment to proceed.
 
         If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 
@@ -76,7 +77,7 @@ function Show-ADTInstallationWelcome
         Specifies whether the windows is the topmost window. Default: $true.
 
     .PARAMETER ForceCountdown
-        Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.
+        Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.
 
     .PARAMETER CustomText
         Specify whether to display a custom message specified in the string.psd1 file. Custom message must be populated for each language section in the string.psd1 file.
@@ -104,7 +105,7 @@ function Show-ADTInstallationWelcome
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution
 
-        Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
+        Close Word and Excel and prevent the user from launching the applications while the deployment is in progress.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' } -CloseProcessesCountdown 600
@@ -114,19 +115,19 @@ function Show-ADTInstallationWelcome
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
 
-        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml, so the user cannot ignore it by dragging it aside.
+        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the config.psd1, so the user cannot ignore it by dragging it aside.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '25/08/2013'
 
-        Allow the user to defer the installation until the deadline is reached.
+        Allow the user to defer the deployment until the deadline is reached.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '25/08/2013' -CloseProcessesCountdown 600
 
-        Close Word and Excel and prevent the user from launching the applications while the installation is in progress.
+        Close Word and Excel and prevent the user from launching the applications while the deployment is in progress.
 
-        Allow the user to defer the installation a maximum of 10 times or until the deadline is reached, whichever happens first.
+        Allow the user to defer the deployment a maximum of 10 times or until the deadline is reached, whichever happens first.
 
         When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 
@@ -135,15 +136,15 @@ function Show-ADTInstallationWelcome
 
         The process descriptions are retrieved via Get-Process, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself with a '=' symbol - see examples.
 
-        The dialog box will timeout after the timeout specified in the config.psd1 file (default 55 minutes) to prevent Intune/SCCM installations from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
+        The dialog box will timeout after the timeout specified in the config.psd1 file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationWelcome
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
@@ -167,10 +168,10 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, HelpMessage = 'Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.')]
         [System.Management.Automation.SwitchParameter]$PromptToSave,
 
-        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the AppDeployToolkitConfig.xml.')]
+        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to make the prompt persist in the center of the screen every couple of seconds, specified in the config.psd1 file.')]
         [System.Management.Automation.SwitchParameter]$PersistPrompt,
 
-        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to block execution of the processes during installation.')]
+        [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to block execution of the processes during deployment.')]
         [System.Management.Automation.SwitchParameter]$BlockExecution,
 
         [Parameter(Mandatory = $false, HelpMessage = ' Specify whether to enable the optional defer button on the dialog box.')]
@@ -191,7 +192,7 @@ function Show-ADTInstallationWelcome
         [ValidateNotNullOrEmpty()]
         [System.String]$DeferDeadline,
 
-        [Parameter(Mandatory = $true, HelpMessage = 'Specify whether to check if there is enough disk space for the installation to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.', ParameterSetName = 'CheckDiskSpace')]
+        [Parameter(Mandatory = $true, HelpMessage = 'Specify whether to check if there is enough disk space for the deployment to proceed. If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.', ParameterSetName = 'CheckDiskSpace')]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Specify required disk space in MB, used in combination with $CheckDiskSpace.', ParameterSetName = 'CheckDiskSpace')]
@@ -204,7 +205,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, HelpMessage = 'Specifies whether the window is the topmost window.')]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically proceeding with the installation when a deferral is enabled.')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$ForceCountdown,
 
@@ -225,7 +226,7 @@ function Show-ADTInstallationWelcome
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Title', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "Title of the prompt. Default: the application installation name." }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = "Title of the prompt. Default: the application deployment name." }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
@@ -263,7 +264,7 @@ function Show-ADTInstallationWelcome
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $PSBoundParameters.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', [System.String]::Format($adtStrings.WelcomePrompt.Fluent.Subtitle, $adtSession.GetDeploymentTypeName()))
         }
 
         # Instantiate new object to hold all data needed within this call.
@@ -279,7 +280,7 @@ function Show-ADTInstallationWelcome
             try
             {
                 # If running in NonInteractive mode, force the processes to close silently.
-                if ($adtSession -and $adtSession.IsNonInteractive())
+                if (!$PSBoundParameters.ContainsKey('Silent') -and $adtSession -and ($adtSession.IsNonInteractive() -or $adtSession.IsSilent()))
                 {
                     $Silent = $true
                 }
@@ -291,7 +292,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Check disk space requirements if specified
-                if ($adtSession -and $CheckDiskSpace)
+                if ($adtSession -and $CheckDiskSpace -and ($scriptDir = try { Get-ADTSessionCacheScriptDirectory } catch { $null = $null }))
                 {
                     Write-ADTLogEntry -Message 'Evaluating disk space requirements.'
                     if (!$RequiredDiskSpace)
@@ -300,7 +301,7 @@ function Show-ADTInstallationWelcome
                         {
                             # Determine the size of the Files folder
                             $fso = New-Object -ComObject Scripting.FileSystemObject
-                            $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($adtSession.ScriptDirectory).Size / 1MB)
+                            $RequiredDiskSpace = [System.Math]::Round($fso.GetFolder($scriptDir).Size / 1MB)
                         }
                         catch
                         {
@@ -568,7 +569,7 @@ function Show-ADTInstallationWelcome
                         elseif ($promptResult -eq 'Timeout')
                         {
                             # Stop the script (if not actioned before the timeout value).
-                            Write-ADTLogEntry -Message 'Installation not actioned before the timeout value.'
+                            Write-ADTLogEntry -Message 'Deployment not actioned before the timeout value.'
                             $BlockExecution = $false
                             if ($adtSession -and (($DeferTimes -ge 0) -or $deferDeadlineUniversal))
                             {
@@ -595,7 +596,7 @@ function Show-ADTInstallationWelcome
                         elseif ($promptResult -eq 'Defer')
                         {
                             #  Stop the script (user chose to defer)
-                            Write-ADTLogEntry -Message 'Installation deferred by the user.'
+                            Write-ADTLogEntry -Message 'Deployment deferred by the user.'
                             $BlockExecution = $false
                             Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
 
@@ -613,7 +614,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Force the processes to close silently, without prompting the user.
-                if (($Silent -or ($adtSession -and $adtSession.IsSilent())) -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
+                if ($Silent -and ($runningProcesses = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction SilentlyContinue))
                 {
                     Write-ADTLogEntry -Message "Force closing application(s) [$(($runningProcesses.ProcessDescription | Sort-Object -Unique) -join ',')] without prompting user."
                     Stop-Process -InputObject $runningProcesses -Force -ErrorAction Ignore

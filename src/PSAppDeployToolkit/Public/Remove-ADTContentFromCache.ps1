@@ -34,13 +34,13 @@ function Remove-ADTContentFromCache
     .NOTES
         An active ADT session is required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTContentFromCache
     #>
 
     [CmdletBinding()]
@@ -48,7 +48,7 @@ function Remove-ADTContentFromCache
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).installName)"
+        [System.String]$Path = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
     )
 
     begin
@@ -56,7 +56,7 @@ function Remove-ADTContentFromCache
         try
         {
             $adtSession = Get-ADTSession
-            $parentPath = $adtSession.ScriptDirectory
+            $scriptDir = Get-ADTSessionCacheScriptDirectory
         }
         catch
         {
@@ -78,9 +78,9 @@ function Remove-ADTContentFromCache
         {
             try
             {
-                Remove-Item -Path $Path -Recurse -Force
-                $adtSession.DirFiles = (Join-Path -Path $parentPath -ChildPath Files)
-                $adtSession.DirSupportFiles = (Join-Path -Path $parentPath -ChildPath SupportFiles)
+                Remove-Item -LiteralPath $Path -Recurse -Force
+                $adtSession.DirFiles = [System.IO.Path]::Combine($scriptDir, 'Files')
+                $adtSession.DirSupportFiles = [System.IO.Path]::Combine($scriptDir, 'SupportFiles')
             }
             catch
             {

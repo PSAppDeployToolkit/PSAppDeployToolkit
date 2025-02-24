@@ -65,13 +65,13 @@ function Invoke-ADTAllUsersRegistryAction
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTAllUsersRegistryAction
     #>
 
     [CmdletBinding()]
@@ -112,7 +112,7 @@ function Invoke-ADTAllUsersRegistryAction
                 try
                 {
                     # Set the path to the user's registry hive file.
-                    $UserRegistryHiveFile = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
+                    $UserRegistryHiveFile = Join-Path -LiteralPath $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
 
                     # Load the User profile registry hive if it is not already loaded because the User is logged in.
                     if (!(Test-Path -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$($UserProfile.SID)"))

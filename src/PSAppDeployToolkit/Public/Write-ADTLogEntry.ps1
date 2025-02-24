@@ -24,7 +24,7 @@ function Write-ADTLogEntry
         The source of the message being logged.
 
     .PARAMETER ScriptSection
-        The heading for the portion of the script that is being executed. Default is: "$($adtSession.InstallPhase)".
+        The heading for the portion of the script that is being executed.
 
     .PARAMETER LogType
         Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.
@@ -64,13 +64,13 @@ function Write-ADTLogEntry
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/Write-ADTLogEntry
     #>
 
     [CmdletBinding()]

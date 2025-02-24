@@ -35,7 +35,7 @@ function New-ADTShortcut
         Working Directory to be used for the target path.
 
     .PARAMETER WindowStyle
-        Windows style of the application. Options: Normal, Maximized, Minimized. Default is: Normal.
+        Windows style of the application. Options: Normal, Maximized, Minimized.
 
     .PARAMETER RunAsAdmin
         Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
@@ -63,13 +63,13 @@ function New-ADTShortcut
 
         Url shortcuts only support TargetPath, IconLocation and IconIndex. Other parameters are ignored.
 
-        Tags: psadt
-        Website: https://psappdeploytoolkit.com
-        Copyright: (C) 2024 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+        Tags: psadt<br />
+        Website: https://psappdeploytoolkit.com<br />
+        Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com
+        https://psappdeploytoolkit.com/docs/reference/functions/New-ADTShortcut
     #>
 
     [CmdletBinding()]
@@ -111,7 +111,7 @@ function New-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized')]
-        [System.String]$WindowStyle,
+        [System.String]$WindowStyle = 'Normal',
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RunAsAdmin,
@@ -234,7 +234,6 @@ function New-ADTShortcut
                         Normal { 1; break }
                         Maximized { 3; break }
                         Minimized { 7; break }
-                        default { 1; break }
                     }
 
                     # Save the changes.

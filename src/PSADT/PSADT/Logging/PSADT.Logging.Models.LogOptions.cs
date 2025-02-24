@@ -291,7 +291,7 @@ namespace PSADT.Logging.Models
                 _retryIntervalInMilliseconds = retryIntervalInMilliseconds ?? (uint)TimeSpan.FromMilliseconds(100).TotalMilliseconds;
                 return this;
             }
-            
+
             public Builder SetMaxRetryDelayInMilliseconds(uint? maxRetryDelayInMilliseconds)
             {
                 _maxRetryDelayInMilliseconds = maxRetryDelayInMilliseconds ?? (uint)TimeSpan.FromSeconds(5).TotalMilliseconds;

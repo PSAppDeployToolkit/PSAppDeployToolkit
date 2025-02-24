@@ -300,7 +300,7 @@ Add-BuildTask FormattingCheck {
 # Synopsis: Invokes PSScriptAnalyzer against the Module source path.
 Add-BuildTask Analyze {
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:BuildRoot -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
+    if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:BuildRoot -ExcludeRule PSUseShouldProcessForStateChangingFunctions, PSAvoidTrailingWhitespace -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      One or more PSScriptAnalyzer errors/warnings where found.'
@@ -417,6 +417,11 @@ Add-BuildTask CreateMarkdownHelp -After CreateHelpStart {
 
         # Trim the file, fix multi-line EXAMPLES, and unescape tilde characters.
         $newContent = ($content.Trim() -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6').Replace('PS C:\\\>', $null).Replace('\`', '`')
+
+        # Escape and slashes within a parameter's `Default value` yaml property.
+        $newContent = [System.Text.RegularExpressions.Regex]::Replace($newContent, '(?<=^Default value: .*?)(\\)', '\\', [System.Text.RegularExpressions.RegexOptions]::Multiline)
+
+        # Write the content back to disk if there's changes.
         if ($newContent -ne $content)
         {
             [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").TrimEnd())
@@ -485,6 +490,15 @@ Add-BuildTask CreateDocusaurusHelp -After CreateMarkdownHelp {
     Write-Build Gray '           Generating docusaurus files...'
     New-DocusaurusHelp -PlatyPSMarkdownPath $Script:MarkdownExportPath -DocsFolder $Script:DocusaurusExportPath -NoPlaceHolderExamples | Where-Object { $_ -isnot [System.IO.DirectoryInfo] }
     Write-Build Gray '           ...Docusaurus generation complete.'
+    Write-Build Gray '           Unescape forced line break elements...'
+    Get-ChildItem -Path "$($Script:DocusaurusExportPath)Commands\*.mdx" | ForEach-Object {
+        # Trim the file, fix multi-line EXAMPLES, and unescape tilde characters.
+        if (($content = [System.IO.File]::ReadAllText($_.FullName)) -ne ($newContent = $content.Trim().Replace('&lt;br /&gt;', '<br />')))
+        {
+            [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").TrimEnd())
+        }
+    }
+    Write-Build Gray '           ...Forced line break unescaping complete.'
 }
 
 Add-BuildTask CreateHelpComplete -After CreateExternalHelp {
@@ -653,8 +667,8 @@ Add-BuildTask Build {
         Write-Build Gray '        ...Docs output completed.'
     }
 
-    # Sign our files if we're running on main.
-    if (($canSign = ($env:GITHUB_ACTIONS -eq 'true') -and ($env:GITHUB_REF_NAME -match '^(main|develop)$')))
+    # Sign our files if we're running on a branch enabled for code-signing.
+    if (($canSign = ($env:GITHUB_ACTIONS -eq 'true') -and ($env:GITHUB_REF_NAME -match '^(main|develop|4.0.x)$')))
     {
         if (!(Get-Command -Name 'azuresigntool' -ErrorAction Ignore))
         {
