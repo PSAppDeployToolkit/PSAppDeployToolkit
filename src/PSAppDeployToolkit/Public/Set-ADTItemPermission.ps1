@@ -97,7 +97,7 @@ function Set-ADTItemPermission
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'DisableInheritance')]
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Path to the folder or file you want to modify (ex: C:\Temp)', ParameterSetName = 'EnableInheritance')]
         [ValidateScript({
-                if (!(Test-Path -Path $_))
+                if (!(Test-Path -LiteralPath $_))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
@@ -152,9 +152,9 @@ function Set-ADTItemPermission
                 # Get object ACLs and enable inheritance.
                 if ($EnableInheritance)
                 {
-                    ($Acl = Get-Acl -Path $Path).SetAccessRuleProtection($false, $true)
+                    ($Acl = Get-Acl -LiteralPath $Path).SetAccessRuleProtection($false, $true)
                     Write-ADTLogEntry -Message "Enabling Inheritance on path [$Path]."
-                    $null = Set-Acl -Path $Path -AclObject $Acl
+                    $null = Set-Acl -LiteralPath $Path -AclObject $Acl
                     return
                 }
 
@@ -167,11 +167,11 @@ function Set-ADTItemPermission
                 }
 
                 # Get object ACLs, disable inheritance but preserve inherited permissions.
-                ($Acl = Get-Acl -Path $Path).SetAccessRuleProtection($true, $true)
-                $null = Set-Acl -Path $Path -AclObject $Acl
+                ($Acl = Get-Acl -LiteralPath $Path).SetAccessRuleProtection($true, $true)
+                $null = Set-Acl -LiteralPath $Path -AclObject $Acl
 
                 # Get updated ACLs - without inheritance.
-                $Acl = Get-Acl -Path $Path
+                $Acl = Get-Acl -LiteralPath $Path
 
                 # Apply permissions on each user.
                 foreach ($Username in $User.Trim())
@@ -194,7 +194,7 @@ function Set-ADTItemPermission
                 }
 
                 # Use the prepared ACL.
-                $null = Set-Acl -Path $Path -AclObject $Acl
+                $null = Set-Acl -LiteralPath $Path -AclObject $Acl
             }
             catch
             {

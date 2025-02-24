@@ -77,7 +77,7 @@ function Get-ADTMsiTableProperty
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!(Test-Path -Path $_ -PathType Leaf))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
@@ -87,7 +87,7 @@ function Get-ADTMsiTableProperty
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-                if (!(Test-Path -Path $_ -PathType Leaf))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName TransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }

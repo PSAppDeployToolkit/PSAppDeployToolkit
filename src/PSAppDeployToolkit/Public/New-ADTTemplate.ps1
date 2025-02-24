@@ -158,13 +158,13 @@ function New-ADTTemplate
                 $null = New-Item -Name 'Add Supporting Files Here.txt' -Path "$templatePath\SupportFiles" -ItemType File -Force
 
                 # Copy in the frontend files and the config/assets/strings.
-                Copy-Item -Path "$Script:PSScriptRoot\Frontend\v$Version\*" -Destination $templatePath -Recurse -Force
+                Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot\Frontend\v$Version"))\*" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$Script:PSScriptRoot\Assets" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$Script:PSScriptRoot\Config" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$Script:PSScriptRoot\Strings" -Destination $templatePath -Recurse -Force
 
                 # Remove any digital signatures from the ps*1 files.
-                Get-ChildItem -Path "$templatePath\*.ps*1" -Recurse | & {
+                Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {
                     process
                     {
                         if (($sigLine = $(($fileLines = [System.IO.File]::ReadAllLines($_.FullName)) -match '^# SIG # Begin signature block$')))
@@ -176,7 +176,7 @@ function New-ADTTemplate
 
                 # Copy in the module files.
                 $null = New-Item -Path $templateModulePath -ItemType Directory -Force
-                Copy-Item -Path "$Script:PSScriptRoot\*" -Destination $templateModulePath -Recurse -Force
+                Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot"))\*" -Destination $templateModulePath -Recurse -Force
 
                 # Make the shipped module and its files read-only.
                 $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {

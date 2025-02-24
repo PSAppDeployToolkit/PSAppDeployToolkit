@@ -66,7 +66,7 @@ function New-ADTMsiTransform
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!(Test-Path -Path $_ -PathType Leaf))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MsiPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
@@ -76,7 +76,7 @@ function New-ADTMsiTransform
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-                if (!(Test-Path -Path $_ -PathType Leaf))
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ApplyTransformPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
@@ -120,7 +120,7 @@ function New-ADTMsiTransform
             try
             {
                 # Create a second copy of the MSI database.
-                $MsiParentFolder = Split-Path -Path $MsiPath -Parent
+                $MsiParentFolder = Split-Path -LiteralPath $MsiPath -Parent
                 $TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetRandomFileName())
                 Write-ADTLogEntry -Message "Copying MSI database in path [$MsiPath] to destination [$TempMsiPath]."
                 $null = Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force

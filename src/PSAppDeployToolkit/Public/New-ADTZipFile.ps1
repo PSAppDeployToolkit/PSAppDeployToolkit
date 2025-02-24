@@ -161,7 +161,7 @@ function New-ADTZipFile
                 Write-ADTLogEntry -Message "If the archive was created in session 0 or by an Admin, then it may only be readable by elevated users. Apply permissions from parent folder [$parentPath] to file [$DestinationPath]."
                 try
                 {
-                    Set-Acl -LiteralPath $DestinationPath -AclObject (Get-Acl -Path $parentPath)
+                    Set-Acl -LiteralPath $DestinationPath -AclObject (Get-Acl -LiteralPath $parentPath)
                 }
                 catch
                 {

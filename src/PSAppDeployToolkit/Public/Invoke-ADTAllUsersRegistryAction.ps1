@@ -112,7 +112,7 @@ function Invoke-ADTAllUsersRegistryAction
                 try
                 {
                     # Set the path to the user's registry hive file.
-                    $UserRegistryHiveFile = Join-Path -Path $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
+                    $UserRegistryHiveFile = Join-Path -LiteralPath $UserProfile.ProfilePath -ChildPath 'NTUSER.DAT'
 
                     # Load the User profile registry hive if it is not already loaded because the User is logged in.
                     if (!(Test-Path -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$($UserProfile.SID)"))

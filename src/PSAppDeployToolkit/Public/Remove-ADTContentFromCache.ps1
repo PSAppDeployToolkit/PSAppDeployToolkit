@@ -78,7 +78,7 @@ function Remove-ADTContentFromCache
         {
             try
             {
-                Remove-Item -Path $Path -Recurse -Force
+                Remove-Item -LiteralPath $Path -Recurse -Force
                 $adtSession.DirFiles = [System.IO.Path]::Combine($scriptDir, 'Files')
                 $adtSession.DirSupportFiles = [System.IO.Path]::Combine($scriptDir, 'SupportFiles')
             }
