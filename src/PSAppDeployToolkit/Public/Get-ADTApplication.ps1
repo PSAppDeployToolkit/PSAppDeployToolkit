@@ -52,6 +52,8 @@ function Get-ADTApplication
         - InstallLocation
         - InstallDate
         - Publisher
+        - HelpLink
+        - EstimatedSize
         - SystemComponent
         - WindowsInstaller
         - Is64BitApplication
@@ -235,6 +237,7 @@ function Get-ADTApplication
                         $(if ($psPropNames.Contains('InstallDate') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallDate)) { $appRegProps.InstallDate }),
                         $(if ($psPropNames.Contains('Publisher') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.Publisher)) { $appRegProps.Publisher }),
                         $(if ($psPropNames.Contains('HelpLink') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.HelpLink)) { $appRegProps.HelpLink }),
+                        $(if ($psPropNames.Contains('EstimatedSize') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.EstimatedSize)) { $appRegProps.EstimatedSize }),
                         !!$(if ($psPropNames.Contains('SystemComponent')) { $appRegProps.SystemComponent }),
                         $windowsInstaller,
                         ([System.Environment]::Is64BitProcess -and ($appRegProps.PSPath -notmatch '^Microsoft\.PowerShell\.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node'))
