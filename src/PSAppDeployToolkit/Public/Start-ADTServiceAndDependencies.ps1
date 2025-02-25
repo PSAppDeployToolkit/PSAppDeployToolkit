@@ -117,11 +117,14 @@ function Start-ADTServiceAndDependencies
                 Cmdlet = $PSCmdlet
                 SessionState = $ExecutionContext.SessionState
                 ErrorRecord = $_
-                LogMessage = "Failed to start the service [$($Name)]."
             }
             if ($pipelining)
             {
-                $iafehParams.Add('ErrorAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
+                $iafehParams.Add('LogMessage', "Failed to start the service [$($InputObject.Name)].")
+            }
+            else
+            {
+                $iafehParams.Add('LogMessage', "Failed to start the service [$($Name)].")
             }
             Invoke-ADTFunctionErrorHandler @iafehParams
         }

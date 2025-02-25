@@ -117,11 +117,14 @@ function Stop-ADTServiceAndDependencies
                 Cmdlet = $PSCmdlet
                 SessionState = $ExecutionContext.SessionState
                 ErrorRecord = $_
-                LogMessage = "Failed to stop the service [$($Name)]."
             }
             if ($pipelining)
             {
-                $iafehParams.Add('ErrorAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
+                $iafehParams.Add('LogMessage', "Failed to stop the service [$($InputObject.Name)].")
+            }
+            else
+            {
+                $iafehParams.Add('LogMessage', "Failed to stop the service [$($Name)].")
             }
             Invoke-ADTFunctionErrorHandler @iafehParams
         }
