@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Threading;
 using System.Runtime.InteropServices;
 using PSADT.PInvoke;
 
@@ -9,7 +10,7 @@ namespace PSADT.Devices
         public static bool IsMicrophoneInUse()
         {
             // Initialize COM
-            if (NativeMethods.CoInitializeEx(IntPtr.Zero, COINIT.COINIT_APARTMENTTHREADED) is int hr && hr != 0)  // S_OK is 0; anything else indicates a failure or specific status.
+            if (NativeMethods.CoInitializeEx(IntPtr.Zero, Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED) is int hr && hr != 0)  // S_OK is 0; anything else indicates a failure or specific status.
             {
                 Marshal.ThrowExceptionForHR(hr);
             }
