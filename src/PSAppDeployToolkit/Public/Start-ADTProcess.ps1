@@ -234,7 +234,6 @@ function Start-ADTProcess
                 {
                     if (![System.IO.File]::Exists($FilePath))
                     {
-                        Write-ADTLogEntry -Message "File [$FilePath] not found." -Severity 3
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("File [$FilePath] not found.")
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
@@ -251,7 +250,6 @@ function Start-ADTProcess
                     # Get the fully qualified path for the file using DirFiles, the current directory, then the system's path environment variable.
                     if (!($fqPath = Get-Item -LiteralPath ("$(if ($adtSession) { "$($adtSession.DirFiles);" })$($ExecutionContext.SessionState.Path.CurrentLocation.Path);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                     {
-                        Write-ADTLogEntry -Message "[$FilePath] contains an invalid path or file name." -Severity 3
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("[$FilePath] contains an invalid path or file name.")
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
