@@ -1,4 +1,5 @@
-﻿using Windows.Win32;
+﻿using System.Threading;
+using Windows.Win32;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
 
@@ -9,7 +10,7 @@ namespace PSADT.Devices
         public static bool IsMicrophoneInUse()
         {
             // Initialize COM.
-            PInvoke.CoInitializeEx(COINIT.COINIT_APARTMENTTHREADED).ThrowOnFailure();
+            PInvoke.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED).ThrowOnFailure();
             bool micInUse = false;
             try
             {
