@@ -56,7 +56,7 @@ function Show-ADTHelpConsoleInternal
     $helpForm.Font = [System.Drawing.SystemFonts]::MessageBoxFont
     $helpForm.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 15)
     $helpForm.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
-    $helpForm.ClientSize = [System.Drawing.Size]::new(1524, 679)
+    $helpForm.ClientSize = [System.Drawing.Size]::new(1525, 679)
     $helpForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
     $helpForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
     $helpForm.Controls.Add($helpListBox)
