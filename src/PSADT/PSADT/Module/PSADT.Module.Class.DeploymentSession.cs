@@ -1069,7 +1069,7 @@ namespace PSADT.Module
         /// <returns></returns>
         private T GetPropertyValue<T>([CallerMemberName] string propertyName = null!)
         {
-            if (CallerSessionState != null)
+            if (null != CallerSessionState)
             {
                 return (T)CallerSessionState.PSVariable.GetValue(propertyName);
             }
@@ -1084,7 +1084,7 @@ namespace PSADT.Module
         /// <param name="propertyName"></param>
         private void SetPropertyValue<T>(T value, [CallerMemberName] string propertyName = null!)
         {
-            if (CallerSessionState != null)
+            if (null != CallerSessionState)
             {
                 CallerSessionState.PSVariable.Set(new PSVariable(propertyName, value));
             }
