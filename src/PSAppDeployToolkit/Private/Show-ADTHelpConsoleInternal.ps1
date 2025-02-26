@@ -32,7 +32,7 @@ function Show-ADTHelpConsoleInternal
 
     # Build out the form's listbox.
     $helpListBox = [System.Windows.Forms.ListBox]::new()
-    $helpListBox.ClientSize = [System.Drawing.Size]::new(261, 675)
+    $helpListBox.ClientSize = [System.Drawing.Size]::new(281, 556)
     $helpListBox.Font = [System.Drawing.SystemFonts]::MessageBoxFont
     $helpListBox.Location = [System.Drawing.Point]::new(3, 0)
     $helpListBox.Anchor = "Top, Left, Bottom"
@@ -42,9 +42,9 @@ function Show-ADTHelpConsoleInternal
 
     # Build out the form's textbox.
     $helpTextBox = [System.Windows.Forms.RichTextBox]::new()
-    $helpTextBox.ClientSize = [System.Drawing.Size]::new(1250, 675)
+    $helpTextBox.ClientSize = [System.Drawing.Size]::new(1030, 556)
     $helpTextBox.Font = [System.Drawing.Font]::new('Consolas', 9)
-    $helpTextBox.Location = [System.Drawing.Point]::new(271, 0)
+    $helpTextBox.Location = [System.Drawing.Point]::new(291, 0)
     $helpTextBox.Anchor = "Top, Left, Right, Bottom"
     $helpTextBox.ReadOnly = $true
     $helpTextBox.WordWrap = $false
@@ -56,7 +56,7 @@ function Show-ADTHelpConsoleInternal
     $helpForm.Font = [System.Drawing.SystemFonts]::MessageBoxFont
     $helpForm.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 15)
     $helpForm.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
-    $helpForm.ClientSize = [System.Drawing.Size]::new(1525, 679)
+    $helpForm.ClientSize = [System.Drawing.Size]::new(1327, 562)
     $helpForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
     $helpForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
     $helpForm.Controls.Add($helpListBox)
