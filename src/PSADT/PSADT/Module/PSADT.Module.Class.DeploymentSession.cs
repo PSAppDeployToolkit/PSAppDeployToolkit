@@ -1282,6 +1282,15 @@ namespace PSADT.Module
             ExitCode = exitCode;
         }
 
+        /// <summary>
+        /// Returns whether this session has been closed out.
+        /// </summary>
+        /// <returns>True if so; otherwise, false.</returns>
+        public bool IsClosed()
+        {
+            return Settings.HasFlag(DeploymentSettings.Disposed);
+        }
+
 
         #endregion
         #region Internal variables.
