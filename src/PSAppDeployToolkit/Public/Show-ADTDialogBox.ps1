@@ -30,6 +30,9 @@ function Show-ADTDialogBox
     .PARAMETER NotTopMost
         Specifies whether the message box shouldn't be a system modal message box that appears in a topmost window.
 
+    .PARAMETER Force
+        Specifies whether the message box should appear irrespective of an ongoing DeploymentSession's DeployMode.
+
     .INPUTS
         None
 
@@ -75,7 +78,10 @@ function Show-ADTDialogBox
         [System.String]$Icon = 'None',
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NotTopMost
+        [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     dynamicparam
@@ -138,13 +144,20 @@ function Show-ADTDialogBox
     process
     {
         # Bypass if in silent mode.
-        if ($adtSession -and $adtSession.IsNonInteractive())
+        if ($adtSession -and $adtSession.IsNonInteractive() -and !$Force)
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.deployMode)]. Text: $Text"
             return
         }
+        elseif ($Force)
+        {
+            Write-ADTLogEntry -Message "Forcibly displaying dialog box with message: $Text..."
+        }
+        else
+        {
+            Write-ADTLogEntry -Message "Displaying dialog box with message: $Text..."
+        }
 
-        Write-ADTLogEntry -Message "Displaying Dialog Box with message: $Text..."
         try
         {
             try
@@ -164,7 +177,7 @@ function Show-ADTDialogBox
                     default { 'Unknown'; break }
                 }
 
-                Write-ADTLogEntry -Message "Dialog Box Response: $result"
+                Write-ADTLogEntry -Message "Dialog box response: $result"
                 return $result
             }
             catch

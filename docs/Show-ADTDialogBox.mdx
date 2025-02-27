@@ -13,7 +13,7 @@ Display a custom dialog box with optional title, buttons, icon, and timeout.
 
 ```powershell
 Show-ADTDialogBox [-Text] <String> [-Buttons <String>] [-DefaultButton <String>] [-Icon <String>] [-NotTopMost]
- -Title <String> [-Timeout <UInt32>] [<CommonParameters>]
+ [-Force] -Title <String> [-Timeout <UInt32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -102,6 +102,22 @@ Accept wildcard characters: False
 ### -NotTopMost
 
 Specifies whether the message box shouldn't be a system modal message box that appears in a topmost window.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+
+Specifies whether the message box should appear irrespective of an ongoing DeploymentSession's DeployMode.
 
 ```yaml
 Type: SwitchParameter
