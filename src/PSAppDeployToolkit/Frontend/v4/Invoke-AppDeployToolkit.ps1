@@ -268,16 +268,15 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
-    $moduleName = if ([System.IO.File]::Exists("$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
+    if ([System.IO.File]::Exists("$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
     {
         Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction Ignore
-        "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
+        Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     }
     else
     {
-        'PSAppDeployToolkit'
+        Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     }
-    Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     try
     {
         $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
