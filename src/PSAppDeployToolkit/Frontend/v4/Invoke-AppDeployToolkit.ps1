@@ -277,16 +277,8 @@ try
     {
         Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     }
-    try
-    {
-        $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
-        $adtSession = Open-ADTSession -SessionState $PSCmdlet.SessionState @adtSession @iadtParams -PassThru
-    }
-    catch
-    {
-        Remove-Module -Name PSAppDeployToolkit* -Force
-        throw
-    }
+    $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
+    $adtSession = Open-ADTSession -SessionState $PSCmdlet.SessionState @adtSession @iadtParams -PassThru
 }
 catch
 {
@@ -316,8 +308,4 @@ catch
     Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_) -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
     Close-ADTSession -ExitCode 60001
-}
-finally
-{
-    Remove-Module -Name PSAppDeployToolkit* -Force
 }
