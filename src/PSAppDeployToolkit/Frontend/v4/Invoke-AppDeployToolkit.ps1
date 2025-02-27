@@ -281,7 +281,7 @@ try
     try
     {
         $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
-        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession @iadtParams -PassThru
+        $adtSession = Open-ADTSession -SessionState $PSCmdlet.SessionState @adtSession @iadtParams -PassThru
     }
     catch
     {
