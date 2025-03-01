@@ -214,7 +214,8 @@ function Start-ADTProcess
         }
 
         # Set up initial variables.
-        $extInvoker = !(Get-PSCallStack)[1].InvocationInfo.MyCommand.Source.StartsWith($MyInvocation.MyCommand.Module.Name)
+        $funcCaller = Get-PSCallStack | Select-Object -Skip 1 | Select-Object -First 1 | & { process { $_.InvocationInfo.MyCommand } }
+        $extInvoker = !$funcCaller -or !$funcCaller.Source.StartsWith($MyInvocation.MyCommand.Module.Name) -or $funcCaller.Name.Equals('Start-ADTMsiProcess')
         $stdOutBuilder = [System.Text.StringBuilder]::new()
         $stdErrBuilder = [System.Text.StringBuilder]::new()
         $stdOutEvent = $stdErrEvent = $null
