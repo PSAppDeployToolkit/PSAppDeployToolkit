@@ -103,7 +103,7 @@ try
                 $domainAssemblies = [System.AppDomain]::CurrentDomain.GetAssemblies()
 
                 # Determine whether we're on a network location.
-                $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or ($PSScriptRoot -match '^([A-Za-z]:)\\' -and ((Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DeviceID='$($Matches[1])'").ProviderName -match '^\\\\'))
+                $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or (($PSScriptRoot -match '^[A-Za-z]:\\') -and [System.IO.DriveInfo]::new($Matches.0).DriveType.Equals([System.IO.DriveType]::Network))
 
                 # Add in system assemblies.
                 Add-Type -AssemblyName @(
