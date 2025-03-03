@@ -118,7 +118,7 @@ function Start-ADTProcess
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcess
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'None')]
     [OutputType([PSADT.Types.ProcessResult])]
     [OutputType([PSADT.Types.ProcessInfo])]
     param
@@ -151,13 +151,13 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'WaitForMsiExec')]
         [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'WaitForMsiExec')]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = '(Get-ADTConfig).MSI.MutexWaitTime')]
-        [System.UInt32]$MsiExecWaitTime,
+        [System.TimeSpan]$MsiExecWaitTime,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -189,7 +189,7 @@ function Start-ADTProcess
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
         {
-            $MsiExecWaitTime = (Get-ADTConfig).MSI.MutexWaitTime
+            $MsiExecWaitTime = [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
         }
         if (!$PSBoundParameters.ContainsKey('SuccessExitCodes'))
         {
@@ -281,7 +281,7 @@ function Start-ADTProcess
                 # to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
                 if (($FilePath -match 'msiexec') -or $WaitForMsiExec)
                 {
-                    $MsiExecAvailable = Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime ([System.TimeSpan]::FromSeconds($MsiExecWaitTime))
+                    $MsiExecAvailable = Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime $MsiExecWaitTime
                     [System.Threading.Thread]::Sleep(1000)
                     if (!$MsiExecAvailable)
                     {

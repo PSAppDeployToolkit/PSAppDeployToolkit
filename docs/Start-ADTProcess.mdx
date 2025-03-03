@@ -11,12 +11,22 @@ Execute a process with optional arguments, working directory, window style.
 
 ## SYNTAX
 
+### None (Default)
+
 ```powershell
-Start-ADTProcess [-FilePath] <String> [[-ArgumentList] <String[]>] [-SecureArgumentList]
- [[-WindowStyle] <ProcessWindowStyle>] [-CreateNoWindow] [[-WorkingDirectory] <String>] [-NoWait] [-PassThru]
- [-WaitForMsiExec] [[-MsiExecWaitTime] <UInt32>] [[-SuccessExitCodes] <Int32[]>] [[-RebootExitCodes] <Int32[]>]
- [[-IgnoreExitCodes] <String[]>] [[-PriorityClass] <ProcessPriorityClass>] [-UseShellExecute]
- [<CommonParameters>]
+Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WindowStyle <ProcessWindowStyle>] [-CreateNoWindow] [-WorkingDirectory <String>] [-NoWait] [-PassThru]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-UseShellExecute] [<CommonParameters>]
+```
+
+### WaitForMsiExec
+
+```powershell
+Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WindowStyle <ProcessWindowStyle>] [-CreateNoWindow] [-WorkingDirectory <String>] [-NoWait] [-PassThru]
+ [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-UseShellExecute] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -83,7 +93,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -99,7 +109,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -139,7 +149,7 @@ Aliases:
 Accepted values: Normal, Hidden, Minimized, Maximized
 
 Required: False
-Position: 3
+Position: Named
 Default value: Normal
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -176,7 +186,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -222,10 +232,10 @@ In such cases, this variable will ensure that this function waits for the msiexe
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: WaitForMsiExec
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: False
 Accept pipeline input: False
@@ -237,12 +247,12 @@ Accept wildcard characters: False
 Specify the length of time in seconds to wait for the msiexec engine to become available.
 
 ```yaml
-Type: UInt32
-Parameter Sets: (All)
+Type: TimeSpan
+Parameter Sets: WaitForMsiExec
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: (Get-ADTConfig).MSI.MutexWaitTime
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -259,7 +269,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -276,7 +286,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -292,7 +302,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: True
@@ -310,7 +320,7 @@ Aliases:
 Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 
 Required: False
-Position: 9
+Position: Named
 Default value: Normal
 Accept pipeline input: False
 Accept wildcard characters: False
