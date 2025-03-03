@@ -81,30 +81,28 @@ function Remove-ADTFile
 
     process
     {
-        foreach ($Item in $PSBoundParameters[$PSCmdlet.ParameterSetName])
+        foreach ($Value in $PSBoundParameters[$PSCmdlet.ParameterSetName])
         {
             # Resolve the specified path, if the path does not exist, display a warning instead of an error.
             try
             {
                 try
                 {
-                    $Item = if ($PSCmdlet.ParameterSetName -eq 'Path')
+                    $rpParams = @{ $PSCmdlet.ParameterSetName = $Value }
+                    if (!($Item = Resolve-Path @rpParams | Select-Object -ExpandProperty Path))
                     {
-                        (Resolve-Path -Path $Item).Path
-                    }
-                    else
-                    {
-                        (Resolve-Path -LiteralPath $Item).Path
+                        Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity 2
+                        continue
                     }
                 }
                 catch [System.Management.Automation.ItemNotFoundException]
                 {
-                    Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because it does not exist." -Severity 2
+                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity 2
                     continue
                 }
                 catch [System.Management.Automation.DriveNotFoundException]
                 {
-                    Write-ADTLogEntry -Message "Unable to resolve the path [$Item] because the drive does not exist." -Severity 2
+                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because the drive does not exist." -Severity 2
                     continue
                 }
                 catch
@@ -114,7 +112,7 @@ function Remove-ADTFile
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$Item]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$Value]."
                 continue
             }
 
