@@ -181,6 +181,7 @@ function Get-ADTApplication
                     # Set up initial variables.
                     $appRegProps = Get-ItemProperty -LiteralPath $item.PSPath
                     $psPropNames = $appRegProps.PSObject.Properties | Select-Object -ExpandProperty Name
+                    $installDate = [System.DateTime]::MinValue
                     $defaultGuid = [System.Guid]::Empty
 
                     # Exclude anything without any properties.
@@ -222,6 +223,12 @@ function Get-ADTApplication
                         continue
                     }
 
+                    # Determine the install date. If the key has a valid property, we use it. If not, we get the LastWriteDate for the key from the registry.
+                    if (!$psPropNames.Contains('InstallDate') -or ![System.DateTime]::TryParseExact($appRegProps.InstallDate, "yyyyMMdd", [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
+                    {
+                        $installDate = [PSADT.Registry.Utilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date
+                    }
+
                     # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
                     $app = [PSADT.Types.InstalledApplication]::new(
                         $appRegProps.PSPath,
@@ -234,7 +241,7 @@ function Get-ADTApplication
                         $(if ($psPropNames.Contains('QuietUninstallString') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.QuietUninstallString)) { $appRegProps.QuietUninstallString }),
                         $(if ($psPropNames.Contains('InstallSource') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallSource)) { $appRegProps.InstallSource }),
                         $(if ($psPropNames.Contains('InstallLocation') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallLocation)) { $appRegProps.InstallLocation }),
-                        $(if ($psPropNames.Contains('InstallDate') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallDate)) { $appRegProps.InstallDate }),
+                        $installDate,
                         $(if ($psPropNames.Contains('Publisher') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.Publisher)) { $appRegProps.Publisher }),
                         $(if ($psPropNames.Contains('HelpLink') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.HelpLink)) { $appRegProps.HelpLink }),
                         $(if ($psPropNames.Contains('EstimatedSize') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.EstimatedSize)) { $appRegProps.EstimatedSize }),

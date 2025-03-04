@@ -40,7 +40,7 @@ namespace PSADT.Types
             string? quietUninstallString,
             string? installSource,
             string? installLocation,
-            string? installDate,
+            DateTime? installDate,
             string? publisher,
             Uri? helpLink,
             uint? estimatedSize,
@@ -58,25 +58,13 @@ namespace PSADT.Types
             QuietUninstallString = quietUninstallString;
             InstallSource = installSource;
             InstallLocation = installLocation;
+            InstallDate = installDate;
             Publisher = publisher;
             HelpLink = helpLink;
             EstimatedSize = estimatedSize;
             SystemComponent = systemComponent;
             WindowsInstaller = windowsInstaller;
             Is64BitApplication = is64BitApplication;
-
-            DateTime parsedDate;
-            // Attempt to parse the date based on yyyyMMdd format expected from Windows Installer
-            if (!DateTime.TryParseExact(installDate, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out parsedDate))
-            {
-                // Attempt to parse the string date based on the current culture
-                if (!DateTime.TryParse(installDate, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out parsedDate))
-                {
-                    // Fallback to smallest possible value of System.DateTime if parsing fails
-                    parsedDate = DateTime.MinValue;
-                }
-            }
-            InstallDate = parsedDate;
         }
 
         /// <summary>
@@ -132,7 +120,7 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the date the application was installed as a <see cref="DateTime"/> object.
         /// </summary>
-        public DateTime InstallDate { get; }
+        public DateTime? InstallDate { get; }
 
         /// <summary>
         /// Gets the publisher of the application.
