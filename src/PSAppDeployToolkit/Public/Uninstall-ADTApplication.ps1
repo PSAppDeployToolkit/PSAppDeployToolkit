@@ -229,7 +229,7 @@ function Uninstall-ADTApplication
                         {
                             $null = $sampParams.Remove('FilePath')
                         }
-                        $removeApplication | Start-ADTMsiProcess @sampParams
+                        $removeApplication | Start-ADTMsiProcess @sampParams -ErrorAction $OriginalErrorAction
                     }
                     catch
                     {
@@ -297,7 +297,7 @@ function Uninstall-ADTApplication
                     Write-ADTLogEntry -Message "Removing EXE application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]."
                     try
                     {
-                        Start-ADTProcess @sapParams
+                        Start-ADTProcess @sapParams -ErrorAction $OriginalErrorAction
                     }
                     catch
                     {
