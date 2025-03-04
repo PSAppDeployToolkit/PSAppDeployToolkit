@@ -9,3 +9,6 @@ AudioSessionState
 EDataFlow
 ERole
 CLSCTX
+RegOpenKeyEx
+RegQueryInfoKey
+RegCloseKey
