@@ -41,5 +41,5 @@ function Show-ADTHelpConsole
     #>
 
     # Run this via a new PowerShell window so it doesn't stall the main thread.
-    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -NoNewWindow -ArgumentList "$(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -NoLogo -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Show-ADTHelpConsoleInternal'.ScriptBlock)} -ModuleName '$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1' -Guid $($MyInvocation.MyCommand.Module.Guid) -ModuleVersion $($MyInvocation.MyCommand.Module.Version)")"
+    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -NoNewWindow -ArgumentList "$(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -NoLogo -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Show-ADTHelpConsoleInternal'.ScriptBlock)} -ModuleBase '$([System.String]::Join("', '", (Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*").ModuleBase))'")"
 }

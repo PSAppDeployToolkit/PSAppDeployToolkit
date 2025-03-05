@@ -11,15 +11,7 @@ function Show-ADTHelpConsoleInternal
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$ModuleName,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Guid]$Guid,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Version]$ModuleVersion
+        [System.String[]]$ModuleBase
     )
 
     # Ensure script runs in strict mode since this may be called in a new scope.
@@ -28,47 +20,62 @@ function Show-ADTHelpConsoleInternal
     Set-StrictMode -Version 3
 
     # Import the module and store its passthru data so we can access it later.
-    $module = Import-Module -FullyQualifiedName ([Microsoft.PowerShell.Commands.ModuleSpecification]::new($PSBoundParameters)) -PassThru
+    $modules = Import-Module -Name ($ModuleBase | Sort-Object) -PassThru
+    $defFont = [System.Drawing.Font]::new('Consolas', 9)
+
+    # Calculate a DPI offset. This is pretty rough but there's no great way to adjust these sizes otherwise.
+    $dpiOffset = if (($dpiScale = [System.Drawing.Graphics]::FromHwnd([System.IntPtr]::Zero).DpiX / 96) -gt 1.0)
+    {
+        $dpiScale
+    }
 
     # Build out a panel to hold the list box (flattens border)
-    $helpListPanel = [System.Windows.Forms.Panel]::new()
-    $helpListPanel.ClientSize = [System.Drawing.Size]::new(281, 559)
-    $helpListPanel.Location = [System.Drawing.Point]::new(3, 0)
-    $helpListPanel.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
-    $helpListPanel.Anchor = "Top, Left, Bottom"
-    $helpListPanel.Controls.Add(($helpListBox = [System.Windows.Forms.ListBox]::new()))
-    $helpListBox.BorderStyle = [System.Windows.Forms.BorderStyle]::None
-    $helpListBox.Font = [System.Drawing.SystemFonts]::MessageBoxFont
-    $helpListBox.Dock = [System.Windows.Forms.DockStyle]::Fill
+    $helpListBox = [System.Windows.Forms.ListBox]::new()
+    $helpListBox.ClientSize = [System.Drawing.Size]::new(307, 532)
+    $helpListBox.Location = [System.Drawing.Point]::new(5, 32)
+    $helpListBox.Font = $defFont
+    $helpListBox.Anchor = "Top, Left, Bottom"
     $helpListBox.IntegralHeight = $false
+    $helpListBox.Sorted = $true
+    $helpListBox.TabIndex = 1
     $helpListBox.add_SelectedIndexChanged({ $helpTextBox.Text = [System.String]::Join("`n", ((Get-Help -Name $helpListBox.SelectedItem -Full | Out-String -Stream -Width ([System.Int32]::MaxValue)) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', $null) })
-    $null = $helpListBox.Items.AddRange(($module.ExportedCommands.Keys | Sort-Object))
+
+    # Build out a panel to hold the module combo box (flattens border)
+    $helpComboBox = [System.Windows.Forms.ComboBox]::new()
+    $helpComboBox.ClientSize = [System.Drawing.Size]::new(307, 25)
+    $helpComboBox.Location = [System.Drawing.Point]::new(5, 5)
+    $helpComboBox.Font = $defFont
+    $helpComboBox.Anchor = "Top, Left, Bottom"
+    $helpComboBox.Sorted = $true
+    $helpComboBox.TabIndex = 0
+    $helpComboBox.Items.AddRange($modules) | Out-Null
+    $helpComboBox.add_SelectedIndexChanged({ $helpListBox.Items.Clear(); $helpListBox.Items.AddRange($helpComboBox.SelectedItem.ExportedCommands.Keys) })
+    $helpComboBox.SelectedIndex = 0
 
     # Build out a panel to hold the rich text box (flattens border)
-    $helpTextPanel = [System.Windows.Forms.Panel]::new()
-    $helpTextPanel.ClientSize = [System.Drawing.Size]::new(1034, 559)
-    $helpTextPanel.Location = [System.Drawing.Point]::new(287, 0)
-    $helpTextPanel.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
-    $helpTextPanel.Anchor = "Top, Left, Right, Bottom"
-    $helpTextPanel.Controls.Add(($helpTextBox = [System.Windows.Forms.RichTextBox]::new()))
-    $helpTextBox.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+    $helpTextBox = [System.Windows.Forms.RichTextBox]::new()
+    $helpTextBox.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+    $helpTextBox.ClientSize = [System.Drawing.Size]::new(992, 559)
+    $helpTextBox.Location = [System.Drawing.Point]::new(321, 5)
     $helpTextBox.Font = [System.Drawing.Font]::new('Consolas', 9)
-    $helpTextBox.Dock = [System.Windows.Forms.DockStyle]::Fill
+    $helpTextBox.Anchor = "Top, Left, Right, Bottom"
     $helpTextBox.ReadOnly = $true
     $helpTextBox.WordWrap = $false
+    $helpTextBox.TabIndex = 2
 
     # Build out the form. The suspend/resume is crucial for HiDPI support!
     $helpForm = [System.Windows.Forms.Form]::new()
     $helpForm.SuspendLayout()
-    $helpForm.Text = "$($module.Name) Help Console"
-    $helpForm.Font = [System.Drawing.SystemFonts]::MessageBoxFont
-    $helpForm.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 15)
+    $helpForm.Text = "$($modules[0].Name) Help Console"
+    $helpForm.Font = $defFont
+    $helpForm.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 14)
     $helpForm.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
-    $helpForm.ClientSize = [System.Drawing.Size]::new(1324, 562)
+    $helpForm.ClientSize = [System.Drawing.Size]::new([System.Math]::Round(1322 - $dpiOffset + (1. / 65536.)), [System.Math]::Round(573 - $dpiOffset - (1. / 65536.)))
     $helpForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
     $helpForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
-    $helpForm.Controls.Add($helpListPanel)
-    $helpForm.Controls.Add($helpTextPanel)
+    $helpForm.Controls.Add($helpComboBox)
+    $helpForm.Controls.Add($helpListBox)
+    $helpForm.Controls.Add($helpTextBox)
     $helpForm.ResumeLayout()
 
     # Show the form. Using Application.Run automatically manages disposal for us.
