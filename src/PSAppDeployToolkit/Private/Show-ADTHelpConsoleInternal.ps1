@@ -24,9 +24,23 @@ function Show-ADTHelpConsoleInternal
     $defFont = [System.Drawing.Font]::new('Consolas', 9)
 
     # Calculate a DPI offset. This is pretty rough but there's no great way to adjust these sizes otherwise.
-    $dpiOffset = if (($dpiScale = [System.Drawing.Graphics]::FromHwnd([System.IntPtr]::Zero).DpiX / 96) -gt 1.0)
-    {
-        $dpiScale
+    $dpiOffset = & {
+        begin
+        {
+            $gfx = [System.Drawing.Graphics]::FromHwnd([System.IntPtr]::Zero)
+            $scale = $gfx.DpiX / 96
+        }
+        process
+        {
+            if ($scale -gt 1.0)
+            {
+                return $scale
+            }
+        }
+        end
+        {
+            $gfx.Dispose()
+        }
     }
 
     # Build out a panel to hold the list box (flattens border)
