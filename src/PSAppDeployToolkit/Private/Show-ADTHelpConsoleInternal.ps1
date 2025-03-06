@@ -25,25 +25,21 @@ function Show-ADTHelpConsoleInternal
 
     # Calculate a DPI offset. This is pretty rough but there's no great way to adjust these sizes otherwise.
     $dpiOffset = & {
-        begin
+        $gfx = [System.Drawing.Graphics]::FromHwnd([System.IntPtr]::Zero)
+        try
         {
-            $gfx = [System.Drawing.Graphics]::FromHwnd([System.IntPtr]::Zero)
-            $scale = $gfx.DpiX / 96
-        }
-        process
-        {
-            if ($scale -gt 1.0)
+            if ($gfx.DpiX -gt 96)
             {
-                return $scale
+                return ($gfx.DpiX / 96)
             }
         }
-        end
+        finally
         {
             $gfx.Dispose()
         }
     }
 
-    # Build out a panel to hold the list box (flattens border)
+    # Build out module function ListBox.
     $helpListBox = [System.Windows.Forms.ListBox]::new()
     $helpListBox.ClientSize = [System.Drawing.Size]::new(307, 532)
     $helpListBox.Location = [System.Drawing.Point]::new(5, 32)
@@ -54,7 +50,7 @@ function Show-ADTHelpConsoleInternal
     $helpListBox.TabIndex = 1
     $helpListBox.add_SelectedIndexChanged({ $helpTextBox.Text = [System.String]::Join("`n", ((Get-Help -Name $helpListBox.SelectedItem -Full | Out-String -Stream -Width ([System.Int32]::MaxValue)) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', $null) })
 
-    # Build out a panel to hold the module combo box (flattens border)
+    # Build out the module selection ComboBox.
     $helpComboBox = [System.Windows.Forms.ComboBox]::new()
     $helpComboBox.ClientSize = [System.Drawing.Size]::new(307, 25)
     $helpComboBox.Location = [System.Drawing.Point]::new(5, 5)
@@ -71,7 +67,7 @@ function Show-ADTHelpConsoleInternal
     $helpTextBox.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
     $helpTextBox.ClientSize = [System.Drawing.Size]::new(992, 559)
     $helpTextBox.Location = [System.Drawing.Point]::new(321, 5)
-    $helpTextBox.Font = [System.Drawing.Font]::new('Consolas', 9)
+    $helpTextBox.Font = $defFont
     $helpTextBox.Anchor = "Top, Left, Right, Bottom"
     $helpTextBox.ReadOnly = $true
     $helpTextBox.WordWrap = $false
