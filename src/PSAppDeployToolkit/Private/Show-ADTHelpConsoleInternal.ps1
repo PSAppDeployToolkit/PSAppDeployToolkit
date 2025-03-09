@@ -20,7 +20,7 @@ function Show-ADTHelpConsoleInternal
     Set-StrictMode -Version 3
 
     # Import the module and store its passthru data so we can access it later.
-    $modules = Import-Module -Name ($ModuleBase | Sort-Object) -PassThru
+    $modules = Import-Module -Name $ModuleBase -PassThru
     $defFont = [System.Drawing.Font]::new('Consolas', 9)
 
     # Calculate a DPI offset. This is pretty rough but there's no great way to adjust these sizes otherwise.
