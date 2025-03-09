@@ -53,7 +53,6 @@ PSAppDeployToolkit allows you to encapsulate a typical Windows Installer MSI or 
 
 - [Homepage](https://psappdeploytoolkit.com)
 - [Latest News](https://psappdeploytoolkit.com/blog)
-
 - [Documentation](https://psappdeploytoolkit.com/docs)
 - [Function & Variable References](https://psappdeploytoolkit.com/docs/reference)
 - [GitHub Latest Release](https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases)
