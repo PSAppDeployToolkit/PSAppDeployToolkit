@@ -59,7 +59,7 @@ function Show-ADTHelpConsoleInternal
     $helpComboBox.Sorted = $true
     $helpComboBox.TabIndex = 0
     $helpComboBox.Items.AddRange($modules) | Out-Null
-    $helpComboBox.add_SelectedIndexChanged({ $helpListBox.Items.Clear(); $helpListBox.Items.AddRange($helpComboBox.SelectedItem.ExportedCommands.Keys) })
+    $helpComboBox.add_SelectedIndexChanged({ $helpListBox.Items.Clear(); $helpListBox.Items.AddRange([System.String[]]$helpComboBox.SelectedItem.ExportedCommands.Keys) })
     $helpComboBox.SelectedIndex = 0
 
     # Build out a panel to hold the rich text box (flattens border)
