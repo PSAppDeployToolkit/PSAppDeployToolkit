@@ -293,11 +293,14 @@ catch
 
 try
 {
-    Get-ChildItem -LiteralPath $PSScriptRoot -Directory -Filter PSAppDeployToolkit.* | & {
+    Get-ChildItem -LiteralPath $PSScriptRoot -Directory | & {
         process
         {
-            Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore
-            Import-Module -Name $_.FullName -Force
+            if ($_.Name -match 'PSAppDeployToolkit\..+$')
+            {
+                Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore
+                Import-Module -Name $_.FullName -Force
+            }
         }
     }
     & "$($adtSession.DeploymentType)-ADTDeployment"
