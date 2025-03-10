@@ -247,7 +247,7 @@ namespace PSADT.Module
                             };
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
-                            if (msiFiles.Where(f => !f.EndsWith($".{formattedOSArch}.msi", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() is string msiFile)
+                            if (msiFiles.Where(f => !f.EndsWith($".{formattedOSArch}.msi", StringComparison.OrdinalIgnoreCase)).FirstOrDefault() is string msiFile)
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
@@ -513,7 +513,7 @@ namespace PSADT.Module
                     {
                         WriteLogEntry($"[{_deployAppScriptFriendlyName}] script version is [{_deployAppScriptVersion}].");
                     }
-                    if ((null != _deployAppScriptParameters) && (_deployAppScriptParameters.Count > 0))
+                    if (_deployAppScriptParameters?.Count > 0)
                     {
                         WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)).Replace("''", "'")}].");
                     }
