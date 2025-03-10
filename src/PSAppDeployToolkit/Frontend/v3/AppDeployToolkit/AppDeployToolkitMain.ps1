@@ -5139,12 +5139,12 @@ if ((Test-Path -LiteralPath "$PSScriptRoot\AppDeployToolkitExtensions.ps1" -Path
     $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
     {
         # If this script was invoked by another script.
-        Split-Path -LiteralPath $invokingScript -Parent
+        (Get-Item -LiteralPath $invokingScript).DirectoryName
     }
     else
     {
         # If this script was not invoked by another script, fall back to the directory one level above this script.
-        (Get-Item -LiteralPath (Split-Path -LiteralPath $MyInvocation.MyCommand.Definition -Parent)).Parent.FullName
+        (Get-Item -LiteralPath $MyInvocation.MyCommand.Definition).Directory.Parent.FullName
     }
     . "$PSScriptRoot\AppDeployToolkitExtensions.ps1"
 }
