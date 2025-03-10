@@ -69,6 +69,7 @@ function Set-ADTMsiProperty
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        $View = $null
     }
 
     process
@@ -114,7 +115,7 @@ function Set-ADTMsiProperty
         {
             $null = try
             {
-                if (Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::View)
+                if ($View)
                 {
                     Invoke-ADTObjectMethod -InputObject $View -MethodName Close
                     [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
