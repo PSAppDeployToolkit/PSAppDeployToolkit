@@ -304,8 +304,8 @@ namespace PSADT
                     WriteDebugMessage($"No '-File' parameter specified on command-line. Adding parameter '-File \"{adtFrontendPath}\"'...");
                 }
 
-                // Add the frontend script file to the arguments.
-                pwshArguments += $" -File \"{adtFrontendPath}\"";
+                // Add the frontend script file to the arguments (Note that -File has been removed to resolve an issue with WDAC and Constrained Language Mode).
+                pwshArguments += $" \"{adtFrontendPath}\"";
                 if (cliArguments.Count > 0)
                 {
                     pwshArguments += $" {string.Join(" ", cliArguments)}";
