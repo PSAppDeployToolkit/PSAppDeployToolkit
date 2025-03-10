@@ -10,7 +10,7 @@ PSAppDeployToolkit - This script performs the installation or uninstallation of 
 
 The script imports the PSAppDeployToolkit module which contains the logic and functions required to install or uninstall an application.
 
-PSAppDeployToolkit is licensed under the GNU LGPLv3 License - (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
+PSAppDeployToolkit is licensed under the GNU LGPLv3 License - © 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but
@@ -18,10 +18,12 @@ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FI
 for more details. You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 .PARAMETER DeploymentType
-The type of deployment to perform. Default is: Install.
+The type of deployment to perform.
 
 .PARAMETER DeployMode
-Specifies whether the installation should be run in Interactive, Silent, or NonInteractive mode. Default is: Interactive. Options: Interactive = Shows dialogs, Silent = No dialogs, NonInteractive = Very silent, i.e. no blocking apps. NonInteractive mode is automatically set if it is detected that the process is not user interactive.
+Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), or NonInteractive (dialogs without prompts) mode.
+
+NonInteractive mode is automatically set if it is detected that the process is not user interactive.
 
 .PARAMETER AllowRebootPassThru
 Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
@@ -30,7 +32,7 @@ Allows the 3010 return code (requires restart) to be passed back to the parent p
 Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Desktop Session Hosts/Citrix servers.
 
 .PARAMETER DisableLogging
-Disables logging to file for the script. Default is: $false.
+Disables logging to file for the script.
 
 .EXAMPLE
 powershell.exe -File Invoke-AppDeployToolkit.ps1 -DeployMode Silent
@@ -66,11 +68,13 @@ param
 (
     [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
-    [System.String]$DeploymentType = 'Install',
+    [PSDefaultValue(Help = 'Install', Value = 'Install')]
+    [System.String]$DeploymentType,
 
     [Parameter(Mandatory = $false)]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
-    [System.String]$DeployMode = 'Interactive',
+    [PSDefaultValue(Help = 'Interactive', Value = 'Interactive')]
+    [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$AllowRebootPassThru,
@@ -281,25 +285,17 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
-    $moduleName = if ([System.IO.File]::Exists("$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
+    if ([System.IO.File]::Exists("$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
     {
         Get-ChildItem -LiteralPath $PSScriptRoot\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction Ignore
-        "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"
+        Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     }
     else
     {
-        'PSAppDeployToolkit'
+        Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     }
-    Import-Module -FullyQualifiedName @{ ModuleName = $moduleName; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
-    try
-    {
-        $adtSession = Open-ADTSession -SessionState $ExecutionContext.SessionState @adtSession @PSBoundParameters -PassThru
-    }
-    catch
-    {
-        Remove-Module -Name PSAppDeployToolkit* -Force
-        throw
-    }
+    $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
+    $adtSession = Open-ADTSession -SessionState $PSCmdlet.SessionState @adtSession @iadtParams -PassThru
 }
 catch
 {
@@ -314,7 +310,7 @@ catch
 
 try
 {
-    Get-Item -Path $PSScriptRoot\PSAppDeployToolkit.* | & {
+    Get-ChildItem -LiteralPath $PSScriptRoot -Directory -Filter PSAppDeployToolkit.* | & {
         process
         {
             Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore
@@ -329,8 +325,4 @@ catch
     Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_) -Severity 3
     Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop | Out-Null
     Close-ADTSession -ExitCode 60001
-}
-finally
-{
-    Remove-Module -Name PSAppDeployToolkit* -Force
 }
