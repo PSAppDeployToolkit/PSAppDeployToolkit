@@ -110,6 +110,23 @@ function New-ADTMsiTransform
             TransformValidationNone = 0
             SuppressApplyTransformErrors = 63
         }
+
+        # Establish initial paths.
+        $MsiParentFolder = (Get-Item -LiteralPath $MsiPath).DirectoryName
+        $TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetRandomFileName())
+
+        # Determine the path for the new transform file that will be generated.
+        if (!$NewTransformPath)
+        {
+            $NewTransformPath = if ($ApplyTransformPath)
+            {
+                Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($ApplyTransformPath) + '.new' + [System.IO.Path]::GetExtension($ApplyTransformPath))
+            }
+            else
+            {
+                Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetFileNameWithoutExtension($MsiPath) + '.mst')
+            }
+        }
     }
 
     process
@@ -120,8 +137,6 @@ function New-ADTMsiTransform
             try
             {
                 # Create a second copy of the MSI database.
-                $MsiParentFolder = (Get-Item -LiteralPath $MsiPath).DirectoryName
-                $TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetRandomFileName())
                 Write-ADTLogEntry -Message "Copying MSI database in path [$MsiPath] to destination [$TempMsiPath]."
                 $null = Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force
 
@@ -137,20 +152,6 @@ function New-ADTMsiTransform
                 {
                     Write-ADTLogEntry -Message "Applying transform file [$ApplyTransformPath] to MSI database [$TempMsiPath]."
                     $null = Invoke-ADTObjectMethod -InputObject $TempMsiPathDatabase -MethodName ApplyTransform -ArgumentList @($ApplyTransformPath, $msiOpenDatabaseTypes.SuppressApplyTransformErrors)
-                }
-
-                # Determine the path for the new transform file that will be generated.
-                if (!$NewTransformPath)
-                {
-                    $NewTransformFileName = if ($ApplyTransformPath)
-                    {
-                        [System.IO.Path]::GetFileNameWithoutExtension($ApplyTransformPath) + '.new' + [System.IO.Path]::GetExtension($ApplyTransformPath)
-                    }
-                    else
-                    {
-                        [System.IO.Path]::GetFileNameWithoutExtension($MsiPath) + '.mst'
-                    }
-                    $NewTransformPath = Join-Path -Path $MsiParentFolder -ChildPath $NewTransformFileName
                 }
 
                 # Set the MSI properties in the temporary copy of the MSI database.
