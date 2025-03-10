@@ -85,7 +85,7 @@ function Set-ADTMsiProperty
                 # Retrieve the requested property from the requested table and close off the view.
                 # https://msdn.microsoft.com/en-us/library/windows/desktop/aa371136(v=vs.85).aspx
                 $Record = Invoke-ADTObjectMethod -InputObject $View -MethodName Fetch
-                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @()
+                $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Close
                 $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
 
                 # Set the MSI property.
@@ -116,7 +116,7 @@ function Set-ADTMsiProperty
             {
                 if (Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::View)
                 {
-                    Invoke-ADTObjectMethod -InputObject $View -MethodName Close -ArgumentList @()
+                    Invoke-ADTObjectMethod -InputObject $View -MethodName Close
                     [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
                 }
             }
