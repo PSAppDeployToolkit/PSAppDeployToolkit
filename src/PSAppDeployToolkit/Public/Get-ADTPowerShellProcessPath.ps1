@@ -40,5 +40,5 @@ function Get-ADTPowerShellProcessPath
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTPowerShellProcessPath
     #>
 
-    return "$PSHOME\$(('powershell.exe', 'pwsh.exe')[$PSVersionTable.PSEdition.Equals('Core')])"
+    return [System.IO.Path]::Combine($PSHOME, ('powershell.exe', 'pwsh.exe')[$PSVersionTable.PSEdition.Equals('Core')])
 }
