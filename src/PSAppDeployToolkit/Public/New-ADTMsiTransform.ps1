@@ -120,7 +120,7 @@ function New-ADTMsiTransform
             try
             {
                 # Create a second copy of the MSI database.
-                $MsiParentFolder = Split-Path -LiteralPath $MsiPath -Parent
+                $MsiParentFolder = (Get-Item -LiteralPath $MsiPath).DirectoryName
                 $TempMsiPath = Join-Path -Path $MsiParentFolder -ChildPath ([System.IO.Path]::GetRandomFileName())
                 Write-ADTLogEntry -Message "Copying MSI database in path [$MsiPath] to destination [$TempMsiPath]."
                 $null = Copy-Item -LiteralPath $MsiPath -Destination $TempMsiPath -Force
