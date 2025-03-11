@@ -117,6 +117,11 @@ $adtSession = @{
 
 function Install-ADTDeployment
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     ##================================================
     ## MARK: Pre-Install
     ##================================================
@@ -171,6 +176,11 @@ function Install-ADTDeployment
 
 function Uninstall-ADTDeployment
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     ##================================================
     ## MARK: Pre-Uninstall
     ##================================================
@@ -214,6 +224,11 @@ function Uninstall-ADTDeployment
 
 function Repair-ADTDeployment
 {
+    [CmdletBinding()]
+    param
+    (
+    )
+
     ##================================================
     ## MARK: Pre-Repair
     ##================================================
