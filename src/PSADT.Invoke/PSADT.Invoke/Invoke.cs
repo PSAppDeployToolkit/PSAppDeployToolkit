@@ -274,7 +274,7 @@ namespace PSADT
                 // Check for the App Deploy Script file being specified.
                 if (cliArguments.Exists(x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
                 {
-                    throw new Exception("'-Command' parameter was specified on the command-line. Please use the '-File' parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
+                    throw new ArgumentException("'-Command' parameter was specified on the command-line. Please use the '-File' parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
                 }
 
                 var fileIndex = Array.FindIndex(cliArguments.ToArray(), x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
@@ -297,19 +297,20 @@ namespace PSADT
                         adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                     }
                     cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
-                    WriteDebugMessage(".ps1 file specified on command-line. Appending '-File' parameter name...");
+                    WriteDebugMessage("Script (.ps1) file directly specified on command-line.");
                 }
                 else
                 {
-                    WriteDebugMessage($"No '-File' parameter specified on command-line. Adding parameter '-File \"{adtFrontendPath}\"'...");
+                    WriteDebugMessage($"No '-File' or script parameter specified on command-line. Invoking '\"{adtFrontendPath}\"'...");
                 }
 
                 // Add the frontend script file to the arguments (Note that -File has been removed to resolve an issue with WDAC and Constrained Language Mode).
-                pwshArguments += $" \"{adtFrontendPath}\"";
+                pwshArguments += $" -Command & '{adtFrontendPath}'";
                 if (cliArguments.Count > 0)
                 {
                     pwshArguments += $" {string.Join(" ", cliArguments)}";
                 }
+                pwshArguments += "; [System.Environment]::Exit($Global:LASTEXITCODE)";
 
                 // Define PowerShell process.
                 WriteDebugMessage($"Executable Path: {pwshExecutablePath}");
