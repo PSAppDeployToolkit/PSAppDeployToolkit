@@ -3317,7 +3317,7 @@ function Install-MSUpdates
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Get-ADTSchedulerTask
+# MARK: Direct implementation for Get-SchedulerTask.
 #
 #---------------------------------------------------------------------------
 
@@ -3335,29 +3335,64 @@ function Get-SchedulerTask
         [System.Boolean]$ContinueOnError = $true
     )
 
-    # Set strict mode to the highest within this function's scope.
-    Set-StrictMode -Version 3
+    begin
+    {
+        # Set strict mode to the highest within this function's scope.
+        Set-StrictMode -Version 3
 
-    # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTSchedulerTask]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
-    if ($PSBoundParameters.ContainsKey('ContinueOnError'))
-    {
-        $null = $PSBoundParameters.Remove('ContinueOnError')
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction ('Stop', 'SilentlyContinue')[$ContinueOnError]
+
+        # Advise that this function is considered deprecated.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity 2
     }
-    if (!$ContinueOnError)
+
+    process
     {
-        $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
-    }
-    try
-    {
-        Get-ADTSchedulerTask @PSBoundParameters
-    }
-    catch
-    {
-        if (!$ContinueOnError)
+        Write-ADTLogEntry -Message 'Retrieving Scheduled Tasks...'
+        try
         {
-            $PSCmdlet.ThrowTerminatingError($_)
+            try
+            {
+                # Get CSV data from the binary and confirm success.
+                $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV 2>&1
+                if ($Global:LASTEXITCODE -ne 0)
+                {
+                    $naerParams = @{
+                        Exception = [System.Runtime.InteropServices.ExternalException]::new("The call to [$([System.Environment]::SystemDirectory)\schtasks.exe] failed with exit code [$Global:LASTEXITCODE].", $Global:LASTEXITCODE)
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'SchTasksExecutableFailure'
+                        TargetObject = $exeSchtasksResults
+                        RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+
+                # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
+                if (($schTasks = $exeSchtasksResults | ConvertFrom-Csv | & { process { if (($_.TaskName -match '^\\') -and (!$PSBoundParameters.ContainsKey('TaskName') -or ($_.TaskName -match $TaskName))) { return $_ } } }))
+                {
+                    return $schTasks | Select-Object -Property ($schTasks[0].PSObject.Properties.Name | & {
+                            process
+                            {
+                                @{ Label = $_ -replace '[^\w]'; Expression = [scriptblock]::Create("`$_.'$_'") }
+                            }
+                        })
+                }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
         }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to retrieve scheduled tasks."
+        }
+    }
+
+    end
+    {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
 
