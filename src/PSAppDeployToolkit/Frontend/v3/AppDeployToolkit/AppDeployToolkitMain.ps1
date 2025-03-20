@@ -3323,6 +3323,7 @@ function Install-MSUpdates
 
 function Get-SchedulerTask
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'TaskName', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
