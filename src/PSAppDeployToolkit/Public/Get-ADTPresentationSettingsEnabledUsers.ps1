@@ -65,15 +65,8 @@ function Get-ADTPresentationSettingsEnabledUsers
                     UserProfiles = Get-ADTUserProfiles -ExcludeDefaultUser -InformationAction SilentlyContinue
                 }
 
-                # Return early if there's no user profiles to cycle through (brand new machine, etc).
-                if (!$iaauraParams.UserProfiles)
-                {
-                    Write-ADTLogEntry -Message "There are no user accounts found on this device."
-                    return $false
-                }
-
                 # Return UserProfile objects for each user with "I am currently giving a presentation" enabled.
-                if (($usersInPresentationMode = Invoke-ADTAllUsersRegistryAction @iaauraParams -SkipUnloadedProfiles -InformationAction SilentlyContinue))
+                if ($iaauraParams.UserProfiles -and ($usersInPresentationMode = Invoke-ADTAllUsersRegistryAction @iaauraParams -SkipUnloadedProfiles -InformationAction SilentlyContinue))
                 {
                     Write-ADTLogEntry -Message "The following users are currently in presentation mode: ['$([System.String]::Join("', '", $usersInPresentationMode.NTAccount))']."
                     return $usersInPresentationMode
