@@ -101,7 +101,7 @@ function Invoke-ADTServiceAndDependencyOperation
     $Service = Get-Service -Name $Name
 
     # Wait up to 60 seconds if service is in a pending state.
-    if (($desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }.($Service.Status)))
+    if (($desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }[$Service.Status]))
     {
         Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$([System.ServiceProcess.ServiceControllerStatus]$desiredStatus)]."
         $Service.WaitForStatus($desiredStatus, $PendingStatusWait)
