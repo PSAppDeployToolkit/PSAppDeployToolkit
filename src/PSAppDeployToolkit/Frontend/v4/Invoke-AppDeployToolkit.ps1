@@ -68,12 +68,10 @@ param
 (
     [Parameter(Mandatory = $false)]
     [ValidateSet('Install', 'Uninstall', 'Repair')]
-    [PSDefaultValue(Help = 'Install', Value = 'Install')]
     [System.String]$DeploymentType,
 
     [Parameter(Mandatory = $false)]
     [ValidateSet('Interactive', 'Silent', 'NonInteractive')]
-    [PSDefaultValue(Help = 'Interactive', Value = 'Interactive')]
     [System.String]$DeployMode,
 
     [Parameter(Mandatory = $false)]
