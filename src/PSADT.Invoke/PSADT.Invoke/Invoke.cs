@@ -94,8 +94,14 @@ namespace PSADT
         }
     }
 
+    /// <summary>
+    /// A utility class to determine the system information.
+    /// </summary>
     internal static class NativeSystemInfo
     {
+        /// <summary>
+        /// Processor architecture types supported by Windows.
+        /// </summary>
         public enum ProcessorArchitecture : ushort
         {
             PROCESSOR_ARCHITECTURE_INTEL = 0,
@@ -115,6 +121,9 @@ namespace PSADT
             PROCESSOR_ARCHITECTURE_UNKNOWN = 0xFFFF
         }
 
+        /// <summary>
+        /// Contains information about the current computer system.
+        /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
         public struct SYSTEM_INFO
         {
@@ -131,9 +140,17 @@ namespace PSADT
             public ushort wProcessorRevision;
         }
 
+        /// <summary>
+        /// Retrieves information about the current system to an application running under WOW64.
+        /// </summary>
+        /// <param name="lpSystemInfo"></param>
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
         private static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
 
+        /// <summary>
+        /// Retrieves information about the current system to an application running under WOW64.
+        /// </summary>
+        /// <returns></returns>
         public static SYSTEM_INFO GetNativeSystemInfo()
         {
             GetNativeSystemInfo(out SYSTEM_INFO sysInfo);
@@ -141,17 +158,17 @@ namespace PSADT
         }
     }
 
+    /// <summary>
+    /// A utility class to invoke a PowerShell script.
+    /// </summary>
     internal static class Invoke
     {
-        private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
-        private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
-        private static readonly string v3ToolkitPath = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
-        private static readonly string v4ToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit");
-        private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
-        private static readonly string timeStamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
-        private static readonly Encoding LogEncoding = new UTF8Encoding(true);
-
+        /// <summary>
+        /// The current path of the executing assembly.
+        /// </summary>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="Exception"></exception>
         private static void Main()
         {
             // Set up exit code.
@@ -369,6 +386,12 @@ namespace PSADT
             }
         }
 
+        /// <summary>
+        /// Writes a debug message to the log file and optionally displays an error message.
+        /// </summary>
+        /// <param name="debugMessage"></param>
+        /// <param name="IsDisplayError"></param>
+        /// <param name="MsgBoxStyle"></param>
         private static void WriteDebugMessage(string debugMessage, bool IsDisplayError = false, MessageBoxIcon MsgBoxStyle = MessageBoxIcon.Information)
         {
             // Output to the log file.
@@ -401,5 +424,45 @@ namespace PSADT
                 }
             }
         }
+
+        /// <summary>
+        /// The default path to PowerShell.
+        /// </summary>
+        private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
+
+        /// <summary>
+        /// The current path of the executing assembly.
+        /// </summary>
+        private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
+
+        /// <summary>
+        /// The name of the executing assembly.
+        /// </summary>
+        private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
+
+        /// <summary>
+        /// The path to the PSAppDeployToolkit module.
+        /// </summary>
+        private static readonly string v3ToolkitPath = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
+
+        /// <summary>
+        /// The path to the PSAppDeployToolkit module.
+        /// </summary>
+        private static readonly string v4ToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit");
+
+        /// <summary>
+        /// The path to the logging directory.
+        /// </summary>
+        private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
+
+        /// <summary>
+        /// The current timestamp.
+        /// </summary>
+        private static readonly string timeStamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
+
+        /// <summary>
+        /// The encoding to use for the log file.
+        /// </summary>
+        private static readonly Encoding LogEncoding = new UTF8Encoding(true);
     }
 }
