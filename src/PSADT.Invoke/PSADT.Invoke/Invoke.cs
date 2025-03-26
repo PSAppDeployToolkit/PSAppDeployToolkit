@@ -395,12 +395,11 @@ namespace PSADT
         private static void WriteDebugMessage(string debugMessage, bool IsDisplayError = false, MessageBoxIcon MsgBoxStyle = MessageBoxIcon.Information)
         {
             // Output to the log file.
-            var logPath = Path.Combine(loggingPath, $"{assemblyName}.exe");
-            if (!Directory.Exists(logPath))
+            if (!Directory.Exists(logDir))
             {
-                Directory.CreateDirectory(logPath);
+                Directory.CreateDirectory(logDir);
             }
-            using (StreamWriter sw = new StreamWriter(Path.Combine(logPath, $"{assemblyName}.exe_{timeStamp}.log"), true, LogEncoding))
+            using (StreamWriter sw = new StreamWriter(logPath, true, LogEncoding))
             {
                 sw.WriteLine(debugMessage.Replace("\n", " "));
             }
@@ -453,12 +452,17 @@ namespace PSADT
         /// <summary>
         /// The path to the logging directory.
         /// </summary>
-        private static readonly string loggingPath = Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs");
+        private static readonly string logDir = Path.Combine(Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs"), $"{assemblyName}.exe");
 
         /// <summary>
-        /// The current timestamp.
+        /// The path to the log file.
         /// </summary>
-        private static readonly string timeStamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
+        private static readonly string logFile = $"{assemblyName}.exe_{DateTime.Now.ToString("O").Split('.')[0].Replace(":", null)}.log";
+
+        /// <summary>
+        /// The full path to the log file.
+        /// </summary>
+        private static readonly string logPath = Path.Combine(logDir, logFile);
 
         /// <summary>
         /// The encoding to use for the log file.
