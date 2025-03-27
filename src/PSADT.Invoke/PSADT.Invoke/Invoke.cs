@@ -352,7 +352,7 @@ namespace PSADT
                 }
                 cliArguments.RemoveAt(fileIndex + 1);
                 cliArguments.RemoveAt(fileIndex);
-                WriteDebugMessage("'-File' parameter specified on command line. Passing command line untouched...");
+                WriteDebugMessage("The [-File] parameter was specified on command line. Passing command line untouched...");
             }
             else if (cliArguments.Exists(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
             {
@@ -362,7 +362,7 @@ namespace PSADT
                     adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                 }
                 cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
-                WriteDebugMessage("Script (.ps1) file directly specified on command line.");
+                WriteDebugMessage("Using script (.ps1) file directly specified on the command line...");
             }
             else
             {
