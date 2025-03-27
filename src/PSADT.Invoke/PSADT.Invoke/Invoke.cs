@@ -46,11 +46,12 @@ namespace PSADT
                 {
                     FileName = GetPowerShellPath(cliArguments),
                     Arguments = GetPowerShellArguments(cliArguments),
+                    WindowStyle = ProcessWindowStyle.Hidden,
                     WorkingDirectory = currentPath,
                     RedirectStandardOutput = inDebugMode,
                     RedirectStandardError = inDebugMode,
                     UseShellExecute = !inDebugMode,
-                    CreateNoWindow = inDebugMode,
+                    CreateNoWindow = true,
                 };
                 if ((Environment.OSVersion.Version.Major >= 6) && RequireElevation())
                 {
