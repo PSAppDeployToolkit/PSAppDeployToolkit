@@ -169,7 +169,7 @@ namespace PSADT
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="Exception"></exception>
-        private static void Main()
+        private static void Main(string[] args)
         {
             // Set up exit code.
             int exitCode = 60010;
@@ -182,14 +182,11 @@ namespace PSADT
                 string adtConfigPath = Path.Combine(currentPath, $"{validToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = pwshDefaultPath;
                 string pwshArguments = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
-                var cliArguments = Environment.GetCommandLineArgs().ToList().ConvertAll(x => x.Trim());
+                var cliArguments = args.ToList().ConvertAll(x => x.Trim());
                 bool isRequireAdmin = false;
 
                 // Announce commencement
                 WriteDebugMessage($"Commencing invocation of {adtFrontendPath}.");
-
-                // Remove first command-line argument as this is always the executable name.
-                cliArguments.RemoveAt(0);
 
                 // Confirm /32 and /Core both haven't been passed as it's not supported.
                 bool x32Specified = cliArguments.Exists(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
