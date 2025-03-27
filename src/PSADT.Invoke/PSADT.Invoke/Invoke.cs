@@ -181,7 +181,7 @@ namespace PSADT
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
                 string adtConfigPath = Path.Combine(currentPath, $"{validToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = pwshDefaultPath;
-                string pwshArguments = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
+                string pwshArguments = "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
                 var cliArguments = args.ToList().ConvertAll(x => x.Trim());
                 bool isRequireAdmin = false;
 
