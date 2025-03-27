@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Language;
-using System.Windows.Forms;
+using Microsoft.VisualBasic;
 
 namespace PSADT
 {
@@ -173,7 +174,6 @@ namespace PSADT
         {
             // Set up exit code.
             int exitCode = 60010;
-            bool silentMode = false;
 
             try
             {
@@ -226,14 +226,6 @@ namespace PSADT
                     {
                         pwshExecutablePath = pwshParentProcessPath;
                     }
-                }
-
-                // Test whether we're running in silent mode.
-                var deployModeIndex = Array.FindIndex(cliArguments.ToArray(), x => x.Equals("-DeployMode", StringComparison.OrdinalIgnoreCase));
-                silentMode = (deployModeIndex != -1) && !cliArguments[deployModeIndex + 1].ToLower().Equals("interactive", StringComparison.OrdinalIgnoreCase);
-                if (silentMode)
-                {
-                    WriteDebugMessage("Silent mode detected. No user interaction will be displayed.");
                 }
 
                 // Test whether we've got a local config before continuing.
@@ -377,7 +369,7 @@ namespace PSADT
             }
             catch (Exception ex)
             {
-                WriteDebugMessage(ex.Message, !silentMode, MessageBoxIcon.Error);
+                WriteDebugMessage(ex.Message, true, MsgBoxStyle.Critical);
                 Environment.Exit(exitCode);
             }
         }
@@ -386,9 +378,9 @@ namespace PSADT
         /// Writes a debug message to the log file and optionally displays an error message.
         /// </summary>
         /// <param name="debugMessage"></param>
-        /// <param name="IsDisplayError"></param>
-        /// <param name="MsgBoxStyle"></param>
-        private static void WriteDebugMessage(string debugMessage, bool IsDisplayError = false, MessageBoxIcon MsgBoxStyle = MessageBoxIcon.Information)
+        /// <param name="isDisplayError"></param>
+        /// <param name="messageBoxStyle"></param>
+        private static void WriteDebugMessage(string debugMessage, bool isDisplayError = false, MsgBoxStyle messageBoxStyle = MsgBoxStyle.Information)
         {
             // Output to the log file.
             if (!Directory.Exists(logDir))
@@ -401,22 +393,9 @@ namespace PSADT
             }
 
             // If we are to display an error message...
-            if (IsDisplayError)
+            if (isDisplayError)
             {
-                try
-                {
-                    MessageBox.Show(
-                        new Form { TopMost = true },
-                        debugMessage,
-                        $"{Application.ProductName} {Application.ProductVersion}",
-                        MessageBoxButtons.OK,
-                        MsgBoxStyle,
-                        MessageBoxDefaultButton.Button1);
-                }
-                catch
-                {
-                    // Do nothing with this.
-                }
+                Interaction.MsgBox(debugMessage, messageBoxStyle | MsgBoxStyle.SystemModal, $"{assemblyName} {assemblyVersion}");
             }
         }
 
@@ -495,6 +474,11 @@ namespace PSADT
         /// The name of the executing assembly.
         /// </summary>
         private static readonly string assemblyName = Process.GetCurrentProcess().ProcessName;
+
+        /// <summary>
+        /// The version of the executing assembly.
+        /// </summary>
+        private static readonly string assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
 
         /// <summary>
         /// The path to the PSAppDeployToolkit module.
