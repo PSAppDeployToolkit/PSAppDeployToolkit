@@ -165,11 +165,9 @@ namespace PSADT
     internal static class Invoke
     {
         /// <summary>
-        /// The current path of the executing assembly.
+        /// The entry point for the application.
         /// </summary>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
-        /// <exception cref="Exception"></exception>
+        /// <param name="args"></param>
         private static void Main(string[] args)
         {
             // Set up exit code.
@@ -177,199 +175,51 @@ namespace PSADT
 
             try
             {
-                // Set up variables.
-                string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-                string adtConfigPath = Path.Combine(currentPath, $"{validToolkitPath}\\Config\\config.psd1");
-                string pwshExecutablePath = pwshDefaultPath;
-                string pwshArguments = "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
+                // Announce commencement.
+                WriteDebugMessage($"Commencing invocation.");
                 var cliArguments = args.ToList().ConvertAll(x => x.Trim());
-                bool isRequireAdmin = false;
-
-                // Announce commencement
-                WriteDebugMessage($"Commencing invocation of {adtFrontendPath}.");
-
-                // Confirm /32 and /Core both haven't been passed as it's not supported.
-                bool x32Specified = cliArguments.Exists(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
-                bool coreSpecified = cliArguments.Exists(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
-                if (x32Specified && coreSpecified)
-                {
-                    throw new ArgumentException("The use of both '/32' and '/Core' on the command line is not supported.");
-                }
-
-                // Check if we're using PowerShell Core (7).
-                if (coreSpecified)
-                {
-                    if (!(Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault() is string pwshCorePath))
-                    {
-                        throw new InvalidOperationException("The '/Core' parameter was specified, but PowerShell Core was not found on this system.");
-                    }
-                    cliArguments.RemoveAll(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
-                    pwshExecutablePath = pwshCorePath;
-                }
-
-                // Check if x86 PowerShell mode was specified on command line.
-                if (x32Specified)
-                {
-                    // Remove the /32 command line argument so that it is not passed to PowerShell script
-                    WriteDebugMessage("The '/32' parameter was specified on the command line. Running in forced x86 PowerShell mode...");
-                    cliArguments.RemoveAll(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
-                    if (NativeSystemInfo.GetNativeSystemInfo().wProcessorArchitecture.ToString().EndsWith("64"))
-                    {
-                        pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "WindowsPowerShell\\v1.0\\PowerShell.exe");
-                    }
-                }
-
-                // If the PowerShell mode hasn't been explicitly specified, override it with a PowerShell parent process if available.
-                if (pwshExecutablePath.Equals(pwshDefaultPath))
-                {
-                    if (ParentProcessUtilities.GetParentProcesses().Where(p => p.ProcessName.Equals("pwsh") || p.ProcessName.Equals("powershell")).Select(p => p.MainModule.FileName).FirstOrDefault() is string pwshParentProcessPath)
-                    {
-                        pwshExecutablePath = pwshParentProcessPath;
-                    }
-                }
-
-                // Test whether we've got a local config before continuing.
-                if ((Path.Combine(currentPath, "Config\\config.psd1") is string adtLocalConfigPath) && File.Exists(adtLocalConfigPath))
-                {
-                    // Test the file for validity prior to just blindly using it.
-                    var localConfigAst = Parser.ParseFile(adtLocalConfigPath, out Token[] localConfigTokens, out ParseError[] localConfigErrors);
-                    if (localConfigErrors.Length > 0)
-                    {
-                        throw new Exception($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtLocalConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
-                    }
-
-                    // Test that the local config is a hashtable.
-                    if ((localConfigAst.Find(p => p.GetType() == typeof(HashtableAst), false) is HashtableAst localConfig) && (((Hashtable)localConfig.SafeGetValue())["Toolkit"] is Hashtable localConfigToolkit) && (null != localConfigToolkit["RequireAdmin"]))
-                    {
-                        adtConfigPath = adtLocalConfigPath;
-                    }
-                }
-
-                // Verify if the App Deploy script file exists.
-                if (!File.Exists(adtFrontendPath))
-                {
-                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the App Deploy Script file at '{adtFrontendPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
-                }
-
-                // Verify if the PSAppDeployToolkit folder exists.
-                if (String.IsNullOrWhiteSpace(validToolkitPath))
-                {
-                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'PSAppDeployToolkit' module directory'.\n\nPlease ensure you have all of the required files available to start the installation.");
-                }
-
-                // Verify if the PSAppDeployToolkit config file exists.
-                if (!File.Exists(adtConfigPath))
-                {
-                    throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
-                }
-
-                // Parse our config and throw if we have any errors.
-                var configAst = Parser.ParseFile(adtConfigPath, out Token[] configTokens, out ParseError[] configErrors);
-                if (configErrors.Length > 0)
-                {
-                    throw new Exception($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
-                }
-
-                // Determine whether we require admin rights or not.
-                if (isRequireAdmin = (bool)((Hashtable)((Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue())["Toolkit"])["RequireAdmin"])
-                {
-                    WriteDebugMessage("Administrator rights are required. The verb 'RunAs' will be used with the invocation.");
-                }
-
-                // Check for the App Deploy Script file being specified.
-                if (cliArguments.Exists(x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
-                {
-                    throw new ArgumentException("'-Command' parameter was specified on the command-line. Please use the '-File' parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
-                }
-
-                var fileIndex = Array.FindIndex(cliArguments.ToArray(), x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
-                if (fileIndex != -1)
-                {
-                    adtFrontendPath = cliArguments[fileIndex + 1].Replace("\"", null);
-                    if (!Path.IsPathRooted(adtFrontendPath))
-                    {
-                        adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
-                    }
-                    cliArguments.RemoveAt(fileIndex + 1);
-                    cliArguments.RemoveAt(fileIndex);
-                    WriteDebugMessage("'-File' parameter specified on command-line. Passing command-line untouched...");
-                }
-                else if (cliArguments.Exists(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
-                {
-                    adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", null);
-                    if (!Path.IsPathRooted(adtFrontendPath))
-                    {
-                        adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
-                    }
-                    cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
-                    WriteDebugMessage("Script (.ps1) file directly specified on command-line.");
-                }
-                else
-                {
-                    WriteDebugMessage($"No '-File' or script parameter specified on command-line. Invoking '\"{adtFrontendPath}\"'...");
-                }
-
-                // Add the frontend script file to the arguments (Note that -File has been removed to resolve an issue with WDAC and Constrained Language Mode).
-                pwshArguments += $" -Command & '{adtFrontendPath}'";
-                if (cliArguments.Count > 0)
-                {
-                    pwshArguments += $" {string.Join(" ", cliArguments)}";
-                }
-                pwshArguments += "; [System.Environment]::Exit($Global:LASTEXITCODE)";
-
-                // Define PowerShell process.
-                WriteDebugMessage($"Executable Path: {pwshExecutablePath}");
-                WriteDebugMessage($"Arguments: {pwshArguments}");
-                WriteDebugMessage($"Working Directory: {currentPath}");
-
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = pwshExecutablePath,
-                    Arguments = pwshArguments,
-                    WorkingDirectory = currentPath,
+                    FileName = GetPowerShellPath(cliArguments),
+                    Arguments = GetPowerShellArguments(cliArguments),
                     WindowStyle = ProcessWindowStyle.Hidden,
+                    WorkingDirectory = currentPath,
                     UseShellExecute = true
                 };
-
-                // Set the RunAs flag if the PSADT configuration file specifically calls for Admin Rights and OS Vista or higher
-                if (isRequireAdmin && (Environment.OSVersion.Version.Major >= 6))
+                if (RequireElevation() && (Environment.OSVersion.Version.Major >= 6))
                 {
                     processStartInfo.Verb = "runas";
                 }
+                WriteDebugMessage($"PowerShell Path: {processStartInfo.FileName}");
+                WriteDebugMessage($"PowerShell Args: {processStartInfo.Arguments}");
+                WriteDebugMessage($"Working Directory: {processStartInfo.WorkingDirectory}");
+                WriteDebugMessage($"Requires Admin: {processStartInfo.Verb == "runas"}");
 
-                // Start the PowerShell process and wait for completion
-                exitCode = 60011;
-                var process = new Process();
-                try
+                // Start the PowerShell process and wait for completion.
+                using (var process = new Process { StartInfo = processStartInfo })
                 {
                     // Null out PSModulePath to prevent any module conflicts.
                     // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
                     Environment.SetEnvironmentVariable("PSModulePath", null);
-                    process.StartInfo = processStartInfo;
+                    exitCode = 60011;
                     process.Start();
                     process.WaitForExit();
                     exitCode = process.ExitCode;
                     if ((exitCode == 1) || (exitCode == 64) || (exitCode == 255) || ((exitCode >= 60000) && (exitCode <= 79999) && (exitCode != 60012)))
                     {
-                        throw new ExternalException($"An error occurred while running {Path.GetFileName(adtFrontendPath)}. Exit code: {exitCode}", exitCode);
+                        throw new ExternalException($"An error occurred while running {Path.GetFileName(processStartInfo.FileName)}. Exit code: {exitCode}", exitCode);
                     }
-                }
-                catch
-                {
-                    throw;
-                }
-                finally
-                {
-                    process?.Dispose();
                 }
 
                 // Exit with the script's code.
                 WriteDebugMessage($"Exit Code: {exitCode}");
-                Environment.Exit(exitCode);
             }
             catch (Exception ex)
             {
                 WriteDebugMessage(ex.Message, true, MsgBoxStyle.Critical);
+            }
+            finally
+            {
                 Environment.Exit(exitCode);
             }
         }
@@ -428,7 +278,7 @@ namespace PSADT
         /// Gets the path to the PSAppDeployToolkit module.
         /// </summary>
         /// <returns></returns>
-        private static string? GetToolkitPath()
+        private static string GetToolkitPath()
         {
             // Check if there's a PSAppDeployToolkit module path three levels up (we're developing).
             if (Directory.Exists(devToolkitPath))
@@ -457,13 +307,185 @@ namespace PSADT
                     return validPath;
                 }
             }
-            return null;
+            throw new DirectoryNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'PSAppDeployToolkit' module directory'.\n\nPlease ensure you have all of the required files available to start the installation.");
+        }
+
+        /// <summary>
+        /// Gets the path to the PowerShell executable.
+        /// </summary>
+        /// <param name="cliArguments"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        private static string GetPowerShellPath(List<string> cliArguments)
+        {
+            // Confirm /32 and /Core both haven't been passed as it's not supported.
+            bool x32Specified = cliArguments.Exists(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+            bool coreSpecified = cliArguments.Exists(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+            if (x32Specified && coreSpecified)
+            {
+                throw new ArgumentException("The use of both '/32' and '/Core' on the command line is not supported.");
+            }
+
+            // Check if we're using PowerShell Core (7).
+            string pwshExecutablePath = pwshDefaultPath;
+            if (coreSpecified)
+            {
+                if (!(Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault() is string pwshCorePath))
+                {
+                    throw new InvalidOperationException("The '/Core' parameter was specified, but PowerShell Core was not found on this system.");
+                }
+                WriteDebugMessage("The '/Core' parameter was specified on the command line. Running using PowerShell 7...");
+                cliArguments.RemoveAll(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+                pwshExecutablePath = pwshCorePath;
+            }
+
+            // Check if x86 PowerShell mode was specified on command line.
+            if (x32Specified)
+            {
+                // Remove the /32 command line argument so that it is not passed to PowerShell script
+                WriteDebugMessage("The '/32' parameter was specified on the command line. Running in forced x86 PowerShell mode...");
+                cliArguments.RemoveAll(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+                if (NativeSystemInfo.GetNativeSystemInfo().wProcessorArchitecture.ToString().EndsWith("64"))
+                {
+                    pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "WindowsPowerShell\\v1.0\\PowerShell.exe");
+                }
+            }
+
+            // If the PowerShell mode hasn't been explicitly specified, override it with a PowerShell parent process if available.
+            if (pwshExecutablePath.Equals(pwshDefaultPath))
+            {
+                foreach (var parentProcess in ParentProcessUtilities.GetParentProcesses())
+                {
+                    if (parentProcess.ProcessName.Equals("pwsh") || parentProcess.ProcessName.Equals("powershell"))
+                    {
+                        return parentProcess.MainModule.FileName;
+                    }
+                }
+            }
+            return pwshExecutablePath;
+        }
+
+        /// <summary>
+        /// Determines whether the script requires elevation.
+        /// </summary>
+        /// <param name="toolkitPath"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidDataException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
+        private static bool RequireElevation()
+        {
+            // Test whether we've got a local config before continuing.
+            if ((Path.Combine(currentPath, "Config\\config.psd1") is string adtLocalConfigPath) && File.Exists(adtLocalConfigPath))
+            {
+                // Test the file for validity prior to just blindly using it.
+                var localConfigAst = Parser.ParseFile(adtLocalConfigPath, out Token[] localConfigTokens, out ParseError[] localConfigErrors);
+                if (localConfigErrors.Length > 0)
+                {
+                    throw new InvalidDataException($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtLocalConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
+                }
+
+                // Test that the local config is a hashtable.
+                if ((localConfigAst.Find(p => p.GetType() == typeof(HashtableAst), false) is HashtableAst localConfig) && (((Hashtable)localConfig.SafeGetValue())["Toolkit"] is Hashtable localConfigToolkit) && (localConfigToolkit["RequireAdmin"] is bool requireAdmin))
+                {
+                    if (requireAdmin)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+
+            // Verify if the PSAppDeployToolkit config file exists.
+            var adtConfigPath = Path.Combine(currentPath, $"{GetToolkitPath()}\\Config\\config.psd1");
+            if (!File.Exists(adtConfigPath))
+            {
+                throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
+            }
+
+            // Parse our config and throw if we have any errors.
+            var configAst = Parser.ParseFile(adtConfigPath, out Token[] configTokens, out ParseError[] configErrors);
+            if (configErrors.Length > 0)
+            {
+                throw new InvalidDataException($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
+            }
+
+            // Determine whether we require admin rights or not.
+            if ((bool)((Hashtable)((Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue())["Toolkit"])["RequireAdmin"])
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the arguments to pass to PowerShell.
+        /// </summary>
+        /// <param name="cliArguments"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
+        private static string GetPowerShellArguments(List<string> cliArguments)
+        {
+            // Check for the App Deploy Script file being specified.
+            if (cliArguments.Exists(x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException("'-Command' parameter was specified on the command-line. Please use the '-File' parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
+            }
+
+            // Determine the path to the script to invoke.
+            string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
+            var fileIndex = Array.FindIndex(cliArguments.ToArray(), x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
+            if (fileIndex != -1)
+            {
+                adtFrontendPath = cliArguments[fileIndex + 1].Replace("\"", null);
+                if (!Path.IsPathRooted(adtFrontendPath))
+                {
+                    adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
+                }
+                cliArguments.RemoveAt(fileIndex + 1);
+                cliArguments.RemoveAt(fileIndex);
+                WriteDebugMessage("'-File' parameter specified on command-line. Passing command-line untouched...");
+            }
+            else if (cliArguments.Exists(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
+            {
+                adtFrontendPath = cliArguments.Find(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", null);
+                if (!Path.IsPathRooted(adtFrontendPath))
+                {
+                    adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
+                }
+                cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
+                WriteDebugMessage("Script (.ps1) file directly specified on command-line.");
+            }
+            else
+            {
+                WriteDebugMessage($"No '-File' or script parameter specified on command-line. Invoking '\"{adtFrontendPath}\"'...");
+            }
+
+            // Verify if the App Deploy script file exists.
+            if (!File.Exists(adtFrontendPath))
+            {
+                throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the App Deploy Script file at '{adtFrontendPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
+            }
+
+            // Add the frontend script file to the arguments (Note that -File has been removed to resolve an issue with WDAC and Constrained Language Mode).
+            string pwshArguments = pwshDefaultArgs + $" -Command & '{adtFrontendPath}'";
+            if (cliArguments.Count > 0)
+            {
+                pwshArguments += $" {string.Join(" ", cliArguments)}";
+            }
+            return pwshArguments + "; [System.Environment]::Exit($Global:LASTEXITCODE)";
         }
 
         /// <summary>
         /// The default path to PowerShell.
         /// </summary>
         private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
+
+        /// <summary>
+        /// The default arguments to pass to PowerShell.
+        /// </summary>
+        private static readonly string pwshDefaultArgs = "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
 
         /// <summary>
         /// The current path of the executing assembly.
@@ -494,11 +516,6 @@ namespace PSADT
         /// The path to the PSAppDeployToolkit module.
         /// </summary>
         private static readonly string devToolkitPath = Path.Combine(currentPath, "..\\..\\..\\PSAppDeployToolkit");
-
-        /// <summary>
-        /// The path to the PSAppDeployToolkit module.
-        /// </summary>
-        private static readonly string validToolkitPath = GetToolkitPath();
 
         /// <summary>
         /// The path to the logging directory.
