@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Principal;
 using System.Runtime.InteropServices;
-using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.Management.Automation.Language;
 using System.Windows.Forms;
 
@@ -179,8 +179,7 @@ namespace PSADT
             {
                 // Set up variables.
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-                string adtToolkitPath = Directory.Exists(devToolkitPath) ? devToolkitPath : Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : (PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First()!.Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault() is string psGalleryPath) ? psGalleryPath : null;
-                string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
+                string adtConfigPath = Path.Combine(currentPath, $"{validToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = pwshDefaultPath;
                 string pwshArguments = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
                 var cliArguments = Environment.GetCommandLineArgs().ToList().ConvertAll(x => x.Trim());
@@ -264,7 +263,7 @@ namespace PSADT
                 }
 
                 // Verify if the PSAppDeployToolkit folder exists.
-                if (String.IsNullOrWhiteSpace(adtToolkitPath))
+                if (String.IsNullOrWhiteSpace(validToolkitPath))
                 {
                     throw new Exception($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'PSAppDeployToolkit' module directory'.\n\nPlease ensure you have all of the required files available to start the installation.");
                 }
@@ -425,6 +424,67 @@ namespace PSADT
         }
 
         /// <summary>
+        /// Determines whether the current process is elevated.
+        /// </summary>
+        /// <returns></returns>
+        private static bool IsElevated()
+        {
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+        }
+
+        /// <summary>
+        /// Gets the PSModulePath environment variable values.
+        /// </summary>
+        /// <returns></returns>
+        private static string[] GetPSModulePaths()
+        {
+            using (var rs = RunspaceFactory.CreateRunspace())
+            {
+                rs.Open(); return ((string)rs.SessionStateProxy.GetVariable("env:PSModulePath")).Split(';');
+            }
+        }
+
+        /// <summary>
+        /// Gets the path to the PSAppDeployToolkit module.
+        /// </summary>
+        /// <returns></returns>
+        private static string? GetToolkitPath()
+        {
+            // Check if there's a PSAppDeployToolkit module path three levels up (we're developing).
+            if (Directory.Exists(devToolkitPath))
+            {
+                return devToolkitPath;
+            }
+
+            // Check if there's a PSAppDeployToolkit module path in the expected v4 directory.
+            if (Directory.Exists(v4ToolkitPath))
+            {
+                return v4ToolkitPath;
+            }
+
+            // Check if there's a PSAppDeployToolkit module path in the expected v3 directory.
+            if (Directory.Exists(v3ToolkitPath))
+            {
+                return v3ToolkitPath;
+            }
+
+            // Check if there's a PSAppDeployToolkit module path in the PSModulePath environment variable.
+            foreach (var psModulePath in GetPSModulePaths())
+            {
+                var validPath = Path.Combine(psModulePath, "PSAppDeployToolkit");
+                if (Directory.Exists(validPath))
+                {
+                    return validPath;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// The default path to PowerShell.
         /// </summary>
         private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
@@ -455,9 +515,14 @@ namespace PSADT
         private static readonly string devToolkitPath = Path.Combine(currentPath, "..\\..\\..\\PSAppDeployToolkit");
 
         /// <summary>
+        /// The path to the PSAppDeployToolkit module.
+        /// </summary>
+        private static readonly string validToolkitPath = GetToolkitPath();
+
+        /// <summary>
         /// The path to the logging directory.
         /// </summary>
-        private static readonly string logDir = Path.Combine(Path.Combine((new WindowsPrincipal(WindowsIdentity.GetCurrent())).IsInRole(WindowsBuiltInRole.Administrator) ? Environment.GetFolderPath(Environment.SpecialFolder.Windows) : Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Logs"), $"{assemblyName}.exe");
+        private static readonly string logDir = Path.Combine(Path.Combine(Environment.GetFolderPath(IsElevated() ? Environment.SpecialFolder.Windows : Environment.SpecialFolder.CommonApplicationData), "Logs"), $"{assemblyName}.exe");
 
         /// <summary>
         /// The path to the log file.
