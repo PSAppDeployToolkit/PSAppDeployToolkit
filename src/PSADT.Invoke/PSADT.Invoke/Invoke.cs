@@ -126,22 +126,26 @@ namespace PSADT
         {
             // Determine whether this is an error message or not.
             bool isError = messageBoxStyle != MsgBoxStyle.Information;
+            string logMessage = debugMessage.Replace("\n\n", " ");
+
+            // Output to the log file.
+            using (StreamWriter sw = new StreamWriter(logPath, true, LogEncoding))
+            {
+                sw.WriteLine(logMessage.Trim());
+            }
 
             // Write to the console if we have one, otherwise display a modal dialog.
             if (inDebugMode)
             {
-                // Strip any forced line breaks from the string.
-                // These are only to make the GUI look nicer.
-                debugMessage = debugMessage.Replace("\n\n", " ");
                 if (isError)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Error.WriteLine(debugMessage);
+                    Console.Error.WriteLine(logMessage);
                     Console.ResetColor();
                 }
                 else
                 {
-                    Console.WriteLine(debugMessage);
+                    Console.WriteLine(logMessage);
                 }
             }
             else if (isError)
@@ -447,6 +451,21 @@ namespace PSADT
         /// The path to the PSAppDeployToolkit module.
         /// </summary>
         private static readonly string devToolkitPath = Path.Combine(currentPath, "..\\..\\..\\PSAppDeployToolkit");
+
+        /// <summary>
+        /// The path to the logging directory.
+        /// </summary>
+        private static readonly string logDir = Directory.CreateDirectory(Path.Combine(Path.Combine(Environment.GetFolderPath(IsElevated() ? Environment.SpecialFolder.Windows : Environment.SpecialFolder.CommonApplicationData), "Logs"), $"{assemblyName}.exe")).FullName;
+
+        /// <summary>
+        /// The path to the log file.
+        /// </summary>
+        private static readonly string logFile = $"{assemblyName}.exe_{DateTime.Now.ToString("O").Split('.')[0].Replace(":", null)}.log";
+
+        /// <summary>
+        /// The full path to the log file.
+        /// </summary>
+        private static readonly string logPath = Path.Combine(logDir, logFile);
 
         /// <summary>
         /// The encoding to use for the log file.
