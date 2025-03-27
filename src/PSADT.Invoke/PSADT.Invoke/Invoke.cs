@@ -420,7 +420,7 @@ namespace PSADT
         /// <summary>
         /// The default arguments to pass to PowerShell.
         /// </summary>
-        private static readonly string pwshDefaultArgs = "-NonInteractive -NoProfile -NoLogo";
+        private static readonly string pwshDefaultArgs = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo";
 
         /// <summary>
         /// The current path of the executing assembly.
