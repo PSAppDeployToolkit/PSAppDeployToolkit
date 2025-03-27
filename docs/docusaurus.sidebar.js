@@ -51,7 +51,6 @@ module.exports = [
     'commands/Get-ADTPresentationSettingsEnabledUsers',
     'commands/Get-ADTRegistryKey',
     'commands/Get-ADTRunAsActiveUser',
-    'commands/Get-ADTSchedulerTask',
     'commands/Get-ADTServiceStartMode',
     'commands/Get-ADTSession',
     'commands/Get-ADTShortcut',

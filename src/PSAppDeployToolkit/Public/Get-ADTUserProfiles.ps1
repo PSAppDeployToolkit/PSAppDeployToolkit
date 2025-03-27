@@ -178,7 +178,10 @@ function Get-ADTUserProfiles
                         }
 
                         # Write out the object to the pipeline.
-                        return $userProfile
+                        if ($userProfile)
+                        {
+                            return $userProfile
+                        }
                     }
                 }
 
