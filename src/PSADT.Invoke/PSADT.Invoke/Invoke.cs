@@ -16,150 +16,6 @@ using Microsoft.VisualBasic;
 namespace PSADT
 {
     /// <summary>
-    /// A utility class to determine a process parent.
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct ParentProcessUtilities
-    {
-        // These members must match PROCESS_BASIC_INFORMATION
-        internal IntPtr Reserved1;
-        internal IntPtr PebBaseAddress;
-        internal IntPtr Reserved2_0;
-        internal IntPtr Reserved2_1;
-        internal IntPtr UniqueProcessId;
-        internal IntPtr InheritedFromUniqueProcessId;
-
-        [DllImport("ntdll.dll")]
-        private static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ParentProcessUtilities processInformation, int processInformationLength, out int returnLength);
-
-        /// <summary>
-        /// Gets the parent process of the current process.
-        /// </summary>
-        /// <returns>An instance of the Process class.</returns>
-        public static Process GetParentProcess()
-        {
-            return GetParentProcess(Process.GetCurrentProcess().Handle);
-        }
-
-        /// <summary>
-        /// Gets the parent process of specified process.
-        /// </summary>
-        /// <param name="id">The process id.</param>
-        /// <returns>An instance of the Process class.</returns>
-        public static Process GetParentProcess(int id)
-        {
-            Process process = Process.GetProcessById(id);
-            return GetParentProcess(process.Handle);
-        }
-
-        /// <summary>
-        /// Gets the parent process of a specified process.
-        /// </summary>
-        /// <param name="handle">The process handle.</param>
-        /// <returns>An instance of the Process class.</returns>
-        public static Process GetParentProcess(IntPtr handle)
-        {
-            ParentProcessUtilities pbi = new ParentProcessUtilities();
-            int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out var returnLength);
-            if (status != 0)
-            {
-                throw new Win32Exception(status);
-            }
-            return Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
-        }
-
-        /// <summary>
-        /// Gets a list of all parent processes of this one.
-        /// </summary>
-        /// <returns>An list of instances of the Process class.</returns>
-        public static List<Process> GetParentProcesses()
-        {
-            List<Process> procs = [];
-            var proc = Process.GetCurrentProcess();
-            while (true)
-            {
-                try
-                {
-                    if (procs.Contains((proc = GetParentProcess(proc.Handle))))
-                    {
-                        break;
-                    }
-                    procs.Add(proc);
-                }
-                catch
-                {
-                    break;
-                }
-            }
-            return procs;
-        }
-    }
-
-    /// <summary>
-    /// A utility class to determine the system information.
-    /// </summary>
-    internal static class NativeSystemInfo
-    {
-        /// <summary>
-        /// Processor architecture types supported by Windows.
-        /// </summary>
-        public enum ProcessorArchitecture : ushort
-        {
-            PROCESSOR_ARCHITECTURE_INTEL = 0,
-            PROCESSOR_ARCHITECTURE_MIPS = 1,
-            PROCESSOR_ARCHITECTURE_ALPHA = 2,
-            PROCESSOR_ARCHITECTURE_PPC = 3,
-            PROCESSOR_ARCHITECTURE_SHX = 4,
-            PROCESSOR_ARCHITECTURE_ARM = 5,
-            PROCESSOR_ARCHITECTURE_IA64 = 6,
-            PROCESSOR_ARCHITECTURE_ALPHA64 = 7,
-            PROCESSOR_ARCHITECTURE_MSIL = 8,
-            PROCESSOR_ARCHITECTURE_AMD64 = 9,
-            PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 = 10,
-            PROCESSOR_ARCHITECTURE_NEUTRAL = 11,
-            PROCESSOR_ARCHITECTURE_ARM64 = 12,
-            PROCESSOR_ARCHITECTURE_ARM32_ON_WIN64 = 13,
-            PROCESSOR_ARCHITECTURE_UNKNOWN = 0xFFFF
-        }
-
-        /// <summary>
-        /// Contains information about the current computer system.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential, Pack = 2)]
-        public struct SYSTEM_INFO
-        {
-            public ProcessorArchitecture wProcessorArchitecture;
-            public ushort wReserved;
-            public uint dwPageSize;
-            public IntPtr lpMinimumApplicationAddress;
-            public IntPtr lpMaximumApplicationAddress;
-            public UIntPtr dwActiveProcessorMask;
-            public uint dwNumberOfProcessors;
-            public uint dwProcessorType;
-            public uint dwAllocationGranularity;
-            public ushort wProcessorLevel;
-            public ushort wProcessorRevision;
-        }
-
-        /// <summary>
-        /// Retrieves information about the current system to an application running under WOW64.
-        /// </summary>
-        /// <param name="lpSystemInfo"></param>
-        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
-        private static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
-
-        /// <summary>
-        /// Retrieves information about the current system to an application running under WOW64.
-        /// </summary>
-        /// <returns></returns>
-        public static SYSTEM_INFO GetNativeSystemInfo()
-        {
-            GetNativeSystemInfo(out SYSTEM_INFO sysInfo);
-            return sysInfo;
-        }
-    }
-
-    /// <summary>
     /// A utility class to invoke a PowerShell script.
     /// </summary>
     internal static class Invoke
@@ -536,5 +392,149 @@ namespace PSADT
         /// The encoding to use for the log file.
         /// </summary>
         private static readonly Encoding LogEncoding = new UTF8Encoding(true);
+    }
+
+    /// <summary>
+    /// A utility class to determine a process parent.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ParentProcessUtilities
+    {
+        // These members must match PROCESS_BASIC_INFORMATION
+        internal IntPtr Reserved1;
+        internal IntPtr PebBaseAddress;
+        internal IntPtr Reserved2_0;
+        internal IntPtr Reserved2_1;
+        internal IntPtr UniqueProcessId;
+        internal IntPtr InheritedFromUniqueProcessId;
+
+        [DllImport("ntdll.dll")]
+        private static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ParentProcessUtilities processInformation, int processInformationLength, out int returnLength);
+
+        /// <summary>
+        /// Gets the parent process of the current process.
+        /// </summary>
+        /// <returns>An instance of the Process class.</returns>
+        public static Process GetParentProcess()
+        {
+            return GetParentProcess(Process.GetCurrentProcess().Handle);
+        }
+
+        /// <summary>
+        /// Gets the parent process of specified process.
+        /// </summary>
+        /// <param name="id">The process id.</param>
+        /// <returns>An instance of the Process class.</returns>
+        public static Process GetParentProcess(int id)
+        {
+            Process process = Process.GetProcessById(id);
+            return GetParentProcess(process.Handle);
+        }
+
+        /// <summary>
+        /// Gets the parent process of a specified process.
+        /// </summary>
+        /// <param name="handle">The process handle.</param>
+        /// <returns>An instance of the Process class.</returns>
+        public static Process GetParentProcess(IntPtr handle)
+        {
+            ParentProcessUtilities pbi = new ParentProcessUtilities();
+            int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out var returnLength);
+            if (status != 0)
+            {
+                throw new Win32Exception(status);
+            }
+            return Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
+        }
+
+        /// <summary>
+        /// Gets a list of all parent processes of this one.
+        /// </summary>
+        /// <returns>An list of instances of the Process class.</returns>
+        public static List<Process> GetParentProcesses()
+        {
+            List<Process> procs = [];
+            var proc = Process.GetCurrentProcess();
+            while (true)
+            {
+                try
+                {
+                    if (procs.Contains((proc = GetParentProcess(proc.Handle))))
+                    {
+                        break;
+                    }
+                    procs.Add(proc);
+                }
+                catch
+                {
+                    break;
+                }
+            }
+            return procs;
+        }
+    }
+
+    /// <summary>
+    /// A utility class to determine the system information.
+    /// </summary>
+    internal static class NativeSystemInfo
+    {
+        /// <summary>
+        /// Processor architecture types supported by Windows.
+        /// </summary>
+        public enum ProcessorArchitecture : ushort
+        {
+            PROCESSOR_ARCHITECTURE_INTEL = 0,
+            PROCESSOR_ARCHITECTURE_MIPS = 1,
+            PROCESSOR_ARCHITECTURE_ALPHA = 2,
+            PROCESSOR_ARCHITECTURE_PPC = 3,
+            PROCESSOR_ARCHITECTURE_SHX = 4,
+            PROCESSOR_ARCHITECTURE_ARM = 5,
+            PROCESSOR_ARCHITECTURE_IA64 = 6,
+            PROCESSOR_ARCHITECTURE_ALPHA64 = 7,
+            PROCESSOR_ARCHITECTURE_MSIL = 8,
+            PROCESSOR_ARCHITECTURE_AMD64 = 9,
+            PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 = 10,
+            PROCESSOR_ARCHITECTURE_NEUTRAL = 11,
+            PROCESSOR_ARCHITECTURE_ARM64 = 12,
+            PROCESSOR_ARCHITECTURE_ARM32_ON_WIN64 = 13,
+            PROCESSOR_ARCHITECTURE_UNKNOWN = 0xFFFF
+        }
+
+        /// <summary>
+        /// Contains information about the current computer system.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, Pack = 2)]
+        public struct SYSTEM_INFO
+        {
+            public ProcessorArchitecture wProcessorArchitecture;
+            public ushort wReserved;
+            public uint dwPageSize;
+            public IntPtr lpMinimumApplicationAddress;
+            public IntPtr lpMaximumApplicationAddress;
+            public UIntPtr dwActiveProcessorMask;
+            public uint dwNumberOfProcessors;
+            public uint dwProcessorType;
+            public uint dwAllocationGranularity;
+            public ushort wProcessorLevel;
+            public ushort wProcessorRevision;
+        }
+
+        /// <summary>
+        /// Retrieves information about the current system to an application running under WOW64.
+        /// </summary>
+        /// <param name="lpSystemInfo"></param>
+        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
+        private static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
+
+        /// <summary>
+        /// Retrieves information about the current system to an application running under WOW64.
+        /// </summary>
+        /// <returns></returns>
+        public static SYSTEM_INFO GetNativeSystemInfo()
+        {
+            GetNativeSystemInfo(out SYSTEM_INFO sysInfo);
+            return sysInfo;
+        }
     }
 }
