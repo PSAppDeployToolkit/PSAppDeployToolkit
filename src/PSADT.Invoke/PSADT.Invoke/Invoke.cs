@@ -179,7 +179,7 @@ namespace PSADT
             {
                 // Set up variables.
                 string adtFrontendPath = Path.Combine(currentPath, $"{assemblyName}.ps1");
-                string adtToolkitPath = Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : (PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First()!.Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault() is string psGalleryPath) ? psGalleryPath : null;
+                string adtToolkitPath = Directory.Exists(devToolkitPath) ? devToolkitPath : Directory.Exists(v4ToolkitPath) ? v4ToolkitPath : Directory.Exists(v3ToolkitPath) ? v3ToolkitPath : (PowerShell.Create().AddScript("$env:PSModulePath").Invoke().Select(o => o.BaseObject as string).First()!.Split(';').Where(p => Directory.Exists(Path.Combine(p, "PSAppDeployToolkit"))).Select(p => Path.Combine(p, "PSAppDeployToolkit")).FirstOrDefault() is string psGalleryPath) ? psGalleryPath : null;
                 string adtConfigPath = Path.Combine(currentPath, $"{adtToolkitPath}\\Config\\config.psd1");
                 string pwshExecutablePath = pwshDefaultPath;
                 string pwshArguments = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
@@ -448,6 +448,11 @@ namespace PSADT
         /// The path to the PSAppDeployToolkit module.
         /// </summary>
         private static readonly string v4ToolkitPath = Path.Combine(currentPath, "PSAppDeployToolkit");
+
+        /// <summary>
+        /// The path to the PSAppDeployToolkit module.
+        /// </summary>
+        private static readonly string devToolkitPath = Path.Combine(currentPath, "..\\..\\..\\PSAppDeployToolkit");
 
         /// <summary>
         /// The path to the logging directory.
