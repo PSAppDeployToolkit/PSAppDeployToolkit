@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Language;
@@ -254,6 +255,19 @@ namespace PSADT
         }
 
         /// <summary>
+        /// Determines whether the current process is elevated.
+        /// </summary>
+        /// <returns></returns>
+        private static bool IsElevated()
+        {
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+        }
+
+        /// <summary>
         /// Determines whether the script requires elevation.
         /// </summary>
         /// <param name="toolkitPath"></param>
@@ -262,6 +276,12 @@ namespace PSADT
         /// <exception cref="FileNotFoundException"></exception>
         private static bool RequireElevation()
         {
+            // If the process is elevated, we don't need to check the config file.
+            if (IsElevated())
+            {
+                return false;
+            }
+
             // Test whether we've got a local config before continuing.
             if ((Path.Combine(currentPath, "Config\\config.psd1") is string adtLocalConfigPath) && File.Exists(adtLocalConfigPath))
             {
