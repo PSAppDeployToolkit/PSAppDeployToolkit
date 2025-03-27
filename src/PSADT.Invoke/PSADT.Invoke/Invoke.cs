@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Language;
@@ -26,21 +25,31 @@ namespace PSADT
         /// <param name="args"></param>
         private static void Main(string[] args)
         {
-            // Set up exit code.
-            int exitCode = 60010;
+            // Flag whether we're debugging or not.
+            var cliArguments = args.ToList().ConvertAll(x => x.Trim());
+            if (cliArguments.Exists(x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (!inDebugMode)
+                {
+                    inDebugMode = ConsoleUtils.AllocConsole();
+                }
+                cliArguments.RemoveAll(x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
+            }
 
+            // Announce commencement and begin.
+            WriteDebugMessage($"Preparing for PSAppDeployToolkit invocation.");
             try
             {
-                // Announce commencement.
-                WriteDebugMessage($"Commencing invocation.");
-                var cliArguments = args.ToList().ConvertAll(x => x.Trim());
+                // Establish the PowerShell process start information.
                 var processStartInfo = new ProcessStartInfo
                 {
                     FileName = GetPowerShellPath(cliArguments),
                     Arguments = GetPowerShellArguments(cliArguments),
-                    WindowStyle = ProcessWindowStyle.Hidden,
                     WorkingDirectory = currentPath,
-                    UseShellExecute = true
+                    RedirectStandardOutput = inDebugMode,
+                    RedirectStandardError = inDebugMode,
+                    UseShellExecute = !inDebugMode,
+                    CreateNoWindow = inDebugMode,
                 };
                 if (RequireElevation() && (Environment.OSVersion.Version.Major >= 6))
                 {
@@ -51,32 +60,58 @@ namespace PSADT
                 WriteDebugMessage($"Working Directory: {processStartInfo.WorkingDirectory}");
                 WriteDebugMessage($"Requires Admin: {processStartInfo.Verb == "runas"}");
 
-                // Start the PowerShell process and wait for completion.
-                using (var process = new Process { StartInfo = processStartInfo })
+                // Null out PSModulePath to prevent any module conflicts.
+                // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
+                Environment.SetEnvironmentVariable("PSModulePath", null);
+
+                // Invoke the given script as per the StartInfo.
+                try
                 {
-                    // Null out PSModulePath to prevent any module conflicts.
-                    // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
-                    Environment.SetEnvironmentVariable("PSModulePath", null);
-                    exitCode = 60011;
-                    process.Start();
-                    process.WaitForExit();
-                    exitCode = process.ExitCode;
-                    if ((exitCode == 1) || (exitCode == 64) || (exitCode == 255) || ((exitCode >= 60000) && (exitCode <= 79999) && (exitCode != 60012)))
+                    using (var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode })
                     {
-                        throw new ExternalException($"An error occurred while running {Path.GetFileName(processStartInfo.FileName)}. Exit code: {exitCode}", exitCode);
+                        // Redirect the output and error streams if we're debugging, then start.
+                        if (inDebugMode)
+                        {
+                            process.ErrorDataReceived += (sender, e) =>
+                            {
+                                if (!string.IsNullOrWhiteSpace(e.Data))
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.Error.WriteLine(e.Data);
+                                    Console.ResetColor();
+                                }
+                            };
+                            process.OutputDataReceived += (sender, e) =>
+                            {
+                                if (!string.IsNullOrWhiteSpace(e.Data))
+                                {
+                                    Console.WriteLine(e.Data);
+                                }
+                            };
+                        }
+                        WriteDebugMessage($"Commencing invocation.\n");
+                        process.Start();
+
+                        // If we're debugging, begin reading the output and error streams, then exit with the process's exit code.
+                        if (inDebugMode)
+                        {
+                            process.BeginOutputReadLine();
+                            process.BeginErrorReadLine();
+                        }
+                        process.WaitForExit();
+                        ExitProcess(process.ExitCode);
                     }
                 }
-
-                // Exit with the script's code.
-                WriteDebugMessage($"Exit Code: {exitCode}");
+                catch (Exception ex)
+                {
+                    WriteDebugMessage(ex.Message, MsgBoxStyle.Critical);
+                    ExitProcess(60011);
+                }
             }
             catch (Exception ex)
             {
-                WriteDebugMessage(ex.Message, true, MsgBoxStyle.Critical);
-            }
-            finally
-            {
-                Environment.Exit(exitCode);
+                WriteDebugMessage(ex.Message, MsgBoxStyle.Critical);
+                ExitProcess(60010);
             }
         }
 
@@ -84,37 +119,32 @@ namespace PSADT
         /// Writes a debug message to the log file and optionally displays an error message.
         /// </summary>
         /// <param name="debugMessage"></param>
-        /// <param name="isDisplayError"></param>
         /// <param name="messageBoxStyle"></param>
-        private static void WriteDebugMessage(string debugMessage, bool isDisplayError = false, MsgBoxStyle messageBoxStyle = MsgBoxStyle.Information)
+        private static void WriteDebugMessage(string debugMessage, MsgBoxStyle messageBoxStyle = MsgBoxStyle.Information)
         {
-            // Output to the log file.
-            if (!Directory.Exists(logDir))
-            {
-                Directory.CreateDirectory(logDir);
-            }
-            using (StreamWriter sw = new StreamWriter(logPath, true, LogEncoding))
-            {
-                sw.WriteLine(debugMessage.Replace("\n", " "));
-            }
+            // Determine whether this is an error message or not.
+            bool isError = messageBoxStyle != MsgBoxStyle.Information;
 
-            // If we are to display an error message...
-            if (isDisplayError)
+            // Write to the console if we have one, otherwise display a modal dialog.
+            if (inDebugMode)
+            {
+                // Strip any forced line breaks from the string.
+                // These are only to make the GUI look nicer.
+                debugMessage = debugMessage.Replace("\n\n", " ");
+                if (isError)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Error.WriteLine(debugMessage);
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.WriteLine(debugMessage);
+                }
+            }
+            else if (isError)
             {
                 Interaction.MsgBox(debugMessage, messageBoxStyle | MsgBoxStyle.SystemModal, $"{assemblyName} {assemblyVersion}");
-            }
-        }
-
-        /// <summary>
-        /// Determines whether the current process is elevated.
-        /// </summary>
-        /// <returns></returns>
-        private static bool IsElevated()
-        {
-            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-            {
-                WindowsPrincipal principal = new WindowsPrincipal(identity);
-                return principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
         }
 
@@ -334,6 +364,29 @@ namespace PSADT
         }
 
         /// <summary>
+        /// Exits the process with the specified exit code.
+        /// </summary>
+        /// <param name="exitcode"></param>
+        private static void ExitProcess(int exitcode)
+        {
+            if (inDebugMode)
+            {
+                Console.WriteLine("\nPress any key to exit...");
+                if (ConsoleUtils.GetConsoleWindow() != IntPtr.Zero)
+                {
+                    Console.ReadKey();
+                }
+                inDebugMode = !ConsoleUtils.FreeConsole();
+            }
+            Environment.Exit(exitcode);
+        }
+
+        /// <summary>
+        /// Determines if the application is in debug mode.
+        /// </summary>
+        private static bool inDebugMode = System.Diagnostics.Debugger.IsAttached;
+
+        /// <summary>
         /// The default path to PowerShell.
         /// </summary>
         private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
@@ -341,7 +394,7 @@ namespace PSADT
         /// <summary>
         /// The default arguments to pass to PowerShell.
         /// </summary>
-        private static readonly string pwshDefaultArgs = "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden";
+        private static readonly string pwshDefaultArgs = "-NonInteractive -NoProfile -NoLogo";
 
         /// <summary>
         /// The current path of the executing assembly.
@@ -372,21 +425,6 @@ namespace PSADT
         /// The path to the PSAppDeployToolkit module.
         /// </summary>
         private static readonly string devToolkitPath = Path.Combine(currentPath, "..\\..\\..\\PSAppDeployToolkit");
-
-        /// <summary>
-        /// The path to the logging directory.
-        /// </summary>
-        private static readonly string logDir = Path.Combine(Path.Combine(Environment.GetFolderPath(IsElevated() ? Environment.SpecialFolder.Windows : Environment.SpecialFolder.CommonApplicationData), "Logs"), $"{assemblyName}.exe");
-
-        /// <summary>
-        /// The path to the log file.
-        /// </summary>
-        private static readonly string logFile = $"{assemblyName}.exe_{DateTime.Now.ToString("O").Split('.')[0].Replace(":", null)}.log";
-
-        /// <summary>
-        /// The full path to the log file.
-        /// </summary>
-        private static readonly string logPath = Path.Combine(logDir, logFile);
 
         /// <summary>
         /// The encoding to use for the log file.
@@ -536,5 +574,34 @@ namespace PSADT
             GetNativeSystemInfo(out SYSTEM_INFO sysInfo);
             return sysInfo;
         }
+    }
+
+    /// <summary>
+    /// A utility class to allocate and free a console window.
+    /// </summary>
+    internal static class ConsoleUtils
+    {
+        /// <summary>
+        /// Allocates a console to the process.
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AllocConsole();
+
+        /// <summary>
+        /// Gets a handle to the allocated console window.
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        internal static extern IntPtr GetConsoleWindow();
+
+        /// <summary>
+        /// Frees the console allocated to the process.
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool FreeConsole();
     }
 }
