@@ -55,10 +55,10 @@ namespace PSADT
                 {
                     processStartInfo.Verb = "runas";
                 }
-                WriteDebugMessage($"PowerShell Path: {processStartInfo.FileName}");
-                WriteDebugMessage($"PowerShell Args: {processStartInfo.Arguments}");
-                WriteDebugMessage($"Working Directory: {processStartInfo.WorkingDirectory}");
-                WriteDebugMessage($"Requires Admin: {processStartInfo.Verb == "runas"}");
+                WriteDebugMessage($"PowerShell Path: [{processStartInfo.FileName}]");
+                WriteDebugMessage($"PowerShell Args: [{processStartInfo.Arguments}]");
+                WriteDebugMessage($"Working Directory: [{processStartInfo.WorkingDirectory}]");
+                WriteDebugMessage($"Requires Admin: [{processStartInfo.Verb == "runas"}]");
 
                 // Null out PSModulePath to prevent any module conflicts.
                 // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
@@ -193,7 +193,7 @@ namespace PSADT
                     return validPath;
                 }
             }
-            throw new DirectoryNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'PSAppDeployToolkit' module directory'.\n\nPlease ensure you have all of the required files available to start the installation.");
+            throw new DirectoryNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the [PSAppDeployToolkit] module directory.\n\nPlease ensure you have all of the required files available to start the installation.");
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace PSADT
             bool coreSpecified = cliArguments.Exists(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
             if (x32Specified && coreSpecified)
             {
-                throw new ArgumentException("The use of both '/32' and '/Core' on the command line is not supported.");
+                throw new ArgumentException("The use of both [/32] and [/Core] on the command line is not supported.");
             }
 
             // Check if we're using PowerShell Core (7).
@@ -219,9 +219,9 @@ namespace PSADT
             {
                 if (!(Environment.GetEnvironmentVariable("PATH").Split(';').Where(p => File.Exists(Path.Combine(p, "pwsh.exe"))).Select(p => Path.Combine(p, "pwsh.exe")).FirstOrDefault() is string pwshCorePath))
                 {
-                    throw new InvalidOperationException("The '/Core' parameter was specified, but PowerShell Core was not found on this system.");
+                    throw new InvalidOperationException("The [/Core] parameter was specified, but PowerShell Core was not found on this system.");
                 }
-                WriteDebugMessage("The '/Core' parameter was specified on the command line. Running using PowerShell 7...");
+                WriteDebugMessage("The [/Core] parameter was specified on the command line. Running using PowerShell 7...");
                 cliArguments.RemoveAll(x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
                 pwshExecutablePath = pwshCorePath;
             }
@@ -230,7 +230,7 @@ namespace PSADT
             if (x32Specified)
             {
                 // Remove the /32 command line argument so that it is not passed to PowerShell script
-                WriteDebugMessage("The '/32' parameter was specified on the command line. Running in forced x86 PowerShell mode...");
+                WriteDebugMessage("The [/32] parameter was specified on the command line. Running in forced x86 PowerShell mode...");
                 cliArguments.RemoveAll(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
                 if (NativeSystemInfo.GetNativeSystemInfo().wProcessorArchitecture.ToString().EndsWith("64"))
                 {
@@ -268,7 +268,7 @@ namespace PSADT
                 var localConfigAst = Parser.ParseFile(adtLocalConfigPath, out Token[] localConfigTokens, out ParseError[] localConfigErrors);
                 if (localConfigErrors.Length > 0)
                 {
-                    throw new InvalidDataException($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtLocalConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
+                    throw new InvalidDataException($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the [config.psd1] file at [{adtLocalConfigPath}].\n\nPlease review your configuration to ensure it's correct before starting the installation.");
                 }
 
                 // Test that the local config is a hashtable.
@@ -286,14 +286,14 @@ namespace PSADT
             var adtConfigPath = Path.Combine(currentPath, $"{GetToolkitPath()}\\Config\\config.psd1");
             if (!File.Exists(adtConfigPath))
             {
-                throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
+                throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the [config.psd1] file at [{adtConfigPath}].\n\nPlease ensure you have all of the required files available to start the installation.");
             }
 
             // Parse our config and throw if we have any errors.
             var configAst = Parser.ParseFile(adtConfigPath, out Token[] configTokens, out ParseError[] configErrors);
             if (configErrors.Length > 0)
             {
-                throw new InvalidDataException($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the 'config.psd1' file at '{adtConfigPath}'.\n\nPlease review your configuration to ensure it's correct before starting the installation.");
+                throw new InvalidDataException($"A critical component of PSAppDeployToolkit is corrupt.\n\nUnable to parse the [config.psd1] file at [{adtConfigPath}].\n\nPlease review your configuration to ensure it's correct before starting the installation.");
             }
 
             // Determine whether we require admin rights or not.
@@ -316,7 +316,7 @@ namespace PSADT
             // Check for the App Deploy Script file being specified.
             if (cliArguments.Exists(x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException("'-Command' parameter was specified on the command-line. Please use the '-File' parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
+                throw new ArgumentException("The [-Command] parameter was specified on the command line. Please use the [-File] parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
             }
 
             // Determine the path to the script to invoke.
@@ -331,7 +331,7 @@ namespace PSADT
                 }
                 cliArguments.RemoveAt(fileIndex + 1);
                 cliArguments.RemoveAt(fileIndex);
-                WriteDebugMessage("'-File' parameter specified on command-line. Passing command-line untouched...");
+                WriteDebugMessage("'-File' parameter specified on command line. Passing command line untouched...");
             }
             else if (cliArguments.Exists(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
             {
@@ -341,17 +341,17 @@ namespace PSADT
                     adtFrontendPath = Path.Combine(currentPath, adtFrontendPath);
                 }
                 cliArguments.RemoveAt(cliArguments.FindIndex(x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
-                WriteDebugMessage("Script (.ps1) file directly specified on command-line.");
+                WriteDebugMessage("Script (.ps1) file directly specified on command line.");
             }
             else
             {
-                WriteDebugMessage($"No '-File' or script parameter specified on command-line. Invoking '\"{adtFrontendPath}\"'...");
+                WriteDebugMessage($"Using default script path [{adtFrontendPath}]...");
             }
 
             // Verify if the App Deploy script file exists.
             if (!File.Exists(adtFrontendPath))
             {
-                throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the App Deploy Script file at '{adtFrontendPath}'.\n\nPlease ensure you have all of the required files available to start the installation.");
+                throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the App Deploy Script file at [{adtFrontendPath}].\n\nPlease ensure you have all of the required files available to start the installation.");
             }
 
             // Add the frontend script file to the arguments (Note that -File has been removed to resolve an issue with WDAC and Constrained Language Mode).
