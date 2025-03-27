@@ -144,6 +144,7 @@ namespace PSADT
             }
             else if (isError)
             {
+                DpiUtils.SetProcessDPIAware();
                 Interaction.MsgBox(debugMessage, messageBoxStyle | MsgBoxStyle.SystemModal, $"{assemblyName} {assemblyVersion}");
             }
         }
@@ -603,5 +604,19 @@ namespace PSADT
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool FreeConsole();
+    }
+
+    /// <summary>
+    /// A utility class to set the process as DPI aware.
+    /// </summary>
+    internal static class DpiUtils
+    {
+        /// <summary>
+        /// Sets the process as DPI aware.
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("user32.dll", SetLastError = false, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetProcessDPIAware();
     }
 }
