@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents detailed information about a running process.
     /// </summary>
-    public readonly struct ProcessInfo
+    public sealed class ProcessInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessInfo"/> struct.
@@ -23,17 +23,17 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the unique identifier of the process.
         /// </summary>
-        public int Id { get; }
+        public readonly int Id;
 
         /// <summary>
         /// Gets the handle to the process.
         /// </summary>
-        public IntPtr Handle { get; }
+        public readonly IntPtr Handle;
 
         /// <summary>
         /// Gets the name of the process.
         /// </summary>
-        public string ProcessName { get; }
+        public readonly string ProcessName;
 
         /// <summary>
         /// Returns a string representation of the current <see cref="ProcessInfo"/> object.

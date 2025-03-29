@@ -7,7 +7,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about a user profile.
     /// </summary>
-    public readonly struct UserProfile
+    public sealed class UserProfile
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserProfile"/> struct.
@@ -53,57 +53,57 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the NT account associated with the user profile.
         /// </summary>
-        public NTAccount NTAccount { get; }
+        public readonly NTAccount NTAccount;
 
         /// <summary>
         /// Gets the security identifier (SID) for the user profile.
         /// </summary>
-        public SecurityIdentifier SID { get; }
+        public readonly SecurityIdentifier SID;
 
         /// <summary>
         /// Gets the path to the user's profile directory.
         /// </summary>
-        public DirectoryInfo ProfilePath { get; }
+        public readonly DirectoryInfo ProfilePath;
         /// <summary>
         /// Gets the path to the user's AppData directory.
         /// </summary>
 
-        public DirectoryInfo? AppDataPath { get; }
+        public readonly DirectoryInfo? AppDataPath;
 
         /// <summary>
         /// Gets the path to the user's LocalAppData directory.
         /// </summary>
-        public DirectoryInfo? LocalAppDataPath { get; }
+        public readonly DirectoryInfo? LocalAppDataPath;
 
         /// <summary>
         /// Gets the path to the user's Desktop directory.
         /// </summary>
-        public DirectoryInfo? DesktopPath { get; }
+        public readonly DirectoryInfo? DesktopPath;
 
         /// <summary>
         /// Gets the path to the user's Documents directory.
         /// </summary>
-        public DirectoryInfo? DocumentsPath { get; }
+        public readonly DirectoryInfo? DocumentsPath;
 
         /// <summary>
         /// Gets the path to the user's Start Menu directory.
         /// </summary>
-        public DirectoryInfo? StartMenuPath { get; }
+        public readonly DirectoryInfo? StartMenuPath;
 
         /// <summary>
         /// Gets the path to the user's Temp directory.
         /// </summary>
-        public DirectoryInfo? TempPath { get; }
+        public readonly DirectoryInfo? TempPath;
 
         /// <summary>
         /// Gets the path to the user's OneDrive directory.
         /// </summary>
-        public DirectoryInfo? OneDrivePath { get; }
+        public readonly DirectoryInfo? OneDrivePath;
 
         /// <summary>
         /// Gets the path to the user's OneDrive for Business directory.
         /// </summary>
-        public DirectoryInfo? OneDriveCommercialPath { get; }
+        public readonly DirectoryInfo? OneDriveCommercialPath;
 
         /// <summary>
         /// Returns a string that represents the current <see cref="UserProfile"/> object.

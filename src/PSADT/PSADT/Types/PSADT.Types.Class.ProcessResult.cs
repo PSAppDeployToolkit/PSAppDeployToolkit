@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents the result of a process execution, including exit code and standard output/error.
     /// </summary>
-    public readonly struct ProcessResult
+    public sealed class ProcessResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
@@ -21,17 +21,17 @@
         /// <summary>
         /// Gets the exit code of the process.
         /// </summary>
-        public int ExitCode { get; }
+        public readonly int ExitCode;
 
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        public string? StdOut { get; }
+        public readonly string? StdOut;
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        public string? StdErr { get; }
+        public readonly string? StdErr;
 
         /// <summary>
         /// Returns a string that represents the current <see cref="ProcessResult"/> object.

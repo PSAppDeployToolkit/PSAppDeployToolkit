@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents MSI (Microsoft Installer) summary information.
     /// </summary>
-    public readonly struct MsiSummaryInfo
+    public sealed class MsiSummaryInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MsiSummaryInfo"/> struct.
@@ -55,87 +55,87 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the code page of the MSI file.
         /// </summary>
-        public int CodePage { get; }
+        public readonly int CodePage;
 
         /// <summary>
         /// Gets the title of the MSI package.
         /// </summary>
-        public string Title { get; }
+        public readonly string Title;
 
         /// <summary>
         /// Gets the subject of the MSI package.
         /// </summary>
-        public string Subject { get; }
+        public readonly string Subject;
 
         /// <summary>
         /// Gets the author of the MSI package.
         /// </summary>
-        public string Author { get; }
+        public readonly string Author;
 
         /// <summary>
         /// Gets the keywords associated with the MSI package.
         /// </summary>
-        public string Keywords { get; }
+        public readonly string Keywords;
 
         /// <summary>
         /// Gets the comments or notes about the MSI package.
         /// </summary>
-        public string Comments { get; }
+        public readonly string Comments;
 
         /// <summary>
         /// Gets the template of the MSI package.
         /// </summary>
-        public string Template { get; }
+        public readonly string Template;
 
         /// <summary>
         /// Gets the name of the user who last saved the MSI package.
         /// </summary>
-        public string LastSavedBy { get; }
+        public readonly string LastSavedBy;
 
         /// <summary>
         /// Gets the revision number of the MSI package.
         /// </summary>
-        public Guid RevisionNumber { get; }
+        public readonly Guid RevisionNumber;
 
         /// <summary>
         /// Gets the date and time when the MSI package was last printed.
         /// </summary>
-        public DateTime? LastPrinted { get; }
+        public readonly DateTime? LastPrinted;
 
         /// <summary>
         /// Gets the date and time when the MSI package was created.
         /// </summary>
-        public DateTime CreateTimeDate { get; }
+        public readonly DateTime CreateTimeDate;
 
         /// <summary>
         /// Gets the date and time when the MSI package was last saved.
         /// </summary>
-        public DateTime LastSaveTimeDate { get; }
+        public readonly DateTime LastSaveTimeDate;
 
         /// <summary>
         /// Gets the number of pages in the MSI package.
         /// </summary>
-        public int PageCount { get; }
+        public readonly int PageCount;
 
         /// <summary>
         /// Gets the word count of the MSI package.
         /// </summary>
-        public int WordCount { get; }
+        public readonly int WordCount;
 
         /// <summary>
         /// Gets the character count of the MSI package.
         /// </summary>
-        public int? CharacterCount { get; }
+        public readonly int? CharacterCount;
 
         /// <summary>
         /// Gets the application used to create the MSI package.
         /// </summary>
-        public string CreatingApplication { get; }
+        public readonly string CreatingApplication;
 
         /// <summary>
         /// Gets the security descriptor for the MSI package.
         /// </summary>
-        public int Security { get; }
+        public readonly int Security;
 
         /// <summary>
         /// Returns a string representation of the MSI summary information.

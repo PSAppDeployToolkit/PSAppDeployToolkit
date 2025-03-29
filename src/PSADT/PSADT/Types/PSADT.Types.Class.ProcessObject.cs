@@ -7,7 +7,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents basic information about a process.
     /// </summary>
-    public readonly struct ProcessObject
+    public sealed class ProcessObject
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessObject"/> struct.
@@ -110,17 +110,17 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the name of the process.
         /// </summary>
-        public string Name { get; }
+        public readonly string Name;
 
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
-        public string? Description { get; }
+        public readonly string? Description;
 
         /// <summary>
         /// Gets the filter script for the process.
         /// </summary>
-        public ScriptBlock? Filter { get; }
+        public readonly ScriptBlock? Filter;
 
         /// <summary>
         /// Returns a string that represents the current <see cref="ProcessObject"/> object.

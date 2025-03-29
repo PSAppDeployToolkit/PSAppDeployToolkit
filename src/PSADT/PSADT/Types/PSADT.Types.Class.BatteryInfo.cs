@@ -5,42 +5,42 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about the system's battery.
     /// </summary>
-    public readonly struct BatteryInfo
+    public sealed class BatteryInfo
     {
         /// <summary>
         /// Gets the current AC power line status.
         /// </summary>
-        public PowerLineStatus ACPowerLineStatus { get; }
+        public readonly PowerLineStatus ACPowerLineStatus;
 
         /// <summary>
         /// Gets the current battery charge status.
         /// </summary>
-        public BatteryChargeStatus BatteryChargeStatus { get; }
+        public readonly BatteryChargeStatus BatteryChargeStatus;
 
         /// <summary>
         /// Gets the current battery life percentage.
         /// </summary>
-        public float BatteryLifePercent { get; }
+        public readonly float BatteryLifePercent;
 
         /// <summary>
         /// Gets the remaining battery life as a <see cref="TimeSpan"/>.
         /// </summary>
-        public TimeSpan BatteryLifeRemaining { get; }
+        public readonly TimeSpan BatteryLifeRemaining;
 
         /// <summary>
         /// Gets the full battery lifetime as a <see cref="TimeSpan"/>.
         /// </summary>
-        public TimeSpan BatteryFullLifetime { get; }
+        public readonly TimeSpan BatteryFullLifetime;
 
         /// <summary>
         /// Gets a value indicating whether the system is using AC power.
         /// </summary>
-        public bool IsUsingACPower { get; }
+        public readonly bool IsUsingACPower;
 
         /// <summary>
         /// Gets a value indicating whether the system is a laptop.
         /// </summary>
-        public bool IsLaptop { get; }
+        public readonly bool IsLaptop;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BatteryInfo"/> struct,
@@ -97,7 +97,7 @@ namespace PSADT.Types
         /// Returns the battery life percentage as a formatted string (e.g., "85%").
         /// </summary>
         /// <returns>A string representing the formatted battery percentage.</returns>
-        public readonly string GetFormattedBatteryPercentage()
+        public string GetFormattedBatteryPercentage()
         {
             return $"{BatteryLifePercent:F1}%";
         }
@@ -106,7 +106,7 @@ namespace PSADT.Types
         /// Returns a summary of the battery information in a readable format.
         /// </summary>
         /// <returns>A string summarizing the battery status.</returns>
-        public readonly string GetBatterySummary()
+        public string GetBatterySummary()
         {
             var status = IsUsingACPower ? "Plugged into AC" : "On Battery";
             var batteryLife = BatteryLifeRemaining.TotalSeconds > 0 ? $"{BatteryLifeRemaining.TotalMinutes:F0} minutes remaining" : "Unknown time remaining";

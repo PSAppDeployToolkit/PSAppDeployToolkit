@@ -6,7 +6,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about reboot and pending operations on the system.
     /// </summary>
-    public readonly struct RebootInfo
+    public sealed class RebootInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RebootInfo"/> struct with the specified values.
@@ -51,63 +51,63 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the name of the computer.
         /// </summary>
-        public string ComputerName { get; }
+        public readonly string ComputerName;
 
         /// <summary>
         /// Gets the last boot-up time of the system.
         /// </summary>
-        public DateTime LastBootUpTime { get; }
+        public readonly DateTime LastBootUpTime;
 
         /// <summary>
         /// Gets a value indicating whether a system reboot is pending.
         /// </summary>
-        public bool IsSystemRebootPending { get; }
+        public readonly bool IsSystemRebootPending;
 
         /// <summary>
         /// Gets a value indicating whether Component-Based Servicing (CBS) requires a reboot.
         /// </summary>
-        public bool IsCBServicingRebootPending { get; }
+        public readonly bool IsCBServicingRebootPending;
 
         /// <summary>
         /// Gets a value indicating whether a Windows Update reboot is pending.
         /// </summary>
-        public bool IsWindowsUpdateRebootPending { get; }
+        public readonly bool IsWindowsUpdateRebootPending;
 
         /// <summary>
         /// Gets a value indicating whether the SCCM client requires a reboot.
         /// </summary>
-        public bool? IsSCCMClientRebootPending { get; }
+        public readonly bool? IsSCCMClientRebootPending;
 
         /// <summary>
         /// Gets a value indicating whether the Intune Management Extension client requires a reboot.
         /// </summary>
-        public bool? IsIntuneClientRebootPending { get; }
+        public readonly bool? IsIntuneClientRebootPending;
 
         /// <summary>
         /// Gets a value indicating whether an App-V client requires a reboot.
         /// </summary>
-        public bool IsAppVRebootPending { get; }
+        public readonly bool IsAppVRebootPending;
 
         /// <summary>
         /// Gets a value indicating whether file rename operations require a reboot.
         /// </summary>
-        public bool? IsFileRenameRebootPending { get; }
+        public readonly bool? IsFileRenameRebootPending;
 
         /// <summary>
         /// Gets the list of pending file rename operations.
         /// </summary>
-        public ReadOnlyCollection<string> PendingFileRenameOperations { get; }
+        public readonly ReadOnlyCollection<string> PendingFileRenameOperations;
 
         /// <summary>
         /// Gets the error messages related to reboot operations.
         /// </summary>
-        public ReadOnlyCollection<string> ErrorMsg { get; }
+        public readonly ReadOnlyCollection<string> ErrorMsg;
 
         /// <summary>
         /// Returns a value indicating whether any reboot is pending.
         /// </summary>
         /// <returns>True if any reboot is pending; otherwise false.</returns>
-        public readonly bool HasPendingReboot()
+        public bool HasPendingReboot()
         {
             return IsSystemRebootPending ||
                    IsCBServicingRebootPending ||

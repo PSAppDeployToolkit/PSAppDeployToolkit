@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about a window in the system.
     /// </summary>
-    public readonly struct WindowInfo
+    public sealed class WindowInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowInfo"/> struct.
@@ -27,27 +27,27 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the title of the window.
         /// </summary>
-        public string WindowTitle { get; }
+        public readonly string WindowTitle;
 
         /// <summary>
         /// Gets the handle to the window.
         /// </summary>
-        public IntPtr WindowHandle { get; }
+        public readonly IntPtr WindowHandle;
 
         /// <summary>
         /// Gets the name of the parent process that owns the window.
         /// </summary>
-        public string? ParentProcess { get; }
+        public readonly string? ParentProcess;
 
         /// <summary>
         /// Gets the handle to the main window of the parent process.
         /// </summary>
-        public IntPtr ParentProcessMainWindowHandle { get; }
+        public readonly IntPtr ParentProcessMainWindowHandle;
 
         /// <summary>
         /// Gets the ID of the parent process.
         /// </summary>
-        public int ParentProcessId { get; }
+        public readonly int ParentProcessId;
 
         /// <summary>
         /// Provides a string representation of the <see cref="WindowInfo"/> struct.

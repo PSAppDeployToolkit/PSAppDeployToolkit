@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents an installed application and its related information.
     /// </summary>
-    public readonly struct InstalledApplication
+    public sealed class InstalledApplication
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InstalledApplication"/> struct.
@@ -69,87 +69,87 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the registry key that contains the uninstall entry.
         /// </summary>
-        public string UninstallKey { get; }
+        public readonly string UninstallKey;
 
         /// <summary>
         /// Gets the registry key for the subkey's parent.
         /// </summary>
-        public string UninstallParentKey { get; }
+        public readonly string UninstallParentKey;
 
         /// <summary>
         /// Gets the registry subkey for uninstalling the application.
         /// </summary>
-        public string UninstallSubKey { get; }
+        public readonly string UninstallSubKey;
 
         /// <summary>
         /// Gets the product code for the application.
         /// </summary>
-        public Guid? ProductCode { get; }
+        public readonly Guid? ProductCode;
 
         /// <summary>
         /// Gets the display name of the application.
         /// </summary>
-        public string DisplayName { get; }
+        public readonly string DisplayName;
 
         /// <summary>
         /// Gets the version of the application.
         /// </summary>
-        public string? DisplayVersion { get; }
+        public readonly string? DisplayVersion;
 
         /// <summary>
         /// Gets the uninstall string used to remove the application.
         /// </summary>
-        public string? UninstallString { get; }
+        public readonly string? UninstallString;
 
         /// <summary>
         /// Gets the quiet uninstall string used to remove the application.
         /// </summary>
-        public string? QuietUninstallString { get; }
+        public readonly string? QuietUninstallString;
 
         /// <summary>
         /// Gets the source from which the application was installed.
         /// </summary>
-        public string? InstallSource { get; }
+        public readonly string? InstallSource;
 
         /// <summary>
         /// Gets the location where the application is installed.
         /// </summary>
-        public string? InstallLocation { get; }
+        public readonly string? InstallLocation;
 
         /// <summary>
         /// Gets the date the application was installed as a <see cref="DateTime"/> object.
         /// </summary>
-        public DateTime? InstallDate { get; }
+        public readonly DateTime? InstallDate;
 
         /// <summary>
         /// Gets the publisher of the application.
         /// </summary>
-        public string? Publisher { get; }
+        public readonly string? Publisher;
 
         /// <summary>
         /// Gets the publisher's help link of the application.
         /// </summary>
-        public Uri? HelpLink { get; }
+        public readonly Uri? HelpLink;
 
         /// <summary>
         /// Gets the estimated disk usage on kilobytes of the application.
         /// </summary>
-        public uint? EstimatedSize { get; }
+        public readonly uint? EstimatedSize;
 
         /// <summary>
         /// Gets a value indicating whether the application is a system component.
         /// </summary>
-        public bool SystemComponent { get; }
+        public readonly bool SystemComponent;
 
         /// <summary>
         /// Gets a value indicating whether the application is an MSI.
         /// </summary>
-        public bool WindowsInstaller { get; }
+        public readonly bool WindowsInstaller;
 
         /// <summary>
         /// Gets a value indicating whether the application is a 64-bit application.
         /// </summary>
-        public bool Is64BitApplication { get; }
+        public readonly bool Is64BitApplication;
 
         /// <summary>
         /// Returns a string representation of the installed application.
