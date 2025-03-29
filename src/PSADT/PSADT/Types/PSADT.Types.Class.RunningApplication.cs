@@ -3,7 +3,10 @@ using Microsoft.Management.Infrastructure;
 
 namespace PSADT.Types
 {
-    public class RunningApplication
+    /// <summary>
+    /// Represents a running application.
+    /// </summary>
+    public sealed class RunningApplication
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RunningApplication"/> class with specified properties.
@@ -28,26 +31,26 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the process associated with the running application.
         /// </summary>
-        public Process Process { get; }
+        public readonly Process Process;
 
         /// <summary>
         /// Gets the CIM instance associated with the running application.
         /// </summary>
-        public CimInstance CimInstance { get; }
+        public readonly CimInstance CimInstance;
 
         /// <summary>
         /// Gets the description of the running application.
         /// </summary>
-        public string Description { get; }
+        public readonly string Description;
 
         /// <summary>
         /// Gets the command line used to start the running application.
         /// </summary>
-        public string CommandLine { get; }
+        public readonly string CommandLine;
 
         /// <summary>
         /// Gets the arguments passed to the running application.
         /// </summary>
-        public string? Arguments { get; }
+        public readonly string? Arguments;
     }
 }

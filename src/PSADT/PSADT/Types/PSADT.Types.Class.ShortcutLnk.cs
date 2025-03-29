@@ -7,49 +7,35 @@ namespace PSADT.Types
     /// </summary>
     public class ShortcutLnk : ShortcutBase
     {
-        private string? _windowStyle;
+        /// <summary>
+        /// The window style for the shortcut.
+        /// </summary>
+        public readonly string? WindowStyle;
 
         /// <summary>
         /// Gets or sets the arguments passed to the target application when the shortcut is executed.
         /// </summary>
-        public string? Arguments { get; set; }
+        public readonly string? Arguments;
 
         /// <summary>
         /// Gets or sets the description of the shortcut.
         /// </summary>
-        public string? Description { get; set; }
+        public readonly string? Description;
 
         /// <summary>
         /// Gets or sets the working directory for the shortcut's target application.
         /// </summary>
-        public string? WorkingDirectory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the window style (e.g., normal, minimized, maximized) for the target application.
-        /// This value can be parsed and validated against known window styles.
-        /// </summary>
-        public string? WindowStyle
-        {
-            get => _windowStyle;
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value) && !Enum.TryParse(value, true, out WindowStyle _))
-                {
-                    throw new ArgumentException($"Invalid window style: {value}. Must be one of: Normal, Minimized, Maximized.");
-                }
-                _windowStyle = value;
-            }
-        }
+        public readonly string? WorkingDirectory;
 
         /// <summary>
         /// Gets or sets the hotkey associated with the shortcut.
         /// </summary>
-        public string? Hotkey { get; set; }
+        public readonly string? Hotkey;
 
         /// <summary>
         /// Gets or sets a value indicating whether the shortcut requires administrative privileges to run.
         /// </summary>
-        public bool RunAsAdmin { get; set; }
+        public readonly bool RunAsAdmin;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShortcutLnk"/> class with specified properties.
@@ -62,10 +48,14 @@ namespace PSADT.Types
         /// <param name="runAsAdmin">Indicates if the shortcut requires administrative privileges.</param>
         public ShortcutLnk(string? path, string? targetPath, string? iconIndex, string? iconLocation, string? arguments, string? description, string? workingDirectory, string? windowStyle, string? hotkey, bool runAsAdmin) : base(path, targetPath, iconIndex, iconLocation)
         {
+            if (!string.IsNullOrWhiteSpace(windowStyle) && !Enum.TryParse(windowStyle, true, out WindowStyle _))
+            {
+                throw new ArgumentException($"Invalid window style: {windowStyle}. Must be one of: Normal, Minimized, Maximized.");
+            }
+            WindowStyle = windowStyle;
             Arguments = arguments;
             Description = description;
             WorkingDirectory = workingDirectory;
-            WindowStyle = windowStyle; // This will trigger validation
             Hotkey = hotkey;
             RunAsAdmin = runAsAdmin;
         }

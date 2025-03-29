@@ -7,74 +7,25 @@ namespace PSADT.Types
     /// </summary>
     public abstract class ShortcutBase
     {
-        private string? _path;
-        private string? _targetPath;
-        private string? _iconIndex;
-        private string? _iconLocation;
+        /// <summary>
+        /// The path to the shortcut file.
+        /// </summary>
+        public readonly string? Path;
 
         /// <summary>
-        /// Gets or sets the path to the shortcut file. It must be a valid file path.
+        /// The target path of the shortcut.
         /// </summary>
-        public string? Path
-        {
-            get => _path;
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value) && !IsValidFilePath(value!))
-                {
-                    throw new ArgumentException("Invalid file path provided for the shortcut.");
-                }
-                _path = value;
-            }
-        }
+        public readonly string? TargetPath;
 
         /// <summary>
-        /// Gets or sets the target path of the shortcut. It must be a valid target file or URL.
+        /// The index of the icon used for the shortcut.
         /// </summary>
-        public string? TargetPath
-        {
-            get => _targetPath;
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value) && !IsValidTargetPath(value!))
-                {
-                    throw new ArgumentException("Invalid target path provided for the shortcut.");
-                }
-                _targetPath = value;
-            }
-        }
+        public readonly string? IconIndex;
 
         /// <summary>
-        /// Gets or sets the index of the icon used for the shortcut. Must be a numeric value or null.
+        /// The location of the icon used for the shortcut.
         /// </summary>
-        public string? IconIndex
-        {
-            get => _iconIndex;
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value) && !int.TryParse(value, out _))
-                {
-                    throw new ArgumentException("IconIndex must be a numeric value.");
-                }
-                _iconIndex = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the location of the icon used for the shortcut. Must be a valid file path.
-        /// </summary>
-        public string? IconLocation
-        {
-            get => _iconLocation;
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value) && !IsValidFilePath(value!))
-                {
-                    throw new ArgumentException("Invalid icon location path provided.");
-                }
-                _iconLocation = value;
-            }
-        }
+        public readonly string? IconLocation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShortcutBase"/> class with optional properties.
@@ -85,9 +36,28 @@ namespace PSADT.Types
         /// <param name="iconLocation">The location of the icon used for the shortcut.</param>
         protected ShortcutBase(string? path = null, string? targetPath = null, string? iconIndex = null, string? iconLocation = null)
         {
+            if (!string.IsNullOrWhiteSpace(path) && !IsValidFilePath(path!))
+            {
+                throw new ArgumentException("Invalid file path provided for the shortcut.");
+            }
             Path = path;
+
+            if (!string.IsNullOrWhiteSpace(targetPath) && !IsValidTargetPath(targetPath!))
+            {
+                throw new ArgumentException("Invalid target path provided for the shortcut.");
+            }
             TargetPath = targetPath;
+
+            if (!string.IsNullOrWhiteSpace(iconIndex) && !int.TryParse(iconIndex, out _))
+            {
+                throw new ArgumentException("IconIndex must be a numeric value.");
+            }
             IconIndex = iconIndex;
+
+            if (!string.IsNullOrWhiteSpace(iconLocation) && !IsValidFilePath(iconLocation!))
+            {
+                throw new ArgumentException("Invalid icon location path provided.");
+            }
             IconLocation = iconLocation;
         }
 

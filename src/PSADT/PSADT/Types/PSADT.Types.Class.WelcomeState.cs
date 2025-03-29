@@ -3,31 +3,31 @@
     /// <summary>
     /// Represents all data needed by a Show-ADTInstallationWelcome invocation.
     /// </summary>
-    public class WelcomeState
+    public sealed class WelcomeState
     {
         /// <summary>
         /// Gets/sets the running applications.
         /// </summary>
-        public RunningApplication[]? RunningApps { get; set; }
+        public RunningApplication[]? RunningApps;
 
         /// <summary>
         /// Gets/sets the classic WelcomePrompt's starting position.
         /// </summary>
-        public System.Drawing.Point FormStartLocation { get; set; }
+        public System.Drawing.Point FormStartLocation;
 
         /// <summary>
         /// Gets/sets the InstallationWelcome's CloseProcesses countdown.
         /// </summary>
-        public System.Diagnostics.Stopwatch? CloseProcessesCountdown { get; set; }
+        public System.Diagnostics.Stopwatch? CloseProcessesCountdown;
 
         /// <summary>
         /// Gets/sets the running process descriptions.
         /// </summary>
-        public string[]? RunningAppDescriptions { get; set; }
+        public string[]? RunningAppDescriptions;
 
         /// <summary>
         /// Gets/sets the WelcomePrompt's timer.
         /// </summary>
-        public System.Windows.Forms.Timer? WelcomeTimer { get; set; }
+        public System.Windows.Forms.Timer? WelcomeTimer;
     }
 }
