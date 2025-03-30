@@ -32,16 +32,5 @@
         /// Gets the standard error output of the process.
         /// </summary>
         public readonly string? StdErr;
-
-        /// <summary>
-        /// Returns a string that represents the current <see cref="ProcessResult"/> object.
-        /// </summary>
-        /// <returns>A formatted string containing the exit code, standard output, and standard error.</returns>
-        public override string ToString()
-        {
-            return $@"Exit Code: {ExitCode}
-                      Standard Output: {StdOut}
-                      Standard Error: {StdErr}";
-        }
     }
 }
