@@ -38,7 +38,7 @@ namespace PSADT.WTSSession
             string? domainName,
             uint sessionId,
             string? sessionName,
-            WTS_CONNECTSTATE_CLASS connectState,
+            LibraryInterfaces.WTS_CONNECTSTATE_CLASS connectState,
             bool isCurrentSession,
             bool isConsoleSession,
             bool isActiveUserSession,
@@ -108,7 +108,7 @@ namespace PSADT.WTSSession
         /// <summary>
         /// The connection state of the session.
         /// </summary>
-        public readonly WTS_CONNECTSTATE_CLASS ConnectState;
+        public readonly LibraryInterfaces.WTS_CONNECTSTATE_CLASS ConnectState;
 
         /// <summary>
         /// Whether the session is the current session of the caller.
