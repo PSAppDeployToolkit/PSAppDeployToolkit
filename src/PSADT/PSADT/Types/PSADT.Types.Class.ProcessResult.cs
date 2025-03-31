@@ -1,4 +1,6 @@
-﻿namespace PSADT.Types
+﻿using System.Collections.ObjectModel;
+
+namespace PSADT.Types
 {
     /// <summary>
     /// Represents the result of a process execution, including exit code and standard output/error.
@@ -11,11 +13,11 @@
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
-        public ProcessResult(int exitCode, string? stdOut, string? stdErr)
+        public ProcessResult(int exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr)
         {
             ExitCode = exitCode;
-            if (!string.IsNullOrWhiteSpace(stdOut)) StdOut = stdOut;
-            if (!string.IsNullOrWhiteSpace(stdErr)) StdErr = stdErr;
+            StdOut = stdOut;
+            StdErr = stdErr;
         }
 
         /// <summary>
@@ -26,11 +28,11 @@
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        public readonly string? StdOut;
+        public readonly ReadOnlyCollection<string> StdOut;
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        public readonly string? StdErr;
+        public readonly ReadOnlyCollection<string> StdErr;
     }
 }
