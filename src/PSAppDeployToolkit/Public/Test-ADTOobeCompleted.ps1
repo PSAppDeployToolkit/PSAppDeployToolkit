@@ -59,7 +59,7 @@ function Test-ADTOobeCompleted
         {
             try
             {
-                return ([PSADT.Shared.Utility]::IsOOBEComplete())
+                return ([PSADT.LibraryInterfaces.Kernel32]::IsOOBEComplete())
             }
             catch
             {

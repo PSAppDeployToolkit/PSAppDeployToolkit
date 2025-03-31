@@ -94,7 +94,7 @@ function Dismount-ADTWimFile
 
                         # Get all open file handles for our path.
                         Write-ADTLogEntry -Message "The directory could not be completely unmounted. Checking for any open file handles that can be closed."
-                        $exeHandle = "$Script:PSScriptRoot\bin\$([PSADT.OperatingSystem.OSHelper]::GetArchitecture())\handle\handle.exe"
+                        $exeHandle = "$Script:PSScriptRoot\bin\$([PSADT.OperatingSystem.OSHelper]::GetSystemArchitecture())\handle\handle.exe"
                         $pathRegex = "^$([System.Text.RegularExpressions.Regex]::Escape($($wimFile.Path)))"
                         $pathHandles = Get-ADTProcessHandles | & { process { if ($_.Name -match $pathRegex) { return $_ } } }
 

@@ -2,8 +2,7 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Win32.SafeHandles;
-using Windows.Win32;
+using PSADT.LibraryInterfaces;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Registry;
 
@@ -12,18 +11,18 @@ namespace PSADT.Registry
     /// <summary>
     /// Registry utilities using CsWin32.
     /// </summary>
-    public static class Utilities
+    public static class RegistryUtilities
     {
         /// <summary>
-        /// Registry hive to SafeRegistryHandle lookup table.
+        /// Registry hive lookup table.
         /// </summary>
-        private static readonly ReadOnlyDictionary<string, SafeRegistryHandle> HiveMap = new ReadOnlyDictionary<string, SafeRegistryHandle>(new Dictionary<string, SafeRegistryHandle>(StringComparer.OrdinalIgnoreCase)
+        private static readonly ReadOnlyDictionary<string, HKEY> HiveMap = new ReadOnlyDictionary<string, HKEY>(new Dictionary<string, HKEY>(StringComparer.OrdinalIgnoreCase)
         {
-            { "HKEY_LOCAL_MACHINE", new SafeRegistryHandle(new IntPtr(unchecked((int)0x80000002)), false) },
-            { "HKEY_CURRENT_USER", new SafeRegistryHandle(new IntPtr(unchecked((int)0x80000001)), false) },
-            { "HKEY_CLASSES_ROOT", new SafeRegistryHandle(new IntPtr(unchecked((int)0x80000000)), false) },
-            { "HKEY_USERS", new SafeRegistryHandle(new IntPtr(unchecked((int)0x80000003)), false) },
-            { "HKEY_CURRENT_CONFIG", new SafeRegistryHandle(new IntPtr(unchecked((int)0x80000005)), false) }
+            { "HKEY_LOCAL_MACHINE", HKEY.HKEY_LOCAL_MACHINE },
+            { "HKEY_CURRENT_USER", HKEY.HKEY_CURRENT_USER },
+            { "HKEY_CLASSES_ROOT", HKEY.HKEY_LOCAL_MACHINE },
+            { "HKEY_USERS", HKEY.HKEY_USERS },
+            { "HKEY_CURRENT_CONFIG", HKEY.HKEY_CURRENT_CONFIG }
         });
 
         /// <summary>
@@ -49,39 +48,29 @@ namespace PSADT.Registry
             string hiveName = parts[0];
             string subKeyPath = parts[1];
 
-            // Validate and get the correct SafeRegistryHandle for the root hive.
-            if (!HiveMap.TryGetValue(hiveName, out SafeRegistryHandle? hKeyRoot) || (null == hKeyRoot))
+            // Validate and get the correct handle for the root hive.
+            if (!HiveMap.TryGetValue(hiveName, out HKEY hKeyRoot))
             {
                 throw new ArgumentException($"Invalid registry hive: {hiveName}", nameof(fullKeyPath));
             }
 
-            // Open the registry key using SafeRegistryHandle for hKeyRoot.
-            var result = PInvoke.RegOpenKeyEx(hKeyRoot, subKeyPath, 0, REG_SAM_FLAGS.KEY_READ, out SafeRegistryHandle hKey);
-            if (result != WIN32_ERROR.ERROR_SUCCESS || hKey.IsInvalid)
+            // Open the registry key using the root hive's handle.
+            var result = AdvApi32.RegOpenKeyEx(hKeyRoot, subKeyPath, 0, REG_SAM_FLAGS.KEY_READ, out HKEY hKey);
+            if (result != WIN32_ERROR.ERROR_SUCCESS || hKey.IsNull)
             {
                 throw new Win32Exception((int)result, "Failed to open the registry key.");
             }
 
-            // Get the modified time from the registry. This must be unsafe as CsWin32 only allows FILETIME to be a pointer...
+            // Get the modified time from the registry.
             try
             {
-                System.Runtime.InteropServices.ComTypes.FILETIME lastWriteTime;
-                unsafe
-                {
-                    result = PInvoke.RegQueryInfoKey(new HKEY(hKey.DangerousGetHandle()), null, null, null, null, null, null, null, null, null, null, &lastWriteTime);
-                }
-                if (result != WIN32_ERROR.ERROR_SUCCESS)
-                {
-                    throw new Win32Exception((int)result, "Failed to query the registry key.");
-                }
-
-                // Return the FILETIME as DateTime.
+                result = AdvApi32.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out _, out var lastWriteTime);
                 return DateTime.FromFileTime(((long)lastWriteTime.dwHighDateTime << 32) | (lastWriteTime.dwLowDateTime & 0xFFFFFFFFL));
             }
             finally
             {
-                // Ensure the SafeHandle is properly disposed.
-                hKey.Dispose();
+                // Ensure the handle is properly disposed.
+                AdvApi32.RegCloseKey(ref hKey);
             }
         }
     }

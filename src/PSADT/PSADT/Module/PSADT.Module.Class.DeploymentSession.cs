@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
+using System.Security.Principal;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Runtime.CompilerServices;
@@ -12,12 +13,16 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using PSADT.LibraryInterfaces;
 using PSADT.Shared;
 using PSADT.Types;
 using PSADT.WTSSession;
 
 namespace PSADT.Module
 {
+    /// <summary>
+    /// Represents a deployment session.
+    /// </summary>
     public class DeploymentSession
     {
         #region Constructors.
@@ -515,7 +520,7 @@ namespace PSADT.Module
                     }
                     if (_deployAppScriptParameters?.Count > 0)
                     {
-                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{Utility.ConvertDictToPowerShellArgs(_deployAppScriptParameters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)).Replace("''", "'")}].");
+                        WriteLogEntry($"The following parameters were passed to [{_deployAppScriptFriendlyName}]: [{GeneralUtilities.ConvertDictToPowerShellArgs(_deployAppScriptParameters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)).Replace("''", "'")}].");
                     }
                 }
                 var adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
@@ -573,7 +578,7 @@ namespace PSADT.Module
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn)}].");
 
                     // Check if the current process is running in the context of one of the logged on users
-                    if (adtEnv["CurrentLoggedOnUserSession"] is CompatibilitySessionInfo CurrentLoggedOnUserSession)
+                    if (adtEnv["CurrentLoggedOnUserSession"] is SessionInfo CurrentLoggedOnUserSession)
                     {
                         WriteLogEntry($"Current process is running with user account [{adtEnv["ProcessNTAccount"]}] under logged on user session for [{CurrentLoggedOnUserSession.NTAccount}].");
                     }
@@ -586,7 +591,7 @@ namespace PSADT.Module
                     if ((bool)configToolkit["OobeDetection"]!)
                     {
                         // Check if the device has completed the OOBE or not.
-                        if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Utility.IsOOBEComplete())
+                        if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Kernel32.IsOOBEComplete())
                         {
                             WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
                             _deployMode = DeployMode.Silent;
@@ -599,7 +604,7 @@ namespace PSADT.Module
                             if (!string.IsNullOrWhiteSpace((string)moduleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
                             {
                                 WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
-                                if (((CompatibilitySessionInfo)adtEnv["RunAsActiveUser"])?.SID is string userSid)
+                                if (((SessionInfo)adtEnv["RunAsActiveUser"])?.SID is SecurityIdentifier userSid)
                                 {
                                     var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$"Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync\\{userSid}"], null, false).FirstOrDefault();
                                     if (null != fsRegData)
@@ -647,7 +652,7 @@ namespace PSADT.Module
                     }
 
                     // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-                    if (adtEnv["CurrentConsoleUserSession"] is CompatibilitySessionInfo CurrentConsoleUserSession)
+                    if (adtEnv["CurrentConsoleUserSession"] is SessionInfo CurrentConsoleUserSession)
                     {
                         WriteLogEntry($"The following user is the console user [{CurrentConsoleUserSession.NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
                     }
@@ -657,7 +662,7 @@ namespace PSADT.Module
                     }
 
                     // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-                    if (adtEnv["RunAsActiveUser"] is CompatibilitySessionInfo RunAsActiveUser)
+                    if (adtEnv["RunAsActiveUser"] is SessionInfo RunAsActiveUser)
                     {
                         WriteLogEntry($"The active logged on user is [{RunAsActiveUser.NTAccount}].");
                     }

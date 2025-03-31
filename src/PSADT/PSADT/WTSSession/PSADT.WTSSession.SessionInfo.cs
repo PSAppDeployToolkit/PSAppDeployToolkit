@@ -1,103 +1,178 @@
 ﻿using System;
+using System.Security.Principal;
 
 namespace PSADT.WTSSession
 {
     /// <summary>
-    /// Represents information about an enumerated session.
+    /// A class to hold all information for a given WTS session.
     /// </summary>
-    public class SessionInfo
+    public sealed class SessionInfo
     {
-        public uint SessionId { get; set; }
-        public string SessionName { get; set; } = string.Empty;
-        public string ConnectionState { get; set; } = string.Empty;
-
-        public bool? IsCurrentProcessSession { get; set; }
-        public bool IsConsoleSession { get; set; }
-        public bool IsActiveSession { get; set; }
-
-        public bool IsConnectedSession { get; set; }
-        public bool IsDisconnectedSession { get; set; }
-
-        public bool IsRemoteSession { get; set; }
-        public bool IsRdpSession { get; set; }
-        public bool IsHdxSession { get; set; }
-        public bool IsRemoteListenerSession { get; set; }
-
-        public bool IsLocalSession { get; set; }
-
-        public bool IsSystemSession { get; set; }
-        public bool IsServicesSession { get; set; }
-        public bool IsConnectedConsoleSession { get; set; }
-
-        public bool IsUserSession { get; set; }
-        public bool IsLocalAdminUserSession { get; set; }
-        public bool IsActiveUserSession { get; set; }
-        public bool IsConsoleActiveUserSession { get; set; }
-        public bool IsPrimaryActiveUserSession { get; set; }
-        public bool IsPrimaryActiveLocalAdminUserSession { get; set; }
-        public bool IsConnectedUserSession { get; set; }
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        /// <param name="ntAccount"></param>
+        /// <param name="sid"></param>
+        /// <param name="userName"></param>
+        /// <param name="domainName"></param>
+        /// <param name="sessionId"></param>
+        /// <param name="sessionName"></param>
+        /// <param name="connectState"></param>
+        /// <param name="isCurrentSession"></param>
+        /// <param name="isConsoleSession"></param>
+        /// <param name="isActiveUserSession"></param>
+        /// <param name="isUserSession"></param>
+        /// <param name="isRdpSession"></param>
+        /// <param name="isLocalAdmin"></param>
+        /// <param name="logonTime"></param>
+        /// <param name="idleTime"></param>
+        /// <param name="disconnectTime"></param>
+        /// <param name="clientName"></param>
+        /// <param name="clientProtocolType"></param>
+        /// <param name="clientDirectory"></param>
+        /// <param name="clientBuildNumber"></param>
+        public SessionInfo(
+            NTAccount? ntAccount,
+            SecurityIdentifier? sid,
+            string? userName,
+            string? domainName,
+            uint sessionId,
+            string? sessionName,
+            WTS_CONNECTSTATE_CLASS connectState,
+            bool isCurrentSession,
+            bool isConsoleSession,
+            bool isActiveUserSession,
+            bool isUserSession,
+            bool isRdpSession,
+            bool isLocalAdmin,
+            DateTime? logonTime,
+            TimeSpan? idleTime,
+            DateTime? disconnectTime,
+            string? clientName,
+            WTS_PROTOCOL_TYPE clientProtocolType,
+            string? clientDirectory,
+            uint? clientBuildNumber)
+        {
+            NTAccount = ntAccount;
+            SID = sid;
+            UserName = userName;
+            DomainName = domainName;
+            SessionId = sessionId;
+            SessionName = sessionName;
+            ConnectState = connectState;
+            IsCurrentSession = isCurrentSession;
+            IsConsoleSession = isConsoleSession;
+            IsActiveUserSession = isActiveUserSession;
+            IsUserSession = isUserSession;
+            IsRdpSession = isRdpSession;
+            IsLocalAdmin = isLocalAdmin;
+            LogonTime = logonTime;
+            IdleTime = idleTime;
+            DisconnectTime = disconnectTime;
+            ClientName = clientName;
+            ClientProtocolType = clientProtocolType;
+            ClientDirectory = clientDirectory;
+            ClientBuildNumber = clientBuildNumber;
+        }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SessionInfo"/> class.
+        /// The NTAccount for the session's user.
         /// </summary>
-        public SessionInfo()
-        {
-        }
+        public readonly NTAccount? NTAccount;
 
-        public SessionInfo(
-            uint sessionId,
-            string sessionName,
-            string connectionState,
-            bool? isCurrentProcessSession,
-            bool isConsoleSession,
-            bool isActiveSession,
-            bool isConnectedSession,
-            bool isDisconnectedSession,
-            bool isRemoteSession,
-            bool isRdpSession,
-            bool isHdxSession,
-            bool isRemoteListenerSession,
-            bool isLocalSession,
-            bool isSystemSession,
-            bool isServicesSession,
-            bool isConnectedConsoleSession,
-            bool isUserSession,
-            bool isLocalAdminUserSession,
-            bool isActiveUserSession,
-            bool isConsoleActiveUserSession,
-            bool isPrimaryActiveUserSession,
-            bool isPrimaryActiveLocalAdminUserSession,
-            bool isConnectedUserSession)
-        {
-            SessionId = sessionId;
-            SessionName = sessionName ?? throw new ArgumentNullException(nameof(sessionName));
-            ConnectionState = connectionState ?? throw new ArgumentNullException(nameof(sessionName));
+        /// <summary>
+        /// The SID for the session's user.
+        /// </summary>
+        public readonly SecurityIdentifier? SID;
 
-            IsCurrentProcessSession = isCurrentProcessSession;
-            IsConsoleSession = isConsoleSession;
-            IsActiveSession = isActiveSession;
+        /// <summary>
+        /// The username for the session's user.
+        /// </summary>
+        public readonly string? UserName;
 
-            IsConnectedSession = isConnectedSession;
-            IsDisconnectedSession = isDisconnectedSession;
+        /// <summary>
+        /// The domain name for the session's user.
+        /// </summary>
+        public readonly string? DomainName;
 
-            IsRemoteSession = isRemoteSession;
-            IsRdpSession = isRdpSession;
-            IsHdxSession = isHdxSession;
-            IsRemoteListenerSession = isRemoteListenerSession;
+        /// <summary>
+        /// The Id of the session.
+        /// </summary>
+        public readonly uint SessionId;
 
-            IsLocalSession = isLocalSession;
+        /// <summary>
+        /// The session name for the session.
+        /// </summary>
+        public readonly string? SessionName;
 
-            IsSystemSession = isSystemSession;
-            IsServicesSession = isServicesSession;
-            IsConnectedConsoleSession = isConnectedConsoleSession;
+        /// <summary>
+        /// The connection state of the session.
+        /// </summary>
+        public readonly WTS_CONNECTSTATE_CLASS ConnectState;
 
-            IsUserSession = isUserSession;
-            IsLocalAdminUserSession = isLocalAdminUserSession;
-            IsActiveUserSession = isActiveUserSession;
-            IsConsoleActiveUserSession = isConsoleActiveUserSession;
-            IsPrimaryActiveUserSession = isPrimaryActiveUserSession;
-            IsPrimaryActiveLocalAdminUserSession = isPrimaryActiveLocalAdminUserSession;
-            IsConnectedUserSession = isConnectedUserSession;
-        }
+        /// <summary>
+        /// Whether the session is the current session of the caller.
+        /// </summary>
+        public readonly bool IsCurrentSession;
+
+        /// <summary>
+        /// Whether the session is a console session.
+        /// </summary>
+        public readonly bool IsConsoleSession;
+
+        /// <summary>
+        /// Whether the session is active or not.
+        /// </summary>
+        public readonly bool IsActiveUserSession;
+
+        /// <summary>
+        /// Whether the session is that of a user.
+        /// </summary>
+        public readonly bool IsUserSession;
+
+        /// <summary>
+        /// Whether the session is remote or local.
+        /// </summary>
+        public readonly bool IsRdpSession;
+
+        /// <summary>
+        /// Whether the user of the session is a local administrator.
+        /// </summary>
+        public readonly bool IsLocalAdmin;
+
+        /// <summary>
+        /// The logon time of the session.
+        /// </summary>
+        public readonly DateTime? LogonTime;
+
+        /// <summary>
+        /// How long the session has been idle for.
+        /// </summary>
+        public readonly TimeSpan? IdleTime;
+
+        /// <summary>
+        /// The last disconnection time of the session.
+        /// </summary>
+        public readonly DateTime? DisconnectTime;
+
+        /// <summary>
+        /// The name of the terminal server (workstation).
+        /// </summary>
+        public readonly string? ClientName;
+
+        /// <summary>
+        /// The protocol type of the session (console, RDP, etc).
+        /// </summary>
+        public readonly WTS_PROTOCOL_TYPE ClientProtocolType;
+
+        /// <summary>
+        /// The directory service providing the session.
+        /// </summary>
+        public readonly string? ClientDirectory;
+
+        /// <summary>
+        /// The Windows NT build number of the client.
+        /// </summary>
+        public readonly uint? ClientBuildNumber;
     }
 }

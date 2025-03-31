@@ -1,9 +1,13 @@
 ﻿using System;
-using PSADT.PInvokes;
-using PSADT.Diagnostics.Exceptions;
+using PSADT.LibraryInterfaces;
+using Windows.Win32;
+using Windows.Win32.System.LibraryLoader;
 
 namespace PSADT.Installer
 {
+    /// <summary>
+    /// Public P/Invokes from the msi.dll library.
+    /// </summary>
     public static class Msi
     {
         /// <summary>
@@ -12,21 +16,29 @@ namespace PSADT.Installer
         /// <param name="msiExitCode">The MSI exit code.</param>
         /// <returns>The message string associated with the given MSI exit code.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
-        public static string GetMessageFromMsiExitCode(uint msiExitCode)
+        public static string? GetMessageFromMsiExitCode(uint msiExitCode)
         {
-            const string libraryName = "msimsg.dll";
-            using SafeLibraryHandle hMsiMsgDll = NativeMethods.LoadLibraryEx(libraryName, SafeLibraryHandle.Null, LoadLibraryExFlags.LOAD_LIBRARY_AS_DATAFILE);
-
-            if (hMsiMsgDll.IsInvalid || hMsiMsgDll.IsClosed)
+            if (Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE) is FreeLibrarySafeHandle hMsiMsgDll)
             {
-                ErrorHandler.ThrowSystemError($"Failed to load library [{libraryName}].", SystemErrorType.Win32);
+                try
+                {
+                    if (!hMsiMsgDll.IsInvalid && !hMsiMsgDll.IsClosed)
+                    {
+                        var buffer = new char[4096];
+                        User32.LoadString(hMsiMsgDll, msiExitCode, buffer, buffer.Length);
+                        var msiMsgString = new string(buffer).Trim();
+                        if (!string.IsNullOrWhiteSpace(msiMsgString))
+                        {
+                            return msiMsgString;
+                        }
+                    }
+                }
+                finally
+                {
+                    hMsiMsgDll.Dispose();
+                }
             }
-            if (!NativeMethods.LoadString(hMsiMsgDll, (int)msiExitCode, out string? message))
-            {
-                ErrorHandler.ThrowSystemError($"Failed to retrieve the message for MSI exit code {msiExitCode}.", SystemErrorType.Win32);
-            }
-
-            return message!;
+            return null;
         }
     }
 }

@@ -1,0 +1,31 @@
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.SystemInformation;
+
+namespace PSADT.LibraryInterfaces
+{
+    /// <summary>
+    /// Public P/Invokes from the ntdll.dll library.
+    /// </summary>
+    public static class Ntdll
+    {
+        /// <summary>
+        /// Gets the version info of the current operating system from the kernel.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe OSVERSIONINFOEXW RtlGetVersion()
+        {
+            OSVERSIONINFOEXW version = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
+            NTSTATUS status = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)Unsafe.AsPointer(ref version));
+            if (status.Value < 0)
+            {
+                throw new Win32Exception((int)PInvoke.RtlNtStatusToDosError(status));
+            }
+            return version;
+        }
+    }
+}

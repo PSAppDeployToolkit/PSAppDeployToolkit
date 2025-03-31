@@ -66,7 +66,7 @@ function Convert-ADTValuesFromRemainingArguments
             try
             {
                 # Process input into a dictionary and return it. Assume anything starting with a '-' is a new variable.
-                return [PSADT.Shared.Utility]::ConvertValuesFromRemainingArguments($RemainingArguments)
+                return [PSADT.Shared.GeneralUtilities]::ConvertValuesFromRemainingArguments($RemainingArguments)
             }
             catch
             {

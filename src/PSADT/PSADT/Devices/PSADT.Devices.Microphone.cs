@@ -1,21 +1,29 @@
 ﻿using System.Threading;
+using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
 
 namespace PSADT.Devices
 {
+    /// <summary>
+    /// Utility class containing methods to do with audio tests.
+    /// </summary>
     public static class Audio
     {
+        /// <summary>
+        /// Tests whether the microphone is in use on the current device.
+        /// </summary>
+        /// <returns></returns>
         public static bool IsMicrophoneInUse()
         {
             // Initialize COM.
-            PInvoke.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED).ThrowOnFailure();
+            Ole32.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED);
             bool micInUse = false;
             try
             {
                 // Create an enumerator for audio devices.
-                PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out IMMDeviceEnumerator deviceEnumerator).ThrowOnFailure();
+                Ole32.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null!, CLSCTX.CLSCTX_INPROC_SERVER, out IMMDeviceEnumerator deviceEnumerator);
 
                 // Get the default audio capture device (microphone).
                 IMMDevice microphoneDevice;

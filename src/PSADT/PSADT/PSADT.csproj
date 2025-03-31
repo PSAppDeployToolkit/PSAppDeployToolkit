@@ -18,7 +18,6 @@
 		<Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
 		<PackageProjectUrl>https://psappdeploytoolkit.com/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
-		<ApplicationIcon>PsadtExec.ico</ApplicationIcon>
 
 		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
 		<TargetFrameworks>net462;net8.0-windows10.0.17763</TargetFrameworks>
@@ -95,11 +94,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="PsadtExec.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.106">
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.183">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -109,6 +104,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Reference Include="System.DirectoryServices" Condition="'$(TargetFramework)' == 'net462'" />
 		<Reference Include="Microsoft.Management.Infrastructure" Condition="'$(TargetFramework)' == 'net462'">
 			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\Microsoft.Management.Infrastructure\v4.0_1.0.0.0__31bf3856ad364e35\Microsoft.Management.Infrastructure.dll</HintPath>
 			<Private>False</Private>

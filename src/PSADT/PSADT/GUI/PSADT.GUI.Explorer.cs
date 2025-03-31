@@ -1,11 +1,16 @@
-using System;
-using System.ComponentModel;
+﻿using System;
 using System.Runtime.InteropServices;
-using PSADT.PInvokes;
-using PSADT.Diagnostics.Exceptions;
+using PSADT.LibraryInterfaces;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.Shell;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.GUI
 {
+    /// <summary>
+    /// Provides methods for interacting with the Windows Explorer.
+    /// </summary>
     public static class Explorer
     {
         /// <summary>
@@ -14,56 +19,18 @@ namespace PSADT.GUI
         /// <exception cref="InvalidOperationException">Thrown if the operation fails.</exception>
         public static void RefreshDesktopAndEnvironmentVariables()
         {
-            // Update desktop icons using SHChangeNotify
-            NativeMethods.SHChangeNotify(NativeMethods.SHCNE_ASSOCCHANGED, NativeMethods.SHCNF_FLUSHNOWAIT, IntPtr.Zero, IntPtr.Zero);
-
-            // Notify all top-level windows that the environment variables have changed
-            if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST,
-                                                 NativeMethods.WM_SETTINGCHANGE,
-                                                 IntPtr.Zero,
-                                                 null,
-                                                 NativeMethods.SMTO_ABORTIFHUNG,
-                                                 100,
-                                                 IntPtr.Zero) == IntPtr.Zero)
+            // Update desktop icons using SHChangeNotify, then notify all top-level windows that the environment variables have changed.
+            Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSHNOWAIT, IntPtr.Zero, IntPtr.Zero);
+            User32.SendMessageTimeout(HWND.HWND_BROADCAST, PInvoke.WM_SETTINGCHANGE, new WPARAM(0), new LPARAM(0), SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
+            IntPtr lpString = Marshal.StringToHGlobalUni("Environment");
+            try
             {
-                var errorCode = Marshal.GetLastWin32Error();
-                throw new Win32Exception(errorCode, $"Failed to send WM_SETTINGCHANGE message. Error code [{errorCode}].");
+                User32.SendMessageTimeout(HWND.HWND_BROADCAST, PInvoke.WM_SETTINGCHANGE, new WPARAM(0), lpString, SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG, 100, out _);
             }
-
-            if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST, NativeMethods.WM_SETTINGCHANGE,
-                                                 IntPtr.Zero, "Environment", NativeMethods.SMTO_ABORTIFHUNG, 100,
-                                                 IntPtr.Zero) == IntPtr.Zero)
+            finally
             {
-                var errorCode = Marshal.GetLastWin32Error();
-                throw new Win32Exception(errorCode, $"Failed to send WM_SETTINGCHANGE message for environment variables. Error code [{errorCode}].");
+                Marshal.FreeHGlobal(lpString);
             }
         }
-
-        /// <summary>
-        /// Retrieves a string resource from the shell32.dll library.
-        /// </summary>
-        /// <param name="verbId">The identifier of the string resource.</param>
-        /// <returns>The loaded string resource.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the library or string resource fails to load.</exception>
-        public static string GetPinVerb(int verbId)
-        {
-            const string libraryName = "shell32.dll";
-
-            // Load the shell32 library with the appropriate flags
-            using SafeLibraryHandle hShell32Dll = NativeMethods.LoadLibraryEx(libraryName, SafeLibraryHandle.Null, LoadLibraryExFlags.LOAD_LIBRARY_AS_DATAFILE);
-            if (hShell32Dll.IsInvalid || hShell32Dll.IsClosed)
-            {
-                ErrorHandler.ThrowSystemError($"Failed to load library [{libraryName}].", SystemErrorType.Win32);
-            }
-
-            // Load the string resource
-            if(!NativeMethods.LoadString(hShell32Dll, verbId, out string? stringResource))
-            {
-                ErrorHandler.ThrowSystemError($"Failed to load string resource with verb id [{verbId}] from library [{libraryName}].", SystemErrorType.Win32);
-            }
-
-            return stringResource!;
-        }
-
     }
 }

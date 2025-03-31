@@ -140,7 +140,7 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
         [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.PInvokes.CREATE_PROCESS]$ProcessCreationFlags,
+        [System.Object]$ProcessCreationFlags,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
         [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
@@ -229,7 +229,7 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'AllActiveUserSessions')]
         [Parameter(Mandatory = $false, ParameterSetName = 'PrimaryActiveUserSession')]
         [ValidateNotNullOrEmpty()]
-        [PSADT.ProcessEx.WaitType]$WaitOption,
+        [System.Object]$WaitOption,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
         [Parameter(Mandatory = $false, ParameterSetName = 'SessionId')]
@@ -336,10 +336,10 @@ function Start-ADTProcessAsUser
         {
             try
             {
-                if (($result = ($process = [PSADT.ProcessEx.StartProcess]::new()).ExecuteAndMonitorAsync($PSBoundParameters)) -and $PassThru)
-                {
-                    return $result
-                }
+                # if (($result = ($process = [PSADT.ProcessEx.StartProcess]::new()).ExecuteAndMonitorAsync($PSBoundParameters)) -and $PassThru)
+                # {
+                #     return $result
+                # }
             }
             catch
             {
