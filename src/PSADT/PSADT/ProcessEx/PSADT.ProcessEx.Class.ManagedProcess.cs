@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PSADT.LibraryInterfaces;
 using PSADT.Types;
+using PSADT.Shared;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -98,7 +99,7 @@ namespace PSADT.ProcessEx
                 });
                 await Task.WhenAll(waitForJob, readOut, readErr, writeIn);
                 Kernel32.GetExitCodeProcess(pi.hProcess, out var exitCode);
-                return new ProcessResult((int)exitCode, string.Join(Environment.NewLine, stdout), string.Join(Environment.NewLine, stderr));
+                return new ProcessResult(ValueTypeConverter<int>.Convert(exitCode), string.Join(Environment.NewLine, stdout), string.Join(Environment.NewLine, stderr));
             }
             finally
             {
