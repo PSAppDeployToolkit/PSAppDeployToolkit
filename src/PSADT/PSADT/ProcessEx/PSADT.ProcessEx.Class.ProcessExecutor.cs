@@ -113,6 +113,16 @@ namespace PSADT.ProcessEx
         }
 
         /// <summary>
+        /// Launches a process with the specified start info and waits for it to complete.
+        /// </summary>
+        /// <param name="startInfo"></param>
+        /// <returns></returns>
+        public static ProcessResult Launch(ProcessOptions startInfo)
+        {
+            return LaunchAsync(startInfo).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
         /// Creates a pipe for reading or writing.
         /// </summary>
         /// <param name="readPipe"></param>
