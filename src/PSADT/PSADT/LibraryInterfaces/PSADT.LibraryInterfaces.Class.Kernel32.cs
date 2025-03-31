@@ -88,9 +88,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pNativeMachine"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL IsWow64Process2(SafeHandle hProcess, out IMAGE_FILE_MACHINE pProcessMachine, out IMAGE_FILE_MACHINE pNativeMachine)
+        internal static unsafe BOOL IsWow64Process2(SafeHandle hProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine)
         {
-            IMAGE_FILE_MACHINE pNativeMachineInternal;
+            Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachineInternal;
             var res = PInvoke.IsWow64Process2(hProcess, out pProcessMachine, &pNativeMachineInternal);
             if (null == res)
             {

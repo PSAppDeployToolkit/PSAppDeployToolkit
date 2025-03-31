@@ -26,7 +26,7 @@ namespace PSADT.OperatingSystem
                 {
                     if (!hKernel32Dll.IsInvalid && !hKernel32Dll.IsClosed && Kernel32.GetProcAddress(hKernel32Dll, "IsWow64Process2") is FARPROC hKernel32EntryPoint && !hKernel32EntryPoint.IsNull)
                     {
-                        Kernel32.IsWow64Process2(PInvoke.GetCurrentProcess_SafeHandle(), out IMAGE_FILE_MACHINE pProcessMachine, out IMAGE_FILE_MACHINE pNativeMachine);
+                        Kernel32.IsWow64Process2(PInvoke.GetCurrentProcess_SafeHandle(), out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine);
                         return (SystemArchitecture)pNativeMachine;
                     }
                 }
