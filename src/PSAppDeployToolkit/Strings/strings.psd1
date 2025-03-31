@@ -208,7 +208,19 @@
             }
 
             # This is a word used to describe the number of deferrals left. custom message to display at the Welcome Screen window.
+            TextBlockDeferralsRemaining = 'Remaining Deferrals'
+
+            # This is a word used to describe the number of deferrals left. custom message to display at the Welcome Screen window.
+            TextBlockRemain = 'remain'
+
+            # This is a word used to describe the number of deferrals left. custom message to display at the Welcome Screen window.
             ButtonDeferRemaining = 'remain'
+
+            # This is a word used to describe the number of deferrals left. custom message to display at the Welcome Screen window.
+            TextBlockDeferralDeadline = 'Deferral Deadline'
+
+            # This is a word used to describe the number of deferrals left. custom message to display at the Welcome Screen window.
+            TextBlockAutomaticStartCountdown = 'Automatic Start Countdown'
 
             # This is a phrase used to describe the process of deferring a deployment.
             ButtonLeftText = 'Defer'

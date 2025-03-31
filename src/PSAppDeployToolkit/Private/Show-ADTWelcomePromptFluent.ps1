@@ -6,6 +6,36 @@
 
 function Private:Show-ADTWelcomePromptFluent
 {
+    <#
+    .SYNOPSIS
+        Internal function to display the Welcome/CloseApps prompt using the Fluent UI.
+
+    .DESCRIPTION
+        Called by Show-ADTInstallationWelcome. Uses the UnifiedAdtApplication C# class
+        to display a CloseApps dialog. Handles parameter mapping and result translation.
+
+    .PARAMETER Title
+        Dialog title.
+
+    .PARAMETER Subtitle
+        Dialog subtitle.
+
+    .PARAMETER DeploymentType
+        Type of deployment ('Install', 'Uninstall', 'Repair'). Used for string selection.
+
+    .PARAMETER DeferTimes
+        Number of deferrals remaining.
+
+    .PARAMETER MinimizeWindows
+        Switch to minimize other windows.
+
+    .PARAMETER NotTopMost
+        Switch to prevent the dialog from being topmost.
+
+    .OUTPUTS
+        String
+        Returns 'Close', 'Defer', or 'Timeout'.
+    #>
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
     [CmdletBinding()]
     [OutputType([System.String])]
@@ -80,49 +110,93 @@ function Private:Show-ADTWelcomePromptFluent
         $null = (Get-ADTEnvironmentTable).ShellApp.MinimizeAll()
     }
 
-    # Send this out to the C# code.
-    $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowWelcomeDialog(
-        [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout),
-        $Title,
-        $Subtitle,
-        !$NotTopMost,
-        $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes + 1 }),
-        $appsToClose,
-        $adtConfig.Assets.Logo,
-        $adtStrings.WelcomePrompt.Fluent.DialogMessage,
-        $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses.$DeploymentType,
-        $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining,
-        $adtStrings.WelcomePrompt.Fluent.ButtonLeftText,
-        $adtStrings.WelcomePrompt.Fluent.ButtonRightText.$DeploymentType,
-        $adtStrings.WelcomePrompt.Fluent.ButtonRightTextNoProcesses.$DeploymentType,
-        $(if ($adtConfig.UI.DynamicProcessEvaluation) { [PSADT.UserInterface.Services.ProcessEvaluationService]::new() })
+    # Map parameters and call the updated C# ShowCloseAppsDialog method.
+    $dialogParams = @{
+        dialogExpiryDuration = [System.TimeSpan]::FromMinutes((Get-ADTConfig).UI.DialogStyleFluentOptions.ExpiryDuration)
+        dialogAccentColor    = (Get-ADTConfig).UI.DialogStyleFluentOptions.AccentColor
+        dialogPosition       = (Get-ADTConfig).UI.DialogStyleFluentOptions.Position
+        dialogTopMost        = !$NotTopMost
+        dialogAllowMove      = (Get-ADTConfig).UI.DialogStyleFluentOptions.AllowMove
+        appTitle                        = $Title
+        subtitle                        = $Subtitle
+        appIconImage                    = $adtConfig.Assets.Logo
+        appsToClose                     = $appsToClose # Array of [PSADT.UserInterface.Services.AppProcessInfo]
+        countdownDuration               = $null # Not used for Welcome prompt
+        deferralsRemaining              = $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes }) # Pass DeferTimes directly
+        deferralDeadline                = $null # Not used for Welcome prompt
+        closeAppsMessageText            = $adtStrings.WelcomePrompt.Fluent.DialogMessage
+        alternativeCloseAppsMessageText = $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses.$DeploymentType
+        deferralsRemainingText          = $adtStrings.WelcomePrompt.Fluent.ButtonDeferRemaining # Text shown next to deferral count/deadline
+        deferralDeadlineText            = $null # Not used for Welcome prompt
+        automaticStartCountdownText     = $null # Not used for Welcome prompt
+        deferButtonText                 = $adtStrings.WelcomePrompt.Fluent.ButtonLeftText
+        continueButtonText              = $adtStrings.WelcomePrompt.Fluent.ButtonRightText.$DeploymentType
+        alternativeContinueButtonText   = $adtStrings.WelcomePrompt.Fluent.ButtonRightTextNoProcesses.$DeploymentType
+        processEvaluationService        = $(if ($adtConfig.UI.DynamicProcessEvaluation) { [PSADT.UserInterface.Services.ProcessEvaluationService]::new() })
+    }
+
+    # Call the C# method with positional parameters
+    $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowCloseAppsDialog(
+        $dialogParams.dialogExpiryDuration,
+        $dialogParams.dialogAccentColor,
+        $dialogParams.dialogPosition,
+        $dialogParams.dialogTopMost,
+        $dialogParams.dialogAllowMove,
+        $dialogParams.appTitle,
+        $dialogParams.subtitle,
+        $dialogParams.appIconImage,
+        $dialogParams.appsToClose,
+        $dialogParams.countdownDuration,
+        $dialogParams.deferralsRemaining,
+        $dialogParams.deferralDeadline,
+        $dialogParams.closeAppsMessageText,
+        $dialogParams.alternativeCloseAppsMessageText,
+        $dialogParams.deferralsRemainingText,
+        $dialogParams.deferralDeadlineText,
+        $dialogParams.automaticStartCountdownText,
+        $dialogParams.deferButtonText,
+        $dialogParams.continueButtonText,
+        $dialogParams.alternativeContinueButtonText,
+        $dialogParams.processEvaluationService
     )
 
     # Return a translated value that's compatible with the toolkit.
-    switch ($result)
+    switch ($result) # Possible results: Continue, Defer, Cancel, Error, Disposed
     {
-        Continue
+        'Continue'
         {
-            return 'Close'
-            break
+            # User clicked Continue/Install
+            return 'Close' # Maps to the legacy return value expected by Show-InstallationWelcome
         }
-        Defer
+        'Defer'
         {
+            # User clicked Defer
             return 'Defer'
-            break
         }
-        Cancel
+        'Cancel'
         {
+            # Dialog timed out or was closed unexpectedly (e.g., via Dispose)
             return 'Timeout'
-            break
+        }
+        'Error'
+        {
+            # An error occurred within the C# dialog code
+            Write-Error "An error occurred while displaying the welcome prompt (Fluent)."
+            return 'Timeout' # Treat errors like timeouts for safety
+        }
+        'Disposed'
+        {
+            # The application was disposed before the dialog could be shown
+            Write-Warning "The UI application was disposed before the welcome prompt could be shown."
+            return 'Timeout' # Treat as timeout
         }
         default
         {
             $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The returned dialog result of [$_] is invalid and cannot be processed.")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = "WelcomeDialogInvalidResult"
-                TargetObject = $_
+                Exception    = [System.InvalidOperationException]::new("The returned dialog result of [$result] is invalid and cannot be processed.")
+                Category     = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId      = "WelcomeDialogInvalidResultFluent"
+                TargetObject = $result
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }

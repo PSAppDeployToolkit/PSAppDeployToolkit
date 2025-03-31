@@ -130,7 +130,7 @@ function Private:Show-ADTInstallationRestartPromptClassic
                 $buttonRestartLater.Enabled = $false
 
                 # If the form is hidden when we hit the "No Hide", bring it back up.
-                If ($formRestart.WindowState.Equals([System.Windows.Forms.FormWindowState]::Minimized))
+                if ($formRestart.WindowState.Equals([System.Windows.Forms.FormWindowState]::Minimized))
                 {
                     $formRestart.WindowState = [System.Windows.Forms.FormWindowState]::Normal
                     $formRestart.TopMost = !$NotTopMost

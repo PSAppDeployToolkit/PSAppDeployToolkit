@@ -17,135 +17,230 @@ namespace PSADT.UserInterface
             }
 
             // Set up parameters for testing
-            const string appTitle = "Microsoft Office 365 1.2 x64 EN";
-            const string subtitle = "MyCompanyName Technology Ltd - App Install";
-            const bool topMost = true;
-            const string? appIconImage = null;
+            string appTitle = "Adobe Reader CS 2025 x64 EN";
+            // string appTitle = "MadeyUppyVendor Excessively Girthsome App Title 1.1 x64 EN";
+            string subtitle = "Bisto Systems Ltd Ltd - App Install";
+            string? appIconImage = null;
+            // string? dialogAccentColor = "#FFB900";
+            string? dialogAccentColor = null;
+            DialogPosition dialogPosition = DialogPosition.BottomRight;
+            bool dialogTopMost = true;
+            bool dialogAllowMove = false;
+
 
             AppProcessInfo[] appsToClose =
             {
                 new("excel", "Microsoft Office Excel", null, null, null),
-                new("cmd", "Command Prompt", null, null, null),
+                // new("notepad", "Microsoft Notepad", null, null, null),
+                // new("cmd", "Command Prompt", null, null, null),
                 new("chrome", "Google Chrome", null, null, null),
                 new("firefox", null, null, null, null),
-                new("msedge", "Microsoft Edge", null, null, null),
+                // new("msedge", "Microsoft Edge", null, null, null),
                 new("explorer", null, null, null, null),
                 new("spotify", null, null, null, null),
                 new("code", "Visual Studio Code", null, null, null),
                 new("taskmgr", "Task Manager", null, null, null),
                 new("regedit", "Registry Editor", null, null, null),
+                new("powerpnt", "Microsoft Office PowerPoint", null, null, null),
+                new("winword", "Microsoft Office Word", null, null, null),
+                new("outlook", "Microsoft Office Outlook", null, null, null),
+                new("onenote", "Microsoft Office OneNote", null, null, null),
+                new("skype", "Skype", null, null, null),
+                new("slack", "Slack", null, null, null),
+                new("zoom", "Zoom", null, null, null),
+                new("webex", "WebEx", null, null, null),
+                new("acrobat", "Adobe Acrobat Reader", null, null, null),
+                new("photoshop", "Adobe Photoshop", null, null, null),
+
+
+
+
+
+
+
+
             };
 
-            TimeSpan dialogExpiryDuration = TimeSpan.FromMinutes(55);
-            const string closeAppMessage = "Please save your work before continuing. The following applications will be closed automatically.";
-            const string altCloseAppMessage = "Please select \"Install\" to continue with the installation. If you have any \"Defers\" remaining, you may also choose to delay the installation.";
-            const int defersRemaining = 5;
-            const string deferRemainText = "remain";
-            const string deferButtonText = "Defer";
-            const string continueButtonText = "Close Apps & Install";
-            const string altContinueButtonText = "Install";
+            TimeSpan? dialogExpiryDuration = TimeSpan.FromSeconds(90);
 
-            const string progressMessage = "Performing pre-flight checks ...";
-            const string progressMessageDetail = "Testing your system to ensure the installation can proceed, please wait ...";
+            TimeSpan? countdownDuration = TimeSpan.FromSeconds(90);
 
-            const string timeRemainingText = "Time Remaining:";
-            TimeSpan restartCountdown = TimeSpan.FromMinutes(5);
-            const string restartMessage = "The installation will begin in 5 minutes. You can restart your computer now or wait for the countdown to complete.";
-            const string restartCountdownMessage = "The installation will begin in 5 minutes. You can restart your computer now or wait for the countdown to complete.";
-            const string dismissButtonText = "Dismiss";
-            const string restartButtonText = "Restart Now";
+            string? closeAppsMessageText = "Please save your work before continuing as the following applications will be closed automatically. For more information, please see the [Internal Security Policy](http://internal-it.bistrosys.com/security-policies).";
+            string? alternativeCloseAppsMessageText = "Please select \'Install\' to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.";
+            int? deferralsRemaining = 1;
+            // TimeSpan deferralDeadline = TimeSpan.FromHours(2);
+            TimeSpan? deferralDeadline = null;
+            string? deferralsRemainingText = "Remaining Deferrals";
+            string? deferralDeadlineText = "Deferral Deadline";
+            string? automaticStartCountdownText = "Automatic Start Countdown";
+            string? deferButtonText = "_Defer";
+            string? continueButtonText = "_Close Apps & Install";
+            string? alternativeContinueButtonText = "_Install";
+            string? progressMessageText = "Performing pre-flight checks ...";
+            string? progressMessageDetailText = "Testing your system to ensure the installation can proceed, please wait ...";
 
-            const string customMessage = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed? ";
-            const string button1Text = "No thanks";
-            const string button2Text = "";
-            const string button3Text = "Bring it!";
+            TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(80);
+            TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(70);
+
+            string countdownAutomaticRestartText = "Automatic Restart Countdown";
+            string restartMessageText = "Your computer needs to be restarted. Please save your work before continuing.";
+            string countdownRestartMessageText = "Your computer needs to be restarted. Please save your work before continuing, then click Restart Now.  You can restart your computer now or wait for the countdown to complete.";
+            string dismissButtonText = "_Minimize";
+            string restartButtonText = "_Restart Now";
+
+            string customMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed?";
+
+            string inputBoxMessageText = "Please provide the name of the server you wish to connect to.";
+            string inputBoxText = "Type things here";
+            string inputBoxButtonLeftText = "_Cancel";
+            string inputBoxButtonMiddleText = "_Use Defaults";
+            string inputBoxButtonRightText = "_Start";
+
+
+            string ButtonLeftText = "No thanks";
+            string ButtonMiddleText = "";
+            string ButtonRightText = "Bring it!";
 
             // Create ProcessEvaluationService
             var processEvaluationService = new ProcessEvaluationService();
 
             try
             {
-                // Show Welcome Dialog
-                string welcomeResult = UnifiedAdtApplication.ShowWelcomeDialog(
+                //Guid moduleGuid = new Guid("8c3c366b-8606-4576-9f2d-4051144f7ca2");
+                //String moduleName = "PSAppDeployToolkit";
+                //Version moduleVersion = new Version(4, 0, 6);
+                //DialogActionResult helpConsoleResult = UnifiedAdtApplication.ShowHelpConsoleDialog(moduleName, moduleGuid, moduleVersion);
+
+
+                //// #################################################################################
+
+                //// Show Input Dialog for completion
+                //string inputResult = UnifiedAdtApplication.ShowInputDialog(
+                //    dialogExpiryDuration,
+                //    dialogAccentColor,
+                //    dialogPosition,
+                //    dialogTopMost,
+                //    dialogAllowMove,
+                //    appTitle,
+                //    subtitle,
+                //    appIconImage,
+                //    inputBoxMessageText,
+                //    inputBoxText,
+                //    inputBoxButtonLeftText,
+                //    inputBoxButtonMiddleText,
+                //    inputBoxButtonRightText);
+
+                //Console.WriteLine($"Input Dialog DialogResult: {inputResult}");
+
+                // #################################################################################
+
+                // Show CloseApps Dialog
+                var closeAppsResult = UnifiedAdtApplication.ShowCloseAppsDialog(
                     dialogExpiryDuration,
+                    dialogAccentColor,
+                    dialogPosition,
+                    dialogTopMost,
+                    dialogAllowMove,
                     appTitle,
                     subtitle,
-                    topMost,
-                    defersRemaining,
-                    appsToClose,
                     appIconImage,
-                    closeAppMessage,
-                    altCloseAppMessage,
-                    deferRemainText,
+                    appsToClose,
+                    countdownDuration,
+                    deferralsRemaining,
+                    deferralDeadline,
+                    closeAppsMessageText,
+                    alternativeCloseAppsMessageText,
+                    deferralsRemainingText,
+                    deferralDeadlineText,
+                    automaticStartCountdownText,
                     deferButtonText,
                     continueButtonText,
-                    altContinueButtonText,
-                    processEvaluationService); // Pass the service as optional parameter
+                    alternativeContinueButtonText,
+                    processEvaluationService
+                    ); // Pass the service as optional parameter
 
-                Console.WriteLine($"Welcome Dialog Result: {welcomeResult}");
+                Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
 
-                if (welcomeResult.Equals("Continue", StringComparison.OrdinalIgnoreCase))
+                // #################################################################################
+
+                if (closeAppsResult.Equals("Continue"))
                 {
                     // Show Progress Dialog
                     UnifiedAdtApplication.ShowProgressDialog(
+                        dialogExpiryDuration,
+                        dialogAccentColor,
+                        dialogPosition,
+                        dialogTopMost,
+                        dialogAllowMove,
                         appTitle,
                         subtitle,
-                        topMost,
                         appIconImage,
-                        progressMessage,
-                        progressMessageDetail);
+                        progressMessageText,
+                        progressMessageDetailText);
 
                     // Simulate a process with progress updates
                     for (int i = 0; i <= 100; i += 10)
                     {
                         // Update progress
-                        UnifiedAdtApplication.UpdateProgress(i, $"Installation progress: {i}%", $"Step {i / 10} of 10");
+                        UnifiedAdtApplication.UpdateProgress($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
                         Thread.Sleep(1000);  // Simulate work being done
                     }
 
                     // Close Progress Dialog
                     UnifiedAdtApplication.CloseCurrentDialog();
 
-                    // Show Custom Dialog for completion
-                    string customResult = UnifiedAdtApplication.ShowCustomDialog(
-                        dialogExpiryDuration,
-                        appTitle,
-                        subtitle,
-                        topMost,
-                        appIconImage,
-                        customMessage,
-                        button1Text,
-                        button2Text,
-                        button3Text);
+                    // #################################################################################
 
-                    Console.WriteLine($"Custom Dialog Result: {customResult}");
+                    // Show Custom Dialog for completion
+                    var customResult = UnifiedAdtApplication.ShowCustomDialog(
+                            dialogExpiryDuration,
+                            dialogAccentColor,
+                            dialogPosition,
+                            dialogTopMost,
+                            dialogAllowMove,
+                            appTitle,
+                            subtitle,
+                            appIconImage,
+                            customMessageText,
+                            ButtonLeftText,
+                            ButtonMiddleText,
+                            ButtonRightText);
+
+                    Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
                 }
                 else
                 {
                     Console.WriteLine("Installation deferred or cancelled.");
                 }
 
+                // #################################################################################
+
                 // Show Restart Dialog
-                string restartResult = UnifiedAdtApplication.ShowRestartDialog(
+                var restartResult = UnifiedAdtApplication.ShowRestartDialog(
+                    dialogExpiryDuration,
+                    dialogAccentColor,
+                    dialogPosition,
+                    dialogTopMost,
+                    dialogAllowMove,
                     appTitle,
                     subtitle,
-                    topMost,
                     appIconImage,
-                    timeRemainingText,
-                    restartCountdown,
-                    restartMessage,
-                    restartCountdownMessage,
+                    restartCountdownDuration,
+                    restartCountdownNoMinimizeDuration,
+                    restartMessageText,
+                    countdownRestartMessageText,
+                    countdownAutomaticRestartText,
                     dismissButtonText,
                     restartButtonText);
 
-                Console.WriteLine($"Restart Dialog Result: {restartResult}");
+                Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
 
-                if (restartResult.Equals("Restart", StringComparison.OrdinalIgnoreCase))
+                if (restartResult.Equals("Restart"))
                 {
                     Console.WriteLine("Proceeding with installation after restart.");
                     // Implement actual restart logic here
                 }
-                else if (restartResult.Equals("Defer", StringComparison.OrdinalIgnoreCase))
+                else if (restartResult.Equals("Defer"))
                 {
                     Console.WriteLine("Installation deferred by the user.");
                 }
@@ -160,32 +255,6 @@ namespace PSADT.UserInterface
                 UnifiedAdtApplication.Dispose();
             }
 
-            // Example of re-instantiating after disposal if needed
-            /*
-            try
-            {
-                // Attempt to use UnifiedAdtApplication after disposal
-                string newWelcomeResult = UnifiedAdtApplication.ShowWelcomeDialog(
-                    dialogExpiryDuration,
-                    appTitle,
-                    subtitle,
-                    topMost,
-                    defersRemaining,
-                    appsToClose,
-                    appIconImage,
-                    closeAppMessage,
-                    deferRemainText,
-                    deferButtonText,
-                    continueButtonText,
-                    processEvaluationService);
-
-                Console.WriteLine($"New Welcome Dialog Result: {newWelcomeResult}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred after disposal: {ex.Message}");
-            }
-            */
         }
     }
 }

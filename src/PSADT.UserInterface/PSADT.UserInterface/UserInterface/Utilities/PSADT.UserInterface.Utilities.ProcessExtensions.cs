@@ -24,9 +24,18 @@ namespace PSADT.UserInterface.Utilities
 
             var fileNameBuilder = new StringBuilder(BufferSize);
             uint bufferLength = (uint)fileNameBuilder.Capacity + 1;
-            return NativeMethods.QueryFullProcessImageName(process.Handle, 0, fileNameBuilder, ref bufferLength) != 0 ?
-                fileNameBuilder.ToString() :
-                null;
+
+            try
+            {
+                return NativeMethods.QueryFullProcessImageName(process.Handle, 0, fileNameBuilder, ref bufferLength) != 0 ?
+                    fileNameBuilder.ToString() :
+                    null;
+            }
+            catch (Win32Exception ex)
+            {
+                Debug.WriteLine($"Error getting main module file name for process {process.ProcessName}: {ex.Message}");
+                return null;
+            }
         }
 
         /// <summary>

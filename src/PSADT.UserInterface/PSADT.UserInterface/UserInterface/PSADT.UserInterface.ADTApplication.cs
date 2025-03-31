@@ -1,7 +1,11 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Threading;
 using PSADT.UserInterface.Services;
 using Wpf.Ui.Markup;
+using System.Collections;
+using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace PSADT.UserInterface
 {
@@ -10,17 +14,18 @@ namespace PSADT.UserInterface
     /// </summary>
     internal class AdtApplication : IDisposable
     {
-        private readonly Thread _appThread;
+        private Thread? _appThread;
         private Application? _app;
         private Window? _currentWindow;
         private readonly ManualResetEvent _initEvent = new(false);
         private Exception? _startupException;
-        private bool _disposed = false;
+        private bool _isDisposed = false;
+
 
         /// <summary>
         /// Indicates whether the AdtApplication has been disposed.
         /// </summary>
-        internal bool IsDisposed => _disposed;
+        internal bool IsDisposed => _isDisposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AdtApplication"/> class.
@@ -74,40 +79,32 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Shows the WelcomeDialog synchronously and returns the user's response.
+        /// Shows the UnifiedDialog with Welcome Dialog content synchronously and returns the user's response.
         /// </summary>
-        /// <param name="dialogExpiryDuration">Duration of the dialog.</param>
-        /// <param name="appTitle">Title of the application.</param>
-        /// <param name="subtitle">Subtitle of the application.</param>
-        /// <param name="topMost">Whether the dialog should be topmost.</param>
-        /// <param name="defersRemaining">Number of defers remaining.</param>
-        /// <param name="appsToClose">List of applications to close.</param>
-        /// <param name="appIconImage">URI of the application icon.</param>
-        /// <param name="closeAppMessage">Message prompting users to close apps.</param>
-        /// <param name="altCloseAppMessage">Alternative message when no apps need to be closed.</param> <!-- New Parameter -->
-        /// <param name="deferRemainText">Text for the word remain in, deferrals remaining.</param>
-        /// <param name="deferButtonText">Text for the defer button.</param>
-        /// <param name="continueButtonText">Text for the continue button.</param>
-        /// <param name="altContinueButtonText">Alternative text for the continue button when no apps need to be closed.</param> <!-- New Parameter -->
-        /// <param name="processEvaluationService">Optional process evaluation service.</param>
-        /// <returns>User's response as a string.</returns>
         public string ShowWelcomeDialog(
             TimeSpan? dialogExpiryDuration,
+            String? dialogAccentColor,
+            DialogPosition? dialogPosition,
+            bool? dialogTopMost,
             string? appTitle,
             string? subtitle,
-            bool? topMost,
-            int? defersRemaining,
-            AppProcessInfo[]? appsToClose,
             string? appIconImage,
-            string closeAppMessage,
-            string altCloseAppMessage,
-            string? deferRemainText,
+            AppProcessInfo[]? appsToClose,
+            TimeSpan? countdownDuration,
+            int? deferralsRemaining,
+            TimeSpan? deferralDeadline,
+            string? closeAppsMessageText,
+            string? alternativeCloseAppsMessageText,
+            string? deferralsRemainingText,
+            string? deferralDeadlineText,
+            string? automaticStartCountdownText,
             string? deferButtonText,
             string? continueButtonText,
-            string? altContinueButtonText,
-            IProcessEvaluationService? processEvaluationService = null)
+            string? alternativeContinueButtonText,
+            IProcessEvaluationService? processEvaluationService
+            )
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
@@ -116,95 +113,92 @@ namespace PSADT.UserInterface
 
             _app!.Dispatcher.Invoke(() =>
             {
-                var welcomeDialog = new WelcomeDialog(
-                    dialogExpiryDuration,
-                    appTitle,
-                    subtitle,
-                    topMost,
-                    defersRemaining,
-                    appsToClose,
-                    appIconImage,
-                    closeAppMessage,
-                    altCloseAppMessage,
-                    deferRemainText,
-                    deferButtonText,
-                    continueButtonText,
-                    altContinueButtonText,
-                    processEvaluationService);
+                // Create new CloseApps dialog
+                var dialog = new UnifiedDialog(DialogType.CloseApps, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost);
+                dialog.InitializeCloseAppsDialog(
+                    appTitle: appTitle,
+                    subtitle: subtitle,
+                    appIconImage: appIconImage,
+                    appsToClose: appsToClose != null ? new List<AppProcessInfo>(appsToClose) : null,
+                    countdownDuration: countdownDuration,
+                    deferralsRemaining: deferralsRemaining,
+                    deferralDeadline: deferralDeadline,
+                    closeAppsMessageText: closeAppsMessageText,
+                    alternativeCloseAppsMessageText: alternativeCloseAppsMessageText,
+                    deferralsRemainingText: deferralsRemainingText,
+                    deferralDeadlineText: deferralDeadlineText,
+                    automaticStartCountdownText: automaticStartCountdownText,
+                    deferButtonText: deferButtonText,
+                    continueButtonText: continueButtonText,
+                    alternativeContinueButtonText: alternativeContinueButtonText,
+                    processEvaluationService: processEvaluationService
+                    );
 
-                // Show the dialog modally
-                welcomeDialog.ShowDialog();
-                result = welcomeDialog.Result ?? "Cancel";
+                _currentWindow = dialog;
+                dialog.ShowDialog();
+                result = dialog.DialogResult ?? "Cancel";
             });
 
             return result;
         }
 
+
         /// <summary>
-        /// _currentWindow = welcomeDialog;
-        /// Shows the ProgressDialog synchronously.
+        /// Shows the UnifiedDialog with ProgressDialog content synchronously.
         /// </summary>
-        /// <param name="appTitle">Title of the application.</param>
-        /// <param name="subtitle">Subtitle of the application.</param>
-        /// <param name="topMost">Whether the dialog should be topmost.</param>
-        /// <param name="appIconImage">URI of the application icon.</param>
-        /// <param name="progressMessage">Main progress message.</param>
-        /// <param name="progressMessageDetail">Detailed progress message.</param>
         public void ShowProgressDialog(
+            TimeSpan? dialogExpiryDuration,
+            String? dialogAccentColor,
+            DialogPosition? dialogPosition,
+            bool? dialogTopMost,
             string? appTitle,
             string? subtitle,
-            bool? topMost,
             string? appIconImage,
+            bool? topMost,
             string? progressMessage,
-            string? progressMessageDetail)
+            string? progressDetailMessage)
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             _app!.Dispatcher.Invoke(() =>
             {
-                var progressDialog = new ProgressDialog(
-                    appTitle,
-                    subtitle,
-                    topMost,
-                    appIconImage,
-                    progressMessage,
-                    progressMessageDetail);
+                // Create new Progress dialog
+                var dialog = new UnifiedDialog(DialogType.Progress, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost);
+                dialog.InitializeProgressDialog(
+                    appTitle: appTitle,
+                    subtitle: subtitle,
+                    appIconImage: appIconImage,
+                    progressMessage: progressMessage,
+                    progressDetailMessage: progressDetailMessage
+                    );
 
-                _currentWindow = progressDialog;
-
-                // Show the dialog non-modally
-                progressDialog.Show();
+                _currentWindow = dialog;
+                dialog.Show(); // Non-modal
             });
         }
 
         /// <summary>
-        /// Shows the RestartDialog synchronously and returns the user's response.
+        /// Shows the UnifiedDialog with CustomDialog content synchronously and returns the user's response.
         /// </summary>
-        /// <param name="dialogExpiryDuration">How long before the dialog should expire.</param>
-        /// <param name="appTitle">Title of the application.</param>
-        /// <param name="subtitle">Subtitle of the application.</param>
-        /// <param name="topMost">Whether the dialog should be topmost.</param>
-        /// <param name="appIconImage">URI of the application icon.</param>
-        /// <param name="customMessage">Message prompting users to close apps.</param>
-        /// <param name="button1Text">Text for the word remain in, deferrals remaining.</param>
-        /// <param name="button2Text">Text for the word remain in, deferrals remaining.</param>
-        /// <param name="button3Text">Text for the word remain in, deferrals remaining.</param>
-        /// <returns>User's response as a string.</returns>
         public string ShowCustomDialog(
-            TimeSpan dialogExpiryDuration,
+            TimeSpan? dialogExpiryDuration,
+            String? dialogAccentColor,
+            DialogPosition? dialogPosition,
+            bool? dialogTopMost,
             string? appTitle,
             string? subtitle,
-            bool? topMost,
             string? appIconImage,
+            bool? topMost,
             string customMessage,
-            string? button1Text,
-            string? button2Text,
-            string? button3Text)
+            string? ButtonLeftText,
+            string? ButtonMiddleText,
+            string? ButtonRightText
+            )
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
@@ -213,54 +207,46 @@ namespace PSADT.UserInterface
 
             _app!.Dispatcher.Invoke(() =>
             {
-                var customDialog = new CustomDialog(
-                    dialogExpiryDuration,
-                    appTitle,
-                    subtitle,
-                    topMost,
-                    appIconImage,
-                    customMessage,
-                    button1Text,
-                    button2Text,
-                    button3Text);
+                var dialog = new UnifiedDialog(DialogType.Custom, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost);
+                dialog.InitializeCustomDialog(
+                    appTitle: appTitle,
+                    subtitle: subtitle,
+                    appIconImage: appIconImage,
+                    customMessage: customMessage,
+                    ButtonLeftText: ButtonLeftText,
+                    ButtonMiddleText: ButtonMiddleText,
+                    ButtonRightText: ButtonRightText
+                );
 
-                _currentWindow = customDialog;
-
-                // Show the dialog modally
-                bool? dialogResult = customDialog.ShowDialog();
-                result = customDialog.Result ?? "Cancel";
+                _currentWindow = dialog;
+                dialog.ShowDialog();
+                result = dialog.DialogResult ?? "Cancel";
             });
 
             return result;
         }
 
         /// <summary>
-        /// Shows the RestartDialog synchronously and returns the user's response.
+        /// Shows the UnifiedDialog with RestartDialog content synchronously and returns the user's response.
         /// </summary>
-        /// <param name="appTitle">Title of the application.</param>
-        /// <param name="subtitle">Subtitle of the application.</param>
-        /// <param name="topMost">Whether the dialog should be topmost.</param>
-        /// <param name="appIconImage">URI of the application icon.</param>
-        /// <param name="timeRemainingText">Main progress message.</param>
-        /// <param name="restartCountdown">Message prompting users to close apps.</param>
-        /// <param name="restartMessageText">Text for the word remain in, deferrals remaining.</param>
-        /// <param name="restartMessageCountdownText">Text for the word remain in, deferrals remaining.</param>
-        /// <param name="dismissButtonText">Text for the defer button.</param>
-        /// <param name="restartButtonText">Text for the continue button.</param>
-        /// <returns>User's response as a string.</returns>
         public string ShowRestartDialog(
+            TimeSpan? dialogExpiryDuration,
+            String? dialogAccentColor,
+            DialogPosition? dialogPosition,
+            bool? dialogTopMost,
             string? appTitle,
             string? subtitle,
-            bool? topMost,
             string? appIconImage,
-            string? timeRemainingText,
-            TimeSpan? restartCountdown,
-            string restartMessageText,
-            string restartMessageCountdownText,
+            bool? topMost,
+            TimeSpan? countdownDuration,
+            TimeSpan? countdownNoMinimizeDuration,
+            string? restartMessageText,
+            string? countdownRestartMessageText,
+            string? countdownAutomaticRestartText,
             string? dismissButtonText,
             string? restartButtonText)
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
@@ -269,67 +255,68 @@ namespace PSADT.UserInterface
 
             _app!.Dispatcher.Invoke(() =>
             {
-                var restartDialog = new RestartDialog(
-                    appTitle,
-                    subtitle,
-                    topMost,
-                    appIconImage,
-                    timeRemainingText,
-                    restartCountdown,
-                    restartMessageText,
-                    restartMessageCountdownText,
-                    dismissButtonText,
-                    restartButtonText);
+                var dialog = new UnifiedDialog(DialogType.Restart, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost);
+                dialog.InitializeRestartDialog(
+                    appTitle: appTitle,
+                    subtitle: subtitle,
+                    appIconImage: appIconImage,
+                    countdownDuration: countdownDuration,
+                    countdownNoMinimizeDuration: countdownNoMinimizeDuration,
+                    restartMessageText: restartMessageText,
+                    countdownRestartMessageText: countdownRestartMessageText,
+                    countdownAutomaticRestartText: countdownAutomaticRestartText,
+                    dismissButtonText: dismissButtonText,
+                    restartButtonText: restartButtonText
+                );
 
-                _currentWindow = restartDialog;
-
-                // Show the dialog modally
-                restartDialog.ShowDialog();
-                result = restartDialog.Result ?? "Cancel";
+                _currentWindow = dialog;
+                dialog.ShowDialog();
+                result = dialog.DialogResult ?? "Cancel";
             });
 
             return result;
         }
 
         /// <summary>
-        /// Adds an application to the list of apps to close in the WelcomeDialog.
+        /// Adds an application to the list of apps to close in the CloseApps Dialog.
         /// </summary>
         /// <param name="appToClose">The application process info to add.</param>
         public void AddAppToClose(AppProcessInfo appToClose)
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             _app!.Dispatcher.Invoke(() =>
             {
-                if (_currentWindow is WelcomeDialog welcomeDialog)
+                if (_currentWindow is UnifiedDialog dialog && dialog.DialogType == DialogType.CloseApps) // Ensure it's a CloseApps Dialog
                 {
-                    welcomeDialog.AppsToCloseCollection.Add(appToClose);
+                    dialog.AppsToCloseCollection.Add(appToClose);
                 }
             });
         }
 
         /// <summary>
-        /// Removes an application from the list of apps to close in the WelcomeDialog.
+        /// Removes an application from the list of apps to close in the CloseApps Dialog.
         /// </summary>
         /// <param name="appToClose">The application process info to remove.</param>
         public void RemoveAppToClose(AppProcessInfo appToClose)
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             _app!.Dispatcher.Invoke(() =>
             {
-                if (_currentWindow is WelcomeDialog welcomeDialog)
+                if (_currentWindow is UnifiedDialog dialog && dialog.DialogType == DialogType.CloseApps) // Ensure it's a CloseApps Dialog
                 {
-                    welcomeDialog.AppsToCloseCollection.Remove(appToClose);
+                    dialog.AppsToCloseCollection.Remove(appToClose);
                 }
             });
         }
+
 
         /// <summary>
         /// Updates the progress in the ProgressDialog.
@@ -337,19 +324,18 @@ namespace PSADT.UserInterface
         /// <param name="value">Progress value (0 to 100).</param>
         /// <param name="message">Optional main progress message.</param>
         /// <param name="detailMessage">Optional detailed progress message.</param>
-        public void UpdateProgress(double value, string? message = null, string? detailMessage = null)
+        public void UpdateProgress(string? message = null, string? detailMessage = null, double? value = null)
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             _app!.Dispatcher.Invoke(() =>
             {
-                if (_currentWindow is ProgressDialog progressDialog)
-
+                if (_currentWindow is UnifiedDialog dialog && dialog.DialogType == DialogType.Progress) // Ensure it's a Progress Dialog
                 {
-                    progressDialog.UpdateProgress(value, message, detailMessage);
+                    dialog.UpdateProgress(message, detailMessage, value);
                 }
             });
         }
@@ -359,16 +345,15 @@ namespace PSADT.UserInterface
         /// </summary>
         public void CloseProgressDialog()
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             _app!.Dispatcher.Invoke(() =>
             {
-                if (_currentWindow is ProgressDialog progressDialog)
+                if (_currentWindow is UnifiedDialog dialog && dialog.DialogType == DialogType.Progress) // Ensure it's a Progress Dialog
                 {
-                    progressDialog.AllowToClose();
                     _currentWindow.Close();
                     _currentWindow = null;
                 }
@@ -380,19 +365,15 @@ namespace PSADT.UserInterface
         /// </summary>
         public void CloseCurrentDialog()
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
 
             _app!.Dispatcher.Invoke(() =>
             {
-                if (_currentWindow is ProgressDialog progressDialog)
-                {
-                    progressDialog.AllowToClose();
-                    _currentWindow?.Close();
-                    _currentWindow = null;
-                }
+                _currentWindow?.Close();
+                _currentWindow = null;
             });
         }
 
@@ -401,7 +382,7 @@ namespace PSADT.UserInterface
         /// </summary>
         public bool CurrentDialogVisible()
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new InvalidOperationException("WPF Application is not initialized.");
             }
@@ -416,14 +397,15 @@ namespace PSADT.UserInterface
             return isVisible;
         }
 
+
         /// <summary>
         /// Disposes the WPF Application and cleans up resources.
         /// </summary>
         public void Dispose()
         {
-            if (!_disposed)
+            if (!_isDisposed)
             {
-                _disposed = true;
+                _isDisposed = true;
 
                 if (_app != null)
                 {
@@ -434,7 +416,7 @@ namespace PSADT.UserInterface
                     });
 
                     // Wait for the application thread to exit
-                    _appThread.Join();
+                    _appThread?.Join();
                     _app = null!;
                 }
             }

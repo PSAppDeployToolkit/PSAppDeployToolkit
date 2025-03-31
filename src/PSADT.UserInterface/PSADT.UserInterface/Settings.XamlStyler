@@ -1,4 +1,4 @@
-{
+﻿{
 	"AttributesTolerance": 1,
 	"KeepFirstAttributeOnSameLine": false,
 	"MaxAttributeCharactersPerLine": 0,
@@ -58,7 +58,7 @@
 	"AttributeIndentation": 0,
 	"AttributeIndentationStyle": 1,
 	"RemoveDesignTimeReferences":  false,
-	"EnableAttributeReordering": false,
+	"EnableAttributeReordering": true,
 	"AttributeOrderingRuleGroups": [
 		"x:Class",
 		"xmlns, xmlns:x",
@@ -74,12 +74,12 @@
 	],
 	"FirstLineAttributes": "",
 	"OrderAttributesByName": true,
-	"PutEndingBracketOnNewLine": false,
+	"PutEndingBracketOnNewLine": true,
 	"RemoveEndingTagOfEmptyElement": true,
 	"SpaceBeforeClosingSlash": true,
 	"RootElementLineBreakRule": 0,
 	"ReorderVSM": 0,
-	"ReorderGridChildren": false,
+	"ReorderGridChildren": true,
 	"ReorderCanvasChildren": false,
 	"ReorderSetters": 0,
 	"FormatMarkupExtension": true,

@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
+using System.Drawing;
 using Microsoft.Win32.SafeHandles;
 
 namespace PSADT.UserInterface.Utilities
@@ -152,7 +153,7 @@ namespace PSADT.UserInterface.Utilities
                 return new RECT(x, y, x + width, y + height);
             }
 
-            public readonly Size Size => new(right - left, bottom - top);
+            public readonly System.Windows.Size Size => new(right - left, bottom - top);
         }
 
         [StructLayout(LayoutKind.Sequential)]
