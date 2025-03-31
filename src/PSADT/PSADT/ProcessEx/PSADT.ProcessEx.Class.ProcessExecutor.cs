@@ -41,6 +41,18 @@ namespace PSADT.ProcessEx
             HANDLE iocp = default;
             HANDLE job = default;
 
+            // Determine whether the process we're starting is a console app or not.
+            bool noWindow = startInfo.NoNewWindow || ((SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE);
+            bool consoleApp;
+            try
+            {
+                consoleApp = GeneralUtilities.GetExecutableInfo(startInfo.FilePath).ExecutableType == ExecutableType.Console;
+            }
+            catch
+            {
+                consoleApp = false;
+            }
+
             try
             {
                 iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, HANDLE.Null, UIntPtr.Zero, 1);
@@ -53,7 +65,7 @@ namespace PSADT.ProcessEx
                 };
                 Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, ref assoc, (uint)Marshal.SizeOf<JOBOBJECT_ASSOCIATE_COMPLETION_PORT>());
 
-                if (!startInfo.UseShellExecute)
+                if ((consoleApp && noWindow) || !startInfo.UseShellExecute)
                 {
                     CreatePipe(out hStdOutRead, out hStdOutWrite, true);
                     CreatePipe(out hStdErrRead, out hStdErrWrite, true);
@@ -71,11 +83,11 @@ namespace PSADT.ProcessEx
                         PROCESS_CREATION_FLAGS.CREATE_SUSPENDED |
                         PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP;
 
-                    if (!startInfo.NoNewWindow && ((SHOW_WINDOW_CMD)startInfo.WindowStyle != SHOW_WINDOW_CMD.SW_HIDE))
+                    if (!noWindow)
                     {
                         startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
                         startupInfo.wShowWindow = startInfo.WindowStyle;
-                        if (GeneralUtilities.GetExecutableInfo(startInfo.FilePath).ExecutableType == ExecutableType.Console)
+                        if (consoleApp)
                         {
                             creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
                         }
@@ -109,7 +121,7 @@ namespace PSADT.ProcessEx
                         lpParameters = startInfo.GetArgsForShellExecuteEx(),
                         lpDirectory = startInfo.WorkingDirectory,
                     };
-                    if (startInfo.NoNewWindow || ((SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                    if (noWindow)
                     {
                         startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
                         startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
