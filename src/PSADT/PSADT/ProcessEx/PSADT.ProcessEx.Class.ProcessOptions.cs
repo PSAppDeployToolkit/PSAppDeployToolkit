@@ -87,6 +87,15 @@ namespace PSADT.ProcessEx
         }
 
         /// <summary>
+        /// Gets the arguments to pass to ShellExecuteEx.
+        /// </summary>
+        /// <returns></returns>
+        public string? GetArgsForShellExecuteEx()
+        {
+            return Arguments ?? null;
+        }
+
+        /// <summary>
         /// Gets the file path of the process to launch.
         /// </summary>
         public readonly string FilePath;

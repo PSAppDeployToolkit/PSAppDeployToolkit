@@ -30,78 +30,106 @@ namespace PSADT.ProcessEx
         /// <exception cref="TaskCanceledException"></exception>
         public static async Task<ProcessResult> LaunchAsync(ProcessOptions startInfo)
         {
-            // Get information about the executable to launch.
-            var executableInfo = GeneralUtilities.GetExecutableInfo(startInfo.FilePath);
-
             // Declare all variables C-style so we can close them in the finally block.
-            HANDLE job = Kernel32.CreateJobObject(out _, default);
-            PROCESS_INFORMATION pi = default;
             HANDLE hStdOutWrite = default;
             HANDLE hStdErrWrite = default;
             HANDLE hStdOutRead = default;
             HANDLE hStdErrRead = default;
             HANDLE hStdInWrite = default;
             HANDLE hStdInRead = default;
+            HANDLE hProcess = default;
             HANDLE iocp = default;
+            HANDLE job = default;
 
             try
             {
-                CreatePipe(out hStdOutRead, out hStdOutWrite, true);
-                CreatePipe(out hStdErrRead, out hStdErrWrite, true);
-                CreatePipe(out hStdInRead, out hStdInWrite, false);
-
-                var startupInfo = new STARTUPINFOW
-                {
-                    cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
-                    hStdOutput = hStdOutWrite,
-                    hStdError = hStdErrWrite,
-                    hStdInput = hStdInRead,
-                };
-
-                var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
-                    PROCESS_CREATION_FLAGS.CREATE_SUSPENDED |
-                    PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP;
-
-                if (!startInfo.NoNewWindow && ((SHOW_WINDOW_CMD)startInfo.WindowStyle != SHOW_WINDOW_CMD.SW_HIDE))
-                {
-                    startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                    startupInfo.wShowWindow = startInfo.WindowStyle;
-                    if (executableInfo.ExecutableType == ExecutableType.Console)
-                    {
-                        creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
-                    }
-                    else
-                    {
-                        creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
-                    }
-                }
-                else
-                {
-                    startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
-                    creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
-                    creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
-                }
+                iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, HANDLE.Null, UIntPtr.Zero, 1);
+                job = Kernel32.CreateJobObject(out _, default);
 
                 var assoc = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
                 {
-                    CompletionPort = (iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, HANDLE.Null, UIntPtr.Zero, 1)),
+                    CompletionPort = iocp,
                     CompletionKey = null,
                 };
-
                 Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, ref assoc, (uint)Marshal.SizeOf<JOBOBJECT_ASSOCIATE_COMPLETION_PORT>());
-                Kernel32.CreateProcess(startInfo.FilePath, startInfo.GetArgsForCreateProcess(), null, null, true, creationFlags, IntPtr.Zero, startInfo.WorkingDirectory, startupInfo, out pi);
-                Kernel32.AssignProcessToJobObject(job, pi.hProcess);
-                Kernel32.ResumeThread(pi.hThread);
-                Kernel32.CloseHandle(ref pi.hThread);
-                Kernel32.CloseHandle(ref hStdOutWrite);
-                Kernel32.CloseHandle(ref hStdErrWrite);
-                Kernel32.CloseHandle(ref hStdInRead);
+
+                if (!startInfo.UseShellExecute)
+                {
+                    CreatePipe(out hStdOutRead, out hStdOutWrite, true);
+                    CreatePipe(out hStdErrRead, out hStdErrWrite, true);
+                    CreatePipe(out hStdInRead, out hStdInWrite, false);
+
+                    var startupInfo = new STARTUPINFOW
+                    {
+                        cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
+                        hStdOutput = hStdOutWrite,
+                        hStdError = hStdErrWrite,
+                        hStdInput = hStdInRead,
+                    };
+
+                    var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
+                        PROCESS_CREATION_FLAGS.CREATE_SUSPENDED |
+                        PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP;
+
+                    if (!startInfo.NoNewWindow && ((SHOW_WINDOW_CMD)startInfo.WindowStyle != SHOW_WINDOW_CMD.SW_HIDE))
+                    {
+                        startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                        startupInfo.wShowWindow = startInfo.WindowStyle;
+                        if (GeneralUtilities.GetExecutableInfo(startInfo.FilePath).ExecutableType == ExecutableType.Console)
+                        {
+                            creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
+                        }
+                        else
+                        {
+                            creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                        }
+                    }
+                    else
+                    {
+                        startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                        creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
+                        creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                    }
+
+                    Kernel32.CreateProcess(startInfo.FilePath, startInfo.GetArgsForCreateProcess(), null, null, true, creationFlags, IntPtr.Zero, startInfo.WorkingDirectory, startupInfo, out var pi);
+                    Kernel32.AssignProcessToJobObject(job, (hProcess = pi.hProcess));
+                    Kernel32.ResumeThread(pi.hThread);
+                    Kernel32.CloseHandle(ref pi.hThread);
+                    Kernel32.CloseHandle(ref hStdOutWrite);
+                    Kernel32.CloseHandle(ref hStdErrWrite);
+                    Kernel32.CloseHandle(ref hStdInRead);
+                }
+                else
+                {
+                    var startupInfo = new Shell32.SHELLEXECUTEINFO
+                    {
+                        cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
+                        fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI,
+                        lpFile = startInfo.FilePath,
+                        lpParameters = startInfo.GetArgsForShellExecuteEx(),
+                        lpDirectory = startInfo.WorkingDirectory,
+                    };
+                    if (startInfo.NoNewWindow || ((SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                    {
+                        startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
+                        startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
+                    }
+                    else
+                    {
+                        startupInfo.nShow = startInfo.WindowStyle;
+                    }
+                    Shell32.ShellExecuteEx(ref startupInfo);
+                    if (startupInfo.hProcess != IntPtr.Zero)
+                    {
+                        Kernel32.AssignProcessToJobObject(job, (hProcess = (HANDLE)startupInfo.hProcess));
+                    }
+                }
 
                 List<string> stdout = []; List<string> stderr = [];
-                Task readOut = Task.Run(() => ReadPipe(hStdOutRead, stdout, startInfo.CancellationToken));
-                Task readErr = Task.Run(() => ReadPipe(hStdErrRead, stderr, startInfo.CancellationToken));
+                Task readOut = (hStdOutRead != default) ? Task.Run(() => ReadPipe(hStdOutRead, stdout, startInfo.CancellationToken)) : Task.CompletedTask;
+                Task readErr = (hStdErrRead != default) ? Task.Run(() => ReadPipe(hStdErrRead, stderr, startInfo.CancellationToken)) : Task.CompletedTask;
                 Task writeIn = (null != startInfo.StandardInput) ? Task.Run(() => WritePipe(hStdInWrite, startInfo.StandardInput!, startInfo.CancellationToken)) : Task.CompletedTask;
-                Task waitForJob = Task.Run(() =>
+                Task waitForJob = (hProcess == default) ? Task.CompletedTask : Task.Run(() =>
                 {
                     while (true)
                     {
@@ -117,7 +145,12 @@ namespace PSADT.ProcessEx
                     }
                 });
                 await Task.WhenAll(waitForJob, readOut, readErr, writeIn);
-                Kernel32.GetExitCodeProcess(pi.hProcess, out var exitCode);
+
+                uint exitCode = 0;
+                if (hProcess != default)
+                {
+                    Kernel32.GetExitCodeProcess(hProcess, out exitCode);
+                }
                 return new ProcessResult(ValueTypeConverter<int>.Convert(exitCode), stdout.AsReadOnly(), stderr.AsReadOnly());
             }
             finally
@@ -127,8 +160,8 @@ namespace PSADT.ProcessEx
                 Kernel32.CloseHandle(ref hStdOutRead);
                 Kernel32.CloseHandle(ref hStdErrRead);
                 Kernel32.CloseHandle(ref hStdInWrite);
-                Kernel32.CloseHandle(ref pi.hProcess);
                 Kernel32.CloseHandle(ref hStdInRead);
+                Kernel32.CloseHandle(ref hProcess);
                 Kernel32.CloseHandle(ref iocp);
                 Kernel32.CloseHandle(ref job);
             }
