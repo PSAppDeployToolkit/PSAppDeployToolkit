@@ -2,6 +2,9 @@
 using System.Linq;
 using System.Diagnostics;
 using System.Threading;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.ProcessEx
 {
@@ -44,7 +47,7 @@ namespace PSADT.ProcessEx
 
             FilePath = filePath;
             PriorityClass = priorityClass;
-            WindowStyle = windowStyle;
+            WindowStyle = WindowStyleMap[windowStyle];
             NoNewWindow = noNewWindow;
             UseShellExecute = useShellExecute;
             CancellationToken = cancellationToken;
@@ -62,6 +65,17 @@ namespace PSADT.ProcessEx
         /// <param name="filePath"></param>
         /// <param name="argumentList"></param>
         public ProcessOptions(string filePath, string[] argumentList) : this(filePath, argumentList, null) { }
+
+        /// <summary>
+        /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
+        /// </summary>
+        private static readonly ReadOnlyDictionary<ProcessWindowStyle, ushort> WindowStyleMap = new ReadOnlyDictionary<ProcessWindowStyle, ushort>(new Dictionary<ProcessWindowStyle, ushort>
+        {
+            { ProcessWindowStyle.Normal, (ushort)SHOW_WINDOW_CMD.SW_SHOWNORMAL },
+            { ProcessWindowStyle.Hidden, (ushort)SHOW_WINDOW_CMD.SW_HIDE },
+            { ProcessWindowStyle.Minimized, (ushort)SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
+            { ProcessWindowStyle.Maximized, (ushort)SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED }
+        });
 
         /// <summary>
         /// Prepares a null-terminated character array of arguments for CreateProcess.
@@ -85,7 +99,7 @@ namespace PSADT.ProcessEx
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        public readonly ProcessWindowStyle WindowStyle;
+        public readonly ushort WindowStyle;
 
         /// <summary>
         /// Gets a value indicating whether to create a new window for the process.

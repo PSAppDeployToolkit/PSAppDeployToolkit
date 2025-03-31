@@ -13,6 +13,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.ProcessEx
 {
@@ -29,6 +30,9 @@ namespace PSADT.ProcessEx
         /// <exception cref="TaskCanceledException"></exception>
         public static async Task<ProcessResult> LaunchAsync(ProcessOptions startInfo)
         {
+            // Get information about the executable to launch.
+            var executableInfo = GeneralUtilities.GetExecutableInfo(startInfo.FilePath);
+
             // Declare all variables C-style so we can close them in the finally block.
             HANDLE job = Kernel32.CreateJobObject(out _, default);
             PROCESS_INFORMATION pi = default;
@@ -52,13 +56,31 @@ namespace PSADT.ProcessEx
                     hStdOutput = hStdOutWrite,
                     hStdError = hStdErrWrite,
                     hStdInput = hStdInRead,
-                    dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES,
                 };
 
                 var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                     PROCESS_CREATION_FLAGS.CREATE_SUSPENDED |
-                    PROCESS_CREATION_FLAGS.DETACHED_PROCESS |
                     PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP;
+
+                if (!startInfo.NoNewWindow && ((SHOW_WINDOW_CMD)startInfo.WindowStyle != SHOW_WINDOW_CMD.SW_HIDE))
+                {
+                    startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                    startupInfo.wShowWindow = startInfo.WindowStyle;
+                    if (executableInfo.ExecutableType == ExecutableType.Console)
+                    {
+                        creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
+                    }
+                    else
+                    {
+                        creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                    }
+                }
+                else
+                {
+                    startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                    creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
+                    creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                }
 
                 var assoc = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
                 {
