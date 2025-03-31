@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -20,17 +19,15 @@ namespace PSADT.ProcessEx
     /// <summary>
     /// Provides methods for launching processes with more control over input/output.
     /// </summary>
-    public static class ProcessLauncher
+    public static class ProcessExecutor
     {
         /// <summary>
         /// Launches a process with the specified start info and waits for it to complete.
         /// </summary>
         /// <param name="startInfo"></param>
-        /// <param name="stdIn"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="TaskCanceledException"></exception>
-        public static async Task<ProcessResult> LaunchAsync(ProcessStartInfo startInfo, string? stdIn = null, CancellationToken cancellationToken = default)
+        public static async Task<ProcessResult> LaunchAsync(ProcessOptions startInfo)
         {
             // Declare all variables C-style so we can close them in the finally block.
             HANDLE job = Kernel32.CreateJobObject(out _, default);
@@ -70,7 +67,7 @@ namespace PSADT.ProcessEx
                 };
 
                 Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, ref assoc, (uint)Marshal.SizeOf<JOBOBJECT_ASSOCIATE_COMPLETION_PORT>());
-                Kernel32.CreateProcess(startInfo.FileName, (startInfo.Arguments.Trim() + "\0").ToCharArray(), null, null, true, creationFlags, IntPtr.Zero, startInfo.WorkingDirectory, startupInfo, out pi);
+                Kernel32.CreateProcess(startInfo.FilePath, startInfo.GetArgsForCreateProcess(), null, null, true, creationFlags, IntPtr.Zero, startInfo.WorkingDirectory, startupInfo, out pi);
                 Kernel32.AssignProcessToJobObject(job, pi.hProcess);
                 Kernel32.ResumeThread(pi.hThread);
                 Kernel32.CloseHandle(ref pi.hThread);
@@ -79,9 +76,9 @@ namespace PSADT.ProcessEx
                 Kernel32.CloseHandle(ref hStdInRead);
 
                 List<string> stdout = []; List<string> stderr = [];
-                Task readOut = Task.Run(() => ReadPipe(hStdOutRead, stdout, cancellationToken));
-                Task readErr = Task.Run(() => ReadPipe(hStdErrRead, stderr, cancellationToken));
-                Task writeIn = !string.IsNullOrWhiteSpace(stdIn) ? Task.Run(() => WritePipe(hStdInWrite, stdIn!, cancellationToken)) : Task.CompletedTask;
+                Task readOut = Task.Run(() => ReadPipe(hStdOutRead, stdout, startInfo.CancellationToken));
+                Task readErr = Task.Run(() => ReadPipe(hStdErrRead, stderr, startInfo.CancellationToken));
+                Task writeIn = (null != startInfo.StandardInput) ? Task.Run(() => WritePipe(hStdInWrite, startInfo.StandardInput!, startInfo.CancellationToken)) : Task.CompletedTask;
                 Task waitForJob = Task.Run(() =>
                 {
                     while (true)
@@ -91,7 +88,7 @@ namespace PSADT.ProcessEx
                         {
                             break;
                         }
-                        if (cancellationToken.IsCancellationRequested)
+                        if (startInfo.CancellationToken.IsCancellationRequested)
                         {
                             throw new TaskCanceledException();
                         }
