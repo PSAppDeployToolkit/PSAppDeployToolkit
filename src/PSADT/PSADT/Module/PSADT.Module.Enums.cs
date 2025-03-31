@@ -2,6 +2,9 @@
 
 namespace PSADT.Module
 {
+    /// <summary>
+    /// A bitfield representing the possible settings used within an active DeploymentSession object.
+    /// </summary>
     [Flags]
     public enum DeploymentSettings
     {
@@ -17,6 +20,9 @@ namespace PSADT.Module
         Silent = 256
     }
 
+    /// <summary>
+    /// The deployment types that a DeploymentSession can be.
+    /// </summary>
     public enum DeploymentType
     {
         Install,
@@ -24,6 +30,9 @@ namespace PSADT.Module
         Repair
     }
 
+    /// <summary>
+    /// The deployment modes that a DeploymentSession can be.
+    /// </summary>
     public enum DeployMode
     {
         Interactive,
@@ -31,6 +40,9 @@ namespace PSADT.Module
         Silent
     }
 
+    /// <summary>
+    /// Status values to determine the overall state/success of a deployment.
+    /// </summary>
     public enum DeploymentStatus
     {
         Complete,
@@ -39,6 +51,9 @@ namespace PSADT.Module
         Error
     }
 
+    /// <summary>
+    /// Flag to indicate how to write log entries to the console.
+    /// </summary>
     public enum HostLogStream
     {
         None,

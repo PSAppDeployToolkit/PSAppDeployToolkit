@@ -11,6 +11,9 @@ using System.Management.Automation;
 
 namespace PSADT.Shared
 {
+    /// <summary>
+    /// A collection of utility methods for use in the PSADT module.
+    /// </summary>
     public static class GeneralUtilities
     {
         /// <summary>
