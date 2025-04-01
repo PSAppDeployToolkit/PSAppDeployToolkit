@@ -103,5 +103,98 @@ namespace PSADT.LibraryInterfaces
                 return res;
             }
         }
+
+        /// <summary>
+        /// Opens the access token associated with a process.
+        /// </summary>
+        /// <param name="ProcessHandle"></param>
+        /// <param name="DesiredAccess"></param>
+        /// <param name="TokenHandle"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL OpenProcessToken(HANDLE ProcessHandle, TOKEN_ACCESS_MASK DesiredAccess, out HANDLE TokenHandle)
+        {
+            HANDLE TokenHandleLocal;
+            var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, &TokenHandleLocal);
+            if (!res)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            TokenHandle = TokenHandleLocal;
+            return res;
+        }
+
+        /// <summary>
+        /// Enables or disables privileges in the specified access token.
+        /// </summary>
+        /// <param name="lpSystemName"></param>
+        /// <param name="lpName"></param>
+        /// <param name="lpLuid"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL LookupPrivilegeValue(string? lpSystemName, string lpName, out LUID lpLuid)
+        {
+            var res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName, out lpLuid);
+            if (!res)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves a specified type of information about an access token.
+        /// </summary>
+        /// <param name="TokenHandle"></param>
+        /// <param name="TokenInformationClass"></param>
+        /// <param name="TokenInformation"></param>
+        /// <param name="TokenInformationLength"></param>
+        /// <param name="ReturnLength"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL GetTokenInformation(HANDLE TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, [Optional] IntPtr TokenInformation, uint TokenInformationLength, out uint ReturnLength)
+        {
+            uint ReturnLengthLocal;
+            void* buffer = null;
+            if (TokenInformation != IntPtr.Zero)
+            {
+                buffer = TokenInformation.ToPointer();
+            }
+            var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, buffer, TokenInformationLength, &ReturnLengthLocal);
+            if (!res)
+            {
+                int error = Marshal.GetLastWin32Error();
+                if ((WIN32_ERROR)error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || TokenInformationLength != 0)
+                {
+                    throw new Win32Exception(error);
+                }
+            }
+            ReturnLength = ReturnLengthLocal;
+            return res;
+        }
+
+        /// <summary>
+        /// Enables or disables privileges in the specified access token.
+        /// </summary>
+        /// <param name="TokenHandle"></param>
+        /// <param name="DisableAllPrivileges"></param>
+        /// <param name="NewState"></param>
+        /// <param name="BufferLength"></param>
+        /// <param name="PreviousState"></param>
+        /// <param name="ReturnLength"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL AdjustTokenPrivileges(HANDLE TokenHandle, BOOL DisableAllPrivileges, [Optional] ref TOKEN_PRIVILEGES NewState, uint BufferLength)
+        {
+            fixed (TOKEN_PRIVILEGES* NewStatePtr = &NewState)
+            {
+                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, NewStatePtr, BufferLength, null, null);
+                if (!res)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+                return res;
+            }
+        }
     }
 }

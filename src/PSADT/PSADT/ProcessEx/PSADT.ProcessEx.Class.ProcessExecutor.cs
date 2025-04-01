@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Principal;
+using PSADT.AccessToken;
 using PSADT.LibraryInterfaces;
 using PSADT.Types;
 using PSADT.Shared;
@@ -117,6 +118,9 @@ namespace PSADT.ProcessEx
                                 throw new UnauthorizedAccessException("Launching processes as other users is only supported when running as SYSTEM.");
                             }
                         }
+
+                        PrivilegeManager.EnsurePrivilegeEnabled(SE_TOKEN.SeIncreaseQuotaPrivilege);
+                        PrivilegeManager.EnsurePrivilegeEnabled(SE_TOKEN.SeAssignPrimaryTokenPrivilege);
 
                         var userSessions = SessionManager.GetSessionInfo();
                         if (userSessions.Count == 0)
