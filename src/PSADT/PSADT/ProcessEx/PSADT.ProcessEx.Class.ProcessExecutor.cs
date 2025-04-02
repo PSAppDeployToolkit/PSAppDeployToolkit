@@ -69,8 +69,7 @@ namespace PSADT.ProcessEx
                 // Set up the job object and I/O completion port for the process.
                 iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, HANDLE.Null, UIntPtr.Zero, 1);
                 job = Kernel32.CreateJobObject(null, default);
-                var assoc = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = iocp, CompletionKey = null };
-                Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, ref assoc, (uint)Marshal.SizeOf<JOBOBJECT_ASSOCIATE_COMPLETION_PORT>());
+                Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = iocp, CompletionKey = null });
 
                 // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
                 // Invoking processes as user has no ShellExecute capability, so it always comes through here.
@@ -306,7 +305,7 @@ namespace PSADT.ProcessEx
         /// <exception cref="Win32Exception"></exception>
         private static void CreatePipe(out HANDLE readPipe, out HANDLE writePipe)
         {
-            Kernel32.CreatePipe(out readPipe, out writePipe, new SECURITY_ATTRIBUTES { nLength = (uint)Marshal.SizeOf<SECURITY_ATTRIBUTES>(), bInheritHandle = true }, 0);
+            Kernel32.CreatePipe(out readPipe, out writePipe, new SECURITY_ATTRIBUTES { nLength = (uint)Marshal.SizeOf<SECURITY_ATTRIBUTES>(), bInheritHandle = true });
             Kernel32.SetHandleInformation(readPipe, (uint)HANDLE_FLAGS.HANDLE_FLAG_INHERIT, 0);
         }
 
@@ -319,14 +318,13 @@ namespace PSADT.ProcessEx
         /// <exception cref="Win32Exception"></exception>
         private static void ReadPipe(HANDLE handle, List<string> output, ConcurrentQueue<string> interleaved, CancellationToken token)
         {
-            NativeOverlapped lpOverlapped = default;
             var buffer = new byte[4096];
             uint bytesRead = 0;
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    Kernel32.ReadFile(handle, buffer, out bytesRead, ref lpOverlapped);
+                    Kernel32.ReadFile(handle, buffer, out bytesRead);
                     if (bytesRead == 0)
                     {
                         break;

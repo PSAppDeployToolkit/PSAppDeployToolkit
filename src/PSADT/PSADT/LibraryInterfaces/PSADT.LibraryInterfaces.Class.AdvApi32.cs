@@ -48,14 +48,15 @@ namespace PSADT.LibraryInterfaces
         {
             fixed (uint* lpcchClassPtr = &lpcchClass, lpReservedPtr = &lpReserved, lpcSubKeysPtr = &lpcSubKeys, lpcbMaxSubKeyLenPtr = &lpcbMaxSubKeyLen, lpcbMaxClassLenPtr = &lpcbMaxClassLen, lpcValuesPtr = &lpcValues, lpcbMaxValueNameLenPtr = &lpcbMaxValueNameLen, lpcbMaxValueLenPtr = &lpcbMaxValueLen, lpcbSecurityDescriptorPtr = &lpcbSecurityDescriptor)
             {
-                global::System.Runtime.InteropServices.ComTypes.FILETIME lastWriteTime;
-                var res = PInvoke.RegQueryInfoKey(hKey, lpClass, lpcchClassPtr, lpReservedPtr, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, &lastWriteTime);
-                if (res != WIN32_ERROR.ERROR_SUCCESS)
+                fixed (global::System.Runtime.InteropServices.ComTypes.FILETIME* lpftLastWriteTimePtr = &lpftLastWriteTime)
                 {
-                    throw ErrorHandler.GetExceptionForLastWin32Error(res);
+                    var res = PInvoke.RegQueryInfoKey(hKey, lpClass, lpcchClassPtr, lpReservedPtr, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
+                    if (res != WIN32_ERROR.ERROR_SUCCESS)
+                    {
+                        throw ErrorHandler.GetExceptionForLastWin32Error(res);
+                    }
+                    return res;
                 }
-                lpftLastWriteTime = lastWriteTime;
-                return res;
             }
         }
 
@@ -159,12 +160,7 @@ namespace PSADT.LibraryInterfaces
         {
             fixed (uint* ReturnLengthPtr = &ReturnLength)
             {
-                void* buffer = null;
-                if (TokenInformation != IntPtr.Zero)
-                {
-                    buffer = TokenInformation.ToPointer();
-                }
-                var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, buffer, TokenInformationLength, ReturnLengthPtr);
+                var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.ToPointer(), TokenInformationLength, ReturnLengthPtr);
                 if (!res)
                 {
                     var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
@@ -188,17 +184,15 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL AdjustTokenPrivileges(HANDLE TokenHandle, BOOL DisableAllPrivileges, [Optional] ref TOKEN_PRIVILEGES NewState, uint BufferLength)
+        internal static unsafe BOOL AdjustTokenPrivileges(HANDLE TokenHandle, BOOL DisableAllPrivileges, [Optional] TOKEN_PRIVILEGES? NewState, uint BufferLength)
         {
-            fixed (TOKEN_PRIVILEGES* NewStatePtr = &NewState)
+            TOKEN_PRIVILEGES NewStateLocal = NewState ?? default(TOKEN_PRIVILEGES);
+            var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, NewState.HasValue ? &NewStateLocal : null, BufferLength, null, null);
+            if (!res)
             {
-                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, NewStatePtr, BufferLength, null, null);
-                if (!res)
-                {
-                    throw ErrorHandler.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
+            return res;
         }
     }
 }

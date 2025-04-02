@@ -23,7 +23,7 @@ namespace PSADT.OperatingSystem
         /// </summary>
         private OSVersionInfo()
         {
-            var osVersion = Ntdll.RtlGetVersion();
+            Ntdll.RtlGetVersion(out var osVersion);
             var suiteMask = (SUITE_MASK)osVersion.wSuiteMask;
             var productType = (PRODUCT_TYPE)osVersion.wProductType;
             string? editionId = null;

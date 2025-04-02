@@ -174,7 +174,7 @@ namespace PSADT.LibraryInterfaces
         internal static unsafe HANDLE CreateJobObject([Optional] SECURITY_ATTRIBUTES? lpJobAttributes, PCWSTR lpName)
         {
             SECURITY_ATTRIBUTES lpJobAttributesLocal = lpJobAttributes ?? default(SECURITY_ATTRIBUTES);
-            var res = PInvoke.CreateJobObject(&lpJobAttributesLocal, lpName);
+            var res = PInvoke.CreateJobObject(lpJobAttributes.HasValue ? &lpJobAttributesLocal : null, (lpName.Value != null && *lpName.Value != '\0') ? lpName : null);
             if (null == res || res.IsNull)
             {
                 throw ErrorHandler.GetExceptionForLastWin32Error();
@@ -191,17 +191,19 @@ namespace PSADT.LibraryInterfaces
         /// <param name="cbJobObjectInformationLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, ref JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation, uint cbJobObjectInformationLength)
+        internal static unsafe BOOL SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
-            fixed (JOBOBJECT_ASSOCIATE_COMPLETION_PORT* pJobObjectInformation = &lpJobObjectInformation)
+            var res = PInvoke.SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation.ToPointer(), cbJobObjectInformationLength);
+            if (!res)
             {
-                var res = PInvoke.SetInformationJobObject(hJob, JobObjectInformationClass, pJobObjectInformation, cbJobObjectInformationLength);
-                if (!res)
-                {
-                    throw ErrorHandler.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
+            return res;
+        }
+
+        internal static unsafe BOOL SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
+        {
+            return SetInformationJobObject(hJob, JobObjectInformationClass, new IntPtr(&lpJobObjectInformation), (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
         }
 
         /// <summary>
@@ -393,11 +395,12 @@ namespace PSADT.LibraryInterfaces
         /// <param name="nSize"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreatePipe(out HANDLE hReadPipe, out HANDLE hWritePipe, [Optional] SECURITY_ATTRIBUTES lpPipeAttributes, uint nSize)
+        internal static unsafe BOOL CreatePipe(out HANDLE hReadPipe, out HANDLE hWritePipe, [Optional] SECURITY_ATTRIBUTES? lpPipeAttributes, uint nSize = 0)
         {
             fixed (HANDLE* pReadPipe = &hReadPipe, pWritePipe = &hWritePipe)
             {
-                var res = PInvoke.CreatePipe(pReadPipe, pWritePipe, &lpPipeAttributes, nSize);
+                SECURITY_ATTRIBUTES lpPipeAttributesLocal = lpPipeAttributes ?? default(SECURITY_ATTRIBUTES);
+                var res = PInvoke.CreatePipe(pReadPipe, pWritePipe, lpPipeAttributes.HasValue ? &lpPipeAttributesLocal : null, nSize);
                 if (!res)
                 {
                     throw ErrorHandler.GetExceptionForLastWin32Error();
@@ -429,7 +432,6 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="hFile"></param>
         /// <param name="lpBuffer"></param>
-        /// <param name="nNumberOfBytesToRead"></param>
         /// <param name="lpNumberOfBytesRead"></param>
         /// <param name="lpOverlapped"></param>
         /// <returns></returns>
@@ -438,9 +440,9 @@ namespace PSADT.LibraryInterfaces
         {
             fixed (byte* pBuffer = lpBuffer)
             {
-                fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
+                fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
                 {
-                    fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
+                    fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
                     {
                         var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, pOverlapped);
                         if (!res)
@@ -449,6 +451,31 @@ namespace PSADT.LibraryInterfaces
                         }
                         return res;
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wrapper around ReadFile to manage error handling.
+        /// </summary>
+        /// <param name="hFile"></param>
+        /// <param name="lpBuffer"></param>
+        /// <param name="lpNumberOfBytesRead"></param>
+        /// <param name="lpOverlapped"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL ReadFile(HANDLE hFile, [Optional] byte[] lpBuffer, [Optional] out uint lpNumberOfBytesRead)
+        {
+            fixed (byte* pBuffer = lpBuffer)
+            {
+                fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
+                {
+                    var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, null);
+                    if (!res)
+                    {
+                        throw ErrorHandler.GetExceptionForLastWin32Error();
+                    }
+                    return res;
                 }
             }
         }

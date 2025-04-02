@@ -18,15 +18,15 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe OSVERSIONINFOEXW RtlGetVersion()
+        internal static unsafe NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
         {
-            OSVERSIONINFOEXW version = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
-            NTSTATUS status = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)Unsafe.AsPointer(ref version));
+            lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
+            NTSTATUS status = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)Unsafe.AsPointer(ref lpVersionInformation));
             if (status.Value < 0)
             {
                 throw ErrorHandler.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(status));
             }
-            return version;
+            return status;
         }
     }
 }
