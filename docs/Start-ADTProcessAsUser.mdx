@@ -17,7 +17,8 @@ Invokes a process in another user's session.
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
  [-CreateNoWindow] [-NoWait] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ### UseShellExecuteWaitForMsiExec
@@ -27,7 +28,7 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArg
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
  [-CreateNoWindow] [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-WaitForMsiExec]
  [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+ [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### UseShellExecute
@@ -36,8 +37,8 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArg
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
  [-CreateNoWindow] [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-SuccessExitCodes <Int32[]>]
- [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
- [<CommonParameters>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
+ [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### CreateNoWindowWaitForMsiExec
@@ -46,7 +47,8 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArg
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
  [-CreateNoWindow] [-NoWait] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ### DefaultWaitForMsiExec
@@ -55,8 +57,8 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArg
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
  [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>]
- [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
- [<CommonParameters>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
+ [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### Default
@@ -65,7 +67,8 @@ Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArg
 Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
  [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -372,6 +375,22 @@ Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExitOnProcessFailure
+
+Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

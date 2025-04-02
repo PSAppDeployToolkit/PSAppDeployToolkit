@@ -59,6 +59,9 @@ function Start-ADTProcessAsUser
     .PARAMETER IgnoreExitCodes
         List the exit codes to ignore or * to ignore all exit codes.
 
+    .PARAMETER ExitOnProcessFailure
+        Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
@@ -241,6 +244,14 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
         [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
+
+        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
+        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
+        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
+        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
+        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
+        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
         [Parameter(Mandatory = $false, ParameterSetName = "Default")]
         [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]

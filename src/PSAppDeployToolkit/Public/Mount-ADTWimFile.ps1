@@ -164,7 +164,7 @@ function Mount-ADTWimFile
                 # If we're using the force, forcibly remove the existing directory.
                 if ([System.IO.Directory]::Exists($Path))
                 {
-                    if (($content = Get-ChildItem -LiteralPath $Path -ErrorAction Ignore))
+                    if (Get-ChildItem -LiteralPath $Path -ErrorAction Ignore)
                     {
                         if (!$Force)
                         {

@@ -74,6 +74,9 @@ function Start-ADTProcess
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
+    .PARAMETER ExitOnProcessFailure
+        Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+
     .PARAMETER PassThru
         If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process. If NoWait is specified, returns an object with Id, Handle and ProcessName.
 
@@ -282,6 +285,16 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = "UsernameWaitForMsiExec")]
         [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
         [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
+
+        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
+        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
+        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
+        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
+        [Parameter(Mandatory = $false, ParameterSetName = "Username")]
+        [Parameter(Mandatory = $false, ParameterSetName = "UsernameWaitForMsiExec")]
+        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
+        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
@@ -363,7 +376,7 @@ function Start-ADTProcess
         }
         if (!$PSBoundParameters.ContainsKey('WorkingDirectory'))
         {
-            if ($adtSession)
+            if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
             {
                 $WorkingDirectory = $adtSession.DirFiles
             }
@@ -399,7 +412,7 @@ function Start-ADTProcess
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
-                    Write-ADTLogEntry -Message "[$FilePath] successfully resolved to fully qualified path [$fqPath]."
+                    Write-ADTLogEntry -Message "File path [$FilePath] successfully resolved to fully qualified path [$fqPath]."
                     $FilePath = $fqPath
                 }
 
@@ -556,18 +569,45 @@ function Start-ADTProcess
         catch
         {
             # Set up parameters for Invoke-ADTFunctionErrorHandler.
+            $iafehParams = @{
+                Cmdlet = $PSCmdlet
+                SessionState = $ExecutionContext.SessionState
+                ErrorRecord = $_
+            }
+
+            # Handle the error differently if its a process exit code issue.
             if ($null -ne $result)
             {
-                # Update the session's last exit code with the value if externally called.
-                if ($adtSession -and $extInvoker -and ($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$'))
+                $iafehParams.LogMessage = $_.Exception.Message
+                $iafehParams.DisableErrorResolving = $true
+                if ($adtSession -and $extInvoker)
                 {
-                    $adtSession.SetExitCode($result.ExitCode)
+                    # Update the session's last exit code with the value if externally called.
+                    if ($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$')
+                    {
+                        $adtSession.SetExitCode($result.ExitCode)
+                    }
+
+                    # If the caller is opting to exit out of their deployment, we don't want Invoke-ADTFunctionErrorHandler to throw.
+                    if ($ExitOnProcessFailure)
+                    {
+                        $iafehParams.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                        Invoke-ADTFunctionErrorHandler @iafehParams
+                        Close-ADTSession
+                    }
+                    else
+                    {
+                        Invoke-ADTFunctionErrorHandler @iafehParams
+                    }
                 }
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage $_.Exception.Message -DisableErrorResolving
+                else
+                {
+                    Invoke-ADTFunctionErrorHandler @iafehParams
+                }
             }
             else
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Error occurred while attempting to start the specified process."
+                Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process."
             }
         }
         finally
