@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using PSADT.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Security;
 using Windows.Win32.Foundation;
@@ -21,7 +22,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.RegOpenKeyEx(hKey, lpSubKeyPtr, ulOptions, samDesired, &phkResultInternal);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
-                    throw new Win32Exception((int)res);
+                    throw ErrorHandler.GetExceptionForLastWin32Error(res);
                 }
                 phkResult = phkResultInternal;
                 return res;
@@ -51,7 +52,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.RegQueryInfoKey(hKey, lpClass, lpcchClassPtr, lpReservedPtr, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, &lastWriteTime);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
-                    throw new Win32Exception((int)res);
+                    throw ErrorHandler.GetExceptionForLastWin32Error(res);
                 }
                 lpftLastWriteTime = lastWriteTime;
                 return res;
@@ -73,7 +74,8 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.RegCloseKey(hKey);
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
-                throw new Win32Exception((int)res);
+                
+                throw ErrorHandler.GetExceptionForLastWin32Error(res);
             }
             hKey = default;
             return res;
@@ -98,7 +100,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.DuplicateTokenEx(hExistingToken, dwDesiredAccess, lpTokenAttributes.HasValue ? &lpTokenAttributesLocal : null, ImpersonationLevel, TokenType, phNewTokenPtr);
                 if (!res)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
@@ -118,7 +120,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, &TokenHandleLocal);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             TokenHandle = TokenHandleLocal;
             return res;
@@ -137,7 +139,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName, out lpLuid);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -163,10 +165,10 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, buffer, TokenInformationLength, &ReturnLengthLocal);
             if (!res)
             {
-                int error = Marshal.GetLastWin32Error();
-                if ((WIN32_ERROR)error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || TokenInformationLength != 0)
+                var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
+                if (error != WIN32_ERROR.NO_ERROR && (error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || TokenInformationLength != 0))
                 {
-                    throw new Win32Exception(error);
+                    throw ErrorHandler.GetExceptionForLastWin32Error(error);
                 }
             }
             ReturnLength = ReturnLengthLocal;
@@ -191,7 +193,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, NewStatePtr, BufferLength, null, null);
                 if (!res)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
                 return res;
             }

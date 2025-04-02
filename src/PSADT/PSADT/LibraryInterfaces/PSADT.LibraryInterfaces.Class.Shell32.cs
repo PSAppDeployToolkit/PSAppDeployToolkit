@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using PSADT.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -162,7 +163,7 @@ namespace PSADT.LibraryInterfaces
             var res = ShellExecuteExNative(ref lpExecInfo);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }

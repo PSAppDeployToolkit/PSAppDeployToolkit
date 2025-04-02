@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using PSADT.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.HiDpi;
@@ -46,7 +47,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.DestroyMenu((HMENU)hMenu);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -104,7 +105,7 @@ namespace PSADT.LibraryInterfaces
         {
             if (!PInvoke.SetProcessDpiAwarenessContext(context))
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return true;
         }
@@ -123,7 +124,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.LoadString(hInstance, uID, lpBuffer, cchBufferMax);
             if (res == 0)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -140,7 +141,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.EnumWindows(lpEnumFunc, lParam);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -156,10 +157,10 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.GetWindowTextLength(hWnd);
             if (res == 0)
             {
-                var error = Marshal.GetLastWin32Error();
-                if (error != 0)
+                var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
+                if (error != WIN32_ERROR.NO_ERROR)
                 {
-                    throw new Win32Exception(error);
+                    throw ErrorHandler.GetExceptionForLastWin32Error(error);
                 }
             }
             return res;
@@ -180,7 +181,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.GetWindowText(hWnd, lpStringPointer, lpString.Length);
                 if (res == 0)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
@@ -200,7 +201,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.GetWindowThreadProcessId(hWnd, lpdwProcessIdPointer);
                 if (res == 0)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
@@ -219,7 +220,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.AttachThreadInput(idAttach, idAttachTo, fAttach);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -235,7 +236,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.BringWindowToTop(hWnd);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -251,7 +252,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.SetActiveWindow(hWnd);
             if (res == IntPtr.Zero)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -267,7 +268,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.SetFocus(hWnd);
             if (res == IntPtr.Zero)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -291,7 +292,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.SendMessageTimeout(hWnd, Msg, wParam, lParam, fuFlags, uTimeout, lpdwResultPointer);
                 if (res == IntPtr.Zero)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
                 return res;
             }

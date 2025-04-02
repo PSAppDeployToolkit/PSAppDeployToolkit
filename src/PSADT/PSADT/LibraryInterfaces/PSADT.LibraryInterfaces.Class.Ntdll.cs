@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using PSADT.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.SystemInformation;
@@ -23,7 +24,7 @@ namespace PSADT.LibraryInterfaces
             NTSTATUS status = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)Unsafe.AsPointer(ref version));
             if (status.Value < 0)
             {
-                throw new Win32Exception((int)PInvoke.RtlNtStatusToDosError(status));
+                throw ErrorHandler.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(status));
             }
             return version;
         }

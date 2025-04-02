@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
+using PSADT.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -26,7 +27,7 @@ namespace PSADT.LibraryInterfaces
         {
             if (!PInvoke.OOBEComplete(out var isOobeComplete))
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return isOobeComplete;
         }
@@ -41,7 +42,7 @@ namespace PSADT.LibraryInterfaces
         {
             if (!PInvoke.ProcessIdToSessionId(processId, out uint sessionId))
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return sessionId;
         }
@@ -58,7 +59,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
             if (null == res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -75,7 +76,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.GetProcAddress(hModule, lpProcName);
             if (null == res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -94,7 +95,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.IsWow64Process2(hProcess, out pProcessMachine, &pNativeMachineInternal);
             if (null == res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             pNativeMachine = pNativeMachineInternal;
             return res;
@@ -116,7 +117,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName);
             if (res == 0)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             else if (res == lpReturnedString.Length - 1)
             {
@@ -139,7 +140,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -158,7 +159,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
             if (null == res || res.IsNull)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -177,7 +178,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.CreateJobObject(pJobAttributes, lpName);
                 if (null == res || res.IsNull)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
@@ -199,7 +200,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.SetInformationJobObject(hJob, JobObjectInformationClass, pJobObjectInformation, cbJobObjectInformationLength);
                 if (!res)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
@@ -235,7 +236,7 @@ namespace PSADT.LibraryInterfaces
                         var res = PInvoke.CreateProcess(lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
                         if (!res)
                         {
-                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                            throw ErrorHandler.GetExceptionForLastWin32Error();
                         }
                         return res;
                     }
@@ -274,7 +275,7 @@ namespace PSADT.LibraryInterfaces
                         var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
                         if (!res)
                         {
-                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                            throw ErrorHandler.GetExceptionForLastWin32Error();
                         }
                         return res;
                     }
@@ -294,7 +295,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.AssignProcessToJobObject(hJob, hProcess);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -310,7 +311,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.ResumeThread(hThread);
             if (res == uint.MaxValue)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -330,7 +331,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.CloseHandle(hObject);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             hObject = default;
             return res;
@@ -352,7 +353,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, &lpCompletionCodeLocal, &lpCompletionKeyLocal, &lpOverlappedLocalPointer, dwMilliseconds);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             lpCompletionCode = lpCompletionCodeLocal;
             lpCompletionKey = lpCompletionKeyLocal;
@@ -373,7 +374,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.GetExitCodeProcess(hProcess, &lpExitCodeLocal);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             lpExitCode = lpExitCodeLocal;
             return res;
@@ -394,7 +395,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.CreatePipe(&hReadPipeLocal, &hWritePipeLocal, &lpPipeAttributes, nSize);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             hReadPipe = hReadPipeLocal;
             hWritePipe = hWritePipeLocal;
@@ -414,7 +415,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.SetHandleInformation(hObject, dwMask, dwFlags);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -438,9 +439,13 @@ namespace PSADT.LibraryInterfaces
                     fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
                     {
                         var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, pOverlapped);
-                        if (!res && (WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR error && error != WIN32_ERROR.NO_ERROR && error != WIN32_ERROR.ERROR_BROKEN_PIPE)
+                        if (!res)
                         {
-                            throw new Win32Exception(((int)error));
+                            var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
+                            if (error != WIN32_ERROR.NO_ERROR && error != WIN32_ERROR.ERROR_BROKEN_PIPE)
+                            {
+                                throw ErrorHandler.GetExceptionForLastWin32Error(error);
+                            }
                         }
                         return res;
                     }

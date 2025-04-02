@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
+using PSADT.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.RemoteDesktop;
@@ -28,7 +29,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             try
             {
@@ -60,7 +61,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out ppBuffer, out pBytesReturned);
             if (!res)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -79,7 +80,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.WTSQueryUserToken(SessionId, pphToken);
                 if (!res)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
