@@ -18,11 +18,14 @@ namespace PSADT.ProcessEx
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="argumentList"></param>
+        /// <param name="workingDirectory"></param>
+        /// <param name="username"></param>
+        /// <param name="useLinkedAdminToken"></param>
+        /// <param name="useShellExecute"></param>
+        /// <param name="verb"></param>
         /// <param name="windowStyle"></param>
         /// <param name="noNewWindow"></param>
-        /// <param name="workingDirectory"></param>
         /// <param name="priorityClass"></param>
-        /// <param name="useShellExecute"></param>
         /// <param name="cancellationToken"></param>
         public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, string? username = null, bool useLinkedAdminToken = false, bool useShellExecute = false, string? verb = null, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, CancellationToken cancellationToken = default)
         {
