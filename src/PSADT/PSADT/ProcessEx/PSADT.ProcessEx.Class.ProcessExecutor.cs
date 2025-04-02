@@ -68,7 +68,7 @@ namespace PSADT.ProcessEx
             {
                 // Set up the job object and I/O completion port for the process.
                 iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, HANDLE.Null, UIntPtr.Zero, 1);
-                job = Kernel32.CreateJobObject(out _, default);
+                job = Kernel32.CreateJobObject(null, default);
                 var assoc = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = iocp, CompletionKey = null };
                 Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, ref assoc, (uint)Marshal.SizeOf<JOBOBJECT_ASSOCIATE_COMPLETION_PORT>());
 
@@ -316,11 +316,20 @@ namespace PSADT.ProcessEx
         /// <exception cref="Win32Exception"></exception>
         private static void ReadPipe(HANDLE handle, List<string> output, ConcurrentQueue<string> interleaved, CancellationToken token)
         {
+            NativeOverlapped lpOverlapped = default;
             var buffer = new byte[4096];
+            uint bytesRead = 0;
             while (!token.IsCancellationRequested)
             {
-                Kernel32.ReadFile(handle, buffer, out var bytesRead, out _);
-                if (bytesRead == 0)
+                try
+                {
+                    Kernel32.ReadFile(handle, buffer, out bytesRead, ref lpOverlapped);
+                    if (bytesRead == 0)
+                    {
+                        break;
+                    }
+                }
+                catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BROKEN_PIPE)
                 {
                     break;
                 }

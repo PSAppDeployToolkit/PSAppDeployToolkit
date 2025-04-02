@@ -171,17 +171,15 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpName"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe HANDLE CreateJobObject([Optional] out SECURITY_ATTRIBUTES lpJobAttributes, PCWSTR lpName)
+        internal static unsafe HANDLE CreateJobObject([Optional] SECURITY_ATTRIBUTES? lpJobAttributes, PCWSTR lpName)
         {
-            fixed (SECURITY_ATTRIBUTES* pJobAttributes = &lpJobAttributes)
+            SECURITY_ATTRIBUTES lpJobAttributesLocal = lpJobAttributes ?? default(SECURITY_ATTRIBUTES);
+            var res = PInvoke.CreateJobObject(&lpJobAttributesLocal, lpName);
+            if (null == res || res.IsNull)
             {
-                var res = PInvoke.CreateJobObject(pJobAttributes, lpName);
-                if (null == res || res.IsNull)
-                {
-                    throw ErrorHandler.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -430,7 +428,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpOverlapped"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL ReadFile(HANDLE hFile, [Optional] byte[] lpBuffer, [Optional] out uint lpNumberOfBytesRead, [Optional] out NativeOverlapped lpOverlapped)
+        internal static unsafe BOOL ReadFile(HANDLE hFile, [Optional] byte[] lpBuffer, [Optional] out uint lpNumberOfBytesRead, [Optional] ref NativeOverlapped lpOverlapped)
         {
             fixed (byte* pBuffer = lpBuffer)
             {
@@ -441,11 +439,7 @@ namespace PSADT.LibraryInterfaces
                         var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, pOverlapped);
                         if (!res)
                         {
-                            var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
-                            if (error != WIN32_ERROR.NO_ERROR && error != WIN32_ERROR.ERROR_BROKEN_PIPE)
-                            {
-                                throw ErrorHandler.GetExceptionForLastWin32Error(error);
-                            }
+                            throw ErrorHandler.GetExceptionForLastWin32Error();
                         }
                         return res;
                     }
