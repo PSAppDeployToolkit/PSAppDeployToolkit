@@ -347,16 +347,21 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL GetQueuedCompletionStatus(HANDLE CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out NativeOverlapped lpOverlapped, uint dwMilliseconds)
         {
-            uint lpCompletionCodeLocal; nuint lpCompletionKeyLocal; NativeOverlapped lpOverlappedLocal; NativeOverlapped* lpOverlappedLocalPointer = &lpOverlappedLocal;
-            var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, &lpCompletionCodeLocal, &lpCompletionKeyLocal, &lpOverlappedLocalPointer, dwMilliseconds);
-            if (!res)
+            fixed (uint* pCompletionCode = &lpCompletionCode)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                fixed (nuint* pCompletionKey = &lpCompletionKey)
+                {
+                    fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
+                    {
+                        var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, pCompletionCode, pCompletionKey, &pOverlapped, dwMilliseconds);
+                        if (!res)
+                        {
+                            throw ErrorHandler.GetExceptionForLastWin32Error();
+                        }
+                        return res;
+                    }
+                }
             }
-            lpCompletionCode = lpCompletionCodeLocal;
-            lpCompletionKey = lpCompletionKeyLocal;
-            lpOverlapped = lpOverlappedLocal;
-            return res;
         }
 
         /// <summary>
@@ -368,14 +373,15 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL GetExitCodeProcess(HANDLE hProcess, out uint lpExitCode)
         {
-            uint lpExitCodeLocal;
-            var res = PInvoke.GetExitCodeProcess(hProcess, &lpExitCodeLocal);
-            if (!res)
+            fixed (uint* pExitCode = &lpExitCode)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                var res = PInvoke.GetExitCodeProcess(hProcess, pExitCode);
+                if (!res)
+                {
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            lpExitCode = lpExitCodeLocal;
-            return res;
         }
 
         /// <summary>
@@ -389,15 +395,15 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreatePipe(out HANDLE hReadPipe, out HANDLE hWritePipe, [Optional] SECURITY_ATTRIBUTES lpPipeAttributes, uint nSize)
         {
-            HANDLE hReadPipeLocal; HANDLE hWritePipeLocal;
-            var res = PInvoke.CreatePipe(&hReadPipeLocal, &hWritePipeLocal, &lpPipeAttributes, nSize);
-            if (!res)
+            fixed (HANDLE* pReadPipe = &hReadPipe, pWritePipe = &hWritePipe)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                var res = PInvoke.CreatePipe(pReadPipe, pWritePipe, &lpPipeAttributes, nSize);
+                if (!res)
+                {
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            hReadPipe = hReadPipeLocal;
-            hWritePipe = hWritePipeLocal;
-            return res;
         }
 
         /// <summary>

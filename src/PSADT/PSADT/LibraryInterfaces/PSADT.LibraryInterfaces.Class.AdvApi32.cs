@@ -116,14 +116,15 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL OpenProcessToken(HANDLE ProcessHandle, TOKEN_ACCESS_MASK DesiredAccess, out HANDLE TokenHandle)
         {
-            HANDLE TokenHandleLocal;
-            var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, &TokenHandleLocal);
-            if (!res)
+            fixed (HANDLE* TokenHandlePtr = &TokenHandle)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, TokenHandlePtr);
+                if (!res)
+                {
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            TokenHandle = TokenHandleLocal;
-            return res;
         }
 
         /// <summary>
@@ -156,23 +157,24 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL GetTokenInformation(HANDLE TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, [Optional] IntPtr TokenInformation, uint TokenInformationLength, out uint ReturnLength)
         {
-            uint ReturnLengthLocal;
-            void* buffer = null;
-            if (TokenInformation != IntPtr.Zero)
+            fixed (uint* ReturnLengthPtr = &ReturnLength)
             {
-                buffer = TokenInformation.ToPointer();
-            }
-            var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, buffer, TokenInformationLength, &ReturnLengthLocal);
-            if (!res)
-            {
-                var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
-                if (error != WIN32_ERROR.NO_ERROR && (error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || TokenInformationLength != 0))
+                void* buffer = null;
+                if (TokenInformation != IntPtr.Zero)
                 {
-                    throw ErrorHandler.GetExceptionForLastWin32Error(error);
+                    buffer = TokenInformation.ToPointer();
                 }
+                var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, buffer, TokenInformationLength, ReturnLengthPtr);
+                if (!res)
+                {
+                    var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
+                    if (error != WIN32_ERROR.NO_ERROR && (error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || TokenInformationLength != 0))
+                    {
+                        throw ErrorHandler.GetExceptionForLastWin32Error(error);
+                    }
+                }
+                return res;
             }
-            ReturnLength = ReturnLengthLocal;
-            return res;
         }
 
         /// <summary>

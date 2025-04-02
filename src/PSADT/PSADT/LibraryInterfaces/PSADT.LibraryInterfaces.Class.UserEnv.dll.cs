@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using PSADT.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -22,14 +21,15 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateEnvironmentBlock(out IntPtr lpEnvironment, HANDLE hToken, BOOL bInherit)
         {
-            void* lpEnvironmentLocal;
-            var res = PInvoke.CreateEnvironmentBlock(&lpEnvironmentLocal, hToken, bInherit);
-            if (!res)
+            fixed (void* lpEnvironmentPtr = &lpEnvironment)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                var res = PInvoke.CreateEnvironmentBlock(&lpEnvironmentPtr, hToken, bInherit);
+                if (!res)
+                {
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            lpEnvironment = (IntPtr)lpEnvironmentLocal;
-            return res;
         }
 
         /// <summary>
