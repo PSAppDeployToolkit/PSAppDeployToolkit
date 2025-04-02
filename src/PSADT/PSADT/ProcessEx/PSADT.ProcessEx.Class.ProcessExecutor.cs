@@ -215,6 +215,11 @@ namespace PSADT.ProcessEx
                     {
                         startupInfo.nShow = startInfo.WindowStyle;
                     }
+                    if (null != startInfo.Verb)
+                    {
+                        startupInfo.lpVerb = startInfo.Verb;
+                    }
+
                     Shell32.ShellExecuteEx(ref startupInfo);
                     if (startupInfo.hProcess != IntPtr.Zero)
                     {

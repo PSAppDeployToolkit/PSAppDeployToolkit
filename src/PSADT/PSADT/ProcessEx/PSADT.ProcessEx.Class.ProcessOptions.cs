@@ -24,7 +24,7 @@ namespace PSADT.ProcessEx
         /// <param name="priorityClass"></param>
         /// <param name="useShellExecute"></param>
         /// <param name="cancellationToken"></param>
-        public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, string? username = null, bool useLinkedAdminToken = false, bool useShellExecute = false, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, CancellationToken cancellationToken = default)
+        public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, string? username = null, bool useLinkedAdminToken = false, bool useShellExecute = false, string? verb = null, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, CancellationToken cancellationToken = default)
         {
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
@@ -43,6 +43,11 @@ namespace PSADT.ProcessEx
             if (!string.IsNullOrWhiteSpace(username))
             {
                 Username = username;
+            }
+
+            if (!string.IsNullOrWhiteSpace(verb))
+            {
+                Verb = verb;
             }
 
             FilePath = filePath;
@@ -116,6 +121,11 @@ namespace PSADT.ProcessEx
         /// Gets a value indicating whether to use the shell to execute the process.
         /// </summary>
         public readonly bool UseShellExecute;
+
+        /// <summary>
+        /// Gets the verb to use when starting the process.
+        /// </summary>
+        public readonly string? Verb = null;
 
         /// <summary>
         /// Gets the window style of the process.
