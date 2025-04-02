@@ -197,7 +197,15 @@ namespace PSADT
                 var validPath = Path.Combine(psModulePath, "PSAppDeployToolkit");
                 if (Directory.Exists(validPath))
                 {
-                    return validPath;
+                    var versionPath = Path.Combine(validPath, assemblyVersion);
+                    if (Directory.Exists(versionPath))
+                    {
+                        return versionPath;
+                    }
+                    else if (Directory.EnumerateDirectories(validPath).LastOrDefault() is string latestPath)
+                    {
+                        return latestPath;
+                    }
                 }
             }
             throw new DirectoryNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the [PSAppDeployToolkit] module directory.\n\nPlease ensure you have all of the required files available to start the installation.");
