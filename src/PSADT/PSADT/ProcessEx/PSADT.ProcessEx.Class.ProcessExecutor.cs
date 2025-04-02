@@ -141,7 +141,24 @@ namespace PSADT.ProcessEx
                         WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
                         try
                         {
-                            AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                            if (startInfo.UseLinkedAdminToken)
+                            {
+                                int buffLen = Marshal.SizeOf(typeof(TOKEN_LINKED_TOKEN));
+                                var buffer = Marshal.AllocHGlobal(buffLen);
+                                try
+                                {
+                                    AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, (uint)buffLen, out _);
+                                    AdvApi32.DuplicateTokenEx(Marshal.PtrToStructure<TOKEN_LINKED_TOKEN>(buffer).LinkedToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                                }
+                                finally
+                                {
+                                    Marshal.FreeHGlobal(buffer);
+                                }
+                            }
+                            else
+                            {
+                                AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                            }
                         }
                         finally
                         {
