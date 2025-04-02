@@ -395,33 +395,5 @@ namespace PSADT.LibraryInterfaces
                 }
             }
         }
-
-        /// <summary>
-        /// Wrapper around WriteFile to manage error handling.
-        /// </summary>
-        /// <param name="hFile"></param>
-        /// <param name="lpBuffer"></param>
-        /// <param name="lpNumberOfBytesWritten"></param>
-        /// <param name="lpOverlapped"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WriteFile(HANDLE hFile, [Optional] byte[] lpBuffer, [Optional] out uint lpNumberOfBytesWritten, [Optional] out NativeOverlapped lpOverlapped)
-        {
-            fixed (byte* pBuffer = lpBuffer)
-            {
-                fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
-                {
-                    fixed (uint* pNumberOfBytesWritten = &lpNumberOfBytesWritten)
-                    {
-                        var res = PInvoke.WriteFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesWritten, pOverlapped);
-                        if (!res)
-                        {
-                            throw new Win32Exception(Marshal.GetLastWin32Error());
-                        }
-                        return res;
-                    }
-                }
-            }
-        }
     }
 }

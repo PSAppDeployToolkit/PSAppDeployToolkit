@@ -23,9 +23,8 @@ namespace PSADT.ProcessEx
         /// <param name="workingDirectory"></param>
         /// <param name="priorityClass"></param>
         /// <param name="useShellExecute"></param>
-        /// <param name="standardInput"></param>
         /// <param name="cancellationToken"></param>
-        public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, bool useShellExecute = false, string? standardInput = null, CancellationToken cancellationToken = default)
+        public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, bool useShellExecute = false, CancellationToken cancellationToken = default)
         {
             if ((null != workingDirectory) && !string.IsNullOrWhiteSpace(workingDirectory))
             {
@@ -39,10 +38,6 @@ namespace PSADT.ProcessEx
             if ((null != argumentList) && (string.Join(" ", argumentList.Select(x => x.Trim())).Trim() is string args) && !string.IsNullOrWhiteSpace(args))
             {
                 Arguments = args;
-            }
-            if ((null != standardInput) && !string.IsNullOrWhiteSpace(standardInput))
-            {
-                StandardInput = standardInput.Trim();
             }
 
             FilePath = filePath;

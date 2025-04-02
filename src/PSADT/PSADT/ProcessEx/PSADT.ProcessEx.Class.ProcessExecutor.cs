@@ -35,8 +35,6 @@ namespace PSADT.ProcessEx
             HANDLE hStdErrWrite = default;
             HANDLE hStdOutRead = default;
             HANDLE hStdErrRead = default;
-            HANDLE hStdInWrite = default;
-            HANDLE hStdInRead = default;
             HANDLE hProcess = default;
             HANDLE iocp = default;
             HANDLE job = default;
@@ -67,16 +65,14 @@ namespace PSADT.ProcessEx
 
                 if ((consoleApp && noWindow) || !startInfo.UseShellExecute)
                 {
-                    CreatePipe(out hStdOutRead, out hStdOutWrite, true);
-                    CreatePipe(out hStdErrRead, out hStdErrWrite, true);
-                    CreatePipe(out hStdInRead, out hStdInWrite, false);
+                    CreatePipe(out hStdOutRead, out hStdOutWrite);
+                    CreatePipe(out hStdErrRead, out hStdErrWrite);
 
                     var startupInfo = new STARTUPINFOW
                     {
                         cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
                         hStdOutput = hStdOutWrite,
                         hStdError = hStdErrWrite,
-                        hStdInput = hStdInRead,
                     };
 
                     var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
@@ -100,7 +96,10 @@ namespace PSADT.ProcessEx
                     {
                         startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
                         creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
-                        creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                        if (!consoleApp)
+                        {
+                            creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                        }
                     }
 
                     Kernel32.CreateProcess(startInfo.FilePath, startInfo.GetArgsForCreateProcess(), null, null, true, creationFlags, IntPtr.Zero, startInfo.WorkingDirectory, startupInfo, out var pi);
@@ -109,7 +108,6 @@ namespace PSADT.ProcessEx
                     Kernel32.CloseHandle(ref pi.hThread);
                     Kernel32.CloseHandle(ref hStdOutWrite);
                     Kernel32.CloseHandle(ref hStdErrWrite);
-                    Kernel32.CloseHandle(ref hStdInRead);
                 }
                 else
                 {
@@ -140,7 +138,6 @@ namespace PSADT.ProcessEx
                 List<string> stdout = []; List<string> stderr = [];
                 Task readOut = (hStdOutRead != default) ? Task.Run(() => ReadPipe(hStdOutRead, stdout, startInfo.CancellationToken)) : Task.CompletedTask;
                 Task readErr = (hStdErrRead != default) ? Task.Run(() => ReadPipe(hStdErrRead, stderr, startInfo.CancellationToken)) : Task.CompletedTask;
-                Task writeIn = (null != startInfo.StandardInput) ? Task.Run(() => WritePipe(hStdInWrite, startInfo.StandardInput!, startInfo.CancellationToken)) : Task.CompletedTask;
                 Task waitForJob = (hProcess == default) ? Task.CompletedTask : Task.Run(() =>
                 {
                     while (true)
@@ -156,7 +153,7 @@ namespace PSADT.ProcessEx
                         }
                     }
                 });
-                await Task.WhenAll(waitForJob, readOut, readErr, writeIn);
+                await Task.WhenAll(waitForJob, readOut, readErr);
 
                 uint exitCode = 0;
                 if (hProcess != default)
@@ -171,8 +168,6 @@ namespace PSADT.ProcessEx
                 Kernel32.CloseHandle(ref hStdErrWrite);
                 Kernel32.CloseHandle(ref hStdOutRead);
                 Kernel32.CloseHandle(ref hStdErrRead);
-                Kernel32.CloseHandle(ref hStdInWrite);
-                Kernel32.CloseHandle(ref hStdInRead);
                 Kernel32.CloseHandle(ref hProcess);
                 Kernel32.CloseHandle(ref iocp);
                 Kernel32.CloseHandle(ref job);
@@ -194,12 +189,11 @@ namespace PSADT.ProcessEx
         /// </summary>
         /// <param name="readPipe"></param>
         /// <param name="writePipe"></param>
-        /// <param name="readFromChild"></param>
         /// <exception cref="Win32Exception"></exception>
-        private static void CreatePipe(out HANDLE readPipe, out HANDLE writePipe, bool readFromChild)
+        private static void CreatePipe(out HANDLE readPipe, out HANDLE writePipe)
         {
             Kernel32.CreatePipe(out readPipe, out writePipe, new SECURITY_ATTRIBUTES { nLength = (uint)Marshal.SizeOf<SECURITY_ATTRIBUTES>(), bInheritHandle = true }, 0);
-            Kernel32.SetHandleInformation(readFromChild ? readPipe : writePipe, (uint)HANDLE_FLAGS.HANDLE_FLAG_INHERIT, 0);
+            Kernel32.SetHandleInformation(readPipe, (uint)HANDLE_FLAGS.HANDLE_FLAG_INHERIT, 0);
         }
 
         /// <summary>
@@ -221,17 +215,6 @@ namespace PSADT.ProcessEx
                 }
                 output.Add(Encoding.Default.GetString(buffer, 0, (int)bytesRead).TrimEnd());
             }
-        }
-
-        /// <summary>
-        /// Writes to a pipe.
-        /// </summary>
-        /// <param name="handle"></param>
-        /// <param name="input"></param>
-        /// <param name="token"></param>
-        private static void WritePipe(HANDLE handle, string input, CancellationToken token)
-        {
-            Kernel32.WriteFile(handle, Encoding.Default.GetBytes(input), out _, out _);
         }
     }
 }
