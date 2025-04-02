@@ -45,7 +45,8 @@ namespace PSADT.ProcessEx
             HANDLE iocp = default;
             HANDLE job = default;
 
-            // Determine whether the process we're starting is a console app or not.
+            // Determine whether the process we're starting is a console app or not. This is important
+            // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
             bool noWindow = startInfo.NoNewWindow || ((SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE);
             bool consoleApp;
             try
@@ -69,6 +70,8 @@ namespace PSADT.ProcessEx
                 };
                 Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, ref assoc, (uint)Marshal.SizeOf<JOBOBJECT_ASSOCIATE_COMPLETION_PORT>());
 
+                // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
+                // Invoking processes as user has no ShellExecute capability, so it always comes through here.
                 if ((consoleApp && noWindow) || !startInfo.UseShellExecute || (null != startInfo.Username))
                 {
                     CreatePipe(out hStdOutRead, out hStdOutWrite);
@@ -82,10 +85,12 @@ namespace PSADT.ProcessEx
                         hStdError = hStdErrWrite,
                     };
 
+                    // The process is created suspended so it can be assigned to the job object.
                     var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                         PROCESS_CREATION_FLAGS.CREATE_SUSPENDED |
                         PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP;
 
+                    // We must create a console window for console apps when the window is shown.
                     if (!noWindow)
                     {
                         startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
@@ -119,15 +124,18 @@ namespace PSADT.ProcessEx
                             }
                         }
 
+                        // SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
                         PrivilegeManager.EnsurePrivilegeEnabled(SE_TOKEN.SeIncreaseQuotaPrivilege);
                         PrivilegeManager.EnsurePrivilegeEnabled(SE_TOKEN.SeAssignPrimaryTokenPrivilege);
 
+                        // You can only run a process as a user if they're logged on.
                         var userSessions = SessionManager.GetSessionInfo();
                         if (userSessions.Count == 0)
                         {
                             throw new InvalidOperationException("No user sessions are available to launch the process in.");
                         }
 
+                        // You can only run a process as a user if they're active.
                         var session = userSessions.Where(s => (null != s.UserName) && s.UserName.Equals(startInfo.Username, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                         if (null == session)
                         {
@@ -138,9 +146,12 @@ namespace PSADT.ProcessEx
                             throw new InvalidOperationException($"The session for user {startInfo.Username} is not active.");
                         }
 
+                        // First we get the user's token.
                         WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
                         try
                         {
+                            // If we're to get their linked token, we get it via their user token.
+                            // Once done, we duplicate the linked token to get a primary token to create the new process.
                             if (startInfo.UseLinkedAdminToken)
                             {
                                 int buffLen = Marshal.SizeOf(typeof(TOKEN_LINKED_TOKEN));
@@ -165,7 +176,11 @@ namespace PSADT.ProcessEx
                             Kernel32.CloseHandle(ref userToken);
                         }
 
-                        startupInfo.lpDesktop = new PWSTR(Marshal.StringToCoTaskMemUni("winsta0\\default"));
+                        // This is important so that a windowed application can be shown.
+                        if (!noWindow)
+                        {
+                            startupInfo.lpDesktop = new PWSTR(Marshal.StringToCoTaskMemUni("winsta0\\default"));
+                        }
                         UserEnv.CreateEnvironmentBlock(out lpEnvironment, hPrimaryToken, true);
                         Kernel32.CreateProcessAsUser(hPrimaryToken, null, startInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, lpEnvironment, startInfo.WorkingDirectory, startupInfo, out pi);
                     }
@@ -206,6 +221,7 @@ namespace PSADT.ProcessEx
                     }
                 }
 
+                // These tasks read all outputs and wait for the process to complete.
                 List<string> stdout = []; List<string> stderr = [];
                 Task readOut = (hStdOutRead != default) ? Task.Run(() => ReadPipe(hStdOutRead, stdout, startInfo.CancellationToken)) : Task.CompletedTask;
                 Task readErr = (hStdErrRead != default) ? Task.Run(() => ReadPipe(hStdErrRead, stderr, startInfo.CancellationToken)) : Task.CompletedTask;
