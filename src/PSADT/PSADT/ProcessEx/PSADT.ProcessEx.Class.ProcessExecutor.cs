@@ -80,7 +80,8 @@ namespace PSADT.ProcessEx
                     try
                     {
                         // The process is created suspended so it can be assigned to the job object.
-                        var creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
+                        var creationFlags = (PROCESS_CREATION_FLAGS)startInfo.PriorityClass |
+                            PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                             PROCESS_CREATION_FLAGS.CREATE_SUSPENDED |
                             PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP;
 
@@ -247,7 +248,9 @@ namespace PSADT.ProcessEx
                     Shell32.ShellExecuteEx(ref startupInfo);
                     if (startupInfo.hProcess != IntPtr.Zero)
                     {
-                        Kernel32.AssignProcessToJobObject(job, (hProcess = (HANDLE)startupInfo.hProcess));
+                        hProcess = (HANDLE)startupInfo.hProcess;
+                        Kernel32.SetPriorityClass(hProcess, startInfo.PriorityClass);
+                        Kernel32.AssignProcessToJobObject(job, hProcess);
                     }
                 }
 

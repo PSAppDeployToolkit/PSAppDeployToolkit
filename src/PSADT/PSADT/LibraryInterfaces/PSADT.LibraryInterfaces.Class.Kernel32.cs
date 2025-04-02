@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using PSADT.Diagnostics;
@@ -8,7 +9,6 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.LibraryLoader;
-using Windows.Win32.System.SystemInformation;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.LibraryInterfaces
@@ -445,6 +445,33 @@ namespace PSADT.LibraryInterfaces
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Wrapper around WriteFile to manage error handling.
+        /// </summary>
+        /// <param name="hProcess"></param>
+        /// <param name="dwPriorityClass"></param>
+        /// <returns></returns>
+        internal static BOOL SetPriorityClass(HANDLE hProcess, PROCESS_CREATION_FLAGS dwPriorityClass)
+        {
+            var res = PInvoke.SetPriorityClass(hProcess, dwPriorityClass);
+            if (!res)
+            {
+                throw ErrorHandler.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Wrapper around WriteFile to manage error handling.
+        /// </summary>
+        /// <param name="hProcess"></param>
+        /// <param name="dwPriorityClass"></param>
+        /// <returns></returns>
+        internal static BOOL SetPriorityClass(HANDLE hProcess, ProcessPriorityClass dwPriorityClass)
+        {
+            return SetPriorityClass(hProcess, (PROCESS_CREATION_FLAGS)dwPriorityClass);
         }
     }
 }

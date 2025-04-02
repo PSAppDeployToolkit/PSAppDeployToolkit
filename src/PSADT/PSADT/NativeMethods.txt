@@ -106,6 +106,7 @@ SetForegroundWindow
 SetHandleInformation
 SetInformationJobObject
 SetLastError
+SetPriorityClass
 SetProcessDPIAware
 SetProcessDpiAwareness
 SetProcessDpiAwarenessContext
