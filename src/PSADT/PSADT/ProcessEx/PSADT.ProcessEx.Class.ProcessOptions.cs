@@ -27,7 +27,7 @@ namespace PSADT.ProcessEx
         /// <param name="noNewWindow"></param>
         /// <param name="priorityClass"></param>
         /// <param name="cancellationToken"></param>
-        public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, string? username = null, bool useLinkedAdminToken = false, bool useShellExecute = false, string? verb = null, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, CancellationToken cancellationToken = default)
+        public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, string? username = null, bool useLinkedAdminToken = false, bool inheritEnvironmentVariables = false, bool useShellExecute = false, string? verb = null, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, CancellationToken cancellationToken = default)
         {
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
@@ -55,6 +55,7 @@ namespace PSADT.ProcessEx
 
             FilePath = filePath;
             UseLinkedAdminToken = useLinkedAdminToken;
+            InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseShellExecute = useShellExecute;
             WindowStyle = WindowStyleMap[windowStyle];
             NoNewWindow = noNewWindow;
@@ -119,6 +120,11 @@ namespace PSADT.ProcessEx
         /// Gets a value indicating whether to use the linked admin token to start the process.
         /// </summary>
         public readonly bool UseLinkedAdminToken;
+
+        /// <summary>
+        /// Gets a value indicating whether to inherit the environment variables of the current process.
+        /// </summary>
+        public readonly bool InheritEnvironmentVariables;
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.

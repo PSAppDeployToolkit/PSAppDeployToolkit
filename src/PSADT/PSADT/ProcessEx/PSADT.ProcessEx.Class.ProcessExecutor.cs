@@ -191,7 +191,7 @@ namespace PSADT.ProcessEx
                                 }
 
                                 // Finally, start the process off for the user.
-                                UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, true);
+                                UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, startInfo.InheritEnvironmentVariables);
                                 try
                                 {
                                     Kernel32.CreateProcessAsUser(hPrimaryToken, null, startInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, lpEnvironment, startInfo.WorkingDirectory, startupInfo, out pi);
