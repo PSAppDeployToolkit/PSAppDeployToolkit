@@ -14,11 +14,12 @@ namespace PSADT.Types
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
-        public ProcessResult(int exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr)
+        public ProcessResult(int exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleavedOut)
         {
             ExitCode = exitCode;
             StdOut = stdOut.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
             StdErr = stdErr.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
+            Interleaved = interleavedOut.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
         }
 
         /// <summary>
@@ -35,5 +36,10 @@ namespace PSADT.Types
         /// Gets the standard error output of the process.
         /// </summary>
         public readonly ReadOnlyCollection<string> StdErr;
+
+        /// <summary>
+        /// Gets the combined standard output and error of the process.
+        /// </summary>
+        public readonly ReadOnlyCollection<string> Interleaved;
     }
 }

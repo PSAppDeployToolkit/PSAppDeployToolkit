@@ -2,6 +2,7 @@
 using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -222,9 +223,9 @@ namespace PSADT.ProcessEx
                 }
 
                 // These tasks read all outputs and wait for the process to complete.
-                List<string> stdout = []; List<string> stderr = [];
-                Task readOut = (hStdOutRead != default) ? Task.Run(() => ReadPipe(hStdOutRead, stdout, startInfo.CancellationToken)) : Task.CompletedTask;
-                Task readErr = (hStdErrRead != default) ? Task.Run(() => ReadPipe(hStdErrRead, stderr, startInfo.CancellationToken)) : Task.CompletedTask;
+                List<string> stdout = []; List<string> stderr = []; ConcurrentQueue<string> interleaved = [];
+                Task readOut = (hStdOutRead != default) ? Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, startInfo.CancellationToken)) : Task.CompletedTask;
+                Task readErr = (hStdErrRead != default) ? Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, startInfo.CancellationToken)) : Task.CompletedTask;
                 Task waitForJob = (hProcess == default) ? Task.CompletedTask : Task.Run(() =>
                 {
                     while (true)
@@ -247,7 +248,7 @@ namespace PSADT.ProcessEx
                 {
                     Kernel32.GetExitCodeProcess(hProcess, out exitCode);
                 }
-                return new ProcessResult(ValueTypeConverter<int>.Convert(exitCode), stdout.AsReadOnly(), stderr.AsReadOnly());
+                return new ProcessResult(ValueTypeConverter<int>.Convert(exitCode), stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly());
             }
             finally
             {
@@ -292,7 +293,7 @@ namespace PSADT.ProcessEx
         /// <param name="output"></param>
         /// <param name="token"></param>
         /// <exception cref="Win32Exception"></exception>
-        private static void ReadPipe(HANDLE handle, List<string> output, CancellationToken token)
+        private static void ReadPipe(HANDLE handle, List<string> output, ConcurrentQueue<string> interleaved, CancellationToken token)
         {
             var buffer = new byte[4096];
             while (!token.IsCancellationRequested)
@@ -302,7 +303,9 @@ namespace PSADT.ProcessEx
                 {
                     break;
                 }
-                output.Add(Encoding.Default.GetString(buffer, 0, (int)bytesRead).TrimEnd());
+                var text = Encoding.Default.GetString(buffer, 0, (int)bytesRead).TrimEnd();
+                interleaved.Enqueue(text);
+                output.Add(text);
             }
         }
     }
