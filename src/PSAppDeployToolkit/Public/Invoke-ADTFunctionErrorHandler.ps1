@@ -99,6 +99,9 @@ function Invoke-ADTFunctionErrorHandler
         [System.Management.Automation.SwitchParameter]$DisableErrorResolving
     )
 
+    # Store out the caller's original ErrorAction for some checks and balances.
+    $OriginalErrorAction = $SessionState.PSVariable.Get('OriginalErrorAction').Value
+
     # Recover true ErrorActionPreference the caller may have set,
     # unless an ErrorAction was specifically provided to this function.
     $ErrorActionPreference = if ($PSBoundParameters.ContainsKey('ErrorAction'))
@@ -111,7 +114,7 @@ function Invoke-ADTFunctionErrorHandler
     }
     else
     {
-        $SessionState.PSVariable.Get('OriginalErrorAction').Value
+        $OriginalErrorAction
     }
 
     # If the caller hasn't specified a LogMessage, use the ErrorRecord's message.
@@ -127,7 +130,7 @@ function Invoke-ADTFunctionErrorHandler
     }
 
     # Write out the error to the log file.
-    if (!$DisableErrorResolving)
+    if ($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$' -and (!$PSBoundParameters.ContainsKey('DisableErrorResolving') -or !$PSBoundParameters.DisableErrorResolving))
     {
         $raerProps = @{ ErrorRecord = $ErrorRecord }; if ($PSCmdlet.ParameterSetName.Equals('AdditionalResolveErrorProperties'))
         {
