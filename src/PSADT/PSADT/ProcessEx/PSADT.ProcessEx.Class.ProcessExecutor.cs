@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Security.Principal;
 using PSADT.LibraryInterfaces;
 using PSADT.Types;
 using PSADT.Shared;
+using PSADT.WTSSession;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -31,6 +34,8 @@ namespace PSADT.ProcessEx
         public static async Task<ProcessResult> LaunchAsync(ProcessOptions startInfo)
         {
             // Declare all variables C-style so we can close them in the finally block.
+            IntPtr lpEnvironment = IntPtr.Zero;
+            HANDLE hPrimaryToken = default;
             HANDLE hStdOutWrite = default;
             HANDLE hStdErrWrite = default;
             HANDLE hStdOutRead = default;
@@ -63,11 +68,12 @@ namespace PSADT.ProcessEx
                 };
                 Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, ref assoc, (uint)Marshal.SizeOf<JOBOBJECT_ASSOCIATE_COMPLETION_PORT>());
 
-                if ((consoleApp && noWindow) || !startInfo.UseShellExecute)
+                if ((consoleApp && noWindow) || !startInfo.UseShellExecute || (null != startInfo.Username))
                 {
                     CreatePipe(out hStdOutRead, out hStdOutWrite);
                     CreatePipe(out hStdErrRead, out hStdErrWrite);
 
+                    var pi = new PROCESS_INFORMATION();
                     var startupInfo = new STARTUPINFOW
                     {
                         cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
@@ -102,7 +108,51 @@ namespace PSADT.ProcessEx
                         }
                     }
 
-                    Kernel32.CreateProcess(startInfo.FilePath, startInfo.GetArgsForCreateProcess(), null, null, true, creationFlags, IntPtr.Zero, startInfo.WorkingDirectory, startupInfo, out var pi);
+                    if (null != startInfo.Username)
+                    {
+                        using (WindowsIdentity caller = WindowsIdentity.GetCurrent())
+                        {
+                            if (!caller.User!.IsWellKnown(WellKnownSidType.LocalSystemSid))
+                            {
+                                throw new UnauthorizedAccessException("Launching processes as other users is only supported when running as SYSTEM.");
+                            }
+                        }
+
+                        var userSessions = SessionManager.GetSessionInfo();
+                        if (userSessions.Count == 0)
+                        {
+                            throw new InvalidOperationException("No user sessions are available to launch the process in.");
+                        }
+
+                        var session = userSessions.Where(s => (null != s.UserName) && s.UserName.Equals(startInfo.Username, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                        if (null == session)
+                        {
+                            throw new InvalidOperationException($"No session found for user {startInfo.Username}.");
+                        }
+                        if (session.ConnectState != LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive)
+                        {
+                            throw new InvalidOperationException($"The session for user {startInfo.Username} is not active.");
+                        }
+
+                        WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
+                        try
+                        {
+                            AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                        }
+                        finally
+                        {
+                            Kernel32.CloseHandle(ref userToken);
+                        }
+
+                        startupInfo.lpDesktop = new PWSTR(Marshal.StringToCoTaskMemUni("winsta0\\default"));
+                        UserEnv.CreateEnvironmentBlock(out lpEnvironment, hPrimaryToken, true);
+                        Kernel32.CreateProcessAsUser(hPrimaryToken, null, startInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, lpEnvironment, startInfo.WorkingDirectory, startupInfo, out pi);
+                    }
+                    else
+                    {
+                        Kernel32.CreateProcess(null, startInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, lpEnvironment, startInfo.WorkingDirectory, startupInfo, out pi);
+                    }
+
                     Kernel32.AssignProcessToJobObject(job, (hProcess = pi.hProcess));
                     Kernel32.ResumeThread(pi.hThread);
                     Kernel32.CloseHandle(ref pi.hThread);
@@ -116,7 +166,7 @@ namespace PSADT.ProcessEx
                         cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
                         fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI,
                         lpFile = startInfo.FilePath,
-                        lpParameters = startInfo.GetArgsForShellExecuteEx(),
+                        lpParameters = startInfo.Arguments,
                         lpDirectory = startInfo.WorkingDirectory,
                     };
                     if (noWindow)
@@ -164,6 +214,8 @@ namespace PSADT.ProcessEx
             }
             finally
             {
+                UserEnv.DestroyEnvironmentBlock(lpEnvironment);
+                Kernel32.CloseHandle(ref hPrimaryToken);
                 Kernel32.CloseHandle(ref hStdOutWrite);
                 Kernel32.CloseHandle(ref hStdErrWrite);
                 Kernel32.CloseHandle(ref hStdOutRead);

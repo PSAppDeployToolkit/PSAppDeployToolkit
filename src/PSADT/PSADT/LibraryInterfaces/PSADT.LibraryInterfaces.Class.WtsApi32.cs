@@ -64,5 +64,25 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Wrapper around WTSQueryUserToken to manage error handling.
+        /// </summary>
+        /// <param name="SessionId"></param>
+        /// <param name="phToken"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL WTSQueryUserToken(uint SessionId, out HANDLE phToken)
+        {
+            fixed (HANDLE* pphToken = &phToken)
+            {
+                var res = PInvoke.WTSQueryUserToken(SessionId, pphToken);
+                if (!res)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+                return res;
+            }
+        }
     }
 }

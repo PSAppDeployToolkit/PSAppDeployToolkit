@@ -220,14 +220,66 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreateProcess(string? lpApplicationName, Span<char> lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, IntPtr lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static unsafe BOOL CreateProcess(string? lpApplicationName, string lpCommandLine, [Optional] SECURITY_ATTRIBUTES? lpProcessAttributes, [Optional] SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, [Optional] IntPtr lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), (!string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory : null), lpStartupInfo, out lpProcessInformation);
-            if (!res)
+            fixed (PROCESS_INFORMATION* pProcessInformation = &lpProcessInformation)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+                fixed (STARTUPINFOW* pStartupInfo = &lpStartupInfo)
+                {
+                    string lpCurrentDirectoryLocal = !string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory! : string.Empty;
+                    string lpApplicationNameLocal = !string.IsNullOrWhiteSpace(lpApplicationName) ? lpApplicationName! : string.Empty;
+                    fixed (char* pApplicationName = lpApplicationNameLocal, pCommandLine = lpCommandLine, pCurrentDirectory = lpCurrentDirectoryLocal)
+                    {
+                        SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
+                        SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
+                        var res = PInvoke.CreateProcess(lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
+                        if (!res)
+                        {
+                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                        }
+                        return res;
+                    }
+                }
             }
-            return res;
+        }
+
+        /// <summary>
+        /// Wrapper around CreateProcessAsUser to manage error handling.
+        /// </summary>
+        /// <param name="hToken"></param>
+        /// <param name="lpApplicationName"></param>
+        /// <param name="lpCommandLine"></param>
+        /// <param name="lpProcessAttributes"></param>
+        /// <param name="lpThreadAttributes"></param>
+        /// <param name="bInheritHandles"></param>
+        /// <param name="dwCreationFlags"></param>
+        /// <param name="lpEnvironment"></param>
+        /// <param name="lpCurrentDirectory"></param>
+        /// <param name="lpStartupInfo"></param>
+        /// <param name="lpProcessInformation"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL CreateProcessAsUser(HANDLE hToken, string? lpApplicationName, string lpCommandLine, [Optional] SECURITY_ATTRIBUTES? lpProcessAttributes, [Optional] SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, [Optional] IntPtr lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        {
+            fixed (PROCESS_INFORMATION* pProcessInformation = &lpProcessInformation)
+            {
+                fixed (STARTUPINFOW* pStartupInfo = &lpStartupInfo)
+                {
+                    string lpCurrentDirectoryLocal = !string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory! : string.Empty;
+                    string lpApplicationNameLocal = !string.IsNullOrWhiteSpace(lpApplicationName) ? lpApplicationName! : string.Empty;
+                    fixed (char* pApplicationName = lpApplicationNameLocal, pCommandLine = lpCommandLine, pCurrentDirectory = lpCurrentDirectoryLocal)
+                    {
+                        SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
+                        SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
+                        var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
+                        if (!res)
+                        {
+                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                        }
+                        return res;
+                    }
+                }
+            }
         }
 
         /// <summary>

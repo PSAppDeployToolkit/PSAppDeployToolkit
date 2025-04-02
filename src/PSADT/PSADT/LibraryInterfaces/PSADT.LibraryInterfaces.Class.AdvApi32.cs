@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Windows.Win32;
+using Windows.Win32.Security;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Registry;
 
@@ -76,6 +77,31 @@ namespace PSADT.LibraryInterfaces
             }
             hKey = default;
             return res;
+        }
+
+        /// <summary>
+        /// Duplicates an access token.
+        /// </summary>
+        /// <param name="hExistingToken"></param>
+        /// <param name="dwDesiredAccess"></param>
+        /// <param name="lpTokenAttributes"></param>
+        /// <param name="ImpersonationLevel"></param>
+        /// <param name="TokenType"></param>
+        /// <param name="phNewToken"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe BOOL DuplicateTokenEx(HANDLE hExistingToken, TOKEN_ACCESS_MASK dwDesiredAccess, [Optional] SECURITY_ATTRIBUTES? lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out HANDLE phNewToken)
+        {
+            fixed (HANDLE* phNewTokenPtr = &phNewToken)
+            {
+                SECURITY_ATTRIBUTES lpTokenAttributesLocal = lpTokenAttributes ?? default(SECURITY_ATTRIBUTES);
+                var res = PInvoke.DuplicateTokenEx(hExistingToken, dwDesiredAccess, lpTokenAttributes.HasValue ? &lpTokenAttributesLocal : null, ImpersonationLevel, TokenType, phNewTokenPtr);
+                if (!res)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+                return res;
+            }
         }
     }
 }

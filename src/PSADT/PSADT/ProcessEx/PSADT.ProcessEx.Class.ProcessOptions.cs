@@ -24,11 +24,11 @@ namespace PSADT.ProcessEx
         /// <param name="priorityClass"></param>
         /// <param name="useShellExecute"></param>
         /// <param name="cancellationToken"></param>
-        public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, bool useShellExecute = false, CancellationToken cancellationToken = default)
+        public ProcessOptions(string filePath, string[]? argumentList = null, string? workingDirectory = null, string? username = null, bool useShellExecute = false, ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal, bool noNewWindow = false, ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal, CancellationToken cancellationToken = default)
         {
-            if ((null != workingDirectory) && !string.IsNullOrWhiteSpace(workingDirectory))
+            if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
-                workingDirectory = workingDirectory.Trim();
+                workingDirectory = workingDirectory!.Trim();
             }
             else if (Path.GetDirectoryName(filePath) is string fileDir && !string.IsNullOrWhiteSpace(fileDir))
             {
@@ -40,11 +40,16 @@ namespace PSADT.ProcessEx
                 Arguments = args;
             }
 
+            if (!string.IsNullOrWhiteSpace(username))
+            {
+                Username = username;
+            }
+
             FilePath = filePath;
-            PriorityClass = priorityClass;
+            UseShellExecute = useShellExecute;
             WindowStyle = WindowStyleMap[windowStyle];
             NoNewWindow = noNewWindow;
-            UseShellExecute = useShellExecute;
+            PriorityClass = priorityClass;
             CancellationToken = cancellationToken;
         }
 
@@ -76,18 +81,9 @@ namespace PSADT.ProcessEx
         /// Prepares a null-terminated character array of arguments for CreateProcess.
         /// </summary>
         /// <returns></returns>
-        public char[]? GetArgsForCreateProcess()
+        public string GetCreateProcessCommandLine()
         {
-            return (null != Arguments) ? (Arguments + "\0").ToCharArray() : null;
-        }
-
-        /// <summary>
-        /// Gets the arguments to pass to ShellExecuteEx.
-        /// </summary>
-        /// <returns></returns>
-        public string? GetArgsForShellExecuteEx()
-        {
-            return Arguments ?? null;
+            return $"\"{FilePath}\"{((null != Arguments) ? $" {Arguments}" : null)}\0";
         }
 
         /// <summary>
@@ -101,6 +97,21 @@ namespace PSADT.ProcessEx
         public readonly string? Arguments = null;
 
         /// <summary>
+        /// Gets the working directory of the process.
+        /// </summary>
+        public readonly string? WorkingDirectory = null;
+
+        /// <summary>
+        /// Gets the username to use when starting the process.
+        /// </summary>
+        public readonly string? Username = null;
+
+        /// <summary>
+        /// Gets a value indicating whether to use the shell to execute the process.
+        /// </summary>
+        public readonly bool UseShellExecute;
+
+        /// <summary>
         /// Gets the window style of the process.
         /// </summary>
         public readonly ushort WindowStyle;
@@ -111,24 +122,9 @@ namespace PSADT.ProcessEx
         public readonly bool NoNewWindow;
 
         /// <summary>
-        /// Gets the working directory of the process.
-        /// </summary>
-        public readonly string? WorkingDirectory = null;
-
-        /// <summary>
         /// Gets the priority class of the process.
         /// </summary>
         public readonly ProcessPriorityClass PriorityClass;
-
-        /// <summary>
-        /// Gets a value indicating whether to use the shell to execute the process.
-        /// </summary>
-        public readonly bool UseShellExecute;
-
-        /// <summary>
-        /// Gets the standard input to pass to the process.
-        /// </summary>
-        public readonly string? StandardInput = null;
 
         /// <summary>
         /// Gets the cancellation token to cancel the process.

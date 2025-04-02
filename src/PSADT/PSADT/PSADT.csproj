@@ -86,6 +86,10 @@
 	  <Optimize>true</Optimize>
 	</PropertyGroup>
 
+	<PropertyGroup>
+	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	</PropertyGroup>
+
 	<ItemGroup>
 	  <Compile Remove="LINQ\**" />
 	  <EmbeddedResource Remove="LINQ\**" />
