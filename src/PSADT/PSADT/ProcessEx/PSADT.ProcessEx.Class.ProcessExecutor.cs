@@ -226,7 +226,7 @@ namespace PSADT.ProcessEx
                     var startupInfo = new Shell32.SHELLEXECUTEINFO
                     {
                         cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
-                        fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI,
+                        fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
                         lpFile = startInfo.FilePath,
                         lpParameters = startInfo.Arguments,
                         lpDirectory = startInfo.WorkingDirectory,

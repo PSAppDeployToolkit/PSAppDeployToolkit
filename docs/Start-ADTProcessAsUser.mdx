@@ -11,48 +11,61 @@ Invokes a process in another user's session.
 
 ## SYNTAX
 
-### PrimaryActiveUserSession (Default)
+### CreateNoWindow (Default)
 
 ```powershell
-Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-UseLinkedAdminToken]
- [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication] [-NoRedirectOutput]
- [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
+Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
+ [-CreateNoWindow] [-NoWait] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+```
+
+### UseShellExecuteWaitForMsiExec
+
+```powershell
+Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
+ [-CreateNoWindow] [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-WaitForMsiExec]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+```
+
+### UseShellExecute
+
+```powershell
+Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
+ [-CreateNoWindow] [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
  [<CommonParameters>]
 ```
 
-### AllActiveUserSessions
+### CreateNoWindowWaitForMsiExec
 
 ```powershell
-Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] [-AllActiveUserSessions]
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
+Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
+ [-CreateNoWindow] [-NoWait] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+```
+
+### DefaultWaitForMsiExec
+
+```powershell
+Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
+ [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
  [<CommonParameters>]
 ```
 
-### SessionId
+### Default
 
 ```powershell
-Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -SessionId <UInt32>
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
- [<CommonParameters>]
-```
-
-### Username
-
-```powershell
-Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-WorkingDirectory <String>] [-HideWindow]
- [-ProcessCreationFlags <CREATE_PROCESS>] [-InheritEnvironmentVariables] [-Wait] -Username <String>
- [-UseLinkedAdminToken] [-SuccessExitCodes <Int32[]>] [-ConsoleTimeoutInSeconds <UInt32>] [-IsGuiApplication]
- [-NoRedirectOutput] [-MergeStdErrAndStdOut] [-OutputDirectory <String>] [-NoTerminateOnTimeout]
- [-AdditionalEnvironmentVariables <IDictionary>] [-WaitOption <WaitType>] [-SecureArgumentList] [-PassThru]
- [<CommonParameters>]
+Start-ADTProcessAsUser -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
+ [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -64,14 +77,52 @@ Invokes a process from SYSTEM in another user's session.
 ### EXAMPLE 1
 
 ```powershell
-Start-ADTProcessAsUser -FilePath "$($adtSession.DirFiles)\setup.exe" -ArgumentList '/S' -SuccessExitCodes 0, 500
+Start-ADTProcessAsUser -FilePath 'setup.exe' -ArgumentList '/S' -IgnoreExitCodes 1,2
 ```
+
+Launch InstallShield "setup.exe" from the ".\Files" sub-directory.
+
+### EXAMPLE 2
+
+```powershell
+Start-ADTProcessAsUser -FilePath "$($adtSession.DirFiles)\Bin\setup.exe" -ArgumentList '/S' -WindowStyle 'Hidden'
+```
+
+Launch InstallShield "setup.exe" from the ".\Files\Bin" sub-directory.
+
+### EXAMPLE 3
+
+```powershell
+Start-ADTProcessAsUser -FilePath 'uninstall_flash_player_64bit.exe' -ArgumentList '/uninstall' -WindowStyle 'Hidden'
+```
+
+If the file is in the "Files" directory of the AppDeployToolkit, only the file name needs to be specified.
+
+### EXAMPLE 4
+
+```powershell
+Start-ADTProcessAsUser -FilePath 'setup.exe' -ArgumentList "-s -f2`"$((Get-ADTConfig).Toolkit.LogPath)\$($adtSession.InstallName).log`""
+```
+
+Launch InstallShield "setup.exe" from the ".\Files" sub-directory and force log files to the logging folder.
+
+### EXAMPLE 5
+
+```powershell
+Start-ADTProcessAsUser -FilePath 'setup.exe' -ArgumentList "/s /v`"ALLUSERS=1 /qn /L* `"$((Get-ADTConfig).Toolkit.LogPath)\$($adtSession.InstallName).log`"`""
+```
+
+Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 
 ## PARAMETERS
 
 ### -FilePath
 
-Path to the executable to invoke.
+Path to the file to be executed.
+If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.
+
+Otherwise, the full path of the file must be specified.
+If the files is in a subdirectory of "Files", use the "$($adtSession.DirFiles)" variable as shown in the example.
 
 ```yaml
 Type: String
@@ -87,302 +138,12 @@ Accept wildcard characters: False
 
 ### -ArgumentList
 
-Arguments for the invoked executable.
+Arguments to be passed to the executable.
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
 Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -WorkingDirectory
-
-The 'start-in' directory for the invoked executable.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -HideWindow
-
-Specifies whether the window should be hidden or not.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProcessCreationFlags
-
-One or more flags to control the process's invocation.
-
-```yaml
-Type: CREATE_PROCESS
-Parameter Sets: (All)
-Aliases:
-Accepted values: DEBUG_PROCESS, DEBUG_ONLY_THIS_PROCESS, CREATE_SUSPENDED, DETACHED_PROCESS, CREATE_NEW_CONSOLE, NORMAL_PRIORITY_CLASS, IDLE_PRIORITY_CLASS, HIGH_PRIORITY_CLASS, REALTIME_PRIORITY_CLASS, CREATE_NEW_PROCESS_GROUP, CREATE_UNICODE_ENVIRONMENT, CREATE_SEPARATE_WOW_VDM, CREATE_SHARED_WOW_VDM, BELOW_NORMAL_PRIORITY_CLASS, ABOVE_NORMAL_PRIORITY_CLASS, INHERIT_PARENT_AFFINITY, CREATE_PROTECTED_PROCESS, EXTENDED_STARTUPINFO_PRESENT, PROCESS_MODE_BACKGROUND_BEGIN, PROCESS_MODE_BACKGROUND_END, CREATE_SECURE_PROCESS, CREATE_BREAKAWAY_FROM_JOB, CREATE_PRESERVE_CODE_AUTHZ_LEVEL, CREATE_DEFAULT_ERROR_MODE, CREATE_NO_WINDOW
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -InheritEnvironmentVariables
-
-Specifies whether the process should inherit the user's environment state.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Wait
-
-Specifies whether to wait for the invoked excecutable to finish.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Username
-
-The username of the user's session to invoke the executable in.
-
-```yaml
-Type: String
-Parameter Sets: Username
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SessionId
-
-The session ID of the user to invoke the executable in.
-
-```yaml
-Type: UInt32
-Parameter Sets: SessionId
-Aliases:
-
-Required: True
-Position: Named
-Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AllActiveUserSessions
-
-Specifies that the executable should be invoked in all active sessions.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: AllActiveUserSessions
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UseLinkedAdminToken
-
-Specifies that an admin token (if available) should be used for the invocation.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SuccessExitCodes
-
-Specifies one or more exit codes that the function uses to consider the invocation successful.
-
-```yaml
-Type: Int32[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ConsoleTimeoutInSeconds
-
-Specifies the timeout in seconds to wait for a console application to finish its task.
-
-```yaml
-Type: UInt32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IsGuiApplication
-
-Indicates that the executed application is a GUI-based app, not a console-based app.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoRedirectOutput
-
-Specifies that stdout/stderr output should not be redirected to file.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MergeStdErrAndStdOut
-
-Specifies that the stdout/stderr streams should be merged into a single output.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -OutputDirectory
-
-Specifies the output directory for the redirected stdout/stderr streams.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoTerminateOnTimeout
-
-Specifies that the process shouldn't terminate on timeout.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AdditionalEnvironmentVariables
-
-Specifies additional environment variables to inject into the user's session.
-
-```yaml
-Type: IDictionary
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -WaitOption
-
-Specifies the wait type to use when waiting for an invoked executable to finish.
-
-```yaml
-Type: WaitType
-Parameter Sets: (All)
-Aliases:
-Accepted values: WaitForAny, WaitForAll
 
 Required: False
 Position: Named
@@ -403,6 +164,214 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WorkingDirectory
+
+The working directory used for executing the process.
+Defaults to the directory of the file being executed.
+The use of UseShellExecute affects this parameter.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Username
+
+A username to invoke the process as.
+Only supported while running as the SYSTEM account.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseLinkedAdminToken
+
+Use a user's linked administrative token while running the process under their context.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InheritEnvironmentVariables
+
+Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CreateNoWindow
+
+Specifies whether the process should be started with a new window to contain it.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CreateNoWindow, UseShellExecuteWaitForMsiExec, UseShellExecute, CreateNoWindowWaitForMsiExec
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WindowStyle
+
+Style of the window of the process executed.
+Options: Normal, Hidden, Maximized, Minimized.
+Only works for native Windows GUI applications.
+If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
+
+Note: Not all processes honor WindowStyle.
+WindowStyle is a recommendation passed to the process.
+They can choose to ignore it.
+
+```yaml
+Type: ProcessWindowStyle
+Parameter Sets: UseShellExecuteWaitForMsiExec, UseShellExecute, DefaultWaitForMsiExec, Default
+Aliases:
+Accepted values: Normal, Hidden, Minimized, Maximized
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoWait
+
+Immediately continue after executing the process.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WaitForMsiExec
+
+Sometimes an EXE bootstrapper will launch an MSI install.
+In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: UseShellExecuteWaitForMsiExec, CreateNoWindowWaitForMsiExec, DefaultWaitForMsiExec
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SuccessExitCodes
+
+List of exit codes to be considered successful.
+Defaults to values set during ADTSession initialization, otherwise: 0
+
+```yaml
+Type: Int32[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RebootExitCodes
+
+List of exit codes to indicate a reboot is required.
+Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
+
+```yaml
+Type: Int32[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IgnoreExitCodes
+
+List the exit codes to ignore or * to ignore all exit codes.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: True
+```
+
+### -PriorityClass
+
+Specifies priority class for the process.
+Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
+
+```yaml
+Type: ProcessPriorityClass
+Parameter Sets: (All)
+Aliases:
+Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -435,9 +404,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### System.Threading.Tasks.Task[System.Int32]
+### PSADT.Types.ProcessResult
 
-### Returns a task object indicating the process's result.
+### Returns an object with the results of the installation if -PassThru is specified.
+### - ExitCode
+### - StdOut
+### - StdErr
 ## NOTES
 An active ADT session is NOT required to use this function.
 
@@ -448,4 +420,4 @@ License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcessAsUser](https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcessAsUser)
+[https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcess](https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcess)

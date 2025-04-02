@@ -11,22 +11,79 @@ Execute a process with optional arguments, working directory, window style.
 
 ## SYNTAX
 
-### None (Default)
+### CreateNoWindow (Default)
 
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
- [-WindowStyle <ProcessWindowStyle>] [-CreateNoWindow] [-WorkingDirectory <String>] [-NoWait] [-PassThru]
- [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-UseShellExecute] [<CommonParameters>]
+ [-WorkingDirectory <String>] [-CreateNoWindow] [-NoWait] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
+ [<CommonParameters>]
 ```
 
-### WaitForMsiExec
+### UseShellExecuteWaitForMsiExec
 
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
- [-WindowStyle <ProcessWindowStyle>] [-CreateNoWindow] [-WorkingDirectory <String>] [-NoWait] [-PassThru]
- [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-UseShellExecute] [<CommonParameters>]
+ [-WorkingDirectory <String>] [-UseShellExecute] [-Verb <String>] [-CreateNoWindow]
+ [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
+ [<CommonParameters>]
+```
+
+### UseShellExecute
+
+```powershell
+Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] [-UseShellExecute] [-Verb <String>] [-CreateNoWindow]
+ [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+```
+
+### UsernameWaitForMsiExec
+
+```powershell
+Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
+ [-CreateNoWindow] [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-WaitForMsiExec]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+```
+
+### Username
+
+```powershell
+Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
+ [-CreateNoWindow] [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
+ [<CommonParameters>]
+```
+
+### CreateNoWindowWaitForMsiExec
+
+```powershell
+Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] [-CreateNoWindow] [-NoWait] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
+ [<CommonParameters>]
+```
+
+### DefaultWaitForMsiExec
+
+```powershell
+Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-WaitForMsiExec]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-PassThru] [<CommonParameters>]
+```
+
+### Default
+
+```powershell
+Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
+ [-WorkingDirectory <String>] [-WindowStyle <ProcessWindowStyle>] [-NoWait] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -131,6 +188,133 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -WorkingDirectory
+
+The working directory used for executing the process.
+Defaults to the directory of the file being executed.
+The use of UseShellExecute affects this parameter.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Username
+
+A username to invoke the process as.
+Only supported while running as the SYSTEM account.
+
+```yaml
+Type: String
+Parameter Sets: UsernameWaitForMsiExec, Username
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseLinkedAdminToken
+
+Use a user's linked administrative token while running the process under their context.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: UsernameWaitForMsiExec, Username
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InheritEnvironmentVariables
+
+Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: UsernameWaitForMsiExec, Username
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseShellExecute
+
+Specifies whether to use the operating system shell to start the process.
+$true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
+
+The word "Shell" in this context refers to a graphical shell (similar to the Windows shell) rather than command shells (for example, bash or sh) and lets users launch graphical applications or open documents.
+It lets you open a file or a url and the Shell will figure out the program to open it with.
+
+The WorkingDirectory property behaves differently depending on the value of the UseShellExecute property.
+When UseShellExecute is true, the WorkingDirectory property specifies the location of the executable.
+When UseShellExecute is false, the WorkingDirectory property is not used to find the executable.
+Instead, it is used only by the process that is started and has meaning only within the context of the new process.
+
+If you set UseShellExecute to $true, there will be no available output from the process.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: UseShellExecuteWaitForMsiExec, UseShellExecute
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Verb
+
+The verb to use when doing a ShellExecute invocation.
+Common usages are "runas" to trigger a UAC elevation of the process.
+
+```yaml
+Type: String
+Parameter Sets: UseShellExecuteWaitForMsiExec, UseShellExecute
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CreateNoWindow
+
+Specifies whether the process should be started with a new window to contain it.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CreateNoWindow, UseShellExecuteWaitForMsiExec, UseShellExecute, UsernameWaitForMsiExec, Username, CreateNoWindowWaitForMsiExec
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -WindowStyle
 
 Style of the window of the process executed.
@@ -144,46 +328,9 @@ They can choose to ignore it.
 
 ```yaml
 Type: ProcessWindowStyle
-Parameter Sets: (All)
+Parameter Sets: UseShellExecuteWaitForMsiExec, UseShellExecute, UsernameWaitForMsiExec, Username, DefaultWaitForMsiExec, Default
 Aliases:
 Accepted values: Normal, Hidden, Minimized, Maximized
-
-Required: False
-Position: Named
-Default value: Normal
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CreateNoWindow
-
-Specifies whether the process should be started with a new window to contain it.
-Only works for Console mode applications.
-UseShellExecute should be set to $false.
-Default is false.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -WorkingDirectory
-
-The working directory used for executing the process.
-Defaults to the directory of the file being executed.
-The use of UseShellExecute affects this parameter.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
 
 Required: False
 Position: Named
@@ -208,23 +355,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-
-If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process.
-If NoWait is specified, returns an object with Id, Handle and ProcessName.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -WaitForMsiExec
 
 Sometimes an EXE bootstrapper will launch an MSI install.
@@ -232,28 +362,12 @@ In such cases, this variable will ensure that this function waits for the msiexe
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: WaitForMsiExec
+Parameter Sets: UseShellExecuteWaitForMsiExec, UsernameWaitForMsiExec, CreateNoWindowWaitForMsiExec, DefaultWaitForMsiExec
 Aliases:
 
 Required: True
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MsiExecWaitTime
-
-Specify the length of time in seconds to wait for the msiexec engine to become available.
-
-```yaml
-Type: TimeSpan
-Parameter Sets: WaitForMsiExec
-Aliases:
-
-Required: False
-Position: Named
-Default value: (Get-ADTConfig).MSI.MutexWaitTime
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -321,25 +435,15 @@ Accepted values: Normal, Idle, High, RealTime, BelowNormal, AboveNormal
 
 Required: False
 Position: Named
-Default value: Normal
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseShellExecute
+### -PassThru
 
-Specifies whether to use the operating system shell to start the process.
-$true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
-
-The word "Shell" in this context refers to a graphical shell (similar to the Windows shell) rather than command shells (for example, bash or sh) and lets users launch graphical applications or open documents.
-It lets you open a file or a url and the Shell will figure out the program to open it with.
-
-The WorkingDirectory property behaves differently depending on the value of the UseShellExecute property.
-When UseShellExecute is true, the WorkingDirectory property specifies the location of the executable.
-When UseShellExecute is false, the WorkingDirectory property is not used to find the executable.
-Instead, it is used only by the process that is started and has meaning only within the context of the new process.
-
-If you set UseShellExecute to $true, there will be no available output from the process.
+If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process.
+If NoWait is specified, returns an object with Id, Handle and ProcessName.
 
 ```yaml
 Type: SwitchParameter

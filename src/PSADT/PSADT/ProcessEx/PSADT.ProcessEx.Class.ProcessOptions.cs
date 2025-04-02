@@ -36,9 +36,9 @@ namespace PSADT.ProcessEx
             bool inheritEnvironmentVariables = false,
             bool useShellExecute = false,
             string? verb = null,
-            ProcessWindowStyle windowStyle = ProcessWindowStyle.Normal,
             bool noNewWindow = false,
-            ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal,
+            ProcessWindowStyle? windowStyle = null,
+            ProcessPriorityClass? priorityClass = null,
             CancellationToken cancellationToken = default)
         {
             if (!string.IsNullOrWhiteSpace(workingDirectory))
@@ -65,13 +65,21 @@ namespace PSADT.ProcessEx
                 Verb = verb;
             }
 
+            if (null != windowStyle)
+            {
+                WindowStyle = WindowStyleMap[windowStyle.Value];
+            }
+
+            if (null != priorityClass)
+            {
+                PriorityClass = priorityClass.Value;
+            }
+
             FilePath = filePath;
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseShellExecute = useShellExecute;
-            WindowStyle = WindowStyleMap[windowStyle];
             NoNewWindow = noNewWindow;
-            PriorityClass = priorityClass;
             CancellationToken = cancellationToken;
         }
 
@@ -149,19 +157,19 @@ namespace PSADT.ProcessEx
         public readonly string? Verb = null;
 
         /// <summary>
-        /// Gets the window style of the process.
-        /// </summary>
-        public readonly ushort WindowStyle;
-
-        /// <summary>
         /// Gets a value indicating whether to create a new window for the process.
         /// </summary>
         public readonly bool NoNewWindow;
 
         /// <summary>
+        /// Gets the window style of the process.
+        /// </summary>
+        public readonly ushort WindowStyle = (ushort)SHOW_WINDOW_CMD.SW_NORMAL;
+
+        /// <summary>
         /// Gets the priority class of the process.
         /// </summary>
-        public readonly ProcessPriorityClass PriorityClass;
+        public readonly ProcessPriorityClass PriorityClass = ProcessPriorityClass.Normal;
 
         /// <summary>
         /// Gets the cancellation token to cancel the process.
