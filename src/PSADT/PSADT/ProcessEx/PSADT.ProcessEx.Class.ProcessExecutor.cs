@@ -265,7 +265,7 @@ namespace PSADT.ProcessEx
                         }
                         if (startInfo.CancellationToken.IsCancellationRequested)
                         {
-                            throw new TaskCanceledException();
+                            startInfo.CancellationToken.ThrowIfCancellationRequested();
                         }
                     }
                 }));
