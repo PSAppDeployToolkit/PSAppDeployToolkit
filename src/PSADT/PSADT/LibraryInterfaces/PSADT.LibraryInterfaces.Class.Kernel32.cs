@@ -223,24 +223,20 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateProcess(string? lpApplicationName, string lpCommandLine, [Optional] SECURITY_ATTRIBUTES? lpProcessAttributes, [Optional] SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, [Optional] IntPtr lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
+            string lpCurrentDirectoryLocal = !string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory! : string.Empty;
+            string lpApplicationNameLocal = !string.IsNullOrWhiteSpace(lpApplicationName) ? lpApplicationName! : string.Empty;
+            fixed (char* pApplicationName = lpApplicationNameLocal, pCommandLine = lpCommandLine, pCurrentDirectory = lpCurrentDirectoryLocal)
             fixed (PROCESS_INFORMATION* pProcessInformation = &lpProcessInformation)
+            fixed (STARTUPINFOW* pStartupInfo = &lpStartupInfo)
             {
-                fixed (STARTUPINFOW* pStartupInfo = &lpStartupInfo)
+                SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
+                SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
+                var res = PInvoke.CreateProcess(lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
+                if (!res)
                 {
-                    string lpCurrentDirectoryLocal = !string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory! : string.Empty;
-                    string lpApplicationNameLocal = !string.IsNullOrWhiteSpace(lpApplicationName) ? lpApplicationName! : string.Empty;
-                    fixed (char* pApplicationName = lpApplicationNameLocal, pCommandLine = lpCommandLine, pCurrentDirectory = lpCurrentDirectoryLocal)
-                    {
-                        SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
-                        SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
-                        var res = PInvoke.CreateProcess(lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
-                        if (!res)
-                        {
-                            throw ErrorHandler.GetExceptionForLastWin32Error();
-                        }
-                        return res;
-                    }
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
+                return res;
             }
         }
 
@@ -262,24 +258,20 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateProcessAsUser(HANDLE hToken, string? lpApplicationName, string lpCommandLine, [Optional] SECURITY_ATTRIBUTES? lpProcessAttributes, [Optional] SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, [Optional] IntPtr lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
+            string lpCurrentDirectoryLocal = !string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory! : string.Empty;
+            string lpApplicationNameLocal = !string.IsNullOrWhiteSpace(lpApplicationName) ? lpApplicationName! : string.Empty;
+            fixed (char* pApplicationName = lpApplicationNameLocal, pCommandLine = lpCommandLine, pCurrentDirectory = lpCurrentDirectoryLocal)
             fixed (PROCESS_INFORMATION* pProcessInformation = &lpProcessInformation)
+            fixed (STARTUPINFOW* pStartupInfo = &lpStartupInfo)
             {
-                fixed (STARTUPINFOW* pStartupInfo = &lpStartupInfo)
+                SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
+                SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
+                var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
+                if (!res)
                 {
-                    string lpCurrentDirectoryLocal = !string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory! : string.Empty;
-                    string lpApplicationNameLocal = !string.IsNullOrWhiteSpace(lpApplicationName) ? lpApplicationName! : string.Empty;
-                    fixed (char* pApplicationName = lpApplicationNameLocal, pCommandLine = lpCommandLine, pCurrentDirectory = lpCurrentDirectoryLocal)
-                    {
-                        SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
-                        SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
-                        var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
-                        if (!res)
-                        {
-                            throw ErrorHandler.GetExceptionForLastWin32Error();
-                        }
-                        return res;
-                    }
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
+                return res;
             }
         }
 
@@ -350,19 +342,15 @@ namespace PSADT.LibraryInterfaces
         internal static unsafe BOOL GetQueuedCompletionStatus(HANDLE CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out NativeOverlapped lpOverlapped, uint dwMilliseconds)
         {
             fixed (uint* pCompletionCode = &lpCompletionCode)
+            fixed (nuint* pCompletionKey = &lpCompletionKey)
+            fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
             {
-                fixed (nuint* pCompletionKey = &lpCompletionKey)
+                var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, pCompletionCode, pCompletionKey, &pOverlapped, dwMilliseconds);
+                if (!res)
                 {
-                    fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
-                    {
-                        var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, pCompletionCode, pCompletionKey, &pOverlapped, dwMilliseconds);
-                        if (!res)
-                        {
-                            throw ErrorHandler.GetExceptionForLastWin32Error();
-                        }
-                        return res;
-                    }
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
+                return res;
             }
         }
 
@@ -439,19 +427,15 @@ namespace PSADT.LibraryInterfaces
         internal static unsafe BOOL ReadFile(HANDLE hFile, [Optional] byte[] lpBuffer, [Optional] out uint lpNumberOfBytesRead, [Optional] ref NativeOverlapped lpOverlapped)
         {
             fixed (byte* pBuffer = lpBuffer)
+            fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
+            fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
             {
-                fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
+                var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, pOverlapped);
+                if (!res)
                 {
-                    fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
-                    {
-                        var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, pOverlapped);
-                        if (!res)
-                        {
-                            throw ErrorHandler.GetExceptionForLastWin32Error();
-                        }
-                        return res;
-                    }
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
+                return res;
             }
         }
 
@@ -467,16 +451,14 @@ namespace PSADT.LibraryInterfaces
         internal static unsafe BOOL ReadFile(HANDLE hFile, [Optional] byte[] lpBuffer, [Optional] out uint lpNumberOfBytesRead)
         {
             fixed (byte* pBuffer = lpBuffer)
+            fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
             {
-                fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
+                var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, null);
+                if (!res)
                 {
-                    var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, null);
-                    if (!res)
-                    {
-                        throw ErrorHandler.GetExceptionForLastWin32Error();
-                    }
-                    return res;
+                    throw ErrorHandler.GetExceptionForLastWin32Error();
                 }
+                return res;
             }
         }
 

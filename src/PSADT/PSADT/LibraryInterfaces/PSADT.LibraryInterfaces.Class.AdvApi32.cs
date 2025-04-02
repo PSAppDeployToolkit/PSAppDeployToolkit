@@ -47,16 +47,14 @@ namespace PSADT.LibraryInterfaces
         internal static unsafe WIN32_ERROR RegQueryInfoKey(HKEY hKey, PWSTR lpClass, [Optional] out uint lpcchClass, [Optional] out uint lpReserved, [Optional] out uint lpcSubKeys, [Optional] out uint lpcbMaxSubKeyLen, [Optional] out uint lpcbMaxClassLen, [Optional] out uint lpcValues, [Optional] out uint lpcbMaxValueNameLen, [Optional] out uint lpcbMaxValueLen, [Optional] out uint lpcbSecurityDescriptor, [Optional] out global::System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
         {
             fixed (uint* lpcchClassPtr = &lpcchClass, lpReservedPtr = &lpReserved, lpcSubKeysPtr = &lpcSubKeys, lpcbMaxSubKeyLenPtr = &lpcbMaxSubKeyLen, lpcbMaxClassLenPtr = &lpcbMaxClassLen, lpcValuesPtr = &lpcValues, lpcbMaxValueNameLenPtr = &lpcbMaxValueNameLen, lpcbMaxValueLenPtr = &lpcbMaxValueLen, lpcbSecurityDescriptorPtr = &lpcbSecurityDescriptor)
+            fixed (global::System.Runtime.InteropServices.ComTypes.FILETIME* lpftLastWriteTimePtr = &lpftLastWriteTime)
             {
-                fixed (global::System.Runtime.InteropServices.ComTypes.FILETIME* lpftLastWriteTimePtr = &lpftLastWriteTime)
+                var res = PInvoke.RegQueryInfoKey(hKey, lpClass, lpcchClassPtr, lpReservedPtr, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
+                if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
-                    var res = PInvoke.RegQueryInfoKey(hKey, lpClass, lpcchClassPtr, lpReservedPtr, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
-                    if (res != WIN32_ERROR.ERROR_SUCCESS)
-                    {
-                        throw ErrorHandler.GetExceptionForLastWin32Error(res);
-                    }
-                    return res;
+                    throw ErrorHandler.GetExceptionForLastWin32Error(res);
                 }
+                return res;
             }
         }
 
