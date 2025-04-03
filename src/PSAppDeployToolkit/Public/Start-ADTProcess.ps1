@@ -401,7 +401,7 @@ function Start-ADTProcess
                 # Validate and find the fully qualified path for the $FilePath variable.
                 if ([System.IO.Path]::HasExtension($FilePath) -and ![System.IO.Path]::IsPathRooted($FilePath))
                 {
-                    if (!($fqPath = Get-Item -LiteralPath ("$(if ($adtSession) { "$($adtSession.DirFiles);" })$($ExecutionContext.SessionState.Path.CurrentLocation.Path);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                    if (!($fqPath = Get-Item -LiteralPath ("$WorkingDirectory;$($ExecutionContext.SessionState.Path.CurrentLocation.Path);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                     {
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
@@ -414,6 +414,12 @@ function Start-ADTProcess
                     }
                     Write-ADTLogEntry -Message "File path [$FilePath] successfully resolved to fully qualified path [$fqPath]."
                     $FilePath = $fqPath
+                }
+
+                # Set the Working directory if not specified.
+                if ([System.String]::IsNullOrWhiteSpace($WorkingDirectory))
+                {
+                    $WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
                 }
 
                 # If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
