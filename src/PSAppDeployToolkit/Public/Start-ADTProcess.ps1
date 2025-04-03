@@ -404,7 +404,7 @@ function Start-ADTProcess
                     if (!($fqPath = Get-Item -LiteralPath ("$(if ($adtSession) { "$($adtSession.DirFiles);" })$($ExecutionContext.SessionState.Path.CurrentLocation.Path);$([System.Environment]::GetEnvironmentVariable('PATH'))".TrimEnd(';').Split(';').TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                     {
                         $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("[$FilePath] contains an invalid path or file name.")
+                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                             ErrorId = 'PathFileNotFound'
                             TargetObject = $FilePath
