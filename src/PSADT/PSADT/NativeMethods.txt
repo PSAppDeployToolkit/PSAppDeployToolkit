@@ -1,6 +1,5 @@
 ﻿AdjustTokenPrivileges
 AssignProcessToJobObject
-AttachThreadInput
 BringWindowToTop
 CloseHandle
 CoCreateInstance
@@ -31,7 +30,6 @@ GetSystemMenu
 GetTokenInformation
 GetWindowText
 GetWindowTextLength
-GetWindowThreadProcessId
 HKEY_CLASSES_ROOT
 HKEY_CURRENT_CONFIG
 HKEY_CURRENT_USER

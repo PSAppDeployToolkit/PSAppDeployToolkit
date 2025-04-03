@@ -95,11 +95,10 @@ namespace PSADT.GUI
             {
                 PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
             }
-            IntPtr currentForegroundWindow = User32.GetForegroundWindow();
-            uint currentThreadId = PInvoke.GetCurrentThreadId();
-            uint windowThreadProcessId = GetWindowThreadProcessId(currentForegroundWindow);
-            User32.AttachThreadInput(windowThreadProcessId, currentThreadId, true);
 
+            uint currentThreadId = PInvoke.GetCurrentThreadId();
+            uint windowThreadId = User32.GetWindowThreadProcessId((HWND)User32.GetForegroundWindow(), out _);
+            User32.AttachThreadInput(currentThreadId, windowThreadId, true);
             try
             {
                 User32.BringWindowToTop(hwnd);
@@ -113,7 +112,7 @@ namespace PSADT.GUI
             }
             finally
             {
-                User32.AttachThreadInput(windowThreadProcessId, currentThreadId, false);
+                User32.AttachThreadInput(currentThreadId, windowThreadId, false);
             }
         }
 

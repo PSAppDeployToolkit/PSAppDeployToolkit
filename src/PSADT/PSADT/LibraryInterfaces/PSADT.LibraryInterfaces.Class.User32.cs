@@ -32,7 +32,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="uIDEnableItem"></param>
         /// <param name="uEnable"></param>
         /// <returns></returns>
-        public static bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable)
+        public static int EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable)
         {
             return PInvoke.EnableMenuItem((HMENU)hMenu, uIDEnableItem, (MENU_ITEM_FLAGS)uEnable);
         }
@@ -78,14 +78,19 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         public static IntPtr GetForegroundWindow()
         {
-            return PInvoke.GetForegroundWindow();
+            var res = PInvoke.GetForegroundWindow();
+            if (res == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Failed to get the foreground window.");
+            }
+            return res;
         }
 
         /// <summary>
         /// Sets the current process as DPI-aware (Windows Vista-onwards).
         /// </summary>
         /// <returns></returns>
-        public static bool SetProcessDPIAware()
+        internal static BOOL SetProcessDPIAware()
         {
             var res = PInvoke.SetProcessDPIAware();
             if (!res)
@@ -101,13 +106,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="context"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static bool SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT context)
+        internal static BOOL SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT context)
         {
-            if (!PInvoke.SetProcessDpiAwarenessContext(context))
+            var res = PInvoke.SetProcessDpiAwarenessContext(context);
+            if (!res)
             {
                 throw ErrorHandler.GetExceptionForLastWin32Error();
             }
-            return true;
+            return res;
         }
 
         /// <summary>
@@ -193,19 +199,36 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hWnd"></param>
         /// <param name="lpdwProcessId"></param>
         /// <returns></returns>
+        [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "GetWindowThreadProcessId")]
+        internal static extern unsafe uint GetWindowThreadProcessIdNative(IntPtr hWnd, out uint lpdwProcessId);
+
+        /// <summary>
+        /// Retrieves the text of the specified window.
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="lpdwProcessId"></param>
+        /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe uint GetWindowThreadProcessId(HWND hWnd, [Optional] out uint lpdwProcessId)
+        internal static uint GetWindowThreadProcessId(HWND hWnd, [Optional] out uint lpdwProcessId)
         {
-            fixed (uint* lpdwProcessIdPointer = &lpdwProcessId)
+            var res = GetWindowThreadProcessIdNative(hWnd, out lpdwProcessId);
+            if (res == 0)
             {
-                var res = PInvoke.GetWindowThreadProcessId(hWnd, lpdwProcessIdPointer);
-                if (res == 0)
-                {
-                    throw ErrorHandler.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ErrorHandler.GetExceptionForLastWin32Error();
             }
+            return res;
         }
+
+        /// <summary>
+        /// Retrieves the text of the specified window.
+        /// </summary>
+        /// <param name="idAttach"></param>
+        /// <param name="idAttachTo"></param>
+        /// <param name="fAttach"></param>
+        /// <returns></returns>
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "AttachThreadInput")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool AttachThreadInputNative(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
 
         /// <summary>
         /// Attaches or detaches the input processing mechanism of one thread to another.
@@ -215,9 +238,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="fAttach"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static BOOL AttachThreadInput(uint idAttach, uint idAttachTo, BOOL fAttach)
+        internal static bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach)
         {
-            var res = PInvoke.AttachThreadInput(idAttach, idAttachTo, fAttach);
+            var res = AttachThreadInputNative(idAttach, idAttachTo, fAttach);
             if (!res)
             {
                 throw ErrorHandler.GetExceptionForLastWin32Error();
