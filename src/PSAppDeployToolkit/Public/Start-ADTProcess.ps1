@@ -417,7 +417,7 @@ function Start-ADTProcess
                 }
 
                 # Set the Working directory if not specified.
-                if ([System.String]::IsNullOrWhiteSpace($WorkingDirectory))
+                if ([System.IO.Path]::IsPathRooted($FilePath) -and [System.String]::IsNullOrWhiteSpace($WorkingDirectory))
                 {
                     $WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
                 }
