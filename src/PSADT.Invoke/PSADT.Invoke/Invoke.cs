@@ -24,21 +24,15 @@ namespace PSADT.Invoke
         /// The entry point for the application.
         /// </summary>
         /// <param name="args"></param>
-        private static void Main(string[] args)
+        private static int Main(string[] args)
         {
-            // Flag whether we're debugging or not.
+            // Configure debug mode if /Debug is specified.
             var cliArguments = args.ToList().ConvertAll(x => x.Trim());
-            if (cliArguments.Exists(x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
-            {
-                if (!inDebugMode)
-                {
-                    inDebugMode = Kernel32.AllocConsole();
-                }
-                cliArguments.RemoveAll(x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
-            }
+            ConfigureDebugMode(cliArguments);
 
             // Announce commencement and begin.
             WriteDebugMessage($"Preparing for PSAppDeployToolkit invocation.");
+            int exitCode = 0;
             try
             {
                 // Establish the PowerShell process start information.
@@ -101,20 +95,25 @@ namespace PSADT.Invoke
                             process.BeginErrorReadLine();
                         }
                         process.WaitForExit();
-                        ExitProcess(process.ExitCode);
+                        exitCode = process.ExitCode;
                     }
                 }
                 catch (Exception ex)
                 {
                     WriteDebugMessage(ex.Message, MsgBoxStyle.Critical);
-                    ExitProcess(60011);
+                    exitCode = 60011;
                 }
             }
             catch (Exception ex)
             {
                 WriteDebugMessage(ex.Message, MsgBoxStyle.Critical);
-                ExitProcess(60010);
+                exitCode = 60010;
             }
+            finally
+            {
+                CloseDebugMode();
+            }
+            return exitCode;
         }
 
         /// <summary>
@@ -152,6 +151,39 @@ namespace PSADT.Invoke
             {
                 User32.SetProcessDPIAware();
                 Interaction.MsgBox(debugMessage, messageBoxStyle | MsgBoxStyle.SystemModal, $"{assemblyName} {assemblyVersion}");
+            }
+        }
+
+        /// <summary>
+        /// Configures the debug mode based on the command line arguments.
+        /// </summary>
+        /// <param name="cliArguments"></param>
+        private static void ConfigureDebugMode(List<string> cliArguments)
+        {
+            if (cliArguments.Exists(x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (!inDebugMode)
+                {
+                    inDebugMode = Kernel32.AllocConsole();
+                }
+                cliArguments.RemoveAll(x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        /// <summary>
+        /// Pauses the console and waits for a key press to exit.
+        /// </summary>
+        private static void CloseDebugMode()
+        {
+            Console.WriteLine("\nPress any key to exit...");
+            try
+            {
+                Kernel32.GetConsoleWindow(); Console.ReadKey();
+                Kernel32.FreeConsole();
+            }
+            catch
+            {
+                return;
             }
         }
 
@@ -395,29 +427,6 @@ namespace PSADT.Invoke
                 pwshArguments += $" {string.Join(" ", cliArguments)}";
             }
             return pwshArguments + "; [System.Environment]::Exit($Global:LASTEXITCODE)";
-        }
-
-        /// <summary>
-        /// Exits the process with the specified exit code.
-        /// </summary>
-        /// <param name="exitcode"></param>
-        private static void ExitProcess(int exitcode)
-        {
-            if (!inDebugMode)
-            {
-                Environment.Exit(exitcode);
-            }
-
-            Console.WriteLine("\nPress any key to exit...");
-            try
-            {
-                Kernel32.GetConsoleWindow(); Console.ReadKey();
-                Kernel32.FreeConsole();
-            }
-            finally
-            {
-                Environment.Exit(exitcode);
-            }
         }
 
         /// <summary>
