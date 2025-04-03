@@ -142,6 +142,10 @@ function Invoke-ADTFunctionErrorHandler
         }
         $LogMessage += "`n$(Resolve-ADTErrorRecord @raerProps)"
     }
+    elseif ($LogMessage -ne $ErrorRecord.Exception.Message)
+    {
+        $LogMessage += " $($ErrorRecord.Exception.Message)"
+    }
     Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity 3
 
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,
