@@ -949,6 +949,28 @@ namespace PSADT.Module
         }
 
         /// <summary>
+        /// Gets the host log stream mode based on the configuration and parameters.
+        /// </summary>
+        /// <param name="writeHost"></param>
+        /// <returns></returns>
+        private HostLogStream GetHostLogStreamMode(bool? writeHost = null)
+        {
+            var configToolkit = (Hashtable)InternalDatabase.GetConfig()["Toolkit"]!;
+            if ((null != writeHost && !writeHost.Value) || !(bool)configToolkit["LogWriteToHost"]!)
+            {
+                return HostLogStream.None;
+            }
+            else if ((bool)configToolkit["LogHostOutputToStdStreams"]!)
+            {
+                return HostLogStream.Console;
+            }
+            else
+            {
+                return HostLogStream.Host;
+            }
+        }
+
+        /// <summary>
         /// Writes a log entry with detailed parameters.
         /// </summary>
         /// <param name="message">The log message.</param>
@@ -965,7 +987,7 @@ namespace PSADT.Module
             if (null == hostLogStream)
             {
                 var configToolkit = (Hashtable)InternalDatabase.GetConfig()["Toolkit"]!;
-                hostLogStream = (bool)configToolkit["LogWriteToHost"]! ? (bool)configToolkit["LogHostOutputToStdStreams"]! ? HostLogStream.Console : HostLogStream.Host : HostLogStream.None;
+                hostLogStream = GetHostLogStreamMode();
             }
             if (!DisableLogging)
             {
@@ -1033,7 +1055,7 @@ namespace PSADT.Module
         /// <param name="writeHost">Whether to write to the host.</param>
         public void WriteLogEntry(string message, bool writeHost)
         {
-            WriteLogEntry([message], false, null, null, null, null, null, null, (writeHost && (bool)((Hashtable)InternalDatabase.GetConfig()["Toolkit"]!)["LogWriteToHost"]! ? HostLogStream.Host : HostLogStream.None));
+            WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
         }
 
         /// <summary>
