@@ -55,7 +55,7 @@
     <PreferNativeArm64>true</PreferNativeArm64>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>PSADT.Invoke</StartupObject>
+    <StartupObject>PSADT.Invoke.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>appIcon.ico</ApplicationIcon>
@@ -72,6 +72,11 @@
     <Reference Include="Microsoft.VisualBasic" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LibraryInterfaces\PSADT.Invoke.LibraryInterfaces.Class.Kernel32.cs" />
+    <Compile Include="LibraryInterfaces\PSADT.Invoke.LibraryInterfaces.Class.NtDll.cs" />
+    <Compile Include="LibraryInterfaces\PSADT.Invoke.LibraryInterfaces.Class.User32.cs" />
+    <Compile Include="LibraryInterfaces\PSADT.Invoke.LibraryInterfaces.Enums.cs" />
+    <Compile Include="Utilities\PSADT.Invoke.Utilities.Class.ProcessUtilities.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
