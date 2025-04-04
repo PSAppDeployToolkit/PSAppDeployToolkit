@@ -58,7 +58,11 @@ function Initialize-ADTModule
                 }
                 return $_
             })]
-        [System.String[]]$ScriptDirectory
+        [System.String[]]$ScriptDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.IDictionary]$AdditionalEnvironmentVariables
     )
 
     begin
@@ -79,6 +83,7 @@ function Initialize-ADTModule
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $null = $PSBoundParameters.Remove('ScriptDirectory')
     }
 
     process
@@ -119,7 +124,7 @@ function Initialize-ADTModule
                 $Script:Dialogs.Classic.BannerHeight = $null
 
                 # Initialize the module's global state.
-                $Script:ADT.Environment = New-ADTEnvironmentTable
+                $Script:ADT.Environment = New-ADTEnvironmentTable @PSBoundParameters
                 $Script:ADT.Config = Import-ADTConfig -BaseDirectory $Script:ADT.Directories.Config
                 $Script:ADT.Language = Get-ADTStringLanguage
                 $Script:ADT.Strings = Import-ADTModuleDataFile -BaseDirectory $Script:ADT.Directories.Strings -FileName strings.psd1 -UICulture $Script:ADT.Language -IgnorePolicy

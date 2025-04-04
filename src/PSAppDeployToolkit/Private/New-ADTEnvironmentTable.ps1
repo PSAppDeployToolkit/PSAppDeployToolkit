@@ -7,8 +7,12 @@
 function New-ADTEnvironmentTable
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
+    [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.IDictionary]$AdditionalEnvironmentVariables
     )
 
     # Perform initial setup.
@@ -317,6 +321,15 @@ function New-ADTEnvironmentTable
     # Add in WScript shell variables.
     $variables.Add('Shell', [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')))
     $variables.Add('ShellApp', [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('Shell.Application')))
+
+    # Add in additional environment variables from the caller if they've provided any.
+    if ($PSBoundParameters.ContainsKey('AdditionalEnvironmentVariables'))
+    {
+        foreach ($kvp in $AdditionalEnvironmentVariables.GetEnumerator())
+        {
+            $variables.Add($kvp.Key, $kvp.Value)
+        }
+    }
 
     # Return variables for use within the module.
     return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]]$variables
