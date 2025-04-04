@@ -8,7 +8,7 @@ namespace PSADT.Utilities
     /// <summary>
     /// Public P/Invokes from the msi.dll library.
     /// </summary>
-    public static class Msi
+    public static class MsiUtilities
     {
         /// <summary>
         /// Retrieves the message string associated with an MSI exit code from the msimsg.dll resource.

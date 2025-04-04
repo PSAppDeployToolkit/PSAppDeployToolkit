@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents an LNK (Windows Shortcut) file.
     /// </summary>
-    public class ShortcutLnk : ShortcutBase
+    public sealed class ShortcutLnk : ShortcutBase
     {
         /// <summary>
         /// The window style for the shortcut.

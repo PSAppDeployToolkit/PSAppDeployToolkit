@@ -12,7 +12,7 @@ namespace PSADT.Execution
     /// <summary>
     /// Provides options for launching a managed process.
     /// </summary>
-    public class ProcessLaunchInfo
+    public sealed class ProcessLaunchInfo
     {
         /// <summary>
         /// Initializes a new instance of the ManagedProcessOptions class.

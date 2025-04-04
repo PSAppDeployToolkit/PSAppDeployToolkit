@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a URL shortcut.
     /// </summary>
-    public class ShortcutUrl : ShortcutBase
+    public sealed class ShortcutUrl : ShortcutBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ShortcutBase"/> class with optional properties.
