@@ -170,7 +170,7 @@ function Write-ADTLogEntry
             {
                 Initialize-ADTModule
             }
-            [PSADT.Module.LoggingUtilities]::WriteLogEntry(
+            [PSADT.Module.LogUtilities]::WriteLogEntry(
                 $messages,
                 ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)],
                 $false,

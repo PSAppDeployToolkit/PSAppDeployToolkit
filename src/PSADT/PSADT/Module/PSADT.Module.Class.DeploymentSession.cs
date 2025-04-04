@@ -494,7 +494,7 @@ namespace PSADT.Module
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(LogPath, LogName), true, LoggingUtilities.LogEncoding))
+                    using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(LogPath, LogName), true, LogUtilities.LogEncoding))
                     {
                         foreach (LogEntry logEntry in LogBuffer)
                         {
@@ -1005,11 +1005,11 @@ namespace PSADT.Module
             ReadOnlyCollection<LogEntry> logEntries;
             if (!DisableLogging)
             {
-                logEntries = LoggingUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? LogPath, logFileName ?? LogName, logType);
+                logEntries = LogUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? LogPath, logFileName ?? LogName, logType);
             }
             else
             {
-                logEntries = LoggingUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, null, null, logType);
+                logEntries = LogUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, null, null, logType);
             }
             LogBuffer.AddRange(logEntries);
             return logEntries;
@@ -1079,7 +1079,7 @@ namespace PSADT.Module
         /// </summary>
         private void WriteLogDivider()
         {
-            WriteLogEntry(LoggingUtilities.LogDivider);
+            WriteLogEntry(LogUtilities.LogDivider);
         }
 
         /// <summary>

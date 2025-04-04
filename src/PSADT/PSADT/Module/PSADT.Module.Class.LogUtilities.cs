@@ -13,7 +13,7 @@ using System.Management.Automation.Runspaces;
 
 namespace PSADT.Module
 {
-    public static class LoggingUtilities
+    public static class LogUtilities
     {
         /// <summary>
         /// Writes a log entry with detailed parameters.
