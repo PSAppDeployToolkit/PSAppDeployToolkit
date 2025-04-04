@@ -112,8 +112,8 @@ namespace PSADT.Execution
                         {
                             CreatePipe(out hStdOutRead, out startupInfo.hStdOutput);
                             CreatePipe(out hStdErrRead, out startupInfo.hStdError);
-                            stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, startInfo.CancellationToken));
-                            stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, startInfo.CancellationToken));
+                            stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved));
+                            stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved));
                         }
 
                         // Handle user process creation, otherwise just create the process for the running user.
@@ -313,11 +313,11 @@ namespace PSADT.Execution
         /// <param name="output"></param>
         /// <param name="token"></param>
         /// <exception cref="Win32Exception"></exception>
-        private static void ReadPipe(HANDLE handle, List<string> output, ConcurrentQueue<string> interleaved, CancellationToken token)
+        private static void ReadPipe(HANDLE handle, List<string> output, ConcurrentQueue<string> interleaved)
         {
             var buffer = new byte[4096];
             uint bytesRead = 0;
-            while (!token.IsCancellationRequested)
+            while (true)
             {
                 try
                 {
