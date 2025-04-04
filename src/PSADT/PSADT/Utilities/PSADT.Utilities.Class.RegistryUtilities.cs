@@ -6,7 +6,7 @@ using PSADT.LibraryInterfaces;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Registry;
 
-namespace PSADT.Registry
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Registry utilities using CsWin32.
@@ -65,7 +65,7 @@ namespace PSADT.Registry
             try
             {
                 result = AdvApi32.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out _, out var lastWriteTime);
-                return DateTime.FromFileTime(((long)lastWriteTime.dwHighDateTime << 32) | (lastWriteTime.dwLowDateTime & 0xFFFFFFFFL));
+                return DateTime.FromFileTime((long)lastWriteTime.dwHighDateTime << 32 | lastWriteTime.dwLowDateTime & 0xFFFFFFFFL);
             }
             finally
             {

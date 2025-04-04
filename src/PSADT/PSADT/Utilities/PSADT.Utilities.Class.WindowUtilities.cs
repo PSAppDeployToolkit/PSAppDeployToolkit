@@ -2,19 +2,16 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
-using PSADT.OperatingSystem;
 using Windows.Win32;
-using Windows.Win32.UI.HiDpi;
-using Windows.Win32.UI.Shell;
-using Windows.Win32.UI.WindowsAndMessaging;
 using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.GUI
 {
     /// <summary>
     /// Provides methods for interacting with UI automation on Windows.
     /// </summary>
-    public static class UiAutomation
+    public static class WindowUtilities
     {
         /// <summary>
         /// Enumerates all top-level windows on the screen.
@@ -129,49 +126,6 @@ namespace PSADT.GUI
             }
             User32.GetWindowThreadProcessId(new HWND(hWnd), out uint processId);
             return processId;
-        }
-
-        /// <summary>
-        /// Gets the user notification state.
-        /// </summary>
-        /// <returns>The user notification state.</returns>
-        public static LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
-        {
-            Shell32.SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE state);
-            return (LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE)state;
-        }
-
-        /// <summary>
-        /// Sets the appropriate DPI awareness for the current process based on the operating system version.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if the appropriate DPI awareness setting could not be applied.</exception>
-        /// <remarks>
-        /// This method will check the operating system version and apply the most advanced DPI awareness setting supported by the system.
-        /// It will attempt to use Per Monitor DPI Awareness v2 for Windows 10 (version 15063 and later), fallback to earlier versions for
-        /// Windows 8.1 and above, and finally to older APIs for Windows 7 and Vista.
-        /// </remarks>
-        public static void SetProcessDpiAwarenessForOSVersion()
-        {
-            if (OSVersionInfo.Current.Version >= new Version(10, 0, 15063)) // Windows 10, Creators Update (Version 1703) and later
-            {
-                User32.SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-            }
-            else if (OSVersionInfo.Current.Version >= new Version(10, 0, 14393)) // Windows 10, Anniversary Update (Version 1607)
-            {
-                User32.SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
-            }
-            else if (OSVersionInfo.Current.Version >= new Version(6, 3, 9600)) // Windows 8.1
-            {
-                SHCore.SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
-            }
-            else if (OSVersionInfo.Current.Version >= new Version(6, 0, 6000)) // Windows Vista or Windows 7
-            {
-                User32.SetProcessDPIAware();
-            }
-            else
-            {
-                throw new NotSupportedException("The current operating system version does not support any known DPI awareness APIs.");
-            }
         }
     }
 }

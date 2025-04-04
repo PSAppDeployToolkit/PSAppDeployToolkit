@@ -162,7 +162,7 @@ try
         {
             try
             {
-                [PSADT.GUI.UiAutomation]::SetProcessDpiAwarenessForOSVersion()
+                [PSADT.Utilities.DisplayUtilities]::SetProcessDpiAwarenessForOSVersion()
             }
             catch
             {

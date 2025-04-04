@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.DirectoryServices;
 using System.Security.Principal;
 
-namespace PSADT.AccountManagement
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Utility methods for working with Windows accounts and groups.
@@ -61,12 +61,9 @@ namespace PSADT.AccountManagement
                         }
 
                         // If this member is a group, scan through its members recursively.
-                        if (memberEntry.SchemaClassName == "Group")
+                        if (memberEntry.SchemaClassName == "Group" && CheckMemberRecursive(memberEntry, targetSid, visited))
                         {
-                            if (CheckMemberRecursive(memberEntry, targetSid, visited))
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }

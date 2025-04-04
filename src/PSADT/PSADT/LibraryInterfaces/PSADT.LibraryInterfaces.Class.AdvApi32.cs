@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using PSADT.Diagnostics;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Security;
 using Windows.Win32.Foundation;
@@ -22,7 +22,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.RegOpenKeyEx(hKey, lpSubKeyPtr, ulOptions, samDesired, &phkResultInternal);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
-                    throw ErrorHandler.GetExceptionForLastWin32Error(res);
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
                 }
                 phkResult = phkResultInternal;
                 return res;
@@ -52,7 +52,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.RegQueryInfoKey(hKey, lpClass, lpcchClassPtr, lpReservedPtr, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
-                    throw ErrorHandler.GetExceptionForLastWin32Error(res);
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
                 }
                 return res;
             }
@@ -74,7 +74,7 @@ namespace PSADT.LibraryInterfaces
             if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
                 
-                throw ErrorHandler.GetExceptionForLastWin32Error(res);
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
             hKey = default;
             return res;
@@ -99,7 +99,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.DuplicateTokenEx(hExistingToken, dwDesiredAccess, lpTokenAttributes.HasValue ? &lpTokenAttributesLocal : null, ImpersonationLevel, TokenType, phNewTokenPtr);
                 if (!res)
                 {
-                    throw ErrorHandler.GetExceptionForLastWin32Error();
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
@@ -120,7 +120,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, TokenHandlePtr);
                 if (!res)
                 {
-                    throw ErrorHandler.GetExceptionForLastWin32Error();
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
@@ -139,7 +139,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName, out lpLuid);
             if (!res)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
         }
@@ -164,7 +164,7 @@ namespace PSADT.LibraryInterfaces
                     var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
                     if (error != WIN32_ERROR.NO_ERROR && (error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || TokenInformationLength != 0))
                     {
-                        throw ErrorHandler.GetExceptionForLastWin32Error(error);
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error(error);
                     }
                 }
                 return res;
@@ -188,7 +188,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, NewState.HasValue ? &NewStateLocal : null, BufferLength, null, null);
             if (!res)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
         }

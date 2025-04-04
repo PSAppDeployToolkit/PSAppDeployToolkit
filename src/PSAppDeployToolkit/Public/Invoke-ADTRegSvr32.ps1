@@ -98,7 +98,7 @@ function Invoke-ADTRegSvr32
             try
             {
                 # Determine the bitness of the DLL file.
-                if ((($DLLFileBitness = Get-ADTPEFileArchitecture -FilePath $FilePath) -ne [PSADT.Shared.SystemArchitecture]::AMD64) -and ($DLLFileBitness -ne [PSADT.Shared.SystemArchitecture]::i386))
+                if ((($DLLFileBitness = Get-ADTPEFileArchitecture -FilePath $FilePath) -ne [PSADT.Types.SystemArchitecture]::AMD64) -and ($DLLFileBitness -ne [PSADT.Types.SystemArchitecture]::i386))
                 {
                     $naerParams = @{
                         Exception = [System.PlatformNotSupportedException]::new("File [$filePath] has a detected file architecture of [$DLLFileBitness]. Only 32-bit or 64-bit DLL files can be $($Action.ToLower() + 'ed').")
@@ -113,7 +113,7 @@ function Invoke-ADTRegSvr32
                 # Get the correct path to regsrv32.exe for the system and DLL file.
                 $RegSvr32Path = if ([System.Environment]::Is64BitOperatingSystem)
                 {
-                    if ($DLLFileBitness -eq [PSADT.Shared.SystemArchitecture]::AMD64)
+                    if ($DLLFileBitness -eq [PSADT.Types.SystemArchitecture]::AMD64)
                     {
                         if ([System.Environment]::Is64BitProcess)
                         {
@@ -124,12 +124,12 @@ function Invoke-ADTRegSvr32
                             "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows))\sysnative\regsvr32.exe"
                         }
                     }
-                    elseif ($DLLFileBitness -eq [PSADT.Shared.SystemArchitecture]::i386)
+                    elseif ($DLLFileBitness -eq [PSADT.Types.SystemArchitecture]::i386)
                     {
                         "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::SystemX86))\regsvr32.exe"
                     }
                 }
-                elseif ($DLLFileBitness -eq [PSADT.Shared.SystemArchitecture]::i386)
+                elseif ($DLLFileBitness -eq [PSADT.Types.SystemArchitecture]::i386)
                 {
                     "$([System.Environment]::SystemDirectory)\regsvr32.exe"
                 }

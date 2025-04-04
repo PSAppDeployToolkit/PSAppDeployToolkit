@@ -3,7 +3,7 @@ using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.System.LibraryLoader;
 
-namespace PSADT.Installer
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Public P/Invokes from the msi.dll library.

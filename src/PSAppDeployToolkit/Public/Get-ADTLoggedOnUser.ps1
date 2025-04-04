@@ -86,7 +86,7 @@ function Get-ADTLoggedOnUser
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Collections.ObjectModel.ReadOnlyCollection[PSADT.WTSSession.SessionInfo]])]
+    [OutputType([System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]])]
     param
     (
     )
@@ -103,7 +103,7 @@ function Get-ADTLoggedOnUser
         {
             try
             {
-                return [PSADT.WTSSession.SessionManager]::GetSessionInfo()
+                return [PSADT.TerminalServices.SessionManager]::GetSessionInfo()
             }
             catch
             {

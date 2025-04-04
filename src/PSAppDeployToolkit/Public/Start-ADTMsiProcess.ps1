@@ -135,7 +135,6 @@ function Start-ADTMsiProcess
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Int32])]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -369,7 +368,7 @@ function Start-ADTMsiProcess
                 if ($msiInstalled -and ($Action -eq 'Install'))
                 {
                     Write-ADTLogEntry -Message "The MSI is already installed on this system. Skipping action [$Action]..."
-                    return $(if ($PassThru) { [PSADT.Types.ProcessResult]::new(1638, $null, $null) })
+                    return $(if ($PassThru) { [PSADT.Execution.ProcessResult]::new(1638) })
                 }
                 elseif (!$msiInstalled -and ($Action -ne 'Install'))
                 {

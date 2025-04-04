@@ -6,12 +6,12 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace PSADT.GUI
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Provides methods for interacting with the Windows Explorer.
     /// </summary>
-    public static class Explorer
+    public static class ShellUtilities
     {
         /// <summary>
         /// Refreshes the desktop icons and updates the environment variables in the system.
@@ -31,6 +31,16 @@ namespace PSADT.GUI
             {
                 Marshal.FreeHGlobal(lpString);
             }
+        }
+
+        /// <summary>
+        /// Gets the user notification state.
+        /// </summary>
+        /// <returns>The user notification state.</returns>
+        public static LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
+        {
+            Shell32.SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE state);
+            return (LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE)state;
         }
     }
 }

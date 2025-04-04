@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Principal;
 
-namespace PSADT.WTSSession
+namespace PSADT.TerminalServices
 {
     /// <summary>
     /// A class to hold all information for a given WTS session.

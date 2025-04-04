@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace PSADT.Types
+namespace PSADT.Execution
 {
     /// <summary>
     /// Represents the result of a process execution, including exit code and standard output/error.

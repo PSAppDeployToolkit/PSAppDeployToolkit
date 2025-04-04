@@ -1,6 +1,6 @@
 ﻿using Windows.Win32;
 
-namespace PSADT.WTSSession
+namespace PSADT.TerminalServices
 {
     /// <summary>
     /// WTS SessionInfoEx level identifiers.

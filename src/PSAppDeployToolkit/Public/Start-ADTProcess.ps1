@@ -131,7 +131,7 @@ function Start-ADTProcess
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'CreateNoWindow')]
-    [OutputType([PSADT.Types.ProcessResult])]
+    [OutputType([PSADT.Execution.ProcessResult])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = "Default")]
@@ -433,7 +433,7 @@ function Start-ADTProcess
                     {
                         # Default MSI exit code for install already in progress.
                         Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
-                        $result = [PSADT.Types.ProcessResult]::new(1618)
+                        $result = [PSADT.Execution.ProcessResult]::new(1618)
                         $naerParams = @{
                             Exception = [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
                             Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
@@ -446,7 +446,7 @@ function Start-ADTProcess
                 }
 
                 # Set up the process start flags.
-                $startInfo = [PSADT.ProcessEx.ProcessOptions]::new(
+                $startInfo = [PSADT.Execution.ProcessLaunchInfo]::new(
                     $FilePath,
                     $ArgumentList,
                     $WorkingDirectory,
@@ -491,7 +491,7 @@ function Start-ADTProcess
                 }
 
                 # Start the process.
-                $process = [PSADT.ProcessEx.ProcessExecutor]::LaunchAsync($startInfo)
+                $process = [PSADT.Execution.ProcessManager]::LaunchAsync($startInfo)
 
                 # NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams.
                 if ($NoWait)

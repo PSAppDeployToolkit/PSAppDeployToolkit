@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using PSADT.Shared;
+using PSADT.Types;
 
-namespace PSADT.Types
+namespace PSADT.Execution
 {
     /// <summary>
     /// Provides information about a PE file.

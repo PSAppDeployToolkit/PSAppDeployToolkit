@@ -58,7 +58,7 @@ function Test-ADTMicrophoneInUse
         {
             try
             {
-                if (($microphoneInUse = [PSADT.Devices.Audio]::IsMicrophoneInUse()))
+                if (($microphoneInUse = [PSADT.Utilities.DeviceUtilities]::IsMicrophoneInUse()))
                 {
                     Write-ADTLogEntry -Message "The device's microphone is currently in use."
                 }

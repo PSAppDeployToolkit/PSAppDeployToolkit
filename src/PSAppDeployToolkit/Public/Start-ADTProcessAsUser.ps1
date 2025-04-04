@@ -119,7 +119,7 @@ function Start-ADTProcessAsUser
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'CreateNoWindow')]
-    [OutputType([PSADT.Types.ProcessResult])]
+    [OutputType([PSADT.Execution.ProcessResult])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = "Default")]

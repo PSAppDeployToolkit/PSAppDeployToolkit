@@ -1,9 +1,9 @@
-﻿namespace PSADT.AccessToken
+﻿namespace PSADT.Security
 {
     /// <summary>
-    /// Enumeration of all available security tokens.
+    /// Enumeration of all available security privileges.
     /// </summary>
-    public enum SE_TOKEN
+    public enum SE_PRIVILEGE
     {
         /// <summary>
         /// The right to attach a primary token to a process.

@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Security.Principal;
@@ -38,7 +37,7 @@ namespace PSADT.Module
             bool noRunspace = (null == Runspace.DefaultRunspace) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
 
             // Perform early return checks before wasting time.
-            if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)((Hashtable)InternalDatabase.GetConfig()["Toolkit"]!)["LogDebugMessage"]!))
+            if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogDebugMessage"]!))
             {
                 return;
             }
@@ -57,7 +56,7 @@ namespace PSADT.Module
             }
             else
             {
-                CallStackFrame invoker = GetLogEntryCaller(InternalDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).ToArray());
+                CallStackFrame invoker = GetLogEntryCaller(ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).ToArray());
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
                 callerSource = GetPowerShellCallStackFrameCommand(invoker);
             }
@@ -73,7 +72,7 @@ namespace PSADT.Module
             }
             if (canLogToDisk && string.IsNullOrWhiteSpace(logType))
             {
-                logType = (string)((Hashtable)InternalDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
+                logType = (string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
             }
             if ((null != logFileDirectory) && !Directory.Exists(logFileDirectory))
             {
@@ -140,7 +139,7 @@ namespace PSADT.Module
                 else
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    InternalDatabase.InvokeScript(WriteLogEntryDelegate, message, sevCols, source!, logFormats["Legacy"]!, hostLogStream.Equals(HostLogStream.Verbose));
+                    ModuleDatabase.InvokeScript(WriteLogEntryDelegate, message, sevCols, source!, logFormats["Legacy"]!, hostLogStream.Equals(HostLogStream.Verbose));
                 }
             }
         }

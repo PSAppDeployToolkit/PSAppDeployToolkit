@@ -900,7 +900,7 @@ function Show-ADTInstallationWelcome
                                             Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
                                             $null = try
                                             {
-                                                [PSADT.GUI.UiAutomation]::BringWindowToFront($OpenWindow.WindowHandle)
+                                                [PSADT.Utilities.WindowUtilities]::BringWindowToFront($OpenWindow.WindowHandle)
                                             }
                                             catch
                                             {

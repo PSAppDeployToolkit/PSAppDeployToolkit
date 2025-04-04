@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using PSADT.Diagnostics;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
@@ -26,7 +26,7 @@ namespace PSADT.LibraryInterfaces
                 var res = PInvoke.CreateEnvironmentBlock(&lpEnvironmentPtr, hToken, bInherit);
                 if (!res)
                 {
-                    throw ErrorHandler.GetExceptionForLastWin32Error();
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
@@ -47,7 +47,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.DestroyEnvironmentBlock(lpEnvironment.ToPointer());
             if (!res)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
         }

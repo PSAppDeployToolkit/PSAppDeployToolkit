@@ -55,7 +55,7 @@ function Convert-ADTValueType
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Shared.ValueTypes]$To
+        [PSADT.Utilities.ValueTypeConverter+ValueTypes]$To
     )
 
     begin
@@ -72,7 +72,7 @@ function Convert-ADTValueType
             try
             {
                 # Use our custom converter to get it done.
-                return [PSADT.Shared.ValueTypeConverter]::$method($Value)
+                return [PSADT.Utilities.ValueTypeConverter]::$method($Value)
             }
             catch
             {

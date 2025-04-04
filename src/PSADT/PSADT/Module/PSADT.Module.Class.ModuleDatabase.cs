@@ -3,7 +3,6 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Management.Automation;
 
 namespace PSADT.Module
@@ -11,7 +10,7 @@ namespace PSADT.Module
     /// <summary>
     /// The internal database for the PSAppDeployToolkit module, as initialised via PSAppDeployToolkit.psm1.
     /// </summary>
-    public static class InternalDatabase
+    public static class ModuleDatabase
     {
         private const string errorMessage = "Please ensure that [Initialize-ADTModule] is called before using any PSAppDeployToolkit functions or methods.";
         private static PSObject? _database = null;

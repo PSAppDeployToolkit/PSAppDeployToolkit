@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Linq.Expressions;
 
-namespace PSADT.Shared
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Utility class to convert values to another type by casting (PowerShell can't do this without help).
@@ -95,7 +94,7 @@ namespace PSADT.Shared
         {
             unchecked
             {
-                return (long)val;
+                return val;
             }
         }
 
@@ -153,6 +152,82 @@ namespace PSADT.Shared
         /// <param name="val"></param>
         /// <returns></returns>
         public static ulong ToUInt64(long val) { return ToULong(val); }
+
+        /// <summary>
+        /// Valid value types for ValueTypeConverter.
+        /// </summary>
+        public enum ValueTypes
+        {
+            /// <summary>
+            /// A signed byte.
+            /// </summary>
+            SByte,
+
+            /// <summary>
+            /// An unsigned byte.
+            /// </summary>
+            Byte,
+
+            /// <summary>
+            /// A signed 16-bit integer.
+            /// </summary>
+            Short,
+
+            /// <summary>
+            /// An unsigned 16-bit integer.
+            /// </summary>
+            Int16,
+
+            /// <summary>
+            /// A signed 32-bit integer.
+            /// </summary>
+            UShort,
+
+            /// <summary>
+            /// An unsigned 32-bit integer.
+            /// </summary>
+            UInt16,
+
+            /// <summary>
+            /// A signed 32-bit integer.
+            /// </summary>
+            Int,
+
+            /// <summary>
+            /// An unsigned 32-bit integer.
+            /// </summary>
+            Int32,
+
+            /// <summary>
+            /// A signed 64-bit integer.
+            /// </summary>
+            UInt,
+
+            /// <summary>
+            /// An unsigned 64-bit integer.
+            /// </summary>
+            UInt32,
+
+            /// <summary>
+            /// A signed 64-bit integer.
+            /// </summary>
+            Long,
+
+            /// <summary>
+            /// An unsigned 64-bit integer.
+            /// </summary>
+            Int64,
+
+            /// <summary>
+            /// A signed 64-bit integer.
+            /// </summary>
+            ULong,
+
+            /// <summary>
+            /// An unsigned 64-bit integer.
+            /// </summary>
+            UInt64,
+        }
     }
 
     /// <summary>

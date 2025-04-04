@@ -5,13 +5,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using PSADT.AccountManagement;
 using PSADT.LibraryInterfaces;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.RemoteDesktop;
 
-namespace PSADT.WTSSession
+namespace PSADT.TerminalServices
 {
     /// <summary>
     /// Utility methods for interacting with WTS.

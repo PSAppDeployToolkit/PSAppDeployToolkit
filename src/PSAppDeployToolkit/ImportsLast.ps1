@@ -149,7 +149,7 @@ try
     # Send the module's database into the C# code for internal access.
     if (!$MinimumStartup)
     {
-        [PSADT.Module.InternalDatabase]::Init($ADT)
+        [PSADT.Module.ModuleDatabase]::Init($ADT)
     }
 }
 catch

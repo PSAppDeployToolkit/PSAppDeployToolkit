@@ -8,11 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Principal;
-using PSADT.AccessToken;
 using PSADT.LibraryInterfaces;
-using PSADT.Types;
-using PSADT.Shared;
-using PSADT.WTSSession;
+using PSADT.Security;
+using PSADT.TerminalServices;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -20,12 +19,12 @@ using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace PSADT.ProcessEx
+namespace PSADT.Execution
 {
     /// <summary>
     /// Provides methods for launching processes with more control over input/output.
     /// </summary>
-    public static class ProcessExecutor
+    public static class ProcessManager
     {
         /// <summary>
         /// Launches a process with the specified start info and waits for it to complete.
@@ -33,7 +32,7 @@ namespace PSADT.ProcessEx
         /// <param name="startInfo"></param>
         /// <returns></returns>
         /// <exception cref="TaskCanceledException"></exception>
-        public static async Task<ProcessResult> LaunchAsync(ProcessOptions startInfo)
+        public static async Task<ProcessResult> LaunchAsync(ProcessLaunchInfo startInfo)
         {
             // Declare all handles C-style so we can close them in the finally block for cleanup.
             HANDLE hStdOutRead = default;
@@ -57,7 +56,7 @@ namespace PSADT.ProcessEx
             bool consoleApp;
             try
             {
-                consoleApp = GeneralUtilities.GetExecutableInfo(startInfo.FilePath).ExecutableType == ExecutableType.Console;
+                consoleApp = ExecutableUtilities.GetExecutableInfo(startInfo.FilePath).ExecutableType == ExecutableType.Console;
             }
             catch
             {
@@ -81,8 +80,8 @@ namespace PSADT.ProcessEx
                         // The process is created suspended so it can be assigned to the job object.
                         var creationFlags = (PROCESS_CREATION_FLAGS)startInfo.PriorityClass |
                             PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
-                            PROCESS_CREATION_FLAGS.CREATE_SUSPENDED |
-                            PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP;
+                            PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
+                            PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
                         // We must create a console window for console apps when the window is shown.
                         if (!noWindow)
@@ -130,8 +129,8 @@ namespace PSADT.ProcessEx
                             }
 
                             // SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
-                            PrivilegeManager.EnsurePrivilegeEnabled(SE_TOKEN.SeIncreaseQuotaPrivilege);
-                            PrivilegeManager.EnsurePrivilegeEnabled(SE_TOKEN.SeAssignPrimaryTokenPrivilege);
+                            PrivilegeManager.EnsurePrivilegeEnabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                            PrivilegeManager.EnsurePrivilegeEnabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                             // You can only run a process as a user if they're logged on.
                             var userSessions = SessionManager.GetSessionInfo();
@@ -285,16 +284,6 @@ namespace PSADT.ProcessEx
                 Kernel32.CloseHandle(ref iocp);
                 Kernel32.CloseHandle(ref job);
             }
-        }
-
-        /// <summary>
-        /// Launches a process with the specified start info and waits for it to complete.
-        /// </summary>
-        /// <param name="startInfo"></param>
-        /// <returns></returns>
-        public static ProcessResult Launch(ProcessOptions startInfo)
-        {
-            return LaunchAsync(startInfo).GetAwaiter().GetResult();
         }
 
         /// <summary>

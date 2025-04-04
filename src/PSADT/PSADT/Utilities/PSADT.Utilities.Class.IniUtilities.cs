@@ -1,12 +1,11 @@
-﻿using System;
-using PSADT.LibraryInterfaces;
+﻿using PSADT.LibraryInterfaces;
 
-namespace PSADT.Configuration
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Utility methods for interacting with INI files.
     /// </summary>
-    public static class IniFile
+    public static class IniUtilities
     {
         /// <summary>
         /// Gets the value of a key in a section of an INI file.

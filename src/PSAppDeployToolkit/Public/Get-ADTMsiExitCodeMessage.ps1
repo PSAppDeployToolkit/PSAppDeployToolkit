@@ -66,7 +66,7 @@ function Get-ADTMsiExitCodeMessage
             try
             {
                 # Only return the output if we receive something from the library.
-                if (![System.String]::IsNullOrWhiteSpace(($msg = [PSADT.Installer.Msi]::GetMessageFromMsiExitCode($MsiExitCode))))
+                if (![System.String]::IsNullOrWhiteSpace(($msg = [PSADT.Utilities.MsiUtilities]::GetMessageFromMsiExitCode($MsiExitCode))))
                 {
                     return $msg
                 }

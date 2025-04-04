@@ -4,7 +4,7 @@ using Windows.Win32;
 using Windows.Win32.Security;
 using Windows.Win32.Foundation;
 
-namespace PSADT.AccessToken
+namespace PSADT.Security
 {
     /// <summary>
     /// Utility methods for working with security tokens.
@@ -15,7 +15,7 @@ namespace PSADT.AccessToken
         /// Ensures that a security token is enabled.
         /// </summary>
         /// <param name="privilege"></param>
-        public static void EnsurePrivilegeEnabled(SE_TOKEN privilege)
+        public static void EnsurePrivilegeEnabled(SE_PRIVILEGE privilege)
         {
             AdvApi32.OpenProcessToken(PInvoke.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
             try
@@ -38,7 +38,7 @@ namespace PSADT.AccessToken
         /// <param name="token"></param>
         /// <param name="privilegeName"></param>
         /// <returns></returns>
-        private static bool IsPrivilegeEnabled(HANDLE token, SE_TOKEN privilege)
+        private static bool IsPrivilegeEnabled(HANDLE token, SE_PRIVILEGE privilege)
         {
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
 
@@ -73,7 +73,7 @@ namespace PSADT.AccessToken
         /// </summary>
         /// <param name="token"></param>
         /// <param name="privilegeName"></param>
-        private static void EnablePrivilege(HANDLE token, SE_TOKEN privilege)
+        private static void EnablePrivilege(HANDLE token, SE_PRIVILEGE privilege)
         {
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
 

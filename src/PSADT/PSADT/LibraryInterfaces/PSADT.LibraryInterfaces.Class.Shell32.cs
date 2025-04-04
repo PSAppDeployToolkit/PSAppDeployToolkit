@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using PSADT.Diagnostics;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -40,7 +40,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Flags that specify the behavior of the function.
             /// </summary>
-            public ProcessEx.SEE_MASK_FLAGS fMask;
+            public SEE_MASK_FLAGS fMask;
 
             /// <summary>
             /// Handle to the parent window used for displaying a UI or error messages.
@@ -163,7 +163,7 @@ namespace PSADT.LibraryInterfaces
             var res = ShellExecuteExNative(ref lpExecInfo);
             if (!res)
             {
-                throw ErrorHandler.GetExceptionForLastWin32Error();
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
         }

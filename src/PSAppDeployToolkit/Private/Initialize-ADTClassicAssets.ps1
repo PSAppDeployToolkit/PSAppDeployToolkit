@@ -23,7 +23,7 @@ function Initialize-ADTClassicAssets
     {
         $adtConfig = Get-ADTConfig
         $Script:Dialogs.Classic.Assets.Logo = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($adtConfig.Assets.Logo)))
-        $Script:Dialogs.Classic.Assets.Icon = [PSADT.Shared.GeneralUtilities]::ConvertImageToIcon($Script:Dialogs.Classic.Assets.Logo)
+        $Script:Dialogs.Classic.Assets.Icon = [PSADT.Utilities.DrawingUtilities]::ConvertImageToIcon($Script:Dialogs.Classic.Assets.Logo)
         $Script:Dialogs.Classic.Assets.Banner = [System.Drawing.Image]::FromStream([System.IO.MemoryStream]::new([System.IO.File]::ReadAllBytes($adtConfig.Assets.Banner)))
         $Script:Dialogs.Classic.BannerHeight = [System.Math]::Ceiling($Script:Dialogs.Classic.Width * ($Script:Dialogs.Classic.Assets.Banner.Height / $Script:Dialogs.Classic.Assets.Banner.Width))
     }

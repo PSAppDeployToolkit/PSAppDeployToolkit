@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace PSADT.ProcessEx
+namespace PSADT.Execution
 {
     /// <summary>
     /// Provides options for launching a managed process.
     /// </summary>
-    public class ProcessOptions
+    public class ProcessLaunchInfo
     {
         /// <summary>
         /// Initializes a new instance of the ManagedProcessOptions class.
@@ -27,7 +27,7 @@ namespace PSADT.ProcessEx
         /// <param name="noNewWindow"></param>
         /// <param name="priorityClass"></param>
         /// <param name="cancellationToken"></param>
-        public ProcessOptions(
+        public ProcessLaunchInfo(
             string filePath,
             string[]? argumentList = null,
             string? workingDirectory = null,
@@ -87,14 +87,14 @@ namespace PSADT.ProcessEx
         /// Initializes a new instance of the ManagedProcessOptions class.
         /// </summary>
         /// <param name="filePath"></param>
-        public ProcessOptions(string filePath) : this(filePath, null!) { }
+        public ProcessLaunchInfo(string filePath) : this(filePath, null!) { }
 
         /// <summary>
         /// Initializes a new instance of the ManagedProcessOptions class.
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="argumentList"></param>
-        public ProcessOptions(string filePath, string[] argumentList) : this(filePath, argumentList, null) { }
+        public ProcessLaunchInfo(string filePath, string[] argumentList) : this(filePath, argumentList, null) { }
 
         /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.

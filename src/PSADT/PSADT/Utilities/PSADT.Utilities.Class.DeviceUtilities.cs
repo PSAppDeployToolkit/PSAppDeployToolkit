@@ -4,12 +4,12 @@ using Windows.Win32;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
 
-namespace PSADT.Devices
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Utility class containing methods to do with audio tests.
     /// </summary>
-    public static class Audio
+    public static class DeviceUtilities
     {
         /// <summary>
         /// Tests whether the microphone is in use on the current device.

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.ComponentModel;
 using PSADT.LibraryInterfaces;
-using PSADT.Shared;
+using PSADT.Types;
 using Windows.Win32;
 using Windows.Win32.System.SystemInformation;
 

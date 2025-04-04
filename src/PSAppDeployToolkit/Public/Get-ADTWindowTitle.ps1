@@ -158,7 +158,7 @@ function Get-ADTWindowTitle
                 }
 
                 # Get all window handles for visible windows and loop through the visible ones.
-                [PSADT.GUI.UiAutomation]::EnumWindows() | & {
+                [PSADT.Utilities.WindowUtilities]::EnumWindows() | & {
                     process
                     {
                         # Return early if we're null.
@@ -174,7 +174,7 @@ function Get-ADTWindowTitle
                         }
 
                         # Return early if the window doesn't have any text.
-                        if (!($VisibleWindowTitle = [PSADT.GUI.UiAutomation]::GetWindowText($_)))
+                        if (!($VisibleWindowTitle = [PSADT.Utilities.WindowUtilities]::GetWindowText($_)))
                         {
                             return
                         }
@@ -186,7 +186,7 @@ function Get-ADTWindowTitle
                         }
 
                         # Return early if the window doesn't have an associated process.
-                        if (!($process = $processes | Where-Object -Property Id -EQ -Value ([PSADT.GUI.UiAutomation]::GetWindowThreadProcessId($_)) | Select-Object -First 1))
+                        if (!($process = $processes | Where-Object -Property Id -EQ -Value ([PSADT.Utilities.WindowUtilities]::GetWindowThreadProcessId($_)) | Select-Object -First 1))
                         {
                             return
                         }
