@@ -1326,7 +1326,7 @@ namespace PSADT.Module
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly IReadOnlyDictionary<string, FieldInfo> BackingFields = new ReadOnlyDictionary<string, FieldInfo> (typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("<_") && field.Name.EndsWith("k__BackingField")).ToDictionary(static field => char.ToUpper(field.Name[2]) + field.Name.Substring(3, field.Name.IndexOf(">") - 3), static field => field));
+        private static readonly IReadOnlyDictionary<string, FieldInfo> BackingFields = new ReadOnlyDictionary<string, FieldInfo> (typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpper(field.Name[1]) + field.Name.Substring(2), static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.
@@ -1336,12 +1336,12 @@ namespace PSADT.Module
         /// <summary>
         /// Bitfield with settings for this deployment.
         /// </summary>
-        private DeploymentSettings Settings { get; set; }
+        private DeploymentSettings Settings;
 
         /// <summary>
         /// Gets the caller's SessionState from value that was supplied during object instantiation.
         /// </summary>
-        private SessionState? CallerSessionState { get; }
+        private readonly SessionState? CallerSessionState;
 
         /// <summary>
         /// Gets the mounted WIM files within this session.
@@ -1351,71 +1351,71 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the list of executables found within a Zero-Config MSI file.
         /// </summary>
-        private IReadOnlyList<ProcessObject> DefaultMsiExecutablesList { get; } = new ReadOnlyCollection<ProcessObject>([]);
+        private readonly IReadOnlyList<ProcessObject> DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessObject>([]);
 
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
         /// </summary>
-        private string? DirFilesSubstDrive { get; }
+        private readonly string? DirFilesSubstDrive;
 
         /// <summary>
         /// Gets the base registry path used for getting/setting deferral information.
         /// </summary>
-        private string RegKeyDeferBase { get; }
+        private readonly string RegKeyDeferBase;
 
         /// <summary>
         /// Gets the registry path used for getting/setting deferral information.
         /// </summary>
-        private string RegKeyDeferHistory { get; }
+        private readonly string RegKeyDeferHistory;
 
         /// <summary>
         /// Gets the deployment session's temporary filesystem log path when compressing logs.
         /// </summary>
-        private string LogTempFolder { get; }
+        private readonly string LogTempFolder;
 
         /// <summary>
         /// Gets the deployment session's filesystem log path.
         /// </summary>
-        private string LogPath { get; }
+        private readonly string LogPath;
 
         /// <summary>
         /// Gets the deployment session's closing exit code.
         /// </summary>
-        private int ExitCode { get; set; }
+        private int ExitCode;
 
 
         #endregion
         #region Private backing fields.
 
 
-        private DeploymentType _deploymentType { get; } = DeploymentType.Install;
-        private DeployMode _deployMode { get; } = DeployMode.Interactive;
-        private string? _appVendor { get; }
-        private string? _appName { get; }
-        private string? _appVersion { get; }
-        private string? _appArch { get; }
-        private string? _appLang { get; }
-        private string? _appRevision { get; }
-        private IReadOnlyList<int> _appSuccessExitCodes { get; } = new ReadOnlyCollection<int>([0]);
-        private IReadOnlyList<int> _appRebootExitCodes { get; } = new ReadOnlyCollection<int>([1641, 3010]);
-        private Version? _appScriptVersion { get; }
-        private DateTime? _appScriptDate { get; }
-        private string? _appScriptAuthor { get; }
-        private string _installName { get; }
-        private string _installTitle { get; }
-        private string? _deployAppScriptFriendlyName { get; }
-        private Version? _deployAppScriptVersion { get; }
-        private IReadOnlyDictionary<string, object>? _deployAppScriptParameters { get; }
-        private string _installPhase { get; set; } = "Initialization";
-        private string _currentDate { get; }
-        private string _currentTime { get; }
-        private IReadOnlyList<string>? _scriptDirectory { get; }
-        private string? _dirFiles { get; set; }
-        private string? _dirSupportFiles { get; set; }
-        private string? _defaultMsiFile { get; }
-        private string? _defaultMstFile { get; }
-        private IReadOnlyList<string> _defaultMspFiles { get; } = new ReadOnlyCollection<string>([]);
-        private string _logName { get; }
+        private readonly DeploymentType _deploymentType = DeploymentType.Install;
+        private readonly DeployMode _deployMode = DeployMode.Interactive;
+        private readonly string? _appVendor;
+        private readonly string? _appName;
+        private readonly string? _appVersion;
+        private readonly string? _appArch;
+        private readonly string? _appLang;
+        private readonly string? _appRevision;
+        private readonly IReadOnlyList<int> _appSuccessExitCodes = new ReadOnlyCollection<int>([0]);
+        private readonly IReadOnlyList<int> _appRebootExitCodes = new ReadOnlyCollection<int>([1641, 3010]);
+        private readonly Version? _appScriptVersion;
+        private readonly DateTime? _appScriptDate;
+        private readonly string? _appScriptAuthor;
+        private readonly string _installName;
+        private readonly string _installTitle;
+        private readonly string? _deployAppScriptFriendlyName;
+        private readonly Version? _deployAppScriptVersion;
+        private readonly IReadOnlyDictionary<string, object>? _deployAppScriptParameters;
+        private readonly string _currentDate;
+        private readonly string _currentTime;
+        private readonly IReadOnlyList<string>? _scriptDirectory;
+        private readonly string? _defaultMsiFile;
+        private readonly string? _defaultMstFile;
+        private readonly IReadOnlyList<string> _defaultMspFiles = new ReadOnlyCollection<string>([]);
+        private readonly string _logName;
+        private string _installPhase = "Initialization";
+        private string? _dirFiles;
+        private string? _dirSupportFiles;
 
 
         #endregion
