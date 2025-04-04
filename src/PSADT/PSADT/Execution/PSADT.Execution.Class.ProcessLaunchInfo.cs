@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading;
@@ -41,6 +42,29 @@ namespace PSADT.Execution
             ProcessPriorityClass? priorityClass = null,
             CancellationToken cancellationToken = default)
         {
+            // Ensure NoNewWindow and the WindowStyle are compatible.
+            if (null != windowStyle)
+            {
+                if (windowStyle != ProcessWindowStyle.Hidden)
+                {
+                    if (noNewWindow)
+                    {
+                        throw new ArgumentException("Cannot set WindowStyle to a value other than Hidden when NoNewWindow is true.");
+                    }
+                }
+                else
+                {
+                    NoNewWindow = true;
+                }
+                WindowStyle = WindowStyleMap[windowStyle.Value];
+            }
+            else if (noNewWindow)
+            {
+                WindowStyle = WindowStyleMap[ProcessWindowStyle.Hidden];
+                NoNewWindow = true;
+            }
+
+            // Validate all nullable parameters.
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
                 workingDirectory = workingDirectory!.Trim();
@@ -49,37 +73,28 @@ namespace PSADT.Execution
             {
                 workingDirectory = fileDir;
             }
-
             if ((null != argumentList) && (string.Join(" ", argumentList.Select(x => x.Trim())).Trim() is string args) && !string.IsNullOrWhiteSpace(args))
             {
                 Arguments = args;
             }
-
             if (!string.IsNullOrWhiteSpace(username))
             {
                 Username = username;
             }
-
             if (!string.IsNullOrWhiteSpace(verb))
             {
                 Verb = verb;
             }
-
-            if (null != windowStyle)
-            {
-                WindowStyle = WindowStyleMap[windowStyle.Value];
-            }
-
             if (null != priorityClass)
             {
                 PriorityClass = priorityClass.Value;
             }
 
+            // Set remaining boolean parameters.
             FilePath = filePath;
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseShellExecute = useShellExecute;
-            NoNewWindow = noNewWindow;
             CancellationToken = cancellationToken;
         }
 
@@ -164,7 +179,7 @@ namespace PSADT.Execution
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        public readonly ushort WindowStyle = (ushort)SHOW_WINDOW_CMD.SW_NORMAL;
+        public readonly ushort WindowStyle = WindowStyleMap[ProcessWindowStyle.Normal];
 
         /// <summary>
         /// Gets the priority class of the process.

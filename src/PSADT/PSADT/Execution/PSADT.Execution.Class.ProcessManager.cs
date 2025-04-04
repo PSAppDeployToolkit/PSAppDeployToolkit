@@ -53,14 +53,14 @@ namespace PSADT.Execution
             // Determine whether the process we're starting is a console app or not. This is important
             // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
             bool noWindow = startInfo.NoNewWindow || ((SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE);
-            bool consoleApp;
+            bool guiApp;
             try
             {
-                consoleApp = ExecutableUtilities.GetExecutableInfo(startInfo.FilePath).ExecutableType == ExecutableType.Console;
+                guiApp = ExecutableUtilities.GetExecutableInfo(startInfo.FilePath).ExecutableType == ExecutableType.GUI;
             }
             catch
             {
-                consoleApp = false;
+                guiApp = false;
             }
 
             try
@@ -72,9 +72,14 @@ namespace PSADT.Execution
 
                 // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
                 // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-                if ((consoleApp && noWindow) || !startInfo.UseShellExecute || (null != startInfo.Username))
+                if ((!guiApp && noWindow) || !startInfo.UseShellExecute || (null != startInfo.Username))
                 {
-                    var startupInfo = new STARTUPINFOW { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
+                    var startupInfo = new STARTUPINFOW
+                    {
+                        cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
+                        dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW,
+                        wShowWindow = startInfo.WindowStyle,
+                    };
                     try
                     {
                         // The process is created suspended so it can be assigned to the job object.
@@ -84,27 +89,21 @@ namespace PSADT.Execution
                             PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
                         // We must create a console window for console apps when the window is shown.
-                        if (!noWindow)
+                        if (!guiApp)
                         {
-                            startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                            startupInfo.wShowWindow = startInfo.WindowStyle;
-                            if (consoleApp)
+                            if (noWindow)
                             {
-                                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
+                                startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                             }
                             else
                             {
-                                creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
                             }
                         }
                         else
                         {
-                            startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
-                            creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
-                            if (!consoleApp)
-                            {
-                                creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
-                            }
+                            creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
                         }
 
                         // If we're to read the output, we create pipes for stdout and stderr.
