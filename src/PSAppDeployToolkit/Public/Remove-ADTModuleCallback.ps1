@@ -61,7 +61,7 @@ function Remove-ADTModuleCallback
     # Send it off to the backend function.
     try
     {
-        Invoke-ADTCallbackOperation -Action Remove @PSBoundParameters
+        Invoke-ADTModuleCallbackOperation -Action Remove @PSBoundParameters
     }
     catch
     {

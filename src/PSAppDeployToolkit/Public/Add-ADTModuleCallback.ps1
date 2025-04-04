@@ -61,7 +61,7 @@ function Add-ADTModuleCallback
     # Send it off to the backend function.
     try
     {
-        Invoke-ADTCallbackOperation -Action Add @PSBoundParameters
+        Invoke-ADTModuleCallbackOperation -Action Add @PSBoundParameters
     }
     catch
     {
