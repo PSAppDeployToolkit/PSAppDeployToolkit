@@ -12,7 +12,8 @@ Initializes the ADT module by setting up necessary configurations and environmen
 ## SYNTAX
 
 ```powershell
-Initialize-ADTModule [[-ScriptDirectory] <String[]>] [<CommonParameters>]
+Initialize-ADTModule [[-ScriptDirectory] <String[]>] [[-AdditionalEnvironmentVariables] <IDictionary>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -44,6 +45,22 @@ Aliases:
 
 Required: False
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AdditionalEnvironmentVariables
+
+A dictionary of key/value pairs to inject into the generated environment table.
+
+```yaml
+Type: IDictionary
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
