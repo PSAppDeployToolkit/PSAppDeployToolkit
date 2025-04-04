@@ -1,20 +1,23 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Remove-ADTSessionClosingCallback
+# MARK: Remove-ADTModuleCallback
 #
 #-----------------------------------------------------------------------------
 
-function Remove-ADTSessionClosingCallback
+function Remove-ADTModuleCallback
 {
     <#
     .SYNOPSIS
-        Removes a callback function from the ADT session closing event.
+        Removes a callback function from the nominated hooking point.
 
     .DESCRIPTION
-        This function removes a specified callback function from the ADT session closing event. The callback function must be provided as a parameter. If the operation fails, it throws a terminating error.
+        This function removes a specified callback function from the nominated hooking point.
+
+    .PARAMETER Hookpoint
+        Where you wish for the callback to be removed from.
 
     .PARAMETER Callback
-        The callback function to remove from the ADT session closing event.
+        The callback function to remove from the nominated hooking point.
 
     .INPUTS
         None
@@ -27,9 +30,9 @@ function Remove-ADTSessionClosingCallback
         This function does not generate any output.
 
     .EXAMPLE
-        Remove-ADTSessionClosingCallback -Callback (Get-Command -Name 'MyCallbackFunction')
+        Remove-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command -Name 'MyCallbackFunction')
 
-        Removes the specified callback function from the ADT session closing event.
+        Removes the specified callback function from being invoked after a DeploymentSession has opened.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -40,12 +43,16 @@ function Remove-ADTSessionClosingCallback
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTSessionClosingCallback
+        https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTModuleCallback
     #>
 
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Module.CallbackType]$Hookpoint,
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.CommandInfo[]]$Callback
@@ -54,7 +61,7 @@ function Remove-ADTSessionClosingCallback
     # Send it off to the backend function.
     try
     {
-        Invoke-ADTSessionCallbackOperation -Type Closing -Action Remove @PSBoundParameters
+        Invoke-ADTCallbackOperation -Action Remove @PSBoundParameters
     }
     catch
     {

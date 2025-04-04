@@ -1,41 +1,56 @@
 ---
-id: Remove-ADTSessionStartingCallback
-title: Remove-ADTSessionStartingCallback
+id: Remove-ADTModuleCallback
+title: Remove-ADTModuleCallback
 hide_title: false
 hide_table_of_contents: false
 ---
 
 ## SYNOPSIS
 
-Removes a callback function from the ADT session starting event.
+Removes a callback function from the nominated hooking point.
 
 ## SYNTAX
 
 ```powershell
-Remove-ADTSessionStartingCallback [-Callback] <CommandInfo[]> [<CommonParameters>]
+Remove-ADTModuleCallback [-Hookpoint] <CallbackType> [-Callback] <CommandInfo[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-This function removes a specified callback function from the ADT session starting event.
-The callback function must be provided as a parameter.
-If the operation fails, it throws a terminating error.
+This function removes a specified callback function from the nominated hooking point.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Remove-ADTSessionStartingCallback -Callback (Get-Command -Name 'MyCallbackFunction')
+Remove-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command -Name 'MyCallbackFunction')
 ```
 
-Removes the specified callback function from the ADT session starting event.
+Removes the specified callback function from being invoked after a DeploymentSession has opened.
 
 ## PARAMETERS
 
+### -Hookpoint
+
+Where you wish for the callback to be removed from.
+
+```yaml
+Type: CallbackType
+Parameter Sets: (All)
+Aliases:
+Accepted values: OnInit, OnStart, PreOpen, PostOpen, PreClose, PostClose, OnFinish, OnExit
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Callback
 
-The callback function to remove from the ADT session starting event.
+The callback function to remove from the nominated hooking point.
 
 ```yaml
 Type: CommandInfo[]
@@ -43,7 +58,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -73,4 +88,4 @@ License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTSessionStartingCallback](https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTSessionStartingCallback)
+[https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTModuleCallback](https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTModuleCallback)

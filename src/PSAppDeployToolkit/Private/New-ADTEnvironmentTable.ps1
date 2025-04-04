@@ -8,6 +8,7 @@ function New-ADTEnvironmentTable
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
     [CmdletBinding()]
+    [OutputType([System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]])]
     param
     (
         [Parameter(Mandatory = $false)]

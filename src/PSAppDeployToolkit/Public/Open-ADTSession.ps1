@@ -399,16 +399,29 @@ function Open-ADTSession
             try
             {
                 # Initialize the module before opening the first session.
-                if ($firstSession -and !$Script:ADT.Initialized)
+                if ($firstSession)
                 {
-                    Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
+                    if (!$Script:ADT.Initialized)
+                    {
+                        Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
+                    }
+                    foreach ($callback in $($Script:ADT.Callbacks.OnStart))
+                    {
+                        & $callback
+                    }
+                }
+
+                # Invoke pre-open callbacks.
+                foreach ($callback in $($Script:ADT.Callbacks.PreOpen))
+                {
+                    & $callback
                 }
 
                 # Instantiate the new session. The constructor will handle adding the session to the module's list.
                 $Script:ADT.Sessions.Add(($adtSession = $SessionClass::new($PSBoundParameters, $noExitOnClose, $(if ($compatibilityMode) { $SessionState }))))
 
-                # Invoke all callbacks.
-                foreach ($callback in $(if ($firstSession) { $Script:ADT.Callbacks.Starting }; $Script:ADT.Callbacks.Opening))
+                # Invoke post-open callbacks.
+                foreach ($callback in $($Script:ADT.Callbacks.PostOpen))
                 {
                     & $callback
                 }

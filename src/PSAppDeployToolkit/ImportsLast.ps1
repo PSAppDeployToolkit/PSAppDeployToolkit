@@ -23,10 +23,14 @@ try
     # Define object for holding all PSADT variables.
     New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
             Callbacks = [pscustomobject]@{
-                Starting = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                Opening = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                Closing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                Finishing = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                OnInit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                OnStart = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                PreOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                PostOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                PreClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                PostClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                OnFinish = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                OnExit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
             }
             Directories = [pscustomobject]@{
                 Defaults = ([ordered]@{

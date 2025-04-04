@@ -139,7 +139,7 @@ function Block-ADTAppExecution
                 }
 
                 # Add callback to remove all blocked app executions during the shutdown of the final session.
-                Add-ADTSessionFinishingCallback -Callback $Script:CommandTable.'Unblock-ADTAppExecution'
+                Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Unblock-ADTAppExecution'
             }
             catch
             {

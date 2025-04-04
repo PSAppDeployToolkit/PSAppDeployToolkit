@@ -201,7 +201,7 @@ function Show-ADTInstallationProgress
                 # Add a callback to close it if we've opened for the first time.
                 if (!(Test-ADTInstallationProgressRunning).Equals($progressOpen))
                 {
-                    Add-ADTSessionFinishingCallback -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
+                    Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
                 }
             }
             catch

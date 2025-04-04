@@ -1,41 +1,56 @@
 ---
-id: Remove-ADTSessionClosingCallback
-title: Remove-ADTSessionClosingCallback
+id: Add-ADTModuleCallback
+title: Add-ADTModuleCallback
 hide_title: false
 hide_table_of_contents: false
 ---
 
 ## SYNOPSIS
 
-Removes a callback function from the ADT session closing event.
+Adds a callback function to the nominated hooking point.
 
 ## SYNTAX
 
 ```powershell
-Remove-ADTSessionClosingCallback [-Callback] <CommandInfo[]> [<CommonParameters>]
+Add-ADTModuleCallback [-Hookpoint] <CallbackType> [-Callback] <CommandInfo[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-This function removes a specified callback function from the ADT session closing event.
-The callback function must be provided as a parameter.
-If the operation fails, it throws a terminating error.
+This function adds a specified callback function to the nominated hooking point.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Remove-ADTSessionClosingCallback -Callback (Get-Command -Name 'MyCallbackFunction')
+Add-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command -Name 'MyCallbackFunction')
 ```
 
-Removes the specified callback function from the ADT session closing event.
+Adds the specified callback function to be invoked after a DeploymentSession has opened.
 
 ## PARAMETERS
 
+### -Hookpoint
+
+Where you wish for the callback to be executed at.
+
+```yaml
+Type: CallbackType
+Parameter Sets: (All)
+Aliases:
+Accepted values: OnInit, OnStart, PreOpen, PostOpen, PreClose, PostClose, OnFinish, OnExit
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Callback
 
-The callback function to remove from the ADT session closing event.
+The callback function to add to the nominated hooking point.
 
 ```yaml
 Type: CommandInfo[]
@@ -43,7 +58,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -73,4 +88,4 @@ License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTSessionClosingCallback](https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTSessionClosingCallback)
+[https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTModuleCallback](https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTModuleCallback)

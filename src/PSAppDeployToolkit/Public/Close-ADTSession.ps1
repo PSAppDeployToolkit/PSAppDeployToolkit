@@ -91,24 +91,44 @@ function Close-ADTSession
         }
 
         # Invoke all callbacks and capture all errors.
-        $callbackErrors = foreach ($callback in $($Script:ADT.Callbacks.Closing; if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Callbacks.Finishing }))
-        {
-            try
+        $callbackErrors = $(
+            foreach ($callback in $($Script:ADT.Callbacks.PreClose))
             {
                 try
                 {
-                    & $callback
+                    try
+                    {
+                        & $callback
+                    }
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
+                    }
                 }
                 catch
                 {
-                    Write-Error -ErrorRecord $_
+                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking pre-close callback [$($callback.Name)]."
                 }
             }
-            catch
+            foreach ($callback in $(if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Callbacks.OnFinish }))
             {
-                $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking callback [$($callback.Name)]."
+                try
+                {
+                    try
+                    {
+                        & $callback
+                    }
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
+                    }
+                }
+                catch
+                {
+                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking on-finish callback [$($callback.Name)]."
+                }
             }
-        }
+        )
 
         # Close out the active session and clean up session state.
         try
@@ -129,6 +149,25 @@ function Close-ADTSession
         }
         finally
         {
+            # Invoke close callbacks before we remove the session, the callback owner may still need it.
+            foreach ($callback in $($Script:ADT.Callbacks.PostClose))
+            {
+                try
+                {
+                    try
+                    {
+                        & $callback
+                    }
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
+                    }
+                }
+                catch
+                {
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking post-close callback [$($callback.Name)]."
+                }
+            }
             $null = $Script:ADT.Sessions.Remove($adtSession)
         }
 

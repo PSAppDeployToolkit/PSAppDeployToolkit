@@ -1,18 +1,18 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Invoke-ADTSessionCallbackOperation
+# MARK: Invoke-ADTCallbackOperation
 #
 #-----------------------------------------------------------------------------
 
-function Invoke-ADTSessionCallbackOperation
+function Invoke-ADTCallbackOperation
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Action', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('Starting', 'Opening', 'Closing', 'Finishing')]
-        [System.String]$Type,
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Module.CallbackType]$Hookpoint,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Add', 'Remove')]
@@ -24,6 +24,6 @@ function Invoke-ADTSessionCallbackOperation
     )
 
     # Cache the global callbacks and perform any required action.
-    $callbacks = $Script:ADT.Callbacks.$Type
+    $callbacks = $Script:ADT.Callbacks.$Hookpoint
     $null = $Callback | & { process { if ($Action.Equals('Remove') -or !$callbacks.Contains($_)) { $callbacks.$Action($_) } } }
 }

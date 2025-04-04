@@ -1,20 +1,23 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Add-ADTSessionFinishingCallback
+# MARK: Add-ADTModuleCallback
 #
 #-----------------------------------------------------------------------------
 
-function Add-ADTSessionFinishingCallback
+function Add-ADTModuleCallback
 {
     <#
     .SYNOPSIS
-        Adds a callback to be executed when the ADT session is finishing.
+        Adds a callback function to the nominated hooking point.
 
     .DESCRIPTION
-        The Add-ADTSessionFinishingCallback function registers a callback command to be executed when the ADT session is finishing. This function sends the callback to the backend function for processing.
+        This function adds a specified callback function to the nominated hooking point.
+
+    .PARAMETER Hookpoint
+        Where you wish for the callback to be executed at.
 
     .PARAMETER Callback
-        The callback command(s) to be executed when the ADT session is finishing.
+        The callback function to add to the nominated hooking point.
 
     .INPUTS
         None
@@ -24,15 +27,15 @@ function Add-ADTSessionFinishingCallback
     .OUTPUTS
         None
 
-        This function does not return any output.
+        This function does not generate any output.
 
     .EXAMPLE
-        Add-ADTSessionFinishingCallback -Callback $myCallback
+        Add-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command -Name 'MyCallbackFunction')
 
-        This example adds the specified callback to be executed when the ADT session is finishing.
+        Adds the specified callback function to be invoked after a DeploymentSession has opened.
 
     .NOTES
-        An active ADT session is required to use this function.
+        An active ADT session is NOT required to use this function.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
@@ -40,12 +43,16 @@ function Add-ADTSessionFinishingCallback
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTSessionFinishingCallback
+        https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTModuleCallback
     #>
 
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Module.CallbackType]$Hookpoint,
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.CommandInfo[]]$Callback
@@ -54,7 +61,7 @@ function Add-ADTSessionFinishingCallback
     # Send it off to the backend function.
     try
     {
-        Invoke-ADTSessionCallbackOperation -Type Finishing -Action Add @PSBoundParameters
+        Invoke-ADTCallbackOperation -Action Add @PSBoundParameters
     }
     catch
     {

@@ -16,6 +16,9 @@ function Initialize-ADTModule
     .PARAMETER ScriptDirectory
         An override directory to use for config and string loading.
 
+    .PARAMETER AdditionalEnvironmentVariables
+        A dictionary of key/value pairs to inject into the generated environment table.
+
     .INPUTS
         None
 
@@ -122,6 +125,12 @@ function Initialize-ADTModule
 
                 # De-init the classic dialog assets.
                 $Script:Dialogs.Classic.BannerHeight = $null
+
+                # Invoke all callbacks.
+                foreach ($callback in $($Script:ADT.Callbacks.OnInit))
+                {
+                    & $callback
+                }
 
                 # Initialize the module's global state.
                 $Script:ADT.Environment = New-ADTEnvironmentTable @PSBoundParameters

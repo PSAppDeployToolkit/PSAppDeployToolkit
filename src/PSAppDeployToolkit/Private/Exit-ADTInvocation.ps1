@@ -36,6 +36,20 @@ function Exit-ADTInvocation
     # Flag the module as uninitialized upon last session closure.
     $Script:ADT.Initialized = $false
 
+    # Invoke on-exit callbacks.
+    try
+    {
+        foreach ($callback in $($Script:ADT.Callbacks.OnExit))
+        {
+            & $callback
+        }
+    }
+    catch
+    {
+        # Do not under any circumstance let a bad callback de-stabilise our exit procedure.
+        $Host.UI.WriteErrorLine((Out-String -InputObject $_ -Width ([System.Int32]::MaxValue)))
+    }
+
     # If a callback failed and we're in a proper console, forcibly exit the process.
     # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
     if ($Force -or ($Host.Name.Equals('ConsoleHost') -and $progressOpen))
