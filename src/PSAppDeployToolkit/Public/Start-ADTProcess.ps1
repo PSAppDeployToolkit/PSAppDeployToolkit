@@ -466,6 +466,10 @@ function Start-ADTProcess
                 {
                     Write-ADTLogEntry -Message 'UseShellExecute is set to true, standard output and error will not be available.'
                 }
+                elseif (!$CreateNoWindow -or ![System.Diagnostics.ProcessWindowStyle]::Hidden.Equals($WindowStyle))
+                {
+                    Write-ADTLogEntry -Message 'CreateNoWindow not specified or WindowStyle not Hidden, standard output and error will not be available.'
+                }
                 if ($startInfo.WorkingDirectory)
                 {
                     Write-ADTLogEntry -Message "Working Directory is [$WorkingDirectory]."
