@@ -209,9 +209,17 @@ namespace PSADT.Execution
                         {
                             Kernel32.CreateProcess(null, startInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, IntPtr.Zero, startInfo.WorkingDirectory, startupInfo, out pi);
                         }
-                        Kernel32.AssignProcessToJobObject(job, (hProcess = pi.hProcess));
-                        Kernel32.ResumeThread(pi.hThread);
-                        Kernel32.CloseHandle(ref pi.hThread);
+
+                        // Start tracking the process and allow it to resume execution.
+                        try
+                        {
+                            Kernel32.AssignProcessToJobObject(job, (hProcess = pi.hProcess));
+                            Kernel32.ResumeThread(pi.hThread);
+                        }
+                        finally
+                        {
+                            Kernel32.CloseHandle(ref pi.hThread);
+                        }
                     }
                     finally
                     {
