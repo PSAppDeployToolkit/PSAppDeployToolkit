@@ -51,6 +51,7 @@ namespace PSADT.Module
                 var adtConfig = ModuleDatabase.GetConfig();
                 var moduleSessionState = ModuleDatabase.GetSessionState();
                 object? paramValue = null;
+                bool writtenDivider = false;
 
                 // Extrapolate the Toolkit options from the config hashtable.
                 var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
@@ -204,7 +205,7 @@ namespace PSADT.Module
                     if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
                     {
                         // Mount the WIM file and reset DirFiles to the mount point.
-                        WriteZeroConfigDivider(); Settings |= DeploymentSettings.ZeroConfigInitiated;
+                        WriteInitialDivider(ref writtenDivider); Settings |= DeploymentSettings.ZeroConfigInitiated;
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                         string mountPath = Path.Combine(_dirFiles, Path.GetRandomFileName());
                         ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
@@ -270,7 +271,7 @@ namespace PSADT.Module
                     // If we have a default MSI file, proceed further with the Zero-Config configuration.
                     if (!string.IsNullOrWhiteSpace(_defaultMsiFile))
                     {
-                        WriteZeroConfigDivider(); Settings |= DeploymentSettings.ZeroConfigInitiated;
+                        WriteInitialDivider(ref writtenDivider); Settings |= DeploymentSettings.ZeroConfigInitiated;
                         WriteLogEntry($"Discovered Zero-Config MSI installation file [{_defaultMsiFile}].");
 
                         // Discover if there is a zero-config MST file.
@@ -503,7 +504,7 @@ namespace PSADT.Module
                 }
 
                 // Open log file with commencement message.
-                WriteLogDivider(2);
+                WriteInitialDivider(ref writtenDivider);
                 WriteLogEntry($"[{_installName}] {_deploymentType.ToString().ToLower()} started.");
 
 
@@ -580,7 +581,6 @@ namespace PSADT.Module
 
 
                 // Log details for all currently logged on users.
-                WriteLogDivider();
                 var loggedOnUsers = (string)ModuleDatabase.InvokeScript(ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), adtEnv["LoggedOnUserSessions"]!).First().BaseObject;
                 WriteLogEntry($"Display session information for all logged on users:{(!string.IsNullOrWhiteSpace(loggedOnUsers) ? $"\n{loggedOnUsers}" : $" There are currently no logged on users.")}", false);
 
@@ -1075,33 +1075,23 @@ namespace PSADT.Module
         }
 
         /// <summary>
-        /// Writes a log divider with a specified count.
-        /// </summary>
-        /// <param name="count">The number of dividers to write.</param>
-        private void WriteLogDivider(uint count)
-        {
-            string[] dividers = new string[count]; for (uint i = 0; i < count; i++) { dividers[i] = new string('*', 79); }
-            WriteLogEntry(dividers);
-        }
-
-        /// <summary>
         /// Writes a log divider.
         /// </summary>
         private void WriteLogDivider()
         {
-            WriteLogDivider(1);
+            WriteLogEntry(LoggingUtilities.LogDivider);
         }
 
         /// <summary>
-        /// Writes a log divider prior to a Zero-Config setup.
+        /// Writes a divider if one hasn't been written already.
         /// </summary>
-        private void WriteZeroConfigDivider()
+        private void WriteInitialDivider(ref bool write)
         {
-            // Print an extra divider when we process a Zero-Config setup before the main logging starts.
-            if (!Settings.HasFlag(DeploymentSettings.ZeroConfigInitiated))
+            if (!write)
             {
-                WriteLogDivider(2);
+                WriteLogDivider();
             }
+            write = true;
         }
 
         /// <summary>
