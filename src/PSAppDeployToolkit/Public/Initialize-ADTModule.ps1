@@ -96,7 +96,7 @@ function Initialize-ADTModule
             try
             {
                 # Specify the base directory used when searching for config and string tables.
-                $Script:ADT.Directories.Script = if ($PSBoundParameters.ContainsKey('ScriptDirectory'))
+                $Script:ADT.Directories.Script = if ($null -ne $ScriptDirectory)
                 {
                     $ScriptDirectory
                 }
