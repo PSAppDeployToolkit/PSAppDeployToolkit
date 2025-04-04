@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -46,7 +47,7 @@ namespace PSADT.Module
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        internal static IReadOnlyDictionary<string, object> GetEnvironment()
+        public static IReadOnlyDictionary<string, object> GetEnvironment()
         {
             return (IReadOnlyDictionary<string, object>?)_database?.Properties["Environment"].Value ?? throw new InvalidOperationException(errorMessage);
         }
@@ -56,7 +57,7 @@ namespace PSADT.Module
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        internal static Hashtable GetConfig()
+        public static Hashtable GetConfig()
         {
             return (Hashtable?)((PSObject?)_database?.Properties["Config"].Value)?.BaseObject ?? throw new InvalidOperationException(errorMessage);
         }
@@ -66,19 +67,24 @@ namespace PSADT.Module
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        internal static Hashtable GetStrings()
+        public static Hashtable GetStrings()
         {
             return (Hashtable?)((PSObject?)_database?.Properties["Strings"].Value)?.BaseObject ?? throw new InvalidOperationException(errorMessage);
         }
 
         /// <summary>
-        /// Gets the active sessions from the internal database.
+        /// Gets the active deployment session from the internal database.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        internal static List<DeploymentSession> GetSessionList()
+        public static DeploymentSession GetDeploymentSession()
         {
-            return (List<DeploymentSession>?)_database?.Properties["Sessions"].Value ?? throw new InvalidOperationException(errorMessage);
+            var sessionList = (List<DeploymentSession>?)_database?.Properties["Sessions"].Value ?? throw new InvalidOperationException(errorMessage);
+            if (sessionList.Count == 0)
+            {
+                throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.");
+            }
+            return sessionList.Last();
         }
 
         /// <summary>
