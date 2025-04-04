@@ -18,7 +18,7 @@ namespace PSADT.Module
         /// <param name="debugMessage">Indicates whether the log entry is a debug message.</param>
         /// <param name="callerFileName">The log entry's caller file name.</param>
         /// <param name="callerSource">The log entry's caller source.</param>
-        public LogEntry(DateTime timeStamp, string message, LogSeverities severity, string source, string scriptSection, bool debugMessage, string callerFileName, string callerSource, string? consoleOutput, string? diskOutput)
+        public LogEntry(DateTime timeStamp, string message, LogSeverity severity, string source, string scriptSection, bool debugMessage, string callerFileName, string callerSource, string? consoleOutput, string? diskOutput)
         {
             Timestamp = timeStamp;
             Message = message;
@@ -45,7 +45,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the log entry's severity.
         /// </summary>
-        public readonly LogSeverities Severity;
+        public readonly LogSeverity Severity;
 
         /// <summary>
         /// Gets the log entry's source.

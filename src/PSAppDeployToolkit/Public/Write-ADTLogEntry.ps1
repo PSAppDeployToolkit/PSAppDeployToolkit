@@ -83,7 +83,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[PSADT.Module.LogSeverities]]$Severity,
+        [System.Nullable[PSADT.Module.LogSeverity]]$Severity,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

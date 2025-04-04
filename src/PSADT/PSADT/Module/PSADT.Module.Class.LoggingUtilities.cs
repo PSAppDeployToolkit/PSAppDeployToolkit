@@ -27,7 +27,7 @@ namespace PSADT.Module
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
-        public static ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, LogSeverities? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
+        public static ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
         {
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
@@ -64,7 +64,7 @@ namespace PSADT.Module
             // Set up default values if not specified.
             if (null == severity)
             {
-                severity = LogSeverities.Info;
+                severity = LogSeverity.Info;
             }
             if (string.IsNullOrWhiteSpace(source))
             {
@@ -138,12 +138,12 @@ namespace PSADT.Module
                 if (hostLogStream.Equals(HostLogStream.Console) || noRunspace)
                 {
                     // Writing straight to the console.
-                    if (severity != LogSeverities.Info)
+                    if (severity != LogSeverity.Info)
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
                         Console.BackgroundColor = sevCols["BackgroundColor"];
                     }
-                    if (severity == LogSeverities.Error)
+                    if (severity == LogSeverity.Error)
                     {
                         Console.Error.WriteLine(string.Join(Environment.NewLine, conOutput));
                     }

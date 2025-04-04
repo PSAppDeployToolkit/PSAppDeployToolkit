@@ -460,7 +460,7 @@ namespace PSADT.Module
                         // Log message about archiving the log file.
                         if (logFileSizeExceeded)
                         {
-                            WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", LogSeverities.Warning);
+                            WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", LogSeverity.Warning);
                         }
 
                         // Rename the file.
@@ -469,7 +469,7 @@ namespace PSADT.Module
                         // Start new log file and log message about archiving the old log file.
                         if (logFileSizeExceeded)
                         {
-                            WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", LogSeverities.Warning);
+                            WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", LogSeverity.Warning);
                         }
 
                         // Get all log files sorted by last write time.
@@ -487,7 +487,7 @@ namespace PSADT.Module
                     }
                     catch (Exception ex)
                     {
-                        WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", LogSeverities.Error);
+                        WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", LogSeverity.Error);
                     }
                 }
 
@@ -548,8 +548,8 @@ namespace PSADT.Module
                 // Announce session instantiation mode.
                 if (null != callerSessionState)
                 {
-                    WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverities.Warning);
-                    WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", LogSeverities.Warning);
+                    WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverity.Warning);
+                    WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", LogSeverity.Warning);
                 }
                 else
                 {
@@ -634,12 +634,12 @@ namespace PSADT.Module
                                             }
                                             else
                                             {
-                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDone.Value}].", LogSeverities.Warning);
+                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDone.Value}].", LogSeverity.Warning);
                                             }
                                         }
                                         else
                                         {
-                                            WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", LogSeverities.Warning);
+                                            WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", LogSeverity.Warning);
                                         }
                                     }
                                     else
@@ -825,7 +825,7 @@ namespace PSADT.Module
             }
             catch (Exception ex)
             {
-                WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", LogSeverities.Error);
+                WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", LogSeverity.Error);
                 SetExitCode(60008);
                 Close();
                 System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex).Throw();
@@ -870,10 +870,10 @@ namespace PSADT.Module
                 {
                     case DeploymentStatus.FastRetry:
                         // Just advise of the exit code with the appropriate severity.
-                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverities.Warning);
+                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverity.Warning);
                         break;
                     case DeploymentStatus.Error:
-                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverities.Error);
+                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverity.Error);
                         break;
                     default:
                         // Clean up app deferral history.
@@ -947,7 +947,7 @@ namespace PSADT.Module
                     }
                     catch (Exception ex)
                     {
-                        WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex.Message}", LogSeverities.Error);
+                        WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex.Message}", LogSeverity.Error);
                     }
                 }
 
@@ -994,7 +994,7 @@ namespace PSADT.Module
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
         /// <param name="hostLogStream">What stream to write the message to.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, bool debugMessage, LogSeverities? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
         {
             if (null == hostLogStream)
             {
@@ -1038,7 +1038,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, LogSeverities severity)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, LogSeverity severity)
         {
             return WriteLogEntry([message], false, severity, null, null, null, null, null, null);
         }
@@ -1059,7 +1059,7 @@ namespace PSADT.Module
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the message.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, LogSeverities severity, string source)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, LogSeverity severity, string source)
         {
             return WriteLogEntry([message], false, severity, source, null, null, null, null, null);
         }
