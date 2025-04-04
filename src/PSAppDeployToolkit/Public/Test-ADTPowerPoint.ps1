@@ -90,12 +90,12 @@ function Test-ADTPowerPoint
                 Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = [PSADT.GUI.UiAutomation]::GetUserNotificationState()))]."
                 switch ($UserNotificationState)
                 {
-                    QUNS_PRESENTATION_MODE
+                    ([PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE]::QUNS_PRESENTATION_MODE)
                     {
                         Write-ADTLogEntry -Message 'Detected that system is in [Presentation Mode].'
                         return ($presenting = $true)
                     }
-                    QUNS_BUSY
+                    ([PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE]::QUNS_BUSY)
                     {
                         if ($PowerPointProcessIDs -contains [PSADT.GUI.UiAutomation]::GetWindowThreadProcessId([PSADT.LibraryInterfaces.User32]::GetForegroundWindow()))
                         {

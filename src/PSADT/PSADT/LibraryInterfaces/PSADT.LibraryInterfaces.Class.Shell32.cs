@@ -127,7 +127,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="pquns"></param>
         /// <returns></returns>
-        internal static unsafe HRESULT SHQueryUserNotificationState(out QUERY_USER_NOTIFICATION_STATE pquns)
+        internal static unsafe HRESULT SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE pquns)
         {
             return PInvoke.SHQueryUserNotificationState(out pquns).ThrowOnFailure();
         }

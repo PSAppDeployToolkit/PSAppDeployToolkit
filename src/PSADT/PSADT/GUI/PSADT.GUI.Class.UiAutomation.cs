@@ -135,10 +135,10 @@ namespace PSADT.GUI
         /// Gets the user notification state.
         /// </summary>
         /// <returns>The user notification state.</returns>
-        public static string GetUserNotificationState()
+        public static LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
-            Shell32.SHQueryUserNotificationState(out QUERY_USER_NOTIFICATION_STATE state);
-            return state.ToString();
+            Shell32.SHQueryUserNotificationState(out Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE state);
+            return (LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE)state;
         }
 
         /// <summary>
