@@ -82,8 +82,8 @@ function Write-ADTLogEntry
         [System.String[]]$Message,
 
         [Parameter(Mandatory = $false)]
-        [ValidateRange(0, 3)]
-        [System.Nullable[System.UInt32]]$Severity,
+        [ValidateNotNullOrEmpty()]
+        [System.Nullable[PSADT.Module.LogSeverities]]$Severity,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -150,7 +150,7 @@ function Write-ADTLogEntry
         }
 
         # If we don't have an active session, write the message to the verbose stream (4).
-        if (Test-ADTSessionActive)
+        $logEntries = if (Test-ADTSessionActive)
         {
             (Get-ADTSession).WriteLogEntry(
                 $messages,
@@ -184,9 +184,9 @@ function Write-ADTLogEntry
         }
 
         # Return the provided message if PassThru is true.
-        if ($PassThru)
+        if ($PassThru -and $logEntries)
         {
-            return $messages
+            return $logEntries
         }
     }
 }

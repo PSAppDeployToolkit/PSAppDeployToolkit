@@ -459,7 +459,7 @@ namespace PSADT.Module
                         // Log message about archiving the log file.
                         if (logFileSizeExceeded)
                         {
-                            WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", 2);
+                            WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", LogSeverities.Warning);
                         }
 
                         // Rename the file.
@@ -468,7 +468,7 @@ namespace PSADT.Module
                         // Start new log file and log message about archiving the old log file.
                         if (logFileSizeExceeded)
                         {
-                            WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", 2);
+                            WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", LogSeverities.Warning);
                         }
 
                         // Get all log files sorted by last write time.
@@ -486,7 +486,19 @@ namespace PSADT.Module
                     }
                     catch (Exception ex)
                     {
-                        WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", 3);
+                        WriteLogEntry($"Failed to rotate the log file [{logFile}]: {ex.Message}", LogSeverities.Error);
+                    }
+                }
+
+                // Flush our log buffer out to disk.
+                if (!DisableLogging && LogBuffer.Count > 0)
+                {
+                    using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(LogPath, LogName), true, LoggingUtilities.LogEncoding))
+                    {
+                        foreach (LogEntry logEntry in LogBuffer)
+                        {
+                            logFileWriter.WriteLine(logEntry.DiskOutput);
+                        }
                     }
                 }
 
@@ -535,8 +547,8 @@ namespace PSADT.Module
                 // Announce session instantiation mode.
                 if (null != callerSessionState)
                 {
-                    WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", 2);
-                    WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", 2);
+                    WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverities.Warning);
+                    WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", LogSeverities.Warning);
                 }
                 else
                 {
@@ -622,12 +634,12 @@ namespace PSADT.Module
                                             }
                                             else
                                             {
-                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDone.Value}].", 2);
+                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDone.Value}].", LogSeverities.Warning);
                                             }
                                         }
                                         else
                                         {
-                                            WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", 2);
+                                            WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", LogSeverities.Warning);
                                         }
                                     }
                                     else
@@ -813,7 +825,7 @@ namespace PSADT.Module
             }
             catch (Exception ex)
             {
-                WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", 3);
+                WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", LogSeverities.Error);
                 SetExitCode(60008);
                 Close();
                 System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex).Throw();
@@ -858,10 +870,10 @@ namespace PSADT.Module
                 {
                     case DeploymentStatus.FastRetry:
                         // Just advise of the exit code with the appropriate severity.
-                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 2);
+                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverities.Warning);
                         break;
                     case DeploymentStatus.Error:
-                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 3);
+                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverities.Error);
                         break;
                     default:
                         // Clean up app deferral history.
@@ -935,7 +947,7 @@ namespace PSADT.Module
                     }
                     catch (Exception ex)
                     {
-                        WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex.Message}", 3);
+                        WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex.Message}", LogSeverities.Error);
                     }
                 }
 
@@ -982,39 +994,43 @@ namespace PSADT.Module
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
         /// <param name="hostLogStream">What stream to write the message to.</param>
-        public void WriteLogEntry(string[] message, bool debugMessage, uint? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, bool debugMessage, LogSeverities? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
         {
             if (null == hostLogStream)
             {
                 var configToolkit = (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!;
                 hostLogStream = GetHostLogStreamMode();
             }
+
+            ReadOnlyCollection<LogEntry> logEntries;
             if (!DisableLogging)
             {
-                LoggingUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, (logFileDirectory ?? LogPath), (logFileName ?? LogName), logType);
+                logEntries = LoggingUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? LogPath, logFileName ?? LogName, logType);
             }
             else
             {
-                LoggingUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, null, null, logType);
+                logEntries = LoggingUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, null, null, logType);
             }
+            LogBuffer.AddRange(logEntries);
+            return logEntries;
         }
 
         /// <summary>
         /// Writes a log entry with a message array.
         /// </summary>
         /// <param name="message">The log message array.</param>
-        public void WriteLogEntry(string[] message)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message)
         {
-            WriteLogEntry(message, false, null, null, null, null, null, null, null);
+            return WriteLogEntry(message, false, null, null, null, null, null, null, null);
         }
 
         /// <summary>
         /// Writes a log entry with a single message.
         /// </summary>
         /// <param name="message">The log message.</param>
-        public void WriteLogEntry(string message)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message)
         {
-            WriteLogEntry([message], false, null, null, null, null, null, null, null);
+            return WriteLogEntry([message], false, null, null, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1022,9 +1038,9 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
-        public void WriteLogEntry(string message, uint severity)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, LogSeverities severity)
         {
-            WriteLogEntry([message], false, severity, null, null, null, null, null, null);
+            return WriteLogEntry([message], false, severity, null, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1032,9 +1048,9 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="source">The source of the message.</param>
-        public void WriteLogEntry(string message, string source)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, string source)
         {
-            WriteLogEntry([message], false, null, source, null, null, null, null, null);
+            return WriteLogEntry([message], false, null, source, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1043,9 +1059,9 @@ namespace PSADT.Module
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the message.</param>
-        public void WriteLogEntry(string message, uint severity, string source)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, LogSeverities severity, string source)
         {
-            WriteLogEntry([message], false, severity, source, null, null, null, null, null);
+            return WriteLogEntry([message], false, severity, source, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1053,9 +1069,9 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="writeHost">Whether to write to the host.</param>
-        public void WriteLogEntry(string message, bool writeHost)
+        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, bool writeHost)
         {
-            WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
+            return WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
         }
 
         /// <summary>
@@ -1332,6 +1348,11 @@ namespace PSADT.Module
         /// Array of all possible drive letters in reverse order.
         /// </summary>
         private static readonly IReadOnlyList<string> DriveLetters = new ReadOnlyCollection<string>(["Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"]);
+
+        /// <summary>
+        /// Buffer for log entries.
+        /// </summary>
+        private static readonly List<LogEntry> LogBuffer = [];
 
         /// <summary>
         /// Bitfield with settings for this deployment.

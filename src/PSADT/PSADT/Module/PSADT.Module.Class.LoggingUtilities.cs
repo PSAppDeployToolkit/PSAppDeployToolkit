@@ -27,7 +27,7 @@ namespace PSADT.Module
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
-        public static void WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, uint? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
+        public static ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, LogSeverities? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
         {
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
@@ -39,7 +39,7 @@ namespace PSADT.Module
             // Perform early return checks before wasting time.
             if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogDebugMessage"]!))
             {
-                return;
+                return new List<LogEntry>().AsReadOnly();
             }
 
             // Variables used to determine the caller's source and filename.
@@ -64,13 +64,13 @@ namespace PSADT.Module
             // Set up default values if not specified.
             if (null == severity)
             {
-                severity = 1;
+                severity = LogSeverities.Info;
             }
             if (string.IsNullOrWhiteSpace(source))
             {
                 source = callerSource;
             }
-            if (canLogToDisk && string.IsNullOrWhiteSpace(logType))
+            if (string.IsNullOrWhiteSpace(logType))
             {
                 logType = (string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
             }
@@ -82,30 +82,52 @@ namespace PSADT.Module
             // Store log string to format with message.
             IReadOnlyDictionary<string, string> logFormats = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()
             {
-                { "Legacy", $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{LogSeverityNames[(int)severity]}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-                { "CMTrace", $"<![LOG[{(null != scriptSection ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString("HH\\:mm\\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
+                { "Legacy", $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
+                { "CMTrace", $"<![LOG[{(null != scriptSection ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString("HH\\:mm\\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
             });
+
+            // Loop through each message and generate necessary log messages.
+            // For CMTrace, we replace all empty lines with a space so OneTrace doesn't trim them.
+            // When splitting the message, we want to trim all lines but not replace genuine
+            // spaces. As such, replace all spaces and empty lines with a punctuation space.
+            // C# identifies this character as whitespace but OneTrace does not so it works.
+            // The empty line feed at the end is required by OneTrace to format correctly.
+            List<LogEntry> logEntries = new List<LogEntry>(message.Length);
+            List<string> dskOutput = new List<string>(message.Length);
+            List<string> conOutput = new List<string>(message.Length);
+            var dskFormat = logFormats[logType!]!;
+            var conFormat = logFormats["Legacy"]!;
+            if (logType == "CMTrace")
+            {
+                foreach (string msg in message)
+                {
+                    var safeMsg = msg.Replace("\0", string.Empty);
+                    var dskLine = string.Format(dskFormat, safeMsg.Contains((char)10) ? (string.Join(Environment.NewLine, safeMsg.Trim().Split((char)10).Select(static m => Regex.Replace(m.Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : safeMsg.Replace("\0", string.Empty));
+                    var conLine = string.Format(conFormat, safeMsg);
+                    logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection!, debugMessage, callerFileName, callerSource, conLine, dskLine));
+                    dskOutput.Add(dskLine);
+                    conOutput.Add(conLine);
+                }
+            }
+            else
+            {
+                foreach (var msg in message)
+                {
+                    var safeMsg = msg.Replace("\0", string.Empty);
+                    var dskLine = string.Format(dskFormat, safeMsg);
+                    var conLine = string.Format(conFormat, safeMsg);
+                    logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection!, debugMessage, callerFileName, callerSource, conLine, dskLine));
+                    dskOutput.Add(dskLine);
+                    conOutput.Add(conLine);
+                }
+            }
 
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
             {
                 using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding))
                 {
-                    string logLine = logFormats[logType!]!;
-                    switch (logType)
-                    {
-                        case "CMTrace":
-                            // Replace all empty lines with a space so OneTrace doesn't trim them.
-                            // When splitting the message, we want to trim all lines but not replace genuine
-                            // spaces. As such, replace all spaces and empty lines with a punctuation space.
-                            // C# identifies this character as whitespace but OneTrace does not so it works.
-                            // The empty line feed at the end is required by OneTrace to format correctly.
-                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Contains((char)10) ? (string.Join(Environment.NewLine, msg.Trim().Split((char)10).Select(static m => Regex.Replace(m.Replace("\0", string.Empty).Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : msg.Replace("\0", string.Empty)))));
-                            break;
-                        case "Legacy":
-                            logFileWriter.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
-                            break;
-                    }
+                    logFileWriter.WriteLine(string.Join(Environment.NewLine, dskOutput));
                 }
             }
 
@@ -115,33 +137,29 @@ namespace PSADT.Module
                 var sevCols = LogSeverityColors[(int)severity];
                 if (hostLogStream.Equals(HostLogStream.Console) || noRunspace)
                 {
-                    // Colour the console if we're not informational.
-                    if (severity != 1)
+                    // Writing straight to the console.
+                    if (severity != LogSeverities.Info)
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
                         Console.BackgroundColor = sevCols["BackgroundColor"];
                     }
-
-                    // Write errors to stderr, otherwise send everything else to stdout.
-                    string logLine = logFormats["Legacy"]!;
-                    if (severity == 3)
+                    if (severity == LogSeverities.Error)
                     {
-                        Console.Error.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
+                        Console.Error.WriteLine(string.Join(Environment.NewLine, conOutput));
                     }
                     else
                     {
-                        Console.WriteLine(string.Join(Environment.NewLine, message.Select(msg => string.Format(logLine, msg.Replace("\0", string.Empty)))));
+                        Console.WriteLine(string.Join(Environment.NewLine, conOutput));
                     }
-
-                    // Reset the console colours back to default.
                     Console.ResetColor();
                 }
                 else
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    ModuleDatabase.InvokeScript(WriteLogEntryDelegate, message, sevCols, source!, logFormats["Legacy"]!, hostLogStream.Equals(HostLogStream.Verbose));
+                    ModuleDatabase.InvokeScript(WriteLogEntryDelegate, conOutput, sevCols, source!, hostLogStream.Equals(HostLogStream.Verbose));
                 }
             }
+            return logEntries.AsReadOnly();
         }
 
         /// <summary>
@@ -198,14 +216,9 @@ namespace PSADT.Module
         }.AsReadOnly();
 
         /// <summary>
-        /// Gets the log severity names.
-        /// </summary>
-        private static readonly IReadOnlyList<string> LogSeverityNames = new List<string>(["Success", "Info", "Warning", "Error"]).AsReadOnly();
-
-        /// <summary>
         /// Gets the Write-LogEntry delegate script block.
         /// </summary>
-        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0].Replace(\"`0\", $null) | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Format $args[3] -Verbose:($args[4])");
+        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Verbose:($args[3])");
 
         /// <summary>
         /// Gets the current process ID.
@@ -220,6 +233,6 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the session's default log file encoding.
         /// </summary>
-        private static readonly UTF8Encoding LogEncoding = new UTF8Encoding(true);
+        internal static readonly UTF8Encoding LogEncoding = new UTF8Encoding(true);
     }
 }
