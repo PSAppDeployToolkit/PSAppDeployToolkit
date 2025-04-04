@@ -1413,9 +1413,12 @@ namespace PSADT.Module
         private readonly string? _defaultMstFile;
         private readonly IReadOnlyList<string> _defaultMspFiles = new ReadOnlyCollection<string>([]);
         private readonly string _logName;
-        private string _installPhase = "Initialization";
         private string? _dirFiles;
         private string? _dirSupportFiles;
+
+        #pragma warning disable 0414
+        private string _installPhase = "Initialization";
+        #pragma warning restore 0414
 
 
         #endregion
