@@ -13,16 +13,19 @@
     MaxHeight="850"
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
     AutomationProperties.Name="PSAppDeployToolkit Dialog"
+    Background="Transparent"
     BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
     BorderThickness="1"
     ExtendsContentIntoTitleBar="True"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     RenderOptions.BitmapScalingMode="HighQuality"
     ResizeMode="NoResize"
     SizeToContent="Height"
-    TextOptions.TextFormattingMode="Ideal"
+    SnapsToDevicePixels="True"
+    TextOptions.TextFormattingMode="Display"
+    TextOptions.TextHintingMode="Animated"
     TextOptions.TextRenderingMode="ClearType"
     Topmost="True"
-    UseLayoutRounding="True"
     WindowBackdropType="Acrylic"
     WindowCornerPreference="RoundSmall"
     mc:Ignorable="d"
@@ -30,6 +33,8 @@
 
     <ui:FluentWindow.Resources>
         <psconv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
+        <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFCCCCCC" />
+
 
         <!-- Animation styles for ListView items -->
         <Style x:Key="ListViewItemAnimationStyle" BasedOn="{StaticResource {x:Type ui:ListViewItem}}" TargetType="ui:ListViewItem">
