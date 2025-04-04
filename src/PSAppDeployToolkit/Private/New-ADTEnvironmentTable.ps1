@@ -176,7 +176,7 @@ function New-ADTEnvironmentTable
     $variables.Add('envOS', (Get-CimInstance -ClassName Win32_OperatingSystem -Verbose:$false))
     $variables.Add('envOSName', $variables.envOS.Caption.Trim())
     $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
-    $variables.Add('envOSVersion', [version][System.Diagnostics.FileVersionInfo]::GetVersionInfo([System.IO.Path]::Combine($variables.envSysNativeDirectory, 'ntoskrnl.exe')).ProductVersion)
+    $variables.Add('envOSVersion', (Get-ADTOperatingSystemInfo).Version)
     $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
     $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
     $variables.Add('envOSVersionBuild', $(if ($variables.envOSVersion.Build -ge 0) { $variables.envOSVersion.Build }))
