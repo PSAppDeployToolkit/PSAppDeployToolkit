@@ -94,6 +94,7 @@
         'Get-ADTEnvironment'
         'Get-ADTEnvironmentTable'
         'Get-ADTEnvironmentVariable'
+        'Get-ADTExecutableInfo'
         'Get-ADTFileVersion'
         'Get-ADTFreeDiskSpace'
         'Get-ADTIniValue'

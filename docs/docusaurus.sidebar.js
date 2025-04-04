@@ -37,6 +37,7 @@ module.exports = [
     'commands/Get-ADTEnvironment',
     'commands/Get-ADTEnvironmentTable',
     'commands/Get-ADTEnvironmentVariable',
+    'commands/Get-ADTExecutableInfo',
     'commands/Get-ADTFileVersion',
     'commands/Get-ADTFreeDiskSpace',
     'commands/Get-ADTIniValue',
