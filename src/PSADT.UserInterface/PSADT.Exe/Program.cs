@@ -18,11 +18,10 @@ namespace PSADT.UserInterface
 
             // Set up parameters for testing
             string appTitle = "Adobe Reader CS 2025 x64 EN";
-            // string appTitle = "MadeyUppyVendor Excessively Girthsome App Title 1.1 x64 EN";
             string subtitle = "Bisto Systems Ltd Ltd - App Install";
             string? appIconImage = null;
-            // string? dialogAccentColor = "#FFB900";
-            string? dialogAccentColor = null;
+            string? dialogAccentColor = "#FFB900";
+            // string? dialogAccentColor = null;
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
@@ -36,7 +35,7 @@ namespace PSADT.UserInterface
                 new("chrome", "Google Chrome", null, null, null),
                 new("firefox", null, null, null, null),
                 // new("msedge", "Microsoft Edge", null, null, null),
-                new("explorer", null, null, null, null),
+                // new("explorer", null, null, null, null),
                 new("spotify", null, null, null, null),
                 new("code", "Visual Studio Code", null, null, null),
                 new("taskmgr", "Task Manager", null, null, null),
@@ -65,7 +64,7 @@ namespace PSADT.UserInterface
 
             TimeSpan? countdownDuration = TimeSpan.FromSeconds(90);
 
-            string? closeAppsMessageText = "Please save your work before continuing as the following applications will be closed automatically. For more information, please see the [Internal Security Policy](http://internal-it.bistrosys.com/security-policies).";
+            string? closeAppsMessageText = "Please save your work before continuing as the following applications will be closed automatically.";
             string? alternativeCloseAppsMessageText = "Please select \'Install\' to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.";
             int? deferralsRemaining = 1;
             // TimeSpan deferralDeadline = TimeSpan.FromHours(2);
