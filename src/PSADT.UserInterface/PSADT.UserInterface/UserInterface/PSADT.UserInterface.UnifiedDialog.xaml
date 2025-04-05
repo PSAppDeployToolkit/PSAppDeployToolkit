@@ -14,14 +14,16 @@
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
     AutomationProperties.Name="PSAppDeployToolkit Dialog"
     Background="Transparent"
-    BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
+    BorderBrush="{DynamicResource AccentTextFillColorTertiaryBrush}"
     BorderThickness="1"
     ExtendsContentIntoTitleBar="True"
+    FontFamily="Segoe UI Display"
+    FontSize="14"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-    RenderOptions.BitmapScalingMode="HighQuality"
     ResizeMode="NoResize"
     SizeToContent="Height"
     SnapsToDevicePixels="True"
+    RenderOptions.BitmapScalingMode="HighQuality"
     TextOptions.TextFormattingMode="Display"
     TextOptions.TextHintingMode="Animated"
     TextOptions.TextRenderingMode="ClearType"
@@ -31,9 +33,9 @@
     mc:Ignorable="d"
     >
 
+    <!--<SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFCCCCCC" />-->
     <ui:FluentWindow.Resources>
         <psconv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
-        <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFCCCCCC" />
 
 
         <!-- Animation styles for ListView items -->
@@ -102,19 +104,14 @@
             AutomationProperties.Name="Accent Sidebar"
             >
 
-            <Border>
-                <Rectangle
-                    x:Name="AccentRectangle"
-                    AutomationProperties.Name="Accent Color Rectangle"
-                    Fill="{DynamicResource SystemAccentColorPrimaryBrush}"
-                    Opacity="1"
-                    />
-
-            </Border>
+            <Rectangle
+                Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                Opacity="1"
+                />
 
             <ui:ImageIcon
                 Width="16"
-                Margin="2,8,0,0"
+                Margin="0,8,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 AutomationProperties.Name="PSAppDeployToolkit Logo"
@@ -166,7 +163,7 @@
             Grid.Column="1"
             Fill="{DynamicResource LayerOnMicaBaseAltFillColorDefaultBrush}"
             />
-        <!-- Fill="{DynamicResource LayerOnMicaBaseAltFillColorDefaultBrush}" /> -->
+
 
         <!-- Header Panel - Common to all dialog types -->
         <StackPanel
@@ -174,7 +171,7 @@
             Grid.Row="0"
             Grid.Column="1"
             Width="Auto"
-            Margin="24,40,24,16"
+            Margin="24,32,24,8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
             AutomationProperties.Name="Header Panel"
@@ -187,7 +184,7 @@
                     x:Name="AppIconImage"
                     Width="64"
                     Height="64"
-                    Margin="0,0,16,0"
+                    Margin="0,0,12,0"
                     AutomationProperties.Name="Application Icon"
                     Stretch="Uniform"
                     >
@@ -201,12 +198,13 @@
                     >
                     <ui:TextBlock
                         x:Name="AppTitleTextBlock"
-                        Width="423"
-                        MaxWidth="423"
+                        Width="420"
+                        MaxWidth="420"
                         HorizontalAlignment="Stretch"
+                        Appearance="Primary"
                         AutomationProperties.Name="Application Title"
-                        FontTypography="Title"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        FontSize="28"
+                        FontWeight="SemiBold"
                         Text="Excessively Long Vendor Application Title 1.1 x64 EN"
                         TextAlignment="Left"
                         TextTrimming="CharacterEllipsis"
@@ -214,13 +212,15 @@
                         />
                     <ui:TextBlock
                         x:Name="SubtitleTextBlock"
-                        MaxWidth="424"
+                        Width="420"
+                        MaxWidth="420"
+                        Margin="0,4,0,0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
+                        Appearance="Secondary"
                         AutomationProperties.Name="Subtitle"
-                        FontTypography="Caption"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="Deployment Toolkit"
+                        FontSize="12"
+                        Text="PSAppDeployToolkit - Installation Type"
                         TextAlignment="Left"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="Wrap"
@@ -238,7 +238,9 @@
             AutomationProperties.Name="Content Card"
             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
             CornerRadius="4"
+            SnapsToDevicePixels="True"
             >
             <StackPanel
                 x:Name="ContentStackPanel"
@@ -255,13 +257,14 @@
                     <ui:TextBlock
                         x:Name="MessageTextBlock"
                         Margin="16,16,16,16"
+                        Appearance="Primary"
                         AutomationProperties.Name="Message Text"
-                        FontTypography="Body"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="Test Message. This will be replaced when the application executes."
                         TextAlignment="Left"
                         TextWrapping="Wrap"
                         />
                 </StackPanel>
+
                 <StackPanel
                     x:Name="CloseAppsStackPanel"
                     VerticalAlignment="Top"
@@ -271,16 +274,15 @@
 
                     <Separator
                         x:Name="CloseAppsSeparator"
-                        Margin="0,0,0,0"
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         />
 
+                    <!-- d:DataContext="{d:DesignInstance Type=ui:GridViewColumn}" -->
                     <ui:ListView
                         x:Name="CloseAppsListView"
-                        MaxHeight="166"
+                        MaxHeight="198"
                         Margin="24,8,24,8"
                         Padding="0"
-                        d:DataContext="{d:DesignInstance Type=ui:GridViewColumn}"
                         d:ItemsSource="{d:SampleData ItemCount=3}"
                         AutomationProperties.Name="Close Applications ListView"
                         ItemsSource="{Binding AppsToCloseCollection}"
@@ -288,6 +290,7 @@
                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                         ScrollViewer.IsDeferredScrollingEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        SelectionMode="Single"
                         ViewState="GridView"
                         VirtualizingPanel.IsVirtualizing="True"
                         VirtualizingPanel.ScrollUnit="Pixel"
@@ -321,7 +324,7 @@
                                         VerticalAlignment="Center"
                                         AutomationProperties.Name="{Binding ProcessName, StringFormat=Icon for \{0\}}"
                                         RenderOptions.BitmapScalingMode="HighQuality"
-                                        Source="{Binding Icon}"
+                                        Source="{Binding Icon, Mode=OneWay}"
                                         />
                                     <ui:TextBlock
                                         x:Name="ListViewTitle"
@@ -330,8 +333,8 @@
                                         Margin="8,8,16,0"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Description"
+                                        FontSize="14"
                                         FontWeight="SemiBold"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                         Text="{Binding ProcessDescription, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis"
                                         TextWrapping="Wrap"
@@ -369,11 +372,11 @@
 
                     <ui:TextBlock
                         x:Name="ProgressMessageDetailTextBlock"
-                        Margin="16,16,16,16"
+                        Margin="16,16,16,8"
                         HorizontalAlignment="Stretch"
+                        Appearance="Secondary"
                         AutomationProperties.Name="Progress Detail Text"
-                        FontTypography="Body"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        FontSize="12"
                         Text="Secondary Progress Message for more details ..."
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="Wrap"
@@ -381,18 +384,18 @@
 
                     <Border
                         x:Name="BottomBar"
-                        Margin="16,0,16,16"
-                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        Height="6"
+                        Margin="16,0,16,24"
                         >
                         <ProgressBar
                             x:Name="ProgressBar"
                             VerticalAlignment="Center"
-                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                             IsIndeterminate="True"
                             />
                     </Border>
                 </StackPanel>
 
+                <!-- Default to Collapsed -->
                 <StackPanel
                     x:Name="InputBoxStackPanel"
                     Margin="0,0,0,0"
@@ -400,23 +403,24 @@
                     Orientation="Vertical"
                     Visibility="Collapsed"
                     >
-                    <!-- Default to Collapsed -->
                     <Separator
                         x:Name="InputBoxSeparator"
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        Background="{DynamicResource DividerStrokeColorDefaultBrush}"
                         />
                     <ui:TextBox
                         x:Name="InputBoxText"
                         Margin="16,16,16,16"
                         AutomationProperties.Name="InputBox"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Text=""
                         TextAlignment="Left"
                         TextWrapping="Wrap"
                         />
                 </StackPanel>
+
                 <StackPanel
                     x:Name="CountdownStackPanel"
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Top"
                     Orientation="Vertical"
                     >
 
@@ -430,70 +434,41 @@
                         x:Name="CountdownDockPanel"
                         Margin="32,16,32,16"
                         >
+
                         <ui:SymbolIcon
-                            Margin="32,0,16,0"
                             VerticalAlignment="Center"
-                            Symbol="TextBulletListSquareClock20"
+                            FontSize="24"
+                            Symbol="Timer24"
                             />
                         <ui:TextBlock
                             x:Name="CountdownHeadingTextBlock"
+                            Margin="16,0,0,0"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            FontTypography="Body"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="Automatic Install Countdown"
                             TextWrapping="WrapWithOverflow"
                             />
 
                         <ui:TextBlock
                             x:Name="CountdownValueTextBlock"
-                            Margin="0,0,32,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Appearance="Primary"
                             AutomationProperties.Name="Countdown Timer Value"
                             FontSize="15"
-                            FontTypography="Body"
-                            FontWeight="Bold"
+                            FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="00:00:00"
                             />
                     </DockPanel>
-
-                    <!--<DockPanel
-                        x:Name="DeferDockPanel"
-                        VerticalAlignment="Top"
-                      -  LastChildFill="True">
-                        <ui:TextBlock
-                            x:Name="DeferralExpiryTextBlock"
-                            Margin="24,8,24,8"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Deferral Expiry"
-                            FontSize="15"
-                            FontTypography="Body"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="Deferral Expiration"
-                            TextAlignment="Left" />
-                        <ui:TextBlock
-                            x:Name="DeferValueTextBlock"
-                            Margin="24,8,24,8"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Deferral Value"
-                            FontFamily="Consolas"
-                            FontSize="18"
-                            FontTypography="Body"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="4:00pm 5th March 2025"
-                            TextAlignment="Right" />
-                    </DockPanel>-->
                 </StackPanel>
 
 
                 <StackPanel
                     x:Name="DeferStackPanel"
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Top"
                     Orientation="Vertical"
                     >
 
@@ -508,65 +483,31 @@
                         Margin="32,16,32,16"
                         >
                         <ui:SymbolIcon
-                            Margin="32,0,16,0"
                             VerticalAlignment="Center"
-                            Symbol="ApprovalsApp32"
+                            FontSize="24"
+                            Symbol="ApprovalsApp24"
                             />
                         <ui:TextBlock
                             x:Name="DeferralDeadlineHeadingTextBlock"
+                            Margin="16,0,0,0"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            FontTypography="Body"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="Deferral Deadline"
                             TextWrapping="WrapWithOverflow"
                             />
                         <ui:TextBlock
                             x:Name="DeferralDeadlineValueTextBlock"
-                            Margin="0,0,32,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Appearance="Primary"
                             FontSize="15"
-                            FontTypography="Body"
-                            FontWeight="Bold"
+                            FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="1pm Mon 4th April 2025"
                             TextWrapping="WrapWithOverflow"
                             />
                     </DockPanel>
-
-                    <!--<DockPanel
-                        x:Name="DeferDockPanel"
-                        VerticalAlignment="Top"
-                        LastChildFill="True">
-                        <ui:TextBlock
-                            x:Name="DeferralExpiryTextBlock"
-                            Margin="24,8,24,8"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Deferral Expiry"
-                            FontSize="15"
-                            FontTypography="Body"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="Deferral Expiration"
-                            TextAlignment="Left" />
-                        <ui:TextBlock
-                            x:Name="DeferValueTextBlock"
-                            Margin="24,8,24,8"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Deferral Value"
-                            FontFamily="Consolas"
-                            FontSize="18"
-                            FontTypography="Body"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="4:00pm 5th March 2025"
-                            TextAlignment="Right" />
-                    </DockPanel>-->
                 </StackPanel>
-
             </StackPanel>
         </Border>
 
@@ -614,7 +555,7 @@
                 <ui:Button
                     x:Name="ButtonRight"
                     Grid.Column="2"
-                    Margin="0,0,4,0"
+                    Margin="4,0,0,0"
                     HorizontalAlignment="Stretch"
                     Appearance="Primary"
                     AutomationProperties.Name="Right Action Button"
