@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using PSADT.UserInterface.Services;
+﻿using PSADT.UserInterface.Services;
 using PSADT.UserInterface.Utilities;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -110,12 +110,12 @@ namespace PSADT.UserInterface
         private bool _canClose = false;
 
         // Constants for UI layout
-        private const double ListViewItemHeight = 59; // Height of each ProcessGrid item
+        private const double ListViewItemHeight = 40; // Height of each ProcessGrid item
 
         private const double ListViewMaxItems = 3; // Maximum number of visible items before scrolling
         private const double ListViewPadding = 16; // Additional padding for the ListView (8px top + 8px bottom)
-        private const double BaseWindowHeight = 190; // Base height for the window without content
-        private const double MaxListViewHeight = 163; // Maximum height for the ListView before scrolling (matches MaxHeight in XAML)
+        private const double BaseWindowHeight = 198; // Base height for the window without content
+        private const double MaxListViewHeight = 198; // Maximum height for the ListView before scrolling (matches MaxHeight in XAML)
 
         // Icon cache for improved performance
         private static readonly Dictionary<string, BitmapImage> _iconCache = new();
@@ -169,7 +169,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Collection of apps that need to be closed
         /// </summary>
-        public ObservableCollection<AppProcessInfo> AppsToCloseCollection { get; } = new();
+        public ObservableCollection<AppProcessInfo> AppsToCloseCollection { get; } = [];
 
         /// <summary>
         /// Current progress percentComplete
@@ -430,11 +430,11 @@ namespace PSADT.UserInterface
             }
             else
             {
-            // No apps to close
-            // CloseAppsStackPanel.Visibility = Visibility.Collapsed;
-            FormatMessageWithHyperlinks(MessageTextBlock, _alternativeMessage); // Use helper method
-            SetButtonContentWithAccelerator(ButtonRight, _buttonRightAlternativeText);
-            AutomationProperties.SetName(ButtonRight, "Install");
+                // No apps to close
+                // CloseAppsStackPanel.Visibility = Visibility.Collapsed;
+                FormatMessageWithHyperlinks(MessageTextBlock, _alternativeMessage); // Use helper method
+                SetButtonContentWithAccelerator(ButtonRight, _buttonRightAlternativeText);
+                AutomationProperties.SetName(ButtonRight, "Install");
             }
 
             // Focus the continue button by default
@@ -472,6 +472,7 @@ namespace PSADT.UserInterface
             FormatMessageWithHyperlinks(MessageTextBlock, progressMessage ?? "Deployment operation in progress. Please wait..."); // Use helper method
             ProgressMessageDetailTextBlock.Text = progressDetailMessage ?? "Performing deployment operation...";
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
+            CloseAppsSeparator.Visibility = Visibility.Collapsed; // Hide the separator when not needed
             ProgressStackPanel.Visibility = Visibility.Visible;
             InputBoxStackPanel.Visibility = Visibility.Collapsed; // Ensure hidden by default
             DeferStackPanel.Visibility = Visibility.Collapsed;
@@ -1010,22 +1011,22 @@ namespace PSADT.UserInterface
                 // Update accessibility count
                 AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
 
-                    if (AppsToCloseCollection.Count == 0 && _alternativeMessage != null)
-                    {
-                        // Update the message and button content with alternative texts
-                        FormatMessageWithHyperlinks(MessageTextBlock, _alternativeMessage); // Use helper method
-                        SetButtonContentWithAccelerator(ButtonRight, _buttonRightAlternativeText);
-                        AutomationProperties.SetName(ButtonRight, _buttonRightAlternativeText ?? "Install");
+                if (AppsToCloseCollection.Count == 0 && _alternativeMessage != null)
+                {
+                    // Update the message and button content with alternative texts
+                    FormatMessageWithHyperlinks(MessageTextBlock, _alternativeMessage); // Use helper method
+                    SetButtonContentWithAccelerator(ButtonRight, _buttonRightAlternativeText);
+                    AutomationProperties.SetName(ButtonRight, _buttonRightAlternativeText ?? "Install");
 
                     // Hide the entire apps to close panel when there are no apps
                     // CloseAppsStackPanel.Visibility = Visibility.Collapsed;
                 }
-                    else if (_originalMessage != null)
-                    {
-                        // Revert to original texts
-                        FormatMessageWithHyperlinks(MessageTextBlock, _originalMessage); // Use helper method
-                        SetButtonContentWithAccelerator(ButtonRight, _buttonRightOriginalText);
-                        AutomationProperties.SetName(ButtonRight, _buttonRightOriginalText ?? "Close Apps & Install");
+                else if (_originalMessage != null)
+                {
+                    // Revert to original texts
+                    FormatMessageWithHyperlinks(MessageTextBlock, _originalMessage); // Use helper method
+                    SetButtonContentWithAccelerator(ButtonRight, _buttonRightOriginalText);
+                    AutomationProperties.SetName(ButtonRight, _buttonRightOriginalText ?? "Close Apps & Install");
                 }
             }
             catch (Exception ex)
@@ -1783,20 +1784,37 @@ namespace PSADT.UserInterface
                 // Clear any existing column definitions.
                 ActionButtons.ColumnDefinitions.Clear();
 
-                // Create new, equally sized columns for each visible button.
-                for (int i = 0; i < visibleButtons.Count; i++)
+                // Special case: if there's only one visible button, limit its width to half of the grid
+                if (visibleButtons.Count == 1)
                 {
+                    // Add two columns - one for the button (50% width) and one empty (50% width)
                     ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                    System.Windows.Controls.Grid.SetColumn(visibleButtons[i], i);
+                    ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-                    // Set margin based on position
-                    Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[i];
-                    if (i == 0)
-                        button.Margin = new Thickness(0, 0, 4, 0);
-                    else if (i == visibleButtons.Count - 1)
-                        button.Margin = new Thickness(4, 0, 0, 0);
-                    else
-                        button.Margin = new Thickness(4, 0, 4, 0);
+                    // Place the single button in the second column
+                    System.Windows.Controls.Grid.SetColumn(visibleButtons[0], 1);
+
+                    // Set appropriate margin
+                    Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[0];
+                    button.Margin = new Thickness(0, 0, 4, 0);
+                }
+                else
+                {
+                    // Create equally sized columns for each visible button (original behavior)
+                    for (int i = 0; i < visibleButtons.Count; i++)
+                    {
+                        ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                        System.Windows.Controls.Grid.SetColumn(visibleButtons[i], i);
+
+                        // Set margin based on position
+                        Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[i];
+                        if (i == 0)
+                            button.Margin = new Thickness(0, 0, 4, 0);
+                        else if (i == visibleButtons.Count - 1)
+                            button.Margin = new Thickness(4, 0, 0, 0);
+                        else
+                            button.Margin = new Thickness(4, 0, 4, 0);
+                    }
                 }
             }
             catch (Exception ex)
