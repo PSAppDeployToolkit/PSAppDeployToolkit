@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Show-ADTInstallationRestartPromptFluent
+function Private:Show-ADTInstallationRestartPromptFluent
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnboundArguments', Justification = "This parameter is just to trap any superfluous input at the end of the function's call.")]
     [CmdletBinding()]

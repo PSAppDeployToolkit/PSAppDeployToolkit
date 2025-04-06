@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Set-ADTPreferenceVariables
+function Private:Set-ADTPreferenceVariables
 {
     <#
     .SYNOPSIS

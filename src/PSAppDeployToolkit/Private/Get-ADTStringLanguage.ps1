@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTStringLanguage
+function Private:Get-ADTStringLanguage
 {
     if (![System.String]::IsNullOrWhiteSpace(($adtConfig = Get-ADTConfig).UI.LanguageOverride))
     {

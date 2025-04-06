@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Invoke-ADTSubstOperation
+function Private:Invoke-ADTSubstOperation
 {
     [CmdletBinding()]
     param

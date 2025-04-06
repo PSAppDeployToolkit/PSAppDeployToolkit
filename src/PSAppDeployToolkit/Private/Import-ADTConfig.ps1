@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Import-ADTConfig
+function Private:Import-ADTConfig
 {
     [CmdletBinding()]
     param

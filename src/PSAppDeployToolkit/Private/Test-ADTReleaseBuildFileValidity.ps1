@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Test-ADTReleaseBuildFileValidity
+function Private:Test-ADTReleaseBuildFileValidity
 {
     [CmdletBinding()]
     param

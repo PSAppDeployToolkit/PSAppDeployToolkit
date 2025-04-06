@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Close-ADTInstallationProgressClassic
+function Private:Close-ADTInstallationProgressClassic
 {
     # Process the WPF window if it exists.
     if ($Script:Dialogs.Classic.ProgressWindow.SyncHash.ContainsKey('Window'))

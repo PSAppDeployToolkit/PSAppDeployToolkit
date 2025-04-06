@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Convert-RegistryKeyToHashtable
+function Private:Convert-RegistryKeyToHashtable
 {
     begin
     {

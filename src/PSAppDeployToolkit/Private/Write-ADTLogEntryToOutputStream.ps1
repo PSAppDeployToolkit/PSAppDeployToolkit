@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Write-ADTLogEntryToOutputStream
+function Private:Write-ADTLogEntryToOutputStream
 {
     [CmdletBinding()]
     param

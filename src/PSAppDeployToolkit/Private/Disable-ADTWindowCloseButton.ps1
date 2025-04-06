@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Disable-ADTWindowCloseButton
+function Private:Disable-ADTWindowCloseButton
 {
     [CmdletBinding()]
     param

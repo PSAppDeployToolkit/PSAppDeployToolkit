@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Import-ADTModuleDataFile
+function Private:Import-ADTModuleDataFile
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]

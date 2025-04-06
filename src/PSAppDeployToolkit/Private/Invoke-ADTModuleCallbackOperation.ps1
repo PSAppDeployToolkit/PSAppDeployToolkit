@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Invoke-ADTModuleCallbackOperation
+function Private:Invoke-ADTModuleCallbackOperation
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Action', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]

@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Invoke-ADTTerminalServerModeChange
+function Private:Invoke-ADTTerminalServerModeChange
 {
     <#
 

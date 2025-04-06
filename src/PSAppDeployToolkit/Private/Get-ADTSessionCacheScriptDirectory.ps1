@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTSessionCacheScriptDirectory
+function Private:Get-ADTSessionCacheScriptDirectory
 {
     # Determine whether we've got a valid script directory for caching purposes and throw if we don't.
     $scriptDir = if (($adtSession = Get-ADTSession).ScriptDirectory -and $adtSession.ScriptDirectory.Count)

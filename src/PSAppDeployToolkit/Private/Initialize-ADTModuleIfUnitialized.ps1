@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Initialize-ADTModuleIfUnitialized
+function Private:Initialize-ADTModuleIfUnitialized
 {
     [CmdletBinding()]
     param

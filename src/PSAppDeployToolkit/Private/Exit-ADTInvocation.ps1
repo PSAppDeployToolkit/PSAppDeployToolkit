@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Exit-ADTInvocation
+function Private:Exit-ADTInvocation
 {
     [CmdletBinding()]
     param

@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Show-ADTHelpConsoleInternal
+function Private:Show-ADTHelpConsoleInternal
 {
     [CmdletBinding()]
     param

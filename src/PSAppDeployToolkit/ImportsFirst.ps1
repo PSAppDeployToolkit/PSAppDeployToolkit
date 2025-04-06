@@ -185,8 +185,30 @@ try
     # Remove any previous functions that may have been defined.
     if ($Module.Compiled)
     {
-        New-Variable -Name FunctionPaths -Option Constant -Value ($MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Microsoft.PowerShell.Core\Function::$($_.Name)" } } })
-        Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
+        $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | . {
+            begin
+            {
+                $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
+                $PrivateFuncs = [System.Collections.Generic.List[System.String]]::new()
+            }
+            process
+            {
+                if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst])
+                {
+                    if ($_.Name.Contains(':'))
+                    {
+                        $PrivateFuncs.Add($_.Name.Split(':')[-1])
+                    }
+                    $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$($_.Name.Split(':')[-1])")
+                }
+            }
+            end
+            {
+                New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
+                New-Variable -Name PrivateFuncs -Option Constant -Value $PrivateFuncs.AsReadOnly() -Force
+                Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
+            }
+        }
     }
 }
 catch

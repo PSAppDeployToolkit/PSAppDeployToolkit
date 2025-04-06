@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTParentProcesses
+function Private:Get-ADTParentProcesses
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     param

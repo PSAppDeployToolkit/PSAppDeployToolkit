@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Unblock-ADTAppExecutionInternal
+function Private:Unblock-ADTAppExecutionInternal
 {
     <#
 

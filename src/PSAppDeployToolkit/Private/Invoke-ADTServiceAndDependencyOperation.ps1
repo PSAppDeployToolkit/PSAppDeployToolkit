@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Invoke-ADTServiceAndDependencyOperation
+function Private:Invoke-ADTServiceAndDependencyOperation
 {
     <#
 

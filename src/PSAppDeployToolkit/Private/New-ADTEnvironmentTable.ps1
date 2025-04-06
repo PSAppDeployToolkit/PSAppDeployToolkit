@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function New-ADTEnvironmentTable
+function Private:New-ADTEnvironmentTable
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
     [CmdletBinding()]

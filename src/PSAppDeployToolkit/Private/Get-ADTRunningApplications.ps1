@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTRunningApplications
+function Private:Get-ADTRunningApplications
 {
     <#
 

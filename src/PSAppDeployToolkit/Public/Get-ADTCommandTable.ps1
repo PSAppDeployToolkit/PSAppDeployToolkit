@@ -42,6 +42,16 @@ function Get-ADTCommandTable
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTCommandTable
     #>
 
-    # Return the module's read-only CommandTable to the caller.
-    return $Script:CommandTable
+    # Create a new directory to insert only public functions into.
+    $output = [System.Collections.Generic.Dictionary[System.String, System.Management.Automation.CommandInfo]]::new()
+    foreach ($command in $Script:CommandTable.Values.GetEnumerator())
+    {
+        if (!$Script:PrivateFuncs.Contains($command.Name))
+        {
+            $output.Add($command.Name, $command)
+        }
+    }
+
+    # Return the output as a read-only dictionary to the caller.
+    return [System.Collections.Generic.IReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]][System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($output)
 }

@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Close-ADTInstallationProgressFluent
+function Private:Close-ADTInstallationProgressFluent
 {
     # Hide the dialog and reset the state bool.
     Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
