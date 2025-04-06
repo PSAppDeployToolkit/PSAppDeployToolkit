@@ -12,7 +12,7 @@ Write messages to a log file in CMTrace.exe compatible format or Legacy text fil
 ## SYNTAX
 
 ```powershell
-Write-ADTLogEntry [-Message] <String[]> [[-Severity] <LogSeverities>] [[-Source] <String>]
+Write-ADTLogEntry [-Message] <String[]> [[-Severity] <LogSeverity>] [[-Source] <String>]
  [[-ScriptSection] <String>] [[-LogType] <String>] [[-LogFileDirectory] <String>] [[-LogFileName] <String>]
  [-PassThru] [-DebugMessage] [<CommonParameters>]
 ```
@@ -65,7 +65,7 @@ When writing to console or CMTrace.exe log format, it allows highlighting of mes
 Options: 0 = Success (highlighted in green), 1 = Information (default), 2 = Warning (highlighted in yellow), 3 = Error (highlighted in red)
 
 ```yaml
-Type: LogSeverities
+Type: LogSeverity
 Parameter Sets: (All)
 Aliases:
 
