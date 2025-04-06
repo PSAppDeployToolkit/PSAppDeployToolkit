@@ -72,7 +72,14 @@ namespace PSADT.Module
             }
             if (string.IsNullOrWhiteSpace(logType))
             {
-                logType = (string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
+                try
+                {
+                    logType = (string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
+                }
+                catch
+                {
+                    logType = "CMTrace";
+                }
             }
             if ((null != logFileDirectory) && !Directory.Exists(logFileDirectory))
             {
