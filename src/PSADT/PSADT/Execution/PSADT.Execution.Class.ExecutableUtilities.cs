@@ -46,7 +46,6 @@ namespace PSADT.Execution
             using var reader = new BinaryReader(fs);
 
             LibraryInterfaces.IMAGE_SUBSYSTEM subsystem = LibraryInterfaces.IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_UNKNOWN;
-            ExecutableType type = ExecutableType.Unknown;
             uint? entryPoint = null;
             ulong? imageBase = null;
             bool isDotNet = false;
@@ -63,7 +62,7 @@ namespace PSADT.Execution
                 throw new InvalidDataException("The specified file does not have a valid PE signature.");
             }
 
-            var fileHeader = ReadStruct<IMAGE_FILE_HEADER>(reader);
+            var machine = (LibraryInterfaces.IMAGE_FILE_MACHINE)ReadStruct<IMAGE_FILE_HEADER>(reader).Machine;
             var magic = (IMAGE_OPTIONAL_HEADER_MAGIC)reader.ReadUInt16();
             fs.Seek(-2, SeekOrigin.Current);
 
@@ -73,7 +72,6 @@ namespace PSADT.Execution
                 subsystem = (LibraryInterfaces.IMAGE_SUBSYSTEM)opt32.Subsystem;
                 entryPoint = opt32.AddressOfEntryPoint;
                 imageBase = opt32.ImageBase;
-                type = (ExecutableType)subsystem;
                 isDotNet = HasCLRHeader(opt32.DataDirectory);
             }
             else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC)
@@ -82,7 +80,6 @@ namespace PSADT.Execution
                 subsystem = (LibraryInterfaces.IMAGE_SUBSYSTEM)opt64.Subsystem;
                 entryPoint = opt64.AddressOfEntryPoint;
                 imageBase = opt64.ImageBase;
-                type = (ExecutableType)subsystem;
                 isDotNet = HasCLRHeader(opt64.DataDirectory);
             }
             else
@@ -92,10 +89,10 @@ namespace PSADT.Execution
 
             return new ExecutableInfo(
                 filePath,
-                (LibraryInterfaces.IMAGE_FILE_MACHINE)fileHeader.Machine,
+                machine,
                 subsystem,
-                (SystemArchitecture)fileHeader.Machine,
-                type,
+                (SystemArchitecture)machine,
+                (ExecutableType)subsystem,
                 isDotNet,
                 entryPoint,
                 imageBase
