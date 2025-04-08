@@ -31,7 +31,7 @@ namespace PSADT.Execution
         /// <param name="startInfo"></param>
         /// <returns></returns>
         /// <exception cref="TaskCanceledException"></exception>
-        public static async Task<ProcessResult> LaunchAsync(ProcessLaunchInfo startInfo)
+        public static async Task<ProcessResult?> LaunchAsync(ProcessLaunchInfo startInfo)
         {
             // Declare all handles C-style so we can close them in the finally block for cleanup.
             HANDLE hStdOutRead = default;
@@ -39,6 +39,8 @@ namespace PSADT.Execution
             HANDLE hProcess = default;
             HANDLE iocp = default;
             HANDLE job = default;
+            uint? processId = null;
+            uint? exitCode = null;
 
             // Lists for output streams to be read into.
             ConcurrentQueue<string> interleaved = [];
@@ -51,7 +53,6 @@ namespace PSADT.Execution
 
             // Determine whether the process we're starting is a console app or not. This is important
             // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
-            bool noWindow = startInfo.NoNewWindow || ((SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE);
             bool guiApp;
             try
             {
@@ -71,7 +72,7 @@ namespace PSADT.Execution
 
                 // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
                 // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-                if ((!guiApp && noWindow) || !startInfo.UseShellExecute || (null != startInfo.Username))
+                if ((!guiApp && startInfo.CreateNoWindow) || !startInfo.UseShellExecute || (null != startInfo.Username))
                 {
                     var startupInfo = new STARTUPINFOW
                     {
@@ -90,8 +91,12 @@ namespace PSADT.Execution
                         // We must create a console window for console apps when the window is shown.
                         if (!guiApp)
                         {
-                            if (noWindow)
+                            if (startInfo.CreateNoWindow)
                             {
+                                if (startInfo.CancellationToken != default && startInfo.NoTerminateOnTimeout)
+                                {
+                                    throw new InvalidOperationException("The NoTerminateOnTimeout option is not supported for console apps while reading stdout/stderr.");
+                                }
                                 startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
                                 creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                             }
@@ -182,7 +187,7 @@ namespace PSADT.Execution
                                 }
 
                                 // This is important so that a windowed application can be shown.
-                                if (!noWindow)
+                                if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
                                 {
                                     startupInfo.lpDesktop = new PWSTR(Marshal.StringToCoTaskMemUni("winsta0\\default"));
                                 }
@@ -213,6 +218,7 @@ namespace PSADT.Execution
                         {
                             Kernel32.AssignProcessToJobObject(job, (hProcess = pi.hProcess));
                             Kernel32.ResumeThread(pi.hThread);
+                            processId = pi.dwProcessId;
                         }
                         finally
                         {
@@ -235,7 +241,7 @@ namespace PSADT.Execution
                         lpParameters = startInfo.Arguments,
                         lpDirectory = startInfo.WorkingDirectory,
                     };
-                    if (noWindow)
+                    if (startInfo.CreateNoWindow || ((SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
                     {
                         startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
                         startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
@@ -253,6 +259,7 @@ namespace PSADT.Execution
                     if (startupInfo.hProcess != IntPtr.Zero)
                     {
                         hProcess = (HANDLE)startupInfo.hProcess;
+                        processId = Kernel32.GetProcessId(hProcess);
                         Kernel32.SetPriorityClass(hProcess, startInfo.PriorityClass);
                         Kernel32.AssignProcessToJobObject(job, hProcess);
                     }
@@ -261,26 +268,41 @@ namespace PSADT.Execution
                 // These tasks read all outputs and wait for the process to complete.
                 await Task.WhenAll(stdOutTask, stdErrTask, (hProcess == default) ? Task.CompletedTask : Task.Run(() =>
                 {
+                    ReadOnlySpan<HANDLE> handles = [iocp, (HANDLE)startInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousGetHandle()];
                     while (true)
                     {
-                        Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out _, PInvoke.INFINITE);
-                        if (lpCompletionCode == PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO)
+                        var index = (uint)Kernel32.WaitForMultipleObjects(handles, false, PInvoke.INFINITE);
+                        if (index == 0)
                         {
-                            break;
+                            Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out _, PInvoke.INFINITE);
+                            if (lpCompletionCode == PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO)
+                            {
+                                Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
+                                exitCode = lpExitCode;
+                                break;
+                            }
                         }
-                        if (startInfo.CancellationToken.IsCancellationRequested)
+                        else if (index == 1)
                         {
-                            startInfo.CancellationToken.ThrowIfCancellationRequested();
+                            if (startInfo.NoTerminateOnTimeout)
+                            {
+                                break;
+                            }
+                            Kernel32.TerminateJobObject(job, ValueTypeConverter<uint>.Convert(TimeoutExitCode));
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"An invalid result was received while waiting for post-launch handles. Result: {index}");
                         }
                     }
                 }));
 
-                uint exitCode = 0;
-                if (hProcess != default)
+                // Return a ProcessResult object if this was a real process (i.e. not a shell action).
+                if (processId.HasValue)
                 {
-                    Kernel32.GetExitCodeProcess(hProcess, out exitCode);
+                    return new ProcessResult(processId.Value, exitCode, stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly());
                 }
-                return new ProcessResult(ValueTypeConverter<int>.Convert(exitCode), stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly());
+                return null;
             }
             finally
             {
@@ -334,5 +356,11 @@ namespace PSADT.Execution
                 output.Add(text);
             }
         }
+
+        /// <summary>
+        /// Special exit code used to signal when we're terminating a process due to timeout.
+        /// The value is `'PSAppDeployToolkit'.GetHashCode()` under Windows PowerShell 5.1.
+        /// </summary>
+        public const int TimeoutExitCode = -443991205;
     }
 }

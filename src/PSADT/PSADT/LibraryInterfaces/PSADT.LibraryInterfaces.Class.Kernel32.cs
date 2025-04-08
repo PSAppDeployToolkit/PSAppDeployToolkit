@@ -488,5 +488,56 @@ namespace PSADT.LibraryInterfaces
         {
             return SetPriorityClass(hProcess, (PROCESS_CREATION_FLAGS)dwPriorityClass);
         }
+
+        /// <summary>
+        /// Terminates a job object and all child processes under it.
+        /// </summary>
+        /// <param name="hJob"></param>
+        /// <param name="uExitCode"></param>
+        /// <returns></returns>
+        internal static BOOL TerminateJobObject(HANDLE hJob, uint uExitCode)
+        {
+            var res = PInvoke.TerminateJobObject(hJob, uExitCode);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Wrapper around WaitForMultipleObjects to manage error handling.
+        /// </summary>
+        /// <param name="lpHandles"></param>
+        /// <param name="bWaitAll"></param>
+        /// <param name="dwMilliseconds"></param>
+        /// <returns></returns>
+        internal static unsafe WAIT_EVENT WaitForMultipleObjects(ReadOnlySpan<HANDLE> lpHandles, BOOL bWaitAll, uint dwMilliseconds)
+        {
+            fixed (HANDLE* pHandles = lpHandles)
+            {
+                var res = PInvoke.WaitForMultipleObjects((uint)lpHandles.Length, pHandles, bWaitAll, dwMilliseconds);
+                if (res == WAIT_EVENT.WAIT_FAILED)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
+        /// Wrapper around GetProcessId to manage error handling.
+        /// </summary>
+        /// <param name="Process"></param>
+        /// <returns></returns>
+        internal static uint GetProcessId(HANDLE Process)
+        {
+            var res = PInvoke.GetProcessId(Process);
+            if (res == 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
     }
 }

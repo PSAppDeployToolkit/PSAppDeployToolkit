@@ -37,31 +37,32 @@ namespace PSADT.Execution
             bool inheritEnvironmentVariables = false,
             bool useShellExecute = false,
             string? verb = null,
-            bool noNewWindow = false,
+            bool createNoWindow = false,
             ProcessWindowStyle? windowStyle = null,
             ProcessPriorityClass? priorityClass = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken? cancellationToken = null,
+            bool noTerminateOnTimeout = false)
         {
-            // Ensure NoNewWindow and the WindowStyle are compatible.
+            // Ensure CreateNoWindow and the WindowStyle are compatible.
             if (null != windowStyle)
             {
                 if (windowStyle != ProcessWindowStyle.Hidden)
                 {
-                    if (noNewWindow)
+                    if (createNoWindow)
                     {
-                        throw new ArgumentException("Cannot set WindowStyle to a value other than Hidden when NoNewWindow is true.");
+                        throw new ArgumentException("Cannot set WindowStyle to a value other than Hidden when CreateNoWindow is true.");
                     }
                 }
                 else
                 {
-                    NoNewWindow = true;
+                    CreateNoWindow = true;
                 }
                 WindowStyle = WindowStyleMap[windowStyle.Value];
             }
-            else if (noNewWindow)
+            else if (createNoWindow)
             {
                 WindowStyle = WindowStyleMap[ProcessWindowStyle.Hidden];
-                NoNewWindow = true;
+                CreateNoWindow = true;
             }
 
             // Validate all nullable parameters.
@@ -89,13 +90,17 @@ namespace PSADT.Execution
             {
                 PriorityClass = priorityClass.Value;
             }
+            if (null != cancellationToken)
+            {
+                CancellationToken = cancellationToken.Value;
+            }
 
             // Set remaining boolean parameters.
             FilePath = filePath;
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseShellExecute = useShellExecute;
-            CancellationToken = cancellationToken;
+            NoTerminateOnTimeout = noTerminateOnTimeout;
         }
 
         /// <summary>
@@ -174,7 +179,7 @@ namespace PSADT.Execution
         /// <summary>
         /// Gets a value indicating whether to create a new window for the process.
         /// </summary>
-        public readonly bool NoNewWindow;
+        public readonly bool CreateNoWindow;
 
         /// <summary>
         /// Gets the window style of the process.
@@ -189,6 +194,11 @@ namespace PSADT.Execution
         /// <summary>
         /// Gets the cancellation token to cancel the process.
         /// </summary>
-        public readonly CancellationToken CancellationToken;
+        public readonly CancellationToken CancellationToken = default;
+
+        /// <summary>
+        /// Gets whether to not end the process upon CancellationToken expiring.
+        /// </summary>
+        public readonly bool NoTerminateOnTimeout;
     }
 }

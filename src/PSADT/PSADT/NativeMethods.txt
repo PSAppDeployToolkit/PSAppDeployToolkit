@@ -24,6 +24,7 @@ GetForegroundWindow
 GetNativeSystemInfo
 GetPrivateProfileString
 GetProcAddress
+GetProcessId
 GetProductInfo
 GetQueuedCompletionStatus
 GetSystemMenu
@@ -104,6 +105,8 @@ SetProcessDpiAwarenessContext
 SHChangeNotify
 ShowWindow
 SHQueryUserNotificationState
+STATUS_CONTROL_C_EXIT
+TerminateJobObject
 TOKEN_LINKED_TOKEN
 VER_NT_DOMAIN_CONTROLLER
 VER_NT_SERVER
@@ -122,6 +125,7 @@ VER_SUITE_SMALLBUSINESS_RESTRICTED
 VER_SUITE_STORAGE_SERVER
 VER_SUITE_TERMINAL
 VER_SUITE_WH_SERVER
+WaitForMultipleObjects
 WM_SETTINGCHANGE
 WritePrivateProfileString
 WTS_CURRENT_SERVER_HANDLE
