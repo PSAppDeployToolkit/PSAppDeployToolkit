@@ -36,19 +36,28 @@ function Start-ADTProcessAsUser
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
-    .PARAMETER CreateNoWindow
-        Specifies whether the process should be started with a new window to contain it.
-
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
 
         Note: Not all processes honor WindowStyle. WindowStyle is a recommendation passed to the process. They can choose to ignore it.
+
+    .PARAMETER CreateNoWindow
+        Specifies whether the process should be started with a new window to contain it.
 
     .PARAMETER NoWait
         Immediately continue after executing the process.
 
     .PARAMETER WaitForMsiExec
         Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
+
+    .PARAMETER Timeout
+        How long to wait for the process before timing out.
+
+    .PARAMETER TimeoutAction
+        What action to take on timeout. Follows ErrorAction if not specified.
+
+    .PARAMETER NoTerminateOnTimeout
+        Indicates that the process should not be terminated on timeout. Only supported for GUI-based applications, or when -CreateNoWindow isn't specified.
 
     .PARAMETER SuccessExitCodes
         List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
@@ -102,9 +111,11 @@ function Start-ADTProcessAsUser
         PSADT.Types.ProcessResult
 
         Returns an object with the results of the installation if -PassThru is specified.
+        - ProcessId
         - ExitCode
         - StdOut
         - StdErr
+        - Interleaved
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -118,154 +129,103 @@ function Start-ADTProcessAsUser
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcess
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'CreateNoWindow')]
+    [CmdletBinding(DefaultParameterSetName = 'Default_CreateWindow_Wait')]
     [OutputType([PSADT.Execution.ProcessResult])]
     param
     (
-        [Parameter(Mandatory = $true, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $true, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $true, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $true, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $true, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $true, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$FilePath,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String[]]$ArgumentList,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$WorkingDirectory,
 
-        [Parameter(Mandatory = $true, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $true, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $true, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $true, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $true, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $true, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Username,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
-        [System.Management.Automation.SwitchParameter]$CreateNoWindow,
-
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        # Window Option: WindowStyle (only in sets where window is "WindowStyle")
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessWindowStyle]$WindowStyle,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
-        [System.Management.Automation.SwitchParameter]$NoWait,
+        # Window Option: CreateNoWindow (only in sets where window is "CreateNoWindow")
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [Switch]$CreateNoWindow,
 
-        [Parameter(Mandatory = $true, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $true, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $true, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        # Wait Option: NoWait (only in sets where wait is "NoWait")
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Switch]$NoWait,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        # Wait Option: Timeout (only in sets where wait is "Timeout")
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [ValidateNotNullOrEmpty()]
+        [System.TimeSpan]$Timeout,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.ActionPreference]$TimeoutAction,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [System.Management.Automation.SwitchParameter]$NoTerminateOnTimeout,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$SuccessExitCodes,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$RebootExitCodes,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
         [System.String[]]$IgnoreExitCodes,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Default")]
-        [Parameter(Mandatory = $false, ParameterSetName = "DefaultWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindow")]
-        [Parameter(Mandatory = $false, ParameterSetName = "CreateNoWindowWaitForMsiExec")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecute")]
-        [Parameter(Mandatory = $false, ParameterSetName = "UseShellExecuteWaitForMsiExec")]
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     dynamicparam
     {
         # Set up the -MsiExecWaitTime parameter if the parameter set is appropriate.
-        if (!$PSCmdlet.ParameterSetName.EndsWith("WaitForMsiExec"))
+        if (!$PSBoundParameters.ContainsKey('WaitForMsiExec') -or !$PSBoundParameters.WaitForMsiExec)
         {
             return
         }
@@ -276,9 +236,7 @@ function Start-ADTProcessAsUser
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('MsiExecWaitTime', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'MsiExecWaitTime', [System.TimeSpan], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; ParameterSetName = 'DefaultWaitForMsiExec'; HelpMessage = "Specify the length of time in seconds to wait for the msiexec engine to become available." }
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; ParameterSetName = 'CreateNoWindowWaitForMsiExec'; HelpMessage = "Specify the length of time in seconds to wait for the msiexec engine to become available." }
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; ParameterSetName = 'UseShellExecuteWaitForMsiExec'; HelpMessage = "Specify the length of time in seconds to wait for the msiexec engine to become available." }
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = "Specify the length of time in seconds to wait for the msiexec engine to become available." }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                     ($defaultValue = [System.Management.Automation.PSDefaultValueAttribute]::new())
                     $defaultValue.Help = '(Get-ADTConfig).MSI.MutexWaitTime'
@@ -297,6 +255,7 @@ function Start-ADTProcessAsUser
     process
     {
         # Just farm it out to Start-ADTProcess as it can do it all.
+        Write-ADTLogEntry -Message "Starting process for user [$Username]..."
         try
         {
             return Start-ADTProcess @PSBoundParameters

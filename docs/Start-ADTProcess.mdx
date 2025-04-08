@@ -25,9 +25,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- [-CreateNoWindow] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout]
- [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
+ [-CreateNoWindow] [-WaitForMsiExec] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>]
+ [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ### Username_CreateNoWindow_NoWait
@@ -55,8 +56,8 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- -WindowStyle <ProcessWindowStyle> -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>]
- [-NoTerminateOnTimeout] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ -WindowStyle <ProcessWindowStyle> [-WaitForMsiExec] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>]
+ [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
  [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru]
  [<CommonParameters>]
 ```
@@ -86,7 +87,7 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <String> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-WaitForMsiExec]
+ [-WaitForMsiExec] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout]
  [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
  [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
@@ -114,8 +115,8 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
- [-WorkingDirectory <String>] [-UseShellExecute] [-Verb <String>] [-CreateNoWindow] -Timeout <TimeSpan>
- [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>]
+ [-WorkingDirectory <String>] [-UseShellExecute] [-Verb <String>] [-CreateNoWindow] [-WaitForMsiExec]
+ -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>]
  [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
  [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
@@ -143,7 +144,7 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] [-UseShellExecute] [-Verb <String>] -WindowStyle <ProcessWindowStyle>
- -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-WaitForMsiExec]
+ [-WaitForMsiExec] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout]
  [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
  [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
@@ -170,8 +171,8 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
- [-WorkingDirectory <String>] [-UseShellExecute] [-Verb <String>] -Timeout <TimeSpan>
- [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>]
+ [-WorkingDirectory <String>] [-UseShellExecute] [-Verb <String>] [-WaitForMsiExec] -Timeout <TimeSpan>
+ [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>]
  [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
  [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
@@ -198,8 +199,8 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
- [-WorkingDirectory <String>] -WindowStyle <ProcessWindowStyle> -Timeout <TimeSpan>
- [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>]
+ [-WorkingDirectory <String>] -WindowStyle <ProcessWindowStyle> [-WaitForMsiExec] -Timeout <TimeSpan>
+ [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>]
  [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
  [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
@@ -226,10 +227,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
- [-WorkingDirectory <String>] [-CreateNoWindow] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>]
- [-NoTerminateOnTimeout] [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru]
- [<CommonParameters>]
+ [-WorkingDirectory <String>] [-CreateNoWindow] [-WaitForMsiExec] -Timeout <TimeSpan>
+ [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
+ [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### Default_CreateNoWindow_NoWait
@@ -263,9 +264,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
- [-WorkingDirectory <String>] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout]
- [-WaitForMsiExec] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
+ [-WorkingDirectory <String>] [-WaitForMsiExec] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>]
+ [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-ExitOnProcessFailure] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -537,6 +539,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -WaitForMsiExec
+
+Sometimes an EXE bootstrapper will launch an MSI install.
+In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Timeout
 
 How long to wait for the process before timing out.
@@ -579,23 +598,6 @@ Only supported for GUI-based applications.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: Username_CreateNoWindow_Timeout, Username_WindowStyle_Timeout, Username_CreateWindow_Timeout, UseShellExecute_CreateNoWindow_Timeout, UseShellExecute_WindowStyle_Timeout, UseShellExecute_CreateWindow_Timeout, Default_WindowStyle_Timeout, Default_CreateNoWindow_Timeout, Default_CreateWindow_Timeout
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -WaitForMsiExec
-
-Sometimes an EXE bootstrapper will launch an MSI install.
-In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
 Aliases:
 
 Required: False
@@ -720,9 +722,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### PSADT.Types.ProcessResult
 
 ### Returns an object with the results of the installation if -PassThru is specified.
+### - ProcessId
 ### - ExitCode
 ### - StdOut
 ### - StdErr
+### - Interleaved
 ## NOTES
 An active ADT session is NOT required to use this function.
 

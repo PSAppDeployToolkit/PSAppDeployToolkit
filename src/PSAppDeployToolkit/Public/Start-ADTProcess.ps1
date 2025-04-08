@@ -48,19 +48,28 @@ function Start-ADTProcess
     .PARAMETER Verb
         The verb to use when doing a ShellExecute invocation. Common usages are "runas" to trigger a UAC elevation of the process.
 
-    .PARAMETER CreateNoWindow
-        Specifies whether the process should be started with a new window to contain it.
-
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
 
         Note: Not all processes honor WindowStyle. WindowStyle is a recommendation passed to the process. They can choose to ignore it.
+
+    .PARAMETER CreateNoWindow
+        Specifies whether the process should be started with a new window to contain it.
 
     .PARAMETER NoWait
         Immediately continue after executing the process.
 
     .PARAMETER WaitForMsiExec
         Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
+
+    .PARAMETER Timeout
+        How long to wait for the process before timing out.
+
+    .PARAMETER TimeoutAction
+        What action to take on timeout. Follows ErrorAction if not specified.
+
+    .PARAMETER NoTerminateOnTimeout
+        Indicates that the process should not be terminated on timeout. Only supported for GUI-based applications.
 
     .PARAMETER SuccessExitCodes
         List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
@@ -73,15 +82,6 @@ function Start-ADTProcess
 
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
-
-    .PARAMETER Timeout
-        How long to wait for the process before timing out.
-
-    .PARAMETER TimeoutAction
-        What action to take on timeout. Follows ErrorAction if not specified.
-
-    .PARAMETER NoTerminateOnTimeout
-        Indicates that the process should not be terminated on timeout. Only supported for GUI-based applications.
 
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
@@ -123,9 +123,11 @@ function Start-ADTProcess
         PSADT.Types.ProcessResult
 
         Returns an object with the results of the installation if -PassThru is specified.
+        - ProcessId
         - ExitCode
         - StdOut
         - StdErr
+        - Interleaved
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -254,6 +256,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Switch]$NoWait,
 
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
+
         # Wait Option: Timeout (only in sets where wait is "Timeout")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
@@ -289,9 +294,6 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$NoTerminateOnTimeout,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -499,20 +501,20 @@ function Start-ADTProcess
                 {
                     if ($SecureArgumentList)
                     {
-                        Write-ADTLogEntry -Message "Executing [$FilePath (Parameters Hidden)]..."
+                        Write-ADTLogEntry -Message "Executing [$FilePath (Parameters Hidden)]$(if ($Username) {" for user [$Username]"})..."
                     }
                     elseif ($startInfo.Arguments -match '-Command \&')
                     {
-                        Write-ADTLogEntry -Message "Executing [$FilePath [PowerShell ScriptBlock]]..."
+                        Write-ADTLogEntry -Message "Executing [$FilePath [PowerShell ScriptBlock]]$(if ($Username) {" for user [$Username]"})..."
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [$FilePath $($startInfo.Arguments)]..."
+                        Write-ADTLogEntry -Message "Executing [$FilePath $($startInfo.Arguments)]$(if ($Username) {" for user [$Username]"})..."
                     }
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Executing [$FilePath]..."
+                    Write-ADTLogEntry -Message "Executing [$FilePath]$(if ($Username) {" for user [$Username]"})..."
                 }
 
                 # Start the process.
@@ -646,7 +648,6 @@ function Start-ADTProcess
             {
                 '^(System\.(TimeoutException|OperationCanceledException))$'
                 {
-                    [Console]::WriteLine('timeout')
                     # Process the ErrorRecord.
                     if ($PSBoundParameters.ContainsKey('TimeoutAction'))
                     {
