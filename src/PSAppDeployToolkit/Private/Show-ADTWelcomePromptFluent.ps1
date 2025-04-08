@@ -121,9 +121,9 @@ function Private:Show-ADTWelcomePromptFluent
         subtitle                        = $Subtitle
         appIconImage                    = $adtConfig.Assets.Logo
         appsToClose                     = $appsToClose # Array of [PSADT.UserInterface.Services.AppProcessInfo]
-        countdownDuration               = $(if ($PSBoundParameters.ContainsKey($'ForceCloseProcessesCountdown')) { $ForceCloseProcessesCountdown } #  Pass ForceCloseProcessCountdown directly
+        countdownDuration               = $(if ($PSBoundParameters.ContainsKey('ForceCloseProcessesCountdown')) { $ForceCloseProcessesCountdown }) #  Pass ForceCloseProcessCountdown directly
         deferralsRemaining              = $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes }) # Pass DeferTimes directly
-        deferralDeadline                = $(if ($PSBoundParameters.ContainsKey('DeferDeadline')) { $DeferDeadline }} # Pass DeferDeadline directly)
+        deferralDeadline                = $(if ($PSBoundParameters.ContainsKey('DeferDeadline')) { $DeferDeadline }) # Pass DeferDeadline directly)
         closeAppsMessageText            = $adtStrings.WelcomePrompt.Fluent.DialogMessage
         alternativeCloseAppsMessageText = $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses.$DeploymentType
         deferralsRemainingText          = $adtStrings.WelcomePrompt.Fluent.TextBlockDeferralsRemaining
