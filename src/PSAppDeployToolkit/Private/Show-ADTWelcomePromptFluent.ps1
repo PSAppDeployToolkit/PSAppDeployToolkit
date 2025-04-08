@@ -54,8 +54,22 @@ function Private:Show-ADTWelcomePromptFluent
         [System.String]$DeploymentType,
 
         [Parameter(Mandatory = $false)]
+        [ValidateScript({
+                if ($_.TotalSeconds -gt (Get-ADTConfig).UI.DefaultTimeout)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The close applications countdown time cannot be longer than the timeout specified in the config file.'))
+                }
+                return ($_ -ge 0)
+            })]
+        [System.TimeSpan]$CloseProcessesCountdown,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$DeferTimes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DeferDeadline,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$MinimizeWindows,
@@ -112,16 +126,16 @@ function Private:Show-ADTWelcomePromptFluent
 
     # Map parameters and call the updated C# ShowCloseAppsDialog method.
     $dialogParams = @{
-        dialogExpiryDuration = [System.TimeSpan]::FromMinutes((Get-ADTConfig).UI.DialogStyleFluentOptions.ExpiryDuration)
-        dialogAccentColor    = (Get-ADTConfig).UI.DialogStyleFluentOptions.AccentColor
-        dialogPosition       = (Get-ADTConfig).UI.DialogStyleFluentOptions.Position
-        dialogTopMost        = !$NotTopMost
-        dialogAllowMove      = (Get-ADTConfig).UI.DialogStyleFluentOptions.AllowMove
+        dialogExpiryDuration            = [System.TimeSpan]::FromMinutes((Get-ADTConfig).UI.DialogStyleFluentOptions.ExpiryDuration)
+        dialogAccentColor               = (Get-ADTConfig).UI.DialogStyleFluentOptions.AccentColor
+        dialogPosition                  = (Get-ADTConfig).UI.DialogStyleFluentOptions.Position
+        dialogTopMost                   = !$NotTopMost
+        dialogAllowMove                 = (Get-ADTConfig).UI.DialogStyleFluentOptions.AllowMove
         appTitle                        = $Title
         subtitle                        = $Subtitle
         appIconImage                    = $adtConfig.Assets.Logo
         appsToClose                     = $appsToClose # Array of [PSADT.UserInterface.Services.AppProcessInfo]
-        countdownDuration               = $(if ($PSBoundParameters.ContainsKey('ForceCloseProcessesCountdown')) { $ForceCloseProcessesCountdown }) #  Pass ForceCloseProcessCountdown directly
+        countdownDuration               = $(if ($PSBoundParameters.ContainsKey('CloseProcessesCountdown')) { $CloseProcessesCountdown }) #  Pass ForceCloseProcessCountdown directly
         deferralsRemaining              = $(if ($PSBoundParameters.ContainsKey('DeferTimes')) { $DeferTimes }) # Pass DeferTimes directly
         deferralDeadline                = $(if ($PSBoundParameters.ContainsKey('DeferDeadline')) { $DeferDeadline }) # Pass DeferDeadline directly)
         closeAppsMessageText            = $adtStrings.WelcomePrompt.Fluent.DialogMessage
