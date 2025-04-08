@@ -30,6 +30,12 @@ namespace PSADT.OperatingSystem
             string? productName = null;
             int ubr = 0;
 
+            var windowsOS = (((ulong)osVersion.dwMajorVersion) << 48) | (((ulong)osVersion.dwMinorVersion) << 32) | (((ulong)osVersion.dwBuildNumber) << 16);
+            if (Enum.IsDefined(typeof(WindowsOS), windowsOS))
+            {
+                OperatingSystem = (WindowsOS)windowsOS;
+            }
+
             using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
             {
                 if (null != key)
@@ -58,7 +64,6 @@ namespace PSADT.OperatingSystem
             }
 
             PInvoke.GetProductInfo(osVersion.dwMajorVersion, osVersion.dwMinorVersion, osVersion.wServicePackMajor, osVersion.wServicePackMinor, out OS_PRODUCT_TYPE edition);
-            WindowsOS.TryParse($"{(((ulong)osVersion.dwMajorVersion) << 48) | (((ulong)osVersion.dwMinorVersion) << 32) | (((ulong)osVersion.dwBuildNumber) << 16)}", out OperatingSystem);
             Name = string.Format(((DescriptionAttribute[])OperatingSystem.GetType().GetField(OperatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false)).First().Description, editionId);
             Version = new Version((int)osVersion.dwMajorVersion, (int)osVersion.dwMinorVersion, (int)osVersion.dwBuildNumber, ubr);
             Edition = edition.ToString();
