@@ -255,7 +255,6 @@ function Start-ADTProcessAsUser
     process
     {
         # Just farm it out to Start-ADTProcess as it can do it all.
-        Write-ADTLogEntry -Message "Starting process for user [$Username]..."
         try
         {
             return Start-ADTProcess @PSBoundParameters

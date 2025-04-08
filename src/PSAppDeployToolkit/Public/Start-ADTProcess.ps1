@@ -417,6 +417,7 @@ function Start-ADTProcess
 
     process
     {
+        Write-ADTLogEntry -Message "Preparing to execute process [$FilePath]$(if (![System.String]::IsNullOrWhiteSpace($Username)) {" for user [$Username]"})..."
         $result = $null
         try
         {
