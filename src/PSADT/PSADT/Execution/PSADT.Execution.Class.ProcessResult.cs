@@ -15,16 +15,10 @@ namespace PSADT.Execution
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
-        public ProcessResult(uint processId, uint? exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
+        public ProcessResult(uint processId, int? exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
         {
-            if (exitCode.HasValue)
-            {
-                unchecked
-                {
-                    ExitCode = (int)exitCode.Value;
-                }
-            }
             ProcessId = processId;
+            ExitCode = exitCode;
             StdOut = stdOut.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
             StdErr = stdErr.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
             Interleaved = interleaved.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();

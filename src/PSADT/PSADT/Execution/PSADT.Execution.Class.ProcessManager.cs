@@ -40,7 +40,7 @@ namespace PSADT.Execution
             HANDLE iocp = default;
             HANDLE job = default;
             uint? processId = null;
-            uint? exitCode = null;
+            int? exitCode = null;
 
             // Lists for output streams to be read into.
             ConcurrentQueue<string> interleaved = [];
@@ -278,7 +278,7 @@ namespace PSADT.Execution
                             if (lpCompletionCode == PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO)
                             {
                                 Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
-                                exitCode = lpExitCode;
+                                exitCode = ValueTypeConverter<int>.Convert(lpExitCode);
                                 break;
                             }
                         }
