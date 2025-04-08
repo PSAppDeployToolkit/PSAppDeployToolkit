@@ -37,7 +37,7 @@
         # Specify if the log files should be bundled together in a compressed zip file.
         CompressLogs = $false
 
-        # Choose from either 'Native' for native PowerShell file copy via Copy-ADTItem, or 'Robocopy' to use robocopy.exe.
+        # Choose from either 'Native' for native PowerShell file copy via Copy-ADTFile, or 'Robocopy' to use robocopy.exe.
         FileCopyMode = 'Native'
 
         # Specify if an existing log file should be appended to.

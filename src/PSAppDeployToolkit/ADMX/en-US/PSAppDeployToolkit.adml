@@ -32,7 +32,7 @@
 			<string id="CompressLogs_Display">CompressLogs</string>
 			<string id="CompressLogs_Explain">Specify if the log files should be bundled together in a compressed zip file.</string>
 			<string id="FileCopyMode_Display">FileCopyMode</string>
-			<string id="FileCopyMode_Explain">Choose from either 'Native' for native PowerShell file copy via Copy-ADTItem, or 'Robocopy' to use robocopy.exe.</string>
+			<string id="FileCopyMode_Explain">Choose from either 'Native' for native PowerShell file copy via Copy-ADTFile, or 'Robocopy' to use robocopy.exe.</string>
 			<string id="LogAppend_Display">LogAppend</string>
 			<string id="LogAppend_Explain">Specify if an existing log file should be appended to.</string>
 			<string id="LogDebugMessage_Display">LogDebugMessage</string>
