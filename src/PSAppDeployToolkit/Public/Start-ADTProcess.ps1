@@ -661,7 +661,7 @@ function Start-ADTProcess
 
                     # Process the error and potentially close out the session.
                     Invoke-ADTFunctionErrorHandler @iafehParams -DisableErrorResolving
-                    if ($ExitOnProcessFailure)
+                    if ($iafehParams.ContainsKey('ErrorAction'))
                     {
                         Close-ADTSession
                     }
