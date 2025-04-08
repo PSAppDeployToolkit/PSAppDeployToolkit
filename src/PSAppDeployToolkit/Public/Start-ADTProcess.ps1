@@ -644,16 +644,6 @@ function Start-ADTProcess
             # Switch on the exception type's name.
             switch -Regex ($_.Exception.GetType().FullName)
             {
-                '^(System\.(TimeoutException|OperationCanceledException))$'
-                {
-                    # Process the ErrorRecord.
-                    if ($PSBoundParameters.ContainsKey('TimeoutAction'))
-                    {
-                        $iafehParams.ErrorAction = $TimeoutAction
-                    }
-                    Invoke-ADTFunctionErrorHandler @iafehParams -DisableErrorResolving
-                    break
-                }
                 '^System\.Runtime\.InteropServices\.ExternalException$'
                 {
                     # Handle requirements for when there's an active session.
@@ -675,6 +665,16 @@ function Start-ADTProcess
                     {
                         Close-ADTSession
                     }
+                    break
+                }
+                '^(System\.(TimeoutException|OperationCanceledException))$'
+                {
+                    # Process the ErrorRecord.
+                    if ($PSBoundParameters.ContainsKey('TimeoutAction'))
+                    {
+                        $iafehParams.ErrorAction = $TimeoutAction
+                    }
+                    Invoke-ADTFunctionErrorHandler @iafehParams -DisableErrorResolving
                     break
                 }
                 default
