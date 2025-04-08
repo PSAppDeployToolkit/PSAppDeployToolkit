@@ -354,20 +354,17 @@ function Start-ADTProcess
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
-        $MsiExecWaitTime = if ($PSCmdlet.ParameterSetName.EndsWith("WaitForMsiExec"))
+        $MsiExecWaitTime = if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
         {
-            if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
+            if (!$adtSession)
             {
-                if (!$adtSession)
-                {
-                    $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-                }
-                [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
+                $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
             }
-            else
-            {
-                $PSBoundParameters.MsiExecWaitTime
-            }
+            [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
+        }
+        else
+        {
+            $PSBoundParameters.MsiExecWaitTime
         }
 
         if (!$PSBoundParameters.ContainsKey('SuccessExitCodes'))
