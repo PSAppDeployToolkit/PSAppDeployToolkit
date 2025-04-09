@@ -25,7 +25,8 @@ namespace PSADT.TerminalServices
         /// <exception cref="Win32Exception"></exception>
         public static ReadOnlyCollection<SessionInfo> GetSessionInfo()
         {
-            return WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE).Select(static x => GetSessionInfo(x.SessionId)).Where(static x => null != x).ToList().AsReadOnly()!;
+            WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var sessionInfo);
+            return sessionInfo.Select(static x => GetSessionInfo(x.SessionId)).Where(static x => null != x).ToList().AsReadOnly()!;
         }
 
         /// <summary>
