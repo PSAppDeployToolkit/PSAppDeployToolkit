@@ -245,6 +245,7 @@ namespace PSADT.Execution
                     {
                         cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
                         fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
+                        lpVerb = launchInfo.Verb,
                         lpFile = launchInfo.FilePath,
                         lpParameters = launchInfo.Arguments,
                         lpDirectory = launchInfo.WorkingDirectory,
@@ -257,10 +258,6 @@ namespace PSADT.Execution
                     else
                     {
                         startupInfo.nShow = launchInfo.WindowStyle;
-                    }
-                    if (null != launchInfo.Verb)
-                    {
-                        startupInfo.lpVerb = launchInfo.Verb;
                     }
 
                     Shell32.ShellExecuteEx(ref startupInfo);

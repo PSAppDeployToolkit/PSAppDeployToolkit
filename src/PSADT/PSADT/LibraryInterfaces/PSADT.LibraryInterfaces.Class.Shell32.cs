@@ -50,7 +50,8 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// String that specifies the verb for the execution.
             /// </summary>
-            [MarshalAs(UnmanagedType.LPWStr)] internal string lpVerb;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            internal string? lpVerb;
 
             /// <summary>
             /// String that specifies the name of the file or object on which to execute the specified verb.
@@ -89,7 +90,7 @@ namespace PSADT.LibraryInterfaces
             /// String that specifies the class.
             /// </summary>
             [MarshalAs(UnmanagedType.LPWStr)]
-            internal string lpClass;
+            internal string? lpClass;
 
             /// <summary>
             /// Handle to the key that identifies the file type.
