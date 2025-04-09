@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -266,7 +267,7 @@ namespace PSADT.Execution
                         hProcess = (HANDLE)startupInfo.hProcess;
                         processId = Kernel32.GetProcessId(hProcess);
                         Kernel32.AssignProcessToJobObject(job, hProcess);
-                        if (PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                        if ((launchInfo.PriorityClass != ProcessPriorityClass.Normal) && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                         {
                             Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
                         }
