@@ -85,7 +85,7 @@ function Get-ADTPendingReboot
             {
                 # Get the date/time that the system last booted up.
                 Write-ADTLogEntry -Message "Getting the pending reboot status on the local computer [$HostName]."
-                $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([System.Environment]::TickCount)
+                $LastBootUpTime = [System.DateTime]::Now - [System.TimeSpan]::FromMilliseconds([PSADT.LibraryInterfaces.Kernel32]::GetTickCount64())
 
                 # Determine if a Windows Vista/Server 2008 and above machine has a pending reboot from a Component Based Servicing (CBS) operation.
                 $IsCBServicingRebootPending = Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'

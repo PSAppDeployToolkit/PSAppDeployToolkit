@@ -28,6 +28,7 @@ GetProcessId
 GetProductInfo
 GetQueuedCompletionStatus
 GetSystemMenu
+GetTickCount64
 GetTokenInformation
 GetWindowText
 GetWindowTextLength
