@@ -455,7 +455,7 @@ function Start-ADTProcess
                         Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
                         $result = [PSADT.Execution.ProcessResult]::new(1618)
                         $naerParams = @{
-                            Exception = [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
+                            Exception = [System.Threading.SynchronizationLockException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
                             Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
                             ErrorId = 'MsiExecUnavailable'
                             TargetObject = $FilePath
