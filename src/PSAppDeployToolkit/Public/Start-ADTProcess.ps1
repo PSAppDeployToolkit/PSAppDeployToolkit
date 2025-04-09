@@ -540,6 +540,16 @@ function Start-ADTProcess
                 }
                 $result = $process.GetAwaiter().GetResult()
 
+                # Handle scenarios where we don't have a ProcessResult object (ShellExecute action, for instance).
+                if (!$result)
+                {
+                    if ($PassThru)
+                    {
+                        Write-ADTLogEntry -Message 'PassThru parameter specified, however no result was available.'
+                    }
+                    return
+                }
+
                 # Check whether the process timed out.
                 if (($null -eq $result.ExitCode) -or ($result.ExitCode -eq [PSADT.Execution.ProcessManager]::TimeoutExitCode))
                 {
@@ -623,12 +633,8 @@ function Start-ADTProcess
                 # If the passthru switch is specified, return the exit code and any output from process.
                 if ($PassThru)
                 {
-                    if ($result)
-                    {
-                        Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
-                        return $result
-                    }
-                    Write-ADTLogEntry -Message 'PassThru parameter specified, however no result was available.'
+                    Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
+                    return $result
                 }
             }
             catch
