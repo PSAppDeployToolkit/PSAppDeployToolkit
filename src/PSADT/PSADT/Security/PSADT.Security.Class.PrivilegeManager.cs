@@ -15,7 +15,7 @@ namespace PSADT.Security
         /// Ensures that a security token is enabled.
         /// </summary>
         /// <param name="privilege"></param>
-        public static void EnsurePrivilegeEnabled(SE_PRIVILEGE privilege)
+        internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
             AdvApi32.OpenProcessToken(PInvoke.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
             try
@@ -36,7 +36,7 @@ namespace PSADT.Security
         /// Determines whether a privilege is enabled in the specified token.
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="privilegeName"></param>
+        /// <param name="privilege"></param>
         /// <returns></returns>
         private static bool IsPrivilegeEnabled(HANDLE token, SE_PRIVILEGE privilege)
         {
@@ -72,7 +72,7 @@ namespace PSADT.Security
         /// Enables a privilege in the specified token.
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="privilegeName"></param>
+        /// <param name="privilege"></param>
         private static void EnablePrivilege(HANDLE token, SE_PRIVILEGE privilege)
         {
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);

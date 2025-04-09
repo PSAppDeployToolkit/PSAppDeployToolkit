@@ -132,8 +132,8 @@ namespace PSADT.Execution
                             }
 
                             // SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
-                            PrivilegeManager.EnsurePrivilegeEnabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                            PrivilegeManager.EnsurePrivilegeEnabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                             // You can only run a process as a user if they're logged on.
                             var userSessions = SessionManager.GetSessionInfo();
