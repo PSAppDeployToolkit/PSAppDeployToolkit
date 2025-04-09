@@ -14,39 +14,6 @@ namespace PSADT.LibraryInterfaces
     internal static class WtsApi32
     {
         /// <summary>
-        /// Wrapper around WTSEnumerateSessions to manage error handling.
-        /// </summary>
-        /// <param name="hServer"></param>
-        /// <param name="Reserved"></param>
-        /// <param name="Version"></param>
-        /// <param name="ppSessionInfo"></param>
-        /// <param name="pCount"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WTSEnumerateSessions(HANDLE hServer, out ReadOnlyCollection<WTS_SESSION_INFOW> sessionInfo)
-        {
-            var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            try
-            {
-                List<WTS_SESSION_INFOW> sessions = [];
-                for (int i = 0; i < pCount; i++)
-                {
-                    sessions.Add(ppSessionInfo[i]);
-                }
-                sessionInfo = sessions.AsReadOnly();
-                return res;
-            }
-            finally
-            {
-                PInvoke.WTSFreeMemory(ppSessionInfo);
-            }
-        }
-
-        /// <summary>
         /// Wrapper around WTSQuerySessionInformation to manage error handling.
         /// </summary>
         /// <param name="hServer"></param>

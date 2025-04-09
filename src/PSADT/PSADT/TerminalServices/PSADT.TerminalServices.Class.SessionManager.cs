@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -23,10 +23,29 @@ namespace PSADT.TerminalServices
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        public static ReadOnlyCollection<SessionInfo> GetSessionInfo()
+        public static unsafe ReadOnlyCollection<SessionInfo> GetSessionInfo()
         {
-            WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var sessionInfo);
-            return sessionInfo.Select(static x => GetSessionInfo(x.SessionId)).Where(static x => null != x).ToList().AsReadOnly()!;
+            var res = PInvoke.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, 1, out var ppSessionInfo, out var pCount);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            try
+            {
+                List<SessionInfo> sessions = [];
+                for (int i = 0; i < pCount; i++)
+                {
+                    if (GetSessionInfo(ppSessionInfo[i].SessionId) is SessionInfo session)
+                    {
+                        sessions.Add(session);
+                    }
+                }
+                return sessions.AsReadOnly();
+            }
+            finally
+            {
+                PInvoke.WTSFreeMemory(ppSessionInfo);
+            }
         }
 
         /// <summary>
