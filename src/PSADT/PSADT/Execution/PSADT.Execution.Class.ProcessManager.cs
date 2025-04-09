@@ -260,8 +260,11 @@ namespace PSADT.Execution
                     {
                         hProcess = (HANDLE)startupInfo.hProcess;
                         processId = Kernel32.GetProcessId(hProcess);
-                        Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
                         Kernel32.AssignProcessToJobObject(job, hProcess);
+                        if (AccountUtilities.CallerIsAdmin())
+                        {
+                            Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
+                        }
                     }
                 }
 

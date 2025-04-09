@@ -70,5 +70,18 @@ namespace PSADT.Utilities
             }
             return false;
         }
+
+        /// <summary>
+        /// Determines whether the current process is elevated.
+        /// </summary>
+        /// <returns></returns>
+        public static bool CallerIsAdmin()
+        {
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+        }
     }
 }

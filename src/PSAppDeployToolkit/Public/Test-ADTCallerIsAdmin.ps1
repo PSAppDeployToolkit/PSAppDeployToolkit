@@ -40,5 +40,5 @@ function Test-ADTCallerIsAdmin
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTCallerIsAdmin
     #>
 
-    return [System.Security.Principal.WindowsPrincipal]::new([System.Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([System.Security.Principal.WindowsBuiltinRole]::Administrator)
+    return [PSADT.Utilities.AccountUtilities]::CallerIsAdmin()
 }
