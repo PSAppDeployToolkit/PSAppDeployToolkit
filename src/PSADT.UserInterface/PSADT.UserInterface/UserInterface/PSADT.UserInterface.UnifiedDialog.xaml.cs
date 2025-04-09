@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions; // Added for Regex
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -17,7 +18,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation; // Added for RequestNavigateEventArgs
 using System.Windows.Threading;
-using System.Text.RegularExpressions; // Added for Regex
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -226,6 +226,8 @@ namespace PSADT.UserInterface
         {
             DataContext = this;
 
+            SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
+
             InitializeComponent();
 
             _dialogCancellationTokenSource = new CancellationTokenSource();
@@ -236,24 +238,19 @@ namespace PSADT.UserInterface
             _dialogAllowMove = dialogAllowMove ?? false;
             _dialogTopMost = dialogTopMost ?? false;
 
-            if (dialogAccentColor != null)
+            if (dialogAccentColor != null || dialogAccentColor != string.Empty)
             {
                 try
                 {
-                    SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, false);
-
                     // Apply the accent color to the application theme
                     var colorDialogAccentColor = StringToColor(dialogAccentColor);
                     ApplicationTheme appTheme = ApplicationThemeManager.GetAppTheme();
                     ApplicationAccentColorManager.Apply(colorDialogAccentColor, appTheme, false);
 
-                    // Set up Acrylic backdrop and watch for theme changes
-                    // SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, false);
-
                     // And set the dialog accent color on the sidebar
-                    // SolidColorBrush accentBrush = new(colorDialogAccentColor);
-                    // accentBrush.Freeze(); // Improve performance by freezing the brush
-                    // AccentRectangle.Fill = accentBrush;
+                    SolidColorBrush accentBrush = new(colorDialogAccentColor);
+                    accentBrush.Freeze(); // Improve performance by freezing the brush
+                    AccentSidebar.Fill = accentBrush;
                 }
                 catch (Exception ex)
                 {

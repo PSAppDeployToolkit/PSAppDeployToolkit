@@ -80,11 +80,11 @@ function Private:Show-ADTInstallationProgressFluent
     {
         # Map parameters for ShowProgressDialog
         $dialogParams = @{
-            dialogExpiryDuration = [System.TimeSpan]::FromMinutes((Get-ADTConfig).UI.DialogStyleFluentOptions.ExpiryDuration)
-            dialogAccentColor    = (Get-ADTConfig).UI.DialogStyleFluentOptions.AccentColor
-            dialogPosition       = (Get-ADTConfig).UI.DialogStyleFluentOptions.Position
+            dialogExpiryDuration = [System.TimeSpan]::FromMinutes($adtConfig.UI.DialogStyleFluentOptions.ExpiryDuration)
+            dialogAccentColor    = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
+            dialogPosition       = $adtConfig.UI.DialogStyleFluentOptions.Position
             dialogTopMost        = !$NotTopMost
-            dialogAllowMove      = (Get-ADTConfig).UI.DialogStyleFluentOptions.AllowMove
+            dialogAllowMove      = $adtConfig.UI.DialogStyleFluentOptions.AllowMove
             appTitle             = $WindowTitle
             subtitle             = $WindowSubtitle
             appIconImage         = $adtConfig.Assets.Logo

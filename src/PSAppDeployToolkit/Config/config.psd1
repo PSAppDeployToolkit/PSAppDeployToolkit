@@ -116,9 +116,6 @@
 
             # Specify where the dialog should be positioned on screen. Valid options are: Center, TopCenter and BottomRight (Default).
             Position = 'BottomRight'
-
-            # ListView scrollbar settings - shows scrollbar only when there are 4 or more items in the list
-            ListViewScrollbarThreshold = 4
         }
 
         # Exit code used when a UI prompt times out.

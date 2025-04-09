@@ -1,5 +1,4 @@
-﻿using PSADT.UserInterface;
-using PSADT.UserInterface.Services;
+﻿using PSADT.UserInterface.Services;
 
 namespace PSADT.UserInterface
 {
@@ -18,10 +17,10 @@ namespace PSADT.UserInterface
 
             // Set up parameters for testing
             string appTitle = "Adobe Reader CS 2025 x64 EN";
-            string subtitle = "Bisto Systems Ltd Ltd - App Install";
+            string subtitle = "Bisto Systems Ltd - App Install";
             string? appIconImage = null;
             string? dialogAccentColor = "#FFB900";
-            // string? dialogAccentColor = null;
+            // string? dialogAccentColor = "";
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
