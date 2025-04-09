@@ -143,7 +143,15 @@ namespace PSADT.Execution
                             }
 
                             // You can only run a process as a user if they're active.
-                            var session = userSessions.Where(s => (null != s.UserName) && s.UserName.Equals(launchInfo.Username, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                            SessionInfo? session = null;
+                            if (!launchInfo.Username.Value.Contains("\\"))
+                            {
+                                session = userSessions.Where(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase)).First();
+                            }
+                            else
+                            {
+                                session = userSessions.Where(s => s.NTAccount == launchInfo.Username).First();
+                            }
                             if (null == session)
                             {
                                 throw new InvalidOperationException($"No session found for user {launchInfo.Username}.");

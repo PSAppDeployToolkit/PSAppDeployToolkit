@@ -133,6 +133,10 @@ function Start-ADTProcessAsUser
     [OutputType([PSADT.Execution.ProcessResult])]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Security.Principal.NTAccount]$Username = (Get-ADTRunAsActiveUser | Select-Object -ExpandProperty NTAccount),
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$FilePath,
@@ -147,10 +151,6 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$WorkingDirectory,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]$Username,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
@@ -250,6 +250,20 @@ function Start-ADTProcessAsUser
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # Test whether there's a proper username to proceed with.
+        if (!$Username)
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentNullException]::new('Username', "There is no logged on user to run a new process as.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'NoActiveUserError'
+                TargetObject = $Username
+                RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+        $PSBoundParameters.Username = $Username
     }
 
     process

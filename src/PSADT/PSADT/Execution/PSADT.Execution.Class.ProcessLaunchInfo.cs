@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using System.Security.Principal;
 using System.Threading;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,7 +33,7 @@ namespace PSADT.Execution
             string filePath,
             string[]? argumentList = null,
             string? workingDirectory = null,
-            string? username = null,
+            NTAccount? username = null,
             bool useLinkedAdminToken = false,
             bool inheritEnvironmentVariables = false,
             bool useShellExecute = false,
@@ -78,10 +79,6 @@ namespace PSADT.Execution
             {
                 Arguments = args;
             }
-            if (!string.IsNullOrWhiteSpace(username))
-            {
-                Username = username;
-            }
             if (!string.IsNullOrWhiteSpace(verb))
             {
                 Verb = verb;
@@ -97,6 +94,7 @@ namespace PSADT.Execution
 
             // Set remaining boolean parameters.
             FilePath = filePath;
+            Username = username;
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseShellExecute = useShellExecute;
@@ -154,7 +152,7 @@ namespace PSADT.Execution
         /// <summary>
         /// Gets the username to use when starting the process.
         /// </summary>
-        public readonly string? Username = null;
+        public readonly NTAccount? Username;
 
         /// <summary>
         /// Gets a value indicating whether to use the linked admin token to start the process.

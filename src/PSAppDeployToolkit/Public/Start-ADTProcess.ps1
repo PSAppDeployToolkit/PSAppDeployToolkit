@@ -171,7 +171,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Username,
+        [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
