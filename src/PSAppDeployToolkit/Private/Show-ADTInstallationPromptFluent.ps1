@@ -121,19 +121,19 @@ function Private:Show-ADTInstallationPromptFluent
         'Cancel'
         {
             # Dialog timed out or was closed unexpectedly
-            Write-Warning "Installation prompt timed out or was closed."
-            return 'Timeout' # Maintain compatibility with expected return values
+            Write-ADTLogEntry "Installation prompt timed out or was closed." -Severity Warning
+            return 'Cancel' # Maintain compatibility with expected return values
         }
         'Error'
         {
             # An error occurred within the C# dialog code
-            Write-Error "An error occurred while displaying the installation prompt (Fluent)."
+            Write-ADTLogEntry "An error occurred while displaying the installation prompt (Fluent)." -Severity Warning
             return 'Timeout' # Treat errors like timeouts for safety
         }
         'Disposed'
         {
             # The application was disposed before the dialog could be shown
-            Write-Warning "The UI application was disposed before the installation prompt could be shown."
+            Write-ADTLogEntry "The UI application was disposed before the installation prompt could be shown." -Severity Warning
             return 'Timeout' # Treat as timeout
         }
         default

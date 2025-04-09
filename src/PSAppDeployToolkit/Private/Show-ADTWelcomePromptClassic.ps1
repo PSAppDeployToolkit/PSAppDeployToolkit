@@ -71,7 +71,7 @@ function Private:Show-ADTWelcomePromptClassic
     $adtConfig = Get-ADTConfig
     $adtStrings = Get-ADTStringTable
 
-    # Initalise the classic assets.
+    # Initialize the classic assets.
     Initialize-ADTClassicAssets
 
     # Initialize variables.

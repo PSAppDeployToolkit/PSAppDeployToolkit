@@ -74,11 +74,11 @@ function Private:Show-ADTInstallationRestartPromptFluent
 
     # Map parameters for the C# ShowRestartDialog method.
     $dialogParams = @{
-        dialogExpiryDuration = [System.TimeSpan]::FromMinutes((Get-ADTConfig).UI.DialogStyleFluentOptions.ExpiryDuration)
-        dialogAccentColor    = (Get-ADTConfig).UI.DialogStyleFluentOptions.AccentColor
-        dialogPosition       = (Get-ADTConfig).UI.DialogStyleFluentOptions.Position
-        dialogTopMost        = !$NotTopMost
-        dialogAllowMove      = (Get-ADTConfig).UI.DialogStyleFluentOptions.AllowMove
+        dialogExpiryDuration            = [System.TimeSpan]::FromMinutes((Get-ADTConfig).UI.DialogStyleFluentOptions.ExpiryDuration)
+        dialogAccentColor               = (Get-ADTConfig).UI.DialogStyleFluentOptions.AccentColor
+        dialogPosition                  = (Get-ADTConfig).UI.DialogStyleFluentOptions.Position
+        dialogTopMost                   = !$NotTopMost
+        dialogAllowMove                 = (Get-ADTConfig).UI.DialogStyleFluentOptions.AllowMove
         appTitle                        = $Title
         subtitle                        = $Subtitle
         appIconImage                    = $adtConfig.Assets.Logo
@@ -127,17 +127,16 @@ function Private:Show-ADTInstallationRestartPromptFluent
         }
         'Cancel'
         {
-            Write-ADTLogEntry -Message 'Restart prompt timed out or was closed.' -Severity Warning
             return 'RestartLater' # Treat timeout/cancel as dismiss
         }
         'Error'
         {
-            Write-Error "An error occurred while displaying the restart prompt (Fluent)."
+            Write-ADTLogEntry "An error occurred while displaying the restart prompt (Fluent)." -Severity Warning
             return 'RestartLater' # Treat errors like dismiss for safety
         }
         'Disposed'
         {
-            Write-Warning "The UI application was disposed before the restart prompt could be shown."
+            Write-ADTLogEntry "The UI application was disposed before the restart prompt could be shown." -Severity Warning
             return 'RestartLater' # Treat as dismiss
         }
         default

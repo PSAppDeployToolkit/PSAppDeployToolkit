@@ -195,13 +195,14 @@ function Private:Show-ADTWelcomePromptFluent
         'Error'
         {
             # An error occurred within the C# dialog code
-            Write-Error "An error occurred while displaying the welcome prompt (Fluent)."
+            Write-ADTLogEntry "An error occurred while displaying the welcome prompt (Fluent)." -Severity Warning
             return 'Timeout' # Treat errors like timeouts for safety
         }
         'Disposed'
         {
             # The application was disposed before the dialog could be shown
-            Write-Warning "The UI application was disposed before the welcome prompt could be shown."
+            Write-ADTLogEntry "The UI application was disposed before the welcome prompt could be shown." -Severity Warning
+            # This is a non-fatal error, but we can't continue without the dialog.
             return 'Timeout' # Treat as timeout
         }
         default
