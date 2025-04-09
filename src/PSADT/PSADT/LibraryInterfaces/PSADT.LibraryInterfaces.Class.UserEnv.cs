@@ -21,15 +21,14 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateEnvironmentBlock(out IntPtr lpEnvironment, HANDLE hToken, BOOL bInherit)
         {
-            fixed (void* lpEnvironmentPtr = &lpEnvironment)
+            void* lpEnvironmentPtr;
+            var res = PInvoke.CreateEnvironmentBlock(&lpEnvironmentPtr, hToken, bInherit);
+            if (!res)
             {
-                var res = PInvoke.CreateEnvironmentBlock(&lpEnvironmentPtr, hToken, bInherit);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            lpEnvironment = new IntPtr(lpEnvironmentPtr);
+            return res;
         }
 
         /// <summary>

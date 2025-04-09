@@ -201,6 +201,13 @@ namespace PSADT.LibraryInterfaces
             return res;
         }
 
+        /// <summary>
+        /// Wrapper around SetInformationJobObject to provide a managed interface for JOBOBJECT_ASSOCIATE_COMPLETION_PORT setups.
+        /// </summary>
+        /// <param name="hJob"></param>
+        /// <param name="JobObjectInformationClass"></param>
+        /// <param name="lpJobObjectInformation"></param>
+        /// <returns></returns>
         internal static unsafe BOOL SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
         {
             return SetInformationJobObject(hJob, JobObjectInformationClass, new IntPtr(&lpJobObjectInformation), (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
