@@ -555,5 +555,29 @@ namespace PSADT.LibraryInterfaces
         {
             return PInvoke.GetTickCount64();
         }
+
+        /// <summary>
+        /// Wrapper around DuplicateHandle to manage error handling.
+        /// </summary>
+        /// <param name="hSourceProcessHandle"></param>
+        /// <param name="hSourceHandle"></param>
+        /// <param name="hTargetProcessHandle"></param>
+        /// <param name="lpTargetHandle"></param>
+        /// <param name="dwDesiredAccess"></param>
+        /// <param name="bInheritHandle"></param>
+        /// <param name="dwOptions"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, out HANDLE lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
+        {
+            fixed (HANDLE* pTargetHandle = &lpTargetHandle)
+            {
+                var res = PInvoke.DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, pTargetHandle, (uint)dwDesiredAccess, bInheritHandle, dwOptions);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+        }
     }
 }

@@ -269,7 +269,7 @@ namespace PSADT.Execution
                         hProcess = (HANDLE)startupInfo.hProcess;
                         processId = Kernel32.GetProcessId(hProcess);
                         Kernel32.AssignProcessToJobObject(job, hProcess);
-                        if (PrivilegeManager.IsPrivilegeEnabled(SE_PRIVILEGE.SeIncreaseBasePriorityPrivilege))
+                        if (PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                         {
                             Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
                         }

@@ -14,7 +14,9 @@ CreateProcessW
 DestroyEnvironmentBlock
 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE
 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+DuplicateHandle
 DuplicateTokenEx
+E_ACCESSDENIED
 EnableMenuItem
 EnumWindows
 GetCurrentProcess
@@ -61,6 +63,7 @@ MMDeviceEnumerator
 OOBEComplete
 OpenProcessToken
 OSVERSIONINFOEXW
+PROCESS_ACCESS_RIGHTS
 PROCESS_INFORMATION
 ProcessIdToSessionId
 QueryInformationJobObject

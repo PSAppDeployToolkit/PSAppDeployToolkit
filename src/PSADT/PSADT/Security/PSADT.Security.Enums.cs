@@ -3,7 +3,7 @@
     /// <summary>
     /// Enumeration of all available security privileges.
     /// </summary>
-    public enum SE_PRIVILEGE
+    internal enum SE_PRIVILEGE
     {
         /// <summary>
         /// The right to attach a primary token to a process.

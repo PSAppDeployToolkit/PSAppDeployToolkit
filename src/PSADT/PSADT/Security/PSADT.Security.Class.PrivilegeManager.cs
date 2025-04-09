@@ -1,15 +1,17 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Security;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.Security
 {
     /// <summary>
     /// Utility methods for working with security tokens.
     /// </summary>
-	public static class PrivilegeManager
+	internal static class PrivilegeManager
     {
         /// <summary>
         /// Ensures that a security token is enabled.
@@ -73,7 +75,7 @@ namespace PSADT.Security
         /// </summary>
         /// <param name="privilege"></param>
         /// <returns></returns>
-        public static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
+        internal static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
         {
             AdvApi32.OpenProcessToken(PInvoke.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
             try
@@ -105,6 +107,27 @@ namespace PSADT.Security
                 Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED
             };
             AdvApi32.AdjustTokenPrivileges(token, false, tp, 0);
+        }
+
+        /// <summary>
+        /// Tests whether the current process has the specified access rights to a process handle.
+        /// </summary>
+        /// <param name="hProcess"></param>
+        /// <param name="accessRights"></param>
+        /// <returns></returns>
+        internal static bool TestProcessAccessRights(HANDLE hProcess, PROCESS_ACCESS_RIGHTS accessRights)
+        {
+            var processHandle = PInvoke.GetCurrentProcess();
+            try
+            {
+                var res = Kernel32.DuplicateHandle(processHandle, hProcess, processHandle, out var newHandle, accessRights, false, 0);
+                Kernel32.CloseHandle(ref newHandle);
+                return res;
+            }
+            catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+            {
+                return false;
+            }
         }
     }
 }
