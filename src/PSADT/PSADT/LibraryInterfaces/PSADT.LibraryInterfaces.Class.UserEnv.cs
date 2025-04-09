@@ -37,9 +37,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpEnvironment"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL DestroyEnvironmentBlock(IntPtr lpEnvironment)
+        internal static unsafe BOOL DestroyEnvironmentBlock(ref IntPtr lpEnvironment)
         {
-            if (IntPtr.Zero == lpEnvironment)
+            if (lpEnvironment == default || IntPtr.Zero == lpEnvironment)
             {
                 return true;
             }
@@ -48,6 +48,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            lpEnvironment = default;
             return res;
         }
     }

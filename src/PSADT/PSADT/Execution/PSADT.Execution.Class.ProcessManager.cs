@@ -208,7 +208,7 @@ namespace PSADT.Execution
                                 }
                                 finally
                                 {
-                                    UserEnv.DestroyEnvironmentBlock(lpEnvironment);
+                                    UserEnv.DestroyEnvironmentBlock(ref lpEnvironment);
                                 }
                             }
                             finally
