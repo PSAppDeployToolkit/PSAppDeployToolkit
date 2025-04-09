@@ -9,7 +9,7 @@ namespace PSADT.Security
     /// <summary>
     /// Utility methods for working with security tokens.
     /// </summary>
-	internal static class PrivilegeManager
+	public static class PrivilegeManager
     {
         /// <summary>
         /// Ensures that a security token is enabled.
@@ -65,6 +65,24 @@ namespace PSADT.Security
             finally
             {
                 Marshal.FreeHGlobal(buffer);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a privilege is enabled in the current process token.
+        /// </summary>
+        /// <param name="privilege"></param>
+        /// <returns></returns>
+        public static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
+        {
+            AdvApi32.OpenProcessToken(PInvoke.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
+            try
+            {
+                return IsPrivilegeEnabled(token, privilege);
+            }
+            finally
+            {
+                Kernel32.CloseHandle(ref token);
             }
         }
 
