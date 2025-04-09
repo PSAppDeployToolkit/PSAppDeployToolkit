@@ -5,9 +5,9 @@ using Windows.Win32.UI.HiDpi;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the shcore.dll library.
+    /// CsWin32 P/Invoke wrappers for the shcore.dll library.
     /// </summary>
-    public static class SHCore
+    internal static class SHCore
     {
         /// <summary>
         /// Sets the current process as DPI-aware (Windows 8.1-onwards).

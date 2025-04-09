@@ -10,7 +10,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the user32.dll library.
+    /// CsWin32 P/Invoke wrappers for the user32.dll library.
     /// </summary>
     public static class User32
     {
@@ -228,7 +228,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true, EntryPoint = "AttachThreadInput")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool AttachThreadInputNative(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
+        private static extern bool AttachThreadInputNative(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
 
         /// <summary>
         /// Attaches or detaches the input processing mechanism of one thread to another.

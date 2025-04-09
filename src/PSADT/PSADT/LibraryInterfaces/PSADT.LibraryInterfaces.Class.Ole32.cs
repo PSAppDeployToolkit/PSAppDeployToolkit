@@ -8,7 +8,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// Utility class containing methods to do with the OLE32 library.
     /// </summary>
-    public static class Ole32
+    internal static class Ole32
     {
         /// <summary>
         /// Initializes the COM library on the current thread and identifies the concurrency model as single-thread apartment (STA).

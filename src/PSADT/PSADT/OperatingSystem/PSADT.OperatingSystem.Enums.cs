@@ -423,7 +423,7 @@ namespace PSADT.OperatingSystem
     /// Flags for determining a product's paricular SKU features.
     /// </summary>
     [Flags]
-    public enum SUITE_MASK : ushort
+    internal enum SUITE_MASK : ushort
     {
         /// <summary>
         /// Microsoft BackOffice components are installed. 
@@ -497,7 +497,7 @@ namespace PSADT.OperatingSystem
     /// <summary>
     /// Values for determining a product's type.
     /// </summary>
-    public enum PRODUCT_TYPE : byte
+    internal enum PRODUCT_TYPE : byte
     {
         /// <summary>
         /// The operating system is Windows 10, Windows 8, Windows 7,...

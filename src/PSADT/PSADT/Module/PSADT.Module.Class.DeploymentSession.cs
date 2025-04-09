@@ -13,7 +13,6 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using PSADT.LibraryInterfaces;
 using PSADT.TerminalServices;
 using PSADT.Types;
 using PSADT.Utilities;
@@ -603,7 +602,7 @@ namespace PSADT.Module
                     if ((bool)configToolkit["OobeDetection"]!)
                     {
                         // Check if the device has completed the OOBE or not.
-                        if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !Kernel32.IsOOBEComplete())
+                        if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !DeviceUtilities.IsOOBEComplete())
                         {
                             WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
                             _deployMode = DeployMode.Silent;

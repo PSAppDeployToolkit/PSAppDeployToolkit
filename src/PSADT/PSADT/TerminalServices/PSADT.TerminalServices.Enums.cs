@@ -5,7 +5,7 @@ namespace PSADT.TerminalServices
     /// <summary>
     /// WTS SessionInfoEx level identifiers.
     /// </summary>
-    public enum WTS_INFO_LEVEL : uint
+    internal enum WTS_INFO_LEVEL : uint
     {
         WTSINFOEX_LEVEL1 = 1,
     }

@@ -16,7 +16,7 @@ namespace PSADT.Utilities
         /// <param name="wellKnownSid"></param>
         /// <param name="targetSid"></param>
         /// <returns></returns>
-        public static bool IsSidMemberOfGroup(WellKnownSidType wellKnownSid, SecurityIdentifier targetSid)
+        internal static bool IsSidMemberOfGroup(WellKnownSidType wellKnownSid, SecurityIdentifier targetSid)
         {
             using (var groupEntry = new DirectoryEntry($"WinNT://./{new SecurityIdentifier(wellKnownSid, null).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
             {

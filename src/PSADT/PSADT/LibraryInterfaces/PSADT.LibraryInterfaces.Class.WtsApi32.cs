@@ -9,9 +9,9 @@ using Windows.Win32.System.RemoteDesktop;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the wtsapi32.dll library.
+    /// CsWin32 P/Invoke wrappers for the wtsapi32.dll library.
     /// </summary>
-    public static class WtsApi32
+    internal static class WtsApi32
     {
         /// <summary>
         /// Wrapper around WTSEnumerateSessions to manage error handling.

@@ -9,7 +9,7 @@ using Windows.Win32.UI.Shell;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the shell32.dll library.
+    /// CsWin32 P/Invoke wrappers for the shell32.dll library.
     /// </summary>
     public static class Shell32
     {
@@ -26,90 +26,90 @@ namespace PSADT.LibraryInterfaces
             internal struct HICON_HMONITOR_UNION
             {
                 [FieldOffset(0)]
-                public IntPtr hIcon;
+                internal IntPtr hIcon;
 
                 [FieldOffset(0)]
-                public IntPtr hMonitor;
+                internal IntPtr hMonitor;
             }
 
             /// <summary>
             /// Size of the structure.
             /// </summary>
-            public int cbSize;
+            internal int cbSize;
 
             /// <summary>
             /// Flags that specify the behavior of the function.
             /// </summary>
-            public SEE_MASK_FLAGS fMask;
+            internal SEE_MASK_FLAGS fMask;
 
             /// <summary>
             /// Handle to the parent window used for displaying a UI or error messages.
             /// </summary>
-            public IntPtr hwnd;
+            internal IntPtr hwnd;
 
             /// <summary>
             /// String that specifies the verb for the execution.
             /// </summary>
-            [MarshalAs(UnmanagedType.LPWStr)] public string lpVerb;
+            [MarshalAs(UnmanagedType.LPWStr)] internal string lpVerb;
 
             /// <summary>
             /// String that specifies the name of the file or object on which to execute the specified verb.
             /// </summary>
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string lpFile;
+            internal string lpFile;
 
             /// <summary>
             /// String that specifies the parameters to be passed to the application.
             /// </summary>
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string? lpParameters;
+            internal string? lpParameters;
 
             /// <summary>
             /// String that specifies the default directory.
             /// </summary>
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string? lpDirectory;
+            internal string? lpDirectory;
 
             /// <summary>
             /// Flags that specify how an application is to be shown when it is opened.
             /// </summary>
-            public int nShow;
+            internal int nShow;
 
             /// <summary>
             /// Handle to the application that is calling the ShellExecuteEx function.
             /// </summary>
-            public IntPtr hInstApp;
+            internal IntPtr hInstApp;
 
             /// <summary>
             /// Union member for the ID list.
             /// </summary>
-            public IntPtr lpIDList;
+            internal IntPtr lpIDList;
 
             /// <summary>
             /// String that specifies the class.
             /// </summary>
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string lpClass;
+            internal string lpClass;
 
             /// <summary>
             /// Handle to the key that identifies the file type.
             /// </summary>
-            public IntPtr hkeyClass;
+            internal IntPtr hkeyClass;
 
             /// <summary>
             /// Flags that specify the input and output values of this structure.
             /// </summary>
-            public uint dwHotKey;
+            internal uint dwHotKey;
 
             /// <summary>
             /// Union member for the icon or monitor handle.
             /// </summary>
-            public HICON_HMONITOR_UNION Anonymous;
+            internal HICON_HMONITOR_UNION Anonymous;
 
             /// <summary>
             /// Handle to the newly started application.
             /// </summary>
-            public IntPtr hProcess;
+            internal IntPtr hProcess;
         }
 
         /// <summary>

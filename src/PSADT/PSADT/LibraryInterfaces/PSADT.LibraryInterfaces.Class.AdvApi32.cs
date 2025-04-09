@@ -10,9 +10,9 @@ using Windows.Win32.System.Registry;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the advapi32.dll library.
+    /// CsWin32 P/Invoke wrappers for the advapi32.dll library.
     /// </summary>
-    public static class AdvApi32
+    internal static class AdvApi32
     {
         internal static unsafe WIN32_ERROR RegOpenKeyEx(HKEY hKey, string lpSubKey, uint ulOptions, REG_SAM_FLAGS samDesired, out HKEY phkResult)
         {

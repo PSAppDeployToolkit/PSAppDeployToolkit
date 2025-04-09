@@ -62,5 +62,16 @@ namespace PSADT.Utilities
 
             return micInUse;
         }
+
+        /// <summary>
+        /// Tests whether the current device has completed its Out-of-Box Experience (OOBE).
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        public static bool IsOOBEComplete()
+        {
+            Kernel32.OOBEComplete(out var isOobeComplete);
+            return isOobeComplete;
+        }
     }
 }

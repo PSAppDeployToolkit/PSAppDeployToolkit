@@ -7,7 +7,7 @@ using Windows.Win32.Foundation;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the userenv.dll library.
+    /// CsWin32 P/Invoke wrappers for the userenv.dll library.
     /// </summary>
     internal static class UserEnv
     {

@@ -9,9 +9,9 @@ using Windows.Win32.System.SystemInformation;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the ntdll.dll library.
+    /// CsWin32 P/Invoke wrappers for the ntdll.dll library.
     /// </summary>
-    public static class Ntdll
+    internal static class Ntdll
     {
         /// <summary>
         /// Gets the version info of the current operating system from the kernel.
