@@ -68,11 +68,11 @@ namespace PSADT.Execution
             // Validate all nullable parameters.
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
-                workingDirectory = workingDirectory!.Trim();
+                WorkingDirectory = workingDirectory!.Trim();
             }
             else if (Path.GetDirectoryName(filePath) is string fileDir && !string.IsNullOrWhiteSpace(fileDir))
             {
-                workingDirectory = fileDir;
+                WorkingDirectory = fileDir;
             }
             if ((null != argumentList) && (string.Join(" ", argumentList.Select(x => x.Trim())).Trim() is string args) && !string.IsNullOrWhiteSpace(args))
             {
