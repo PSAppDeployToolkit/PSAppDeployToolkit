@@ -99,6 +99,7 @@ namespace PSADT.Execution
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseShellExecute = useShellExecute;
             NoTerminateOnTimeout = noTerminateOnTimeout;
+            CommandLine = $"\"{FilePath}\"{((null != Arguments) ? $" {Arguments}" : null)}\0";
         }
 
         /// <summary>
@@ -126,15 +127,6 @@ namespace PSADT.Execution
         });
 
         /// <summary>
-        /// Prepares a null-terminated character array of arguments for CreateProcess.
-        /// </summary>
-        /// <returns></returns>
-        public string GetCreateProcessCommandLine()
-        {
-            return $"\"{FilePath}\"{((null != Arguments) ? $" {Arguments}" : null)}\0";
-        }
-
-        /// <summary>
         /// Gets the file path of the process to launch.
         /// </summary>
         public readonly string FilePath;
@@ -143,6 +135,11 @@ namespace PSADT.Execution
         /// Gets the arguments to pass to the process.
         /// </summary>
         public readonly string? Arguments = null;
+
+        /// <summary>
+        /// Gets the command line to use when starting the process.
+        /// </summary>
+        public readonly string CommandLine;
 
         /// <summary>
         /// Gets the working directory of the process.

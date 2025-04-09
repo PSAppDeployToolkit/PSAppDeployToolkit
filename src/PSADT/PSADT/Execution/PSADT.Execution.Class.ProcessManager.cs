@@ -204,7 +204,7 @@ namespace PSADT.Execution
                                 UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                                 try
                                 {
-                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                 }
                                 finally
                                 {
@@ -218,7 +218,7 @@ namespace PSADT.Execution
                         }
                         else
                         {
-                            Kernel32.CreateProcess(null, launchInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, IntPtr.Zero, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, IntPtr.Zero, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
 
                         // Start tracking the process and allow it to resume execution.
