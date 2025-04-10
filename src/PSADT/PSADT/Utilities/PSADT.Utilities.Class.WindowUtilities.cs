@@ -6,7 +6,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace PSADT.GUI
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Provides methods for interacting with UI automation on Windows.
