@@ -105,7 +105,7 @@
 
         DialogStyleFluentOptions = @{
 
-            # Specify the Accent Color in hex, e.g. '#0078D7'. This is used to highlight UI elements such as buttons and progress bars, as well as the vertical sidebar.
+            # Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. '#FF0078D7'. This is used to highlight UI elements such as buttons and progress bars, as well as the vertical sidebar.
             AccentColor = ''
 
             # Specify whether the user should be allowed to move the dialog from its default position. Valid options are: True, False (Default).

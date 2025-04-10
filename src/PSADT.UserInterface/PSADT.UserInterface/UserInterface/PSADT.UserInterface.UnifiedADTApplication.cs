@@ -1,10 +1,6 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
-using System.Collections.Generic;
+﻿using PSADT.UserInterface.Services;
 using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using PSADT.UserInterface.Services;
 
 namespace PSADT.UserInterface
 {
@@ -66,7 +62,7 @@ namespace PSADT.UserInterface
 
                 // Add WPF-UI resources
                 _app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
-                _app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary());
+                _app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary { Theme = Wpf.Ui.Appearance.ApplicationTheme.Light });
 
                 // Signal that the application is ready
                 _initEvent.Set();

@@ -19,8 +19,8 @@ namespace PSADT.UserInterface
             string appTitle = "Adobe Reader CS 2025 x64 EN";
             string subtitle = "Bisto Systems Ltd - App Install";
             string? appIconImage = null;
-            string? dialogAccentColor = "#FFB900";
-            // string? dialogAccentColor = "";
+            string? dialogAccentColor = "";
+            //string? dialogAccentColor = "#FFFFB900"; // Yellow
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
@@ -49,14 +49,6 @@ namespace PSADT.UserInterface
                 new("webex", "WebEx", null, null, null),
                 new("acrobat", "Adobe Acrobat Reader", null, null, null),
                 new("photoshop", "Adobe Photoshop", null, null, null),
-
-
-
-
-
-
-
-
             };
 
             TimeSpan? dialogExpiryDuration = TimeSpan.FromSeconds(90);

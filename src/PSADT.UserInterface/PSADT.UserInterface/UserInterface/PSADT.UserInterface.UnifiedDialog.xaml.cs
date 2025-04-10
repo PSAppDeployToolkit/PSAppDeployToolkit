@@ -226,7 +226,7 @@ namespace PSADT.UserInterface
         {
             DataContext = this;
 
-            SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
+            SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, true);
 
             InitializeComponent();
 
@@ -238,7 +238,7 @@ namespace PSADT.UserInterface
             _dialogAllowMove = dialogAllowMove ?? false;
             _dialogTopMost = dialogTopMost ?? false;
 
-            if (dialogAccentColor != null || dialogAccentColor != string.Empty)
+            if (dialogAccentColor != string.Empty)
             {
                 try
                 {
@@ -248,18 +248,15 @@ namespace PSADT.UserInterface
                     ApplicationAccentColorManager.Apply(colorDialogAccentColor, appTheme, false);
 
                     // And set the dialog accent color on the sidebar
-                    SolidColorBrush accentBrush = new(colorDialogAccentColor);
-                    accentBrush.Freeze(); // Improve performance by freezing the brush
-                    AccentSidebar.Fill = accentBrush;
+                    //SolidColorBrush accentBrush = new(colorDialogAccentColor);
+                    //accentBrush.Freeze(); // Improve performance by freezing the brush
+                    //AccentSidebar.Fill = accentBrush;
+
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Failed to apply accent color: {ex.Message}");
                 }
-            }
-            else
-            {
-                SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic, true);
             }
 
             var converter = new ResourceReferenceExpressionConverter();
