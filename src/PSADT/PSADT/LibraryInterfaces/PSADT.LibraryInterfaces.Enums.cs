@@ -452,4 +452,25 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         QUNS_APP = Windows.Win32.UI.Shell.QUERY_USER_NOTIFICATION_STATE.QUNS_APP,
     }
+
+    /// <summary>
+    /// NtQueryObject information classes.
+    /// </summary>
+    internal enum OBJECT_INFORMATION_CLASS
+    {
+        /// <summary>
+        /// Basic information about the object.
+        /// </summary>
+        ObjectBasicInformation = 0,
+
+        /// <summary>
+        /// Information about the name of the object.
+        /// </summary>
+        ObjectNameInformation = 1,
+
+        /// <summary>
+        /// Information about the type of the object.
+        /// </summary>
+        ObjectTypeInformation = 2,
+    }
 }

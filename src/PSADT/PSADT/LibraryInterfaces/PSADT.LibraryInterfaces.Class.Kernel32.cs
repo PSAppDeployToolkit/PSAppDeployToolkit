@@ -580,5 +580,42 @@ namespace PSADT.LibraryInterfaces
                 return res;
             }
         }
+
+        /// <summary>
+        /// Wrapper around OpenProcess to manage error handling.
+        /// </summary>
+        /// <param name="dwDesiredAccess"></param>
+        /// <param name="bInheritHandle"></param>
+        /// <param name="dwProcessId"></param>
+        /// <returns></returns>
+        internal static HANDLE OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, uint dwProcessId)
+        {
+            var res = PInvoke.OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
+            if (null == res || res.IsNull)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Wrapper around QueryDosDevice to manage error handling.
+        /// </summary>
+        /// <param name="lpDeviceName"></param>
+        /// <param name="lpTargetPath"></param>
+        /// <returns></returns>
+        internal static unsafe uint QueryDosDevice(string lpDeviceName, Span<char> lpTargetPath)
+        {
+            fixed (char* pDeviceName = lpDeviceName)
+            fixed (char* pTargetPath = lpTargetPath)
+            {
+                var res = PInvoke.QueryDosDevice(pDeviceName, pTargetPath, (uint)lpTargetPath.Length);
+                if (res == 0)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+        }
     }
 }

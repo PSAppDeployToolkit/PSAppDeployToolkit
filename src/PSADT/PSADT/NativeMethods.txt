@@ -60,12 +60,16 @@ LoadLibraryEx
 LoadString
 LookupPrivilegeValueW
 MMDeviceEnumerator
+PUBLIC_OBJECT_TYPE_INFORMATION
+OBJECT_NAME_INFORMATION
 OOBEComplete
+OpenProcess
 OpenProcessToken
 OSVERSIONINFOEXW
 PROCESS_ACCESS_RIGHTS
 PROCESS_INFORMATION
 ProcessIdToSessionId
+QueryDosDevice
 QueryInformationJobObject
 ReadFile
 RegOpenKeyEx
@@ -109,7 +113,8 @@ SetProcessDpiAwarenessContext
 SHChangeNotify
 ShowWindow
 SHQueryUserNotificationState
-STATUS_CONTROL_C_EXIT
+STATUS_INFO_LENGTH_MISMATCH
+STATUS_SUCCESS
 TerminateJobObject
 TOKEN_LINKED_TOKEN
 VER_NT_DOMAIN_CONTROLLER
