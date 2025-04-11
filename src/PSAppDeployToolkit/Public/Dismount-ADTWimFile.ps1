@@ -94,12 +94,10 @@ function Dismount-ADTWimFile
 
                         # Get all open file handles for our path.
                         Write-ADTLogEntry -Message "The directory could not be completely unmounted. Checking for any open file handles that can be closed."
-                        $exeHandle = "$Script:PSScriptRoot\bin\$([PSADT.OperatingSystem.OSHelper]::GetSystemArchitecture())\handle\handle.exe"
-                        $pathRegex = "^$([System.Text.RegularExpressions.Regex]::Escape($($wimFile.Path)))"
-                        $pathHandles = Get-ADTProcessHandles | & { process { if ($_.Name -match $pathRegex) { return $_ } } }
+                        $pathHandles = [PSADT.FileSystem.FileHandleManager]::GetOpenHandles($wimFile.Path)
 
                         # Throw if we have no handles to close, it means we don't know why the WIM didn't dismount.
-                        if (!$pathHandles)
+                        if (!$pathHandles.Count)
                         {
                             throw
                         }
@@ -107,24 +105,8 @@ function Dismount-ADTWimFile
                         # Close all open file handles.
                         foreach ($handle in $pathHandles)
                         {
-                            # Close handle using handle.exe. An exit code of 0 is considered successful.
-                            Write-ADTLogEntry -Message "$(($msg = "Closing handle [$($handle.Handle)] for process [$($handle.Process) ($($handle.PID))]"))."
-                            $handleResult = & $exeHandle -accepteula -nobanner -c $handle.Handle -p $handle.PID -y
-                            if ($Global:LASTEXITCODE.Equals(0))
-                            {
-                                continue
-                            }
-
-                            # If we're here, we had a bad exit code.
-                            Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $handleResult") -Severity 3
-                            $naerParams = @{
-                                Exception = [System.Runtime.InteropServices.ExternalException]::new($msg, $Global:LASTEXITCODE)
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                ErrorId = 'HandleClosureFailure'
-                                TargetObject = $handleResult
-                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                            }
-                            throw (New-ADTErrorRecord @naerParams)
+                            Write-ADTLogEntry -Message "Closing handle [$($handle.HandleInfo.HandleValue)] for process [$($handle.ProcessName) ($($handle.HandleInfo.UniqueProcessId))]."
+                            [PSADT.FileSystem.FileHandleManager]::CloseHandles($handle)
                         }
 
                         # Attempt the dismount again.

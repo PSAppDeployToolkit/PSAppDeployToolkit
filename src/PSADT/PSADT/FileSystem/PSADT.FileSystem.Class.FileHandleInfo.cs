@@ -1,4 +1,5 @@
-﻿using static PSADT.LibraryInterfaces.NtDll;
+﻿using System.Diagnostics;
+using PSADT.LibraryInterfaces;
 
 namespace PSADT.FileSystem
 {
@@ -12,13 +13,19 @@ namespace PSADT.FileSystem
         /// </summary>
         /// <param name="handleInfo"></param>
         /// <param name="filePath"></param>
-        public FileHandleInfo(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleInfo, string filePath, string ntPath, string handleType)
+        public FileHandleInfo(NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleInfo, string filePath, string ntPath, string handleType)
         {
+            ProcessName = Process.GetProcessById((int)handleInfo.UniqueProcessId).ProcessName;
             FilePath = filePath;
             NtPath = ntPath;
             HandleType = handleType;
             HandleInfo = handleInfo;
         }
+
+        /// <summary>
+        /// The name of the process that owns the handle.
+        /// </summary>
+        public readonly string ProcessName;
 
         /// <summary>
         /// The file path associated with the handle.
@@ -38,6 +45,6 @@ namespace PSADT.FileSystem
         /// <summary>
         /// Information about the open handle.
         /// </summary>
-        public readonly SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX HandleInfo;
+        public readonly NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX HandleInfo;
     }
 }
