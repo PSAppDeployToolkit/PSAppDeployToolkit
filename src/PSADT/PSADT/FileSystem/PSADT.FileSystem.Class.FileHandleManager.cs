@@ -143,6 +143,28 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
+        /// Closes the specified handles.
+        /// </summary>
+        /// <param name="handleEntries"></param>
+        public static void CloseHandles(NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
+        {
+            // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
+            foreach (var handleEntry in handleEntries)
+            {
+                var processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32());
+                try
+                {
+                    Kernel32.DuplicateHandle(processHandle, (HANDLE)handleEntry.HandleValue, PInvoke.GetCurrentProcess(), out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                    Kernel32.CloseHandle(ref localHandle);
+                }
+                finally
+                {
+                    Kernel32.CloseHandle(ref processHandle);
+                }
+            }
+        }
+
+        /// <summary>
         /// Retrieves the name of an object associated with a handle.
         /// </summary>
         /// <param name="handle"></param>
