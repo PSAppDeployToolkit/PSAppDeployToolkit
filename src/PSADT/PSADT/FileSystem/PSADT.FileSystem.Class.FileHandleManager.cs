@@ -27,19 +27,19 @@ namespace PSADT.FileSystem
         public static ReadOnlyCollection<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
             // Pre-calculate the sizes of the structures we need to read.
-            var handleEntryExSize = Marshal.SizeOf<Ntdll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
-            var handleInfoExSize = Marshal.SizeOf<Ntdll.SYSTEM_HANDLE_INFORMATION_EX>();
+            var handleEntryExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
+            var handleInfoExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_INFORMATION_EX>();
 
             // Query the total system handle information.
             var handleBufferSize = handleInfoExSize + handleEntryExSize;
             var handleBufferPtr = Marshal.AllocHGlobal(handleBufferSize);
-            var status = Ntdll.NtQuerySystemInformation(SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out int handleBufferReqLength);
+            var status = NtDll.NtQuerySystemInformation(SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out int handleBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
                 Marshal.FreeHGlobal(handleBufferPtr);
                 handleBufferSize = handleBufferReqLength;
                 handleBufferPtr = Marshal.AllocHGlobal(handleBufferReqLength);
-                status = Ntdll.NtQuerySystemInformation(SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out handleBufferReqLength);
+                status = NtDll.NtQuerySystemInformation(SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out handleBufferReqLength);
             }
             if (status != NTSTATUS.STATUS_SUCCESS)
             {
@@ -48,7 +48,7 @@ namespace PSADT.FileSystem
             }
 
             // Read the number of handles from the buffer.
-            var handleCount = Marshal.PtrToStructure<Ntdll.SYSTEM_HANDLE_INFORMATION_EX>(handleBufferPtr).NumberOfHandles.ToUInt64();
+            var handleCount = Marshal.PtrToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>(handleBufferPtr).NumberOfHandles.ToUInt64();
             var handleEntryPtr = handleBufferPtr + handleInfoExSize;
 
             // Process all found handles.
@@ -56,7 +56,7 @@ namespace PSADT.FileSystem
             for (ulong i = 0; i < handleCount; i++)
             {
                 // Read the handle information into a structure.
-                var sysHandle = Marshal.PtrToStructure<Ntdll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(handleEntryPtr);
+                var sysHandle = Marshal.PtrToStructure<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(handleEntryPtr);
                 handleEntryPtr += handleEntryExSize;
 
                 // Open the owning process with rights to duplicate handles.
@@ -155,7 +155,7 @@ namespace PSADT.FileSystem
             int bufferReqLength;
             try
             {
-                Ntdll.NtQueryObject(handle, infoClass, IntPtr.Zero, 0, out bufferReqLength);
+                NtDll.NtQueryObject(handle, infoClass, IntPtr.Zero, 0, out bufferReqLength);
             }
             catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
             {
@@ -172,7 +172,7 @@ namespace PSADT.FileSystem
             {
                 try
                 {
-                    Ntdll.NtQueryObject(handle, infoClass, bufferPtr, bufferReqLength, out _);
+                    NtDll.NtQueryObject(handle, infoClass, bufferPtr, bufferReqLength, out _);
                 }
                 catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
                 {

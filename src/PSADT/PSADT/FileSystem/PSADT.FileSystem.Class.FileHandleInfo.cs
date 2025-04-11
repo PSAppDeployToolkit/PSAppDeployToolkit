@@ -1,4 +1,4 @@
-﻿using static PSADT.LibraryInterfaces.Ntdll;
+﻿using static PSADT.LibraryInterfaces.NtDll;
 
 namespace PSADT.FileSystem
 {

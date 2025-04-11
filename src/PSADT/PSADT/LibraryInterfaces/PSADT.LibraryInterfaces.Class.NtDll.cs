@@ -11,7 +11,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// CsWin32 P/Invoke wrappers for the ntdll.dll library.
     /// </summary>
-    public static class Ntdll
+    public static class NtDll
     {
         /// <summary>
         /// System information class for querying system handles.
