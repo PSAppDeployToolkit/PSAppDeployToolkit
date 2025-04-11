@@ -181,6 +181,7 @@ function Get-ADTApplication
                     # Set up initial variables.
                     $appRegProps = Get-ItemProperty -LiteralPath $item.PSPath
                     $psPropNames = $appRegProps.PSObject.Properties | Select-Object -ExpandProperty Name
+                    $defUriValue = [System.Uri][System.String]::Empty
                     $installDate = [System.DateTime]::MinValue
                     $defaultGuid = [System.Guid]::Empty
 
@@ -243,7 +244,7 @@ function Get-ADTApplication
                         $(if ($psPropNames.Contains('InstallLocation') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.InstallLocation)) { $appRegProps.InstallLocation }),
                         $installDate,
                         $(if ($psPropNames.Contains('Publisher') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.Publisher)) { $appRegProps.Publisher }),
-                        $(if ($psPropNames.Contains('HelpLink') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.HelpLink)) { $appRegProps.HelpLink }),
+                        $(if ($psPropNames.Contains('HelpLink') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.HelpLink) -and [System.Uri]::TryCreate($appRegProps.HelpLink, [System.UriKind]::Absolute, [ref]$defUriValue)) { $defUriValue }),
                         $(if ($psPropNames.Contains('EstimatedSize') -and ![System.String]::IsNullOrWhiteSpace($appRegProps.EstimatedSize)) { $appRegProps.EstimatedSize }),
                         !!$(if ($psPropNames.Contains('SystemComponent')) { $appRegProps.SystemComponent }),
                         $windowsInstaller,
