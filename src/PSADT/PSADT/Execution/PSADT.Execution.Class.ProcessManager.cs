@@ -173,7 +173,7 @@ namespace PSADT.Execution
                                     // Once done, we duplicate the linked token to get a primary token to create the new process.
                                     if (launchInfo.UseLinkedAdminToken)
                                     {
-                                        var length = Marshal.SizeOf(typeof(TOKEN_LINKED_TOKEN));
+                                        var length = Marshal.SizeOf<TOKEN_LINKED_TOKEN>();
                                         var buffer = Marshal.AllocHGlobal(length);
                                         try
                                         {

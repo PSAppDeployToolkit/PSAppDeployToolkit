@@ -159,13 +159,9 @@ namespace PSADT.LibraryInterfaces
             fixed (uint* ReturnLengthPtr = &ReturnLength)
             {
                 var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.ToPointer(), TokenInformationLength, ReturnLengthPtr);
-                if (!res)
+                if (!res && IntPtr.Zero != TokenInformation && 0 != TokenInformationLength)
                 {
-                    var error = (WIN32_ERROR)Marshal.GetLastWin32Error();
-                    if (error != WIN32_ERROR.NO_ERROR && (error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || TokenInformationLength != 0))
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error(error);
-                    }
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 return res;
             }
