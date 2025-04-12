@@ -4,9 +4,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
+using PSADT.NativeInterfacing;
+using PSADT.OperatingSystem;
+using PSADT.Types;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Memory;
 using Windows.Win32.System.Threading;
 using Windows.Wdk.Foundation;
 
@@ -60,14 +64,6 @@ namespace PSADT.FileSystem
 
                     // Skip this handle if it's not a file or directory handle.
                     if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
-                    {
-                        continue;
-                    }
-
-                    // Filter out handles that are known to cause NtQueryObject to hang.
-                    if ((sysHandle.GrantedAccess == 0x00120189 && (sysHandle.HandleAttributes == 0 || sysHandle.HandleAttributes == 2)) ||
-                        (sysHandle.GrantedAccess == 0x0012019F && (sysHandle.HandleAttributes == 0 || sysHandle.HandleAttributes == 2)) ||
-                        (sysHandle.GrantedAccess == 0x001A019F && (sysHandle.HandleAttributes == 2)))
                     {
                         continue;
                     }
@@ -174,42 +170,56 @@ namespace PSADT.FileSystem
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         private static string? GetObjectName(HANDLE handle)
         {
-            // Do an initial query to get the required buffer size.
-            int bufferReqLength;
+            // Start the thread to retrieve the object name and wait for the outcome.
+            var hNtdll = Kernel32.LoadLibrary("ntdll.dll");
+            var buffer = Marshal.AllocHGlobal(GetObjectNameBufferSize);
             try
             {
-                NtDll.NtQueryObject(handle, OBJECT_INFORMATION_CLASS.ObjectNameInformation, IntPtr.Zero, 0, out bufferReqLength);
-            }
-            catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
-            {
-                return null;
-            }
-            catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-            {
-                return null;
-            }
-
-            // Query the object information and return the string result.
-            IntPtr bufferPtr = Marshal.AllocHGlobal(bufferReqLength);
-            try
-            {
+                var shellcode = GetObjectTypeShellcode(Kernel32.GetProcAddress(hNtdll, "NtQueryObject"), OBJECT_INFORMATION_CLASS.ObjectNameInformation, handle, buffer, GetObjectNameBufferSize);
                 try
                 {
-                    NtDll.NtQueryObject(handle, OBJECT_INFORMATION_CLASS.ObjectNameInformation, bufferPtr, bufferReqLength, out _);
+                    NTSTATUS status = NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, PInvoke.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                    try
+                    {
+                        // Terminate the thread if it's taking longer than 250 ms (NtQueryObject() has hung).
+                        if (PInvoke.WaitForSingleObject(hThread, (uint)GetObjectNameThreadTimeout.Milliseconds) == WAIT_EVENT.WAIT_TIMEOUT)
+                        {
+                            NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
+                        }
+
+                        // Get the exit code of the thread and throw an exception if it failed.
+                        Kernel32.GetExitCodeThread(hThread, out var exitCode);
+                        try
+                        {
+                            if ((NTSTATUS)ValueTypeConverter<int>.Convert(exitCode) is NTSTATUS res && res != NTSTATUS.STATUS_SUCCESS)
+                            {
+                                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                            }
+                        }
+                        catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING))
+                        {
+                            return null;
+                        }
+                        catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                        {
+                            return null;
+                        }
+                        return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(buffer).Name.Buffer.ToString()?.Trim('\0').Trim();
+                    }
+                    finally
+                    {
+                        Kernel32.CloseHandle(ref hThread);
+                    }
                 }
-                catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
+                finally
                 {
-                    return null;
+                    Kernel32.VirtualFree(shellcode, 0, VIRTUAL_FREE_TYPE.MEM_RELEASE);
                 }
-                catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                {
-                    return null;
-                }
-                return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(bufferPtr).Name.Buffer.ToString()?.Trim('\0').Trim();
             }
             finally
             {
-                Marshal.FreeHGlobal(bufferPtr);
+                Marshal.FreeHGlobal(buffer);
+                Kernel32.FreeLibrary(ref hNtdll);
             }
         }
 
@@ -257,8 +267,113 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
+        /// The context for the thread that retrieves the object name.
+        /// </summary>
+        /// <param name="ntQueryObject"></param>
+        /// <param name="infoClass"></param>
+        /// <param name="handle"></param>
+        /// <param name="buffer"></param>
+        /// <param name="bufferSize"></param>
+        /// <returns></returns>
+        /// <exception cref="PlatformNotSupportedException"></exception>
+        private static IntPtr GetObjectTypeShellcode(IntPtr ntQueryObject, OBJECT_INFORMATION_CLASS infoClass, IntPtr handle, IntPtr buffer, int bufferSize)
+        {
+            // Build the shellcode stub to call NtQueryObject.
+            switch (OSVersionInfo.Current.Architecture)
+            {
+                case SystemArchitecture.AMD64:
+                {
+                    // mov rcx, <handle>
+                    var shellcode = new List<byte>();
+                    shellcode.Add(0x48); shellcode.Add(0xB9);
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)handle));
+
+                    // mov rdx, ObjectNameInformation (1)
+                    shellcode.Add(0x48); shellcode.Add(0xBA);
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)infoClass));
+
+                    // mov r8, <buffer>
+                    shellcode.Add(0x49); shellcode.Add(0xB8);
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)buffer));
+
+                    // mov r9, <bufferSize>
+                    shellcode.Add(0x49); shellcode.Add(0xB9);
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)bufferSize));
+
+                    // mov rax, <ntQueryObject>
+                    shellcode.Add(0x48); shellcode.Add(0xB8);
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)ntQueryObject));
+
+                    // call rax
+                    shellcode.Add(0xFF); shellcode.Add(0xD0);
+
+                    // ret
+                    shellcode.Add(0xC3);
+                    return NativeUtilities.AllocateExecutableMemory(shellcode.ToArray());
+                }
+                case SystemArchitecture.i386:
+                {
+                    // push bufferSize
+                    var shellcode = new List<byte>();
+                    shellcode.Add(0x68);
+                    shellcode.AddRange(BitConverter.GetBytes(bufferSize));
+
+                    // push buffer
+                    shellcode.Add(0x68);
+                    shellcode.AddRange(BitConverter.GetBytes(buffer.ToInt32()));
+
+                    // push 1 (ObjectNameInformation)
+                    shellcode.Add(0x6A); shellcode.Add((byte)infoClass);
+
+                    // push handle
+                    shellcode.Add(0x68);
+                    shellcode.AddRange(BitConverter.GetBytes(handle.ToInt32()));
+
+                    // mov eax, ntQueryObject
+                    shellcode.Add(0xB8);
+                    shellcode.AddRange(BitConverter.GetBytes(ntQueryObject.ToInt32()));
+
+                    // call eax
+                    shellcode.Add(0xFF); shellcode.Add(0xD0);
+
+                    // ret
+                    shellcode.Add(0xC3);
+                    return NativeUtilities.AllocateExecutableMemory(shellcode.ToArray());
+                }
+                case SystemArchitecture.ARM64:
+                {
+                    var code = new List<uint>();
+                    code.AddRange(NativeUtilities.Load64(0, (ulong)handle));
+                    code.AddRange(NativeUtilities.Load64(1, (ulong)infoClass));
+                    code.AddRange(NativeUtilities.Load64(2, (ulong)buffer));
+                    code.AddRange(NativeUtilities.Load64(3, (ulong)bufferSize));
+                    code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject));
+                    code.Add(NativeUtilities.EncodeBr(16));
+
+                    var shellcode = new List<byte>();
+                    foreach (var instr in code)
+                    {
+                        shellcode.AddRange(BitConverter.GetBytes(instr));
+                    }
+                    return NativeUtilities.AllocateExecutableMemory(shellcode.ToArray());
+                }
+            }
+            throw new PlatformNotSupportedException("Unsupported architecture: " + OSVersionInfo.Current.Architecture);
+        }
+
+        /// <summary>
         /// The lookup table of object types.
         /// </summary>
         private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable = GetObjectTypeLookupTable();
+
+        /// <summary>
+        /// The size of the buffer used to retrieve object names.
+        /// </summary>
+        private const int GetObjectNameBufferSize = 1024;
+
+        /// <summary>
+        /// The duration to wait for a hung NtQueryObject thread to terminate.
+        /// </summary>
+        private static readonly TimeSpan GetObjectNameThreadTimeout = TimeSpan.FromMilliseconds(125);
     }
 }

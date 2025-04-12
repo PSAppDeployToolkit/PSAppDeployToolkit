@@ -10,6 +10,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.LibraryLoader;
+using Windows.Win32.System.Memory;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.LibraryInterfaces
@@ -625,6 +626,102 @@ namespace PSADT.LibraryInterfaces
                 }
                 return res;
             }
+        }
+
+        /// <summary>
+        /// Wrapper around GetExitCodeThread to manage error handling.
+        /// </summary>
+        /// <param name="hThread"></param>
+        /// <param name="lpExitCode"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL GetExitCodeThread(HANDLE hThread, out uint lpExitCode)
+        {
+            fixed (uint* pExitCode = &lpExitCode)
+            {
+                var res = PInvoke.GetExitCodeThread(hThread, pExitCode);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
+        /// Wrapper around VirtualAlloc to manage error handling.
+        /// </summary>
+        /// <param name="lpAddress"></param>
+        /// <param name="dwSize"></param>
+        /// <param name="flAllocationType"></param>
+        /// <param name="flProtect"></param>
+        /// <returns></returns>
+        internal static unsafe IntPtr VirtualAlloc([Optional] IntPtr lpAddress, nuint dwSize, VIRTUAL_ALLOCATION_TYPE flAllocationType, PAGE_PROTECTION_FLAGS flProtect)
+        {
+            var res = PInvoke.VirtualAlloc(lpAddress.ToPointer(), dwSize, flAllocationType, flProtect);
+            if (null == res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return new IntPtr(res);
+        }
+
+        /// <summary>
+        /// Wrapper around VirtualFree to manage error handling.
+        /// </summary>
+        /// <param name="lpAddress"></param>
+        /// <param name="dwSize"></param>
+        /// <param name="dwFreeType"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL VirtualFree(IntPtr lpAddress, nuint dwSize, VIRTUAL_FREE_TYPE dwFreeType)
+        {
+            if (IntPtr.Zero == lpAddress)
+            {
+                return true;
+            }
+            var res = PInvoke.VirtualFree(lpAddress.ToPointer(), dwSize, dwFreeType);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Wrapper around LoadLibrary to manage error handling.
+        /// </summary>
+        /// <param name="lpLibFileName"></param>
+        /// <returns></returns>
+        internal static unsafe HMODULE LoadLibrary(string lpLibFileName)
+        {
+            fixed (char* pLibFileName = lpLibFileName)
+            {
+                var res = PInvoke.LoadLibrary(pLibFileName);
+                if (null == res || res.IsNull)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
+        /// Wrapper around FreeLibrary to manage error handling.
+        /// </summary>
+        /// <param name="hLibModule"></param>
+        /// <returns></returns>
+        internal static BOOL FreeLibrary(ref HMODULE hLibModule)
+        {
+            if (null == hLibModule || hLibModule == default || hLibModule.IsNull)
+            {
+                return true;
+            }
+            var res = PInvoke.FreeLibrary(hLibModule);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            hLibModule = default;
+            return res;
         }
     }
 }

@@ -9,6 +9,7 @@ using Windows.Wdk.Foundation;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.SystemInformation;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.LibraryInterfaces
 {
@@ -271,6 +272,76 @@ namespace PSADT.LibraryInterfaces
         {
             var res = NtQueryObjectNative(Handle, ObjectInformationClass, ObjectInformation, ObjectInformationLength, out ReturnLength);
             if (res.Value < 0 && ((null != Handle && !Handle.IsNull && IntPtr.Zero != ObjectInformation && 0 != ObjectInformationLength) || ((null == Handle || Handle.IsNull) && ObjectInformationLength != ObjectInfoClassSizes[ObjectInformationClass])))
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Creates a thread in the specified process.
+        /// This doesn't use CsWin32 because they don't publicise its availability.
+        /// </summary>
+        /// <param name="threadHandle"></param>
+        /// <param name="desiredAccess"></param>
+        /// <param name="objectAttributes"></param>
+        /// <param name="processHandle"></param>
+        /// <param name="startAddress"></param>
+        /// <param name="parameter"></param>
+        /// <param name="createFlags"></param>
+        /// <param name="zeroBits"></param>
+        /// <param name="stackSize"></param>
+        /// <param name="maximumStackSize"></param>
+        /// <param name="attributeList"></param>
+        /// <returns></returns>
+        [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtCreateThreadEx")]
+        private static extern NTSTATUS NtCreateThreadExNative(out HANDLE threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList);
+
+        /// <summary>
+        /// Creates a thread in the specified process.
+        /// </summary>
+        /// <param name="threadHandle"></param>
+        /// <param name="desiredAccess"></param>
+        /// <param name="objectAttributes"></param>
+        /// <param name="processHandle"></param>
+        /// <param name="startAddress"></param>
+        /// <param name="parameter"></param>
+        /// <param name="createFlags"></param>
+        /// <param name="zeroBits"></param>
+        /// <param name="stackSize"></param>
+        /// <param name="maximumStackSize"></param>
+        /// <param name="attributeList"></param>
+        /// <returns></returns>
+        internal static NTSTATUS NtCreateThreadEx(out HANDLE threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
+        {
+            var res = NtCreateThreadExNative(out threadHandle, desiredAccess, objectAttributes, processHandle, startAddress, parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
+            if (res.Value < 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Terminates a thread.
+        /// This doesn't use CsWin32 because they don't publicise its availability.
+        /// </summary>
+        /// <param name="threadHandle"></param>
+        /// <param name="exitStatus"></param>
+        /// <returns></returns>
+        [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtTerminateThread")]
+        private static extern NTSTATUS NtTerminateThreadNative(HANDLE threadHandle, NTSTATUS exitStatus);
+
+        /// <summary>
+        /// Terminates a thread.
+        /// </summary>
+        /// <param name="threadHandle"></param>
+        /// <param name="exitStatus"></param>
+        /// <returns></returns>
+        internal static NTSTATUS NtTerminateThread(HANDLE threadHandle, NTSTATUS exitStatus)
+        {
+            var res = NtTerminateThreadNative(threadHandle, exitStatus);
+            if (res.Value < 0 && res != exitStatus)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
             }
