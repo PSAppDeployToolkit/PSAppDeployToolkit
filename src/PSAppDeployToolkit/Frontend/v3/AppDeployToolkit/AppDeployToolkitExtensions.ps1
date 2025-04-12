@@ -14,9 +14,6 @@ None. You cannot pipe objects to this script.
 .OUTPUTS
 None. This script does not generate any output.
 
-.LINK
-https://psappdeploytoolkit.com
-
 #>
 
 ##*===============================================
