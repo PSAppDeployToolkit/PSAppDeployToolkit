@@ -18,27 +18,19 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
         public static string? GetMessageFromMsiExitCode(uint msiExitCode)
         {
-            if (Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE) is FreeLibrarySafeHandle hMsiMsgDll)
+            var hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", default, LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
+            try
             {
-                try
-                {
-                    if (!hMsiMsgDll.IsInvalid && !hMsiMsgDll.IsClosed)
-                    {
-                        var buffer = new char[4096];
-                        User32.LoadString(hMsiMsgDll, msiExitCode, buffer, buffer.Length);
-                        var msiMsgString = new string(buffer).Trim();
-                        if (!string.IsNullOrWhiteSpace(msiMsgString))
-                        {
-                            return msiMsgString;
-                        }
-                    }
-                }
-                finally
-                {
-                    hMsiMsgDll.Dispose();
-                }
+                var buffer = new char[4096];
+                var bufspan = new Span<char>(buffer);
+                User32.LoadString(hMsiMsgDll, msiExitCode, bufspan);
+                var msiMsgString = bufspan.ToString().Trim('\0').Trim();
+                return !string.IsNullOrWhiteSpace(msiMsgString) ? msiMsgString : null;
             }
-            return null;
+            finally
+            {
+                Kernel32.FreeLibrary(ref hMsiMsgDll);
+            }
         }
     }
 }

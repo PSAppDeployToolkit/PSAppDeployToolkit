@@ -122,17 +122,19 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hInstance"></param>
         /// <param name="uID"></param>
         /// <param name="lpBuffer"></param>
-        /// <param name="cchBufferMax"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static int LoadString(SafeHandle hInstance, uint uID, Span<char> lpBuffer, int cchBufferMax)
+        internal static unsafe int LoadString(HINSTANCE hInstance, uint uID, Span<char> lpBuffer)
         {
-            var res = PInvoke.LoadString(hInstance, uID, lpBuffer, cchBufferMax);
-            if (res == 0)
+            fixed (char* lpBufferPointer = lpBuffer)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                var res = PInvoke.LoadString(hInstance, uID, lpBufferPointer, lpBuffer.Length);
+                if (res == 0)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            return res;
         }
 
         /// <summary>

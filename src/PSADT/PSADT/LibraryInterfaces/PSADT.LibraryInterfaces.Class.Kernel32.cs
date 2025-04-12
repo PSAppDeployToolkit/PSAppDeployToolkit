@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using PSADT.Utilities;
 using Windows.Win32;
@@ -55,14 +56,17 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwFlags"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags)
+        internal static unsafe HMODULE LoadLibraryEx(string lpLibFileName, HANDLE hFile, LOAD_LIBRARY_FLAGS dwFlags)
         {
-            var res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
-            if (null == res)
+            fixed (char* pLibFileName = lpLibFileName)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                var res = PInvoke.LoadLibraryEx(pLibFileName, hFile, dwFlags);
+                if (null == res || res.IsNull)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            return res;
         }
 
         /// <summary>
@@ -72,14 +76,17 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcName"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe FARPROC GetProcAddress(SafeHandle hModule, string lpProcName)
+        internal static unsafe FARPROC GetProcAddress(HMODULE hModule, string lpProcName)
         {
-            var res = PInvoke.GetProcAddress(hModule, lpProcName);
-            if (null == res)
+            fixed (byte* lpProcNameLocal = lpProcName is object ? Encoding.Default.GetBytes(lpProcName) : null)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                var res = PInvoke.GetProcAddress(hModule, new PCSTR(lpProcNameLocal));
+                if (null == res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            return res;
         }
 
         /// <summary>
@@ -90,16 +97,18 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pNativeMachine"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL IsWow64Process2(SafeHandle hProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine)
+        internal static unsafe BOOL IsWow64Process2(HANDLE hProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, [Optional] out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine)
         {
-            Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachineInternal;
-            var res = PInvoke.IsWow64Process2(hProcess, out pProcessMachine, &pNativeMachineInternal);
-            if (null == res)
+            fixed (Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE* pProcessMachineLocal = &pProcessMachine)
+            fixed (Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE* pNativeMachineLocal = &pNativeMachine)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                var res = PInvoke.IsWow64Process2(hProcess, pProcessMachineLocal, pNativeMachineLocal);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            pNativeMachine = pNativeMachineInternal;
-            return res;
         }
 
         /// <summary>

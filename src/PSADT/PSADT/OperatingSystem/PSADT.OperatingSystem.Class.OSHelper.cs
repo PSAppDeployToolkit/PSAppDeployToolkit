@@ -20,20 +20,20 @@ namespace PSADT.OperatingSystem
         {
             // Attempt to get the OS architecture via isWow64Process2() if we can (only available on Windows 10 1709 or higher).
             // The reason why this is important is that GetNativeSystemInfo() will always report x64 if in an x64 process on a non-x64 operating system.
-            if (Kernel32.LoadLibraryEx("kernel32.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32) is FreeLibrarySafeHandle hKernel32Dll)
+            var hKernel32Dll = Kernel32.LoadLibraryEx("kernel32.dll", default, LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32);
+            try
             {
-                try
-                {
-                    if (!hKernel32Dll.IsInvalid && !hKernel32Dll.IsClosed && Kernel32.GetProcAddress(hKernel32Dll, "IsWow64Process2") is FARPROC hKernel32EntryPoint && !hKernel32EntryPoint.IsNull)
-                    {
-                        Kernel32.IsWow64Process2(PInvoke.GetCurrentProcess_SafeHandle(), out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine);
-                        return (SystemArchitecture)pNativeMachine;
-                    }
-                }
-                finally
-                {
-                    hKernel32Dll.Dispose();
-                }
+                var hKernel32EntryPoint = Kernel32.GetProcAddress(hKernel32Dll, "IsWow64Process2");
+                Kernel32.IsWow64Process2(PInvoke.GetCurrentProcess(), out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine);
+                return (SystemArchitecture)pNativeMachine;
+            }
+            catch
+            {
+                // Just fall through here.
+            }
+            finally
+            {
+                Kernel32.FreeLibrary(ref hKernel32Dll);
             }
 
             // If we're here, we're older than 1709 or isWow64Process2 failed.
