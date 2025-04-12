@@ -255,7 +255,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ObjectInformationLength"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
-        [DllImport("ntdll.dll", EntryPoint = "NtQueryObject")]
+        [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtQueryObject")]
         private static extern NTSTATUS NtQueryObjectNative(HANDLE ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength);
 
         /// <summary>

@@ -459,11 +459,6 @@ namespace PSADT.LibraryInterfaces
     internal enum OBJECT_INFORMATION_CLASS
     {
         /// <summary>
-        /// Basic information about the object.
-        /// </summary>
-        ObjectBasicInformation = 0,
-
-        /// <summary>
         /// Information about the name of the object.
         /// </summary>
         ObjectNameInformation = 1,
