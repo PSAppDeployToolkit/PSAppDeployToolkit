@@ -20,6 +20,9 @@ function Private:Show-ADTInstallationRestartPromptFluent
     .PARAMETER Subtitle
         Dialog subtitle.
 
+    .PARAMETER CustomMessageText
+        Custom custom message text to display in the dialog.
+
     .PARAMETER DeploymentType
         Type of deployment ('Install', 'Uninstall', 'Repair'). Used for string selection.
 
@@ -48,6 +51,9 @@ function Private:Show-ADTInstallationRestartPromptFluent
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Subtitle,
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$CustomMessageText,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -85,6 +91,7 @@ function Private:Show-ADTInstallationRestartPromptFluent
         countdownDuration               = $(if (!$NoCountdown) { [System.TimeSpan]::FromSeconds($CountdownSeconds) } else { $null })
         countdownNoMinimizeDuration     = $(if ($adtConfig.UI.RestartCountdownNoMinimizeSeconds -gt 0) { [System.TimeSpan]::FromSeconds($adtConfig.UI.RestartCountdownNoMinimizeSeconds) } else { $null })
         restartMessageText              = $adtStrings.RestartPrompt.Message.$DeploymentType # Main message
+        customMessageText               = $(if ($PSBoundParameters.ContainsKey('CustomMessageText')) { $CustomMessageText }) #  Pass Custom Text directly
         countdownRestartMessageText     = $adtStrings.RestartPrompt.MessageRestart # Message shown when countdown active
         countdownAutomaticRestartText   = $adtStrings.RestartPrompt.TimeRemaining # Heading for countdown timer
         dismissButtonText               = $adtStrings.RestartPrompt.ButtonRestartLater
@@ -105,6 +112,7 @@ function Private:Show-ADTInstallationRestartPromptFluent
         $dialogParams.countdownDuration,
         $dialogParams.countdownNoMinimizeDuration,
         $dialogParams.restartMessageText,
+        $dialogParams.customMessageText,
         $dialogParams.countdownRestartMessageText,
         $dialogParams.countdownAutomaticRestartText,
         $dialogParams.dismissButtonText,

@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions; // Added for Regex
 using System.Windows;
@@ -72,12 +73,18 @@ namespace PSADT.UserInterface
         private bool _dialogAllowMove;
         private bool _dialogTopMost;
 
-        // Countdown Timer
+        // Countdown Handling and Timers
         private TimeSpan? _countdownDuration;
-
         private TimeSpan? _countdownNoMinimizeDuration; // Minutes before the end when minimize is disabled
         private Timer? _countdownTimer;
         private TimeSpan _countdownRemainingTime;
+
+        // Deferrals Handling and Timers
+        private TimeSpan? _deferralDeadlineDuration;
+        private DateTime? _deferralDeadline;
+        private Timer? _deferralDeadlineTimer;
+        private TimeSpan? _deferralDeadlineRemainingTime;
+        private int? _deferralsRemaining;
 
         // Process Evaluation
         private CancellationTokenSource? _processCancellationTokenSource;
@@ -102,8 +109,6 @@ namespace PSADT.UserInterface
 
         private string? _dialogResult;
         private double _progressBarValue = 0;
-        private int? _deferralsRemaining;
-        private TimeSpan? _deferralDeadline;
         private bool _isProcessing = false;
         private bool _isAnimating = false;
         private bool _isDisposed = false;
@@ -327,6 +332,7 @@ namespace PSADT.UserInterface
         /// <param name="deferralDeadline">Optional deadline until which deferral is allowed.</param>
         /// <param name="closeAppsMessageText">Message displayed when apps need closing.</param>
         /// <param name="alternativeCloseAppsMessageText">Message displayed when no apps need closing.</param>
+        /// <param name="customMessageText">Message displayed underneath the primary dialog message.</param>
         /// <param name="deferralsRemainingText">Text displayed next to the deferral count.</param>
         /// <param name="deferralDeadlineText">Text displayed next to the deferral deadline.</param>
         /// <param name="automaticStartCountdownText">Heading text for the countdown timer.</param>
@@ -341,9 +347,10 @@ namespace PSADT.UserInterface
             List<AppProcessInfo>? appsToClose,
             TimeSpan? countdownDuration,
             int? deferralsRemaining,
-            TimeSpan? deferralDeadline,
+            DateTime? deferralDeadline,
             string? closeAppsMessageText,
             string? alternativeCloseAppsMessageText,
+            string? customMessageText,
             string? deferralsRemainingText,
             string? deferralDeadlineText,
             string? automaticStartCountdownText,
@@ -367,6 +374,8 @@ namespace PSADT.UserInterface
             _appsToClose = appsToClose != null ? new List<AppProcessInfo>(appsToClose) : null; // Create a deep copy to avoid reference issues
             _processEvaluationService = processEvaluationService;
             _deferralsRemaining = deferralsRemaining;
+            _deferralDeadline = deferralDeadline;
+
 
             // Store original and alternative texts
             _originalMessage = closeAppsMessageText ?? "Please close the following applications:";
@@ -378,19 +387,21 @@ namespace PSADT.UserInterface
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, closeAppsMessageText ?? _originalMessage); // Use helper method
+            FormatMessageWithHyperlinks(CustomMessageTextBlock, customMessageText ?? string.Empty); // Use empty string if customMessageText is null
+            CustomMessageTextBlock.Visibility = string.IsNullOrEmpty(customMessageText) ? Visibility.Collapsed : Visibility.Visible; // Show or hide the custom message based on its content
             CloseAppsStackPanel.Visibility = Visibility.Visible;
             ProgressStackPanel.Visibility = Visibility.Collapsed;
             InputBoxStackPanel.Visibility = Visibility.Collapsed; // Ensure hidden by default
-            DeferStackPanel.Visibility = deferralsRemaining.HasValue && deferralsRemaining > 0 || deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
-            DeferralDeadlineHeadingTextBlock.Text = deferralDeadline == null ? deferralsRemainingText : deferralDeadlineText;
-
+            DeferStackPanel.Visibility = deferralsRemaining.HasValue || deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            DeferralDeadlineHeadingTextBlock.Text = !deferralDeadline.HasValue ? deferralsRemainingText : deferralDeadlineText;
+            
             CountdownStackPanel.Visibility = countdownDuration.HasValue ? Visibility.Visible : Visibility.Collapsed;
             CountdownHeadingTextBlock.Text = automaticStartCountdownText;
 
             // Configure buttons
             ButtonPanel.Visibility = Visibility.Visible;
             SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftOriginalText);
-            ButtonLeft.Visibility = deferralsRemaining.HasValue && deferralsRemaining > 0 | deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            ButtonLeft.Visibility = deferralsRemaining.HasValue || deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
             ButtonMiddle.Visibility = Visibility.Collapsed;
             SetButtonContentWithAccelerator(ButtonRight, _buttonRightOriginalText);
             ButtonRight.Visibility = Visibility.Visible;
@@ -464,6 +475,7 @@ namespace PSADT.UserInterface
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, progressMessage ?? "Deployment operation in progress. Please wait..."); // Use helper method
+            CustomMessageTextBlock.Visibility = Visibility.Collapsed;
             ProgressMessageDetailTextBlock.Text = progressDetailMessage ?? "Performing deployment operation...";
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
             CloseAppsSeparator.Visibility = Visibility.Collapsed; // Hide the separator when not needed
@@ -511,6 +523,7 @@ namespace PSADT.UserInterface
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, customMessage ?? string.Empty); // Use helper method
+            CustomMessageTextBlock.Visibility = Visibility.Collapsed;
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
             ProgressStackPanel.Visibility = Visibility.Collapsed;
             InputBoxStackPanel.Visibility = Visibility.Collapsed; // Ensure hidden by default
@@ -579,6 +592,7 @@ namespace PSADT.UserInterface
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, customMessage ?? "Please enter a value:"); // Use helper method
+            CustomMessageTextBlock.Visibility = Visibility.Collapsed; // Hide the custom message block
             InputBoxText.Text = initialInputText ?? string.Empty; // Set initial text
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
             ProgressStackPanel.Visibility = Visibility.Collapsed;
@@ -685,6 +699,7 @@ namespace PSADT.UserInterface
         /// <param name="countdownDuration">Optional duration for a countdown timer before automatic restart.</param>
         /// <param name="countdownNoMinimizeDuration">Optional duration before the end of the countdown when the 'Dismiss' button is disabled.</param>
         /// <param name="restartMessageText">The main message text asking for restart confirmation.</param>
+        /// <param nanm="customMessageText">Custom message text displayed below the primary message.</param>
         /// <param name="countdownRestartMessageText">Message text displayed when the countdown is active.</param>
         /// <param name="countdownAutomaticRestartText">Heading text for the countdown timer.</param>
         /// <param name="dismissButtonText">Text for the dismiss/restart later button.</param>
@@ -696,6 +711,7 @@ namespace PSADT.UserInterface
             TimeSpan? countdownDuration,
             TimeSpan? countdownNoMinimizeDuration,
             string? restartMessageText,
+            string? customMessageText,
             string? countdownRestartMessageText,
             string? countdownAutomaticRestartText,
             string? dismissButtonText,
@@ -716,8 +732,10 @@ namespace PSADT.UserInterface
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, countdownRestartMessageText ?? restartMessageText ?? "A system restart is required to complete the installation."); // Use helper method
-            CountdownHeadingTextBlock.Text = countdownAutomaticRestartText;
+            FormatMessageWithHyperlinks(CustomMessageTextBlock, customMessageText ?? string.Empty); // Use empty string if customMessageText is null
+            CustomMessageTextBlock.Visibility = string.IsNullOrEmpty(customMessageText) ? Visibility.Collapsed : Visibility.Visible; // Show or hide the custom message based on its content
 
+            CountdownHeadingTextBlock.Text = countdownAutomaticRestartText;
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
             ProgressStackPanel.Visibility = Visibility.Collapsed;
             InputBoxStackPanel.Visibility = Visibility.Collapsed; // Ensure hidden by default
@@ -1086,49 +1104,97 @@ namespace PSADT.UserInterface
         {
             try
             {
-                if (_deferralsRemaining.HasValue)
-                {
-                    // Only enable the button if there are deferrals remaining
-                    ButtonLeft.IsEnabled = _deferralsRemaining > 0;
-
-                    // Format the remaining time as hh:mm:ss
-                    CountdownValueTextBlock.Text = $"{_countdownRemainingTime.Hours}h {_countdownRemainingTime.Minutes}m {_countdownRemainingTime.Seconds}s";
-
-                    // Update accessibility properties
-                    AutomationProperties.SetName(DeferralDeadlineValueTextBlock, $"{_deferralsRemaining} remain");
-
-                    // Set the value correctly
-                    DeferralDeadlineValueTextBlock.Text = $"{_deferralsRemaining} remain";
-
-                    // Update text color based on remaining deferrals
-                    if (_deferralsRemaining <= 1)
-                    {
-                        // Less than 1 deferral remaining - use caution color
-                        DeferralDeadlineValueTextBlock.Foreground = Application.Current.Resources["SystemFillColorCautionBrush"] as Brush;
-                    }
-                }
-                else if (_deferralDeadline.HasValue)
-                {
-                    // Only enable the button if the deadline hasn't passed
-                    ButtonLeft.IsEnabled = _deferralDeadline > TimeSpan.Zero;
-
-                    // Update text color based on remaining time
-                    if (_deferralDeadline > TimeSpan.FromDays(1))
-                    {
-                        // Less than 1 deferral remaining - use caution color
-                        DeferralDeadlineValueTextBlock.Foreground = Application.Current.Resources["SystemFillColorCautionBrush"] as Brush;
-                    }
-
-                }
-                else
+                // First handle default case - if no deferral settings, just disable the button
+              if (!_deferralsRemaining.HasValue && !_deferralDeadline.HasValue)
                 {
                     ButtonLeft.IsEnabled = false;
+                    return;
+                }
+
+                // Handle deferrals remaining counter
+                if (_deferralsRemaining.HasValue)
+                {
+                    UpdateDeferralsRemainingUI();
+                }
+                // Handle deferral deadline
+                else if (_deferralDeadline.HasValue)
+                {
+                    UpdateDeferralDeadlineUI();
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error in UpdateDeferralValues: {ex.Message}");
             }
+        }
+
+        private void UpdateDeferralsRemainingUI()
+        {
+            // Only enable the button if there are deferrals remaining
+            ButtonLeft.IsEnabled = _deferralsRemaining > 0;
+
+            // Update text value
+            var displayText = $"{_deferralsRemaining} remain";
+            DeferralDeadlineValueTextBlock.Text = displayText;
+
+            // Update accessibility properties
+            AutomationProperties.SetName(DeferralDeadlineValueTextBlock, displayText);
+
+            // Update text color based on remaining deferrals
+            Brush textBrush;
+            if (_deferralsRemaining == 0)
+            {
+                textBrush = Application.Current.Resources["SystemFillColorCriticalBrush"] as Brush;
+            }
+            else if (_deferralsRemaining <= 1)
+            {
+                textBrush = Application.Current.Resources["SystemFillColorCautionBrush"] as Brush;
+            }
+            else
+            {
+                textBrush = Application.Current.Resources["TextFillColorPrimaryBrush"] as Brush;
+            }
+            DeferralDeadlineValueTextBlock.Foreground = textBrush;
+        }
+
+        private void UpdateDeferralDeadlineUI()
+        {
+            // Calculate time remaining until deadline
+            TimeSpan timeRemaining = _deferralDeadline.Value - DateTime.Now;
+            bool isExpired = timeRemaining <= TimeSpan.Zero;
+
+            // Set button state based on deadline
+            ButtonLeft.IsEnabled = !isExpired;
+
+            // Update text content
+            string displayText;
+            Brush textBrush;
+
+            if (isExpired)
+            {
+                displayText = "Expired";
+                textBrush = Application.Current.Resources["SystemFillColorCriticalBrush"] as Brush;
+            }
+            else
+            {
+                displayText = _deferralDeadline.Value.ToString("r");
+
+                if (timeRemaining < TimeSpan.FromDays(1))
+                {
+                    // Less than 1 day remaining - use caution color
+                    textBrush = Application.Current.Resources["SystemFillColorCautionBrush"] as Brush;
+                }
+                else
+                {
+                    textBrush = Application.Current.Resources["TextFillColorPrimaryBrush"] as Brush;
+                }
+            }
+
+            DeferralDeadlineValueTextBlock.Text = displayText;
+            DeferralDeadlineValueTextBlock.Foreground = textBrush;
+
+            // Update accessibility properties
+            AutomationProperties.SetName(DeferralDeadlineValueTextBlock, displayText);
         }
 
         private async Task StartProcessEvaluationLoopAsync(List<AppProcessInfo> initialApps, CancellationToken token)
@@ -1397,12 +1463,14 @@ namespace PSADT.UserInterface
             try
             {
                 _countdownRemainingTime = duration;
+                _deferralDeadlineRemainingTime = duration;
 
                 // Update the display initially
                 UpdateCountdownDisplay();
 
                 // Set up the timer to update every second
                 _countdownTimer = new Timer(CountdownTimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+                _deferralDeadlineTimer = new Timer(CountdownTimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
             }
             catch (Exception ex)
             {

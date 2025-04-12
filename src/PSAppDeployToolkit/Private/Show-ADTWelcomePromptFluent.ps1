@@ -20,6 +20,9 @@ function Private:Show-ADTWelcomePromptFluent
     .PARAMETER Subtitle
         Dialog subtitle.
 
+    .PARAMETER CustomMessageText
+        Custom custom message text to display in the dialog.
+
     .PARAMETER DeploymentType
         Type of deployment ('Install', 'Uninstall', 'Repair'). Used for string selection.
 
@@ -52,6 +55,9 @@ function Private:Show-ADTWelcomePromptFluent
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$DeploymentType,
+
+        [Parameter(Mandatory = $false)]
+        [System.String]$CustomMessageText,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -140,6 +146,7 @@ function Private:Show-ADTWelcomePromptFluent
         deferralDeadline                = $(if ($PSBoundParameters.ContainsKey('DeferDeadline')) { $DeferDeadline }) # Pass DeferDeadline directly)
         closeAppsMessageText            = $adtStrings.WelcomePrompt.Fluent.DialogMessage
         alternativeCloseAppsMessageText = $adtStrings.WelcomePrompt.Fluent.DialogMessageNoProcesses.$DeploymentType
+        customMessageText               = $(if ($PSBoundParameters.ContainsKey('CustomMessageText')) { $CustomMessageText }) #  Pass Custom Text directly
         deferralsRemainingText          = $adtStrings.WelcomePrompt.Fluent.TextBlockDeferralsRemaining
         deferralDeadlineText            = $adtStrings.WelcomePrompt.Fluent.TextBlockDeferralDeadline
         automaticStartCountdownText     = $adtStrings.WelcomePrompt.Fluent.TextBlockAutomaticStartCountdown
@@ -165,6 +172,7 @@ function Private:Show-ADTWelcomePromptFluent
         $dialogParams.deferralDeadline,
         $dialogParams.closeAppsMessageText,
         $dialogParams.alternativeCloseAppsMessageText,
+        $dialogParams.customMessageText,
         $dialogParams.deferralsRemainingText,
         $dialogParams.deferralDeadlineText,
         $dialogParams.automaticStartCountdownText,

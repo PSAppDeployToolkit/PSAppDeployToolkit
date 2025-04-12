@@ -205,7 +205,7 @@
                         Appearance="Primary"
                         AutomationProperties.Name="Application Title"
                         FontSize="28"
-                        FontWeight="SemiBold"
+                        FontTypography="BodyStrong"
                         Text="Excessively Long Vendor Application Title 1.1 x64 EN"
                         TextAlignment="Left"
                         TextTrimming="CharacterEllipsis"
@@ -259,11 +259,25 @@
                         x:Name="MessageTextBlock"
                         Margin="16,16,16,16"
                         Appearance="Primary"
+                        FontTypography="BodyStrong"
                         AutomationProperties.Name="Message Text"
                         Text="Test Message. This will be replaced when the application executes."
                         TextAlignment="Left"
                         TextWrapping="Wrap"
                         />
+
+                    <ui:TextBlock
+                        x:Name="CustomMessageTextBlock"
+                        Margin="16,0,16,16"
+                        Appearance="Primary"
+                        FontTypography="Body"
+                       
+                        AutomationProperties.Name="Message Text"
+                        Text="This is a custom message that can be added by the customer as an additional block of text. This can be added to any dialog."
+                        TextAlignment="Left"
+                        TextWrapping="Wrap"
+                        />
+
                 </StackPanel>
 
                 <StackPanel
@@ -334,8 +348,7 @@
                                         Margin="8,8,16,0"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Description"
-                                        FontSize="14"
-                                        FontWeight="SemiBold"
+                                        FontTypography="BodyStrong"
                                         Text="{Binding ProcessDescription, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis"
                                         TextWrapping="Wrap"
@@ -373,11 +386,10 @@
 
                     <ui:TextBlock
                         x:Name="ProgressMessageDetailTextBlock"
-                        Margin="16,16,16,8"
+                        Margin="16,16,16,16"
                         HorizontalAlignment="Stretch"
-                        Appearance="Secondary"
+                        FontTypography="Body"
                         AutomationProperties.Name="Progress Detail Text"
-                        FontSize="12"
                         Text="Secondary Progress Message for more details ..."
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="Wrap"
@@ -447,6 +459,8 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Appearance="Primary"
+                            FontSize="15"
+                            FontTypography="BodyStrong"
                             Text="Automatic Install Countdown"
                             TextWrapping="WrapWithOverflow"
                             />
@@ -456,9 +470,9 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            AutomationProperties.Name="Countdown Timer Value"
                             FontSize="15"
-                            FontWeight="SemiBold"
+                            AutomationProperties.Name="Countdown Timer Value"
+                            FontTypography="BodyStrong"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="00:00:00"
                             />
@@ -493,7 +507,9 @@
                             Margin="16,0,0,0"
                             VerticalAlignment="Center"
                             Appearance="Primary"
+                            FontSize="15"
                             Text="Deferral Deadline"
+                            FontTypography="BodyStrong"
                             TextWrapping="WrapWithOverflow"
                             />
                         <ui:TextBlock
@@ -502,7 +518,7 @@
                             VerticalAlignment="Center"
                             Appearance="Primary"
                             FontSize="15"
-                            FontWeight="SemiBold"
+                            FontTypography="BodyStrong"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="1pm Mon 4th April 2025"
                             TextWrapping="WrapWithOverflow"

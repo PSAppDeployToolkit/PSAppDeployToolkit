@@ -93,6 +93,7 @@ namespace PSADT.UserInterface
         /// <param name="deferralsRemaining">Optional number of deferrals allowed.</param>
         /// <param name="deferralDeadline">Optional deadline until which deferral is allowed.</param>
         /// <param name="closeAppsMessageText">Message displayed when apps need closing.</param>
+        /// <param name="customMessageText">A custom message displayed underneath the CloseApps message</param>
         /// <param name="alternativeCloseAppsMessageText">Message displayed when no apps need closing.</param>
         /// <param name="deferralsRemainingText">Text displayed next to the deferral count.</param>
         /// <param name="deferralDeadlineText">Text displayed next to the deferral deadline.</param>
@@ -114,9 +115,10 @@ namespace PSADT.UserInterface
             AppProcessInfo[]? appsToClose,
             TimeSpan? countdownDuration,
             int? deferralsRemaining,
-            TimeSpan? deferralDeadline,
+            DateTime? deferralDeadline,
             string? closeAppsMessageText,
             string? alternativeCloseAppsMessageText,
+            string? customMessageText,
             string? deferralsRemainingText,
             string? deferralDeadlineText,
             string? automaticStartCountdownText,
@@ -139,6 +141,7 @@ namespace PSADT.UserInterface
                     deferralDeadline: deferralDeadline,
                     closeAppsMessageText: closeAppsMessageText,
                     alternativeCloseAppsMessageText: alternativeCloseAppsMessageText,
+                    customMessageText: customMessageText,
                     deferralsRemainingText: deferralsRemainingText,
                     deferralDeadlineText: deferralDeadlineText,
                     automaticStartCountdownText: automaticStartCountdownText,
@@ -415,6 +418,7 @@ namespace PSADT.UserInterface
         /// <param name="countdownDuration">Optional duration for a countdown timer before automatic restart.</param>
         /// <param name="countdownNoMinimizeDuration">Optional duration before the end of the countdown when the 'Dismiss' button is disabled.</param>
         /// <param name="restartMessageText">The main message text asking for restart confirmation.</param>
+        /// <param name="customMessageText">A custom message displayed underneath the CloseApps message</param>
         /// <param name="countdownRestartMessageText">Message text displayed when the countdown is active.</param>
         /// <param name="countdownAutomaticRestartText">Heading text for the countdown timer.</param>
         /// <param name="dismissButtonText">Text for the dismiss/restart later button.</param>
@@ -432,6 +436,7 @@ namespace PSADT.UserInterface
             TimeSpan? countdownDuration,
             TimeSpan? countdownNoMinimizeDuration,
             string restartMessageText,
+            string? customMessageText,
             string? countdownRestartMessageText,
             string? countdownAutomaticRestartText,
             string? dismissButtonText,
@@ -448,6 +453,7 @@ namespace PSADT.UserInterface
                     countdownDuration: countdownDuration,
                     countdownNoMinimizeDuration: countdownNoMinimizeDuration,
                     restartMessageText: restartMessageText,
+                    customMessageText: customMessageText,
                     countdownRestartMessageText: countdownRestartMessageText,
                     countdownAutomaticRestartText: countdownAutomaticRestartText,
                     dismissButtonText: dismissButtonText,

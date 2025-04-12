@@ -57,9 +57,11 @@ namespace PSADT.UserInterface
 
             string? closeAppsMessageText = "Please save your work before continuing as the following applications will be closed automatically.";
             string? alternativeCloseAppsMessageText = "Please select \'Install\' to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.";
-            int? deferralsRemaining = 1;
-            // TimeSpan deferralDeadline = TimeSpan.FromHours(2);
-            TimeSpan? deferralDeadline = null;
+            string? customMessageText = "This is a custom message that can be added using the -CustomText parameter on Show-ADTInstallationWelcome (also now available on Show-ADTInstallationRestartPrompt).";
+
+            int? deferralsRemaining = null;
+            DateTime deferralDeadline = DateTime.Parse("2025-04-20T13:00:00");
+            // DateTime? deferralDeadline = null;
             string? deferralsRemainingText = "Remaining Deferrals";
             string? deferralDeadlineText = "Deferral Deadline";
             string? automaticStartCountdownText = "Automatic Start Countdown";
@@ -78,7 +80,7 @@ namespace PSADT.UserInterface
             string dismissButtonText = "_Minimize";
             string restartButtonText = "_Restart Now";
 
-            string customMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed?";
+            string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed?";
 
             string inputBoxMessageText = "Please provide the name of the server you wish to connect to.";
             string inputBoxText = "Type things here";
@@ -140,6 +142,7 @@ namespace PSADT.UserInterface
                     deferralDeadline,
                     closeAppsMessageText,
                     alternativeCloseAppsMessageText,
+                    customMessageText,
                     deferralsRemainingText,
                     deferralDeadlineText,
                     automaticStartCountdownText,
@@ -191,7 +194,7 @@ namespace PSADT.UserInterface
                             appTitle,
                             subtitle,
                             appIconImage,
-                            customMessageText,
+                            customDialogMessageText,
                             ButtonLeftText,
                             ButtonMiddleText,
                             ButtonRightText);
@@ -218,6 +221,7 @@ namespace PSADT.UserInterface
                     restartCountdownDuration,
                     restartCountdownNoMinimizeDuration,
                     restartMessageText,
+                    customMessageText,
                     countdownRestartMessageText,
                     countdownAutomaticRestartText,
                     dismissButtonText,
