@@ -5,6 +5,9 @@ using Windows.Win32.UI.HiDpi;
 
 namespace PSADT.Utilities
 {
+    /// <summary>
+    /// Utility methods for managing display settings and DPI awareness.
+    /// </summary>
     public static class DisplayUtilities
     {
         /// <summary>

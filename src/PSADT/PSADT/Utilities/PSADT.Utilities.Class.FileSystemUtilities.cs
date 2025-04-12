@@ -3,6 +3,9 @@ using PSADT.LibraryInterfaces;
 
 namespace PSADT.Utilities
 {
+    /// <summary>
+    /// A class containing utility methods for file system operations.
+    /// </summary>
     internal static class FileSystemUtilities
     {
         /// <summary>
