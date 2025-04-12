@@ -49,7 +49,7 @@ namespace PSADT.OperatingSystem
                 case PROCESSOR_ARCHITECTURE.PROCESSOR_ARCHITECTURE_INTEL:
                     return SystemArchitecture.i386;
                 default:
-                    throw new Exception("An unsupported operating system architecture was detected.");
+                    throw new PlatformNotSupportedException("An unsupported operating system architecture was detected.");
             }
         }
 
