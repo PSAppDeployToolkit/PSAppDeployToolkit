@@ -106,7 +106,7 @@ namespace PSADT.FileSystem
                     string? objectName;
                     try
                     {
-                        objectName = GetObjectInformation(localHandle, OBJECT_INFORMATION_CLASS.ObjectNameInformation);
+                        objectName = GetObjectName(localHandle);
                         if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith("\\Device\\HarddiskVolume"))
                         {
                             continue;
@@ -166,16 +166,15 @@ namespace PSADT.FileSystem
         /// Retrieves the name of an object associated with a handle.
         /// </summary>
         /// <param name="handle"></param>
-        /// <param name="infoClass"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private static string? GetObjectInformation(HANDLE handle, OBJECT_INFORMATION_CLASS infoClass)
+        private static string? GetObjectName(HANDLE handle)
         {
             // Do an initial query to get the required buffer size.
             int bufferReqLength;
             try
             {
-                NtDll.NtQueryObject(handle, infoClass, IntPtr.Zero, 0, out bufferReqLength);
+                NtDll.NtQueryObject(handle, OBJECT_INFORMATION_CLASS.ObjectNameInformation, IntPtr.Zero, 0, out bufferReqLength);
             }
             catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
             {
@@ -192,7 +191,7 @@ namespace PSADT.FileSystem
             {
                 try
                 {
-                    NtDll.NtQueryObject(handle, infoClass, bufferPtr, bufferReqLength, out _);
+                    NtDll.NtQueryObject(handle, OBJECT_INFORMATION_CLASS.ObjectNameInformation, bufferPtr, bufferReqLength, out _);
                 }
                 catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME))
                 {
@@ -202,15 +201,7 @@ namespace PSADT.FileSystem
                 {
                     return null;
                 }
-                switch (infoClass)
-                {
-                    case OBJECT_INFORMATION_CLASS.ObjectNameInformation:
-                        return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(bufferPtr).Name.Buffer.ToString()?.Trim('\0').Trim();
-                    case OBJECT_INFORMATION_CLASS.ObjectTypeInformation:
-                        return Marshal.PtrToStructure<NtDll.OBJECT_TYPE_INFORMATION>(bufferPtr).TypeName.Buffer.ToString()?.Trim('\0').Trim();
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(infoClass), $"Unsupported OBJECT_INFORMATION_CLASS: {infoClass}");
-                }
+                return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(bufferPtr).Name.Buffer.ToString()?.Trim('\0').Trim();
             }
             finally
             {
