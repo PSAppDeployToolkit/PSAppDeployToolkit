@@ -23,8 +23,7 @@ namespace PSADT.OperatingSystem
             var hKernel32Dll = Kernel32.LoadLibraryEx("kernel32.dll", default, LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32);
             try
             {
-                var hKernel32EntryPoint = Kernel32.GetProcAddress(hKernel32Dll, "IsWow64Process2");
-                Kernel32.IsWow64Process2(PInvoke.GetCurrentProcess(), out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine);
+                Kernel32.GetProcAddress(hKernel32Dll, "IsWow64Process2").CreateDelegate<IsWow64Process2Delegate>().Invoke(IntPtr.Zero, out var pProcessMachine, out var pNativeMachine);
                 return (SystemArchitecture)pNativeMachine;
             }
             catch
@@ -75,5 +74,14 @@ namespace PSADT.OperatingSystem
             }
             return false;
         }
+
+        /// <summary>
+        /// Determines whether the specified process is running under WOW64.
+        /// </summary>
+        /// <param name="hProcess"></param>
+        /// <param name="pProcessMachine"></param>
+        /// <param name="pNativeMachine"></param>
+        /// <returns></returns>
+        private delegate bool IsWow64Process2Delegate(IntPtr hProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine);
     }
 }

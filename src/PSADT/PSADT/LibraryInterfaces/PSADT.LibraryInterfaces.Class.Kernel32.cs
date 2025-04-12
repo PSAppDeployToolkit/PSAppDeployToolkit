@@ -91,28 +91,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Wrapper around IsWow64Process2 to manage error handling.
-        /// </summary>
-        /// <param name="hProcess"></param>
-        /// <param name="pProcessMachine"></param>
-        /// <param name="pNativeMachine"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL IsWow64Process2(HANDLE hProcess, out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pProcessMachine, [Optional] out Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE pNativeMachine)
-        {
-            fixed (Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE* pProcessMachineLocal = &pProcessMachine)
-            fixed (Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE* pNativeMachineLocal = &pNativeMachine)
-            {
-                var res = PInvoke.IsWow64Process2(hProcess, pProcessMachineLocal, pNativeMachineLocal);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
-            }
-        }
-
-        /// <summary>
         /// Wrapper around GetPrivateProfileString to manage error handling.
         /// </summary>
         /// <param name="lpAppName"></param>
