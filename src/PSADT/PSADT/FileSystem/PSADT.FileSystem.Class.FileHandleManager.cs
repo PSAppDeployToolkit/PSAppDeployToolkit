@@ -8,7 +8,6 @@ using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
-using Windows.Win32.System.WindowsProgramming;
 using Windows.Wdk.Foundation;
 
 namespace PSADT.FileSystem
@@ -59,6 +58,20 @@ namespace PSADT.FileSystem
                 var sysHandle = Marshal.PtrToStructure<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(handleEntryPtr);
                 handleEntryPtr += handleEntryExSize;
 
+                // Skip this handle if it's not a file or directory handle.
+                if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
+                {
+                    continue;
+                }
+
+                // Filter out handles that are known to cause NtQueryObject to hang.
+                if ((sysHandle.GrantedAccess == 0x00120189 && (sysHandle.HandleAttributes == 0 || sysHandle.HandleAttributes == 2)) ||
+                    (sysHandle.GrantedAccess == 0x0012019F && (sysHandle.HandleAttributes == 0 || sysHandle.HandleAttributes == 2)) ||
+                    (sysHandle.GrantedAccess == 0x001A019F && (sysHandle.HandleAttributes == 2)))
+                {
+                    continue;
+                }
+
                 // Open the owning process with rights to duplicate handles.
                 HANDLE processHandle;
                 try
@@ -89,27 +102,10 @@ namespace PSADT.FileSystem
                     Kernel32.CloseHandle(ref processHandle);
                 }
 
-                // Determine what we're working with.
-                string? objectType;
+                // Get the handle's name to check if it's a hard drive path.
                 string? objectName;
                 try
                 {
-                    // Get the handle's type name to check if it's a file/directory handle.
-                    objectType = GetObjectInformation(localHandle, OBJECT_INFORMATION_CLASS.ObjectTypeInformation);
-                    if (string.IsNullOrWhiteSpace(objectType) || (objectType != "File" && objectType != "Directory"))
-                    {
-                        continue;
-                    }
-
-                    // Filter out handles that are known to cause NtQueryObject to hang.
-                    if ((sysHandle.GrantedAccess == 0x00120189 && (sysHandle.HandleAttributes == 0 || sysHandle.HandleAttributes == 2)) ||
-                        (sysHandle.GrantedAccess == 0x0012019F && (sysHandle.HandleAttributes == 0 || sysHandle.HandleAttributes == 2)) ||
-                        (sysHandle.GrantedAccess == 0x001A019F && (sysHandle.HandleAttributes == 2)))
-                    {
-                        continue;
-                    }
-
-                    // Get the handle's name to check if it's a hard drive path.
                     objectName = GetObjectInformation(localHandle, OBJECT_INFORMATION_CLASS.ObjectNameInformation);
                     if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith("\\Device\\HarddiskVolume"))
                     {
@@ -209,7 +205,7 @@ namespace PSADT.FileSystem
                     case OBJECT_INFORMATION_CLASS.ObjectNameInformation:
                         return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(bufferPtr).Name.Buffer.ToString()?.Trim('\0').Trim();
                     case OBJECT_INFORMATION_CLASS.ObjectTypeInformation:
-                        return Marshal.PtrToStructure<PUBLIC_OBJECT_TYPE_INFORMATION>(bufferPtr).TypeName.Buffer.ToString()?.Trim('\0').Trim();
+                        return Marshal.PtrToStructure<NtDll.OBJECT_TYPE_INFORMATION>(bufferPtr).TypeName.Buffer.ToString()?.Trim('\0').Trim();
                     default:
                         throw new ArgumentOutOfRangeException(nameof(infoClass), $"Unsupported OBJECT_INFORMATION_CLASS: {infoClass}");
                 }
@@ -219,6 +215,54 @@ namespace PSADT.FileSystem
                 Marshal.FreeHGlobal(bufferPtr);
             }
         }
+
+        /// <summary>
+        /// Retrieves a lookup table of object types.
+        /// </summary>
+        /// <returns></returns>
+        private static ReadOnlyDictionary<ushort, string> GetObjectTypeLookupTable()
+        {
+            // Pre-calculate the sizes of the structures we need to read.
+            var objectTypesSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
+            var objectTypeSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
+
+            // Query the system for all object type info.
+            var typesBufferSize = objectTypesSize;
+            var typesBufferPtr = Marshal.AllocHGlobal(typesBufferSize);
+            var status = NtDll.NtQueryObject((HANDLE)IntPtr.Zero, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, typesBufferSize, out int typesBufferReqLength);
+            while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            {
+                Marshal.FreeHGlobal(typesBufferPtr);
+                typesBufferSize = typesBufferReqLength;
+                typesBufferPtr = Marshal.AllocHGlobal(typesBufferReqLength);
+                status = NtDll.NtQueryObject((HANDLE)IntPtr.Zero, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, typesBufferSize, out typesBufferReqLength);
+            }
+
+            // Read the number of types from the buffer and return a built-out dictionary.
+            try
+            {
+                var typesCount = Marshal.PtrToStructure<NtDll.OBJECT_TYPES_INFORMATION>(typesBufferPtr).NumberOfTypes;
+                var typeTable = new Dictionary<ushort, string>((int)typesCount);
+                var ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
+                for (uint i = 0; i < typesCount; i++)
+                {
+                    // Marshal the data into our structure and add the necessary values to the dictionary.
+                    var typeInfo = Marshal.PtrToStructure<NtDll.OBJECT_TYPE_INFORMATION>(IntPtr.Add(typesBufferPtr, ptrOffset));
+                    typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().Trim('\0').Trim());
+                    ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
+                }
+                return new ReadOnlyDictionary<ushort, string>(typeTable);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(typesBufferPtr);
+            }
+        }
+
+        /// <summary>
+        /// The lookup table of object types.
+        /// </summary>
+        private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable = GetObjectTypeLookupTable();
 
         /// <summary>
         /// The SystemExtendedHandleInformation class from the kernel.

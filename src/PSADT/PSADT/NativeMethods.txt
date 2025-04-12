@@ -19,6 +19,7 @@ DuplicateTokenEx
 E_ACCESSDENIED
 EnableMenuItem
 EnumWindows
+GENERIC_MAPPING
 GetCurrentProcess
 GetCurrentThreadId
 GetExitCodeProcess
@@ -60,7 +61,6 @@ LoadLibraryEx
 LoadString
 LookupPrivilegeValueW
 MMDeviceEnumerator
-PUBLIC_OBJECT_TYPE_INFORMATION
 OBJECT_NAME_INFORMATION
 OOBEComplete
 OpenProcess

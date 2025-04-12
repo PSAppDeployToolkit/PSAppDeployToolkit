@@ -472,5 +472,10 @@ namespace PSADT.LibraryInterfaces
         /// Information about the type of the object.
         /// </summary>
         ObjectTypeInformation = 2,
+
+        /// <summary>
+        /// Information about the types of objects in the system.
+        /// </summary>
+        ObjectTypesInformation = 3,
     }
 }
