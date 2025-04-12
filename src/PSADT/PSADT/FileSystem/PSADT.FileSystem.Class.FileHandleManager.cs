@@ -82,6 +82,10 @@ namespace PSADT.FileSystem
                     {
                         continue;
                     }
+                    catch (ArgumentException ex) when (ex.HResult == HRESULT.E_INVALIDARG)
+                    {
+                        continue;
+                    }
 
                     // Duplicate the remote handle into our process.
                     HANDLE localHandle;
