@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
-using PSADT.NativeInterfacing;
 using PSADT.OperatingSystem;
 using PSADT.Types;
 using PSADT.Utilities;

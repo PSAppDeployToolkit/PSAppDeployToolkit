@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.System.Memory;
 
-namespace PSADT.NativeInterfacing
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Utility class for building trampolines to call native functions.
