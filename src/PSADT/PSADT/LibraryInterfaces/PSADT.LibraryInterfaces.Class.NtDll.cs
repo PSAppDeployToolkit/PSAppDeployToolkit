@@ -64,7 +64,7 @@ namespace PSADT.LibraryInterfaces
         /// System information class for querying system handle information.
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        internal unsafe struct SYSTEM_HANDLE_INFORMATION_EX
+        internal struct SYSTEM_HANDLE_INFORMATION_EX
         {
             /// <summary>
             /// The number of handles in the system.
