@@ -227,7 +227,7 @@ namespace PSADT.LibraryInterfaces
         {
             lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
             NTSTATUS status = Windows.Wdk.PInvoke.RtlGetVersion((OSVERSIONINFOW*)Unsafe.AsPointer(ref lpVersionInformation));
-            if (status.Value < 0)
+            if (status != NTSTATUS.STATUS_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(status));
             }
@@ -271,7 +271,7 @@ namespace PSADT.LibraryInterfaces
         internal static NTSTATUS NtQueryObject(HANDLE Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength)
         {
             var res = NtQueryObjectNative(Handle, ObjectInformationClass, ObjectInformation, ObjectInformationLength, out ReturnLength);
-            if (res.Value < 0 && ((null != Handle && !Handle.IsNull && IntPtr.Zero != ObjectInformation && 0 != ObjectInformationLength) || ((null == Handle || Handle.IsNull) && ObjectInformationLength != ObjectInfoClassSizes[ObjectInformationClass])))
+            if (res != NTSTATUS.STATUS_SUCCESS && ((null != Handle && !Handle.IsNull && IntPtr.Zero != ObjectInformation && 0 != ObjectInformationLength) || ((null == Handle || Handle.IsNull) && ObjectInformationLength != ObjectInfoClassSizes[ObjectInformationClass])))
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
             }
@@ -315,7 +315,7 @@ namespace PSADT.LibraryInterfaces
         internal static NTSTATUS NtCreateThreadEx(out HANDLE threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
         {
             var res = NtCreateThreadExNative(out threadHandle, desiredAccess, objectAttributes, processHandle, startAddress, parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
-            if (res.Value < 0)
+            if (res != NTSTATUS.STATUS_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
             }
@@ -341,7 +341,7 @@ namespace PSADT.LibraryInterfaces
         internal static NTSTATUS NtTerminateThread(HANDLE threadHandle, NTSTATUS exitStatus)
         {
             var res = NtTerminateThreadNative(threadHandle, exitStatus);
-            if (res.Value < 0 && res != exitStatus)
+            if (res != NTSTATUS.STATUS_SUCCESS && res != exitStatus)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
             }
