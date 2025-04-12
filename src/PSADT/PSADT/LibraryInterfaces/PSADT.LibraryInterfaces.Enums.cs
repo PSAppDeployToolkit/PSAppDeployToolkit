@@ -478,4 +478,15 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         ObjectTypesInformation = 3,
     }
+
+    /// <summary>
+    /// System information classes.
+    /// </summary>
+    internal enum SYSTEM_INFORMATION_CLASS
+    {
+        /// <summary>
+        /// Extended information about the system's handles.
+        /// </summary>
+        SystemExtendedHandleInformation = 64,
+    }
 }

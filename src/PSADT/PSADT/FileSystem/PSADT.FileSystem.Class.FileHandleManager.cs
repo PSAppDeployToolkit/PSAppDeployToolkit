@@ -32,13 +32,13 @@ namespace PSADT.FileSystem
             // Query the total system handle information.
             var handleBufferSize = handleInfoExSize + handleEntryExSize;
             var handleBufferPtr = Marshal.AllocHGlobal(handleBufferSize);
-            var status = NtDll.NtQuerySystemInformation(SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out int handleBufferReqLength);
+            var status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out int handleBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
                 Marshal.FreeHGlobal(handleBufferPtr);
                 handleBufferSize = handleBufferReqLength;
                 handleBufferPtr = Marshal.AllocHGlobal(handleBufferReqLength);
-                status = NtDll.NtQuerySystemInformation(SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out handleBufferReqLength);
+                status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out handleBufferReqLength);
             }
             if (status != NTSTATUS.STATUS_SUCCESS)
             {
@@ -263,10 +263,5 @@ namespace PSADT.FileSystem
         /// The lookup table of object types.
         /// </summary>
         private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable = GetObjectTypeLookupTable();
-
-        /// <summary>
-        /// The SystemExtendedHandleInformation class from the kernel.
-        /// </summary>
-        private const int SystemExtendedHandleInformation = 64;
     }
 }
