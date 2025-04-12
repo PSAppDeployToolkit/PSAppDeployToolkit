@@ -231,7 +231,51 @@ namespace PSADT.UserInterface
         {
             DataContext = this;
 
-            SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, true);
+            if (dialogAccentColor != null && dialogAccentColor != string.Empty)
+                {
+                    try
+                    {
+                        SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
+
+                        // Apply the accent color to the application theme
+                        var colorDialogAccentColor = StringToColor(dialogAccentColor);
+                        ApplicationTheme appTheme = ApplicationThemeManager.GetAppTheme();
+                        ApplicationAccentColorManager.Apply(colorDialogAccentColor, appTheme, true);
+
+
+                        var converter = new ResourceReferenceExpressionConverter();
+                        var brushes = new Dictionary<string, SolidColorBrush>
+                        {
+                            ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
+                            ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
+                            ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
+                            ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"])
+                        };
+                        ResourceDictionary themeDictionary = Application.Current.Resources.MergedDictionaries[0];
+                        foreach (DictionaryEntry entry in themeDictionary)
+                        {
+                            if (entry.Value is SolidColorBrush brush)
+                            {
+                                var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
+                                if (dynamicColor is not Color &&
+                                    converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
+                                    brushes.ContainsKey((string)dynamicResource.ResourceKey))
+                                {
+                                    themeDictionary[entry.Key] = brushes[(string)dynamicResource.ResourceKey];
+                                }
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Failed to apply accent color: {ex.Message}");
+                    }
+                }
+            else
+            {
+                SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, true);
+            }
 
             InitializeComponent();
 
@@ -243,49 +287,8 @@ namespace PSADT.UserInterface
             _dialogAllowMove = dialogAllowMove ?? false;
             _dialogTopMost = dialogTopMost ?? false;
 
-            if (dialogAccentColor != string.Empty)
-            {
-                try
-                {
-                    // Apply the accent color to the application theme
-                    var colorDialogAccentColor = StringToColor(dialogAccentColor);
-                    ApplicationTheme appTheme = ApplicationThemeManager.GetAppTheme();
-                    ApplicationAccentColorManager.Apply(colorDialogAccentColor, appTheme, false);
 
-                    // And set the dialog accent color on the sidebar
-                    //SolidColorBrush accentBrush = new(colorDialogAccentColor);
-                    //accentBrush.Freeze(); // Improve performance by freezing the brush
-                    //AccentSidebar.Fill = accentBrush;
 
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Failed to apply accent color: {ex.Message}");
-                }
-            }
-
-            var converter = new ResourceReferenceExpressionConverter();
-            var brushes = new Dictionary<string, SolidColorBrush>
-            {
-                ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
-                ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
-                ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
-                ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"])
-            };
-            ResourceDictionary themeDictionary = Application.Current.Resources.MergedDictionaries[0];
-            foreach (DictionaryEntry entry in themeDictionary)
-            {
-                if (entry.Value is SolidColorBrush brush)
-                {
-                    var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
-                    if (dynamicColor is not Color &&
-                        converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
-                        brushes.ContainsKey((string)dynamicResource.ResourceKey))
-                    {
-                        themeDictionary[entry.Key] = brushes[(string)dynamicResource.ResourceKey];
-                    }
-                }
-            }
 
             // Configure window events
             Loaded += UnifiedDialog_Loaded;
@@ -1858,7 +1861,7 @@ namespace PSADT.UserInterface
 
                     // Set appropriate margin
                     Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[0];
-                    button.Margin = new Thickness(0, 0, 4, 0);
+                    button.Margin = new Thickness(0, 0, 0, 0);
                 }
                 else
                 {

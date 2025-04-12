@@ -19,10 +19,13 @@
     ExtendsContentIntoTitleBar="True"
     FontFamily="Segoe UI Display"
     FontSize="14"
+    ui:Design.Background="Transparent"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     ResizeMode="NoResize"
     SizeToContent="Height"
     SnapsToDevicePixels="True"
+    UseLayoutRounding="True"
     RenderOptions.BitmapScalingMode="HighQuality"
     TextOptions.TextFormattingMode="Display"
     TextOptions.TextHintingMode="Animated"
@@ -156,6 +159,8 @@
             ShowClose="False"
             ShowMaximize="False"
             ShowMinimize="false"
+            Margin="16,0,0,0"
+            MaxHeight="32"
             />
 
         <Rectangle
@@ -172,7 +177,7 @@
             Grid.Row="0"
             Grid.Column="1"
             Width="Auto"
-            Margin="24,32,24,8"
+            Margin="24,40,24,8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
             AutomationProperties.Name="Header Panel"
@@ -345,7 +350,7 @@
                                         x:Name="ListViewTitle"
                                         Grid.Row="0"
                                         Grid.Column="1"
-                                        Margin="8,8,16,0"
+                                        Margin="8,4,16,0"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Description"
                                         FontTypography="BodyStrong"
@@ -357,7 +362,7 @@
                                         x:Name="ListViewSubTitle"
                                         Grid.Row="1"
                                         Grid.Column="1"
-                                        Margin="8,0,16,8"
+                                        Margin="8,0,16,4"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Name"
                                         FontSize="12"
@@ -397,8 +402,11 @@
 
                     <Border
                         x:Name="BottomBar"
-                        Height="6"
+                        Height="8"
                         Margin="16,0,16,24"
+                        Padding="1,2,1,2"
+                        Background="{DynamicResource CardStrokeColorDefaultBrush}"
+                        CornerRadius="3"
                         >
                         <ProgressBar
                             x:Name="ProgressBar"
@@ -445,7 +453,7 @@
 
                     <DockPanel
                         x:Name="CountdownDockPanel"
-                        Margin="32,16,32,16"
+                        Margin="24,16,24,16"
                         >
 
                         <ui:SymbolIcon
@@ -459,8 +467,7 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            FontSize="15"
-                            FontTypography="BodyStrong"
+                            FontTypography="Body"
                             Text="Automatic Install Countdown"
                             TextWrapping="WrapWithOverflow"
                             />
@@ -470,7 +477,6 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            FontSize="15"
                             AutomationProperties.Name="Countdown Timer Value"
                             FontTypography="BodyStrong"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -495,7 +501,7 @@
 
                     <DockPanel
                         x:Name="DeferDockPanel"
-                        Margin="32,16,32,16"
+                        Margin="24,16,24,16"
                         >
                         <ui:SymbolIcon
                             VerticalAlignment="Center"
@@ -507,9 +513,8 @@
                             Margin="16,0,0,0"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            FontSize="15"
                             Text="Deferral Deadline"
-                            FontTypography="BodyStrong"
+                            FontTypography="Body"
                             TextWrapping="WrapWithOverflow"
                             />
                         <ui:TextBlock
@@ -517,10 +522,9 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            FontSize="15"
                             FontTypography="BodyStrong"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="1pm Mon 4th April 2025"
+                            Text="Sun, 20th Apr 2025, 13:00 EST"
                             TextWrapping="WrapWithOverflow"
                             />
                     </DockPanel>

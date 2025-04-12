@@ -19,9 +19,10 @@ namespace PSADT.UserInterface
             string appTitle = "Adobe Reader CS 2025 x64 EN";
             string subtitle = "Bisto Systems Ltd - App Install";
             string? appIconImage = null;
-            string? dialogAccentColor = "";
-            //string? dialogAccentColor = "#FFFFB900"; // Yellow
+            //string? dialogAccentColor = "";
+            string? dialogAccentColor = "#FFFFB900"; // Yellow
             DialogPosition dialogPosition = DialogPosition.BottomRight;
+            // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
 
@@ -89,9 +90,9 @@ namespace PSADT.UserInterface
             string inputBoxButtonRightText = "_Start";
 
 
-            string ButtonLeftText = "No thanks";
+            string ButtonLeftText = "";
             string ButtonMiddleText = "";
-            string ButtonRightText = "Bring it!";
+            string ButtonRightText = "_Only one button!";
 
             // Create ProcessEvaluationService
             var processEvaluationService = new ProcessEvaluationService();
@@ -171,12 +172,14 @@ namespace PSADT.UserInterface
                         progressMessageText,
                         progressMessageDetailText);
 
+                    Thread.Sleep(3000); // Simulate some work being done
+
                     // Simulate a process with progress updates
                     for (int i = 0; i <= 100; i += 10)
                     {
                         // Update progress
                         UnifiedAdtApplication.UpdateProgress($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
-                        Thread.Sleep(1000);  // Simulate work being done
+                        Thread.Sleep(500);  // Simulate work being done
                     }
 
                     // Close Progress Dialog

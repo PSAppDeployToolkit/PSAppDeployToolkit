@@ -61,8 +61,8 @@ namespace PSADT.UserInterface
 
 
                 // Add WPF-UI resources
+                _app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary { Theme = Wpf.Ui.Appearance.ApplicationTheme.Dark });
                 _app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
-                _app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary { Theme = Wpf.Ui.Appearance.ApplicationTheme.Light });
 
                 // Signal that the application is ready
                 _initEvent.Set();
