@@ -51,8 +51,13 @@ namespace PSADT.FileSystem
             }
 
             // Process all handles and return a read-only list of the ones matching our directory filter.
+            var objectBufferPtr = Marshal.AllocHGlobal(GetObjectNameBufferSize);
+            var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
+            var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll");
             try
             {
+                var ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
+                var exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
                 var handleCount = Marshal.PtrToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>(handleBufferPtr).NumberOfHandles.ToUInt64();
                 var handleEntry = handleBufferPtr + handleInfoExSize;
                 var openHandles = new List<FileHandleInfo>();
@@ -106,7 +111,7 @@ namespace PSADT.FileSystem
                     string? objectName;
                     try
                     {
-                        objectName = GetObjectName(localHandle);
+                        objectName = GetObjectName(localHandle, ntQueryObject, exitThread, objectBufferPtr);
                         if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith("\\Device\\HarddiskVolume"))
                         {
                             continue;
@@ -114,6 +119,10 @@ namespace PSADT.FileSystem
                     }
                     finally
                     {
+                        unsafe
+                        {
+                            new Span<byte>(objectBufferPtr.ToPointer(), GetObjectNameBufferSize).Clear();
+                        }
                         Kernel32.CloseHandle(ref localHandle);
                     }
 
@@ -128,6 +137,9 @@ namespace PSADT.FileSystem
             finally
             {
                 Marshal.FreeHGlobal(handleBufferPtr);
+                Marshal.FreeHGlobal(objectBufferPtr);
+                Kernel32.FreeLibrary(ref hKernel32Ptr);
+                Kernel32.FreeLibrary(ref hNtdllPtr);
             }
         }
 
@@ -168,60 +180,48 @@ namespace PSADT.FileSystem
         /// <param name="handle"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private static string? GetObjectName(HANDLE handle)
+        private static string? GetObjectName(HANDLE handle, FARPROC ntQueryObject, FARPROC exitThread, IntPtr buffer)
         {
             // Start the thread to retrieve the object name and wait for the outcome.
-            var hNtdll = Kernel32.LoadLibrary("ntdll.dll");
-            var hKrn32 = Kernel32.LoadLibrary("kernel32.dll");
-            var buffer = Marshal.AllocHGlobal(GetObjectNameBufferSize);
+            var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, OBJECT_INFORMATION_CLASS.ObjectNameInformation, handle, buffer, GetObjectNameBufferSize);
             try
             {
-                var shellcode = GetObjectTypeShellcode(Kernel32.GetProcAddress(hKrn32, "ExitThread"), Kernel32.GetProcAddress(hNtdll, "NtQueryObject"), OBJECT_INFORMATION_CLASS.ObjectNameInformation, handle, buffer, GetObjectNameBufferSize);
+                NTSTATUS status = NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, PInvoke.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
                 try
                 {
-                    NTSTATUS status = NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, PInvoke.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                    // Terminate the thread if it's taking longer than 250 ms (NtQueryObject() has hung).
+                    if (PInvoke.WaitForSingleObject(hThread, (uint)GetObjectNameThreadTimeout.Milliseconds) == WAIT_EVENT.WAIT_TIMEOUT)
+                    {
+                        NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
+                    }
+
+                    // Get the exit code of the thread and throw an exception if it failed.
+                    Kernel32.GetExitCodeThread(hThread, out var exitCode);
                     try
                     {
-                        // Terminate the thread if it's taking longer than 250 ms (NtQueryObject() has hung).
-                        if (PInvoke.WaitForSingleObject(hThread, (uint)GetObjectNameThreadTimeout.Milliseconds) == WAIT_EVENT.WAIT_TIMEOUT)
+                        if ((NTSTATUS)ValueTypeConverter<int>.Convert(exitCode) is NTSTATUS res && res != NTSTATUS.STATUS_SUCCESS)
                         {
-                            NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
+                            throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
                         }
-
-                        // Get the exit code of the thread and throw an exception if it failed.
-                        Kernel32.GetExitCodeThread(hThread, out var exitCode);
-                        try
-                        {
-                            if ((NTSTATUS)ValueTypeConverter<int>.Convert(exitCode) is NTSTATUS res && res != NTSTATUS.STATUS_SUCCESS)
-                            {
-                                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-                            }
-                        }
-                        catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING))
-                        {
-                            return null;
-                        }
-                        catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                        {
-                            return null;
-                        }
-                        return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(buffer).Name.Buffer.ToString()?.Trim('\0').Trim();
                     }
-                    finally
+                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING))
                     {
-                        Kernel32.CloseHandle(ref hThread);
+                        return null;
                     }
+                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                    {
+                        return null;
+                    }
+                    return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(buffer).Name.Buffer.ToString()?.Trim('\0').Trim();
                 }
                 finally
                 {
-                    Kernel32.VirtualFree(shellcode, 0, VIRTUAL_FREE_TYPE.MEM_RELEASE);
+                    Kernel32.CloseHandle(ref hThread);
                 }
             }
             finally
             {
-                Marshal.FreeHGlobal(buffer);
-                Kernel32.FreeLibrary(ref hKrn32);
-                Kernel32.FreeLibrary(ref hNtdll);
+                Kernel32.VirtualFree(shellcode, 0, VIRTUAL_FREE_TYPE.MEM_RELEASE);
             }
         }
 
