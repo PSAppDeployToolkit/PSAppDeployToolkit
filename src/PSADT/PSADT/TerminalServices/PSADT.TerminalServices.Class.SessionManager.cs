@@ -23,28 +23,28 @@ namespace PSADT.TerminalServices
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        public static unsafe ReadOnlyCollection<SessionInfo> GetSessionInfo()
+        public static ReadOnlyCollection<SessionInfo> GetSessionInfo()
         {
-            var res = PInvoke.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, 0, 1, out var ppSessionInfo, out var pCount);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
+            WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var ppSessionInfo, out var pCount);
             try
             {
+                int structSize = Marshal.SizeOf(typeof(WTS_SESSION_INFOW));
+                IntPtr current = ppSessionInfo;
                 List<SessionInfo> sessions = [];
                 for (int i = 0; i < pCount; i++)
                 {
-                    if (GetSessionInfo(ppSessionInfo[i].SessionId) is SessionInfo session)
+                    var sessionInfo = Marshal.PtrToStructure<WTS_SESSION_INFOW>(current);
+                    if (GetSessionInfo(sessionInfo.SessionId) is SessionInfo session)
                     {
                         sessions.Add(session);
                     }
+                    current += structSize;
                 }
                 return sessions.AsReadOnly();
             }
             finally
             {
-                PInvoke.WTSFreeMemory(ppSessionInfo);
+                WtsApi32.WTSFreeMemory(ref ppSessionInfo);
             }
         }
 
@@ -55,35 +55,36 @@ namespace PSADT.TerminalServices
         /// <returns></returns>
         public static SessionInfo? GetSessionInfo(uint sessionId)
         {
-            unsafe T? GetValue<T>(WTS_INFO_CLASS infoClass)
+            T? GetValue<T>(WTS_INFO_CLASS infoClass)
             {
-                if (WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out var pBuffer, out _) || pBuffer == default || null == pBuffer.Value)
+                WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out var pBuffer, out _);
+                if (pBuffer != default && IntPtr.Zero != pBuffer)
                 {
                     try
                     {
                         if (typeof(T) == typeof(string))
                         {
-                            if (pBuffer.ToString().Trim() is string result && !string.IsNullOrWhiteSpace(result))
+                            if (Marshal.PtrToStringUni(pBuffer)?.Trim() is string result && !string.IsNullOrWhiteSpace(result))
                             {
                                 return (T)(object)result;
                             }
                         }
                         if (typeof(T) == typeof(ushort))
                         {
-                            return (T)(object)(ushort)Marshal.ReadInt16((IntPtr)pBuffer.Value);
+                            return (T)(object)(ushort)Marshal.ReadInt16(pBuffer);
                         }
                         else if (typeof(T) == typeof(uint))
                         {
-                            return (T)(object)(uint)Marshal.ReadInt32((IntPtr)pBuffer.Value);
+                            return (T)(object)(uint)Marshal.ReadInt32(pBuffer);
                         }
                         else if (typeof(T) == typeof(WTSINFOEXW))
                         {
-                            return (T)(object)Marshal.PtrToStructure<WTSINFOEXW>((IntPtr)pBuffer.Value);
+                            return (T)(object)Marshal.PtrToStructure<WTSINFOEXW>(pBuffer);
                         }
                     }
                     finally
                     {
-                        PInvoke.WTSFreeMemory(pBuffer);
+                        WtsApi32.WTSFreeMemory(ref pBuffer);
                     }
                 }
                 return default;

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -12,6 +13,27 @@ namespace PSADT.LibraryInterfaces
     internal static class WtsApi32
     {
         /// <summary>
+        /// Wrapper around WTSEnumerateSessions to manage error handling.
+        /// </summary>
+        /// <param name="hServer"></param>
+        /// <param name="pSessionInfo"></param>
+        /// <param name="pCount"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL WTSEnumerateSessions(HANDLE hServer, out IntPtr pSessionInfo, out uint pCount)
+        {
+            fixed (IntPtr* ppSessionInfo = &pSessionInfo)
+            fixed (uint* ppCount = &pCount)
+            {
+                var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, (WTS_SESSION_INFOW**)ppSessionInfo, ppCount);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
         /// Wrapper around WTSQuerySessionInformation to manage error handling.
         /// </summary>
         /// <param name="hServer"></param>
@@ -21,14 +43,18 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pBytesReturned"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out PWSTR ppBuffer, out uint pBytesReturned)
+        internal static unsafe BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out IntPtr pBuffer, out uint bytesReturned)
         {
-            var res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out ppBuffer, out pBytesReturned);
-            if (!res)
+            fixed (IntPtr* ppBuffer = &pBuffer)
+            fixed (uint* pBytesReturned = &bytesReturned)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                var res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, (PWSTR*)ppBuffer, pBytesReturned);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            return res;
         }
 
         /// <summary>
@@ -48,6 +74,18 @@ namespace PSADT.LibraryInterfaces
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 return res;
+            }
+        }
+
+        /// <summary>
+        /// Wrapper around WTSFreeMemory to manage error handling.
+        /// </summary>
+        /// <param name="pMemory"></param>
+        internal static unsafe void WTSFreeMemory(ref IntPtr pMemory)
+        {
+            if (pMemory != default && IntPtr.Zero == pMemory)
+            {
+                PInvoke.WTSFreeMemory(pMemory.ToPointer());
             }
         }
     }
