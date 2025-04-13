@@ -212,7 +212,7 @@ namespace PSADT.FileSystem
                     {
                         return null;
                     }
-                    return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(buffer).Name.Buffer.ToString()?.Trim('\0').Trim();
+                    return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(buffer).Name.Buffer.ToString()?.Replace("\0", string.Empty).Trim();
                 }
                 finally
                 {
@@ -257,7 +257,7 @@ namespace PSADT.FileSystem
                 {
                     // Marshal the data into our structure and add the necessary values to the dictionary.
                     var typeInfo = Marshal.PtrToStructure<NtDll.OBJECT_TYPE_INFORMATION>(IntPtr.Add(typesBufferPtr, ptrOffset));
-                    typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().Trim('\0').Trim());
+                    typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().Replace("\0", string.Empty).Trim());
                     ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
                 }
                 return new ReadOnlyDictionary<ushort, string>(typeTable);

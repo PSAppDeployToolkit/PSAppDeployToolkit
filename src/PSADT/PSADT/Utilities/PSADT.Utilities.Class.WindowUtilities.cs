@@ -66,7 +66,7 @@ namespace PSADT.Utilities
             {
                 var buffer = new char[textLength + 1];
                 User32.GetWindowText(hwnd, buffer);
-                var text = new string(buffer).TrimEnd('\0').Trim();
+                var text = new string(buffer).Replace("\0", string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     return text;

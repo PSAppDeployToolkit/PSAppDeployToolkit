@@ -24,7 +24,7 @@ namespace PSADT.Utilities
                 var buffer = new char[4096];
                 var bufspan = new Span<char>(buffer);
                 User32.LoadString(hMsiMsgDll, msiExitCode, bufspan);
-                var msiMsgString = bufspan.ToString().Trim('\0').Trim();
+                var msiMsgString = bufspan.ToString().Replace("\0", string.Empty).Trim();
                 return !string.IsNullOrWhiteSpace(msiMsgString) ? msiMsgString : null;
             }
             finally

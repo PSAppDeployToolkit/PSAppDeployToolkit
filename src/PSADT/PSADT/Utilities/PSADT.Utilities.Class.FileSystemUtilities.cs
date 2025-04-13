@@ -28,7 +28,7 @@ namespace PSADT.Utilities
                     continue;
                 }
 
-                var devicePath = targetPath.ToString().Trim('\0').Trim();
+                var devicePath = targetPath.ToString().Replace("\0", string.Empty).Trim();
                 if (ntPath.StartsWith(devicePath))
                 {
                     return ntPath.Replace(devicePath, driveLetter);
