@@ -57,6 +57,7 @@ namespace PSADT.FileSystem
             {
                 var ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
                 var exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
+                var objectBufferSpan = LibraryUtilities.CreateSpanFromPointer<byte>(objectBufferPtr, GetObjectNameBufferSize);
                 var handleCount = Marshal.PtrToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>(handleBufferPtr).NumberOfHandles.ToUInt64();
                 var handleEntry = handleBufferPtr + handleInfoExSize;
                 var openHandles = new List<FileHandleInfo>();
@@ -118,10 +119,7 @@ namespace PSADT.FileSystem
                     }
                     finally
                     {
-                        unsafe
-                        {
-                            new Span<byte>(objectBufferPtr.ToPointer(), GetObjectNameBufferSize).Clear();
-                        }
+                        objectBufferSpan.Clear();
                         Kernel32.CloseHandle(ref localHandle);
                     }
 
@@ -255,7 +253,7 @@ namespace PSADT.FileSystem
                 for (uint i = 0; i < typesCount; i++)
                 {
                     // Marshal the data into our structure and add the necessary values to the dictionary.
-                    var typeInfo = Marshal.PtrToStructure<NtDll.OBJECT_TYPE_INFORMATION>(IntPtr.Add(typesBufferPtr, ptrOffset));
+                    var typeInfo = Marshal.PtrToStructure<NtDll.OBJECT_TYPE_INFORMATION>(typesBufferPtr + ptrOffset);
                     typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().Replace("\0", string.Empty).Trim());
                     ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
                 }
