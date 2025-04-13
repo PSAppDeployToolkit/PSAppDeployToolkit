@@ -420,11 +420,11 @@ function Private:Show-ADTWelcomePromptClassic
         $labelDeferDeadline.AutoSize = $true
         if ($DeferTimes -ge 0)
         {
-            $labelDeferDeadline.Text = "$($adtStrings.WelcomePrompt.Classic.Defer.RemainingDeferrals) $($DeferTimes + 1)"
+            $labelDeferDeadline.Text = "$($adtStrings.WelcomePrompt.Classic.Defer.RemainingDeferrals) $($DeferTimes + 1)".Trim()
         }
         if ($deferDeadline)
         {
-            $labelDeferDeadline.Text = "$($adtStrings.WelcomePrompt.Classic.Defer.Deadline) $deferDeadline"
+            $labelDeferDeadline.Text = "$($labelDeferDeadline.Text)`n`n$($adtStrings.WelcomePrompt.Classic.Defer.Deadline) $deferDeadline".Trim()
         }
         $flowLayoutPanel.Controls.Add($labelDeferDeadline)
 
