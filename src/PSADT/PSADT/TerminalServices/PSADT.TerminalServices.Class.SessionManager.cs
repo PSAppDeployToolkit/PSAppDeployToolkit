@@ -112,7 +112,11 @@ namespace PSADT.TerminalServices
             {
                 logonTime = DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.LogonTime);
                 idleTime = DateTime.Now - DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.LastInputTime);
-                disconnectTime = DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.DisconnectTime);
+                Console.WriteLine(wtsInfoEx.Data.WTSInfoExLevel1.DisconnectTime);
+                if (wtsInfoEx.Data.WTSInfoExLevel1.DisconnectTime != 0)
+                {
+                    disconnectTime = DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.DisconnectTime);
+                }
             }
 
             // Instantiate a SessionInfo object and return it to the caller.
