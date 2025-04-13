@@ -25,7 +25,6 @@ namespace PSADT.FileSystem
         /// Retrieves a list of open handles, optionally filtered by path.
         /// </summary>
         /// <param name="directoryPath"></param>
-        /// <param name="close"></param>
         /// <returns></returns>
         public static ReadOnlyCollection<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
@@ -189,7 +188,7 @@ namespace PSADT.FileSystem
                 NTSTATUS status = NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, PInvoke.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
                 try
                 {
-                    // Terminate the thread if it's taking longer than 250 ms (NtQueryObject() has hung).
+                    // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
                     if (PInvoke.WaitForSingleObject(hThread, (uint)GetObjectNameThreadTimeout.Milliseconds) == WAIT_EVENT.WAIT_TIMEOUT)
                     {
                         NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
@@ -271,6 +270,7 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The context for the thread that retrieves the object name.
         /// </summary>
+        /// <param name="exitThread"></param>
         /// <param name="ntQueryObject"></param>
         /// <param name="infoClass"></param>
         /// <param name="handle"></param>
