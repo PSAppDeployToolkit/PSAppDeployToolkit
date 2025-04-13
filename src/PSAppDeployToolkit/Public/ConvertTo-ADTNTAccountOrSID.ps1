@@ -33,6 +33,9 @@ function ConvertTo-ADTNTAccountOrSID
     .PARAMETER LocalHost
         Avoids a costly domain check when only converting local accounts.
 
+    .PARAMETER LdapUri
+        Allows specification of the LDAP URI to use, either `LDAP://` or `LDAPS://`.
+
     .INPUTS
         System.String
 
@@ -89,14 +92,22 @@ function ConvertTo-ADTNTAccountOrSID
         [System.Security.Principal.SecurityIdentifier]$SID,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownName', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownNameLdap', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownNameLocalHost', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Security.Principal.WellKnownSidType]$WellKnownSIDName,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownNameLdap')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownNameLocalHost')]
         [System.Management.Automation.SwitchParameter]$WellKnownToNTAccount,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
-        [System.Management.Automation.SwitchParameter]$LocalHost
+        [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownNameLocalHost')]
+        [System.Management.Automation.SwitchParameter]$LocalHost,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownNameLdap')]
+        [ValidateSet('LDAP://', 'LDAPS://')]
+        [System.String]$LdapUri = 'LDAP://'
     )
 
     begin
@@ -105,11 +116,11 @@ function ConvertTo-ADTNTAccountOrSID
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Pre-calculate the domain SID.
-        $DomainSid = if ($PSCmdlet.ParameterSetName.Equals('WellKnownName') -and !$LocalHost)
+        $DomainSid = if ($PSCmdlet.ParameterSetName.StartsWith('WellKnownName') -and !$LocalHost)
         {
             try
             {
-                [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("LDAP://$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
+                [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("$LdapUri$((Get-CimInstance -ClassName Win32_ComputerSystem).Domain.ToLower())").ObjectSid[0], 0)
             }
             catch
             {
@@ -124,19 +135,19 @@ function ConvertTo-ADTNTAccountOrSID
         {
             try
             {
-                switch ($PSCmdlet.ParameterSetName)
+                switch -regex ($PSCmdlet.ParameterSetName)
                 {
-                    SIDToNTAccount
+                    '^SIDToNTAccount'
                     {
                         Write-ADTLogEntry -Message "Converting $(($msg = "the SID [$SID] to an NT Account name"))."
                         return $SID.Translate([System.Security.Principal.NTAccount])
                     }
-                    NTAccountToSID
+                    '^NTAccountToSID'
                     {
                         Write-ADTLogEntry -Message "Converting $(($msg = "the NT Account [$AccountName] to a SID"))."
                         return $AccountName.Translate([System.Security.Principal.SecurityIdentifier])
                     }
-                    WellKnownName
+                    '^WellKnownName'
                     {
                         Write-ADTLogEntry -Message "Converting $(($msg = "the Well Known SID Name [$WellKnownSIDName] to a $(('SID', 'NTAccount')[!!$WellKnownToNTAccount])"))."
                         $NTAccountSID = [System.Security.Principal.SecurityIdentifier]::new($WellKnownSIDName, $DomainSid)

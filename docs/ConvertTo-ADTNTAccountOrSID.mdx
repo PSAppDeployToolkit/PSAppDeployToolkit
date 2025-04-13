@@ -23,11 +23,24 @@ ConvertTo-ADTNTAccountOrSID -AccountName <NTAccount> [<CommonParameters>]
 ConvertTo-ADTNTAccountOrSID -SID <SecurityIdentifier> [<CommonParameters>]
 ```
 
-### WellKnownName
+### WellKnownNameLocalHost
 
 ```powershell
 ConvertTo-ADTNTAccountOrSID -WellKnownSIDName <WellKnownSidType> [-WellKnownToNTAccount] [-LocalHost]
  [<CommonParameters>]
+```
+
+### WellKnownNameLdap
+
+```powershell
+ConvertTo-ADTNTAccountOrSID -WellKnownSIDName <WellKnownSidType> [-WellKnownToNTAccount] -LdapUri <String>
+ [<CommonParameters>]
+```
+
+### WellKnownName
+
+```powershell
+ConvertTo-ADTNTAccountOrSID -WellKnownSIDName <WellKnownSidType> [-WellKnownToNTAccount] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -105,7 +118,7 @@ To get all well known SIDs available on system: [Enum]::GetNames([Security.Princ
 
 ```yaml
 Type: WellKnownSidType
-Parameter Sets: WellKnownName
+Parameter Sets: WellKnownNameLocalHost, WellKnownNameLdap, WellKnownName
 Aliases:
 Accepted values: NullSid, WorldSid, LocalSid, CreatorOwnerSid, CreatorGroupSid, CreatorOwnerServerSid, CreatorGroupServerSid, NTAuthoritySid, DialupSid, NetworkSid, BatchSid, InteractiveSid, ServiceSid, AnonymousSid, ProxySid, EnterpriseControllersSid, SelfSid, AuthenticatedUserSid, RestrictedCodeSid, TerminalServerSid, RemoteLogonIdSid, LogonIdsSid, LocalSystemSid, LocalServiceSid, NetworkServiceSid, BuiltinDomainSid, BuiltinAdministratorsSid, BuiltinUsersSid, BuiltinGuestsSid, BuiltinPowerUsersSid, BuiltinAccountOperatorsSid, BuiltinSystemOperatorsSid, BuiltinPrintOperatorsSid, BuiltinBackupOperatorsSid, BuiltinReplicatorSid, BuiltinPreWindows2000CompatibleAccessSid, BuiltinRemoteDesktopUsersSid, BuiltinNetworkConfigurationOperatorsSid, AccountAdministratorSid, AccountGuestSid, AccountKrbtgtSid, AccountDomainAdminsSid, AccountDomainUsersSid, AccountDomainGuestsSid, AccountComputersSid, AccountControllersSid, AccountCertAdminsSid, AccountSchemaAdminsSid, AccountEnterpriseAdminsSid, AccountPolicyAdminsSid, AccountRasAndIasServersSid, NtlmAuthenticationSid, DigestAuthenticationSid, SChannelAuthenticationSid, ThisOrganizationSid, OtherOrganizationSid, BuiltinIncomingForestTrustBuildersSid, BuiltinPerformanceMonitoringUsersSid, BuiltinPerformanceLoggingUsersSid, BuiltinAuthorizationAccessSid, WinBuiltinTerminalServerLicenseServersSid, MaxDefined
 
@@ -122,7 +135,7 @@ Convert the Well Known SID to an NTAccount name.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: WellKnownName
+Parameter Sets: WellKnownNameLocalHost, WellKnownNameLdap, WellKnownName
 Aliases:
 
 Required: False
@@ -138,12 +151,28 @@ Avoids a costly domain check when only converting local accounts.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: WellKnownName
+Parameter Sets: WellKnownNameLocalHost
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LdapUri
+
+Allows specification of the LDAP URI to use, either `LDAP://` or `LDAPS://`.
+
+```yaml
+Type: String
+Parameter Sets: WellKnownNameLdap
+Aliases:
+
+Required: True
+Position: Named
+Default value: LDAP://
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
