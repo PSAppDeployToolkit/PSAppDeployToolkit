@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -55,9 +56,16 @@ namespace PSADT.FileSystem
             var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll");
             try
             {
+                // Set up requirements for GetObjectName.
+                var objectBufferSpan = LibraryUtilities.CreateSpanFromPointer<byte>(objectBufferPtr, GetObjectNameBufferSize);
                 var ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
                 var exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
-                var objectBufferSpan = LibraryUtilities.CreateSpanFromPointer<byte>(objectBufferPtr, GetObjectNameBufferSize);
+
+                // Build a lookup table of NT device names. This must be built at runtime
+                // as the device names are not static and can change between invocations.
+                var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+
+                // Start looping through all handles.
                 var handleCount = Marshal.PtrToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>(handleBufferPtr).NumberOfHandles.ToUInt64();
                 var handleEntry = handleBufferPtr + handleInfoExSize;
                 var openHandles = new List<FileHandleInfo>();
@@ -124,7 +132,8 @@ namespace PSADT.FileSystem
                     }
 
                     // Add the handle information to the list if it matches the specified directory path.
-                    if (FileSystemUtilities.ConvertNtPathToDosPath(objectName) is string dosPath && (null == directoryPath || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
+                    string objectNameKey = $"\\{string.Join("\\", objectName.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (null == directoryPath || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
                     {
                         openHandles.Add(new FileHandleInfo(sysHandle, dosPath, objectName, objectType));
                     }

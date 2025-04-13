@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using PSADT.LibraryInterfaces;
 
 namespace PSADT.Utilities
@@ -9,12 +11,12 @@ namespace PSADT.Utilities
     internal static class FileSystemUtilities
     {
         /// <summary>
-        /// Converts an NT path to a DOS path by checking against all drive letters (A-Z).
+        /// Returns a lookup table for NT paths to drive letters.
         /// </summary>
-        /// <param name="ntPath"></param>
         /// <returns></returns>
-        public static string ConvertNtPathToDosPath(string ntPath)
+        internal static ReadOnlyDictionary<string, string> GetNtPathLookupTable()
         {
+            var lookupTable = new Dictionary<string, string>();
             var targetPath = new Span<char>(new char[260]);
             for (char drive = 'A'; drive <= 'Z'; drive++)
             {
@@ -27,15 +29,17 @@ namespace PSADT.Utilities
                 {
                     continue;
                 }
-
-                var devicePath = targetPath.ToString().Replace("\0", string.Empty).Trim();
-                if (ntPath.StartsWith(devicePath))
+                foreach (var path in targetPath.ToString().Trim('\0').Trim().Split('\0'))
                 {
-                    return ntPath.Replace(devicePath, driveLetter);
+                    var ntPath = path.Trim();
+                    if (ntPath.Length > 0)
+                    {
+                        lookupTable.Add(ntPath, driveLetter);
+                    }
                 }
                 targetPath.Clear();
             }
-            throw new InvalidOperationException($"Failed to convert NT path [{ntPath}] to DOS path.");
+            return new ReadOnlyDictionary<string, string>(lookupTable);
         }
     }
 }
