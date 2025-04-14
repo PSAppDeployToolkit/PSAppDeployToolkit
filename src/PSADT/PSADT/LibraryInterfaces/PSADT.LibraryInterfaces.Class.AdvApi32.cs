@@ -151,13 +151,11 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, BOOL DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, uint BufferLength, out TOKEN_PRIVILEGES PreviousState, out uint ReturnLength)
+        internal static unsafe BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, BOOL DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, uint BufferLength, IntPtr PreviousState, IntPtr ReturnLength)
         {
-            fixed (TOKEN_PRIVILEGES* previousStatePtr = &PreviousState)
             fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
-            fixed (uint* returnLengthPtr = &ReturnLength)
             {
-                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, BufferLength, previousStatePtr, returnLengthPtr);
+                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, BufferLength, (TOKEN_PRIVILEGES*)PreviousState, (uint*)ReturnLength);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
