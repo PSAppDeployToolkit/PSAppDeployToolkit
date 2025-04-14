@@ -491,7 +491,7 @@ function Start-ADTProcess
                         Write-ADTLogEntry -Message "Setting a priority class on a ShellExecute process is only possible for administrators." -Severity 2
                     }
                 }
-                elseif (!$CreateNoWindow -or ![System.Diagnostics.ProcessWindowStyle]::Hidden.Equals($WindowStyle))
+                elseif (!$CreateNoWindow -and ![System.Diagnostics.ProcessWindowStyle]::Hidden.Equals($WindowStyle))
                 {
                     Write-ADTLogEntry -Message 'CreateNoWindow not specified or WindowStyle not Hidden, standard output and error will not be available.'
                 }
