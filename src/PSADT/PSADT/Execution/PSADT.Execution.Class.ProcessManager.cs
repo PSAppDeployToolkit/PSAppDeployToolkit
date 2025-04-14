@@ -177,7 +177,7 @@ namespace PSADT.Execution
                                 // Once done, we duplicate the linked token to get a primary token to create the new process.
                                 if (launchInfo.UseLinkedAdminToken)
                                 {
-                                    using (var buffer = SafeHGlobalHandle.Allocate(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
+                                    using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
                                     {
                                         AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
                                         AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);

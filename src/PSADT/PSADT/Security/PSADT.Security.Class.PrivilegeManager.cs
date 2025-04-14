@@ -40,7 +40,7 @@ namespace PSADT.Security
         private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
-            using (var buffer = SafeHGlobalHandle.Allocate(1024))
+            using (var buffer = SafeHGlobalHandle.Alloc(1024))
             {
                 AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
 

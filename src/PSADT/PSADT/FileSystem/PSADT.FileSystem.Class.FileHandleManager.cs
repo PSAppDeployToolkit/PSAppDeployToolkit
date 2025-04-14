@@ -36,16 +36,16 @@ namespace PSADT.FileSystem
             var handleInfoExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_INFORMATION_EX>();
 
             // Query the total system handle information.
-            using var handleBufferPtr = SafeHGlobalHandle.Allocate(handleInfoExSize + handleEntryExSize);
+            using var handleBufferPtr = SafeHGlobalHandle.Alloc(handleInfoExSize + handleEntryExSize);
             var status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out int handleBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
-                handleBufferPtr.Reallocate(handleBufferReqLength);
+                handleBufferPtr.ReAlloc(handleBufferReqLength);
                 status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out handleBufferReqLength);
             }
 
             // Process all handles and return a read-only list of the ones matching our directory filter.
-            using var objectBufferPtr = SafeHGlobalHandle.Allocate(1024);
+            using var objectBufferPtr = SafeHGlobalHandle.Alloc(1024);
             using var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
             using var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll");
 
@@ -212,11 +212,11 @@ namespace PSADT.FileSystem
             var objectTypeSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
 
             // Query the system for all object type info.
-            using var typesBufferPtr = SafeHGlobalHandle.Allocate(objectTypesSize);
+            using var typesBufferPtr = SafeHGlobalHandle.Alloc(objectTypesSize);
             var status = NtDll.NtQueryObject(NullSafeHandles.NullSafeHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
-                typesBufferPtr.Reallocate(typesBufferReqLength);
+                typesBufferPtr.ReAlloc(typesBufferReqLength);
                 status = NtDll.NtQueryObject(NullSafeHandles.NullSafeHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
             }
 

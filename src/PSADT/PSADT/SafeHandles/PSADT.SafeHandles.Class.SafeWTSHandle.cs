@@ -23,7 +23,7 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="length"></param>
         /// <exception cref="NotImplementedException"></exception>
-        internal override void Reallocate(int length)
+        internal override void ReAlloc(int length)
         {
             throw new NotImplementedException();
         }

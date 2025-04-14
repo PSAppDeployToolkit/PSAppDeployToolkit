@@ -15,7 +15,7 @@ namespace PSADT.SafeHandles
         /// <param name="size"></param>
         /// <returns></returns>
         /// <exception cref="OutOfMemoryException"></exception>
-        internal static SafeHGlobalHandle Allocate(int length)
+        internal static SafeHGlobalHandle Alloc(int length)
         {
             var handle = Marshal.AllocHGlobal(length);
             if (handle == IntPtr.Zero)
@@ -53,7 +53,7 @@ namespace PSADT.SafeHandles
         /// </summary>
         /// <param name="length"></param>
         /// <exception cref="OutOfMemoryException"></exception>
-        internal override void Reallocate(int length)
+        internal override void ReAlloc(int length)
         {
             if (length == Length)
             {
