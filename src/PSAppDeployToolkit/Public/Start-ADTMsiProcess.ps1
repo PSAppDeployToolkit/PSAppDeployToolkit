@@ -84,6 +84,9 @@ function Start-ADTMsiProcess
     .PARAMETER RepairFromSource
         Specifies whether we should repair from source. Also rewrites local cache.
 
+    .PARAMETER ExitOnProcessFailure
+        Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+
     .INPUTS
         None
 
@@ -230,7 +233,10 @@ function Start-ADTMsiProcess
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$RepairFromSource
+        [System.Management.Automation.SwitchParameter]$RepairFromSource,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure
     )
 
     begin
@@ -597,6 +603,10 @@ function Start-ADTMsiProcess
                 if ($NoWait)
                 {
                     $ExecuteProcessSplat.Add('NoWait', $NoWait)
+                }
+                if ($ExitOnProcessFailure)
+                {
+                    $ExecuteProcessSplat.Add('ExitOnProcessFailure', $ExitOnProcessFailure)
                 }
 
                 # Call the Start-ADTProcess function.

@@ -18,7 +18,8 @@ Start-ADTMsiProcess [-Action <String>] -FilePath <String> [-Transforms <String[]
  [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>] [-LoggingOptions <String>]
  [-LogFileName <String>] [-WorkingDirectory <String>] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource] [<CommonParameters>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource]
+ [-ExitOnProcessFailure] [<CommonParameters>]
 ```
 
 ### ProductCode
@@ -28,7 +29,8 @@ Start-ADTMsiProcess [-Action <String>] -ProductCode <Guid> [-Transforms <String[
  [-AdditionalArgumentList <String[]>] [-SecureArgumentList] [-Patches <String[]>] [-LoggingOptions <String>]
  [-LogFileName <String>] [-WorkingDirectory <String>] [-SkipMSIAlreadyInstalledCheck]
  [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource] [<CommonParameters>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource]
+ [-ExitOnProcessFailure] [<CommonParameters>]
 ```
 
 ### InstalledApplication
@@ -39,7 +41,7 @@ Start-ADTMsiProcess [-Action <String>] -InstalledApplication <InstalledApplicati
  [-LoggingOptions <String>] [-LogFileName <String>] [-WorkingDirectory <String>]
  [-SkipMSIAlreadyInstalledCheck] [-IncludeUpdatesAndHotfixes] [-NoWait] [-PassThru]
  [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource] [<CommonParameters>]
+ [-PriorityClass <ProcessPriorityClass>] [-RepairFromSource] [-ExitOnProcessFailure] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -434,6 +436,22 @@ Accept wildcard characters: False
 
 Specifies whether we should repair from source.
 Also rewrites local cache.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExitOnProcessFailure
+
+Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
 ```yaml
 Type: SwitchParameter
