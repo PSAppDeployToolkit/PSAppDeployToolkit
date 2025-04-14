@@ -58,15 +58,18 @@ function Set-ADTActiveSetup
     .PARAMETER NoExecuteForCurrentUser
         Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in.
 
+    .PARAMETER PassThru
+        Returns a ProcessResult from the execution of the ActiveSetup configuration for the current user if `-PassThru` is provided.
+
     .INPUTS
         None
 
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Boolean
+        PSADT.Execution.ProcessResult
 
-        Returns $true if Active Setup entry was created or updated, $false if Active Setup entry was not created or updated.
+        This function returns a ProcessResult from the execution of the ActiveSetup configuration for the current user if `-PassThru` is provided.
 
     .EXAMPLE
         Set-ADTActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -Arguments '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
@@ -107,6 +110,7 @@ function Set-ADTActiveSetup
         [System.String]$StubExePath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Arguments,
 
@@ -114,26 +118,33 @@ function Set-ADTActiveSetup
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = '(Get-ExecutionPolicy)')]
         [Microsoft.PowerShell.ExecutionPolicy]$ExecutionPolicy,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Version = [System.DateTime]::Now.ToString('yyMM,ddHH,mmss'), # Ex: 1405,1515,0522
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Locale,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [System.Management.Automation.SwitchParameter]$DisableActiveSetup,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Purge')]
         [System.Management.Automation.SwitchParameter]$PurgeActiveSetupKey,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'CreateNoExecute')]
+        [System.Management.Automation.SwitchParameter]$NoExecuteForCurrentUser,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
-        [System.Management.Automation.SwitchParameter]$NoExecuteForCurrentUser
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     dynamicparam
@@ -489,6 +500,7 @@ function Set-ADTActiveSetup
                     return
                 }
 
+                $processResult = $null
                 if ([System.Security.Principal.WindowsIdentity]::GetCurrent().User.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
                 {
                     if (!$runAsActiveUser)
@@ -505,13 +517,13 @@ function Set-ADTActiveSetup
                     }
 
                     Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]."
-                    if ($CUArguments)
+                    $processResult = if ($CUArguments)
                     {
-                        Start-ADTProcessAsUser -FilePath $CUStubExePath -ArgumentList $CUArguments -Wait -HideWindow
+                        Start-ADTProcessAsUser -FilePath $CUStubExePath -ArgumentList $CUArguments -CreateNoWindow -PassThru:$PassThru
                     }
                     else
                     {
-                        Start-ADTProcessAsUser -FilePath $CUStubExePath -Wait -HideWindow
+                        Start-ADTProcessAsUser -FilePath $CUStubExePath -CreateNoWindow -PassThru:$PassThru
                     }
 
                     Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
@@ -527,21 +539,27 @@ function Set-ADTActiveSetup
                     }
 
                     Write-ADTLogEntry -Message 'Executing Active Setup StubPath file for the current user.'
-                    if ($CUArguments)
+                    $processResult = if ($CUArguments)
                     {
                         if ($StubExeExt -eq '.ps1')
                         {
                             $CUArguments = $CUArguments.Replace("-WindowStyle Hidden ", $null)
                         }
-                        Start-ADTProcess -FilePath $CUStubExePath -ArgumentList $CUArguments
+                        Start-ADTProcess -FilePath $CUStubExePath -ArgumentList $CUArguments -CreateNoWindow -PassThru:$PassThru
                     }
                     else
                     {
-                        Start-ADTProcess -FilePath $CUStubExePath
+                        Start-ADTProcess -FilePath $CUStubExePath -CreateNoWindow -PassThru:$PassThru
                     }
 
                     Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
                     Set-ADTActiveSetupRegistryEntry @sasreParams -RegPath $HKCURegKey
+                }
+
+                # Return the process result if its available and requested.
+                if ($processResult -and $PassThru)
+                {
+                    return $processResult
                 }
             }
             catch

@@ -15,8 +15,16 @@ Creates an Active Setup entry in the registry to execute a file for each user up
 
 ```powershell
 Set-ADTActiveSetup -StubExePath <String> [-Arguments <String>] [-Wow6432Node]
- [-ExecutionPolicy <ExecutionPolicy>] [-Version <String>] [-Locale <String>] [-DisableActiveSetup]
- [-NoExecuteForCurrentUser] -Key <String> -Description <String> [<CommonParameters>]
+ [-ExecutionPolicy <ExecutionPolicy>] [-Version <String>] [-Locale <String>] [-DisableActiveSetup] [-PassThru]
+ -Key <String> -Description <String> [<CommonParameters>]
+```
+
+### CreateNoExecute
+
+```powershell
+Set-ADTActiveSetup [-Arguments <String>] [-Wow6432Node] [-ExecutionPolicy <ExecutionPolicy>]
+ [-Version <String>] [-Locale <String>] [-DisableActiveSetup] [-NoExecuteForCurrentUser] -Key <String>
+ [<CommonParameters>]
 ```
 
 ### Purge
@@ -89,7 +97,7 @@ Arguments to pass to the file being executed.
 
 ```yaml
 Type: String
-Parameter Sets: Create
+Parameter Sets: Create, CreateNoExecute
 Aliases:
 
 Required: False
@@ -121,7 +129,7 @@ Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script..
 
 ```yaml
 Type: ExecutionPolicy
-Parameter Sets: Create
+Parameter Sets: Create, CreateNoExecute
 Aliases:
 Accepted values: Unrestricted, RemoteSigned, AllSigned, Restricted, Default, Bypass, Undefined
 
@@ -147,7 +155,7 @@ Ensure that the path given to -StubExePath will permit end users to run scripts 
 
 ```yaml
 Type: String
-Parameter Sets: Create
+Parameter Sets: Create, CreateNoExecute
 Aliases:
 
 Required: False
@@ -165,7 +173,7 @@ Not replicated to HKCU.
 
 ```yaml
 Type: String
-Parameter Sets: Create
+Parameter Sets: Create, CreateNoExecute
 Aliases:
 
 Required: False
@@ -182,7 +190,7 @@ This also enables -NoExecuteForCurrentUser.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Create
+Parameter Sets: Create, CreateNoExecute
 Aliases:
 
 Required: False
@@ -214,6 +222,22 @@ Accept wildcard characters: False
 
 Specifies whether the StubExePath should be executed for the current user.
 Since this user is already logged in, the user won't have the application started without logging out and logging back in.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CreateNoExecute
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+
+Returns a ProcessResult from the execution of the ActiveSetup configuration for the current user if `-PassThru` is provided.
 
 ```yaml
 Type: SwitchParameter
@@ -273,9 +297,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### System.Boolean
+### PSADT.Execution.ProcessResult
 
-### Returns $true if Active Setup entry was created or updated, $false if Active Setup entry was not created or updated.
+### This function returns a ProcessResult from the execution of the ActiveSetup configuration for the current user if `-PassThru` is provided.
 ## NOTES
 An active ADT session is NOT required to use this function.
 
