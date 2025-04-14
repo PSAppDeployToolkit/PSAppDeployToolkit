@@ -124,7 +124,6 @@ namespace PSADT.Security
         private static void EnablePrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
-
             var tp = new TOKEN_PRIVILEGES
             {
                 PrivilegeCount = 1,
@@ -135,6 +134,19 @@ namespace PSADT.Security
                 Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED
             };
             AdvApi32.AdjustTokenPrivileges(token, false, ref tp, 0, IntPtr.Zero, IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Enables a privilege in the current process token.
+        /// </summary>
+        /// <param name="privilege"></param>
+        internal static void EnablePrivilege(SE_PRIVILEGE privilege)
+        {
+            AdvApi32.OpenProcessToken(Kernel32.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
+            using (token)
+            {
+                EnablePrivilege(token, privilege);
+            }
         }
 
         /// <summary>
