@@ -12,7 +12,7 @@ namespace PSADT.SafeHandles
         /// Allocates a block of memory of the specified size and returns a <see cref="SafeCoTaskMemHandle"/> that wraps the allocated memory.
         /// This is fully implemented here as static virtual members don't come until C# 11 (.NET 7).
         /// </summary>
-        /// <param name="size"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
         /// <exception cref="OutOfMemoryException"></exception>
         internal static SafeCoTaskMemHandle Alloc(int length)

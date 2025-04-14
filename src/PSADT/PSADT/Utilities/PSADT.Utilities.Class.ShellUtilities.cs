@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using Windows.Win32;

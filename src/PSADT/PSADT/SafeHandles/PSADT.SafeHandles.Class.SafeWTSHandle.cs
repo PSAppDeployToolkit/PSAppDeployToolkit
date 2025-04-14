@@ -12,6 +12,7 @@ namespace PSADT.SafeHandles
         /// Initializes a new instance of the <see cref="SafeWTSHandle"/> class with the specified handle and ownership.
         /// </summary>
         /// <param name="handle"></param>
+        /// <param name="length"></param>
         /// <param name="ownsHandle"></param>
         internal SafeWTSHandle(IntPtr handle, int length, bool ownsHandle) : base(handle, length, ownsHandle)
         {

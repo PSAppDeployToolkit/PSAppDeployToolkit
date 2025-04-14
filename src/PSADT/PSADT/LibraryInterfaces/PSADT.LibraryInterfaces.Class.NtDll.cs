@@ -283,7 +283,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="Handle"></param>
         /// <param name="ObjectInformationClass"></param>
         /// <param name="ObjectInformation"></param>
-        /// <param name="ObjectInformationLength"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         internal static NTSTATUS NtQueryObject(SafeHandle Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, SafeHGlobalHandle ObjectInformation, out int ReturnLength)

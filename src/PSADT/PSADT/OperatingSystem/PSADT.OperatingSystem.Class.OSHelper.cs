@@ -2,7 +2,6 @@
 using PSADT.LibraryInterfaces;
 using PSADT.Types;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.System.LibraryLoader;
 using Windows.Win32.System.SystemInformation;
 

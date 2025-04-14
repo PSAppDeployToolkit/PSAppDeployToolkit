@@ -127,7 +127,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="TokenHandle"></param>
         /// <param name="TokenInformationClass"></param>
         /// <param name="TokenInformation"></param>
-        /// <param name="TokenInformationLength"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>

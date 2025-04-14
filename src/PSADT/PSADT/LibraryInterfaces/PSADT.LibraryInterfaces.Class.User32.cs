@@ -183,7 +183,6 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="hWnd"></param>
         /// <param name="lpString"></param>
-        /// <param name="nMaxCount"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
         internal static int GetWindowText(HWND hWnd, Span<char> lpString)

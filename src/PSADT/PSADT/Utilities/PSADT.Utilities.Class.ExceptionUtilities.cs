@@ -25,7 +25,7 @@ namespace PSADT.Utilities
         /// <summary>
         /// Gets the HRESULT for the last Win32 error.
         /// </summary>
-        /// <param name="lastWin32Error"></param>
+        /// <param name="win32ErrorCode"></param>
         /// <returns></returns>
         private static int GetHRForWin32ErrorCode(int win32ErrorCode)
         {

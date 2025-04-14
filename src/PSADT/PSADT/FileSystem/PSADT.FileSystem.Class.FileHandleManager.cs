@@ -160,14 +160,16 @@ namespace PSADT.FileSystem
         /// Retrieves the name of an object associated with a handle.
         /// </summary>
         /// <param name="handle"></param>
+        /// <param name="ntQueryObject"></param>
+        /// <param name="exitThread"></param>
+        /// <param name="buffer"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
         private static string? GetObjectName(SafeFileHandle handle, FARPROC ntQueryObject, FARPROC exitThread, SafeHGlobalHandle buffer)
         {
             // Start the thread to retrieve the object name and wait for the outcome.
             using (var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, OBJECT_INFORMATION_CLASS.ObjectNameInformation, handle, buffer))
             {
-                NTSTATUS status = NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, PInvoke.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, PInvoke.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
                 using (hThread)
                 {
                     // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
@@ -240,7 +242,6 @@ namespace PSADT.FileSystem
         /// <param name="infoClass"></param>
         /// <param name="handle"></param>
         /// <param name="buffer"></param>
-        /// <param name="bufferSize"></param>
         /// <returns></returns>
         /// <exception cref="PlatformNotSupportedException"></exception>
         private static SafeVirtualAllocHandle GetObjectTypeShellcode(IntPtr exitThread, IntPtr ntQueryObject, OBJECT_INFORMATION_CLASS infoClass, SafeFileHandle handle, SafeHGlobalHandle buffer)

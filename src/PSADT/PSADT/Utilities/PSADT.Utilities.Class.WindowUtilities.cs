@@ -78,7 +78,7 @@ namespace PSADT.Utilities
         /// <summary>
         /// Brings the specified window to the foreground.
         /// </summary>
-        /// <param name="windowHandle">A handle to the window.</param>
+        /// <param name="hWnd">A handle to the window.</param>
         /// <returns>True if the window was brought to the foreground; otherwise, false.</returns>
         public static bool BringWindowToFront(IntPtr hWnd)
         {
@@ -116,7 +116,7 @@ namespace PSADT.Utilities
         /// <summary>
         /// Gets the process ID of the specified window.
         /// </summary>
-        /// <param name="windowHandle">A handle to the window.</param>
+        /// <param name="hWnd">A handle to the window.</param>
         /// <returns>The process ID.</returns>
         public static uint GetWindowThreadProcessId(IntPtr hWnd)
         {
