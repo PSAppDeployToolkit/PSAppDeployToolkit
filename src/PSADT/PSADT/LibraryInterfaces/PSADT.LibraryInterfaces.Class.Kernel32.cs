@@ -391,7 +391,7 @@ namespace PSADT.LibraryInterfaces
         {
             fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
             {
-                var res = PInvoke.ReadFile(hFile, lpBuffer, pNumberOfBytesRead, (NativeOverlapped*)lpOverlapped.ToPointer());
+                var res = PInvoke.ReadFile(hFile, lpBuffer, pNumberOfBytesRead, (NativeOverlapped*)lpOverlapped);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
