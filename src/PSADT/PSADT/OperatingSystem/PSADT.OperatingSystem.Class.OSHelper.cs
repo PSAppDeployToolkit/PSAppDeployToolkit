@@ -20,19 +20,17 @@ namespace PSADT.OperatingSystem
         {
             // Attempt to get the OS architecture via isWow64Process2() if we can (only available on Windows 10 1709 or higher).
             // The reason why this is important is that GetNativeSystemInfo() will always report x64 if in an x64 process on a non-x64 operating system.
-            var hKernel32Dll = Kernel32.LoadLibraryEx("kernel32.dll", default, LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32);
             try
             {
-                Kernel32.GetProcAddress(hKernel32Dll, "IsWow64Process2").CreateDelegate<IsWow64Process2Delegate>().Invoke(IntPtr.Zero, out var pProcessMachine, out var pNativeMachine);
-                return (SystemArchitecture)pNativeMachine;
+                using (var hKernel32Dll = Kernel32.LoadLibraryEx("kernel32.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32))
+                {
+                    Kernel32.GetProcAddress(hKernel32Dll, "IsWow64Process2").CreateDelegate<IsWow64Process2Delegate>().Invoke(IntPtr.Zero, out var pProcessMachine, out var pNativeMachine);
+                    return (SystemArchitecture)pNativeMachine;
+                }
             }
             catch
             {
                 // Just fall through here.
-            }
-            finally
-            {
-                Kernel32.FreeLibrary(ref hKernel32Dll);
             }
 
             // If we're here, we're older than 1709 or isWow64Process2 failed.

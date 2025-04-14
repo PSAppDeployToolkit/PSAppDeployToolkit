@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
+using PSADT.SafeHandles;
 using Windows.Win32.System.Memory;
 
 namespace PSADT.Utilities
@@ -17,10 +18,10 @@ namespace PSADT.Utilities
         /// <param name="code"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static IntPtr AllocateExecutableMemory(byte[] code)
+        internal static SafeVirtualAllocHandle AllocateExecutableMemory(byte[] code)
         {
-            IntPtr mem = Kernel32.VirtualAlloc(IntPtr.Zero, (UIntPtr)code.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-            Marshal.Copy(code, 0, mem, code.Length);
+            SafeVirtualAllocHandle mem = Kernel32.VirtualAlloc(IntPtr.Zero, (UIntPtr)code.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
+            mem.Write(code);
             return mem;
         }
 

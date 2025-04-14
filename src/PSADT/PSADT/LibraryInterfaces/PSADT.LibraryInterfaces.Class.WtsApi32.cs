@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Microsoft.Win32.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -64,17 +65,16 @@ namespace PSADT.LibraryInterfaces
         /// <param name="phToken"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WTSQueryUserToken(uint SessionId, out HANDLE phToken)
+        internal static unsafe BOOL WTSQueryUserToken(uint SessionId, out SafeAccessTokenHandle phToken)
         {
-            fixed (HANDLE* pphToken = &phToken)
+            HANDLE phTokenLocal;
+            var res = PInvoke.WTSQueryUserToken(SessionId, &phTokenLocal);
+            if (!res)
             {
-                var res = PInvoke.WTSQueryUserToken(SessionId, pphToken);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            phToken = new SafeAccessTokenHandle(phTokenLocal);
+            return res;
         }
 
         /// <summary>

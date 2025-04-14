@@ -2,8 +2,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
+using Microsoft.Win32.SafeHandles;
+using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -57,17 +58,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwFlags"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe HMODULE LoadLibraryEx(string lpLibFileName, HANDLE hFile, LOAD_LIBRARY_FLAGS dwFlags)
+        internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags)
         {
-            fixed (char* pLibFileName = lpLibFileName)
+            var res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
+            if (null == res || res.IsInvalid)
             {
-                var res = PInvoke.LoadLibraryEx(pLibFileName, hFile, dwFlags);
-                if (null == res || res.IsNull)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -77,17 +75,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcName"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe FARPROC GetProcAddress(HMODULE hModule, string lpProcName)
+        internal static FARPROC GetProcAddress(SafeHandle hModule, string lpProcName)
         {
-            fixed (byte* lpProcNameLocal = lpProcName is object ? Encoding.Default.GetBytes(lpProcName) : null)
+            var res = PInvoke.GetProcAddress(hModule, lpProcName);
+            if (null == res)
             {
-                var res = PInvoke.GetProcAddress(hModule, new PCSTR(lpProcNameLocal));
-                if (null == res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -101,7 +96,7 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
         /// <exception cref="OverflowException"></exception>
-        internal static uint GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, Span<char> lpReturnedString, string lpFileName)
+        internal static uint GetPrivateProfileString(string lpAppName, string lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
         {
             var res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName);
             if (res == 0)
@@ -124,7 +119,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpFileName"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL WritePrivateProfileString(string lpAppName, string lpKeyName, string lpString, string lpFileName)
+        internal static BOOL WritePrivateProfileString(string lpAppName, string lpKeyName, string lpString, string lpFileName)
         {
             var res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName);
             if (!res)
@@ -143,10 +138,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="NumberOfConcurrentThreads"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static HANDLE CreateIoCompletionPort(HANDLE FileHandle, HANDLE ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
+        internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
             var res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
-            if (null == res || res.IsNull)
+            if (null == res || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -160,11 +155,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpName"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe HANDLE CreateJobObject([Optional] SECURITY_ATTRIBUTES? lpJobAttributes, PCWSTR lpName)
+        internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
-            SECURITY_ATTRIBUTES lpJobAttributesLocal = lpJobAttributes ?? default(SECURITY_ATTRIBUTES);
-            var res = PInvoke.CreateJobObject(lpJobAttributes.HasValue ? &lpJobAttributesLocal : null, (lpName.Value != null && *lpName.Value != '\0') ? lpName : null);
-            if (null == res || res.IsNull)
+            var res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
+            if (null == res || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -180,7 +174,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="cbJobObjectInformationLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength)
+        internal static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength)
         {
             var res = PInvoke.SetInformationJobObject(hJob, JobObjectInformationClass, lpJobObjectInformation.ToPointer(), cbJobObjectInformationLength);
             if (!res)
@@ -197,7 +191,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="JobObjectInformationClass"></param>
         /// <param name="lpJobObjectInformation"></param>
         /// <returns></returns>
-        internal static unsafe BOOL SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
+        internal static unsafe BOOL SetInformationJobObject(SafeHandle hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
         {
             return SetInformationJobObject(hJob, JobObjectInformationClass, new IntPtr(&lpJobObjectInformation), (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
         }
@@ -217,23 +211,15 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreateProcess(string? lpApplicationName, string lpCommandLine, [Optional] SECURITY_ATTRIBUTES? lpProcessAttributes, [Optional] SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, [Optional] IntPtr lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static unsafe BOOL CreateProcess(string? lpApplicationName, string lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            string lpCurrentDirectoryLocal = !string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory! : string.Empty;
-            string lpApplicationNameLocal = !string.IsNullOrWhiteSpace(lpApplicationName) ? lpApplicationName! : string.Empty;
-            fixed (char* pApplicationName = lpApplicationNameLocal, pCommandLine = lpCommandLine, pCurrentDirectory = lpCurrentDirectoryLocal)
-            fixed (PROCESS_INFORMATION* pProcessInformation = &lpProcessInformation)
-            fixed (STARTUPINFOW* pStartupInfo = &lpStartupInfo)
+            var lpCommandLineSpan = new Span<char>(lpCommandLine.ToCharArray());
+            var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLineSpan, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
+            if (!res)
             {
-                SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
-                SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
-                var res = PInvoke.CreateProcess(lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -252,23 +238,15 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpProcessInformation"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreateProcessAsUser(HANDLE hToken, string? lpApplicationName, string lpCommandLine, [Optional] SECURITY_ATTRIBUTES? lpProcessAttributes, [Optional] SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, [Optional] IntPtr lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static unsafe BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, string lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            string lpCurrentDirectoryLocal = !string.IsNullOrWhiteSpace(lpCurrentDirectory) ? lpCurrentDirectory! : string.Empty;
-            string lpApplicationNameLocal = !string.IsNullOrWhiteSpace(lpApplicationName) ? lpApplicationName! : string.Empty;
-            fixed (char* pApplicationName = lpApplicationNameLocal, pCommandLine = lpCommandLine, pCurrentDirectory = lpCurrentDirectoryLocal)
-            fixed (PROCESS_INFORMATION* pProcessInformation = &lpProcessInformation)
-            fixed (STARTUPINFOW* pStartupInfo = &lpStartupInfo)
+            var lpCommandLineSpan = new Span<char>(lpCommandLine.ToCharArray());
+            var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLineSpan, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
+            if (!res)
             {
-                SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default(SECURITY_ATTRIBUTES);
-                SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default(SECURITY_ATTRIBUTES);
-                var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationNameLocal.Length != 0 ? pApplicationName : null, pCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment.ToPointer(), lpCurrentDirectoryLocal.Length != 0 ? pCurrentDirectory : null, pStartupInfo, pProcessInformation);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -278,7 +256,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hProcess"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static BOOL AssignProcessToJobObject(HANDLE hJob, HANDLE hProcess)
+        internal static BOOL AssignProcessToJobObject(SafeHandle hJob, SafeHandle hProcess)
         {
             var res = PInvoke.AssignProcessToJobObject(hJob, hProcess);
             if (!res)
@@ -294,7 +272,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hThread"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static uint ResumeThread(HANDLE hThread)
+        internal static uint ResumeThread(SafeHandle hThread)
         {
             var res = PInvoke.ResumeThread(hThread);
             if (res == uint.MaxValue)
@@ -310,13 +288,13 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hObject"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static BOOL CloseHandle(ref HANDLE hObject)
+        internal static BOOL CloseHandle(ref IntPtr hObject)
         {
-            if (null == hObject || hObject == default || hObject.IsNull)
+            if (hObject == default || IntPtr.Zero != hObject)
             {
                 return true;
             }
-            var res = PInvoke.CloseHandle(hObject);
+            var res = PInvoke.CloseHandle((HANDLE)hObject);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -335,19 +313,15 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwMilliseconds"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL GetQueuedCompletionStatus(HANDLE CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out NativeOverlapped lpOverlapped, uint dwMilliseconds)
+        internal static unsafe BOOL GetQueuedCompletionStatus(SafeHandle CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out IntPtr lpOverlapped, uint dwMilliseconds)
         {
-            fixed (uint* pCompletionCode = &lpCompletionCode)
-            fixed (nuint* pCompletionKey = &lpCompletionKey)
-            fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
+            var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, out lpCompletionCode, out lpCompletionKey, out var pOverlapped, dwMilliseconds);
+            if (!res)
             {
-                var res = PInvoke.GetQueuedCompletionStatus(CompletionPort, pCompletionCode, pCompletionKey, &pOverlapped, dwMilliseconds);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            lpOverlapped = new IntPtr(pOverlapped);
+            return res;
         }
 
         /// <summary>
@@ -357,17 +331,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpExitCode"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL GetExitCodeProcess(HANDLE hProcess, out uint lpExitCode)
+        internal static BOOL GetExitCodeProcess(SafeHandle hProcess, out uint lpExitCode)
         {
-            fixed (uint* pExitCode = &lpExitCode)
+            var res = PInvoke.GetExitCodeProcess(hProcess, out lpExitCode);
+            if (!res)
             {
-                var res = PInvoke.GetExitCodeProcess(hProcess, pExitCode);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -379,18 +350,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="nSize"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreatePipe(out HANDLE hReadPipe, out HANDLE hWritePipe, [Optional] SECURITY_ATTRIBUTES? lpPipeAttributes, uint nSize = 0)
+        internal static BOOL CreatePipe(out SafeFileHandle hReadPipe, out SafeFileHandle hWritePipe, SECURITY_ATTRIBUTES? lpPipeAttributes, uint nSize = 0)
         {
-            fixed (HANDLE* pReadPipe = &hReadPipe, pWritePipe = &hWritePipe)
+            var res = PInvoke.CreatePipe(out hReadPipe, out hWritePipe, lpPipeAttributes, nSize);
+            if (!res)
             {
-                SECURITY_ATTRIBUTES lpPipeAttributesLocal = lpPipeAttributes ?? default(SECURITY_ATTRIBUTES);
-                var res = PInvoke.CreatePipe(pReadPipe, pWritePipe, lpPipeAttributes.HasValue ? &lpPipeAttributesLocal : null, nSize);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -401,9 +368,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="dwFlags"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static BOOL SetHandleInformation(HANDLE hObject, uint dwMask, HANDLE_FLAGS dwFlags)
+        internal static BOOL SetHandleInformation(SafeHandle hObject, HANDLE_FLAGS dwMask, HANDLE_FLAGS dwFlags)
         {
-            var res = PInvoke.SetHandleInformation(hObject, dwMask, dwFlags);
+            var res = PInvoke.SetHandleInformation(hObject, (uint)dwMask, dwFlags);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -420,36 +387,11 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpOverlapped"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL ReadFile(HANDLE hFile, [Optional] byte[] lpBuffer, [Optional] out uint lpNumberOfBytesRead, [Optional] ref NativeOverlapped lpOverlapped)
+        internal static unsafe BOOL ReadFile(SafeHandle hFile, Span<byte> lpBuffer, out uint lpNumberOfBytesRead, IntPtr lpOverlapped)
         {
-            fixed (byte* pBuffer = lpBuffer)
-            fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
-            fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
-            {
-                var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, pOverlapped);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
-            }
-        }
-
-        /// <summary>
-        /// Wrapper around ReadFile to manage error handling.
-        /// </summary>
-        /// <param name="hFile"></param>
-        /// <param name="lpBuffer"></param>
-        /// <param name="lpNumberOfBytesRead"></param>
-        /// <param name="lpOverlapped"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL ReadFile(HANDLE hFile, [Optional] byte[] lpBuffer, [Optional] out uint lpNumberOfBytesRead)
-        {
-            fixed (byte* pBuffer = lpBuffer)
             fixed (uint* pNumberOfBytesRead = &lpNumberOfBytesRead)
             {
-                var res = PInvoke.ReadFile(hFile, pBuffer, (uint)lpBuffer.Length, pNumberOfBytesRead, null);
+                var res = PInvoke.ReadFile(hFile, lpBuffer, pNumberOfBytesRead, (NativeOverlapped*)lpOverlapped.ToPointer());
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -464,7 +406,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hProcess"></param>
         /// <param name="dwPriorityClass"></param>
         /// <returns></returns>
-        internal static BOOL SetPriorityClass(HANDLE hProcess, PROCESS_CREATION_FLAGS dwPriorityClass)
+        internal static BOOL SetPriorityClass(SafeHandle hProcess, PROCESS_CREATION_FLAGS dwPriorityClass)
         {
             var res = PInvoke.SetPriorityClass(hProcess, dwPriorityClass);
             if (!res)
@@ -480,7 +422,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hProcess"></param>
         /// <param name="dwPriorityClass"></param>
         /// <returns></returns>
-        internal static BOOL SetPriorityClass(HANDLE hProcess, ProcessPriorityClass dwPriorityClass)
+        internal static BOOL SetPriorityClass(SafeHandle hProcess, ProcessPriorityClass dwPriorityClass)
         {
             return SetPriorityClass(hProcess, (PROCESS_CREATION_FLAGS)dwPriorityClass);
         }
@@ -491,7 +433,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hJob"></param>
         /// <param name="uExitCode"></param>
         /// <returns></returns>
-        internal static BOOL TerminateJobObject(HANDLE hJob, uint uExitCode)
+        internal static BOOL TerminateJobObject(SafeHandle hJob, uint uExitCode)
         {
             var res = PInvoke.TerminateJobObject(hJob, uExitCode);
             if (!res)
@@ -508,17 +450,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="bWaitAll"></param>
         /// <param name="dwMilliseconds"></param>
         /// <returns></returns>
-        internal static unsafe WAIT_EVENT WaitForMultipleObjects(ReadOnlySpan<HANDLE> lpHandles, BOOL bWaitAll, uint dwMilliseconds)
+        internal static WAIT_EVENT WaitForMultipleObjects(ReadOnlySpan<HANDLE> lpHandles, BOOL bWaitAll, uint dwMilliseconds)
         {
-            fixed (HANDLE* pHandles = lpHandles)
+            var res = PInvoke.WaitForMultipleObjects(lpHandles, bWaitAll, dwMilliseconds);
+            if (res == WAIT_EVENT.WAIT_FAILED)
             {
-                var res = PInvoke.WaitForMultipleObjects((uint)lpHandles.Length, pHandles, bWaitAll, dwMilliseconds);
-                if (res == WAIT_EVENT.WAIT_FAILED)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -526,7 +465,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="Process"></param>
         /// <returns></returns>
-        internal static uint GetProcessId(HANDLE Process)
+        internal static uint GetProcessId(SafeHandle Process)
         {
             var res = PInvoke.GetProcessId(Process);
             if (res == 0)
@@ -556,17 +495,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="bInheritHandle"></param>
         /// <param name="dwOptions"></param>
         /// <returns></returns>
-        internal static unsafe BOOL DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, out HANDLE lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
+        internal static BOOL DuplicateHandle(SafeHandle hSourceProcessHandle, SafeHandle hSourceHandle, SafeHandle hTargetProcessHandle, out SafeFileHandle lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
         {
-            fixed (HANDLE* pTargetHandle = &lpTargetHandle)
+            var res = PInvoke.DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, out lpTargetHandle, (uint)dwDesiredAccess, bInheritHandle, dwOptions);
+            if (!res)
             {
-                var res = PInvoke.DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, pTargetHandle, (uint)dwDesiredAccess, bInheritHandle, dwOptions);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -576,10 +512,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="bInheritHandle"></param>
         /// <param name="dwProcessId"></param>
         /// <returns></returns>
-        internal static HANDLE OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, uint dwProcessId)
+        internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, uint dwProcessId)
         {
-            var res = PInvoke.OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
-            if (null == res || res.IsNull)
+            var res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
+            if (null == res || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -592,18 +528,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpDeviceName"></param>
         /// <param name="lpTargetPath"></param>
         /// <returns></returns>
-        internal static unsafe uint QueryDosDevice(string lpDeviceName, Span<char> lpTargetPath)
+        internal static uint QueryDosDevice(string lpDeviceName, Span<char> lpTargetPath)
         {
-            fixed (char* pDeviceName = lpDeviceName)
-            fixed (char* pTargetPath = lpTargetPath)
+            var res = PInvoke.QueryDosDevice(lpDeviceName, lpTargetPath);
+            if (res == 0)
             {
-                var res = PInvoke.QueryDosDevice(pDeviceName, pTargetPath, (uint)lpTargetPath.Length);
-                if (res == 0)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -612,17 +544,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="hThread"></param>
         /// <param name="lpExitCode"></param>
         /// <returns></returns>
-        internal static unsafe BOOL GetExitCodeThread(HANDLE hThread, out uint lpExitCode)
+        internal static BOOL GetExitCodeThread(SafeHandle hThread, out uint lpExitCode)
         {
-            fixed (uint* pExitCode = &lpExitCode)
+            var res = PInvoke.GetExitCodeThread(hThread, out lpExitCode);
+            if (!res)
             {
-                var res = PInvoke.GetExitCodeThread(hThread, pExitCode);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -633,14 +562,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="flAllocationType"></param>
         /// <param name="flProtect"></param>
         /// <returns></returns>
-        internal static unsafe IntPtr VirtualAlloc([Optional] IntPtr lpAddress, nuint dwSize, VIRTUAL_ALLOCATION_TYPE flAllocationType, PAGE_PROTECTION_FLAGS flProtect)
+        internal static unsafe SafeVirtualAllocHandle VirtualAlloc(IntPtr lpAddress, nuint dwSize, VIRTUAL_ALLOCATION_TYPE flAllocationType, PAGE_PROTECTION_FLAGS flProtect)
         {
             var res = PInvoke.VirtualAlloc(lpAddress.ToPointer(), dwSize, flAllocationType, flProtect);
             if (null == res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            return new IntPtr(res);
+            return new SafeVirtualAllocHandle(new IntPtr(res), true);
         }
 
         /// <summary>
@@ -669,37 +598,23 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="lpLibFileName"></param>
         /// <returns></returns>
-        internal static unsafe HMODULE LoadLibrary(string lpLibFileName)
+        internal static FreeLibrarySafeHandle LoadLibrary(string lpLibFileName)
         {
-            fixed (char* pLibFileName = lpLibFileName)
-            {
-                var res = PInvoke.LoadLibrary(pLibFileName);
-                if (null == res || res.IsNull)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
-            }
-        }
-
-        /// <summary>
-        /// Wrapper around FreeLibrary to manage error handling.
-        /// </summary>
-        /// <param name="hLibModule"></param>
-        /// <returns></returns>
-        internal static BOOL FreeLibrary(ref HMODULE hLibModule)
-        {
-            if (null == hLibModule || hLibModule == default || hLibModule.IsNull)
-            {
-                return true;
-            }
-            var res = PInvoke.FreeLibrary(hLibModule);
-            if (!res)
+            var res = PInvoke.LoadLibrary(lpLibFileName);
+            if (null == res || res.IsInvalid)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            hLibModule = default;
             return res;
+        }
+
+        /// <summary>
+        /// Wrapper around GetCurrentProcess to manage error handling.
+        /// </summary>
+        /// <returns></returns>
+        internal static SafeFileHandle GetCurrentProcess()
+        {
+            return PInvoke.GetCurrentProcess_SafeHandle();
         }
     }
 }

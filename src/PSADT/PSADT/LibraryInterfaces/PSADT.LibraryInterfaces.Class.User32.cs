@@ -16,6 +16,7 @@ namespace PSADT.LibraryInterfaces
     {
         /// <summary>
         /// Gets a handle to a menu for the given window handle.
+        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <param name="hWnd"></param>
         /// <param name="bRevert"></param>
@@ -27,6 +28,7 @@ namespace PSADT.LibraryInterfaces
 
         /// <summary>
         /// Enables a menu item for the given menu handle.
+        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <param name="hMenu"></param>
         /// <param name="uIDEnableItem"></param>
@@ -39,6 +41,7 @@ namespace PSADT.LibraryInterfaces
 
         /// <summary>
         /// Destroys a given menu handle.
+        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <param name="hMenu"></param>
         /// <returns></returns>
@@ -54,6 +57,7 @@ namespace PSADT.LibraryInterfaces
 
         /// <summary>
         /// Tests whether a given window is visible via its handle.
+        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <param name="hWnd"></param>
         /// <returns></returns>
@@ -64,6 +68,7 @@ namespace PSADT.LibraryInterfaces
 
         /// <summary>
         /// Tests whether a given window is enabled via its handle.
+        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <param name="hWnd"></param>
         /// <returns></returns>
@@ -74,6 +79,7 @@ namespace PSADT.LibraryInterfaces
 
         /// <summary>
         /// Gets a handle to the current foreground (active) window.
+        /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <returns></returns>
         public static IntPtr GetForegroundWindow()
@@ -124,17 +130,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpBuffer"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe int LoadString(HINSTANCE hInstance, uint uID, Span<char> lpBuffer)
+        internal static int LoadString(SafeHandle hInstance, uint uID, Span<char> lpBuffer)
         {
-            fixed (char* lpBufferPointer = lpBuffer)
+            var res = PInvoke.LoadString(hInstance, uID, lpBuffer, lpBuffer.Length);
+            if (res == 0)
             {
-                var res = PInvoke.LoadString(hInstance, uID, lpBufferPointer, lpBuffer.Length);
-                if (res == 0)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -182,38 +185,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="nMaxCount"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe int GetWindowText(HWND hWnd, char[] lpString)
+        internal static int GetWindowText(HWND hWnd, Span<char> lpString)
         {
-            fixed (char* lpStringPointer = lpString)
-            {
-                var res = PInvoke.GetWindowText(hWnd, lpStringPointer, lpString.Length);
-                if (res == 0)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the text of the specified window.
-        /// </summary>
-        /// <param name="hWnd"></param>
-        /// <param name="lpdwProcessId"></param>
-        /// <returns></returns>
-        [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "GetWindowThreadProcessId")]
-        internal static extern unsafe uint GetWindowThreadProcessIdNative(IntPtr hWnd, out uint lpdwProcessId);
-
-        /// <summary>
-        /// Retrieves the text of the specified window.
-        /// </summary>
-        /// <param name="hWnd"></param>
-        /// <param name="lpdwProcessId"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static uint GetWindowThreadProcessId(HWND hWnd, [Optional] out uint lpdwProcessId)
-        {
-            var res = GetWindowThreadProcessIdNative(hWnd, out lpdwProcessId);
+            var res = PInvoke.GetWindowText(hWnd, lpString);
             if (res == 0)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -224,13 +198,22 @@ namespace PSADT.LibraryInterfaces
         /// <summary>
         /// Retrieves the text of the specified window.
         /// </summary>
-        /// <param name="idAttach"></param>
-        /// <param name="idAttachTo"></param>
-        /// <param name="fAttach"></param>
+        /// <param name="hWnd"></param>
+        /// <param name="lpdwProcessId"></param>
         /// <returns></returns>
-        [DllImport("user32.dll", SetLastError = true, EntryPoint = "AttachThreadInput")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool AttachThreadInputNative(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
+        /// <exception cref="Win32Exception"></exception>
+        internal static unsafe uint GetWindowThreadProcessId(HWND hWnd, out uint lpdwProcessId)
+        {
+            fixed (uint* lpdwProcessIdPointer = &lpdwProcessId)
+            {
+                var res = PInvoke.GetWindowThreadProcessId(hWnd, lpdwProcessIdPointer);
+                if (res == 0)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+        }
 
         /// <summary>
         /// Attaches or detaches the input processing mechanism of one thread to another.
@@ -242,7 +225,7 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach)
         {
-            var res = AttachThreadInputNative(idAttach, idAttachTo, fAttach);
+            var res = PInvoke.AttachThreadInput(idAttach, idAttachTo, fAttach);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Security;
@@ -14,19 +15,23 @@ namespace PSADT.LibraryInterfaces
     /// </summary>
     internal static class AdvApi32
     {
-        internal static unsafe WIN32_ERROR RegOpenKeyEx(HKEY hKey, string lpSubKey, uint ulOptions, REG_SAM_FLAGS samDesired, out HKEY phkResult)
+        /// <summary>
+        /// Opens the requested registry subkey for the given key.
+        /// </summary>
+        /// <param name="hKey"></param>
+        /// <param name="lpSubKey"></param>
+        /// <param name="ulOptions"></param>
+        /// <param name="samDesired"></param>
+        /// <param name="phkResult"></param>
+        /// <returns></returns>
+        internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string lpSubKey, uint ulOptions, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
-            fixed (char* lpSubKeyPtr = lpSubKey)
+            var res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, ulOptions, samDesired, out phkResult);
+            if (res != WIN32_ERROR.ERROR_SUCCESS)
             {
-                HKEY phkResultInternal;
-                var res = PInvoke.RegOpenKeyEx(hKey, lpSubKeyPtr, ulOptions, samDesired, &phkResultInternal);
-                if (res != WIN32_ERROR.ERROR_SUCCESS)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
-                }
-                phkResult = phkResultInternal;
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
             }
+            return res;
         }
         /// <summary>
         /// Retrieves information about the specified registry key.
@@ -44,40 +49,18 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpftLastWriteTime"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe WIN32_ERROR RegQueryInfoKey(HKEY hKey, PWSTR lpClass, [Optional] out uint lpcchClass, [Optional] out uint lpReserved, [Optional] out uint lpcSubKeys, [Optional] out uint lpcbMaxSubKeyLen, [Optional] out uint lpcbMaxClassLen, [Optional] out uint lpcValues, [Optional] out uint lpcbMaxValueNameLen, [Optional] out uint lpcbMaxValueLen, [Optional] out uint lpcbSecurityDescriptor, [Optional] out global::System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
+        internal static unsafe WIN32_ERROR RegQueryInfoKey(SafeHandle hKey, Span<char> lpClass, IntPtr lpcchClass, out uint lpcSubKeys, out uint lpcbMaxSubKeyLen, out uint lpcbMaxClassLen, out uint lpcValues, out uint lpcbMaxValueNameLen, out uint lpcbMaxValueLen, out uint lpcbSecurityDescriptor, out global::System.Runtime.InteropServices.ComTypes.FILETIME lpftLastWriteTime)
         {
-            fixed (uint* lpcchClassPtr = &lpcchClass, lpReservedPtr = &lpReserved, lpcSubKeysPtr = &lpcSubKeys, lpcbMaxSubKeyLenPtr = &lpcbMaxSubKeyLen, lpcbMaxClassLenPtr = &lpcbMaxClassLen, lpcValuesPtr = &lpcValues, lpcbMaxValueNameLenPtr = &lpcbMaxValueNameLen, lpcbMaxValueLenPtr = &lpcbMaxValueLen, lpcbSecurityDescriptorPtr = &lpcbSecurityDescriptor)
+            fixed (uint* lpcSubKeysPtr = &lpcSubKeys, lpcbMaxSubKeyLenPtr = &lpcbMaxSubKeyLen, lpcbMaxClassLenPtr = &lpcbMaxClassLen, lpcValuesPtr = &lpcValues, lpcbMaxValueNameLenPtr = &lpcbMaxValueNameLen, lpcbMaxValueLenPtr = &lpcbMaxValueLen, lpcbSecurityDescriptorPtr = &lpcbSecurityDescriptor)
             fixed (global::System.Runtime.InteropServices.ComTypes.FILETIME* lpftLastWriteTimePtr = &lpftLastWriteTime)
             {
-                var res = PInvoke.RegQueryInfoKey(hKey, lpClass, lpcchClassPtr, lpReservedPtr, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
+                var res = PInvoke.RegQueryInfoKey(hKey, lpClass, (uint*)lpcchClass, lpcSubKeysPtr, lpcbMaxSubKeyLenPtr, lpcbMaxClassLenPtr, lpcValuesPtr, lpcbMaxValueNameLenPtr, lpcbMaxValueLenPtr, lpcbSecurityDescriptorPtr, lpftLastWriteTimePtr);
                 if (res != WIN32_ERROR.ERROR_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
                 }
                 return res;
             }
-        }
-
-        /// <summary>
-        /// Closes a handle to the specified registry key.
-        /// </summary>
-        /// <param name="hKey"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static WIN32_ERROR RegCloseKey(ref HKEY hKey)
-        {
-            if (null == hKey || hKey == default || hKey.IsNull)
-            {
-                return WIN32_ERROR.ERROR_SUCCESS;
-            }
-            var res = PInvoke.RegCloseKey(hKey);
-            if (res != WIN32_ERROR.ERROR_SUCCESS)
-            {
-                
-                throw ExceptionUtilities.GetExceptionForLastWin32Error(res);
-            }
-            hKey = default;
-            return res;
         }
 
         /// <summary>
@@ -91,18 +74,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="phNewToken"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL DuplicateTokenEx(HANDLE hExistingToken, TOKEN_ACCESS_MASK dwDesiredAccess, [Optional] SECURITY_ATTRIBUTES? lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out HANDLE phNewToken)
+        internal static BOOL DuplicateTokenEx(SafeHandle hExistingToken, TOKEN_ACCESS_MASK dwDesiredAccess, SECURITY_ATTRIBUTES? lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out SafeFileHandle phNewToken)
         {
-            fixed (HANDLE* phNewTokenPtr = &phNewToken)
+            var res = PInvoke.DuplicateTokenEx(hExistingToken, dwDesiredAccess, lpTokenAttributes, ImpersonationLevel, TokenType, out phNewToken);
+            if (!res)
             {
-                SECURITY_ATTRIBUTES lpTokenAttributesLocal = lpTokenAttributes ?? default(SECURITY_ATTRIBUTES);
-                var res = PInvoke.DuplicateTokenEx(hExistingToken, dwDesiredAccess, lpTokenAttributes.HasValue ? &lpTokenAttributesLocal : null, ImpersonationLevel, TokenType, phNewTokenPtr);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -113,17 +92,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="TokenHandle"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL OpenProcessToken(HANDLE ProcessHandle, TOKEN_ACCESS_MASK DesiredAccess, out HANDLE TokenHandle)
+        internal static BOOL OpenProcessToken(SafeHandle ProcessHandle, TOKEN_ACCESS_MASK DesiredAccess, out SafeFileHandle TokenHandle)
         {
-            fixed (HANDLE* TokenHandlePtr = &TokenHandle)
+            var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, out TokenHandle);
+            if (!res)
             {
-                var res = PInvoke.OpenProcessToken(ProcessHandle, DesiredAccess, TokenHandlePtr);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -134,7 +110,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpLuid"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL LookupPrivilegeValue(string? lpSystemName, string lpName, out LUID lpLuid)
+        internal static BOOL LookupPrivilegeValue(string? lpSystemName, string lpName, out LUID lpLuid)
         {
             var res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName, out lpLuid);
             if (!res)
@@ -154,17 +130,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL GetTokenInformation(HANDLE TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, [Optional] IntPtr TokenInformation, uint TokenInformationLength, out uint ReturnLength)
+        internal static unsafe BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, IntPtr TokenInformation, uint TokenInformationLength, out uint ReturnLength)
         {
-            fixed (uint* ReturnLengthPtr = &ReturnLength)
+            var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.ToPointer(), TokenInformationLength, out ReturnLength);
+            if (!res && IntPtr.Zero != TokenInformation && 0 != TokenInformationLength)
             {
-                var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.ToPointer(), TokenInformationLength, ReturnLengthPtr);
-                if (!res && IntPtr.Zero != TokenInformation && 0 != TokenInformationLength)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            return res;
         }
 
         /// <summary>
@@ -178,15 +151,19 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL AdjustTokenPrivileges(HANDLE TokenHandle, BOOL DisableAllPrivileges, [Optional] TOKEN_PRIVILEGES? NewState, uint BufferLength)
+        internal static unsafe BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, BOOL DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, uint BufferLength, out TOKEN_PRIVILEGES PreviousState, out uint ReturnLength)
         {
-            TOKEN_PRIVILEGES NewStateLocal = NewState ?? default(TOKEN_PRIVILEGES);
-            var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, NewState.HasValue ? &NewStateLocal : null, BufferLength, null, null);
-            if (!res)
+            fixed (TOKEN_PRIVILEGES* previousStatePtr = &PreviousState)
+            fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
+            fixed (uint* returnLengthPtr = &ReturnLength)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                var res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, BufferLength, previousStatePtr, returnLengthPtr);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            return res;
         }
     }
 }

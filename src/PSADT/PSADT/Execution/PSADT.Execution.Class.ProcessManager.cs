@@ -8,7 +8,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Principal;
+using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
+using PSADT.SafeHandles;
 using PSADT.Security;
 using PSADT.TerminalServices;
 using PSADT.Utilities;
@@ -35,11 +37,9 @@ namespace PSADT.Execution
         public static async Task<ProcessResult?> LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Declare all handles C-style so we can close them in the finally block for cleanup.
-            HANDLE hStdOutRead = default;
-            HANDLE hStdErrRead = default;
-            HANDLE hProcess = default;
-            HANDLE iocp = default;
-            HANDLE job = default;
+            SafeFileHandle? hStdOutRead = null;
+            SafeFileHandle? hStdErrRead = null;
+            SafeProcessHandle? hProcess = null;
             uint? processId = null;
             int? exitCode = null;
 
@@ -64,12 +64,13 @@ namespace PSADT.Execution
                 guiApp = false;
             }
 
+            // Main process creation logic.
             try
             {
                 // Set up the job object and I/O completion port for the process.
-                iocp = Kernel32.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, HANDLE.Null, UIntPtr.Zero, 1);
-                job = Kernel32.CreateJobObject(null, default);
-                Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = iocp, CompletionKey = null });
+                using var iocp = Kernel32.CreateIoCompletionPort(new SafeFileHandle(HANDLE.INVALID_HANDLE_VALUE, false), new SafeFileHandle(IntPtr.Zero, false), UIntPtr.Zero, 1);
+                using var job = Kernel32.CreateJobObject(null, default);
+                Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
 
                 // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
                 // Invoking processes as user has no ShellExecute capability, so it always comes through here.
@@ -81,6 +82,8 @@ namespace PSADT.Execution
                         dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW,
                         wShowWindow = launchInfo.WindowStyle,
                     };
+                    SafeFileHandle? hStdOutWrite = default;
+                    SafeFileHandle? hStdErrWrite = default;
                     try
                     {
                         // The process is created suspended so it can be assigned to the job object.
@@ -114,16 +117,19 @@ namespace PSADT.Execution
                         // If we're to read the output, we create pipes for stdout and stderr.
                         if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
                         {
-                            CreatePipe(out hStdOutRead, out startupInfo.hStdOutput);
-                            CreatePipe(out hStdErrRead, out startupInfo.hStdError);
+                            CreatePipe(out hStdOutRead, out hStdOutWrite);
+                            CreatePipe(out hStdErrRead, out hStdErrWrite);
                             stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved));
                             stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved));
+                            startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
+                            startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
                         }
 
                         // Handle user process creation, otherwise just create the process for the running user.
                         var pi = new PROCESS_INFORMATION();
                         if (null != launchInfo.Username)
                         {
+                            // We can only run a process as a user if we're running as SYSTEM.
                             using (WindowsIdentity caller = WindowsIdentity.GetCurrent())
                             {
                                 if (!caller.User!.IsWellKnown(WellKnownSidType.LocalSystemSid))
@@ -162,86 +168,71 @@ namespace PSADT.Execution
                                 throw new InvalidOperationException($"The session for user {launchInfo.Username} is not active.");
                             }
 
-                            // First we get the user's token.
-                            HANDLE hPrimaryToken = default;
-                            try
+                            // This is important so that a windowed application can be shown.
+                            if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
                             {
-                                WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
-                                try
-                                {
-                                    // If we're to get their linked token, we get it via their user token.
-                                    // Once done, we duplicate the linked token to get a primary token to create the new process.
-                                    if (launchInfo.UseLinkedAdminToken)
-                                    {
-                                        var length = Marshal.SizeOf<TOKEN_LINKED_TOKEN>();
-                                        var buffer = Marshal.AllocHGlobal(length);
-                                        try
-                                        {
-                                            AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, (uint)length, out _);
-                                            AdvApi32.DuplicateTokenEx(Marshal.PtrToStructure<TOKEN_LINKED_TOKEN>(buffer).LinkedToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
-                                        }
-                                        finally
-                                        {
-                                            Marshal.FreeHGlobal(buffer);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
-                                    }
-                                }
-                                finally
-                                {
-                                    Kernel32.CloseHandle(ref userToken);
-                                }
+                                startupInfo.lpDesktop = new PWSTR(Marshal.StringToCoTaskMemUni("winsta0\\default"));
+                            }
 
-                                // This is important so that a windowed application can be shown.
-                                if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                            // First we get the user's token.
+                            WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
+                            SafeFileHandle hPrimaryToken;
+                            using (userToken)
+                            {
+                                // If we're to get their linked token, we get it via their user token.
+                                // Once done, we duplicate the linked token to get a primary token to create the new process.
+                                if (launchInfo.UseLinkedAdminToken)
                                 {
-                                    startupInfo.lpDesktop = new PWSTR(Marshal.StringToCoTaskMemUni("winsta0\\default"));
+                                    var length = Marshal.SizeOf<TOKEN_LINKED_TOKEN>();
+                                    var buffer = Marshal.AllocHGlobal(length);
+                                    try
+                                    {
+                                        AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, (uint)length, out _);
+                                        AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(Marshal.PtrToStructure<TOKEN_LINKED_TOKEN>(buffer).LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                                    }
+                                    finally
+                                    {
+                                        Marshal.FreeHGlobal(buffer);
+                                    }
                                 }
+                                else
+                                {
+                                    AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                                }
+                            }
 
-                                // Finally, start the process off for the user.
+                            // Finally, start the process off for the user.
+                            using (hPrimaryToken)
+                            {
                                 UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
-                                try
+                                using (lpEnvironment)
                                 {
                                     Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                 }
-                                finally
-                                {
-                                    UserEnv.DestroyEnvironmentBlock(ref lpEnvironment);
-                                }
-                            }
-                            finally
-                            {
-                                Kernel32.CloseHandle(ref hPrimaryToken);
                             }
                         }
                         else
                         {
-                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, IntPtr.Zero, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, NullSafeHandles.NullSafeEnvironmentBlockHandle, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
 
                         // Start tracking the process and allow it to resume execution.
-                        try
+                        using (var hThread = new SafeThreadHandle(pi.hThread, true))
                         {
-                            Kernel32.AssignProcessToJobObject(job, (hProcess = pi.hProcess));
-                            Kernel32.ResumeThread(pi.hThread);
+                            Kernel32.AssignProcessToJobObject(job, (hProcess = new SafeProcessHandle(pi.hProcess, true)));
+                            Kernel32.ResumeThread(hThread);
                             processId = pi.dwProcessId;
-                        }
-                        finally
-                        {
-                            Kernel32.CloseHandle(ref pi.hThread);
                         }
                     }
                     finally
                     {
-                        Kernel32.CloseHandle(ref startupInfo.hStdOutput);
-                        Kernel32.CloseHandle(ref startupInfo.hStdError);
+                        hStdOutWrite?.Dispose();
+                        hStdErrWrite?.Dispose();
                     }
                 }
                 else
                 {
+                    // Set up the shell execute info structure.
                     var startupInfo = new Shell32.SHELLEXECUTEINFO
                     {
                         cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
@@ -261,10 +252,11 @@ namespace PSADT.Execution
                         startupInfo.nShow = launchInfo.WindowStyle;
                     }
 
+                    // Start the process and assign it to the job object if we have a handle.
                     Shell32.ShellExecuteEx(ref startupInfo);
                     if (startupInfo.hProcess != IntPtr.Zero)
                     {
-                        hProcess = (HANDLE)startupInfo.hProcess;
+                        hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
                         processId = Kernel32.GetProcessId(hProcess);
                         Kernel32.AssignProcessToJobObject(job, hProcess);
                         if ((launchInfo.PriorityClass != ProcessPriorityClass.Normal) && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
@@ -275,9 +267,9 @@ namespace PSADT.Execution
                 }
 
                 // These tasks read all outputs and wait for the process to complete.
-                await Task.WhenAll(stdOutTask, stdErrTask, (hProcess == default) ? Task.CompletedTask : Task.Run(() =>
+                await Task.WhenAll(stdOutTask, stdErrTask, (null == hProcess) ? Task.CompletedTask : Task.Run(() =>
                 {
-                    ReadOnlySpan<HANDLE> handles = [iocp, (HANDLE)launchInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousGetHandle()];
+                    ReadOnlySpan<HANDLE> handles = [(HANDLE)iocp.DangerousGetHandle(), (HANDLE)launchInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousGetHandle()];
                     while (true)
                     {
                         var index = (uint)Kernel32.WaitForMultipleObjects(handles, false, PInvoke.INFINITE);
@@ -315,11 +307,9 @@ namespace PSADT.Execution
             }
             finally
             {
-                Kernel32.CloseHandle(ref hStdOutRead);
-                Kernel32.CloseHandle(ref hStdErrRead);
-                Kernel32.CloseHandle(ref hProcess);
-                Kernel32.CloseHandle(ref iocp);
-                Kernel32.CloseHandle(ref job);
+                hStdOutRead?.Dispose();
+                hStdErrRead?.Dispose();
+                hProcess?.Dispose();
             }
         }
 
@@ -329,10 +319,10 @@ namespace PSADT.Execution
         /// <param name="readPipe"></param>
         /// <param name="writePipe"></param>
         /// <exception cref="Win32Exception"></exception>
-        private static void CreatePipe(out HANDLE readPipe, out HANDLE writePipe)
+        private static void CreatePipe(out SafeFileHandle readPipe, out SafeFileHandle writePipe)
         {
             Kernel32.CreatePipe(out readPipe, out writePipe, new SECURITY_ATTRIBUTES { nLength = (uint)Marshal.SizeOf<SECURITY_ATTRIBUTES>(), bInheritHandle = true });
-            Kernel32.SetHandleInformation(readPipe, (uint)HANDLE_FLAGS.HANDLE_FLAG_INHERIT, 0);
+            Kernel32.SetHandleInformation(readPipe, HANDLE_FLAGS.HANDLE_FLAG_INHERIT, 0);
         }
 
         /// <summary>
@@ -342,7 +332,7 @@ namespace PSADT.Execution
         /// <param name="output"></param>
         /// <param name="token"></param>
         /// <exception cref="Win32Exception"></exception>
-        private static void ReadPipe(HANDLE handle, List<string> output, ConcurrentQueue<string> interleaved)
+        private static void ReadPipe(SafeHandle handle, List<string> output, ConcurrentQueue<string> interleaved)
         {
             var buffer = new byte[4096];
             uint bytesRead = 0;
@@ -350,7 +340,7 @@ namespace PSADT.Execution
             {
                 try
                 {
-                    Kernel32.ReadFile(handle, buffer, out bytesRead);
+                    Kernel32.ReadFile(handle, buffer, out bytesRead, IntPtr.Zero);
                     if (bytesRead == 0)
                     {
                         break;

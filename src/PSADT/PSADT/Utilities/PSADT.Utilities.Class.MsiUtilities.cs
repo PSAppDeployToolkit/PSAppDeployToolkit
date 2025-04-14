@@ -1,6 +1,5 @@
 ﻿using System;
 using PSADT.LibraryInterfaces;
-using Windows.Win32;
 using Windows.Win32.System.LibraryLoader;
 
 namespace PSADT.Utilities
@@ -18,18 +17,13 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
         public static string? GetMessageFromMsiExitCode(uint msiExitCode)
         {
-            var hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", default, LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
-            try
+            using (var hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE))
             {
                 var buffer = new char[4096];
                 var bufspan = new Span<char>(buffer);
                 User32.LoadString(hMsiMsgDll, msiExitCode, bufspan);
                 var msiMsgString = bufspan.ToString().Replace("\0", string.Empty).Trim();
                 return !string.IsNullOrWhiteSpace(msiMsgString) ? msiMsgString : null;
-            }
-            finally
-            {
-                Kernel32.FreeLibrary(ref hMsiMsgDll);
             }
         }
     }

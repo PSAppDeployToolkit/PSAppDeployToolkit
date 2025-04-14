@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using Microsoft.Win32.SafeHandles;
+using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -19,15 +21,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="bInherit"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL CreateEnvironmentBlock(out IntPtr lpEnvironment, HANDLE hToken, BOOL bInherit)
+        internal static unsafe BOOL CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, SafeFileHandle hToken, BOOL bInherit)
         {
-            void* lpEnvironmentPtr;
-            var res = PInvoke.CreateEnvironmentBlock(&lpEnvironmentPtr, hToken, bInherit);
+            var res = PInvoke.CreateEnvironmentBlock(out var lpEnvironmentPtr, hToken, bInherit);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            lpEnvironment = new IntPtr(lpEnvironmentPtr);
+            lpEnvironment = new SafeEnvironmentBlockHandle(new IntPtr(lpEnvironmentPtr), true);
             return res;
         }
 

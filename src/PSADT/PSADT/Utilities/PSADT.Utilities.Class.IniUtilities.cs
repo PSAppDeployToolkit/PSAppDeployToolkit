@@ -17,7 +17,7 @@ namespace PSADT.Utilities
         public static string GetSectionKeyValue(string section, string key, string filepath)
         {
             var buffer = new char[4096];
-            var res = Kernel32.GetPrivateProfileString(section, key, "", buffer, filepath);
+            var res = Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath);
             return new string(buffer, 0, (int)res);
         }
 

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Wdk.Foundation;
 using Windows.Win32.Foundation;
@@ -37,7 +38,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// The handle's numerical identifier.
             /// </summary>
-            public IntPtr HandleValue;
+            public UIntPtr HandleValue;
 
             /// <summary>
             /// The type of access granted to the handle.
@@ -79,7 +80,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Reserved for future use.
             /// </summary>
-            internal IntPtr Reserved;
+            internal UIntPtr Reserved;
         }
 
         /// <summary>
@@ -188,7 +189,7 @@ namespace PSADT.LibraryInterfaces
             /// <summary>
             /// Reserved for future use.
             /// </summary>
-            internal sbyte ReservedByte;
+            internal byte ReservedByte;
 
             /// <summary>
             /// The object type's pool type.
@@ -257,7 +258,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtQueryObject")]
-        private static extern NTSTATUS NtQueryObjectNative(HANDLE ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength);
+        private static extern NTSTATUS NtQueryObjectNative(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength);
 
         /// <summary>
         /// Queries an object for information.
@@ -268,10 +269,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ObjectInformationLength"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
-        internal static NTSTATUS NtQueryObject(HANDLE Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength)
+        internal static NTSTATUS NtQueryObject(SafeHandle Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength)
         {
-            var res = NtQueryObjectNative(Handle, ObjectInformationClass, ObjectInformation, ObjectInformationLength, out ReturnLength);
-            if (res != NTSTATUS.STATUS_SUCCESS && ((null != Handle && !Handle.IsNull && IntPtr.Zero != ObjectInformation && 0 != ObjectInformationLength) || ((null == Handle || Handle.IsNull) && ObjectInformationLength != ObjectInfoClassSizes[ObjectInformationClass])))
+            var res = NtQueryObjectNative(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation, ObjectInformationLength, out ReturnLength);
+            if (res != NTSTATUS.STATUS_SUCCESS && ((null != Handle && !Handle.IsInvalid && IntPtr.Zero != ObjectInformation && 0 != ObjectInformationLength) || ((null == Handle || Handle.IsInvalid) && ObjectInformationLength != ObjectInfoClassSizes[ObjectInformationClass])))
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
             }
@@ -295,7 +296,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="attributeList"></param>
         /// <returns></returns>
         [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtCreateThreadEx")]
-        private static extern NTSTATUS NtCreateThreadExNative(out HANDLE threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList);
+        private static extern NTSTATUS NtCreateThreadExNative(out IntPtr threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList);
 
         /// <summary>
         /// Creates a thread in the specified process.
@@ -312,13 +313,14 @@ namespace PSADT.LibraryInterfaces
         /// <param name="maximumStackSize"></param>
         /// <param name="attributeList"></param>
         /// <returns></returns>
-        internal static NTSTATUS NtCreateThreadEx(out HANDLE threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
+        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, SafeVirtualAllocHandle startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
         {
-            var res = NtCreateThreadExNative(out threadHandle, desiredAccess, objectAttributes, processHandle, startAddress, parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
+            var res = NtCreateThreadExNative(out var hThread, desiredAccess, objectAttributes, processHandle, startAddress.DangerousGetHandle(), parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
             if (res != NTSTATUS.STATUS_SUCCESS)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
             }
+            threadHandle = new SafeThreadHandle(hThread, true);
             return res;
         }
 
@@ -330,7 +332,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="exitStatus"></param>
         /// <returns></returns>
         [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtTerminateThread")]
-        private static extern NTSTATUS NtTerminateThreadNative(HANDLE threadHandle, NTSTATUS exitStatus);
+        private static extern NTSTATUS NtTerminateThreadNative(IntPtr threadHandle, NTSTATUS exitStatus);
 
         /// <summary>
         /// Terminates a thread.
@@ -338,9 +340,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="threadHandle"></param>
         /// <param name="exitStatus"></param>
         /// <returns></returns>
-        internal static NTSTATUS NtTerminateThread(HANDLE threadHandle, NTSTATUS exitStatus)
+        internal static NTSTATUS NtTerminateThread(SafeThreadHandle threadHandle, NTSTATUS exitStatus)
         {
-            var res = NtTerminateThreadNative(threadHandle, exitStatus);
+            var res = NtTerminateThreadNative(threadHandle.DangerousGetHandle(), exitStatus);
             if (res != NTSTATUS.STATUS_SUCCESS && res != exitStatus)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
