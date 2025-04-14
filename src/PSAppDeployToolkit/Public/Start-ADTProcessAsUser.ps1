@@ -74,6 +74,9 @@ function Start-ADTProcessAsUser
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
+    .PARAMETER StreamEncoding
+        Specifies the encoding type to use when reading stdout/stderr. Some apps like WinGet encode using UTF8, which will corrupt if incorrectly set.
+
     .PARAMETER PassThru
         If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process. If NoWait is specified, returns an object with Id, Handle and ProcessName.
 
@@ -214,6 +217,10 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Text.Encoding]$StreamEncoding,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,

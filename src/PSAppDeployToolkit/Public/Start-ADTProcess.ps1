@@ -83,6 +83,9 @@ function Start-ADTProcess
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
+    .PARAMETER StreamEncoding
+        Specifies the encoding type to use when reading stdout/stderr. Some apps like WinGet encode using UTF8, which will corrupt if incorrectly set.
+
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
@@ -313,6 +316,10 @@ function Start-ADTProcess
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass,
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Text.Encoding]$StreamEncoding,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
@@ -476,6 +483,7 @@ function Start-ADTProcess
                     $UseShellExecute,
                     $Verb,
                     $CreateNoWindow,
+                    $StreamEncoding,
                     $WindowStyle,
                     $PriorityClass,
                     $cancellationToken,

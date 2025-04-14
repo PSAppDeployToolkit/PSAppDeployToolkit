@@ -115,8 +115,8 @@ namespace PSADT.Execution
                     {
                         CreatePipe(out var hStdOutRead, out hStdOutWrite);
                         CreatePipe(out var hStdErrRead, out hStdErrWrite);
-                        stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved));
-                        stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved));
+                        stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
+                        stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
                         startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
                         startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
                     }
@@ -320,12 +320,13 @@ namespace PSADT.Execution
         }
 
         /// <summary>
-        /// Reads from a pipe until the pipe is closed or the token is cancelled.
+        /// Reads from a pipe until the pipe is closed.
         /// </summary>
         /// <param name="handle"></param>
         /// <param name="output"></param>
-        /// <exception cref="Win32Exception"></exception>
-        private static void ReadPipe(SafeFileHandle handle, List<string> output, ConcurrentQueue<string> interleaved)
+        /// <param name="interleaved"></param>
+        /// <param name="encoding"></param>
+        private static void ReadPipe(SafeFileHandle handle, List<string> output, ConcurrentQueue<string> interleaved, Encoding encoding)
         {
             var buffer = new byte[4096];
             uint bytesRead = 0;
@@ -345,7 +346,7 @@ namespace PSADT.Execution
                     {
                         break;
                     }
-                    var text = Encoding.Default.GetString(buffer, 0, (int)bytesRead).TrimEnd();
+                    var text = encoding.GetString(buffer, 0, (int)bytesRead).Replace("\0", string.Empty).TrimEnd();
                     interleaved.Enqueue(text);
                     output.Add(text);
                 }

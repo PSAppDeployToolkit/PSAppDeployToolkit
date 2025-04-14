@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Threading;
@@ -23,12 +24,16 @@ namespace PSADT.Execution
         /// <param name="workingDirectory"></param>
         /// <param name="username"></param>
         /// <param name="useLinkedAdminToken"></param>
+        /// <param name="inheritEnvironmentVariables"></param>
         /// <param name="useShellExecute"></param>
         /// <param name="verb"></param>
+        /// <param name="createNoWindow"></param>
+        /// <param name="streamEncoding"></param>
         /// <param name="windowStyle"></param>
-        /// <param name="noNewWindow"></param>
         /// <param name="priorityClass"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="noTerminateOnTimeout"></param>
+        /// <exception cref="ArgumentException"></exception>
         public ProcessLaunchInfo(
             string filePath,
             string[]? argumentList = null,
@@ -39,6 +44,7 @@ namespace PSADT.Execution
             bool useShellExecute = false,
             string? verb = null,
             bool createNoWindow = false,
+            Encoding? streamEncoding = null,
             ProcessWindowStyle? windowStyle = null,
             ProcessPriorityClass? priorityClass = null,
             CancellationToken? cancellationToken = null,
@@ -82,6 +88,10 @@ namespace PSADT.Execution
             if (!string.IsNullOrWhiteSpace(verb))
             {
                 Verb = verb;
+            }
+            if (null != streamEncoding)
+            {
+                StreamEncoding = streamEncoding;
             }
             if (null != priorityClass)
             {
@@ -175,6 +185,11 @@ namespace PSADT.Execution
         /// Gets a value indicating whether to create a new window for the process.
         /// </summary>
         public readonly bool CreateNoWindow;
+
+        /// <summary>
+        /// Gets the encoding type to use when parsing stdout/stderr text.
+        /// </summary>
+        public readonly Encoding StreamEncoding = Encoding.Default;
 
         /// <summary>
         /// Gets the window style of the process.
