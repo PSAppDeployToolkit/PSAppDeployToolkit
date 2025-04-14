@@ -368,7 +368,9 @@ namespace PSADT.FileSystem
                 default:
                     throw new PlatformNotSupportedException("Unsupported architecture: " + ProcessArchitecture);
             }
-            return NativeUtilities.AllocateExecutableMemory(shellcode.ToArray());
+            SafeVirtualAllocHandle mem = Kernel32.VirtualAlloc(IntPtr.Zero, (UIntPtr)shellcode.Count, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
+            mem.Write(shellcode.ToArray());
+            return mem;
         }
 
         /// <summary>

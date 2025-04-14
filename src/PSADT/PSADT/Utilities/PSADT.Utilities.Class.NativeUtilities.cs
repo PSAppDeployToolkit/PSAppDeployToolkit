@@ -1,30 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using PSADT.LibraryInterfaces;
-using PSADT.SafeHandles;
-using Windows.Win32.System.Memory;
+﻿using System.Collections.Generic;
 
 namespace PSADT.Utilities
 {
     /// <summary>
-    /// Utility class for building trampolines to call native functions.
+    /// Utility class for working directly with machine code.
     /// </summary>
     internal static class NativeUtilities
     {
-        /// <summary>
-        /// Allocates executable memory and copies the code into it.
-        /// </summary>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static SafeVirtualAllocHandle AllocateExecutableMemory(byte[] code)
-        {
-            SafeVirtualAllocHandle mem = Kernel32.VirtualAlloc(IntPtr.Zero, (UIntPtr)code.Length, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-            mem.Write(code);
-            return mem;
-        }
-
         /// <summary>
         /// Encodes a MOVZ instruction for ARM64.
         /// </summary>
