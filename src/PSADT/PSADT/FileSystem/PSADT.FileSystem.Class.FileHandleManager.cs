@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -249,7 +248,7 @@ namespace PSADT.FileSystem
         {
             // Build the shellcode stub to call NtQueryObject.
             var shellcode = new List<byte>();
-            switch (ProcessArchitecture)
+            switch (ProcessManager.ProcessArchitecture)
             {
                 case SystemArchitecture.AMD64:
                     // mov rcx, handle
@@ -366,7 +365,7 @@ namespace PSADT.FileSystem
                     }
                     break;
                 default:
-                    throw new PlatformNotSupportedException("Unsupported architecture: " + ProcessArchitecture);
+                    throw new PlatformNotSupportedException("Unsupported architecture: " + ProcessManager.ProcessArchitecture);
             }
             SafeVirtualAllocHandle mem = Kernel32.VirtualAlloc(IntPtr.Zero, (UIntPtr)shellcode.Count, VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
             mem.Write(shellcode.ToArray());
@@ -377,11 +376,6 @@ namespace PSADT.FileSystem
         /// The lookup table of object types.
         /// </summary>
         private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable = GetObjectTypeLookupTable();
-
-        /// <summary>
-        /// The architecture of the current process.
-        /// </summary>
-        private static readonly SystemArchitecture ProcessArchitecture = ExecutableUtilities.GetExecutableInfo(Process.GetCurrentProcess().MainModule!.FileName).Architecture;
 
         /// <summary>
         /// The duration to wait for a hung NtQueryObject thread to terminate.

@@ -13,6 +13,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Security;
 using PSADT.TerminalServices;
+using PSADT.Types;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -355,6 +356,11 @@ namespace PSADT.Execution
                 output.Add(text);
             }
         }
+
+        /// <summary>
+        /// The architecture of the current process.
+        /// </summary>
+        public static readonly SystemArchitecture ProcessArchitecture = ExecutableUtilities.GetExecutableInfo(Process.GetCurrentProcess().MainModule!.FileName).Architecture;
 
         /// <summary>
         /// Special exit code used to signal when we're terminating a process due to timeout.
