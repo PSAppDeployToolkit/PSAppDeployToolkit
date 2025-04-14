@@ -27,5 +27,10 @@ namespace PSADT.SafeHandles
         {
             return UserEnv.DestroyEnvironmentBlock(ref handle);
         }
+
+        /// <summary>
+        /// Represents a null safe handle for an environment block.
+        /// </summary>
+        internal static readonly SafeEnvironmentBlockHandle Null = new SafeEnvironmentBlockHandle(IntPtr.Zero, false);
     }
 }

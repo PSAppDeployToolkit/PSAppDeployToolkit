@@ -43,12 +43,10 @@ namespace PSADT.FileSystem
                 status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out handleBufferReqLength);
             }
 
-            // Process all handles and return a read-only list of the ones matching our directory filter.
+            // Set up required pointers for GetObjectName().
             using var objectBufferPtr = SafeHGlobalHandle.Alloc(1024);
             using var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
             using var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll");
-
-            // Set up requirements for GetObjectName.
             var ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
             var exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
 
@@ -212,11 +210,12 @@ namespace PSADT.FileSystem
 
             // Query the system for all object type info.
             using var typesBufferPtr = SafeHGlobalHandle.Alloc(objectTypesSize);
-            var status = NtDll.NtQueryObject(NullSafeHandles.NullSafeHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
+            using var nullHandle = new SafeFileHandle(IntPtr.Zero, false);
+            var status = NtDll.NtQueryObject(nullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
                 typesBufferPtr.ReAlloc(typesBufferReqLength);
-                status = NtDll.NtQueryObject(NullSafeHandles.NullSafeHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
+                status = NtDll.NtQueryObject(nullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
             }
 
             // Read the number of types from the buffer and return a built-out dictionary.

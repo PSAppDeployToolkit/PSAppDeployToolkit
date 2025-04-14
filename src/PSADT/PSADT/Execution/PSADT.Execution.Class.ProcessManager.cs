@@ -214,7 +214,7 @@ namespace PSADT.Execution
                         }
                         else
                         {
-                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, NullSafeHandles.NullSafeEnvironmentBlockHandle, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
 
                         // Start tracking the process and allow it to resume execution.
@@ -331,7 +331,6 @@ namespace PSADT.Execution
         /// </summary>
         /// <param name="handle"></param>
         /// <param name="output"></param>
-        /// <param name="token"></param>
         /// <exception cref="Win32Exception"></exception>
         private static void ReadPipe(SafeHandle handle, List<string> output, ConcurrentQueue<string> interleaved)
         {
