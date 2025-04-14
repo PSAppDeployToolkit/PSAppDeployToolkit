@@ -29,15 +29,13 @@ namespace PSADT.TerminalServices
             using (pSessionInfo)
             {
                 int objLength = Marshal.SizeOf(typeof(WTS_SESSION_INFOW));
-                int ptrOffset = 0;
                 List<SessionInfo> sessions = [];
                 for (int i = 0; i < pCount; i++)
                 {
-                    if (GetSessionInfo(pSessionInfo.ToStructure<WTS_SESSION_INFOW>(ptrOffset).SessionId) is SessionInfo session)
+                    if (GetSessionInfo(pSessionInfo.ToStructure<WTS_SESSION_INFOW>(objLength * i).SessionId) is SessionInfo session)
                     {
                         sessions.Add(session);
                     }
-                    ptrOffset += objLength;
                 }
                 return sessions.AsReadOnly();
             }

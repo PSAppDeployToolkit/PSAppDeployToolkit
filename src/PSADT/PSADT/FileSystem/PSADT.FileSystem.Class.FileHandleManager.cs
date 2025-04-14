@@ -55,16 +55,13 @@ namespace PSADT.FileSystem
             var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
 
             // Start looping through all handles.
-            var handleCount = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>().NumberOfHandles.ToUInt64();
+            var handleCount = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>().NumberOfHandles.ToUInt32();
             var entryOffset = handleInfoExSize;
             var openHandles = new List<FileHandleInfo>();
-            for (ulong i = 0; i < handleCount; i++)
+            for (int i = 0; i < handleCount; i++)
             {
-                // Read the handle information into a structure.
-                var sysHandle = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(entryOffset);
-                entryOffset += handleEntryExSize;
-
-                // Skip this handle if it's not a file or directory handle.
+                // Read the handle information into a structure, skipping over if it's not a file or directory handle.
+                var sysHandle = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(entryOffset + (handleEntryExSize * i));
                 if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
                 {
                     continue;
