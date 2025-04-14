@@ -244,8 +244,25 @@ namespace PSADT.LibraryInterfaces
         /// <param name="SystemInformationLength"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
-        [DllImport("ntdll.dll", ExactSpelling = true)]
-        internal static extern NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, int SystemInformationLength, out int ReturnLength);
+        [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtQuerySystemInformation")]
+        internal static extern NTSTATUS NtQuerySystemInformationNative(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, int SystemInformationLength, out int ReturnLength);
+
+        /// <summary>
+        /// Queries system information from the kernel.
+        /// </summary>
+        /// <param name="SystemInformationClass"></param>
+        /// <param name="SystemInformation"></param>
+        /// <param name="ReturnLength"></param>
+        /// <returns></returns>
+        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, SafeHGlobalHandle SystemInformation, out int ReturnLength)
+        {
+            var res = NtQuerySystemInformationNative(SystemInformationClass, SystemInformation.DangerousGetHandle(), SystemInformation.Length, out ReturnLength);
+            if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
+        }
 
         /// <summary>
         /// Queries an object for information.
@@ -269,10 +286,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ObjectInformationLength"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
-        internal static NTSTATUS NtQueryObject(SafeHandle Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength)
+        internal static NTSTATUS NtQueryObject(SafeHandle Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, SafeHGlobalHandle ObjectInformation, out int ReturnLength)
         {
-            var res = NtQueryObjectNative(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation, ObjectInformationLength, out ReturnLength);
-            if (res != NTSTATUS.STATUS_SUCCESS && ((null != Handle && !Handle.IsInvalid && IntPtr.Zero != ObjectInformation && 0 != ObjectInformationLength) || ((null == Handle || Handle.IsInvalid) && ObjectInformationLength != ObjectInfoClassSizes[ObjectInformationClass])))
+            var res = NtQueryObjectNative(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation.DangerousGetHandle(), ObjectInformation.Length, out ReturnLength);
+            if (res != NTSTATUS.STATUS_SUCCESS && ((null != Handle && !Handle.IsInvalid && !ObjectInformation.IsInvalid && 0 != ObjectInformation.Length) || ((null == Handle || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
             }
@@ -349,6 +366,14 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Lookup table for object system class struct sizes.
+        /// </summary>
+        internal static ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int>(new Dictionary<SYSTEM_INFORMATION_CLASS, int>
+        {
+            { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
+        });
 
         /// <summary>
         /// Lookup table for object information class struct sizes.

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Security;
@@ -130,10 +131,10 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, IntPtr TokenInformation, uint TokenInformationLength, out uint ReturnLength)
+        internal static unsafe BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, SafeHGlobalHandle TokenInformation, out uint ReturnLength)
         {
-            var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.ToPointer(), TokenInformationLength, out ReturnLength);
-            if (!res && IntPtr.Zero != TokenInformation && 0 != TokenInformationLength)
+            var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.DangerousGetHandle().ToPointer(), (uint)TokenInformation.Length, out ReturnLength);
+            if (!res && !TokenInformation.IsInvalid && 0 != TokenInformation.Length)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }

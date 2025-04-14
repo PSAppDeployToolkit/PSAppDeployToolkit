@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -293,11 +294,11 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpdwResult"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe LRESULT SendMessageTimeout(HWND hWnd, uint Msg, WPARAM wParam, LPARAM lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
+        internal static unsafe LRESULT SendMessageTimeout(HWND hWnd, uint Msg, WPARAM wParam, SafeMemoryHandle lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
         {
             fixed (nuint* lpdwResultPointer = &lpdwResult)
             {
-                var res = PInvoke.SendMessageTimeout(hWnd, Msg, wParam, lParam, fuFlags, uTimeout, lpdwResultPointer);
+                var res = PInvoke.SendMessageTimeout(hWnd, Msg, wParam, lParam.DangerousGetHandle(), fuFlags, uTimeout, lpdwResultPointer);
                 if (res == IntPtr.Zero)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();

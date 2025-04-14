@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
+using PSADT.SafeHandles;
 using Windows.Win32.Security;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
@@ -39,30 +40,23 @@ namespace PSADT.Security
         private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
-
-            const int bufferSize = 1024;
-            var buffer = Marshal.AllocHGlobal(bufferSize);
-            try
+            using (var buffer = SafeHGlobalHandle.Allocate(1024))
             {
-                AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, (uint)bufferSize, out _);
+                AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
 
-                var privilegeCount = Marshal.ReadInt32(buffer);
-                var ptr = buffer + sizeof(uint);
-                var inc = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
+                var privilegeCount = buffer.ReadInt32();
+                var bufferOffset = sizeof(uint);
+                var increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
                 for (int i = 0; i < privilegeCount; i++)
                 {
-                    var attr = Marshal.PtrToStructure<LUID_AND_ATTRIBUTES>(ptr);
+                    var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset);
                     if (attr.Luid.LowPart == luid.LowPart && attr.Luid.HighPart == luid.HighPart)
                     {
                         return (attr.Attributes & TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED) != 0;
                     }
-                    ptr += inc;
+                    bufferOffset += increment;
                 }
                 return false;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(buffer);
             }
         }
 

@@ -36,117 +36,101 @@ namespace PSADT.FileSystem
             var handleInfoExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_INFORMATION_EX>();
 
             // Query the total system handle information.
-            var handleBufferSize = handleInfoExSize + handleEntryExSize;
-            var handleBufferPtr = Marshal.AllocHGlobal(handleBufferSize);
-            var status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out int handleBufferReqLength);
+            using var handleBufferPtr = SafeHGlobalHandle.Allocate(handleInfoExSize + handleEntryExSize);
+            var status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out int handleBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
-                Marshal.FreeHGlobal(handleBufferPtr);
-                handleBufferSize = handleBufferReqLength;
-                handleBufferPtr = Marshal.AllocHGlobal(handleBufferReqLength);
-                status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, handleBufferSize, out handleBufferReqLength);
-            }
-            if (status != NTSTATUS.STATUS_SUCCESS)
-            {
-                Marshal.FreeHGlobal(handleBufferPtr);
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(status));
+                handleBufferPtr.Reallocate(handleBufferReqLength);
+                status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out handleBufferReqLength);
             }
 
             // Process all handles and return a read-only list of the ones matching our directory filter.
-            var objectBufferPtr = Marshal.AllocHGlobal(GetObjectNameBufferSize);
+            using var objectBufferPtr = SafeHGlobalHandle.Allocate(1024);
             using var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
             using var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll");
-            try
+
+            // Set up requirements for GetObjectName.
+            var ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
+            var exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
+
+            // Build a lookup table of NT device names. This must be built at runtime
+            // as the device names are not static and can change between invocations.
+            var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+
+            // Start looping through all handles.
+            var handleCount = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>().NumberOfHandles.ToUInt64();
+            var entryOffset = handleInfoExSize;
+            var openHandles = new List<FileHandleInfo>();
+            for (ulong i = 0; i < handleCount; i++)
             {
-                // Set up requirements for GetObjectName.
-                var objectBufferSpan = LibraryUtilities.CreateSpanFromPointer<byte>(objectBufferPtr, GetObjectNameBufferSize);
-                var ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
-                var exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
+                // Read the handle information into a structure.
+                var sysHandle = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(entryOffset);
+                entryOffset += handleEntryExSize;
 
-                // Build a lookup table of NT device names. This must be built at runtime
-                // as the device names are not static and can change between invocations.
-                var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
-
-                // Start looping through all handles.
-                var handleCount = Marshal.PtrToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>(handleBufferPtr).NumberOfHandles.ToUInt64();
-                var handleEntry = handleBufferPtr + handleInfoExSize;
-                var openHandles = new List<FileHandleInfo>();
-                for (ulong i = 0; i < handleCount; i++)
+                // Skip this handle if it's not a file or directory handle.
+                if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
                 {
-                    // Read the handle information into a structure.
-                    var sysHandle = Marshal.PtrToStructure<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>(handleEntry);
-                    handleEntry += handleEntryExSize;
+                    continue;
+                }
 
-                    // Skip this handle if it's not a file or directory handle.
-                    if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
+                // Open the owning process with rights to duplicate handles.
+                SafeFileHandle processHandle;
+                try
+                {
+                    processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, sysHandle.UniqueProcessId.ToUInt32());
+                }
+                catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                {
+                    continue;
+                }
+                catch (ArgumentException ex) when (ex.HResult == HRESULT.E_INVALIDARG)
+                {
+                    continue;
+                }
+
+                // Duplicate the remote handle into our process.
+                SafeFileHandle localHandle;
+                try
+                {
+                    Kernel32.DuplicateHandle(processHandle, new SafeFileHandle((HANDLE)sysHandle.HandleValue, false), Kernel32.GetCurrentProcess(), out localHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                }
+                catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
+                {
+                    continue;
+                }
+                catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                {
+                    continue;
+                }
+                finally
+                {
+                    processHandle.Dispose();
+                }
+
+                // Get the handle's name to check if it's a hard drive path.
+                string? objectName;
+                try
+                {
+                    objectName = GetObjectName(localHandle, ntQueryObject, exitThread, objectBufferPtr);
+                    if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith("\\Device\\HarddiskVolume"))
                     {
                         continue;
                     }
+                }
+                finally
+                {
+                    objectBufferPtr.Clear();
+                    localHandle.Dispose();
+                }
 
-                    // Open the owning process with rights to duplicate handles.
-                    SafeFileHandle processHandle;
-                    try
-                    {
-                        processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, sysHandle.UniqueProcessId.ToUInt32());
-                    }
-                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                    {
-                        continue;
-                    }
-                    catch (ArgumentException ex) when (ex.HResult == HRESULT.E_INVALIDARG)
-                    {
-                        continue;
-                    }
-
-                    // Duplicate the remote handle into our process.
-                    SafeFileHandle localHandle;
-                    try
-                    {
-                        Kernel32.DuplicateHandle(processHandle, new SafeFileHandle((HANDLE)sysHandle.HandleValue, false), Kernel32.GetCurrentProcess(), out localHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
-                    }
-                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
-                    {
-                        continue;
-                    }
-                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                    {
-                        continue;
-                    }
-                    finally
-                    {
-                        processHandle.Dispose();
-                    }
-
-                    // Get the handle's name to check if it's a hard drive path.
-                    string? objectName;
-                    try
-                    {
-                        objectName = GetObjectName(localHandle, ntQueryObject, exitThread, objectBufferPtr);
-                        if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith("\\Device\\HarddiskVolume"))
-                        {
-                            continue;
-                        }
-                    }
-                    finally
-                    {
-                        objectBufferSpan.Clear();
-                        localHandle.Dispose();
-                    }
-
-                    // Add the handle information to the list if it matches the specified directory path.
-                    string objectNameKey = $"\\{string.Join("\\", objectName.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (null == directoryPath || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        openHandles.Add(new FileHandleInfo(sysHandle, dosPath, objectName, objectType));
-                    }
-                }                
-                return openHandles.AsReadOnly();
+                // Add the handle information to the list if it matches the specified directory path.
+                string objectNameKey = $"\\{string.Join("\\", objectName.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (null == directoryPath || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
+                {
+                    openHandles.Add(new FileHandleInfo(sysHandle, dosPath, objectName, objectType));
+                }
             }
-            finally
-            {
-                Marshal.FreeHGlobal(handleBufferPtr);
-                Marshal.FreeHGlobal(objectBufferPtr);
-            }
+            return openHandles.AsReadOnly();
         }
 
         /// <summary>
@@ -181,10 +165,10 @@ namespace PSADT.FileSystem
         /// <param name="handle"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private static string? GetObjectName(SafeFileHandle handle, FARPROC ntQueryObject, FARPROC exitThread, IntPtr buffer)
+        private static string? GetObjectName(SafeFileHandle handle, FARPROC ntQueryObject, FARPROC exitThread, SafeHGlobalHandle buffer)
         {
             // Start the thread to retrieve the object name and wait for the outcome.
-            using (var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, OBJECT_INFORMATION_CLASS.ObjectNameInformation, handle, buffer, GetObjectNameBufferSize))
+            using (var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, OBJECT_INFORMATION_CLASS.ObjectNameInformation, handle, buffer))
             {
                 NTSTATUS status = NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, PInvoke.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
                 using (hThread)
@@ -212,7 +196,7 @@ namespace PSADT.FileSystem
                     {
                         return null;
                     }
-                    return Marshal.PtrToStructure<OBJECT_NAME_INFORMATION>(buffer).Name.Buffer.ToString()?.Replace("\0", string.Empty).Trim();
+                    return buffer.ToStructure<OBJECT_NAME_INFORMATION>().Name.Buffer.ToString()?.Replace("\0", string.Empty).Trim();
                 }
             }
         }
@@ -228,36 +212,26 @@ namespace PSADT.FileSystem
             var objectTypeSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
 
             // Query the system for all object type info.
-            var typesBufferSize = objectTypesSize;
-            var typesBufferPtr = Marshal.AllocHGlobal(typesBufferSize);
-            var status = NtDll.NtQueryObject(NullSafeHandles.NullSafeHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, typesBufferSize, out int typesBufferReqLength);
+            using var typesBufferPtr = SafeHGlobalHandle.Allocate(objectTypesSize);
+            var status = NtDll.NtQueryObject(NullSafeHandles.NullSafeHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
-                Marshal.FreeHGlobal(typesBufferPtr);
-                typesBufferSize = typesBufferReqLength;
-                typesBufferPtr = Marshal.AllocHGlobal(typesBufferReqLength);
-                status = NtDll.NtQueryObject(NullSafeHandles.NullSafeHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, typesBufferSize, out typesBufferReqLength);
+                typesBufferPtr.Reallocate(typesBufferReqLength);
+                status = NtDll.NtQueryObject(NullSafeHandles.NullSafeHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
             }
 
             // Read the number of types from the buffer and return a built-out dictionary.
-            try
+            var typesCount = typesBufferPtr.ToStructure<NtDll.OBJECT_TYPES_INFORMATION>().NumberOfTypes;
+            var typeTable = new Dictionary<ushort, string>((int)typesCount);
+            var ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
+            for (uint i = 0; i < typesCount; i++)
             {
-                var typesCount = Marshal.PtrToStructure<NtDll.OBJECT_TYPES_INFORMATION>(typesBufferPtr).NumberOfTypes;
-                var typeTable = new Dictionary<ushort, string>((int)typesCount);
-                var ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
-                for (uint i = 0; i < typesCount; i++)
-                {
-                    // Marshal the data into our structure and add the necessary values to the dictionary.
-                    var typeInfo = Marshal.PtrToStructure<NtDll.OBJECT_TYPE_INFORMATION>(typesBufferPtr + ptrOffset);
-                    typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().Replace("\0", string.Empty).Trim());
-                    ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
-                }
-                return new ReadOnlyDictionary<ushort, string>(typeTable);
+                // Marshal the data into our structure and add the necessary values to the dictionary.
+                var typeInfo = typesBufferPtr.ToStructure<NtDll.OBJECT_TYPE_INFORMATION>(ptrOffset);
+                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().Replace("\0", string.Empty).Trim());
+                ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
-            finally
-            {
-                Marshal.FreeHGlobal(typesBufferPtr);
-            }
+            return new ReadOnlyDictionary<ushort, string>(typeTable);
         }
 
         /// <summary>
@@ -271,7 +245,7 @@ namespace PSADT.FileSystem
         /// <param name="bufferSize"></param>
         /// <returns></returns>
         /// <exception cref="PlatformNotSupportedException"></exception>
-        private static SafeVirtualAllocHandle GetObjectTypeShellcode(IntPtr exitThread, IntPtr ntQueryObject, OBJECT_INFORMATION_CLASS infoClass, SafeFileHandle handle, IntPtr buffer, int bufferSize)
+        private static SafeVirtualAllocHandle GetObjectTypeShellcode(IntPtr exitThread, IntPtr ntQueryObject, OBJECT_INFORMATION_CLASS infoClass, SafeFileHandle handle, SafeHGlobalHandle buffer)
         {
             // Build the shellcode stub to call NtQueryObject.
             var shellcode = new List<byte>();
@@ -288,11 +262,11 @@ namespace PSADT.FileSystem
 
                     // mov r8, buffer
                     shellcode.Add(0x49); shellcode.Add(0xB8);
-                    shellcode.AddRange(BitConverter.GetBytes((ulong)buffer));
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)buffer.DangerousGetHandle()));
 
                     // mov r9, bufferSize
                     shellcode.Add(0x49); shellcode.Add(0xB9);
-                    shellcode.AddRange(BitConverter.GetBytes((ulong)bufferSize));
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)buffer.Length));
 
                     // sub rsp, 0x28 — shadow space + ReturnLength
                     shellcode.Add(0x48); shellcode.Add(0x83); shellcode.Add(0xEC); shellcode.Add(0x28);
@@ -325,11 +299,11 @@ namespace PSADT.FileSystem
 
                     // push bufferSize
                     shellcode.Add(0x68);
-                    shellcode.AddRange(BitConverter.GetBytes(bufferSize));
+                    shellcode.AddRange(BitConverter.GetBytes(buffer.Length));
 
                     // push buffer
                     shellcode.Add(0x68);
-                    shellcode.AddRange(BitConverter.GetBytes(buffer.ToInt32()));
+                    shellcode.AddRange(BitConverter.GetBytes(buffer.DangerousGetHandle().ToInt32()));
 
                     // push infoClass
                     shellcode.Add(0x68);
@@ -365,10 +339,10 @@ namespace PSADT.FileSystem
                     code.AddRange(NativeUtilities.Load64(1, (ulong)(uint)infoClass));
 
                     // x2 = buffer
-                    code.AddRange(NativeUtilities.Load64(2, (ulong)buffer.ToInt64()));
+                    code.AddRange(NativeUtilities.Load64(2, (ulong)buffer.DangerousGetHandle().ToInt64()));
 
                     // x3 = bufferSize
-                    code.AddRange(NativeUtilities.Load64(3, (ulong)bufferSize));
+                    code.AddRange(NativeUtilities.Load64(3, (ulong)buffer.Length));
 
                     // x4 = NULL (for ReturnLength)
                     code.AddRange(NativeUtilities.Load64(4, 0));
@@ -411,10 +385,5 @@ namespace PSADT.FileSystem
         /// The duration to wait for a hung NtQueryObject thread to terminate.
         /// </summary>
         private static readonly TimeSpan GetObjectNameThreadTimeout = TimeSpan.FromMilliseconds(125);
-
-        /// <summary>
-        /// The size of the buffer used to retrieve object names.
-        /// </summary>
-        private const int GetObjectNameBufferSize = 1024;
     }
 }

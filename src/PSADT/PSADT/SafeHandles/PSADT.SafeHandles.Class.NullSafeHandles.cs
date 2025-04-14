@@ -14,6 +14,11 @@ namespace PSADT.SafeHandles
         internal static readonly SafeEnvironmentBlockHandle NullSafeEnvironmentBlockHandle = new SafeEnvironmentBlockHandle(IntPtr.Zero, false);
 
         /// <summary>
+        /// Represents a null safe handle for memory.
+        /// </summary>
+        internal static readonly SafeMemoryHandle NullSafeMemoryHandle = (SafeMemoryHandle)new SafeWTSHandle(IntPtr.Zero, 0, false);
+
+        /// <summary>
         /// Represents a null safe handle for a thread.
         /// </summary>
         internal static readonly SafeHandle NullSafeHandle = (SafeHandle)NullSafeEnvironmentBlockHandle;

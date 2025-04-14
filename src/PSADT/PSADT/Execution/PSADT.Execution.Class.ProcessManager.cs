@@ -168,12 +168,6 @@ namespace PSADT.Execution
                                 throw new InvalidOperationException($"The session for user {launchInfo.Username} is not active.");
                             }
 
-                            // This is important so that a windowed application can be shown.
-                            if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
-                            {
-                                startupInfo.lpDesktop = new PWSTR(Marshal.StringToCoTaskMemUni("winsta0\\default"));
-                            }
-
                             // First we get the user's token.
                             WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
                             SafeFileHandle hPrimaryToken;
@@ -183,16 +177,10 @@ namespace PSADT.Execution
                                 // Once done, we duplicate the linked token to get a primary token to create the new process.
                                 if (launchInfo.UseLinkedAdminToken)
                                 {
-                                    var length = Marshal.SizeOf<TOKEN_LINKED_TOKEN>();
-                                    var buffer = Marshal.AllocHGlobal(length);
-                                    try
+                                    using (var buffer = SafeHGlobalHandle.Allocate(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
                                     {
-                                        AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, (uint)length, out _);
-                                        AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(Marshal.PtrToStructure<TOKEN_LINKED_TOKEN>(buffer).LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
-                                    }
-                                    finally
-                                    {
-                                        Marshal.FreeHGlobal(buffer);
+                                        AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
+                                        AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
                                     }
                                 }
                                 else
@@ -207,7 +195,19 @@ namespace PSADT.Execution
                                 UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                                 using (lpEnvironment)
                                 {
-                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                    // This is important so that a windowed application can be shown.
+                                    if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                                    {
+                                        using (var lpDesktop = SafeCoTaskMemHandle.StringToUni("winsta0\\default"))
+                                        {
+                                            startupInfo.lpDesktop = lpDesktop.ToPWSTR();
+                                            Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                    }
                                 }
                             }
                         }

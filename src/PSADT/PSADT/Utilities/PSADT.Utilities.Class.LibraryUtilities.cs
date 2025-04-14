@@ -16,22 +16,5 @@ namespace PSADT.Utilities
         {
             return (value + IntPtr.Size - 1) & ~(IntPtr.Size - 1);
         }
-
-        /// <summary>
-        /// Creates a span from a pointer and length.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="pointer"></param>
-        /// <param name="length"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        internal static unsafe Span<T> CreateSpanFromPointer<T>(IntPtr pointer, int length) where T : unmanaged
-        {
-            if (length < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length), "Length must be non-negative.");
-            }
-            return new Span<T>(pointer.ToPointer(), length);
-        }
     }
 }
