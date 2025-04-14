@@ -140,7 +140,7 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Current Process Architecture
     $variables.Add('Is64BitProcess', [System.Environment]::Is64BitProcess)
-    $variables.Add('psArchitecture', (Get-ADTPEFileArchitecture -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path)))
+    $variables.Add('psArchitecture', (Get-ADTPEFileArchitecture -FilePath ([System.Diagnostics.Process]::GetCurrentProcess().Path) -InformationAction SilentlyContinue))
 
     ## Variables: Get normalized paths that vary depending on process bitness.
     if ($variables.Is64Bit)
@@ -300,7 +300,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('SessionZero', $variables.IsLocalSystemAccount -or $variables.IsLocalServiceAccount -or $variables.IsNetworkServiceAccount -or $variables.IsServiceAccount)
 
     ## Variables: Logged on user information
-    $variables.Add('LoggedOnUserSessions', (Get-ADTLoggedOnUser))
+    $variables.Add('LoggedOnUserSessions', (Get-ADTLoggedOnUser -InformationAction SilentlyContinue))
     $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & { process { if ($_) { $_.NTAccount } } }))
     $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_ -and $_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
     $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_ -and $_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
