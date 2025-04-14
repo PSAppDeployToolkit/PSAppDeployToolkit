@@ -37,24 +37,66 @@ namespace PSADT.Security
         /// <param name="token"></param>
         /// <param name="privilege"></param>
         /// <returns></returns>
+        private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
+        {
+            AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, SafeMemoryHandle.Null, out var requiredLength);
+            using (var buffer = SafeHGlobalHandle.Alloc((int)requiredLength))
+            {
+                AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
+                var privilegeCount = buffer.ReadInt32();
+                var bufferOffset = sizeof(int);
+                var increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
+                var charSpan = new Span<char>(new char[256]);
+                for (int i = 0; i < privilegeCount; i++)
+                {
+                    var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset + (increment * i));
+                    AdvApi32.LookupPrivilegeName(null, attr.Luid, charSpan);
+                    if (charSpan.ToString().Replace("\0", string.Empty).Trim().Equals(privilege.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                    charSpan.Clear();
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a privilege is enabled in the current process token.
+        /// </summary>
+        /// <param name="privilege"></param>
+        /// <returns></returns>
+        internal static bool HasPrivilege(SE_PRIVILEGE privilege)
+        {
+            AdvApi32.OpenProcessToken(Kernel32.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
+            using (token)
+            {
+                return HasPrivilege(token, privilege);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a privilege is enabled in the specified token.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="privilege"></param>
+        /// <returns></returns>
         private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
             using (var buffer = SafeHGlobalHandle.Alloc(1024))
             {
                 AdvApi32.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
-
                 var privilegeCount = buffer.ReadInt32();
-                var bufferOffset = sizeof(uint);
+                var bufferOffset = sizeof(int);
                 var increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
                 for (int i = 0; i < privilegeCount; i++)
                 {
-                    var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset);
+                    var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset + (increment * i));
                     if (attr.Luid.LowPart == luid.LowPart && attr.Luid.HighPart == luid.HighPart)
                     {
                         return (attr.Attributes & TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED) != 0;
                     }
-                    bufferOffset += increment;
                 }
                 return false;
             }

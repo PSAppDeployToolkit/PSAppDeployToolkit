@@ -130,7 +130,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, SafeHGlobalHandle TokenInformation, out uint ReturnLength)
+        internal static unsafe BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, SafeMemoryHandle TokenInformation, out uint ReturnLength)
         {
             var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.DangerousGetHandle().ToPointer(), (uint)TokenInformation.Length, out ReturnLength);
             if (!res && !TokenInformation.IsInvalid && 0 != TokenInformation.Length)
@@ -162,6 +162,24 @@ namespace PSADT.LibraryInterfaces
                 }
                 return res;
             }
+        }
+
+        /// <summary>
+        /// Retrieves the name of the specified privilege.
+        /// </summary>
+        /// <param name="lpSystemName"></param>
+        /// <param name="lpLuid"></param>
+        /// <param name="lpName"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName)
+        {
+            var len = (uint)lpName.Length;
+            var res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref len);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
         }
     }
 }

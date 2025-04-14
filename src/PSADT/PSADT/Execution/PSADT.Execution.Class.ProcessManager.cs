@@ -125,18 +125,9 @@ namespace PSADT.Execution
                     var pi = new PROCESS_INFORMATION();
                     if (null != launchInfo.Username)
                     {
-                        // We can only run a process as a user if we're running as SYSTEM.
-                        using (WindowsIdentity caller = WindowsIdentity.GetCurrent())
-                        {
-                            if (!caller.User!.IsWellKnown(WellKnownSidType.LocalSystemSid))
-                            {
-                                throw new UnauthorizedAccessException("Launching processes as other users is only supported when running as SYSTEM.");
-                            }
-                        }
-
-                        // SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                        // Perform initial tests prior to trying to query a user token.
+                        using WindowsIdentity caller = WindowsIdentity.GetCurrent();
+                        SessionInfo? session = null;
 
                         // You can only run a process as a user if they're logged on.
                         var userSessions = SessionManager.GetSessionInfo();
@@ -146,7 +137,6 @@ namespace PSADT.Execution
                         }
 
                         // You can only run a process as a user if they're active.
-                        SessionInfo? session = null;
                         if (!launchInfo.Username.Value.Contains("\\"))
                         {
                             session = userSessions.Where(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase)).First();
@@ -164,51 +154,78 @@ namespace PSADT.Execution
                             throw new InvalidOperationException($"The session for user {launchInfo.Username} is not active.");
                         }
 
-                        // First we get the user's token.
-                        WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
-                        SafeFileHandle hPrimaryToken;
-                        using (userToken)
+                        // We can only run a process as a user if it's different from the caller.
+                        if (!session.NTAccount!.Value.Equals(caller.Name, StringComparison.OrdinalIgnoreCase))
                         {
-                            // If we're to get their linked token, we get it via their user token.
-                            // Once done, we duplicate the linked token to get a primary token to create the new process.
-                            if (launchInfo.UseLinkedAdminToken)
+                            // We can only run a process as another user if the caller is an admin.
+                            if (!new WindowsPrincipal(caller).IsInRole(WindowsBuiltInRole.Administrator))
                             {
-                                using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
-                                {
-                                    AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-                                    AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
-                                }
+                                throw new UnauthorizedAccessException("The calling account is not an administrator. This is required to run a process as another user.");
                             }
-                            else
-                            {
-                                AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
-                            }
-                        }
 
-                        // Finally, start the process off for the user.
-                        using (hPrimaryToken)
-                        {
-                            UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
-                            using (lpEnvironment)
+                            // We can only run a process if we can act as part of the operating system.
+                            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
                             {
-                                // This is important so that a windowed application can be shown.
-                                if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                                throw new UnauthorizedAccessException($"The calling account of [{caller.Name}] does not hold the necessary [SeTcbPrivilege] privilege (Act as part of the operating system) for this operation.");
+                            }
+
+                            // Enable the required tokens. SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+
+                            // First we get the user's token.
+                            WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
+                            SafeFileHandle hPrimaryToken;
+                            using (userToken)
+                            {
+                                // If we're to get their linked token, we get it via their user token.
+                                // Once done, we duplicate the linked token to get a primary token to create the new process.
+                                if (launchInfo.UseLinkedAdminToken)
                                 {
-                                    using (var lpDesktop = SafeCoTaskMemHandle.StringToUni("winsta0\\default"))
+                                    using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
                                     {
-                                        startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                        Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                        AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
+                                        AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
                                     }
                                 }
                                 else
                                 {
-                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                    AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
                                 }
                             }
+
+                            // Finally, start the process off for the user.
+                            using (hPrimaryToken)
+                            {
+                                UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                                using (lpEnvironment)
+                                {
+                                    // This is important so that a windowed application can be shown.
+                                    if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                                    {
+                                        using (var lpDesktop = SafeCoTaskMemHandle.StringToUni("winsta0\\default"))
+                                        {
+                                            startupInfo.lpDesktop = lpDesktop.ToPWSTR();
+                                            Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // The caller is the same as the user, so we can just create the process as the current user.
+                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
                     }
                     else
                     {
+                        // No username was specified, so we're just creating the process as the current user.
                         Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                     }
 

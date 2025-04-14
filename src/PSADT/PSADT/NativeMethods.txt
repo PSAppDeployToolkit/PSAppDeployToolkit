@@ -63,6 +63,7 @@ JOBOBJECT_ASSOCIATE_COMPLETION_PORT
 LoadLibrary
 LoadLibraryEx
 LoadString
+LookupPrivilegeNameW
 LookupPrivilegeValueW
 MMDeviceEnumerator
 OBJECT_NAME_INFORMATION
