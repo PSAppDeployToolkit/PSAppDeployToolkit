@@ -59,12 +59,7 @@ namespace PSADT.SafeHandles
             {
                 return;
             }
-            var newHandle = Marshal.ReAllocCoTaskMem(handle, length);
-            if (newHandle == IntPtr.Zero)
-            {
-                throw new OutOfMemoryException("Failed to reallocate memory.");
-            }
-            SetHandle(newHandle);
+            SetHandle(Marshal.ReAllocCoTaskMem(handle, length));
             Length = length;
         }
 
