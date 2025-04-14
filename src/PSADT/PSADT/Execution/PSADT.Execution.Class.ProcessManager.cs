@@ -37,9 +37,12 @@ namespace PSADT.Execution
         /// <exception cref="TaskCanceledException"></exception>
         public static async Task<ProcessResult?> LaunchAsync(ProcessLaunchInfo launchInfo)
         {
+            // Set up the job object and I/O completion port for the process.
+            using var iocp = Kernel32.CreateIoCompletionPort(new SafeFileHandle(HANDLE.INVALID_HANDLE_VALUE, false), new SafeFileHandle(IntPtr.Zero, false), UIntPtr.Zero, 1);
+            using var job = Kernel32.CreateJobObject(null, default);
+            Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
+
             // Declare all handles C-style so we can close them in the finally block for cleanup.
-            SafeFileHandle? hStdOutRead = null;
-            SafeFileHandle? hStdErrRead = null;
             SafeProcessHandle? hProcess = null;
             uint? processId = null;
             int? exitCode = null;
@@ -65,212 +68,212 @@ namespace PSADT.Execution
                 guiApp = false;
             }
 
-            // Main process creation logic.
-            try
+            // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
+            // Invoking processes as user has no ShellExecute capability, so it always comes through here.
+            if ((!guiApp && launchInfo.CreateNoWindow) || !launchInfo.UseShellExecute || (null != launchInfo.Username))
             {
-                // Set up the job object and I/O completion port for the process.
-                using var iocp = Kernel32.CreateIoCompletionPort(new SafeFileHandle(HANDLE.INVALID_HANDLE_VALUE, false), new SafeFileHandle(IntPtr.Zero, false), UIntPtr.Zero, 1);
-                using var job = Kernel32.CreateJobObject(null, default);
-                Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
-
-                // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
-                // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-                if ((!guiApp && launchInfo.CreateNoWindow) || !launchInfo.UseShellExecute || (null != launchInfo.Username))
+                var startupInfo = new STARTUPINFOW
                 {
-                    var startupInfo = new STARTUPINFOW
-                    {
-                        cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
-                        dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW,
-                        wShowWindow = launchInfo.WindowStyle,
-                    };
-                    SafeFileHandle? hStdOutWrite = default;
-                    SafeFileHandle? hStdErrWrite = default;
-                    try
-                    {
-                        // The process is created suspended so it can be assigned to the job object.
-                        var creationFlags = (PROCESS_CREATION_FLAGS)launchInfo.PriorityClass |
-                            PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
-                            PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
-                            PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
+                    cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
+                    dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW,
+                    wShowWindow = launchInfo.WindowStyle,
+                };
+                SafeFileHandle? hStdOutWrite = default;
+                SafeFileHandle? hStdErrWrite = default;
+                try
+                {
+                    // The process is created suspended so it can be assigned to the job object.
+                    var creationFlags = (PROCESS_CREATION_FLAGS)launchInfo.PriorityClass |
+                        PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
+                        PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
+                        PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
-                        // We must create a console window for console apps when the window is shown.
-                        if (!guiApp)
+                    // We must create a console window for console apps when the window is shown.
+                    if (!guiApp)
+                    {
+                        if (launchInfo.CreateNoWindow)
                         {
-                            if (launchInfo.CreateNoWindow)
+                            if (launchInfo.CancellationToken != default && launchInfo.NoTerminateOnTimeout)
                             {
-                                if (launchInfo.CancellationToken != default && launchInfo.NoTerminateOnTimeout)
-                                {
-                                    throw new InvalidOperationException("The NoTerminateOnTimeout option is not supported for console apps while reading stdout/stderr.");
-                                }
-                                startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
-                                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
+                                throw new InvalidOperationException("The NoTerminateOnTimeout option is not supported for console apps while reading stdout/stderr.");
                             }
-                            else
-                            {
-                                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
-                            }
+                            startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                            creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                         }
                         else
                         {
-                            creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                            creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
                         }
+                    }
+                    else
+                    {
+                        creationFlags |= PROCESS_CREATION_FLAGS.DETACHED_PROCESS;
+                    }
 
-                        // If we're to read the output, we create pipes for stdout and stderr.
-                        if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
-                        {
-                            CreatePipe(out hStdOutRead, out hStdOutWrite);
-                            CreatePipe(out hStdErrRead, out hStdErrWrite);
-                            stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved));
-                            stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved));
-                            startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
-                            startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
-                        }
+                    // If we're to read the output, we create pipes for stdout and stderr.
+                    if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
+                    {
+                        CreatePipe(out var hStdOutRead, out hStdOutWrite);
+                        CreatePipe(out var hStdErrRead, out hStdErrWrite);
+                        stdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved));
+                        stdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved));
+                        startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
+                        startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
+                    }
 
-                        // Handle user process creation, otherwise just create the process for the running user.
-                        var pi = new PROCESS_INFORMATION();
-                        if (null != launchInfo.Username)
+                    // Handle user process creation, otherwise just create the process for the running user.
+                    var pi = new PROCESS_INFORMATION();
+                    if (null != launchInfo.Username)
+                    {
+                        // We can only run a process as a user if we're running as SYSTEM.
+                        using (WindowsIdentity caller = WindowsIdentity.GetCurrent())
                         {
-                            // We can only run a process as a user if we're running as SYSTEM.
-                            using (WindowsIdentity caller = WindowsIdentity.GetCurrent())
+                            if (!caller.User!.IsWellKnown(WellKnownSidType.LocalSystemSid))
                             {
-                                if (!caller.User!.IsWellKnown(WellKnownSidType.LocalSystemSid))
+                                throw new UnauthorizedAccessException("Launching processes as other users is only supported when running as SYSTEM.");
+                            }
+                        }
+
+                        // SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+
+                        // You can only run a process as a user if they're logged on.
+                        var userSessions = SessionManager.GetSessionInfo();
+                        if (userSessions.Count == 0)
+                        {
+                            throw new InvalidOperationException("No user sessions are available to launch the process in.");
+                        }
+
+                        // You can only run a process as a user if they're active.
+                        SessionInfo? session = null;
+                        if (!launchInfo.Username.Value.Contains("\\"))
+                        {
+                            session = userSessions.Where(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase)).First();
+                        }
+                        else
+                        {
+                            session = userSessions.Where(s => s.NTAccount == launchInfo.Username).First();
+                        }
+                        if (null == session)
+                        {
+                            throw new InvalidOperationException($"No session found for user {launchInfo.Username}.");
+                        }
+                        if (session.ConnectState != LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive)
+                        {
+                            throw new InvalidOperationException($"The session for user {launchInfo.Username} is not active.");
+                        }
+
+                        // First we get the user's token.
+                        WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
+                        SafeFileHandle hPrimaryToken;
+                        using (userToken)
+                        {
+                            // If we're to get their linked token, we get it via their user token.
+                            // Once done, we duplicate the linked token to get a primary token to create the new process.
+                            if (launchInfo.UseLinkedAdminToken)
+                            {
+                                using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
                                 {
-                                    throw new UnauthorizedAccessException("Launching processes as other users is only supported when running as SYSTEM.");
+                                    AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
+                                    AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
                                 }
-                            }
-
-                            // SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-
-                            // You can only run a process as a user if they're logged on.
-                            var userSessions = SessionManager.GetSessionInfo();
-                            if (userSessions.Count == 0)
-                            {
-                                throw new InvalidOperationException("No user sessions are available to launch the process in.");
-                            }
-
-                            // You can only run a process as a user if they're active.
-                            SessionInfo? session = null;
-                            if (!launchInfo.Username.Value.Contains("\\"))
-                            {
-                                session = userSessions.Where(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase)).First();
                             }
                             else
                             {
-                                session = userSessions.Where(s => s.NTAccount == launchInfo.Username).First();
+                                AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
                             }
-                            if (null == session)
-                            {
-                                throw new InvalidOperationException($"No session found for user {launchInfo.Username}.");
-                            }
-                            if (session.ConnectState != LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive)
-                            {
-                                throw new InvalidOperationException($"The session for user {launchInfo.Username} is not active.");
-                            }
+                        }
 
-                            // First we get the user's token.
-                            WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
-                            SafeFileHandle hPrimaryToken;
-                            using (userToken)
+                        // Finally, start the process off for the user.
+                        using (hPrimaryToken)
+                        {
+                            UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                            using (lpEnvironment)
                             {
-                                // If we're to get their linked token, we get it via their user token.
-                                // Once done, we duplicate the linked token to get a primary token to create the new process.
-                                if (launchInfo.UseLinkedAdminToken)
+                                // This is important so that a windowed application can be shown.
+                                if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
                                 {
-                                    using (var buffer = SafeHGlobalHandle.Alloc(Marshal.SizeOf<TOKEN_LINKED_TOKEN>()))
+                                    using (var lpDesktop = SafeCoTaskMemHandle.StringToUni("winsta0\\default"))
                                     {
-                                        AdvApi32.GetTokenInformation(userToken, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
-                                        AdvApi32.DuplicateTokenEx(new SafeAccessTokenHandle(buffer.ToStructure<TOKEN_LINKED_TOKEN>().LinkedToken), TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
+                                        startupInfo.lpDesktop = lpDesktop.ToPWSTR();
+                                        Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                     }
                                 }
                                 else
                                 {
-                                    AdvApi32.DuplicateTokenEx(userToken, TOKEN_ACCESS_MASK.TOKEN_ALL_ACCESS, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out hPrimaryToken);
-                                }
-                            }
-
-                            // Finally, start the process off for the user.
-                            using (hPrimaryToken)
-                            {
-                                UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
-                                using (lpEnvironment)
-                                {
-                                    // This is important so that a windowed application can be shown.
-                                    if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
-                                    {
-                                        using (var lpDesktop = SafeCoTaskMemHandle.StringToUni("winsta0\\default"))
-                                        {
-                                            startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                            Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
-                                    }
+                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                 }
                             }
                         }
-                        else
-                        {
-                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
-                        }
-
-                        // Start tracking the process and allow it to resume execution.
-                        using (var hThread = new SafeThreadHandle(pi.hThread, true))
-                        {
-                            Kernel32.AssignProcessToJobObject(job, (hProcess = new SafeProcessHandle(pi.hProcess, true)));
-                            Kernel32.ResumeThread(hThread);
-                            processId = pi.dwProcessId;
-                        }
-                    }
-                    finally
-                    {
-                        hStdOutWrite?.Dispose();
-                        hStdErrWrite?.Dispose();
-                    }
-                }
-                else
-                {
-                    // Set up the shell execute info structure.
-                    var startupInfo = new Shell32.SHELLEXECUTEINFO
-                    {
-                        cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
-                        fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
-                        lpVerb = launchInfo.Verb,
-                        lpFile = launchInfo.FilePath,
-                        lpParameters = launchInfo.Arguments,
-                        lpDirectory = launchInfo.WorkingDirectory,
-                    };
-                    if (launchInfo.CreateNoWindow || ((SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
-                    {
-                        startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
-                        startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
                     }
                     else
                     {
-                        startupInfo.nShow = launchInfo.WindowStyle;
+                        Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, SafeEnvironmentBlockHandle.Null, launchInfo.WorkingDirectory, startupInfo, out pi);
                     }
 
-                    // Start the process and assign it to the job object if we have a handle.
-                    Shell32.ShellExecuteEx(ref startupInfo);
-                    if (startupInfo.hProcess != IntPtr.Zero)
+                    // Start tracking the process and allow it to resume execution.
+                    using (var hThread = new SafeThreadHandle(pi.hThread, true))
                     {
-                        hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
-                        processId = Kernel32.GetProcessId(hProcess);
-                        Kernel32.AssignProcessToJobObject(job, hProcess);
-                        if ((launchInfo.PriorityClass != ProcessPriorityClass.Normal) && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
-                        {
-                            Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
-                        }
+                        Kernel32.AssignProcessToJobObject(job, (hProcess = new SafeProcessHandle(pi.hProcess, true)));
+                        Kernel32.ResumeThread(hThread);
+                        processId = pi.dwProcessId;
                     }
                 }
-
-                // These tasks read all outputs and wait for the process to complete.
-                await Task.WhenAll(stdOutTask, stdErrTask, (null == hProcess) ? Task.CompletedTask : Task.Run(() =>
+                finally
                 {
-                    ReadOnlySpan<HANDLE> handles = [(HANDLE)iocp.DangerousGetHandle(), (HANDLE)launchInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousGetHandle()];
+                    hStdOutWrite?.Dispose();
+                    hStdErrWrite?.Dispose();
+                }
+            }
+            else
+            {
+                // Set up the shell execute info structure.
+                var startupInfo = new Shell32.SHELLEXECUTEINFO
+                {
+                    cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
+                    fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
+                    lpVerb = launchInfo.Verb,
+                    lpFile = launchInfo.FilePath,
+                    lpParameters = launchInfo.Arguments,
+                    lpDirectory = launchInfo.WorkingDirectory,
+                };
+                if (launchInfo.CreateNoWindow || ((SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                {
+                    startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
+                    startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
+                }
+                else
+                {
+                    startupInfo.nShow = launchInfo.WindowStyle;
+                }
+
+                // Start the process and assign it to the job object if we have a handle.
+                Shell32.ShellExecuteEx(ref startupInfo);
+                if (startupInfo.hProcess != IntPtr.Zero)
+                {
+                    hProcess = new SafeProcessHandle(startupInfo.hProcess, true);
+                    processId = Kernel32.GetProcessId(hProcess);
+                    Kernel32.AssignProcessToJobObject(job, hProcess);
+                    if ((launchInfo.PriorityClass != ProcessPriorityClass.Normal) && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                    {
+                        Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
+                    }
+                }
+            }
+
+            // If we don't have a process (shell action), return early.
+            if (!(null != hProcess && null != processId))
+            {
+                return null;
+            }
+
+            // These tasks read all outputs and wait for the process to complete.
+            await Task.WhenAll(stdOutTask, stdErrTask, Task.Run(() =>
+            {
+                ReadOnlySpan<HANDLE> handles = [(HANDLE)iocp.DangerousGetHandle(), (HANDLE)launchInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousGetHandle()];
+                using (hProcess)
+                {
                     while (true)
                     {
                         var index = (uint)Kernel32.WaitForMultipleObjects(handles, false, PInvoke.INFINITE);
@@ -297,21 +300,11 @@ namespace PSADT.Execution
                             throw new InvalidOperationException($"An invalid result was received while waiting for post-launch handles. Result: {index}");
                         }
                     }
-                }));
-
-                // Return a ProcessResult object if this was a real process (i.e. not a shell action).
-                if (processId.HasValue)
-                {
-                    return new ProcessResult(processId.Value, exitCode, stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly());
                 }
-                return null;
-            }
-            finally
-            {
-                hStdOutRead?.Dispose();
-                hStdErrRead?.Dispose();
-                hProcess?.Dispose();
-            }
+            }));
+
+            // Return a ProcessResult object with the result of the process.
+            return new ProcessResult(processId.Value, exitCode, stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly());
         }
 
         /// <summary>
@@ -332,27 +325,30 @@ namespace PSADT.Execution
         /// <param name="handle"></param>
         /// <param name="output"></param>
         /// <exception cref="Win32Exception"></exception>
-        private static void ReadPipe(SafeHandle handle, List<string> output, ConcurrentQueue<string> interleaved)
+        private static void ReadPipe(SafeFileHandle handle, List<string> output, ConcurrentQueue<string> interleaved)
         {
             var buffer = new byte[4096];
             uint bytesRead = 0;
-            while (true)
+            using (handle)
             {
-                try
+                while (true)
                 {
-                    Kernel32.ReadFile(handle, buffer, out bytesRead, IntPtr.Zero);
-                    if (bytesRead == 0)
+                    try
+                    {
+                        Kernel32.ReadFile(handle, buffer, out bytesRead, IntPtr.Zero);
+                        if (bytesRead == 0)
+                        {
+                            break;
+                        }
+                    }
+                    catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BROKEN_PIPE)
                     {
                         break;
                     }
+                    var text = Encoding.Default.GetString(buffer, 0, (int)bytesRead).TrimEnd();
+                    interleaved.Enqueue(text);
+                    output.Add(text);
                 }
-                catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BROKEN_PIPE)
-                {
-                    break;
-                }
-                var text = Encoding.Default.GetString(buffer, 0, (int)bytesRead).TrimEnd();
-                interleaved.Enqueue(text);
-                output.Add(text);
             }
         }
 
