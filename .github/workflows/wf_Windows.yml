@@ -75,7 +75,7 @@ jobs:
     - name: Upload module
       uses: actions/upload-artifact@v4
       with:
-        name: PSAppDeployToolkit
+        name: PSAppDeployToolkit_ModuleOnly
         path: .\src\Artifacts\Module
         if-no-files-found: error
         overwrite: true
