@@ -50,8 +50,8 @@ namespace PSADT.Security
                 for (int i = 0; i < privilegeCount; i++)
                 {
                     var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset + (increment * i));
-                    AdvApi32.LookupPrivilegeName(null, attr.Luid, charSpan);
-                    if (charSpan.ToString().Replace("\0", string.Empty).Trim().Equals(privilege.ToString(), StringComparison.OrdinalIgnoreCase))
+                    AdvApi32.LookupPrivilegeName(null, attr.Luid, charSpan, out var retLength);
+                    if (charSpan.Slice(0, (int)retLength).ToString().Replace("\0", string.Empty).Trim().Equals(privilege.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }

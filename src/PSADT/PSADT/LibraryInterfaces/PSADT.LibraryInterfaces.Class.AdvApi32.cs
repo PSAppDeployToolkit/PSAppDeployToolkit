@@ -171,7 +171,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpLuid"></param>
         /// <param name="lpName"></param>
         /// <returns></returns>
-        internal static unsafe BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName)
+        internal static unsafe BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
         {
             var len = (uint)lpName.Length;
             var res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref len);
@@ -179,6 +179,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            cchName = len;
             return res;
         }
     }

@@ -166,7 +166,7 @@ namespace PSADT.Execution
                             // We can only run a process if we can act as part of the operating system.
                             if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
                             {
-                                throw new UnauthorizedAccessException($"The calling account of [{caller.Name}] does not hold the necessary [SeTcbPrivilege] privilege (Act as part of the operating system) for this operation.");
+                                throw new UnauthorizedAccessException($"The calling account does not hold the necessary SeTcbPrivilege privilege (Act as part of the operating system) for this operation.");
                             }
 
                             // Enable the required tokens. SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
