@@ -116,7 +116,7 @@ function Private:Show-ADTWelcomePromptFluent
                         $_.Description,
                         $_.Process.Product,
                         $_.Process.Company,
-                        $(if ($icon) { [PSADT.UserInterface.Utilities.BitmapExtensions]::ConvertToImageSource($icon.ToBitmap()) }),
+                        $(if ($icon) { [PSADT.UserInterface.Extensions.BitmapExtensions]::ConvertToImageSource($icon.ToBitmap()) }),
                         $_.Process.StartTime
                     )
                 }

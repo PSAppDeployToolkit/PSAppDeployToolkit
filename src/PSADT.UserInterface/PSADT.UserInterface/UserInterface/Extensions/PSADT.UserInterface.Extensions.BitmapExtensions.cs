@@ -3,8 +3,9 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using PSADT.UserInterface.Utilities;
 
-namespace PSADT.UserInterface.Utilities
+namespace PSADT.UserInterface.Extensions
 {
     /// <summary>
     /// Bitmap extensions

@@ -4,9 +4,10 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using PSADT.UserInterface.Utilities;
 using static PSADT.UserInterface.Utilities.NativeMethods;
 
-namespace PSADT.UserInterface.Utilities
+namespace PSADT.UserInterface.Extensions
 {
     /// <summary>
     /// Utility class for process extensions

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Management;
 using System.Windows.Media;
-using PSADT.UserInterface.Utilities;
+using PSADT.UserInterface.Extensions;
 
 namespace PSADT.UserInterface.Services
 {
