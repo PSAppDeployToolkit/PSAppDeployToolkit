@@ -1,1 +1,2 @@
-﻿WIN32_ERROR
+﻿DeleteObject
+WIN32_ERROR

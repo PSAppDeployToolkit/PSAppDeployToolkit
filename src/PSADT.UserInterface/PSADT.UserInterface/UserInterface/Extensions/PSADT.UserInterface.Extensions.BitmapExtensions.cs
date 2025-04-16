@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using PSADT.UserInterface.Utilities;
+using PSADT.UserInterface.LibraryInterfaces;
 
 namespace PSADT.UserInterface.Extensions
 {
@@ -18,7 +18,9 @@ namespace PSADT.UserInterface.Extensions
         public static ImageSource ConvertToImageSource(this Bitmap bitmap)
         {
             if (bitmap == null)
+            {
                 throw new ArgumentNullException(nameof(bitmap));
+            }
 
             IntPtr hBitmap = bitmap.GetHbitmap();
             try
@@ -34,7 +36,7 @@ namespace PSADT.UserInterface.Extensions
             }
             finally
             {
-                NativeMethods.DeleteObject(hBitmap);
+                Gdi32.DeleteObject(hBitmap);
             }
         }
     }
