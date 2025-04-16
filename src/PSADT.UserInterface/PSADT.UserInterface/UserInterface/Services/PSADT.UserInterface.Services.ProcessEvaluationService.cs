@@ -212,7 +212,7 @@ namespace PSADT.UserInterface.Services
                     {
                         // Extract process file path
                         cancellationToken.ThrowIfCancellationRequested();
-                        var processFullFileName = await Task.Run(() => process.GetMainModuleFileName(), cancellationToken).ConfigureAwait(false);
+                        var processFullFileName = process.MainModule?.FileName;
                         if (string.IsNullOrWhiteSpace(processFullFileName))
                         {
                             continue;

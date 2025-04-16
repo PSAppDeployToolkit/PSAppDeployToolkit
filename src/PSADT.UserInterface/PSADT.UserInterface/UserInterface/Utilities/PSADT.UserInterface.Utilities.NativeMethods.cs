@@ -33,13 +33,6 @@ namespace PSADT.UserInterface.Utilities
 
         public static HandleRef NullHandleRef = new(null, IntPtr.Zero);
 
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern uint QueryFullProcessImageName(
-            [In] IntPtr hProcess,
-            [In] uint dwFlags,
-            [Out] StringBuilder lpExeName,
-            [In, Out] ref uint lpdwSize);
-
         [DllImport("shell32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
         public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes,
             ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);

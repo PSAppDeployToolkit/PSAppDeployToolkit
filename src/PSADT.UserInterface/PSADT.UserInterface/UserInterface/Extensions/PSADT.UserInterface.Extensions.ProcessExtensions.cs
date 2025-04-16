@@ -15,31 +15,6 @@ namespace PSADT.UserInterface.Extensions
     /// </summary>
     public static class ProcessExtensions
     {
-        private const int BufferSize = 1024;
-
-        /// <summary>
-        /// Gets the file name of the given process
-        /// </summary>
-        public static string? GetMainModuleFileName(this Process process)
-        {
-            if (process == null) throw new ArgumentNullException(nameof(process));
-
-            var fileNameBuilder = new StringBuilder(BufferSize);
-            uint bufferLength = (uint)fileNameBuilder.Capacity + 1;
-
-            try
-            {
-                return NativeMethods.QueryFullProcessImageName(process.Handle, 0, fileNameBuilder, ref bufferLength) != 0 ?
-                    fileNameBuilder.ToString() :
-                    null;
-            }
-            catch (Win32Exception ex)
-            {
-                Debug.WriteLine($"Error getting main module file name for process {process.ProcessName}: {ex.Message}");
-                return null;
-            }
-        }
-
         /// <summary>
         /// Get the icon of a process
         /// </summary>
@@ -53,7 +28,7 @@ namespace PSADT.UserInterface.Extensions
 
             try
             {
-                string? mainModuleFileName = process.GetMainModuleFileName();
+                string? mainModuleFileName = process.MainModule?.FileName;
                 if (string.IsNullOrWhiteSpace(mainModuleFileName))
                 {
                     return null;
