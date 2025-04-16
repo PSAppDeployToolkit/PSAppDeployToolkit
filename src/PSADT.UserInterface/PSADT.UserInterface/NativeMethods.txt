@@ -1,2 +1,4 @@
 ﻿DeleteObject
+DestroyIcon
+ExtractIconEx
 WIN32_ERROR

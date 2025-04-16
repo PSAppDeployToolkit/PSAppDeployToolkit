@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using PSADT.UserInterface.LibraryInterfaces;
 using PSADT.UserInterface.Utilities;
 using static PSADT.UserInterface.Utilities.NativeMethods;
 
@@ -68,7 +69,7 @@ namespace PSADT.UserInterface.Extensions
                 }
 
                 Icon icon = (Icon)Icon.FromHandle(shinfo.hIcon).Clone(); // Clone to prevent handle loss
-                NativeMethods.DestroyIcon(shinfo.hIcon); // Cleanup unmanaged icon handle
+                User32.DestroyIcon(shinfo.hIcon); // Cleanup unmanaged icon handle
 
                 return icon;
             }

@@ -56,12 +56,6 @@ namespace PSADT.UserInterface.Utilities
         public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes,
             ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
-        [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern uint ExtractIconEx(string lpszFile, int nIconIndex, IntPtr[] phiconLarge, IntPtr[] phiconSmall, uint nIcons);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool DestroyIcon(IntPtr hIcon);
-
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern bool GetMonitorInfo(HandleRef hMonitor, [In, Out] MONITORINFOEX lpmi);
 
