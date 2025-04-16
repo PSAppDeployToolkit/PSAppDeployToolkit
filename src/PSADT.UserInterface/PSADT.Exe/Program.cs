@@ -83,12 +83,6 @@ namespace PSADT.UserInterface
 
             string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed?";
 
-            string inputBoxMessageText = "Please provide the name of the server you wish to connect to.";
-            string inputBoxText = "Type things here";
-            string inputBoxButtonLeftText = "_Cancel";
-            string inputBoxButtonMiddleText = "_Use Defaults";
-            string inputBoxButtonRightText = "_Start";
-
 
             string ButtonLeftText = "";
             string ButtonMiddleText = "";
