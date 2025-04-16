@@ -1,16 +1,11 @@
-﻿using System.ComponentModel;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
-using System.Drawing;
-using Microsoft.Win32.SafeHandles;
 
 namespace PSADT.UserInterface.Utilities
 {
     internal static partial class NativeMethods
     {
-        public const int LoadLibraryAsDatafile = 0x00000002;
-
         public static readonly IntPtr RtGroupIcon = (IntPtr)14;
         public static readonly IntPtr RtIcon = (IntPtr)3;
 
@@ -37,13 +32,6 @@ namespace PSADT.UserInterface.Utilities
         public delegate bool MonitorEnumProc(IntPtr monitor, IntPtr hdc, IntPtr lprcMonitor, IntPtr lParam);
 
         public static HandleRef NullHandleRef = new(null, IntPtr.Zero);
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern SafeLibraryHandle LoadLibraryEx(string lpFileName, IntPtr hFile, int dwFlags);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool FreeLibrary(IntPtr hModule);
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern uint QueryFullProcessImageName(
@@ -225,26 +213,6 @@ namespace PSADT.UserInterface.Utilities
             {
                 return $"Left = {left}, Top = {top}, Right = {right}, Bottom = {bottom}";
             }
-        }
-
-        internal static SafeLibraryHandle LoadLibraryHandle(string fileName)
-        {
-            var handle = LoadLibraryEx(fileName, IntPtr.Zero, LoadLibraryAsDatafile);
-            if (handle.IsInvalid)
-            {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-            return handle;
-        }
-    }
-
-    internal sealed class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
-    {
-        public SafeLibraryHandle() : base(true) { }
-
-        protected override bool ReleaseHandle()
-        {
-            return NativeMethods.FreeLibrary(handle);
         }
     }
 }
