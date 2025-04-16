@@ -6,12 +6,6 @@
     public interface IProcessEvaluationService : IDisposable
     {
         /// <summary>
-        /// Evaluates running processes synchronously.
-        /// Returns only processes that are in appsToClose and are currently running.
-        /// </summary>
-        List<AppProcessInfo> EvaluateRunningProcesses(List<AppProcessInfo> appsToClose);
-
-        /// <summary>
         /// Evaluates the currently running processes against a list of applications to close.
         /// </summary>
         /// <param name="appsToClose">A list of applications that should be closed.</param>
@@ -20,19 +14,19 @@
         Task<List<AppProcessInfo>> EvaluateRunningProcessesAsync(List<AppProcessInfo> appsToClose, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Checks if a specific process is currently running.
-        /// </summary>
-        /// <param name="processName">The name of the process to check.</param>
-        /// <returns>True if the process is running, false otherwise.</returns>
-        bool IsProcessRunning(string processName);
-
-        /// <summary>
         /// Attempts to close a specific process.
         /// </summary>
         /// <param name="processName">The name of the process to close.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains true if the process was successfully closed, false otherwise.</returns>
         Task<bool> CloseProcessAsync(string processName, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Checks if a specific process is currently running.
+        /// </summary>
+        /// <param name="processName">The name of the process to check.</param>
+        /// <returns>True if the process is running, false otherwise.</returns>
+        bool IsProcessRunning(string processName);
 
         /// <summary>
         /// Event that is raised when a tracked process starts.

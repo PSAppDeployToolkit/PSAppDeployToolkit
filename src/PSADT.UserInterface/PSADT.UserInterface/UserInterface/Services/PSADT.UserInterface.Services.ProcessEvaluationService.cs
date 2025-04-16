@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Management;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using PSADT.UserInterface.Utilities;
 
@@ -17,24 +12,6 @@ namespace PSADT.UserInterface.Services
     /// </summary>
     public class ProcessEvaluationService : IProcessEvaluationService, IDisposable
     {
-        private readonly ManagementEventWatcher? _processStartWatcher;
-        private readonly ManagementEventWatcher? _processStopWatcher;
-        private readonly ConcurrentDictionary<string, AppProcessInfo> _processCache;
-        private readonly ConcurrentDictionary<string, byte> _trackedProcessNames;
-        private readonly CancellationTokenSource _serviceCancellationTokenSource;
-        private readonly object _syncLock = new();
-        private bool _isDisposed;
-
-        /// <summary>
-        /// Event raised when a tracked process starts
-        /// </summary>
-        public event EventHandler<AppProcessInfo>? ProcessStarted;
-
-        /// <summary>
-        /// Event raised when a tracked process exits
-        /// </summary>
-        public event EventHandler<AppProcessInfo>? ProcessExited;
-
         /// <summary>
         /// Creates a new instance of ProcessEvaluationService
         /// </summary>
@@ -44,85 +21,14 @@ namespace PSADT.UserInterface.Services
             _trackedProcessNames = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
             _serviceCancellationTokenSource = new CancellationTokenSource();
 
-            try
-            {
-                // Set up WMI event watchers for process start/stop events
-                _processStartWatcher = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace"));
-                _processStartWatcher.EventArrived += ProcessStartWatcher_EventArrived;
-                _processStartWatcher.Start();
+            // Set up WMI event watchers for process start/stop events
+            _processStartWatcher = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace"));
+            _processStartWatcher.EventArrived += ProcessStartWatcher_EventArrived;
+            _processStartWatcher.Start();
 
-                _processStopWatcher = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStopTrace"));
-                _processStopWatcher.EventArrived += ProcessStopWatcher_EventArrived;
-                _processStopWatcher.Start();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error initializing process watchers: {ex.Message}");
-                // Service will continue to function without real-time monitoring
-            }
-        }
-
-        /// <summary>
-        /// Evaluates which processes from the provided list are currently running
-        /// </summary>
-        /// <param name="appsToClose">List of applications to check</param>
-        /// <returns>List of running applications</returns>
-        public List<AppProcessInfo> EvaluateRunningProcesses(List<AppProcessInfo> appsToClose)
-        {
-            if (_isDisposed)
-                throw new ObjectDisposedException(nameof(ProcessEvaluationService));
-
-            if (appsToClose == null || appsToClose.Count == 0)
-                return [];
-
-            var result = new List<AppProcessInfo>();
-            var cacheUpdateTime = DateTime.Now.Subtract(TimeSpan.FromSeconds(5));
-
-            // Register all processes for tracking
-            foreach (var app in appsToClose.Where(a => !string.IsNullOrWhiteSpace(a.ProcessName)))
-            {
-                _trackedProcessNames.TryAdd(app.ProcessName, 0);
-            }
-
-            // Check each process in the list
-            foreach (var app in appsToClose.Where(a => !string.IsNullOrWhiteSpace(a.ProcessName)))
-            {
-                AppProcessInfo? processInfo = null;
-
-                // Check cache first
-                if (_processCache.TryGetValue(app.ProcessName, out var cachedInfo))
-                {
-                    if (cachedInfo.LastUpdated >= cacheUpdateTime && IsProcessRunning(app.ProcessName))
-                    {
-                        processInfo = cachedInfo;
-                    }
-                }
-
-                // If not in cache or cache is outdated, get fresh info
-                if (processInfo == null)
-                {
-                    processInfo = GetProcessInfo(app.ProcessName);
-                }
-
-                // If process is running, merge app-specific overrides and add to result
-                if (processInfo != null)
-                {
-                    var finalInfo = new AppProcessInfo(
-                        app.ProcessName,
-                        app.ProcessDescription ?? processInfo.ProcessDescription,
-                        app.ProductName ?? processInfo.ProductName,
-                        app.PublisherName ?? processInfo.PublisherName,
-                        app.Icon ?? processInfo.Icon,
-                        DateTime.Now
-                    );
-
-                    // Update the cache
-                    _processCache[app.ProcessName] = finalInfo;
-                    result.Add(finalInfo);
-                }
-            }
-
-            return [.. result.OrderBy(x => x.ProcessDescription ?? x.ProcessName)];
+            _processStopWatcher = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStopTrace"));
+            _processStopWatcher.EventArrived += ProcessStopWatcher_EventArrived;
+            _processStopWatcher.Start();
         }
 
         /// <summary>
@@ -133,14 +39,15 @@ namespace PSADT.UserInterface.Services
         /// <returns>List of running applications</returns>
         public async Task<List<AppProcessInfo>> EvaluateRunningProcessesAsync(List<AppProcessInfo> appsToClose, CancellationToken cancellationToken)
         {
+            // Check if the service is disposed or the input is null
             if (_isDisposed)
+            {
                 throw new ObjectDisposedException(nameof(ProcessEvaluationService));
-
+            }
             if (appsToClose == null || appsToClose.Count == 0)
+            {
                 return [];
-
-            var result = new List<AppProcessInfo>();
-            var cacheUpdateTime = DateTime.Now.Subtract(TimeSpan.FromSeconds(5));
+            }
 
             // Register all processes for tracking
             foreach (var app in appsToClose.Where(a => !string.IsNullOrWhiteSpace(a.ProcessName)))
@@ -148,13 +55,13 @@ namespace PSADT.UserInterface.Services
                 _trackedProcessNames.TryAdd(app.ProcessName, 0);
             }
 
-            var tasks = appsToClose
-                .Where(a => !string.IsNullOrWhiteSpace(a.ProcessName))
-                .Select(async app =>
+            // Check if any processes are running
+            var result = new List<AppProcessInfo>();
+            var cacheUpdateTime = DateTime.Now.Subtract(TimeSpan.FromSeconds(5));
+            var tasks = appsToClose.Where(a => !string.IsNullOrWhiteSpace(a.ProcessName)).Select(async app =>
                 {
-                    AppProcessInfo? processInfo = null;
-
                     // Check cache first with a quick process existence check
+                    AppProcessInfo? processInfo = null;
                     if (_processCache.TryGetValue(app.ProcessName, out var cachedInfo))
                     {
                         if (cachedInfo.LastUpdated >= cacheUpdateTime && IsProcessRunning(app.ProcessName))
@@ -185,42 +92,11 @@ namespace PSADT.UserInterface.Services
                         _processCache[app.ProcessName] = finalInfo;
                         return finalInfo;
                     }
-
                     return null;
                 });
 
-            var processInfos = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            foreach (var info in processInfos.Where(i => i != null))
-            {
-                result.Add(info!);
-            }
-
-            return [.. result.OrderBy(x => x.ProcessDescription ?? x.ProcessName)];
-        }
-
-        /// <summary>
-        /// Checks if a process with the specified name is running
-        /// </summary>
-        /// <param name="processName">Name of the process</param>
-        /// <returns>True if running, false otherwise</returns>
-        public bool IsProcessRunning(string processName)
-        {
-            if (_isDisposed)
-                throw new ObjectDisposedException(nameof(ProcessEvaluationService));
-
-            if (string.IsNullOrWhiteSpace(processName))
-                return false;
-
-            // Quick check using cached info
-            if (_processCache.TryGetValue(processName, out var cachedInfo))
-            {
-                if ((DateTime.Now - cachedInfo.LastUpdated) <= TimeSpan.FromSeconds(1))
-                    return true;
-            }
-
-            // Direct process check
-            return Process.GetProcessesByName(processName).Length > 0;
+            // Wait for all tasks to complete and filter out null results before returning
+            return [.. (await Task.WhenAll(tasks).ConfigureAwait(false)).Where(i => i != null).ToList().OrderBy(x => x!.ProcessDescription ?? x.ProcessName)];
         }
 
         /// <summary>
@@ -232,11 +108,16 @@ namespace PSADT.UserInterface.Services
         public async Task<bool> CloseProcessAsync(string processName, CancellationToken cancellationToken)
         {
             if (_isDisposed)
+            {
                 throw new ObjectDisposedException(nameof(ProcessEvaluationService));
+            }
 
             if (string.IsNullOrWhiteSpace(processName))
+            {
                 return false;
+            }
 
+            // Return early if there's no running processes
             var processes = Process.GetProcessesByName(processName);
             if (processes.Length == 0)
             {
@@ -244,18 +125,16 @@ namespace PSADT.UserInterface.Services
                 return false;
             }
 
+            // Attempt to close each process
             bool allClosed = true;
-
             foreach (var process in processes)
             {
                 using (process)
                 {
                     try
                     {
-                        // Try to close gracefully first
+                        // Try to close gracefully first, waiting up to 5 seconds for graceful exit
                         process.CloseMainWindow();
-
-                        // Wait up to 5 seconds for graceful exit
                         if (!await Task.Run(() => process.WaitForExit(5000), cancellationToken).ConfigureAwait(false))
                         {
                             // Force termination if graceful exit fails
@@ -279,13 +158,37 @@ namespace PSADT.UserInterface.Services
                 }
             }
 
-            // If all processes were closed, remove from cache
+            // If all processes were closed, remove from cache before returning the state
             if (allClosed)
             {
                 _processCache.TryRemove(processName, out _);
             }
-
             return allClosed;
+        }
+
+        /// <summary>
+        /// Checks if a process with the specified name is running
+        /// </summary>
+        /// <param name="processName">Name of the process</param>
+        /// <returns>True if running, false otherwise</returns>
+        public bool IsProcessRunning(string processName)
+        {
+            // Check if the service is disposed or the input is null
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(ProcessEvaluationService));
+            }
+            if (string.IsNullOrWhiteSpace(processName))
+            {
+                return false;
+            }
+
+            // Quick check using cached info, otherwise return direct check
+            if (_processCache.TryGetValue(processName, out var cachedInfo) && (DateTime.Now - cachedInfo.LastUpdated) <= TimeSpan.FromSeconds(1))
+            {
+                return true;
+            }
+            return Process.GetProcessesByName(processName).Length > 0;
         }
 
         /// <summary>
@@ -293,30 +196,31 @@ namespace PSADT.UserInterface.Services
         /// </summary>
         private async Task<AppProcessInfo?> GetProcessInfoAsync(string processName, CancellationToken cancellationToken)
         {
+            // Return early if there's no running processes
             var processes = Process.GetProcessesByName(processName);
             if (processes.Length == 0)
+            {
                 return null;
+            }
 
+            // Build an AppProcessInfo object for each process
             foreach (var process in processes)
             {
                 using (process)
                 {
                     try
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
                         // Extract process file path
-                        var processFullFileName = await Task.Run(() => process.GetMainModuleFileName(), cancellationToken)
-                            .ConfigureAwait(false);
-
-                        if (string.IsNullOrWhiteSpace(processFullFileName))
-                            continue;
-
                         cancellationToken.ThrowIfCancellationRequested();
+                        var processFullFileName = await Task.Run(() => process.GetMainModuleFileName(), cancellationToken).ConfigureAwait(false);
+                        if (string.IsNullOrWhiteSpace(processFullFileName))
+                        {
+                            continue;
+                        }
 
                         // Get version info
-                        var processFileVersionInfo = await Task.Run(() => FileVersionInfo.GetVersionInfo(processFullFileName), cancellationToken)
-                            .ConfigureAwait(false);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var processFileVersionInfo = await Task.Run(() => FileVersionInfo.GetVersionInfo(processFullFileName), cancellationToken).ConfigureAwait(false);
 
                         // Extract icon
                         ImageSource? icon = null;
@@ -338,8 +242,6 @@ namespace PSADT.UserInterface.Services
                             }
                         }, cancellationToken).ConfigureAwait(false);
 
-                        cancellationToken.ThrowIfCancellationRequested();
-
                         // Create and return the process info
                         return new AppProcessInfo(
                             processName,
@@ -359,66 +261,6 @@ namespace PSADT.UserInterface.Services
                     }
                 }
             }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets information about a specific process (synchronous version)
-        /// </summary>
-        private AppProcessInfo? GetProcessInfo(string processName)
-        {
-            var processes = Process.GetProcessesByName(processName);
-            if (processes.Length == 0)
-                return null;
-
-            foreach (var process in processes)
-            {
-                using (process)
-                {
-                    try
-                    {
-                        // Extract process file path
-                        var processFullFileName = process.GetMainModuleFileName();
-                        if (string.IsNullOrWhiteSpace(processFullFileName))
-                            continue;
-
-                        // Get version info
-                        var processFileVersionInfo = FileVersionInfo.GetVersionInfo(processFullFileName);
-
-                        // Extract icon
-                        ImageSource? icon = null;
-                        try
-                        {
-                            using var extractedIcon = process.GetIcon(true);
-                            if (extractedIcon != null)
-                            {
-                                using var bitmap = extractedIcon.ToBitmap();
-                                icon = bitmap.ConvertToImageSource();
-                                icon?.Freeze(); // Make thread-safe
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Error extracting icon: {ex.Message}");
-                        }
-
-                        // Create and return the process info
-                        return new AppProcessInfo(
-                            processName,
-                            processFileVersionInfo.FileDescription,
-                            processFileVersionInfo.ProductName,
-                            processFileVersionInfo.CompanyName,
-                            icon
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error getting process info for {processName}: {ex.Message}");
-                    }
-                }
-            }
-
             return null;
         }
 
@@ -427,38 +269,29 @@ namespace PSADT.UserInterface.Services
         /// </summary>
         private async void ProcessStartWatcher_EventArrived(object sender, EventArrivedEventArgs e)
         {
-            if (_isDisposed)
-                return;
-
-            if (e.NewEvent.Properties["ProcessName"]?.Value is string processName)
+            // Return early if the service is disposed or the process name is not tracked
+            if (_isDisposed || !(e.NewEvent.Properties["ProcessName"]?.Value is string processName) || !_trackedProcessNames.ContainsKey(processName))
             {
-                bool shouldTrack = _trackedProcessNames.ContainsKey(processName);
+                return;
+            }
 
-                if (shouldTrack)
+            // Update cache and raise event
+            try
+            {
+                var processInfo = await GetProcessInfoAsync(processName, _serviceCancellationTokenSource.Token).ConfigureAwait(false);
+                if (processInfo != null)
                 {
-                    try
-                    {
-                        var processInfo = await GetProcessInfoAsync(processName, _serviceCancellationTokenSource.Token)
-                            .ConfigureAwait(false);
-
-                        if (processInfo != null)
-                        {
-                            // Update cache
-                            _processCache[processName] = processInfo;
-
-                            // Raise event
-                            ProcessStarted?.Invoke(this, processInfo);
-                        }
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        // Service is shutting down, ignore
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error in ProcessStartWatcher_EventArrived: {ex.Message}");
-                    }
+                    _processCache[processName] = processInfo;
+                    ProcessStarted?.Invoke(this, processInfo);
                 }
+            }
+            catch (TaskCanceledException)
+            {
+                // Service is shutting down, ignore
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in ProcessStartWatcher_EventArrived: {ex.Message}");
             }
         }
 
@@ -467,22 +300,64 @@ namespace PSADT.UserInterface.Services
         /// </summary>
         private void ProcessStopWatcher_EventArrived(object sender, EventArrivedEventArgs e)
         {
-            if (_isDisposed)
-                return;
-
-            if (e.NewEvent.Properties["ProcessName"]?.Value is string processName)
+            // Return early if the service is disposed or the process name is not tracked
+            if (_isDisposed || !(e.NewEvent.Properties["ProcessName"]?.Value is string processName) || !_trackedProcessNames.ContainsKey(processName))
             {
-                bool shouldTrack = _trackedProcessNames.ContainsKey(processName);
+                return;
+            }
 
-                if (shouldTrack)
-                {
-                    if (_processCache.TryRemove(processName, out var processInfo))
-                    {
-                        ProcessExited?.Invoke(this, processInfo);
-                    }
-                }
+            // Remove from cache and raise event
+            if (_processCache.TryRemove(processName, out var processInfo))
+            {
+                ProcessExited?.Invoke(this, processInfo);
             }
         }
+
+        /// <summary>
+        /// Event raised when a tracked process starts
+        /// </summary>
+        public event EventHandler<AppProcessInfo>? ProcessStarted;
+
+        /// <summary>
+        /// Event raised when a tracked process exits
+        /// </summary>
+        public event EventHandler<AppProcessInfo>? ProcessExited;
+
+        /// <summary>
+        /// WMI watcher for process start events
+        /// </summary>
+        private readonly ManagementEventWatcher? _processStartWatcher;
+
+        /// <summary>
+        /// WMI watcher for process stop events
+        /// </summary>
+        private readonly ManagementEventWatcher? _processStopWatcher;
+
+        /// <summary>
+        /// Cache for process information
+        /// </summary>
+        private readonly ConcurrentDictionary<string, AppProcessInfo> _processCache;
+
+        /// <summary>
+        /// Dictionary to track process names
+        /// </summary>
+        private readonly ConcurrentDictionary<string, byte> _trackedProcessNames;
+
+        /// <summary>
+        /// Cancellation token source for service operations
+        /// </summary>
+        private readonly CancellationTokenSource _serviceCancellationTokenSource;
+
+        /// <summary>
+        /// Lock object for thread safety
+        /// </summary>
+        private readonly object _syncLock = new();
+
+        /// <summary>
+        /// Flag to indicate if the service has been disposed
+        /// </summary>
+        private bool _isDisposed;
+
 
         #region IDisposable Implementation
 
@@ -520,7 +395,6 @@ namespace PSADT.UserInterface.Services
                         _processCache.Clear();
                         _trackedProcessNames.Clear();
                     }
-
                     _isDisposed = true;
                 }
             }

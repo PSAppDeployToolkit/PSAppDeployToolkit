@@ -1081,7 +1081,7 @@ namespace PSADT.UserInterface
                 }
 
                 // Evaluate running processes and populate the collection
-                var updatedAppsToClose = _processEvaluationService.EvaluateRunningProcesses(_appsToClose);
+                var updatedAppsToClose = _processEvaluationService.EvaluateRunningProcessesAsync(_appsToClose, CancellationToken.None).GetAwaiter().GetResult();
 
                 // Clear existing items
                 AppsToCloseCollection.Clear();
