@@ -1,4 +1,5 @@
-﻿using System.Windows.Media;
+﻿using System;
+using System.Windows.Media;
 
 namespace PSADT.UserInterface.Services
 {
@@ -11,7 +12,7 @@ namespace PSADT.UserInterface.Services
     /// <param name="publisherName"></param>
     /// <param name="icon"></param>
     /// <param name="lastUpdated"></param>
-    public class AppProcessInfo(
+    public sealed class AppProcessInfo(
         string processName,
         string? processDescription,
         string? productName,
@@ -22,64 +23,32 @@ namespace PSADT.UserInterface.Services
         /// <summary>
         /// Name of the process
         /// </summary>
-        public string ProcessName { get; } = processName;
+        public readonly string ProcessName = processName;
 
         /// <summary>
         /// Description of the process
         /// </summary>
-        public string? ProcessDescription { get; } = processDescription;
+        public readonly string? ProcessDescription = processDescription;
 
         /// <summary>
         /// The product name of the process
         /// </summary>
-        public string? ProductName { get; } = productName;
+        public readonly string? ProductName = productName;
 
         /// <summary>
         /// The publisher name of the process
         /// </summary>
-        public string? PublisherName { get; } = publisherName;
+        public readonly string? PublisherName = publisherName;
 
         /// <summary>
         /// The icon of the process
         /// </summary>
-        public ImageSource? Icon { get; } = icon;
+        public readonly ImageSource? Icon = icon;
 
         /// <summary>
         /// The last time the process information was updated
         /// </summary>
-        public DateTime LastUpdated { get; } = lastUpdated ?? DateTime.Now;
-
-        /// <summary>
-        /// Update the description of the process
-        /// </summary>
-        /// <param name="newDescription"></param>
-        /// <returns></returns>
-        public AppProcessInfo WithUpdatedDescription(string? newDescription)
-        {
-            return new AppProcessInfo(
-                ProcessName,
-                newDescription ?? ProcessDescription,
-                ProductName,
-                PublisherName,
-                Icon,
-                LastUpdated
-            );
-        }
-
-        /// <summary>
-        /// Update the LastUpdated timestamp of the process
-        /// </summary>
-        public AppProcessInfo WithUpdatedTimestamp()
-        {
-            return new AppProcessInfo(
-                ProcessName,
-                ProcessDescription,
-                ProductName,
-                PublisherName,
-                Icon,
-                DateTime.Now
-            );
-        }
+        public readonly DateTime LastUpdated = lastUpdated ?? DateTime.Now;
 
         /// <summary>
         /// Check if two AppProcessInfo objects are equal
@@ -88,10 +57,25 @@ namespace PSADT.UserInterface.Services
         /// <returns></returns>
         public bool Equals(AppProcessInfo? other)
         {
-            if (other is null)
+            // Input is null.
+            if (ReferenceEquals(other, null))
+            {
                 return false;
+            }
 
-            return string.Equals(this.ProcessName, other.ProcessName, StringComparison.OrdinalIgnoreCase);
+            // Both have the same reference.
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            // Check if the properties are equal.
+            return ProcessName == other.ProcessName &&
+                   ProcessDescription == other.ProcessDescription &&
+                   ProductName == other.ProductName &&
+                   PublisherName == other.PublisherName &&
+                   Icon == other.Icon &&
+                   LastUpdated == other.LastUpdated;
         }
 
         /// <summary>
@@ -105,11 +89,42 @@ namespace PSADT.UserInterface.Services
         }
 
         /// <summary>
+        /// Check if two AppProcessInfo objects are not equal
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static bool operator==(AppProcessInfo? left, AppProcessInfo? right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return ReferenceEquals(right, null);
+            }
+            return left.Equals(right);
+        }
+
+        /// <summary>
+        /// Check if two AppProcessInfo objects are not equal
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static bool operator!=(AppProcessInfo? left, AppProcessInfo? right)
+        {
+            return !(left == right);
+        }
+
+        /// <summary>
         /// Gets the immutable hash code for the AppProcessInfo object
         /// </summary>
         public override int GetHashCode()
         {
-            return ProcessName.ToLowerInvariant().GetHashCode();
+            return (this.ProcessName,
+                    this.ProcessDescription,
+                    this.ProductName,
+                    this.PublisherName,
+                    this.Icon,
+                    this.LastUpdated).GetHashCode();
         }
     }
 }
