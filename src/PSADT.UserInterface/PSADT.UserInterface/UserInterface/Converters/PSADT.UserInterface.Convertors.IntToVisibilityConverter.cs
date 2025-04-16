@@ -59,14 +59,13 @@ namespace PSADT.UserInterface.Converters
                 intValue = parsedInt;
             }
 
+            // When reversed, collapse when count > threshold, otherwise it's visible
             if (reverseLogic)
             {
-                // When reversed, collapse when count > threshold
-                return intValue > threshold ? Visibility.Visible : Visibility.Collapsed;
+                return intValue > threshold ? Visibility.Collapsed : Visibility.Visible;
             }
             else
             {
-                // Default: visible when count > threshold
                 return intValue > threshold ? Visibility.Visible : Visibility.Collapsed;
             }
         }
