@@ -74,9 +74,15 @@
 
 
   <ItemGroup>
+	<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.183">
+	  <PrivateAssets>all</PrivateAssets>
+	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
 	<PackageReference Include="System.Management" Version="9.0.4" />
 	<PackageReference Include="System.Collections.Immutable" Version="9.0.4" />
+	<PackageReference Include="System.Memory" Version="4.6.3" />
 	<PackageReference Include="System.Reflection.Metadata" Version="9.0.4" />
+	<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
   </ItemGroup>
 
   <ItemGroup>
