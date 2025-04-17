@@ -19,36 +19,26 @@ namespace PSADT.UserInterface.Utilities
         /// Initializes a new instance of the <see cref="WPFScreen"/> class.
         /// </summary>
         /// <param name="monitor"></param>
-        /// <param name="hdc"></param>
-        private WPFScreen(IntPtr monitor, IntPtr hdc)
+        private WPFScreen(IntPtr monitor)
         {
-            if (!multiMonitorSupport || monitor == (IntPtr)PRIMARY_MONITOR)
-            {
-                Bounds = SystemInformation.VirtualScreen;
-                Primary = true;
-                DeviceName = "DISPLAY";
-            }
-            else
+            if (multiMonitorSupport && monitor != (IntPtr)PRIMARY_MONITOR)
             {
                 User32.GetMonitorInfo((HMONITOR)monitor, out MONITORINFOEXW info);
-
+                DeviceName = info.szDevice.ToString().Replace("\0", string.Empty).Trim();
+                Primary = (info.monitorInfo.dwFlags & PInvoke.MONITORINFOF_PRIMARY) != 0;
                 Bounds = new Rect(
                     info.monitorInfo.rcMonitor.left,
                     info.monitorInfo.rcMonitor.top,
                     info.monitorInfo.rcMonitor.right - info.monitorInfo.rcMonitor.left,
                     info.monitorInfo.rcMonitor.bottom - info.monitorInfo.rcMonitor.top);
-                Primary = (info.monitorInfo.dwFlags & PInvoke.MONITORINFOF_PRIMARY) != 0;
-                DeviceName = info.szDevice.ToString().Replace("\0", string.Empty).Trim();
+            }
+            else
+            {
+                DeviceName = "DISPLAY";
+                Primary = true;
+                Bounds = SystemInformation.VirtualScreen;
             }
             hMonitor = monitor;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WPFScreen"/> class with the specified monitor handle.
-        /// </summary>
-        /// <param name="monitor"></param>
-        private WPFScreen(IntPtr monitor) : this(monitor, IntPtr.Zero)
-        {
         }
 
         /// <summary>
@@ -106,7 +96,7 @@ namespace PSADT.UserInterface.Utilities
                     {
                         callback = (HMONITOR monitor, HDC hdc, RECT* lprcMonitor, LPARAM lParam) =>
                         {
-                            screens.Add(new WPFScreen(monitor, hdc));
+                            screens.Add(new WPFScreen(monitor));
                             return true;
                         };
                     }
@@ -219,12 +209,8 @@ namespace PSADT.UserInterface.Utilities
                 // Check High Contrast mode
                 if (SystemParameters.HighContrast)
                 {
-                    // High Contrast mode is enabled
-                    // Determine if High Contrast theme is dark or light
-                    User32.SystemParametersInfo(
-                        SYSTEM_PARAMETERS_INFO_ACTION.SPI_GETHIGHCONTRAST,
-                        out HIGHCONTRASTW highContrast);
-
+                    // High Contrast mode is enabled. Determine if High Contrast theme is dark or light
+                    User32.SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION.SPI_GETHIGHCONTRAST, out HIGHCONTRASTW highContrast);
                     if ((highContrast.dwFlags & HIGHCONTRASTW_FLAGS.HCF_HIGHCONTRASTON) != 0)
                     {
                         // Analyze lpszDefaultScheme to determine if the High Contrast theme is dark
@@ -232,23 +218,11 @@ namespace PSADT.UserInterface.Utilities
                         if (!string.IsNullOrWhiteSpace(schemeName))
                         {
                             // List of known dark and light High Contrast themes
-                            var darkSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                            {
-                                "High Contrast Black",
-                                "High Contrast #1",
-                            };
-
-                            var lightSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                            {
-                                "High Contrast White",
-                                "High Contrast #2",
-                            };
-
-                            if (darkSchemes.Contains(schemeName))
+                            if (DarkHighContrastSchemes.Contains(schemeName))
                             {
                                 return true;
                             }
-                            else if (lightSchemes.Contains(schemeName))
+                            else if (LightHighContrastSchemes.Contains(schemeName))
                             {
                                 return false;
                             }
@@ -262,7 +236,6 @@ namespace PSADT.UserInterface.Utilities
                 // First, check the AppsUseLightTheme registry key
                 const string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
                 const string valueName = "AppsUseLightTheme";
-
                 var registryValueObject = Registry.GetValue(registryKey, valueName, null);
                 if (registryValueObject != null)
                 {
@@ -272,23 +245,14 @@ namespace PSADT.UserInterface.Utilities
                 }
 
                 // If registry key is not available, fall back to DwmGetColorizationColor
-                try
-                {
-                    // Extract ARGB components from the colorization color
-                    DwmApi.DwmGetColorizationColor(out uint colorizationColor, out BOOL opaqueBlend);
-                    byte a = (byte)((colorizationColor >> 24) & 0xFF);
-                    byte r = (byte)((colorizationColor >> 16) & 0xFF);
-                    byte g = (byte)((colorizationColor >> 8) & 0xFF);
-                    byte b = (byte)(colorizationColor & 0xFF);
+                DwmApi.DwmGetColorizationColor(out uint colorizationColor, out BOOL opaqueBlend);
+                byte a = (byte)((colorizationColor >> 24) & 0xFF);
+                byte r = (byte)((colorizationColor >> 16) & 0xFF);
+                byte g = (byte)((colorizationColor >> 8) & 0xFF);
+                byte b = (byte)(colorizationColor & 0xFF);
 
-                    // Determine if the color is dark
-                    return IsColorDark(Color.FromArgb(a, r, g, b));
-                }
-                catch
-                {
-                    // If all else fails, default to light theme
-                    return false;
-                }
+                // Determine if the color is dark
+                return IsColorDark(Color.FromArgb(a, r, g, b));
             }
             catch
             {
@@ -326,6 +290,24 @@ namespace PSADT.UserInterface.Utilities
         {
             return hMonitor.GetHashCode();
         }
+
+        /// <summary>
+        /// List of known dark High Contrast themes.
+        /// </summary>
+        private static readonly HashSet<string> DarkHighContrastSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "High Contrast Black",
+            "High Contrast #1",
+        };
+
+        /// <summary>
+        /// List of known light High Contrast themes.
+        /// </summary>
+        private static readonly HashSet<string> LightHighContrastSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "High Contrast White",
+            "High Contrast #2",
+        };
 
         /// <summary>
         /// The handle to the monitor.
