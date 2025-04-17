@@ -11,24 +11,13 @@ namespace PSADT.UserInterface.Utilities
     /// <summary>
     /// Represents a display device or multiple display devices on a single system.
     /// </summary>
-    public sealed class WPFScreen
+    internal sealed class WPFScreen
     {
-        private readonly IntPtr hMonitor;
-
-        private const int PRIMARY_MONITOR = unchecked((int)0xBAADF00D);
-
-        private static readonly bool multiMonitorSupport;
-
-        static WPFScreen()
-        {
-            multiMonitorSupport = NativeMethods.GetSystemMetrics(NativeMethods.SM_CMONITORS) != 0;
-        }
-
-        private WPFScreen(IntPtr monitor)
-            : this(monitor, IntPtr.Zero)
-        {
-        }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WPFScreen"/> class.
+        /// </summary>
+        /// <param name="monitor"></param>
+        /// <param name="hdc"></param>
         private WPFScreen(IntPtr monitor, IntPtr hdc)
         {
             if (!multiMonitorSupport || monitor == (IntPtr)PRIMARY_MONITOR)
@@ -53,9 +42,52 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="WPFScreen"/> class with the specified monitor handle.
+        /// </summary>
+        /// <param name="monitor"></param>
+        private WPFScreen(IntPtr monitor) : this(monitor, IntPtr.Zero)
+        {
+        }
+
+        /// <summary>
+        /// Static constructor to initialize the multi-monitor support flag.
+        /// </summary>
+        static WPFScreen()
+        {
+            multiMonitorSupport = NativeMethods.GetSystemMetrics(NativeMethods.SM_CMONITORS) != 0;
+        }
+
+        /// <summary>
+        /// Retrieves a Screen for the display that contains the specified window handle.
+        /// </summary>
+        internal static WPFScreen FromHandle(IntPtr hwnd)
+        {
+            if (multiMonitorSupport)
+            {
+                var monitor = NativeMethods.MonitorFromWindow(new HandleRef(null, hwnd), NativeMethods.MONITOR_DEFAULTTONEAREST);
+                return new WPFScreen(monitor);
+            }
+            return new WPFScreen((IntPtr)PRIMARY_MONITOR);
+        }
+
+        /// <summary>
+        /// Retrieves a Screen for the display that contains the specified point.
+        /// </summary>
+        internal static WPFScreen FromPoint(Point point)
+        {
+            if (multiMonitorSupport)
+            {
+                var pt = new NativeMethods.POINTSTRUCT((int)point.X, (int)point.Y);
+                var monitor = NativeMethods.MonitorFromPoint(pt, NativeMethods.MONITOR_DEFAULTTONEAREST);
+                return new WPFScreen(monitor);
+            }
+            return new WPFScreen((IntPtr)PRIMARY_MONITOR);
+        }
+
+        /// <summary>
         /// Gets an array of all displays on the system.
         /// </summary>
-        public static IEnumerable<WPFScreen> AllScreens
+        internal static IEnumerable<WPFScreen> AllScreens
         {
             get
             {
@@ -75,29 +107,29 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
+        /// Gets the primary display.
+        /// </summary>
+        internal static WPFScreen PrimaryScreen => AllScreens.FirstOrDefault(screen => screen.Primary) ?? new WPFScreen((IntPtr)PRIMARY_MONITOR);
+
+        /// <summary>
         /// Gets the bounds of the display in device pixels.
         /// </summary>
-        public Rect Bounds { get; }
+        internal readonly Rect Bounds;
 
         /// <summary>
         /// Gets the device name associated with a display.
         /// </summary>
-        public string DeviceName { get; }
+        internal readonly string DeviceName;
 
         /// <summary>
         /// Gets a value indicating whether a particular display is the primary device.
         /// </summary>
-        public bool Primary { get; }
-
-        /// <summary>
-        /// Gets the primary display.
-        /// </summary>
-        public static WPFScreen PrimaryScreen => AllScreens.FirstOrDefault(screen => screen.Primary) ?? new WPFScreen((IntPtr)PRIMARY_MONITOR);
+        internal readonly bool Primary;
 
         /// <summary>
         /// Gets the working area of the display in device pixels.
         /// </summary>
-        public Rect WorkingArea
+        internal Rect WorkingArea
         {
             get
             {
@@ -115,58 +147,11 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
-        /// Retrieves a Screen for the display that contains the specified window handle.
-        /// </summary>
-        public static WPFScreen FromHandle(IntPtr hwnd)
-        {
-            if (multiMonitorSupport)
-            {
-                var monitor = NativeMethods.MonitorFromWindow(new HandleRef(null, hwnd), NativeMethods.MONITOR_DEFAULTTONEAREST);
-                return new WPFScreen(monitor);
-            }
-            return new WPFScreen((IntPtr)PRIMARY_MONITOR);
-        }
-
-        /// <summary>
-        /// Retrieves a Screen for the display that contains the specified point.
-        /// </summary>
-        public static WPFScreen FromPoint(Point point)
-        {
-            if (multiMonitorSupport)
-            {
-                var pt = new NativeMethods.POINTSTRUCT((int)point.X, (int)point.Y);
-                var monitor = NativeMethods.MonitorFromPoint(pt, NativeMethods.MONITOR_DEFAULTTONEAREST);
-                return new WPFScreen(monitor);
-            }
-            return new WPFScreen((IntPtr)PRIMARY_MONITOR);
-        }
-
-        /// <summary>
-        /// Determines whether the specified object is equal to this Screen.
-        /// </summary>
-        public override bool Equals(object? obj)
-        {
-            if (obj is WPFScreen other)
-            {
-                return hMonitor == other.hMonitor;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Returns a hash code for this Screen.
-        /// </summary>
-        public override int GetHashCode()
-        {
-            return hMonitor.GetHashCode();
-        }
-
-        /// <summary>
         /// Converts the screen's working area from device pixels to device-independent pixels (DIPs).
         /// </summary>
         /// <param name="visual">A visual element used to get the DPI information.</param>
         /// <returns>The working area in DIPs.</returns>
-        public Rect GetWorkingAreaInDips(Visual visual)
+        internal Rect GetWorkingAreaInDips(Visual visual)
         {
             var source = PresentationSource.FromVisual(visual);
             if (source?.CompositionTarget != null)
@@ -192,7 +177,7 @@ namespace PSADT.UserInterface.Utilities
         /// </summary>
         /// <param name="visual">A visual element used to get the DPI information.</param>
         /// <returns>The bounds in DIPs.</returns>
-        public Rect GetBoundsInDips(Visual visual)
+        internal Rect GetBoundsInDips(Visual visual)
         {
             var source = PresentationSource.FromVisual(visual);
             if (source?.CompositionTarget != null)
@@ -216,7 +201,7 @@ namespace PSADT.UserInterface.Utilities
         /// <summary>
         /// Detects if the system is using a dark theme, using both registry and DwmGetColorizationColor, with High Contrast mode support.
         /// </summary>
-        public static bool IsDarkTheme()
+        internal static bool IsDarkTheme()
         {
             try
             {
@@ -320,6 +305,41 @@ namespace PSADT.UserInterface.Utilities
             double luminance = ((0.299 * color.R) + (0.587 * color.G) + (0.114 * color.B)) / 255;
             return luminance < 0.5;
         }
+
+        /// <summary>
+        /// Determines whether the specified object is equal to this Screen.
+        /// </summary>
+        public override bool Equals(object? obj)
+        {
+            if (obj is WPFScreen other)
+            {
+                return hMonitor == other.hMonitor;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns a hash code for this Screen.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return hMonitor.GetHashCode();
+        }
+
+        /// <summary>
+        /// The handle to the monitor.
+        /// </summary>
+        private readonly IntPtr hMonitor;
+
+        /// <summary>
+        /// The flag to indicate multi-monitor support.
+        /// </summary>
+        private static readonly bool multiMonitorSupport;
+
+        /// <summary>
+        /// The primary monitor constant.
+        /// </summary>
+        private const int PRIMARY_MONITOR = unchecked((int)0xBAADF00D);
     }
 
     /// <summary>
