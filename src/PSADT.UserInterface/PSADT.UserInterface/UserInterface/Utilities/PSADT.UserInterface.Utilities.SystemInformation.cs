@@ -1,4 +1,6 @@
 ﻿using System.Windows;
+using PSADT.UserInterface.LibraryInterfaces;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.Utilities
 {
@@ -14,10 +16,10 @@ namespace PSADT.UserInterface.Utilities
         {
             get
             {
-                int width = NativeMethods.GetSystemMetrics(NativeMethods.SM_CXVIRTUALSCREEN);
-                int height = NativeMethods.GetSystemMetrics(NativeMethods.SM_CYVIRTUALSCREEN);
-                int left = NativeMethods.GetSystemMetrics(NativeMethods.SM_XVIRTUALSCREEN);
-                int top = NativeMethods.GetSystemMetrics(NativeMethods.SM_YVIRTUALSCREEN);
+                int width = User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXVIRTUALSCREEN);
+                int height = User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYVIRTUALSCREEN);
+                int left = User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_XVIRTUALSCREEN);
+                int top = User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_YVIRTUALSCREEN);
                 return new Rect(left, top, width, height);
             }
         }

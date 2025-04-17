@@ -1,6 +1,7 @@
 ﻿DeleteObject
 DestroyIcon
 GetMonitorInfo
+GetSystemMetrics
 FILE_FLAGS_AND_ATTRIBUTES
 MONITORINFOEXW
 MONITORINFOF_PRIMARY

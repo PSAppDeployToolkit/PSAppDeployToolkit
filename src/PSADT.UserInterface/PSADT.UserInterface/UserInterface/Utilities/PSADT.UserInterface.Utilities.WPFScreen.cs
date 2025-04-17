@@ -6,6 +6,7 @@ using PSADT.UserInterface.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.Utilities
 {
@@ -55,7 +56,14 @@ namespace PSADT.UserInterface.Utilities
         /// </summary>
         static WPFScreen()
         {
-            multiMonitorSupport = NativeMethods.GetSystemMetrics(NativeMethods.SM_CMONITORS) != 0;
+            try
+            {
+                multiMonitorSupport = User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CMONITORS) != 0;
+            }
+            catch
+            {
+                multiMonitorSupport = false;
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
+using Windows.Win32;
 
 namespace PSADT.UserInterface.Utilities
 {
@@ -9,16 +10,7 @@ namespace PSADT.UserInterface.Utilities
         public static readonly IntPtr RtGroupIcon = (IntPtr)14;
         public static readonly IntPtr RtIcon = (IntPtr)3;
 
-        public const int SM_CMONITORS = 80;
-        public const int SM_CXSCREEN = 0;
-        public const int SM_CYSCREEN = 1;
         public const int SPI_GETWORKAREA = 48;
-
-        public const int SM_CXVIRTUALSCREEN = 78;
-        public const int SM_CYVIRTUALSCREEN = 79;
-        public const int SM_XVIRTUALSCREEN = 76;
-        public const int SM_YVIRTUALSCREEN = 77;
-
         public const int SPI_GETHIGHCONTRAST = 0x0042;
         public const int HCF_HIGHCONTRASTON = 0x00000001;
 
@@ -32,9 +24,6 @@ namespace PSADT.UserInterface.Utilities
             IntPtr lprcClip,
             MonitorEnumProc lpfnEnum,
             IntPtr dwData);
-
-        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = false)]
-        public static extern int GetSystemMetrics(int nIndex);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern bool SystemParametersInfo(int uiAction, int uiParam, ref RECT pvParam, int fWinIni);

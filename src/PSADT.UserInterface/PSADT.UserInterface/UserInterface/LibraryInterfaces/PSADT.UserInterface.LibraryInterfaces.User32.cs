@@ -129,5 +129,21 @@ namespace PSADT.UserInterface.LibraryInterfaces
         {
             return MonitorFromPoint(new System.Drawing.Point((int)pt.X, (int)pt.Y), dwFlags);
         }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified rectangle.
+        /// </summary>
+        /// <param name="nIndex"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static int GetSystemMetrics(SYSTEM_METRICS_INDEX nIndex)
+        {
+            var res = PInvoke.GetSystemMetrics(nIndex);
+            if (res == 0)
+            {
+                throw new InvalidOperationException("Failed to retrieve system metrics.");
+            }
+            return res;
+        }
     }
 }
