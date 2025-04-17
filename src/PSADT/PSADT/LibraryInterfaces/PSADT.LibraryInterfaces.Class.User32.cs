@@ -134,9 +134,9 @@ namespace PSADT.LibraryInterfaces
         internal static int LoadString(SafeHandle hInstance, uint uID, Span<char> lpBuffer)
         {
             var res = PInvoke.LoadString(hInstance, uID, lpBuffer, lpBuffer.Length);
-            if (res == 0)
+            if (res == 0 && ((WIN32_ERROR)Marshal.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(lastWin32Error);
             }
             return res;
         }
