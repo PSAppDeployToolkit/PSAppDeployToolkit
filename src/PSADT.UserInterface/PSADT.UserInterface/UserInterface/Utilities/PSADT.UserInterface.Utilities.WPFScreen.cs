@@ -17,8 +17,9 @@ namespace PSADT.UserInterface.Utilities
         /// Initializes a new instance of the <see cref="WPFScreen"/> class.
         /// </summary>
         /// <param name="monitor"></param>
-        private WPFScreen(IntPtr monitor)
+        private WPFScreen(IntPtr monitor, bool? haveMultipleMonitors = null)
         {
+            multiMonitorSupport = haveMultipleMonitors ?? HaveMultipleMonitors();
             if (multiMonitorSupport && monitor != (IntPtr)PRIMARY_MONITOR)
             {
                 User32.GetMonitorInfo((HMONITOR)monitor, out MONITORINFOEXW info);
@@ -44,31 +45,17 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
-        /// Static constructor to initialize the multi-monitor support flag.
-        /// </summary>
-        static WPFScreen()
-        {
-            try
-            {
-                multiMonitorSupport = User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CMONITORS) != 0;
-            }
-            catch
-            {
-                multiMonitorSupport = false;
-            }
-        }
-
-        /// <summary>
         /// Retrieves a Screen for the display that contains the specified window handle.
         /// </summary>
         internal static WPFScreen FromHandle(IntPtr hwnd)
         {
+            var multiMonitorSupport = HaveMultipleMonitors();
             if (multiMonitorSupport)
             {
                 var monitor = User32.MonitorFromWindow((HWND)hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
-                return new WPFScreen(monitor);
+                return new WPFScreen(monitor, multiMonitorSupport);
             }
-            return new WPFScreen((IntPtr)PRIMARY_MONITOR);
+            return new WPFScreen((IntPtr)PRIMARY_MONITOR, multiMonitorSupport);
         }
 
         /// <summary>
@@ -76,11 +63,12 @@ namespace PSADT.UserInterface.Utilities
         /// </summary>
         internal static WPFScreen FromPoint(Point point)
         {
+            var multiMonitorSupport = HaveMultipleMonitors();
             if (multiMonitorSupport)
             {
-                return new WPFScreen(User32.MonitorFromPoint(point, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST));
+                return new WPFScreen(User32.MonitorFromPoint(point, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST), multiMonitorSupport);
             }
-            return new WPFScreen((IntPtr)PRIMARY_MONITOR);
+            return new WPFScreen((IntPtr)PRIMARY_MONITOR, multiMonitorSupport);
         }
 
         /// <summary>
@@ -172,6 +160,21 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
+        /// Static constructor to initialize the multi-monitor support flag.
+        /// </summary>
+        private static bool HaveMultipleMonitors()
+        {
+            try
+            {
+                return User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CMONITORS) != 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Determines whether the specified object is equal to this Screen.
         /// </summary>
         public override bool Equals(object? obj)
@@ -199,7 +202,7 @@ namespace PSADT.UserInterface.Utilities
         /// <summary>
         /// The flag to indicate multi-monitor support.
         /// </summary>
-        private static readonly bool multiMonitorSupport;
+        private readonly bool multiMonitorSupport;
 
         /// <summary>
         /// The primary monitor constant.
