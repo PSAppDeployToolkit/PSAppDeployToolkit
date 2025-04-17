@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using Microsoft.Win32;
 using PSADT.UserInterface.LibraryInterfaces;
@@ -102,12 +101,16 @@ namespace PSADT.UserInterface.Utilities
                 if (multiMonitorSupport)
                 {
                     var screens = new List<WPFScreen>();
-                    NativeMethods.MonitorEnumProc callback = (IntPtr monitor, IntPtr hdc, IntPtr lprcMonitor, IntPtr lParam) =>
+                    MONITORENUMPROC callback;
+                    unsafe
                     {
-                        screens.Add(new WPFScreen(monitor, hdc));
-                        return true;
-                    };
-                    NativeMethods.EnumDisplayMonitors(NativeMethods.NullHandleRef, IntPtr.Zero, callback, IntPtr.Zero);
+                        callback = (HMONITOR monitor, HDC hdc, RECT* lprcMonitor, LPARAM lParam) =>
+                        {
+                            screens.Add(new WPFScreen(monitor, hdc));
+                            return true;
+                        };
+                    }
+                    User32.EnumDisplayMonitors(HDC.Null, null, callback, IntPtr.Zero);
                     return screens;
                 }
                 return [new WPFScreen((IntPtr)PRIMARY_MONITOR)];

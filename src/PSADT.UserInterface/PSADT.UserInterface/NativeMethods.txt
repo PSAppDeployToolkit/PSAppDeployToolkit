@@ -1,6 +1,7 @@
 ﻿DeleteObject
 DestroyIcon
 DwmGetColorizationColor
+EnumDisplayMonitors
 GetMonitorInfo
 GetSystemMetrics
 FILE_FLAGS_AND_ATTRIBUTES

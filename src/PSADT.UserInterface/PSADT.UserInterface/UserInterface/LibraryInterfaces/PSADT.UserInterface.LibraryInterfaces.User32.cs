@@ -199,5 +199,24 @@ namespace PSADT.UserInterface.LibraryInterfaces
             pvParam = pvParamLocal;
             return res;
         }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified rectangle.
+        /// </summary>
+        /// <param name="hdc"></param>
+        /// <param name="lprcClip"></param>
+        /// <param name="lpfnEnum"></param>
+        /// <param name="dwData"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static BOOL EnumDisplayMonitors(HDC hdc, RECT? lprcClip, MONITORENUMPROC lpfnEnum, LPARAM dwData)
+        {
+            var res = PInvoke.EnumDisplayMonitors(hdc, lprcClip, lpfnEnum, dwData);
+            if (!res)
+            {
+                throw new InvalidOperationException("Failed to enumerate display monitors.");
+            }
+            return res;
+        }
     }
 }
