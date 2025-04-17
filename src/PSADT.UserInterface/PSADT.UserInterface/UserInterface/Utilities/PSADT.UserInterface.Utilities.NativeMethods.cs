@@ -14,8 +14,5 @@ namespace PSADT.UserInterface.Utilities
             IntPtr lprcClip,
             MonitorEnumProc lpfnEnum,
             IntPtr dwData);
-
-        [DllImport("dwmapi.dll", EntryPoint = "DwmGetColorizationColor", PreserveSig = true)]
-        public static extern int DwmGetColorizationColor(out uint pcrColorization, [MarshalAs(UnmanagedType.Bool)] out bool pfOpaqueBlend);
     }
 }

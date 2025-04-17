@@ -1,5 +1,6 @@
 ﻿DeleteObject
 DestroyIcon
+DwmGetColorizationColor
 GetMonitorInfo
 GetSystemMetrics
 FILE_FLAGS_AND_ATTRIBUTES

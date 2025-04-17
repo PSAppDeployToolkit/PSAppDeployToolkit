@@ -269,22 +269,19 @@ namespace PSADT.UserInterface.Utilities
                 }
 
                 // If registry key is not available, fall back to DwmGetColorizationColor
-
-                int result = NativeMethods.DwmGetColorizationColor(out uint colorizationColor, out bool opaqueBlend);
-                if (result == 0)
+                try
                 {
                     // Extract ARGB components from the colorization color
+                    DwmApi.DwmGetColorizationColor(out uint colorizationColor, out BOOL opaqueBlend);
                     byte a = (byte)((colorizationColor >> 24) & 0xFF);
                     byte r = (byte)((colorizationColor >> 16) & 0xFF);
                     byte g = (byte)((colorizationColor >> 8) & 0xFF);
                     byte b = (byte)(colorizationColor & 0xFF);
 
-                    Color color = Color.FromArgb(a, r, g, b);
-
                     // Determine if the color is dark
-                    return IsColorDark(color);
+                    return IsColorDark(Color.FromArgb(a, r, g, b));
                 }
-                else
+                catch
                 {
                     // If all else fails, default to light theme
                     return false;
