@@ -1,4 +1,4 @@
-﻿using PSADT.UserInterface.Dialogs.Fluent;
+﻿using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.Services;
 
 namespace PSADT.UserInterface

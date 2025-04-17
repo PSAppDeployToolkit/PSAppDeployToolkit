@@ -1,4 +1,5 @@
-﻿using PSADT.UserInterface.Dialogs.Fluent;
+﻿using PSADT.UserInterface.Dialogs;
+using PSADT.UserInterface.Dialogs.Fluent;
 using PSADT.UserInterface.Services;
 using System.Windows;
 using System.Windows.Threading;

@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions; // Added for Regex
 using System.Windows;
@@ -24,39 +23,6 @@ using Wpf.Ui.Controls;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
-    /// <summary>
-    /// Dialog types supported by the UnifiedDialog
-    /// </summary>
-    public enum DialogType
-    {
-        CloseApps,
-        Progress,
-        Restart,
-        Input,
-        Custom
-    }
-
-    /// <summary>
-    /// Defines the position of the dialog window on the screen
-    /// </summary>
-    public enum DialogPosition
-    {
-        /// <summary>
-        /// Position in the bottom right corner of the screen (default)
-        /// </summary>
-        BottomRight,
-
-        /// <summary>
-        /// Position in the center of the screen
-        /// </summary>
-        Center,
-
-        /// <summary>
-        /// Position at the top center of the screen
-        /// </summary>
-        TopCenter
-    }
-
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
