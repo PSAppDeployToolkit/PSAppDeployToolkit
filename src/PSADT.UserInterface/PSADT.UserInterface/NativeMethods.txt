@@ -1,3 +1,4 @@
 ﻿DeleteObject
 DestroyIcon
+FILE_FLAGS_AND_ATTRIBUTES
 WIN32_ERROR

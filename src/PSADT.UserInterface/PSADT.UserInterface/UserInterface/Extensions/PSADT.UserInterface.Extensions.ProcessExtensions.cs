@@ -1,19 +1,13 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using PSADT.UserInterface.LibraryInterfaces;
-using PSADT.UserInterface.Utilities;
-using static PSADT.UserInterface.Utilities.NativeMethods;
 
 namespace PSADT.UserInterface.Extensions
 {
     /// <summary>
     /// Utility class for process extensions
     /// </summary>
-    public static class ProcessExtensions
+    internal static class ProcessExtensions
     {
         /// <summary>
         /// Get the icon of a process
@@ -22,48 +16,19 @@ namespace PSADT.UserInterface.Extensions
         /// <param name="largeIcon"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static Icon? GetIcon(this Process process, bool largeIcon = true)
+        internal static Icon? GetIcon(this Process process, bool largeIcon = true)
         {
-            if (process == null) throw new ArgumentNullException(nameof(process));
-
-            try
+            // Check if the process is null or if the main module's file name is not a string.
+            if (process == null || !(process.MainModule?.FileName is string mainModuleFileName))
             {
-                string? mainModuleFileName = process.MainModule?.FileName;
-                if (string.IsNullOrWhiteSpace(mainModuleFileName))
-                {
-                    return null;
-                }
+                throw new ArgumentNullException(nameof(process));
+            }
 
-                SHFILEINFO shinfo = new();
-                uint flags = SHGFI_ICON | (largeIcon ? SHGFI_LARGEICON : SHGFI_SMALLICON);
-                IntPtr hImg = NativeMethods.SHGetFileInfo(mainModuleFileName!, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), flags);
-
-                if (hImg == IntPtr.Zero)
-                {
-                    return null;
-                }
-
-                Icon icon = (Icon)Icon.FromHandle(shinfo.hIcon).Clone(); // Clone to prevent handle loss
-                User32.DestroyIcon(shinfo.hIcon); // Cleanup unmanaged icon handle
-
-                return icon;
-            }
-            catch (FileNotFoundException)
-            {
-                return null;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return null;
-            }
-            catch (IOException)
-            {
-                return null;
-            }
-            catch (Win32Exception)
-            {
-                return null;
-            }
+            // Get the icon handle using SHGetFileInfo, clone it, then return it.
+            var shinfo = Shell32.SHGetFileInfo(mainModuleFileName, SHGFI_FLAGS.SHGFI_ICON | (largeIcon ? SHGFI_FLAGS.SHGFI_LARGEICON : SHGFI_FLAGS.SHGFI_SMALLICON));
+            Icon icon = (Icon)Icon.FromHandle(shinfo.hIcon).Clone();
+            User32.DestroyIcon(shinfo.hIcon);
+            return icon;
         }
     }
 }

@@ -9,10 +9,6 @@ namespace PSADT.UserInterface.Utilities
         public static readonly IntPtr RtGroupIcon = (IntPtr)14;
         public static readonly IntPtr RtIcon = (IntPtr)3;
 
-        public const uint SHGFI_ICON = 0x000000100;
-        public const uint SHGFI_LARGEICON = 0x000000000;
-        public const uint SHGFI_SMALLICON = 0x000000001;
-
         public const int SM_CMONITORS = 80;
         public const int SM_CXSCREEN = 0;
         public const int SM_CYSCREEN = 1;
@@ -32,10 +28,6 @@ namespace PSADT.UserInterface.Utilities
         public delegate bool MonitorEnumProc(IntPtr monitor, IntPtr hdc, IntPtr lprcMonitor, IntPtr lParam);
 
         public static HandleRef NullHandleRef = new(null, IntPtr.Zero);
-
-        [DllImport("shell32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
-        public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes,
-            ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern bool GetMonitorInfo(HandleRef hMonitor, [In, Out] MONITORINFOEX lpmi);
@@ -71,20 +63,6 @@ namespace PSADT.UserInterface.Utilities
 
         [DllImport("dwmapi.dll", EntryPoint = "DwmGetColorizationColor", PreserveSig = true)]
         public static extern int DwmGetColorizationColor(out uint pcrColorization, [MarshalAs(UnmanagedType.Bool)] out bool pfOpaqueBlend);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct SHFILEINFO
-        {
-            public IntPtr hIcon;
-            public IntPtr iIcon;
-            public uint dwAttributes;
-
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-            public string szDisplayName;
-
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
-            public string szTypeName;
-        };
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct HIGHCONTRAST
