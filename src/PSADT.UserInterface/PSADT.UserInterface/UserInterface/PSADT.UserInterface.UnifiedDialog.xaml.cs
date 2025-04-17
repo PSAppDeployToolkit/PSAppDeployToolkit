@@ -80,9 +80,7 @@ namespace PSADT.UserInterface
         private TimeSpan _countdownRemainingTime;
 
         // Deferrals Handling and Timers
-        private TimeSpan? _deferralDeadlineDuration;
         private DateTime? _deferralDeadline;
-        private Timer? _deferralDeadlineTimer;
         private TimeSpan? _deferralDeadlineRemainingTime;
         private int? _deferralsRemaining;
 
@@ -110,7 +108,6 @@ namespace PSADT.UserInterface
         private string? _dialogResult;
         private double _progressBarValue = 0;
         private bool _isProcessing = false;
-        private bool _isAnimating = false;
         private bool _isDisposed = false;
         private bool _canClose = false;
 
@@ -119,7 +116,6 @@ namespace PSADT.UserInterface
 
         private const double ListViewMaxItems = 3; // Maximum number of visible items before scrolling
         private const double ListViewPadding = 16; // Additional padding for the ListView (8px top + 8px bottom)
-        private const double BaseWindowHeight = 198; // Base height for the window without content
         private const double MaxListViewHeight = 198; // Maximum height for the ListView before scrolling (matches MaxHeight in XAML)
 
         // Icon cache for improved performance
@@ -130,13 +126,8 @@ namespace PSADT.UserInterface
 
         private string? _alternativeMessage;
         private string? _buttonLeftOriginalText;
-        private string? _buttonLeftAlternativeText;
-        private string? _buttonMiddleOriginalText;
-        private string? _buttonMiddleAlternativeText;
         private string? _buttonRightOriginalText;
         private string? _buttonRightAlternativeText;
-        private string? _deferralsRemainingText;
-        private string? _deferralDeadlineText;
         private string? _inputTextResult; // To store text from Input dialog
 
         // Removed animation-related fields
@@ -384,7 +375,6 @@ namespace PSADT.UserInterface
             _originalMessage = closeAppsMessageText ?? "Please close the following applications:";
             _alternativeMessage = alternativeCloseAppsMessageText ?? "Please continue with the installation.";
             _buttonLeftOriginalText = deferButtonText ?? "Defer";
-            _buttonMiddleOriginalText = null;
             _buttonRightOriginalText = continueButtonText ?? "Close Apps & Install";
             _buttonRightAlternativeText = alternativeContinueButtonText ?? "Install";
 
@@ -1473,7 +1463,6 @@ namespace PSADT.UserInterface
 
                 // Set up the timer to update every second
                 _countdownTimer = new Timer(CountdownTimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-                _deferralDeadlineTimer = new Timer(CountdownTimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
             }
             catch (Exception ex)
             {
