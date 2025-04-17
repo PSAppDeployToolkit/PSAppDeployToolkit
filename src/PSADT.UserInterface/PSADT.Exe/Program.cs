@@ -122,7 +122,7 @@ namespace PSADT.UserInterface
                 // #################################################################################
 
                 // Show CloseApps Dialog
-                var closeAppsResult = UnifiedAdtApplication.ShowCloseAppsDialog(
+                var closeAppsResult = DialogManager.ShowCloseAppsDialog(
                     dialogExpiryDuration,
                     dialogAccentColor,
                     dialogPosition,
@@ -154,7 +154,7 @@ namespace PSADT.UserInterface
                 if (closeAppsResult.Equals("Continue"))
                 {
                     // Show Progress Dialog
-                    UnifiedAdtApplication.ShowProgressDialog(
+                    DialogManager.ShowProgressDialog(
                         dialogExpiryDuration,
                         dialogAccentColor,
                         dialogPosition,
@@ -172,17 +172,17 @@ namespace PSADT.UserInterface
                     for (int i = 0; i <= 100; i += 10)
                     {
                         // Update progress
-                        UnifiedAdtApplication.UpdateProgress($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
+                        DialogManager.UpdateProgress($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
                         Thread.Sleep(500);  // Simulate work being done
                     }
 
                     // Close Progress Dialog
-                    UnifiedAdtApplication.CloseCurrentDialog();
+                    DialogManager.CloseCurrentDialog();
 
                     // #################################################################################
 
                     // Show Custom Dialog for completion
-                    var customResult = UnifiedAdtApplication.ShowCustomDialog(
+                    var customResult = DialogManager.ShowCustomDialog(
                             dialogExpiryDuration,
                             dialogAccentColor,
                             dialogPosition,
@@ -206,7 +206,7 @@ namespace PSADT.UserInterface
                 // #################################################################################
 
                 // Show Restart Dialog
-                var restartResult = UnifiedAdtApplication.ShowRestartDialog(
+                var restartResult = DialogManager.ShowRestartDialog(
                     dialogExpiryDuration,
                     dialogAccentColor,
                     dialogPosition,
@@ -243,7 +243,7 @@ namespace PSADT.UserInterface
             finally
             {
                 // Dispose the UnifiedAdtApplication when done
-                UnifiedAdtApplication.Dispose();
+                DialogManager.Dispose();
             }
 
         }
