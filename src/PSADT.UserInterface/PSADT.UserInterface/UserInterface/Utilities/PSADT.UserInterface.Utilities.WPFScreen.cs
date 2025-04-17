@@ -78,9 +78,7 @@ namespace PSADT.UserInterface.Utilities
         {
             if (multiMonitorSupport)
             {
-                var pt = new NativeMethods.POINTSTRUCT((int)point.X, (int)point.Y);
-                var monitor = NativeMethods.MonitorFromPoint(pt, (int)MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
-                return new WPFScreen(monitor);
+                return new WPFScreen(User32.MonitorFromPoint(point, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST));
             }
             return new WPFScreen((IntPtr)PRIMARY_MONITOR);
         }

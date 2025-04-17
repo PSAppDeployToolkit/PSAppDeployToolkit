@@ -33,9 +33,6 @@ namespace PSADT.UserInterface.Utilities
             MonitorEnumProc lpfnEnum,
             IntPtr dwData);
 
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = false)]
-        public static extern IntPtr MonitorFromPoint(POINTSTRUCT pt, int dwFlags);
-
         [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int GetSystemMetrics(int nIndex);
 
@@ -94,13 +91,6 @@ namespace PSADT.UserInterface.Utilities
             }
 
             public readonly System.Windows.Size Size => new(right - left, bottom - top);
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct POINTSTRUCT(int x, int y)
-        {
-            public int x = x;
-            public int y = y;
         }
 
         [StructLayout(LayoutKind.Sequential)]

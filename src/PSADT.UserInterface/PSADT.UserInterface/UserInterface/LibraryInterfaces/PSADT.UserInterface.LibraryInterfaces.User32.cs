@@ -100,5 +100,34 @@ namespace PSADT.UserInterface.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified point.
+        /// </summary>
+        /// <param name="pt"></param>
+        /// <param name="dwFlags"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static HMONITOR MonitorFromPoint(System.Drawing.Point pt, MONITOR_FROM_FLAGS dwFlags)
+        {
+            var res = PInvoke.MonitorFromPoint(pt, dwFlags);
+            if (res.IsNull && (dwFlags & MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONULL) == MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONULL)
+            {
+                throw new InvalidOperationException("Failed to retrieve monitor from point.");
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified point.
+        /// </summary>
+        /// <param name="pt"></param>
+        /// <param name="dwFlags"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static HMONITOR MonitorFromPoint(System.Windows.Point pt, MONITOR_FROM_FLAGS dwFlags)
+        {
+            return MonitorFromPoint(new System.Drawing.Point((int)pt.X, (int)pt.Y), dwFlags);
+        }
     }
 }
