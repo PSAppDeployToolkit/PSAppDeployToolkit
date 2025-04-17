@@ -187,7 +187,6 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
-        [ValidateNotNullOrEmpty()]
         [ValidateScript({
                 if ($_.TotalMilliseconds -lt 1)
                 {

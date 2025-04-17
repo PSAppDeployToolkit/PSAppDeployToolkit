@@ -272,7 +272,6 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
-        [ValidateNotNullOrEmpty()]
         [ValidateScript({
                 if ($_.TotalMilliseconds -lt 1)
                 {
