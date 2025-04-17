@@ -36,7 +36,11 @@ namespace PSADT.UserInterface.Utilities
             {
                 DeviceName = "DISPLAY";
                 Primary = true;
-                Bounds = SystemInformation.VirtualScreen;
+                Bounds = new Rect(
+                    User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_XVIRTUALSCREEN),
+                    User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_YVIRTUALSCREEN),
+                    User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXVIRTUALSCREEN),
+                    User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYVIRTUALSCREEN));
             }
             hMonitor = monitor;
         }
@@ -136,7 +140,8 @@ namespace PSADT.UserInterface.Utilities
             {
                 if (!multiMonitorSupport || hMonitor == (IntPtr)PRIMARY_MONITOR)
                 {
-                    return SystemInformation.WorkingArea;
+                    User32.SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION.SPI_GETWORKAREA, out RECT rc);
+                    return new Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
                 }
                 User32.GetMonitorInfo((HMONITOR)hMonitor, out MONITORINFO info);
                 return new Rect(
