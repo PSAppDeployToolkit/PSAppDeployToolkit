@@ -188,6 +188,13 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                if ($_.TotalMilliseconds -lt 1)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage "Timeout expects a TimeSpan object of 1ms or above; the supplied value of $($_.Ticks) ticks equates to $($_.TotalMilliSeconds) milliseconds. Try: -Timeout (New-Timespan -Seconds $($_.Ticks))"))
+                }
+                return !!$_
+            })]
         [System.TimeSpan]$Timeout,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
