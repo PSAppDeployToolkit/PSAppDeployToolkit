@@ -35,9 +35,6 @@ namespace PSADT.UserInterface.Utilities
             ref HIGHCONTRAST pvParam,
             int fWinIni);
 
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = false)]
-        public static extern bool GetCursorPos([In, Out] POINT pt);
-
         [DllImport("dwmapi.dll", EntryPoint = "DwmGetColorizationColor", PreserveSig = true)]
         public static extern int DwmGetColorizationColor(out uint pcrColorization, [MarshalAs(UnmanagedType.Bool)] out bool pfOpaqueBlend);
 
@@ -80,69 +77,6 @@ namespace PSADT.UserInterface.Utilities
             }
 
             public readonly System.Windows.Size Size => new(right - left, bottom - top);
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public class POINT
-        {
-            public int x;
-            public int y;
-
-            public POINT()
-            {
-            }
-
-            public POINT(int x, int y)
-            {
-                this.x = x;
-                this.y = y;
-            }
-
-#if DEBUG
-            public override string ToString()
-            {
-                return $"{{x={x}, y={y}}}";
-            }
-#endif
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public class COMRECT
-        {
-            public int left;
-            public int top;
-            public int right;
-            public int bottom;
-
-            public COMRECT()
-            {
-            }
-
-            public COMRECT(Rect r)
-            {
-                left = (int)r.X;
-                top = (int)r.Y;
-                right = (int)r.Right;
-                bottom = (int)r.Bottom;
-            }
-
-            public COMRECT(int left, int top, int right, int bottom)
-            {
-                this.left = left;
-                this.top = top;
-                this.right = right;
-                this.bottom = bottom;
-            }
-
-            public static COMRECT FromXYWH(int x, int y, int width, int height)
-            {
-                return new COMRECT(x, y, x + width, y + height);
-            }
-
-            public override string ToString()
-            {
-                return $"Left = {left}, Top = {top}, Right = {right}, Bottom = {bottom}";
-            }
         }
     }
 }
