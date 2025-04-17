@@ -4,6 +4,7 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using PSADT.UserInterface.LibraryInterfaces;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
 namespace PSADT.UserInterface.Utilities
@@ -64,7 +65,7 @@ namespace PSADT.UserInterface.Utilities
         {
             if (multiMonitorSupport)
             {
-                var monitor = NativeMethods.MonitorFromWindow(new HandleRef(null, hwnd), NativeMethods.MONITOR_DEFAULTTONEAREST);
+                var monitor = User32.MonitorFromWindow((HWND)hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
                 return new WPFScreen(monitor);
             }
             return new WPFScreen((IntPtr)PRIMARY_MONITOR);
@@ -78,7 +79,7 @@ namespace PSADT.UserInterface.Utilities
             if (multiMonitorSupport)
             {
                 var pt = new NativeMethods.POINTSTRUCT((int)point.X, (int)point.Y);
-                var monitor = NativeMethods.MonitorFromPoint(pt, NativeMethods.MONITOR_DEFAULTTONEAREST);
+                var monitor = NativeMethods.MonitorFromPoint(pt, (int)MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
                 return new WPFScreen(monitor);
             }
             return new WPFScreen((IntPtr)PRIMARY_MONITOR);

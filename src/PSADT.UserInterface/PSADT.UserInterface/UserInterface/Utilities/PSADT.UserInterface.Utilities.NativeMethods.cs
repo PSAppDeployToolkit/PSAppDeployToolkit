@@ -22,8 +22,6 @@ namespace PSADT.UserInterface.Utilities
         public const int SPI_GETHIGHCONTRAST = 0x0042;
         public const int HCF_HIGHCONTRASTON = 0x00000001;
 
-        public const int MONITOR_DEFAULTTONEAREST = 0x00000002;
-
         public delegate bool MonitorEnumProc(IntPtr monitor, IntPtr hdc, IntPtr lprcMonitor, IntPtr lParam);
 
         public static HandleRef NullHandleRef = new(null, IntPtr.Zero);
@@ -34,9 +32,6 @@ namespace PSADT.UserInterface.Utilities
             IntPtr lprcClip,
             MonitorEnumProc lpfnEnum,
             IntPtr dwData);
-
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = false)]
-        public static extern IntPtr MonitorFromWindow(HandleRef hwnd, int dwFlags);
 
         [DllImport("user32.dll", ExactSpelling = true, SetLastError = false)]
         public static extern IntPtr MonitorFromPoint(POINTSTRUCT pt, int dwFlags);

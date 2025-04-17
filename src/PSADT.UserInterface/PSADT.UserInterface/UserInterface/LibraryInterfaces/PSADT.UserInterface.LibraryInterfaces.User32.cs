@@ -83,5 +83,22 @@ namespace PSADT.UserInterface.LibraryInterfaces
             lpmi = lpmiLocal;
             return res;
         }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified point.
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="dwFlags"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static HMONITOR MonitorFromWindow(HWND hwnd, MONITOR_FROM_FLAGS dwFlags)
+        {
+            var res = PInvoke.MonitorFromWindow(hwnd, dwFlags);
+            if (res.IsNull && (dwFlags & MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONULL) == MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONULL)
+            {
+                throw new InvalidOperationException("Failed to retrieve monitor from window.");
+            }
+            return res;
+        }
     }
 }
