@@ -587,68 +587,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             });
         }
 
-        ///// <summary>
-        ///// Initialize the dialog as a Custom dialog - OLD COMMENTED CODE - REMOVE
-        ///// </summary>
-        //public void InitializeInputDialog(
-        //    string? appTitle,
-        //    string? subtitle,
-        //    string? appIconImage,
-        //    string? inputBoxTextBlock,
-        //    string? inputBoxText,
-        //    string? ButtonLeftText,
-        //    string? ButtonMiddleText,
-        //    string? ButtonRightText)
-        //{
-        //    // Set basic properties
-        //    Title = appTitle ?? "Message";
-        //    AppTitleTextBlock.Text = appTitle;
-        //    SubtitleTextBlock.Text = subtitle;
-
-        //    // Set accessibility properties
-        //    AutomationProperties.SetName(this, appTitle ?? "Input Dialog");
-
-        //    // Set up UI
-        //    MessageTextBlock.Text = inputBoxTextBlock ?? string.Empty;
-        //    InputBoxText.Text = inputBoxText ?? string.Empty;
-        //    CloseAppsStackPanel.Visibility = Visibility.Collapsed;
-        //    ProgressStackPanel.Visibility = Visibility.Collapsed;
-        //    InputBoxStackPanel.Visibility = Visibility.Visible;
-        //    DeferStackPanel.Visibility = Visibility.Collapsed;
-        //    CountdownStackPanel.Visibility = Visibility.Collapsed;
-        //    ButtonPanel.Visibility = Visibility.Visible;
-
-        //    // Configure buttons based on provided texts
-        //    SetButtonContentWithAccelerator(ButtonLeft, ButtonLeftText ?? "_OK");
-        //    ButtonLeft.Visibility = string.IsNullOrWhiteSpace(ButtonLeftText) ? Visibility.Collapsed : Visibility.Visible;
-        //    AutomationProperties.SetName(ButtonLeft, ButtonLeftText ?? "OK");
-
-        //    SetButtonContentWithAccelerator(ButtonMiddle, ButtonMiddleText ?? "_Cancel");
-        //    ButtonMiddle.Visibility = string.IsNullOrWhiteSpace(ButtonMiddleText) ? Visibility.Collapsed : Visibility.Visible;
-        //    AutomationProperties.SetName(ButtonMiddle, ButtonMiddleText ?? "Cancel");
-
-        //    SetButtonContentWithAccelerator(ButtonRight, ButtonRightText ?? "_Continue");
-        //    ButtonRight.Visibility = string.IsNullOrWhiteSpace(ButtonRightText) ? Visibility.Collapsed : Visibility.Visible;
-        //    AutomationProperties.SetName(ButtonRight, ButtonRightText ?? "Continue");
-
-        //    UpdateButtonLayout();
-
-        //    // Set app icon
-        //    SetAppIcon(appIconImage);
-
-        //    // Focus the default button
-        //    Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
-        //    {
-        //        if (ButtonRight.Visibility == Visibility.Visible)
-        //            ButtonRight.Focus();
-        //        else if (ButtonLeft.Visibility == Visibility.Visible)
-        //            ButtonLeft.Focus();
-        //        else if (ButtonMiddle.Visibility == Visibility.Visible)
-        //            ButtonMiddle.Focus();
-        //    });
-        //}
-
-
         /// <summary>
         /// Initializes the UI elements and behavior for the Restart dialog type.
         /// </summary>
