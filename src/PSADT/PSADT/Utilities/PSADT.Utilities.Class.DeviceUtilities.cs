@@ -19,7 +19,6 @@ namespace PSADT.Utilities
         {
             // Initialize COM.
             Ole32.CoInitializeEx(Thread.CurrentThread.GetApartmentState().Equals(ApartmentState.STA) ? COINIT.COINIT_APARTMENTTHREADED : COINIT.COINIT_MULTITHREADED);
-            bool micInUse = false;
             try
             {
                 // Create an enumerator for audio devices.
@@ -33,7 +32,7 @@ namespace PSADT.Utilities
                 }
                 catch
                 {
-                    return micInUse;
+                    return false;
                 }
 
                 // Activate the session manager for the capture device.
@@ -49,18 +48,16 @@ namespace PSADT.Utilities
                     ((IAudioSessionControl2)sessionControl).GetState(out var state);
                     if (state == AudioSessionState.AudioSessionStateActive)
                     {
-                        micInUse = true;
-                        break;
+                        return true;
                     }
                 }
+                return false;
             }
             finally
             {
                 // Cleanup COM.
                 PInvoke.CoUninitialize();
             }
-
-            return micInUse;
         }
 
         /// <summary>
