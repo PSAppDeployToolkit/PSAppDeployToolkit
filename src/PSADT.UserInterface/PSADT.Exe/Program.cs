@@ -94,34 +94,6 @@ namespace PSADT.UserInterface
 
             try
             {
-                //Guid moduleGuid = new Guid("8c3c366b-8606-4576-9f2d-4051144f7ca2");
-                //String moduleName = "PSAppDeployToolkit";
-                //Version moduleVersion = new Version(4, 0, 6);
-                //DialogActionResult helpConsoleResult = UnifiedAdtApplication.ShowHelpConsoleDialog(moduleName, moduleGuid, moduleVersion);
-
-
-                //// #################################################################################
-
-                //// Show Input Dialog for completion
-                //string inputResult = UnifiedAdtApplication.ShowInputDialog(
-                //    dialogExpiryDuration,
-                //    dialogAccentColor,
-                //    dialogPosition,
-                //    dialogTopMost,
-                //    dialogAllowMove,
-                //    appTitle,
-                //    subtitle,
-                //    appIconImage,
-                //    inputBoxMessageText,
-                //    inputBoxText,
-                //    inputBoxButtonLeftText,
-                //    inputBoxButtonMiddleText,
-                //    inputBoxButtonRightText);
-
-                //Console.WriteLine($"Input Dialog DialogResult: {inputResult}");
-
-                // #################################################################################
-
                 // Show CloseApps Dialog
                 var closeAppsResult = DialogManager.ShowCloseAppsDialog(
                     dialogExpiryDuration,
