@@ -1,11 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Media;
-using Microsoft.Win32;
 using PSADT.UserInterface.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
-using Windows.Win32.UI.Accessibility;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.Utilities
@@ -84,37 +82,6 @@ namespace PSADT.UserInterface.Utilities
             }
             return new WPFScreen((IntPtr)PRIMARY_MONITOR);
         }
-
-        /// <summary>
-        /// Gets an array of all displays on the system.
-        /// </summary>
-        internal static IEnumerable<WPFScreen> AllScreens
-        {
-            get
-            {
-                if (multiMonitorSupport)
-                {
-                    var screens = new List<WPFScreen>();
-                    MONITORENUMPROC callback;
-                    unsafe
-                    {
-                        callback = (HMONITOR monitor, HDC hdc, RECT* lprcMonitor, LPARAM lParam) =>
-                        {
-                            screens.Add(new WPFScreen(monitor));
-                            return true;
-                        };
-                    }
-                    User32.EnumDisplayMonitors(HDC.Null, null, callback, IntPtr.Zero);
-                    return screens;
-                }
-                return [new WPFScreen((IntPtr)PRIMARY_MONITOR)];
-            }
-        }
-
-        /// <summary>
-        /// Gets the primary display.
-        /// </summary>
-        internal static WPFScreen PrimaryScreen => AllScreens.FirstOrDefault(screen => screen.Primary) ?? new WPFScreen((IntPtr)PRIMARY_MONITOR);
 
         /// <summary>
         /// Gets the bounds of the display in device pixels.
@@ -205,78 +172,6 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
-        /// Detects if the system is using a dark theme, using both registry and DwmGetColorizationColor, with High Contrast mode support.
-        /// </summary>
-        internal static bool IsDarkTheme()
-        {
-            try
-            {
-                // Check High Contrast mode
-                if (SystemParameters.HighContrast)
-                {
-                    // High Contrast mode is enabled. Determine if High Contrast theme is dark or light
-                    User32.SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION.SPI_GETHIGHCONTRAST, out HIGHCONTRASTW highContrast);
-                    if ((highContrast.dwFlags & HIGHCONTRASTW_FLAGS.HCF_HIGHCONTRASTON) != 0)
-                    {
-                        // Analyze lpszDefaultScheme to determine if the High Contrast theme is dark
-                        var schemeName = highContrast.lpszDefaultScheme.ToString();
-                        if (!string.IsNullOrWhiteSpace(schemeName))
-                        {
-                            // List of known dark and light High Contrast themes
-                            if (DarkHighContrastSchemes.Contains(schemeName))
-                            {
-                                return true;
-                            }
-                            else if (LightHighContrastSchemes.Contains(schemeName))
-                            {
-                                return false;
-                            }
-                        }
-
-                        // Default to false (light theme) if scheme is unrecognized
-                        return false;
-                    }
-                }
-
-                // First, check the AppsUseLightTheme registry key
-                const string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
-                const string valueName = "AppsUseLightTheme";
-                var registryValueObject = Registry.GetValue(registryKey, valueName, null);
-                if (registryValueObject != null)
-                {
-                    int registryValue = (int)registryValueObject;
-                    bool isDarkTheme = registryValue == 0; // 0 means dark theme
-                    return isDarkTheme;
-                }
-
-                // If registry key is not available, fall back to DwmGetColorizationColor
-                DwmApi.DwmGetColorizationColor(out uint colorizationColor, out BOOL opaqueBlend);
-                byte a = (byte)((colorizationColor >> 24) & 0xFF);
-                byte r = (byte)((colorizationColor >> 16) & 0xFF);
-                byte g = (byte)((colorizationColor >> 8) & 0xFF);
-                byte b = (byte)(colorizationColor & 0xFF);
-
-                // Determine if the color is dark
-                return IsColorDark(Color.FromArgb(a, r, g, b));
-            }
-            catch
-            {
-                // In case of any exception, default to light theme
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Helper method to determine if a color is considered dark.
-        /// </summary>
-        private static bool IsColorDark(Color color)
-        {
-            // Calculate luminance
-            double luminance = ((0.299 * color.R) + (0.587 * color.G) + (0.114 * color.B)) / 255;
-            return luminance < 0.5;
-        }
-
-        /// <summary>
         /// Determines whether the specified object is equal to this Screen.
         /// </summary>
         public override bool Equals(object? obj)
@@ -295,24 +190,6 @@ namespace PSADT.UserInterface.Utilities
         {
             return hMonitor.GetHashCode();
         }
-
-        /// <summary>
-        /// List of known dark High Contrast themes.
-        /// </summary>
-        private static readonly HashSet<string> DarkHighContrastSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "High Contrast Black",
-            "High Contrast #1",
-        };
-
-        /// <summary>
-        /// List of known light High Contrast themes.
-        /// </summary>
-        private static readonly HashSet<string> LightHighContrastSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "High Contrast White",
-            "High Contrast #2",
-        };
 
         /// <summary>
         /// The handle to the monitor.
