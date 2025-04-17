@@ -22,15 +22,11 @@ namespace PSADT.UserInterface.Utilities
         public const int SPI_GETHIGHCONTRAST = 0x0042;
         public const int HCF_HIGHCONTRASTON = 0x00000001;
 
-        public const int MONITORINFOF_PRIMARY = 0x00000001;
         public const int MONITOR_DEFAULTTONEAREST = 0x00000002;
 
         public delegate bool MonitorEnumProc(IntPtr monitor, IntPtr hdc, IntPtr lprcMonitor, IntPtr lParam);
 
         public static HandleRef NullHandleRef = new(null, IntPtr.Zero);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-        public static extern bool GetMonitorInfo(HandleRef hMonitor, [In, Out] MONITORINFOEX lpmi);
 
         [DllImport("user32.dll", ExactSpelling = true, SetLastError = false)]
         public static extern bool EnumDisplayMonitors(
@@ -134,17 +130,6 @@ namespace PSADT.UserInterface.Utilities
                 return $"{{x={x}, y={y}}}";
             }
 #endif
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
-        public class MONITORINFOEX
-        {
-            public int cbSize = Marshal.SizeOf(typeof(MONITORINFOEX));
-            public RECT rcMonitor = new();
-            public RECT rcWork = new();
-            public int dwFlags = 0;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public char[] szDevice = new char[32];
         }
 
         [StructLayout(LayoutKind.Sequential)]

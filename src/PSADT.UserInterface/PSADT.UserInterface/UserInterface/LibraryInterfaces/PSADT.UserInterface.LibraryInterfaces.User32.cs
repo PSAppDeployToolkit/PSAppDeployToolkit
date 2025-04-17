@@ -1,6 +1,8 @@
-﻿using PSADT.Utilities;
+﻿using System.Runtime.InteropServices;
+using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.LibraryInterfaces
@@ -33,6 +35,53 @@ namespace PSADT.UserInterface.LibraryInterfaces
         internal static BOOL DestroyIcon(IntPtr hIcon)
         {
             return DestroyIcon((HICON)hIcon);
+        }
+
+        /// <summary>
+        /// Retrieves information about a display monitor.
+        /// </summary>
+        /// <param name="hMonitor"></param>
+        /// <param name="lpmi"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static unsafe BOOL GetMonitorInfo(HMONITOR hMonitor, out MONITORINFO lpmi)
+        {
+            var lpmiLocal = new MONITORINFO
+            {
+                cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFO))
+            };
+            var res = PInvoke.GetMonitorInfo(hMonitor, &lpmiLocal);
+            if (!res)
+            {
+                throw new InvalidOperationException("Failed to retrieve monitor information.");
+            }
+            lpmi = lpmiLocal;
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves information about a display monitor.
+        /// </summary>
+        /// <param name="hMonitor"></param>
+        /// <param name="lpmi"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static unsafe BOOL GetMonitorInfo(HMONITOR hMonitor, out MONITORINFOEXW lpmi)
+        {
+            var lpmiLocal = new MONITORINFOEXW
+            {
+                monitorInfo = new MONITORINFO
+                {
+                    cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFOEXW))
+                }
+            };
+            var res = PInvoke.GetMonitorInfo(hMonitor, (MONITORINFO*)&lpmiLocal);
+            if (!res)
+            {
+                throw new InvalidOperationException("Failed to retrieve monitor information.");
+            }
+            lpmi = lpmiLocal;
+            return res;
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
-using System.Media;
 using Microsoft.Win32;
+using PSADT.UserInterface.LibraryInterfaces;
+using Windows.Win32;
+using Windows.Win32.Graphics.Gdi;
 
 namespace PSADT.UserInterface.Utilities
 {
@@ -37,20 +39,15 @@ namespace PSADT.UserInterface.Utilities
             }
             else
             {
-                var info = new NativeMethods.MONITORINFOEX
-                {
-                    cbSize = Marshal.SizeOf(typeof(NativeMethods.MONITORINFOEX))
-                };
-                NativeMethods.GetMonitorInfo(new HandleRef(null, monitor), info);
+                User32.GetMonitorInfo((HMONITOR)monitor, out MONITORINFOEXW info);
 
                 Bounds = new Rect(
-                    info.rcMonitor.left,
-                    info.rcMonitor.top,
-                    info.rcMonitor.right - info.rcMonitor.left,
-                    info.rcMonitor.bottom - info.rcMonitor.top);
-
-                Primary = (info.dwFlags & NativeMethods.MONITORINFOF_PRIMARY) != 0;
-                DeviceName = new string(info.szDevice).TrimEnd('\0');
+                    info.monitorInfo.rcMonitor.left,
+                    info.monitorInfo.rcMonitor.top,
+                    info.monitorInfo.rcMonitor.right - info.monitorInfo.rcMonitor.left,
+                    info.monitorInfo.rcMonitor.bottom - info.monitorInfo.rcMonitor.top);
+                Primary = (info.monitorInfo.dwFlags & PInvoke.MONITORINFOF_PRIMARY) != 0;
+                DeviceName = info.szDevice.ToString().Replace("\0", string.Empty).Trim();
             }
             hMonitor = monitor;
         }
@@ -108,11 +105,7 @@ namespace PSADT.UserInterface.Utilities
                 {
                     return SystemInformation.WorkingArea;
                 }
-                var info = new NativeMethods.MONITORINFOEX
-                {
-                    cbSize = Marshal.SizeOf(typeof(NativeMethods.MONITORINFOEX))
-                };
-                NativeMethods.GetMonitorInfo(new HandleRef(null, hMonitor), info);
+                User32.GetMonitorInfo((HMONITOR)hMonitor, out MONITORINFO info);
                 return new Rect(
                     info.rcWork.left,
                     info.rcWork.top,
