@@ -3,6 +3,7 @@ using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.Accessibility;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.LibraryInterfaces
@@ -143,6 +144,59 @@ namespace PSADT.UserInterface.LibraryInterfaces
             {
                 throw new InvalidOperationException("Failed to retrieve system metrics.");
             }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified rectangle.
+        /// </summary>
+        /// <param name="uiAction"></param>
+        /// <param name="uiParam"></param>
+        /// <param name="pvParam"></param>
+        /// <param name="fWinIni"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION uiAction, uint uiParam, void* pvParam, SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS fWinIni)
+        {
+            var res = PInvoke.SystemParametersInfo(uiAction, uiParam, pvParam, fWinIni);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified rectangle.
+        /// </summary>
+        /// <param name="uiAction"></param>
+        /// <param name="uiParam"></param>
+        /// <param name="pvParam"></param>
+        /// <param name="fWinIni"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION uiAction, out HIGHCONTRASTW pvParam, SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS fWinIni = 0)
+        {
+            var pvParamLocal = new HIGHCONTRASTW
+            {
+                cbSize = (uint)Marshal.SizeOf(typeof(HIGHCONTRASTW))
+            };
+            var res = SystemParametersInfo(uiAction, pvParamLocal.cbSize, &pvParamLocal, fWinIni);
+            pvParam = pvParamLocal;
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified rectangle.
+        /// </summary>
+        /// <param name="uiAction"></param>
+        /// <param name="uiParam"></param>
+        /// <param name="pvParam"></param>
+        /// <param name="fWinIni"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION uiAction, out RECT pvParam, SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS fWinIni = 0)
+        {
+            RECT pvParamLocal = new();
+            var res = SystemParametersInfo(uiAction, 0, &pvParamLocal, fWinIni);
+            pvParam = pvParamLocal;
             return res;
         }
     }

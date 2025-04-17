@@ -6,6 +6,7 @@ using PSADT.UserInterface.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.Accessibility;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.Utilities
@@ -217,21 +218,14 @@ namespace PSADT.UserInterface.Utilities
                 {
                     // High Contrast mode is enabled
                     // Determine if High Contrast theme is dark or light
-                    var highContrast = new NativeMethods.HIGHCONTRAST
-                    {
-                        cbSize = Marshal.SizeOf(typeof(NativeMethods.HIGHCONTRAST))
-                    };
+                    User32.SystemParametersInfo(
+                        SYSTEM_PARAMETERS_INFO_ACTION.SPI_GETHIGHCONTRAST,
+                        out HIGHCONTRASTW highContrast);
 
-                    bool success = NativeMethods.SystemParametersInfo(
-                        NativeMethods.SPI_GETHIGHCONTRAST,
-                        highContrast.cbSize,
-                        ref highContrast,
-                        0);
-
-                    if (success && (highContrast.dwFlags & NativeMethods.HCF_HIGHCONTRASTON) != 0)
+                    if ((highContrast.dwFlags & HIGHCONTRASTW_FLAGS.HCF_HIGHCONTRASTON) != 0)
                     {
                         // Analyze lpszDefaultScheme to determine if the High Contrast theme is dark
-                        var schemeName = Marshal.PtrToStringAuto(highContrast.lpszDefaultScheme);
+                        var schemeName = highContrast.lpszDefaultScheme.ToString();
                         if (!string.IsNullOrWhiteSpace(schemeName))
                         {
                             // List of known dark and light High Contrast themes

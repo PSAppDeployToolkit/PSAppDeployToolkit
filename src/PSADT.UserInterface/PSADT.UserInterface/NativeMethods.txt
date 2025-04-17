@@ -3,8 +3,11 @@ DestroyIcon
 GetMonitorInfo
 GetSystemMetrics
 FILE_FLAGS_AND_ATTRIBUTES
+HIGHCONTRASTW
 MONITORINFOEXW
 MONITORINFOF_PRIMARY
 MonitorFromPoint
 MonitorFromWindow
+RECT
+SystemParametersInfo
 WIN32_ERROR

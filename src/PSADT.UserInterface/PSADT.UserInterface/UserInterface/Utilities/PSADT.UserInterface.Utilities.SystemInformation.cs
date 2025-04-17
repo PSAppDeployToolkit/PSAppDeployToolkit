@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using PSADT.UserInterface.LibraryInterfaces;
+using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.Utilities
@@ -31,8 +32,7 @@ namespace PSADT.UserInterface.Utilities
         {
             get
             {
-                var rc = new NativeMethods.RECT();
-                NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETWORKAREA, 0, ref rc, 0);
+                User32.SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION.SPI_GETWORKAREA, out RECT rc);
                 return new Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
             }
         }

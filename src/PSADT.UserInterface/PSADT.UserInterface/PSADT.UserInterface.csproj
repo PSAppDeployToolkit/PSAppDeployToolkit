@@ -85,13 +85,13 @@
 	<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
   </ItemGroup>
 
+	<PropertyGroup>
+	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	</PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\lib\wpfui\src\Wpf.Ui.Tray\Wpf.Ui.Tray.csproj" />
     <ProjectReference Include="..\..\..\lib\wpfui\src\Wpf.Ui\Wpf.Ui.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<Reference Include="System.Management" Condition="'$(TargetFramework)' == 'net462'" />
   </ItemGroup>
 
   <ItemGroup>
