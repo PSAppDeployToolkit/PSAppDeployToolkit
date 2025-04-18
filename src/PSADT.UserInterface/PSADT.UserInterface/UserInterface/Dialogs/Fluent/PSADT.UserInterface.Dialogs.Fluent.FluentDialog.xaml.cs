@@ -67,13 +67,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private bool _isDisposed = false;
         private bool _canClose = false;
 
-        // Constants for UI layout
-        private const double ListViewItemHeight = 40; // Height of each ProcessGrid item
-
-        private const double ListViewMaxItems = 3; // Maximum number of visible items before scrolling
-        private const double ListViewPadding = 16; // Additional padding for the ListView (8px top + 8px bottom)
-        private const double MaxListViewHeight = 198; // Maximum height for the ListView before scrolling (matches MaxHeight in XAML)
-
         // Icon cache for improved performance
         private static readonly Dictionary<string, BitmapImage> _iconCache = new();
 
