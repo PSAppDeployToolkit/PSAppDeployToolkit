@@ -1,4 +1,5 @@
-﻿using PSADT.UserInterface.Services;
+﻿using PSADT.UserInterface.Dialogs.Fluent;
+using PSADT.UserInterface.Services;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -12,7 +13,7 @@ namespace PSADT.UserInterface
     {
         private static readonly object _lock = new();
         private static Application? _app;
-        private static UnifiedDialog? _currentDialog;
+        private static FluentDialog? _currentDialog;
         private static Thread? _appThread;
         private static readonly ManualResetEvent _initEvent = new(false);
         private static Exception? _startupException;
@@ -130,7 +131,7 @@ namespace PSADT.UserInterface
         {
             return ShowModalDialogInternal(() =>
             {
-                var dialog = new UnifiedDialog(DialogType.CloseApps, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
+                var dialog = new FluentDialog(DialogType.CloseApps, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
                 dialog.InitializeCloseAppsDialog(
                     appTitle: appTitle,
                     subtitle: subtitle,
@@ -157,13 +158,13 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Internal helper to show modal dialogs, handling common logic like initialization, dispatching, and result retrieval.
         /// </summary>
-        /// <param name="createDialog">A function that creates and initializes the specific <see cref="UnifiedDialog"/> instance.</param>
+        /// <param name="createDialog">A function that creates and initializes the specific <see cref="FluentDialog"/> instance.</param>
         /// <param name="defaultResult">The default result string if the dialog closes unexpectedly.</param>
         /// <param name="errorResult">The result string to return if an error occurs during dialog display.</param>
         /// <param name="disposedResult">The result string to return if the application is disposed.</param>
         /// <returns>The result string from the dialog interaction.</returns>
         private static string ShowModalDialogInternal(
-            Func<UnifiedDialog> createDialog,
+            Func<FluentDialog> createDialog,
             string defaultResult = "Cancel",
             string errorResult = "Error",
             string disposedResult = "Disposed")
@@ -249,7 +250,7 @@ namespace PSADT.UserInterface
                         CloseCurrentDialog();
 
                         // Create new progress dialog
-                        _currentDialog = new UnifiedDialog(DialogType.Progress, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
+                        _currentDialog = new FluentDialog(DialogType.Progress, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
                         _currentDialog.InitializeProgressDialog(
                             appTitle: appTitle,
                             subtitle: subtitle,
@@ -306,7 +307,7 @@ namespace PSADT.UserInterface
         {
             return ShowModalDialogInternal(() =>
             {
-                var dialog = new UnifiedDialog(DialogType.Custom, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
+                var dialog = new FluentDialog(DialogType.Custom, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
                 dialog.InitializeCustomDialog(
                     appTitle: appTitle,
                     subtitle: subtitle,
@@ -371,7 +372,7 @@ namespace PSADT.UserInterface
                         CloseCurrentDialog();
 
                         // Create new input dialog
-                        _currentDialog = new UnifiedDialog(DialogType.Input, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
+                        _currentDialog = new FluentDialog(DialogType.Input, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
                         _currentDialog.InitializeInputDialog(
                             appTitle: appTitle,
                             subtitle: subtitle,
@@ -445,7 +446,7 @@ namespace PSADT.UserInterface
         {
             return ShowModalDialogInternal(() =>
             {
-                var dialog = new UnifiedDialog(DialogType.Restart, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
+                var dialog = new FluentDialog(DialogType.Restart, dialogExpiryDuration, dialogAccentColor, dialogPosition, dialogTopMost, dialogAllowMove);
                 dialog.InitializeRestartDialog(
                     appTitle: appTitle,
                     subtitle: subtitle,
@@ -477,7 +478,7 @@ namespace PSADT.UserInterface
             System.Diagnostics.Debug.WriteLine($"Updating Progress Information - Message: {progressMessage}. Detail: {progressMessageDetail}. Percent Complete: {progressPercent}.");
 
             Application? app = null;
-            UnifiedDialog? dialog = null;
+            FluentDialog? dialog = null;
 
             // Safely capture references under lock
             lock (_lock)
@@ -526,7 +527,7 @@ namespace PSADT.UserInterface
                 return;
 
             Application? app = null;
-            UnifiedDialog? dialog = null;
+            FluentDialog? dialog = null;
 
             // Safely capture references under lock
             lock (_lock)
@@ -574,7 +575,7 @@ namespace PSADT.UserInterface
                 return;
 
             Application? app = null;
-            UnifiedDialog? dialog = null;
+            FluentDialog? dialog = null;
 
             // Safely capture references under lock
             lock (_lock)
@@ -684,7 +685,7 @@ namespace PSADT.UserInterface
                 return;
 
             Application? app = null;
-            UnifiedDialog? dialog = null;
+            FluentDialog? dialog = null;
 
             // Safely capture references under lock
             lock (_lock)
@@ -739,7 +740,7 @@ namespace PSADT.UserInterface
                 return false;
 
             Application? app = null;
-            UnifiedDialog? dialog = null;
+            FluentDialog? dialog = null;
 
             // Safely capture references under lock
             lock (_lock)

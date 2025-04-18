@@ -22,7 +22,7 @@ using System.Windows.Threading;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
-namespace PSADT.UserInterface
+namespace PSADT.UserInterface.Dialogs.Fluent
 {
     /// <summary>
     /// Dialog types supported by the UnifiedDialog
@@ -60,7 +60,7 @@ namespace PSADT.UserInterface
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
-    public partial class UnifiedDialog : FluentWindow, IDisposable, INotifyPropertyChanged
+    public partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
         #region Private Fields
 
@@ -210,7 +210,7 @@ namespace PSADT.UserInterface
         #region Constructor and Initialization
 
         /// <summary>
-        /// Initializes a new instance of UnifiedDialog
+        /// Initializes a new instance of FluentDialog
         /// </summary>
         /// <param name="dialogType">Type of dialog to display</param>
         /// <param name="dialogExpiryDuration">Optional duration after which the dialog will automatically close</param>
@@ -218,7 +218,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogPosition">Position of the window on screen (default: BottomRight)</param>
         /// <param name="dialogTopMost">Whether the dialog should stay on top of other windows</param>
         /// <param name="dialogAllowMove">Whether to allow the user to move the window (default: false)</param>
-        public UnifiedDialog(DialogType dialogType, TimeSpan? dialogExpiryDuration = null, String? dialogAccentColor = null, DialogPosition? dialogPosition = DialogPosition.BottomRight, bool? dialogTopMost = false, bool? dialogAllowMove = false)
+        public FluentDialog(DialogType dialogType, TimeSpan? dialogExpiryDuration = null, String? dialogAccentColor = null, DialogPosition? dialogPosition = DialogPosition.BottomRight, bool? dialogTopMost = false, bool? dialogAllowMove = false)
         {
             DataContext = this;
 
@@ -282,8 +282,8 @@ namespace PSADT.UserInterface
 
 
             // Configure window events
-            Loaded += UnifiedDialog_Loaded;
-            SizeChanged += UnifiedDialog_SizeChanged;
+            Loaded += FluentDialog_Loaded;
+            SizeChanged += FluentDialog_SizeChanged;
             AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
 
             // Set up window and cancellation timer
@@ -809,7 +809,7 @@ namespace PSADT.UserInterface
 
         #region Window Events and Layout Management
 
-        private void UnifiedDialog_Loaded(object sender, RoutedEventArgs e)
+        private void FluentDialog_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateLayout();
 
@@ -829,7 +829,7 @@ namespace PSADT.UserInterface
             PositionWindow();
         }
 
-        private void UnifiedDialog_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void FluentDialog_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // Only reposition window - no animations
             PositionWindow();
@@ -1784,8 +1784,8 @@ namespace PSADT.UserInterface
                     _processCancellationTokenSource?.Dispose();
 
                     // Detach event handlers
-                    Loaded -= UnifiedDialog_Loaded;
-                    SizeChanged -= UnifiedDialog_SizeChanged;
+                    Loaded -= FluentDialog_Loaded;
+                    SizeChanged -= FluentDialog_SizeChanged;
                     AppsToCloseCollection.CollectionChanged -= AppsToCloseCollection_CollectionChanged;
 
                     // Animation timer event handler removed
@@ -1806,7 +1806,7 @@ namespace PSADT.UserInterface
             }
         }
 
-        ~UnifiedDialog()
+        ~FluentDialog()
         {
             Dispose(false);
         }
