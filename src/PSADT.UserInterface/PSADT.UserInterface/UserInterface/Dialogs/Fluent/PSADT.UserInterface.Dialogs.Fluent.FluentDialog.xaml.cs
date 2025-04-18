@@ -726,9 +726,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Update row definitions based on current content
             UpdateRowDefinition();
 
-            // Apply fixed sizing directly
-            UpdateWindowHeight();
-
             // Position the window
             PositionWindow();
         }
@@ -872,34 +869,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
         }
 
-        /// <summary>
-        /// Sets the window height directly based on content
-        /// </summary>
-        private void UpdateWindowHeight()
-        {
-            try
-            {
-                double contentHeight = 0;
-                if (DialogType == DialogType.CloseApps && AppsToCloseCollection.Count > 0)
-                {
-                    // Calculate the height needed for the visible items (max 3)
-                    int visibleItemCount = Math.Min(AppsToCloseCollection.Count, (int)ListViewMaxItems);
-                    contentHeight = (ListViewItemHeight * visibleItemCount) + ListViewPadding;
-
-                    // Ensure we don't exceed the maximum height for the ListView
-                    contentHeight = Math.Min(contentHeight, MaxListViewHeight);
-                }
-                else
-                {
-                    contentHeight = ContentBorder.ActualHeight;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error setting window height: {ex.Message}");
-            }
-        }
-
         #endregion Window Events and Layout Management
 
         #region CloseApps Dialog Features
@@ -913,9 +882,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 // Update row definitions
                 UpdateRowDefinition();
-
-                // Apply fixed sizing directly
-                UpdateWindowHeight();
 
                 // Update accessibility count
                 AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
