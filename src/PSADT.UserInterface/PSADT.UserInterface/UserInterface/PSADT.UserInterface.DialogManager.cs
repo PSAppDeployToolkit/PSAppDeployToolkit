@@ -70,7 +70,7 @@ namespace PSADT.UserInterface
         /// <param name="options">Mandatory options needed to construct the window.</param>
         public static void ShowProgressDialog(ProgressDialogOptions options)
         {
-            if (null != progressDialog)
+            if (ProgressDialogOpen())
             {
                 throw new InvalidOperationException("A progress dialog is already open. Close it before opening a new one.");
             }
@@ -86,11 +86,11 @@ namespace PSADT.UserInterface
         /// <param name="progressPercent">Optional progress percentage (0-100). If provided, the progress bar becomes determinate.</param>
         public static void UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercent = null)
         {
-            if (null == progressDialog)
+            if (!ProgressDialogOpen())
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
-            progressDialog.UpdateProgress(progressMessage, progressDetailMessage, progressPercent);
+            progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercent);
         }
 
         /// <summary>
@@ -98,16 +98,22 @@ namespace PSADT.UserInterface
         /// </summary>
         public static void CloseProgressDialog()
         {
-            if (null == progressDialog)
+            if (!ProgressDialogOpen())
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
             using (progressDialog)
             {
-                progressDialog.Close();
+                progressDialog!.CloseDialog(null);
                 progressDialog = null;
             }
         }
+
+        /// <summary>
+        /// Checks if a Progress dialog is currently open.
+        /// </summary>
+        /// <returns></returns>
+        public static bool ProgressDialogOpen() => null != progressDialog;
 
         /// <summary>
         /// The currently open Progress dialog, if any. Null if no dialog is open.
