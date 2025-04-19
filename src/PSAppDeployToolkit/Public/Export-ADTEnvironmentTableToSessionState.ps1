@@ -48,6 +48,7 @@ function Export-ADTEnvironmentTableToSessionState
         https://psappdeploytoolkit.com/docs/reference/functions/Export-ADTEnvironmentTableToSessionState
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'SessionState', Justification = 'SessionState is used.')]
     [CmdletBinding()]
     param
     (
@@ -77,14 +78,12 @@ function Export-ADTEnvironmentTableToSessionState
             try
             {
                 $adtEnv.GetEnumerator() | & {
-                    process
-                    {
+                    process {
                         # Prior removal is required for ReadOnly variables
-                        $SessionState.PSVariable.Get($_.Key) | & { 
-                            process
-                            { 
+                        $SessionState.PSVariable.Get($_.Key) | & {
+                            process {
                                 $SessionState.PSVaraible.Remove($_)
-                            } 
+                            }
                         }
 
                         $SessionState.PSVariable.Set(
