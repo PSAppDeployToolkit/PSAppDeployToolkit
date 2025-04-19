@@ -11,5 +11,7 @@ MONITORINFOF_PRIMARY
 MonitorFromPoint
 MonitorFromWindow
 RECT
+SC_MOVE
 SystemParametersInfo
 WIN32_ERROR
+WM_SYSCOMMAND

@@ -1,7 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Automation;
@@ -9,7 +7,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using PSADT.UserInterface.Services;
+using Windows.Win32;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -18,243 +16,112 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
-    public partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
+    public abstract partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
-        // Dialog Expiry and Cancellation
-        private readonly CancellationTokenSource _dialogCancellationTokenSource;
-
-        private TimeSpan? _dialogExpiryDuration;
-        private readonly Timer? _dialogExpiryTimer;
-        private DialogPosition? _dialogPosition;
-        private bool _dialogAllowMove;
-        private bool _dialogTopMost;
-
-        // Countdown Handling and Timers
-        private TimeSpan? _countdownDuration;
-        private TimeSpan? _countdownNoMinimizeDuration; // Minutes before the end when minimize is disabled
-        private Timer? _countdownTimer;
-        private TimeSpan _countdownRemainingTime;
-
-        // Deferrals Handling and Timers
-        private DateTime? _deferralDeadline;
-        private TimeSpan? _deferralDeadlineRemainingTime;
-        private int? _deferralsRemaining;
-
-        // Process Evaluation
-        private CancellationTokenSource? _processCancellationTokenSource;
-
-        private IProcessEvaluationService? _processEvaluationService;
-        private List<AppProcessInfo>? _appsToClose;
-        private List<AppProcessInfo> _previousProcessInfo = [];
-        private readonly SemaphoreSlim _processEvaluationLock = new(1, 1); // For thread safety in process evaluation
-
-        // Adaptive delay for process evaluation with optimized defaults
-        private TimeSpan _processEvaluationDelay = TimeSpan.FromSeconds(1.5);
-
-        private const int MAX_DELAY_SECONDS = 4;
-        private const double MIN_DELAY_SECONDS = 0.75;
-
-        // Cache for recently removed processes to prevent flickering
-        private readonly Dictionary<string, DateTime> _recentlyRemovedProcesses = new();
-        private const int PROCESS_CACHE_EXPIRY_MS = 500; // Time to keep removed processes in cache
-
-        // Dialog
-        private DialogType _dialogType;
-
-        private string? _dialogResult;
-        private double _progressBarValue = 0;
-        private bool _isProcessing = false;
-        private bool _isDisposed = false;
-        private bool _canClose = false;
-
-        // Icon cache for improved performance
-        private static readonly Dictionary<string, BitmapImage> _iconCache = new();
-
-        // Store original and alternative texts
-        private string? _originalMessage;
-
-        private string? _alternativeMessage;
-        private string? _buttonLeftOriginalText;
-        private string? _buttonRightOriginalText;
-        private string? _buttonRightAlternativeText;
-        private string? _inputTextResult; // To store text from Input dialog
-
-        /// <summary>
-        /// The result of the dialog interaction
-        /// </summary>
-        public new string DialogResult
-        {
-            get => _dialogResult ?? "Cancel";
-            private set
-            {
-                _dialogResult = value;
-                OnPropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// The type of dialog being displayed
-        /// </summary>
-        public DialogType DialogType
-        {
-            get => _dialogType;
-            private set
-            {
-                _dialogType = value;
-                OnPropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// Collection of apps that need to be closed
-        /// </summary>
-        public ObservableCollection<AppProcessInfo> AppsToCloseCollection { get; } = [];
-
-        /// <summary>
-        /// Current progress percentComplete
-        /// </summary>
-        public double ProgressBarValue
-        {
-            get => _progressBarValue;
-            set
-            {
-                if (Math.Abs(_progressBarValue - value) > 0.01) // Only update if percentComplete has changed significantly
-                {
-                    _progressBarValue = value;
-                    OnPropertyChanged();
-
-                    // Update accessibility properties
-                    Dispatcher.InvokeAsync(() =>
-                    {
-                        AutomationProperties.SetName(ProgressBar, $"Progress: {value:F0}%");
-                    }, DispatcherPriority.Background);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets whether this dialog has been disposed
-        /// </summary>
-        public bool IsDisposed => _isDisposed;
-
-        /// <summary>
-        /// CancellationToken for the dialog operations
-        /// </summary>
-        public CancellationToken DialogCancellationToken => _dialogCancellationTokenSource.Token;
-
-        /// <summary>
-        /// Gets the text entered by the user in the Input dialog, if applicable.
-        /// Returns null for other dialog types or if the dialog was cancelled before input could be captured.
-        /// </summary>
-        public string? InputTextResult => _inputTextResult;
-
         /// <summary>
         /// Initializes a new instance of FluentDialog
         /// </summary>
-        /// <param name="dialogType">Type of dialog to display</param>
-        /// <param name="dialogExpiryDuration">Optional duration after which the dialog will automatically close</param>
-        /// <param name="dialogAccentColor">Optional accent color for the dialog</param>
-        /// <param name="dialogPosition">Position of the window on screen (default: BottomRight)</param>
-        /// <param name="dialogTopMost">Whether the dialog should stay on top of other windows</param>
-        /// <param name="dialogAllowMove">Whether to allow the user to move the window (default: false)</param>
-        public FluentDialog(DialogType dialogType, TimeSpan? dialogExpiryDuration = null, String? dialogAccentColor = null, DialogPosition? dialogPosition = DialogPosition.BottomRight, bool? dialogTopMost = false, bool? dialogAllowMove = false)
+        /// <param name="options">Mandatory options needed to construct the window.</param>
+        internal FluentDialog(DialogOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownNoMinimizeDuration = null, string? countdownDialogResult = null)
         {
+            // Set up the context for data binding
             DataContext = this;
 
-            if (dialogAccentColor != null && dialogAccentColor != string.Empty)
+            // Add in required Wpf.Ui resource dictionaries.
+            Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary { Theme = Wpf.Ui.Appearance.ApplicationTheme.Dark });
+            Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
+
+            // Process the given accent color from the options
+            if (!string.IsNullOrWhiteSpace(options.DialogAccentColor))
+            {
+                // Don't update the window accent as we're setting it manually
+                SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
+
+                // Apply the accent color to the application theme
+                ApplicationAccentColorManager.Apply(StringToColor(options.DialogAccentColor!), ApplicationThemeManager.GetAppTheme(), true);
+
+                // Update the accent color in the theme dictionary
+                // See https://github.com/lepoco/wpfui/issues/1188 for more info.
+                var brushes = new Dictionary<string, SolidColorBrush>
                 {
-                    try
+                    ["SystemAccentColor"] = new SolidColorBrush((Color)Resources["SystemAccentColor"]),
+                    ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Resources["SystemAccentColorPrimary"]),
+                    ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Resources["SystemAccentColorSecondary"]),
+                    ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Resources["SystemAccentColorTertiary"])
+                };
+                ResourceDictionary themeDictionary = Resources.MergedDictionaries[0];
+                var converter = new ResourceReferenceExpressionConverter();
+                foreach (DictionaryEntry entry in themeDictionary)
+                {
+                    if (entry.Value is SolidColorBrush brush)
                     {
-                        SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
-
-                        // Apply the accent color to the application theme
-                        var colorDialogAccentColor = StringToColor(dialogAccentColor);
-                        ApplicationTheme appTheme = ApplicationThemeManager.GetAppTheme();
-                        ApplicationAccentColorManager.Apply(colorDialogAccentColor, appTheme, true);
-
-
-                        var converter = new ResourceReferenceExpressionConverter();
-                        var brushes = new Dictionary<string, SolidColorBrush>
+                        var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
+                        if (dynamicColor is not Color &&
+                            converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
+                            brushes.ContainsKey((string)dynamicResource.ResourceKey))
                         {
-                            ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
-                            ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
-                            ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
-                            ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"])
-                        };
-                        ResourceDictionary themeDictionary = Application.Current.Resources.MergedDictionaries[0];
-                        foreach (DictionaryEntry entry in themeDictionary)
-                        {
-                            if (entry.Value is SolidColorBrush brush)
-                            {
-                                var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
-                                if (dynamicColor is not Color &&
-                                    converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
-                                    brushes.ContainsKey((string)dynamicResource.ResourceKey))
-                                {
-                                    themeDictionary[entry.Key] = brushes[(string)dynamicResource.ResourceKey];
-                                }
-                            }
+                            themeDictionary[entry.Key] = brushes[(string)dynamicResource.ResourceKey];
                         }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Failed to apply accent color: {ex.Message}");
                     }
                 }
+            }
             else
             {
+                // Update the window accent based on the current theme
                 SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, true);
             }
 
+            // Initialize the window
             InitializeComponent();
 
-            _dialogCancellationTokenSource = new CancellationTokenSource();
+            // Set basic properties
+            Title = options.AppTitle;
+            AppTitleTextBlock.Text = options.AppTitle;
+            SubtitleTextBlock.Text = options.Subtitle;
 
-            _dialogType = dialogType;
-            _dialogExpiryDuration = dialogExpiryDuration ?? TimeSpan.FromMinutes(55);
-            _dialogPosition = dialogPosition ?? DialogPosition.BottomRight;
-            _dialogAllowMove = dialogAllowMove ?? false;
-            _dialogTopMost = dialogTopMost ?? false;
+            // Set accessibility properties
+            AutomationProperties.SetName(this, options.AppTitle);
 
+            // Set remaining properties from the options
+            _dialogPosition = options.DialogPosition;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            _dialogAllowMove = options.DialogAllowMove;
+            Topmost = options.DialogTopMost;
+            _dialogExpiryTimer = new Timer(CloseDialog, null, options.DialogExpiryDuration, Timeout.InfiniteTimeSpan);
 
+            // Set supplemental options also
+            _customMessageText = customMessageText;
+            _countdownDuration = countdownDuration;
+            _countdownNoMinimizeDuration = countdownNoMinimizeDuration;
+            CountdownStackPanel.Visibility = _countdownDuration.HasValue ? Visibility.Visible : Visibility.Collapsed;
 
+            // Pre-format the custom message if we have one
+            FormatMessageWithHyperlinks(CustomMessageTextBlock, _customMessageText);
+            CustomMessageTextBlock.Visibility = string.IsNullOrWhiteSpace(_customMessageText) ? Visibility.Collapsed : Visibility.Visible;
+
+            // Set everything to not visible by default, it's up to the derived class to enable what they need.
+            CloseAppsStackPanel.Visibility = Visibility.Collapsed;
+            CloseAppsSeparator.Visibility = Visibility.Collapsed;
+            ProgressStackPanel.Visibility = Visibility.Collapsed;
+            InputBoxStackPanel.Visibility = Visibility.Collapsed;
+            DeferStackPanel.Visibility = Visibility.Collapsed;
+            ButtonPanel.Visibility = Visibility.Collapsed;
+            ButtonLeft.Visibility = Visibility.Collapsed;
+            ButtonMiddle.Visibility = Visibility.Collapsed;
+            ButtonRight.Visibility = Visibility.Collapsed;
+
+            // Set app icon
+            SetAppIcon(options.AppIconImage);
+
+            // Initialize countdown if specified
+            if (countdownDuration.HasValue)
+            {
+                InitializeCountdown(countdownDuration.Value);
+            }
 
             // Configure window events
             Loaded += FluentDialog_Loaded;
             SizeChanged += FluentDialog_SizeChanged;
-            AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
-
-            // Set up window and cancellation timer
-            WindowStartupLocation = WindowStartupLocation.Manual;
-            if (dialogExpiryDuration.HasValue)
-            {
-                _dialogExpiryTimer = new Timer(CloseDialog, null, dialogExpiryDuration.Value, Timeout.InfiniteTimeSpan);
-            }
-
-            this.Topmost = _dialogTopMost;
-
-            // Animation debounce timer removed
-        }
-
-        /// <summary>
-        /// Prevent window movement by handling WM_SYSCOMMAND
-        /// </summary>
-        private const int WM_SYSCOMMAND = 0x0112;
-
-        private const int SC_MOVE = 0xF010;
-
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            if (msg == WM_SYSCOMMAND)
-            {
-                int command = wParam.ToInt32() & 0xfff0;
-                if (command == SC_MOVE && !_dialogAllowMove)
-                {
-                    handled = true;
-                }
-            }
-            return IntPtr.Zero;
         }
 
         /// <summary>
@@ -263,36 +130,107 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="state">State object, typically from a timer callback (not used).</param>
         public void CloseDialog(object? state)
         {
-            // If we're already processing, just return
-            if (_isProcessing || _isDisposed)
+            // If we're already processing, just return.
+            if (_disposed)
+            {
                 return;
-
-            _canClose = true;
-            _isProcessing = true;
-
-            try
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    try
-                    {
-                        // Cancel all operations
-                        _dialogCancellationTokenSource.Cancel();
-
-                        // Close the dialog
-                        Close();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error in CloseDialog inner: {ex.Message}");
-                    }
-                });
             }
-            catch (Exception ex)
+            _canClose = true;
+            Dispatcher.Invoke(Close);
+        }
+
+        /// <summary>
+        /// Raises the PropertyChanged event for the specified property.
+        /// </summary>
+        /// <param name="propertyName"></param>
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        /// <summary>
+        /// Prevent window movement by handling WM_SYSCOMMAND
+        /// </summary>
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == PInvoke.WM_SYSCOMMAND)
             {
-                Debug.WriteLine($"Error in CloseDialog: {ex.Message}");
+                int command = wParam.ToInt32() & 0xfff0;
+                if (command == PInvoke.SC_MOVE && !_dialogAllowMove)
+                {
+                    handled = true;
+                }
+            }
+            return IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// The result of the dialog interaction.
+        /// </summary>
+        public new string DialogResult
+        {
+            get => _dialogResult;
+            protected set
+            {
+                _dialogResult = value;
+                OnPropertyChanged();
             }
         }
+
+        /// <summary>
+        /// An optional custom message to display.
+        /// </summary>
+        protected readonly string? _customMessageText;
+
+        /// <summary>
+        /// The cancellation token source for the dialog.
+        /// </summary>
+        private string _dialogResult = "Timeout";
+
+        /// <summary>
+        /// Whether this window has been disposed.
+        /// </summary>
+        private bool _disposed = false;
+
+        /// <summary>
+        /// Whether this window is able to be closed.
+        /// </summary>
+        private bool _canClose = false;
+
+        /// <summary>
+        /// The specified position of the dialog.
+        /// </summary>
+        private readonly DialogPosition _dialogPosition;
+
+        /// <summary>
+        /// Whether the dialog is allowed to be moved.
+        /// </summary>
+        private readonly bool _dialogAllowMove;
+
+        /// <summary>
+        /// The countdown timer for the dialog to automatically close.
+        /// </summary>
+        private readonly Timer _dialogExpiryTimer;
+
+        /// <summary>
+        /// An optional countdown to zero to commence a preferred action.
+        /// </summary>
+        private readonly TimeSpan? _countdownDuration;
+
+        /// <summary>
+        /// An optional countdown to zero for when the dialog can be no longer minimised.
+        /// </summary>
+        private readonly TimeSpan? _countdownNoMinimizeDuration;
+
+        /// <summary>
+        /// Event handler for when a window property has changed.
+        /// </summary>
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        /// <summary>
+        /// Icon cache for improved performance
+        /// </summary>
+        private static readonly Dictionary<string, BitmapImage> _iconCache = [];
 
         /// <summary>
         /// Dispose managed resources
@@ -308,60 +246,23 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {
-            if (_isDisposed)
-                return;
-
-            _isDisposed = true;
-
-            if (disposing)
+            if (_disposed)
             {
-                try
-                {
-                    // Animation-related cleanup removed
-
-                    // Dispose timers
-                    _dialogExpiryTimer?.Dispose();
-                    _countdownTimer?.Dispose();
-
-                    // Cancel token sources
-                    _dialogCancellationTokenSource.Cancel();
-                    _dialogCancellationTokenSource.Dispose();
-                    _processCancellationTokenSource?.Cancel();
-                    _processCancellationTokenSource?.Dispose();
-
-                    // Detach event handlers
-                    Loaded -= FluentDialog_Loaded;
-                    SizeChanged -= FluentDialog_SizeChanged;
-                    AppsToCloseCollection.CollectionChanged -= AppsToCloseCollection_CollectionChanged;
-
-                    // Animation timer event handler removed
-
-                    if (_processEvaluationService != null && DialogType == DialogType.CloseApps)
-                    {
-                        _processEvaluationService.ProcessStarted -= ProcessEvaluationService_ProcessStarted;
-                        _processEvaluationService.ProcessExited -= ProcessEvaluationService_ProcessExited;
-                    }
-
-                    // Dispose the semaphore
-                    _processEvaluationLock.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error in Dispose: {ex.Message}");
-                }
+                return;
             }
-        }
+            _disposed = true;
 
-        ~FluentDialog()
-        {
-            Dispose(false);
-        }
+            if (!disposing)
+            {
+                return;
+            }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+            // Dispose timers
+            _dialogExpiryTimer.Dispose();
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            // Detach event handlers
+            Loaded -= FluentDialog_Loaded;
+            SizeChanged -= FluentDialog_SizeChanged;
         }
     }
 }

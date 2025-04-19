@@ -4,6 +4,7 @@ using PSADT.UserInterface.Services;
 using System.Windows;
 using System.Windows.Threading;
 
+#if false
 namespace PSADT.UserInterface
 {
     /// <summary>
@@ -639,3 +640,332 @@ namespace PSADT.UserInterface
         }
     }
 }
+
+            _appsToClose = options.AppsToClose != null ? new(options.AppsToClose) : null; // Create a deep copy to avoid reference issues
+            AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
+
+
+        /// <summary>
+        /// Collection of apps that need to be closed
+        /// </summary>
+        public ObservableCollection<AppProcessInfo> AppsToCloseCollection { get; } = [];
+
+        // Process Evaluation
+        private CancellationTokenSource? _processCancellationTokenSource;
+
+        private IProcessEvaluationService? _processEvaluationService;
+        private List<AppProcessInfo>? _appsToClose;
+        private List<AppProcessInfo> _previousProcessInfo = [];
+        private readonly SemaphoreSlim _processEvaluationLock = new(1, 1); // For thread safety in process evaluation
+
+        // Adaptive delay for process evaluation with optimized defaults
+        private TimeSpan _processEvaluationDelay = TimeSpan.FromSeconds(1.5);
+
+        private const int MAX_DELAY_SECONDS = 4;
+        private const double MIN_DELAY_SECONDS = 0.75;
+
+        // Cache for recently removed processes to prevent flickering
+        private const int PROCESS_CACHE_EXPIRY_MS = 500; // Time to keep removed processes in cache
+
+        /// <summary>
+        /// Updates the list of applications to close based on the current state of the process evaluation service.
+        /// </summary>
+        private void UpdateAppsToCloseList()
+        {
+            if (_appsToClose == null || _appsToClose.Count == 0)
+            {
+                // Only set to collapsed if initially there are no apps to close
+                CloseAppsStackPanel.Visibility = Visibility.Collapsed;
+                return;
+            }
+            else
+            {
+                // Ensure the list is visible when we have apps to close
+                CloseAppsStackPanel.Visibility = Visibility.Visible;
+            }
+
+            // Rest of the method remains unchanged
+            if (_processEvaluationService == null)
+            {
+                // Populate the collection directly
+                foreach (AppProcessInfo app in _appsToClose)
+                {
+                    if (AppsToCloseCollection.FirstOrDefault(a => a.ProcessName.Equals(app.ProcessName, StringComparison.OrdinalIgnoreCase)) == null)
+                    {
+                        AppsToCloseCollection.Add(app);
+                    }
+                }
+                return;
+            }
+
+            // Evaluate running processes and populate the collection
+            var updatedAppsToClose = _processEvaluationService.EvaluateRunningProcessesAsync(_appsToClose, CancellationToken.None).GetAwaiter().GetResult();
+
+            // Clear existing items
+            AppsToCloseCollection.Clear();
+
+            // Add updated apps
+            foreach (var app in updatedAppsToClose)
+            {
+                if (AppsToCloseCollection.FirstOrDefault(a => a.ProcessName.Equals(app.ProcessName, StringComparison.OrdinalIgnoreCase)) == null)
+                {
+                    AppsToCloseCollection.Add(app);
+                }
+            }
+
+            _previousProcessInfo = new List<AppProcessInfo>(updatedAppsToClose);
+        }
+
+        /// <summary>
+        /// Starts the process evaluation loop asynchronously.
+        /// </summary>
+        /// <param name="initialApps"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private async Task StartProcessEvaluationLoopAsync(List<AppProcessInfo> initialApps, CancellationToken token)
+        {
+            var stopwatch = new Stopwatch();
+
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        // Wait based on adaptive delay
+                        await Task.Delay(_processEvaluationDelay, token);
+
+                        // Skip if we're in the process of closing the dialog
+                        if (_isProcessing || _isDisposed)
+                            break;
+
+                        stopwatch.Restart();
+
+                        // Acquire lock for thread safety
+                        await _processEvaluationLock.WaitAsync(token);
+
+                        try
+                        {
+                            // Asynchronously evaluate running processes
+                            List<AppProcessInfo> updatedApps = await _processEvaluationService!.EvaluateRunningProcessesAsync(initialApps, token).ConfigureAwait(false);
+
+                            // Check if there's any change compared to the previous list
+                            if (!AreProcessListsEqual(_previousProcessInfo, updatedApps))
+                            {
+                                // Update the collection on the UI thread
+                                await Dispatcher.InvokeAsync(() =>
+                                {
+                                    if (_isDisposed) return;
+
+                                    AppsToCloseCollection.Clear();
+                                    foreach (var app in updatedApps)
+                                    {
+                                        if (AppsToCloseCollection.FirstOrDefault(a => a.ProcessName.Equals(app.ProcessName, StringComparison.OrdinalIgnoreCase)) == null)
+                                        {
+                                            AppsToCloseCollection.Add(app);
+                                        }
+                                    }
+                                }, DispatcherPriority.Background);
+
+                                // Update the previous process info for the next comparison
+                                _previousProcessInfo = new List<AppProcessInfo>(updatedApps);
+                            }
+
+                            // If no more apps to close, exit the loop
+                            if (updatedApps.Count == 0)
+                            {
+                                break;
+                            }
+                        }
+                        finally
+                        {
+                            // Release the lock
+                            _processEvaluationLock.Release();
+                        }
+
+                        stopwatch.Stop();
+
+                        // Adjust delay based on evaluation time
+                        if (stopwatch.ElapsedMilliseconds > 500)
+                        {
+                            // Evaluation is slow, increase delay
+                            _processEvaluationDelay = TimeSpan.FromSeconds(
+                                Math.Min(_processEvaluationDelay.TotalSeconds * 1.5, MAX_DELAY_SECONDS));
+                        }
+                        else if (stopwatch.ElapsedMilliseconds < 100)
+                        {
+                            // Evaluation is fast, decrease delay slightly
+                            _processEvaluationDelay = TimeSpan.FromSeconds(
+                                Math.Max(_processEvaluationDelay.TotalSeconds * 0.9, MIN_DELAY_SECONDS));
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Rethrow to be caught by outer handler
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error during process evaluation iteration: {ex.Message}");
+
+                        // Continue the loop unless we're being canceled
+                        if (token.IsCancellationRequested)
+                            break;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Task was canceled, no action needed
+                Debug.WriteLine("Process evaluation loop was canceled");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Critical error in process evaluation loop: {ex.Message}");
+                // Consider logging to a more permanent store
+            }
+        }
+
+        /// <summary>
+        /// Compares two lists of AppProcessInfo objects to check if they are equal.
+        /// </summary>
+        /// <param name="list1"></param>
+        /// <param name="list2"></param>
+        /// <returns></returns>
+        private static bool AreProcessListsEqual(List<AppProcessInfo> list1, List<AppProcessInfo> list2)
+        {
+            if (list1.Count != list2.Count)
+                return false;
+
+            // Order the lists to ensure consistent comparison
+            var sortedList1 = list1.OrderBy(app => app.ProcessName).ToList();
+            var sortedList2 = list2.OrderBy(app => app.ProcessName).ToList();
+
+            for (int i = 0; i < sortedList1.Count; i++)
+            {
+                if (!string.Equals(sortedList1[i].ProcessName, sortedList2[i].ProcessName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Handles the collection changed event for the AppsToCloseCollection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (DialogType != DialogType.CloseApps)
+                return;
+
+            try
+            {
+                // Update row definitions
+                UpdateRowDefinition();
+
+                // Update accessibility count
+                AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
+
+                if (AppsToCloseCollection.Count == 0 && _alternativeCloseAppsMessageText != null)
+                {
+                    // Update the message and button content with alternative texts
+                    FormatMessageWithHyperlinks(MessageTextBlock, _alternativeCloseAppsMessageText); // Use helper method
+                    SetButtonContentWithAccelerator(ButtonRight, _buttonRightAlternativeText);
+                    AutomationProperties.SetName(ButtonRight, _buttonRightAlternativeText ?? "Install");
+
+                    // Hide the entire apps to close panel when there are no apps
+                    // CloseAppsStackPanel.Visibility = Visibility.Collapsed;
+                }
+                else if (_closeAppsMessageText != null)
+                {
+                    // Revert to original texts
+                    FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText); // Use helper method
+                    SetButtonContentWithAccelerator(ButtonRight, _buttonRightOriginalText);
+                    AutomationProperties.SetName(ButtonRight, _buttonRightOriginalText ?? "Close Apps & Install");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in AppsToCloseCollection_CollectionChanged: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles the process started event from the process evaluation service.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ProcessEvaluationService_ProcessStarted(object? sender, AppProcessInfo e)
+        {
+            if (e == null || DialogType != DialogType.CloseApps || _isDisposed)
+                return;
+
+            try
+            {
+                // Check if the process is already in the collection to avoid duplicates
+                Dispatcher.Invoke(() =>
+                {
+                    if (_isDisposed) return;
+
+                    if (!AppsToCloseCollection.Contains(e))
+                    {
+                        var existingApp = AppsToCloseCollection.FirstOrDefault(a =>
+                            a.ProcessName.Equals(e.ProcessName, StringComparison.OrdinalIgnoreCase));
+
+                        if (existingApp == null)
+                        {
+                            AppsToCloseCollection.Add(e);
+                        }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in ProcessEvaluationService_ProcessStarted: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles the process exited event from the process evaluation service.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ProcessEvaluationService_ProcessExited(object? sender, AppProcessInfo e)
+        {
+            if (e == null || DialogType != DialogType.CloseApps || _isDisposed)
+                return;
+
+            try
+            {
+                // Add to recently removed cache to prevent flickering
+                lock (_recentlyRemovedProcesses)
+                {
+                    _recentlyRemovedProcesses[e.ProcessName] = DateTime.Now;
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    if (_isDisposed) return;
+
+                    var processToRemove = AppsToCloseCollection.FirstOrDefault(a =>
+                        a.ProcessName.Equals(e.ProcessName, StringComparison.OrdinalIgnoreCase));
+
+                    if (processToRemove != null)
+                    {
+                        // Animation logic removed - handled by UnifiedAdtApplication.RemoveAppToClose
+                        AppsToCloseCollection.Remove(processToRemove);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in ProcessEvaluationService_ProcessExited: {ex.Message}");
+            }
+        }
+
+
+#endif

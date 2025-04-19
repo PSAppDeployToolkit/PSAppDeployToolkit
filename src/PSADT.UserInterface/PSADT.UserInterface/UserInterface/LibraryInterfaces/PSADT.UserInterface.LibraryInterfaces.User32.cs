@@ -169,7 +169,6 @@ namespace PSADT.UserInterface.LibraryInterfaces
         /// Retrieves the display monitor that is nearest to the specified rectangle.
         /// </summary>
         /// <param name="uiAction"></param>
-        /// <param name="uiParam"></param>
         /// <param name="pvParam"></param>
         /// <param name="fWinIni"></param>
         /// <returns></returns>
@@ -188,7 +187,6 @@ namespace PSADT.UserInterface.LibraryInterfaces
         /// Retrieves the display monitor that is nearest to the specified rectangle.
         /// </summary>
         /// <param name="uiAction"></param>
-        /// <param name="uiParam"></param>
         /// <param name="pvParam"></param>
         /// <param name="fWinIni"></param>
         /// <returns></returns>

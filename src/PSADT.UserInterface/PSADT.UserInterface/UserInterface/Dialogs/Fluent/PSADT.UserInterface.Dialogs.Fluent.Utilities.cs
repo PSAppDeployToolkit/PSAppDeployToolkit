@@ -19,13 +19,129 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     public partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
         /// <summary>
+        /// Updates the Grid RowDefinition based on the current content
+        /// </summary>
+        protected void UpdateRowDefinition()
+        {
+            // Always use Auto sizing for all dialog types
+            CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
+        }
+
+        /// <summary>
+        /// Sets the button content with an accelerator key (underscore) for accessibility.
+        /// </summary>
+        /// <param name="button"></param>
+        /// <param name="text"></param>
+        protected void SetButtonContentWithAccelerator(Wpf.Ui.Controls.Button button, string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return;
+            }
+
+            // Create AccessText to properly handle the underscore as accelerator
+            button.Content = new AccessText
+            {
+                Text = text
+            };
+        }
+
+        /// <summary>
+        /// Formats the message text with clickable hyperlinks, supporting both plain URLs and Markdown-style links [text](url).
+        /// </summary>
+        /// <param name="textBlock"></param>
+        /// <param name="message"></param>
+        protected void FormatMessageWithHyperlinks(Wpf.Ui.Controls.TextBlock textBlock, string? message)
+        {
+            // Ensure the textblock is cleared and reset.
+            textBlock.Inlines.Clear();
+
+            // Don't waste time on an empty string.
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            // Regex to find Markdown links `[text](url)` or plain URLs.
+            // Group 1: Full Markdown link (optional)
+            // Group 2: Link text from Markdown (optional)
+            // Group 3: URL from Markdown (optional)
+            // Group 4: Full plain URL (optional)
+            var linkRegex = new Regex(
+                @"(\[([^\]]+)\]\(([^)\s]+)\))" + @"|" + // Markdown link: [text](url)
+                @"((?i)\b(?:(?:https?|ftp|mailto):(?://)?|www\.|ftp\.)[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$])", // Plain URL
+                RegexOptions.Compiled);
+
+            // Process each found match and convert into a URI object
+            int lastPos = 0;
+            foreach (Match match in linkRegex.Matches(message))
+            {
+                // Add text before the hyperlink
+                if (match.Index > lastPos)
+                {
+                    textBlock.Inlines.Add(new Run(message!.Substring(lastPos, match.Index - lastPos)));
+                }
+
+                string displayText, url;
+                if (match.Groups[1].Success) // Markdown link matched
+                {
+                    displayText = match.Groups[2].Value;
+                    url = match.Groups[3].Value;
+                }
+                else // Plain URL matched
+                {
+                    url = match.Groups[4].Value;
+                    displayText = url; // Display the URL itself as text
+                }
+
+                // Ensure the URL has a scheme for Process.Start
+                string navigateUrl = url;
+                if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) &&
+                    navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) || navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase))
+                {
+                    navigateUrl = "http://" + navigateUrl; // Assume http for www/ftp starts if no scheme
+                }
+
+                // Add the URL as a proper hyperlink
+                try
+                {
+                    Uri uri = new Uri(navigateUrl); // Validate and create Uri
+                    Hyperlink link = new Hyperlink(new Run(displayText))
+                    {
+                        NavigateUri = uri,
+                        ToolTip = $"Open link: {url}" // Use original URL in tooltip
+                    };
+                    link.RequestNavigate += Hyperlink_RequestNavigate;
+                    textBlock.Inlines.Add(link);
+                }
+                catch (UriFormatException)
+                {
+                    // If it's not a valid URI, just add the original matched text (could be Markdown or plain URL)
+                    textBlock.Inlines.Add(new Run(match.Value));
+                }
+                catch (ArgumentNullException)
+                {
+                    // Handle potential null argument
+                    textBlock.Inlines.Add(new Run(match.Value));
+                }
+                lastPos = match.Index + match.Length;
+            }
+
+            // Add any remaining text after the last hyperlink
+            if (lastPos < message!.Length)
+            {
+                textBlock.Inlines.Add(new Run(message.Substring(lastPos)));
+            }
+        }
+
+        /// <summary>
         /// Converts a hex color string to a Color object.
         /// </summary>
         /// <param name="colorStr"></param>
         /// <returns></returns>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        public static Color StringToColor(string colorStr)
+        private static Color StringToColor(string colorStr)
         {
             if (!Regex.IsMatch(colorStr, "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"))
             {
@@ -130,12 +246,65 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
-        /// Updates the Grid RowDefinition based on the current content
+        /// Updates the layout of the action buttons based on their visibility.
         /// </summary>
-        private void UpdateRowDefinition()
+        private void UpdateButtonLayout()
         {
-            // Always use Auto sizing for all dialog types
-            CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
+            // Build a list of visible buttons in the order they appear.
+            var visibleButtons = new List<UIElement>();
+            if (ButtonLeft.Visibility == Visibility.Visible)
+            {
+                visibleButtons.Add(ButtonLeft);
+            }
+            if (ButtonMiddle.Visibility == Visibility.Visible)
+            {
+                visibleButtons.Add(ButtonMiddle);
+            }
+            if (ButtonRight.Visibility == Visibility.Visible)
+            {
+                visibleButtons.Add(ButtonRight);
+            }
+
+            // Clear any existing column definitions.
+            ActionButtons.ColumnDefinitions.Clear();
+
+            // Special case: if there's only one visible button, limit its width to half of the grid
+            if (visibleButtons.Count > 1)
+            {
+                // Create equally sized columns for each visible button (original behavior)
+                for (int i = 0; i < visibleButtons.Count; i++)
+                {
+                    // Set margin based on position
+                    ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                    Grid.SetColumn(visibleButtons[i], i);
+                    Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[i];
+                    if (i == 0)
+                    {
+                        button.Margin = new Thickness(0, 0, 4, 0);
+                    }
+                    else if (i == visibleButtons.Count - 1)
+                    {
+                        button.Margin = new Thickness(4, 0, 0, 0);
+                    }
+                    else
+                    {
+                        button.Margin = new Thickness(4, 0, 4, 0);
+                    }
+                }
+            }
+            else
+            {
+                // Add two columns - one for the button (50% width) and one empty (50% width)
+                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                // Place the single button in the second column
+                Grid.SetColumn(visibleButtons[0], 1);
+
+                // Set appropriate margin
+                Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[0];
+                button.Margin = new Thickness(0, 0, 0, 0);
+            }
         }
 
         /// <summary>
@@ -170,17 +339,17 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (_countdownRemainingTime.TotalSeconds <= 60)
             {
                 // Less than 60 seconds - use critical color
-                CountdownValueTextBlock.Foreground = Application.Current.Resources["SystemFillColorCriticalBrush"] as Brush;
+                CountdownValueTextBlock.Foreground = (Brush)Resources["SystemFillColorCriticalBrush"];
             }
             else if (_countdownNoMinimizeDuration.HasValue && _countdownRemainingTime <= _countdownNoMinimizeDuration)
             {
                 // Less than no-minimize duration - use attention color
-                CountdownValueTextBlock.Foreground = Application.Current.Resources["SystemFillColorCautionBrush"] as Brush;
+                CountdownValueTextBlock.Foreground = (Brush)Resources["SystemFillColorCautionBrush"];
             }
             else
             {
                 // Normal time - use default text color
-                CountdownValueTextBlock.Foreground = Application.Current.Resources["TextFillColorPrimaryBrush"] as Brush;
+                CountdownValueTextBlock.Foreground = (Brush)Resources["TextFillColorPrimaryBrush"];
             }
 
             // Handle countdown no minimize option for Restart dialog
@@ -253,164 +422,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
             {
                 // Application is shutting down, just ignore
-            }
-        }
-
-        /// <summary>
-        /// Updates the layout of the action buttons based on their visibility.
-        /// </summary>
-        private void UpdateButtonLayout()
-        {
-            // Build a list of visible buttons in the order they appear.
-            var visibleButtons = new List<UIElement>();
-            if (ButtonLeft.Visibility == Visibility.Visible)
-                visibleButtons.Add(ButtonLeft);
-            if (ButtonMiddle.Visibility == Visibility.Visible)
-                visibleButtons.Add(ButtonMiddle);
-            if (ButtonRight.Visibility == Visibility.Visible)
-                visibleButtons.Add(ButtonRight);
-
-            // Clear any existing column definitions.
-            ActionButtons.ColumnDefinitions.Clear();
-
-            // Special case: if there's only one visible button, limit its width to half of the grid
-            if (visibleButtons.Count == 1)
-            {
-                // Add two columns - one for the button (50% width) and one empty (50% width)
-                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-                // Place the single button in the second column
-                System.Windows.Controls.Grid.SetColumn(visibleButtons[0], 1);
-
-                // Set appropriate margin
-                Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[0];
-                button.Margin = new Thickness(0, 0, 0, 0);
-            }
-            else
-            {
-                // Create equally sized columns for each visible button (original behavior)
-                for (int i = 0; i < visibleButtons.Count; i++)
-                {
-                    ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                    System.Windows.Controls.Grid.SetColumn(visibleButtons[i], i);
-
-                    // Set margin based on position
-                    Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[i];
-                    if (i == 0)
-                        button.Margin = new Thickness(0, 0, 4, 0);
-                    else if (i == visibleButtons.Count - 1)
-                        button.Margin = new Thickness(4, 0, 0, 0);
-                    else
-                        button.Margin = new Thickness(4, 0, 4, 0);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets the button content with an accelerator key (underscore) for accessibility.
-        /// </summary>
-        /// <param name="button"></param>
-        /// <param name="text"></param>
-        private void SetButtonContentWithAccelerator(Wpf.Ui.Controls.Button button, string? text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return;
-
-            // Create AccessText to properly handle the underscore as accelerator
-            AccessText accessText = new AccessText
-            {
-                Text = text
-            };
-
-            // Set the AccessText as button content
-            button.Content = accessText;
-        }
-
-        /// <summary>
-        /// Formats the message text with clickable hyperlinks, supporting both plain URLs and Markdown-style links [text](url).
-        /// </summary>
-        /// <param name="textBlock"></param>
-        /// <param name="message"></param>
-        private void FormatMessageWithHyperlinks(Wpf.Ui.Controls.TextBlock textBlock, string message)
-        {
-            textBlock.Inlines.Clear();
-            if (string.IsNullOrEmpty(message)) return;
-
-            // Regex to find Markdown links `[text](url)` or plain URLs.
-            // Group 1: Full Markdown link (optional)
-            // Group 2: Link text from Markdown (optional)
-            // Group 3: URL from Markdown (optional)
-            // Group 4: Full plain URL (optional)
-            var linkRegex = new Regex(
-                @"(\[([^\]]+)\]\(([^)\s]+)\))" + // Markdown link: [text](url)
-                @"|" +
-                @"((?i)\b(?:(?:https?|ftp|mailto):(?://)?|www\.|ftp\.)[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$])", // Plain URL
-                RegexOptions.Compiled);
-
-            int lastPos = 0;
-            foreach (Match match in linkRegex.Matches(message))
-            {
-                // Add text before the hyperlink
-                if (match.Index > lastPos)
-                {
-                    textBlock.Inlines.Add(new Run(message.Substring(lastPos, match.Index - lastPos)));
-                }
-
-                string url;
-                string displayText;
-
-                if (match.Groups[1].Success) // Markdown link matched
-                {
-                    displayText = match.Groups[2].Value;
-                    url = match.Groups[3].Value;
-                }
-                else // Plain URL matched
-                {
-                    url = match.Groups[4].Value;
-                    displayText = url; // Display the URL itself as text
-                }
-
-                // Ensure the URL has a scheme for Process.Start
-                string navigateUrl = url;
-                if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) || navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase))
-                    {
-                        navigateUrl = "http://" + navigateUrl; // Assume http for www/ftp starts if no scheme
-                    }
-                    // else - if it doesn't start with a known prefix and has no scheme, it might not be a valid URL to open
-                }
-
-                try
-                {
-                    Uri uri = new Uri(navigateUrl); // Validate and create Uri
-                    Hyperlink link = new Hyperlink(new Run(displayText))
-                    {
-                        NavigateUri = uri,
-                        ToolTip = $"Open link: {url}" // Use original URL in tooltip
-                    };
-                    link.RequestNavigate += Hyperlink_RequestNavigate;
-                    textBlock.Inlines.Add(link);
-                }
-                catch (UriFormatException)
-                {
-                    // If it's not a valid URI, just add the original matched text (could be Markdown or plain URL)
-                    textBlock.Inlines.Add(new Run(match.Value));
-                }
-                catch (ArgumentNullException)
-                {
-                    // Handle potential null argument
-                    textBlock.Inlines.Add(new Run(match.Value));
-                }
-
-                lastPos = match.Index + match.Length;
-            }
-
-            // Add any remaining text after the last hyperlink
-            if (lastPos < message.Length)
-            {
-                textBlock.Inlines.Add(new Run(message.Substring(lastPos)));
             }
         }
     }

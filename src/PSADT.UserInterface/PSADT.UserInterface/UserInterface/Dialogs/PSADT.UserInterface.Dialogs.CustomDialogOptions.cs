@@ -5,7 +5,7 @@ namespace PSADT.UserInterface.Dialogs
     /// <summary>
     /// Options for the CustomDialog.
     /// </summary>
-    public sealed class CustomDialogOptions : DialogOptions
+    public class CustomDialogOptions : DialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.
@@ -13,11 +13,29 @@ namespace PSADT.UserInterface.Dialogs
         /// <param name="options"></param>
         public CustomDialogOptions(Hashtable options) : base(options)
         {
-            ButtonLeftText = options["ButtonLeftText"] as string;
-            ButtonMiddleText = options["ButtonMiddleText"] as string;
-            ButtonRightText = options["ButtonRightText"] as string;
-            CustomMessage = options["CustomMessage"] as string;
+            // Nothing here is allowed to be null.
+            if (options["MessageText"] is not string messageText || string.IsNullOrWhiteSpace(messageText))
+            {
+                throw new ArgumentNullException("MessageText cannot be null.", (Exception?)null);
+            }
+
+            // The hashtable was correctly defined, so we can assign the values and continue onwards.
+            MessageText = messageText;
+            ButtonLeftText = options["ButtonLeftText"] is string buttonLeftText && !string.IsNullOrWhiteSpace(buttonLeftText) ? buttonLeftText : null;
+            ButtonMiddleText = options["ButtonMiddleText"] is string buttonMiddleText && !string.IsNullOrWhiteSpace(buttonMiddleText) ? buttonMiddleText : null;
+            ButtonRightText = options["ButtonRightText"] is string buttonRightText && !string.IsNullOrWhiteSpace(buttonRightText) ? buttonRightText : null;
+
+            // At least one button must be defined before we finish.
+            if (string.IsNullOrWhiteSpace(ButtonLeftText) && string.IsNullOrWhiteSpace(ButtonMiddleText) && string.IsNullOrWhiteSpace(ButtonRightText))
+            {
+                throw new ArgumentNullException("At least one button must be defined.", (Exception?)null);
+            }
         }
+
+        /// <summary>
+        /// The custom message to be displayed in the dialog.
+        /// </summary>
+        public readonly string MessageText;
 
         /// <summary>
         /// The text for the left button in the dialog.
@@ -33,10 +51,5 @@ namespace PSADT.UserInterface.Dialogs
         /// The text for the right button in the dialog.
         /// </summary>
         public readonly string? ButtonRightText;
-
-        /// <summary>
-        /// The custom message to be displayed in the dialog.
-        /// </summary>
-        public readonly string? CustomMessage;
     }
 }
