@@ -13,49 +13,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     public partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
         /// <summary>
-        /// Handles the loaded event of the window.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void FluentDialog_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Update dialog layout
-            UpdateButtonLayout();
-            UpdateLayout();
-
-            // Initialize countdown display if needed
-            if (_countdownDuration.HasValue)
-            {
-                //UpdateCountdownDisplay();
-            }
-
-            // Update row definitions based on current content
-            UpdateRowDefinition();
-
-            // Position the window
-            PositionWindow();
-        }
-
-        /// <summary>
-        /// Handles the size changed event of the window.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void FluentDialog_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            // Only reposition window - no animations
-            PositionWindow();
-
-            // Add hook to prevent window movement
-            WindowInteropHelper helper = new(this);
-            HwndSource? source = HwndSource.FromHwnd(helper.Handle);
-            if (source != null)
-            {
-                source.AddHook(new HwndSourceHook(WndProc));
-            }
-        }
-
-        /// <summary>
         /// Handles the click event of the left button.
         /// </summary>
         /// <param name="sender"></param>
@@ -114,6 +71,49 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         {
             base.OnClosed(e);
             Dispose();
+        }
+
+        /// <summary>
+        /// Handles the loaded event of the window.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FluentDialog_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Update dialog layout
+            UpdateButtonLayout();
+            UpdateLayout();
+
+            // Initialize countdown display if needed
+            if (_countdownDuration.HasValue)
+            {
+                //UpdateCountdownDisplay();
+            }
+
+            // Update row definitions based on current content
+            UpdateRowDefinition();
+
+            // Position the window
+            PositionWindow();
+        }
+
+        /// <summary>
+        /// Handles the size changed event of the window.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FluentDialog_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // Only reposition window - no animations
+            PositionWindow();
+
+            // Add hook to prevent window movement
+            WindowInteropHelper helper = new(this);
+            HwndSource? source = HwndSource.FromHwnd(helper.Handle);
+            if (source != null)
+            {
+                source.AddHook(new HwndSourceHook(WndProc));
+            }
         }
 
         /// <summary>

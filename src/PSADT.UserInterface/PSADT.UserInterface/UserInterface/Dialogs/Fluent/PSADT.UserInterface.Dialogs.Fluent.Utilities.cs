@@ -19,34 +19,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     public partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
         /// <summary>
-        /// Updates the Grid RowDefinition based on the current content
-        /// </summary>
-        protected void UpdateRowDefinition()
-        {
-            // Always use Auto sizing for all dialog types
-            CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
-        }
-
-        /// <summary>
-        /// Sets the button content with an accelerator key (underscore) for accessibility.
-        /// </summary>
-        /// <param name="button"></param>
-        /// <param name="text"></param>
-        protected void SetButtonContentWithAccelerator(Wpf.Ui.Controls.Button button, string? text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                return;
-            }
-
-            // Create AccessText to properly handle the underscore as accelerator
-            button.Content = new AccessText
-            {
-                Text = text
-            };
-        }
-
-        /// <summary>
         /// Formats the message text with clickable hyperlinks, supporting both plain URLs and Markdown-style links [text](url).
         /// </summary>
         /// <param name="textBlock"></param>
@@ -132,6 +104,34 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 textBlock.Inlines.Add(new Run(message.Substring(lastPos)));
             }
+        }
+
+        /// <summary>
+        /// Sets the button content with an accelerator key (underscore) for accessibility.
+        /// </summary>
+        /// <param name="button"></param>
+        /// <param name="text"></param>
+        protected void SetButtonContentWithAccelerator(Wpf.Ui.Controls.Button button, string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return;
+            }
+
+            // Create AccessText to properly handle the underscore as accelerator
+            button.Content = new AccessText
+            {
+                Text = text
+            };
+        }
+
+        /// <summary>
+        /// Updates the Grid RowDefinition based on the current content
+        /// </summary>
+        protected void UpdateRowDefinition()
+        {
+            // Always use Auto sizing for all dialog types
+            CenterPanelRow.Height = new GridLength(1, GridUnitType.Auto);
         }
 
         /// <summary>
