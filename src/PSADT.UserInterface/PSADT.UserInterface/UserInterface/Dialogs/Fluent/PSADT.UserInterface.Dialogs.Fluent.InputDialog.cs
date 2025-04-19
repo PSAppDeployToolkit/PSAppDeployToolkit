@@ -7,13 +7,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's Input dialog.
     /// </summary>
-    public sealed class InputDialog : CustomDialog
+    internal sealed class InputDialog : CustomDialog
     {
         /// <summary>
         /// Initializes the UI elements and behavior for the Input dialog type.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        public InputDialog(InputDialogOptions options) : base (options, false)
+        internal InputDialog(InputDialogOptions options) : base (options, false)
         {
             // Enable input box within the dialog
             InputBoxStackPanel.Visibility = Visibility.Visible;
@@ -69,7 +69,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The result of the dialog interaction.
         /// </summary>
-        public new InputDialogResult DialogResult
+        internal new InputDialogResult DialogResult
         {
             get => _dialogResult;
             private set

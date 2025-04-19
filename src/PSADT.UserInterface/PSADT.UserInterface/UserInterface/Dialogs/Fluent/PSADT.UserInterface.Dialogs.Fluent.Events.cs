@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one.
     /// </summary>
-    public partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
+    internal abstract partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
         /// <summary>
         /// Handles the click event of the left button.

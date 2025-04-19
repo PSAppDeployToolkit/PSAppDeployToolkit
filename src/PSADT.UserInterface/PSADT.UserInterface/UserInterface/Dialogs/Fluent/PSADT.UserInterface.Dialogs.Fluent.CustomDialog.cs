@@ -8,13 +8,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's Custom dialog.
     /// </summary>
-    public class CustomDialog : FluentDialog
+    internal class CustomDialog : FluentDialog
     {
         /// <summary>
         /// Instantiates a new Custom dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        public CustomDialog(CustomDialogOptions options, bool setFocus = true) : base(options)
+        internal CustomDialog(CustomDialogOptions options, bool setFocus = true) : base(options)
         {
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, options.MessageText);

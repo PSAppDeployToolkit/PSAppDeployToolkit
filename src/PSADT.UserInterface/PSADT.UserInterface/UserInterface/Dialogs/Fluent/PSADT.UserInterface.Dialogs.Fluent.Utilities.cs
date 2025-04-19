@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using PSADT.UserInterface.Utilities;
 using Wpf.Ui.Controls;
 
@@ -16,7 +14,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one.
     /// </summary>
-    public partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
+    internal abstract partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
         /// <summary>
         /// Formats the message text with clickable hyperlinks, supporting both plain URLs and Markdown-style links [text](url).

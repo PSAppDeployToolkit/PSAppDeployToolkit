@@ -8,13 +8,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's CloseApps dialog.
     /// </summary>
-    public sealed class CloseAppsDialog : FluentDialog, IDisposable
+    internal sealed class CloseAppsDialog : FluentDialog, IDisposable
     {
         /// <summary>
         /// Instantiates a new CloseApps dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        public CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, null, "Continue")
+        internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, null, "Continue")
         {
             // Store original and alternative texts
             _closeAppsMessageText = options.CloseAppsMessageText;

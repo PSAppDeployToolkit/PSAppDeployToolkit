@@ -7,13 +7,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's RestartDialog dialog.
     /// </summary>
-    public sealed class RestartDialog : FluentDialog
+    internal sealed class RestartDialog : FluentDialog
     {
         /// <summary>
         /// Instantiates a new RestartDialog dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        public RestartDialog(RestartDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, options.CountdownNoMinimizeDuration)
+        internal RestartDialog(RestartDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, options.CountdownNoMinimizeDuration)
         {
             // Set up UI
             if (null != options.CountdownDuration)

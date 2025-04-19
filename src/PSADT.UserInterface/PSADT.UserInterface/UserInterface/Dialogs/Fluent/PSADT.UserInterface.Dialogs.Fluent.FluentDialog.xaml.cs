@@ -16,13 +16,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
-    public abstract partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
+    internal abstract partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
         /// <summary>
         /// Initializes a new instance of FluentDialog
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        internal FluentDialog(DialogOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownNoMinimizeDuration = null, string? countdownDialogResult = null)
+        private protected FluentDialog(DialogOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownNoMinimizeDuration = null, string? countdownDialogResult = null)
         {
             // Set up the context for data binding
             DataContext = this;
@@ -128,7 +128,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Closes the dialog window and cancels associated operations. Can be called by timers or button clicks.
         /// </summary>
         /// <param name="state">State object, typically from a timer callback (not used).</param>
-        public void CloseDialog(object? state)
+        internal void CloseDialog(object? state)
         {
             // If we're already processing, just return.
             if (_disposed)
@@ -167,10 +167,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The result of the dialog interaction.
         /// </summary>
-        public new string DialogResult
+        internal new string DialogResult
         {
             get => _dialogResult;
-            protected set
+            private protected set
             {
                 _dialogResult = value;
                 OnPropertyChanged();
@@ -223,14 +223,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private readonly TimeSpan? _countdownNoMinimizeDuration;
 
         /// <summary>
-        /// Event handler for when a window property has changed.
-        /// </summary>
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        /// <summary>
         /// Icon cache for improved performance
         /// </summary>
         private static readonly Dictionary<string, BitmapImage> _iconCache = [];
+
+        /// <summary>
+        /// Event handler for when a window property has changed.
+        /// </summary>
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Dispose managed resources
