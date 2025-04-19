@@ -82,7 +82,7 @@ function Export-ADTEnvironmentTableToSessionState
                         # Prior removal is required for ReadOnly variables
                         $SessionState.PSVariable.Get($_.Key) | & {
                             process {
-                                $SessionState.PSVaraible.Remove($_)
+                                $SessionState.PSVariable.Remove($_)
                             }
                         }
 
