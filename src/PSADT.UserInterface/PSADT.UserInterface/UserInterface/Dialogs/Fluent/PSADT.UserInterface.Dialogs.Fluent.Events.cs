@@ -26,7 +26,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Initialize countdown display if needed
             if (_countdownDuration.HasValue)
             {
-                UpdateCountdownDisplay();
+                //UpdateCountdownDisplay();
             }
 
             // Update row definitions based on current content

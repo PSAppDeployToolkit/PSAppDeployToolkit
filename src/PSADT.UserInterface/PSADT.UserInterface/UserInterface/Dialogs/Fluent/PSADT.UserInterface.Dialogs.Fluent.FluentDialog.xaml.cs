@@ -116,7 +116,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Initialize countdown if specified
             if (countdownDuration.HasValue)
             {
-                InitializeCountdown(countdownDuration.Value);
+                //InitializeCountdown(countdownDuration.Value);
             }
 
             // Configure window events

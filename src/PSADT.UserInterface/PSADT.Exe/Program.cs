@@ -11,6 +11,7 @@ namespace PSADT.UserInterface
         [STAThread]
         public static void Main(string[] args)
         {
+#if false
             if (args is null)
             {
                 throw new ArgumentNullException(nameof(args));
@@ -218,7 +219,7 @@ namespace PSADT.UserInterface
                 // Dispose the UnifiedAdtApplication when done
                 DialogManager.Dispose();
             }
-
+# endif
         }
     }
 }

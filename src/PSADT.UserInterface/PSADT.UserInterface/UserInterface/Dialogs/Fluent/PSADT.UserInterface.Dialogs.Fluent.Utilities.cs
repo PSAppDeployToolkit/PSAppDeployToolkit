@@ -307,6 +307,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
         }
 
+#if false
         /// <summary>
         /// Initializes the countdown timer and display for dialogs that support it (CloseApps, Restart).
         /// </summary>
@@ -424,5 +425,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Application is shutting down, just ignore
             }
         }
+#endif
     }
 }
