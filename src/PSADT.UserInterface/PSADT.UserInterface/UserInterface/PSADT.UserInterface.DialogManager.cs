@@ -156,6 +156,6 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Thread for the progress dialog.
         /// </summary>
-        private static ManualResetEventSlim progressInitialized = new ManualResetEventSlim(false);
+        private static readonly ManualResetEventSlim progressInitialized = new ManualResetEventSlim(false);
     }
 }
