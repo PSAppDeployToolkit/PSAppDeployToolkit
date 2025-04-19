@@ -14,56 +14,28 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <returns>A string indicating the user's choice: "Continue", "Defer", "Cancel", "Error", or "Disposed".</returns>
-        public static string ShowCloseAppsDialog(CloseAppsDialogOptions options)
-        {
-            using (var dialog = new CloseAppsDialog(options))
-            {
-                dialog.ShowDialog();
-                return dialog.DialogResult;
-            }
-        }
+        public static string ShowCloseAppsDialog(CloseAppsDialogOptions options)=> ShowModalDialog<CloseAppsDialog, CloseAppsDialogOptions, string>(options => new CloseAppsDialog(options), options);
 
         /// <summary>
         /// Shows a modal Custom dialog with configurable buttons and message.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <returns>A string representing the text of the button clicked by the user (without accelerator underscores), or "Cancel", "Error", "Disposed".</returns>
-        public static string ShowCustomDialog(CustomDialogOptions options)
-        {
-            using (var dialog = new CustomDialog(options))
-            {
-                dialog.ShowDialog();
-                return dialog.DialogResult;
-            }
-        }
+        public static string ShowCustomDialog(CustomDialogOptions options) => ShowModalDialog<CustomDialog, CustomDialogOptions, string>(options => new CustomDialog(options), options);
 
         /// <summary>
         /// Shows a modal Input dialog, prompting the user for text input.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <returns>A tuple containing the result string (button text clicked, "Cancel", "Error", or "Disposed") and the text entered by the user (string?).</returns>
-        public static InputDialogResult ShowInputDialog(InputDialogOptions options)
-        {
-            using (var dialog = new InputDialog(options))
-            {
-                dialog.ShowDialog();
-                return dialog.DialogResult;
-            }
-        }
+        public static InputDialogResult ShowInputDialog(InputDialogOptions options) => ShowModalDialog<InputDialog, InputDialogOptions, InputDialogResult>(options => new InputDialog(options), options);
 
         /// <summary>
         /// Shows a modal Restart dialog, prompting the user to restart the system.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <returns>A string indicating the user's choice: "Restart", "Dismiss", "Cancel", "Error", or "Disposed".</returns>
-        public static string ShowRestartDialog(RestartDialogOptions options)
-        {
-            using (var dialog = new RestartDialog(options))
-            {
-                dialog.ShowDialog();
-                return dialog.DialogResult;
-            }
-        }
+        public static string ShowRestartDialog(RestartDialogOptions options) => ShowModalDialog<RestartDialog, RestartDialogOptions, string>(options => new RestartDialog(options), options);
 
         /// <summary>
         /// Shows a non-modal Progress dialog.
@@ -130,6 +102,23 @@ namespace PSADT.UserInterface
             progressThread = null;
             progressDispatcher = null;
             progressInitialized.Reset();
+        }
+
+        /// <summary>
+        /// Shows a modal dialog of the specified type with the provided options.
+        /// </summary>
+        /// <typeparam name="TDialog"></typeparam>
+        /// <typeparam name="TOptions"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        private static TResult ShowModalDialog<TDialog, TOptions, TResult>(Func<TOptions, TDialog> factory, TOptions options) where TDialog : FluentDialog
+        {
+            using (var dialog = factory(options))
+            {
+                dialog.ShowDialog();
+                return (TResult)(object)dialog.DialogResult;
+            }
         }
 
         /// <summary>
