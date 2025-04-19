@@ -76,7 +76,26 @@ function Export-ADTEnvironmentTableToSessionState
         {
             try
             {
-                $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.Key -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtEnv)
+                $adtEnv.GetEnumerator() | & {
+                    process
+                    {
+                        # Prior removal is required for ReadOnly variables
+                        $SessionState.PSVariable.Get($_.Key) | & { 
+                            process
+                            { 
+                                $SessionState.PSVaraible.Remove($_)
+                            } 
+                        }
+
+                        $SessionState.PSVariable.Set(
+                            [System.Management.Automation.PSVariable]::new(
+                                $_.Key,
+                                $_.Value,
+                                [System.Management.Automation.ScopedItemOptions]::ReadOnly
+                            )
+                        )
+                    }
+                }
             }
             catch
             {
