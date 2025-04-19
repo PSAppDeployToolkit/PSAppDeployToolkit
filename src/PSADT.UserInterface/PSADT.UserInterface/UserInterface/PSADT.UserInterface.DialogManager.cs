@@ -14,14 +14,14 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <returns>A string indicating the user's choice: "Continue", "Defer", "Cancel", "Error", or "Disposed".</returns>
-        public static string ShowCloseAppsDialog(CloseAppsDialogOptions options)=> ShowModalDialog<CloseAppsDialog, CloseAppsDialogOptions, string>(options => new CloseAppsDialog(options), options);
+        public static string ShowCloseAppsDialog(CloseAppsDialogOptions options)=> ShowModalDialog<CloseAppsDialog, CloseAppsDialogOptions, String>(options => new CloseAppsDialog(options), options);
 
         /// <summary>
         /// Shows a modal Custom dialog with configurable buttons and message.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <returns>A string representing the text of the button clicked by the user (without accelerator underscores), or "Cancel", "Error", "Disposed".</returns>
-        public static string ShowCustomDialog(CustomDialogOptions options) => ShowModalDialog<CustomDialog, CustomDialogOptions, string>(options => new CustomDialog(options), options);
+        public static string ShowCustomDialog(CustomDialogOptions options) => ShowModalDialog<CustomDialog, CustomDialogOptions, String>(options => new CustomDialog(options), options);
 
         /// <summary>
         /// Shows a modal Input dialog, prompting the user for text input.
@@ -35,7 +35,7 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <returns>A string indicating the user's choice: "Restart", "Dismiss", "Cancel", "Error", or "Disposed".</returns>
-        public static string ShowRestartDialog(RestartDialogOptions options) => ShowModalDialog<RestartDialog, RestartDialogOptions, string>(options => new RestartDialog(options), options);
+        public static string ShowRestartDialog(RestartDialogOptions options) => ShowModalDialog<RestartDialog, RestartDialogOptions, String>(options => new RestartDialog(options), options);
 
         /// <summary>
         /// Shows a non-modal Progress dialog.

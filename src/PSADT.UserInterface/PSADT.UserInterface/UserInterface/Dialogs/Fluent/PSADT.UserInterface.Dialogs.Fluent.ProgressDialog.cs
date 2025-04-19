@@ -21,8 +21,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             AutomationProperties.SetName(ProgressBar, "Operation Progress");
 
             // Set up UI
-            FormatMessageWithHyperlinks(MessageTextBlock, options.ProgressMessage);
-            ProgressMessageDetailTextBlock.Text = options.ProgressDetailMessage;
+            FormatMessageWithHyperlinks(MessageTextBlock, options.ProgressMessageText);
+            ProgressMessageDetailTextBlock.Text = options.ProgressDetailMessageText;
             ProgressStackPanel.Visibility = Visibility.Visible;
 
             // Initialize progress bar

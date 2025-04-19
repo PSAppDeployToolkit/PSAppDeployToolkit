@@ -46,7 +46,7 @@ namespace PSADT.UserInterface.Dialogs
             {
                 throw new ArgumentNullException("AlternativeContinueButtonText cannot be null.", (Exception?)null);
             }
-            if (options["dynamicProcessEvaluation"] is not bool dynamicProcessEvaluation)
+            if (options["DynamicProcessEvaluation"] is not bool dynamicProcessEvaluation)
             {
                 throw new ArgumentNullException("dynamicProcessEvaluation cannot be null.", (Exception?)null);
             }

@@ -1,4 +1,5 @@
-﻿using PSADT.UserInterface.Dialogs;
+﻿using System.Collections;
+using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.Services;
 
 namespace PSADT.UserInterface
@@ -11,7 +12,6 @@ namespace PSADT.UserInterface
         [STAThread]
         public static void Main(string[] args)
         {
-#if false
             if (args is null)
             {
                 throw new ArgumentNullException(nameof(args));
@@ -20,9 +20,9 @@ namespace PSADT.UserInterface
             // Set up parameters for testing
             string appTitle = "Adobe Reader CS 2025 x64 EN";
             string subtitle = "Bisto Systems Ltd - App Install";
-            string? appIconImage = null;
+            string appIconImage = $"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\..\\..\\PSADT.UserInterface\\Resources\\appIcon.png";
             //string? dialogAccentColor = "";
-            string? dialogAccentColor = "#FFFFB900"; // Yellow
+            string dialogAccentColor = "#FFFFB900"; // Yellow
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
@@ -54,25 +54,25 @@ namespace PSADT.UserInterface
                 new("photoshop", "Adobe Photoshop", null, null, null),
             };
 
-            TimeSpan? dialogExpiryDuration = TimeSpan.FromSeconds(90);
+            TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(90);
 
-            TimeSpan? countdownDuration = TimeSpan.FromSeconds(90);
+            TimeSpan countdownDuration = TimeSpan.FromSeconds(90);
 
-            string? closeAppsMessageText = "Please save your work before continuing as the following applications will be closed automatically.";
-            string? alternativeCloseAppsMessageText = "Please select \'Install\' to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.";
-            string? customMessageText = "This is a custom message that can be added using the -CustomText parameter on Show-ADTInstallationWelcome (also now available on Show-ADTInstallationRestartPrompt).";
+            string closeAppsMessageText = "Please save your work before continuing as the following applications will be closed automatically.";
+            string alternativeCloseAppsMessageText = "Please select \'Install\' to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.";
+            string customMessageText = "This is a custom message that can be added using the -CustomText parameter on Show-ADTInstallationWelcome (also now available on Show-ADTInstallationRestartPrompt).";
 
             int? deferralsRemaining = null;
             DateTime deferralDeadline = DateTime.Parse("2025-04-20T13:00:00");
             // DateTime? deferralDeadline = null;
-            string? deferralsRemainingText = "Remaining Deferrals";
-            string? deferralDeadlineText = "Deferral Deadline";
-            string? automaticStartCountdownText = "Automatic Start Countdown";
-            string? deferButtonText = "_Defer";
-            string? continueButtonText = "_Close Apps & Install";
-            string? alternativeContinueButtonText = "_Install";
-            string? progressMessageText = "Performing pre-flight checks ...";
-            string? progressMessageDetailText = "Testing your system to ensure the installation can proceed, please wait ...";
+            string deferralsRemainingText = "Remaining Deferrals";
+            string deferralDeadlineText = "Deferral Deadline";
+            string automaticStartCountdownText = "Automatic Start Countdown";
+            string deferButtonText = "_Defer";
+            string continueButtonText = "_Close Apps & Install";
+            string alternativeContinueButtonText = "_Install";
+            string progressMessageText = "Performing pre-flight checks...";
+            string progressDetailMessageText = "Testing your system to ensure the installation can proceed, please wait ...";
 
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(80);
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(70);
@@ -90,36 +90,84 @@ namespace PSADT.UserInterface
             string ButtonMiddleText = "";
             string ButtonRightText = "_Only one button!";
 
-            // Create ProcessEvaluationService
-            var processEvaluationService = new ProcessEvaluationService();
+            // Set up options for the dialogs
+            var closeAppsDialogOptions = new CloseAppsDialogOptions(new Hashtable
+            {
+                { "DialogExpiryDuration", dialogExpiryDuration },
+                { "DialogAccentColor", dialogAccentColor },
+                { "DialogPosition", dialogPosition },
+                { "DialogTopMost", dialogTopMost },
+                { "DialogAllowMove", dialogAllowMove },
+                { "AppTitle", appTitle },
+                { "Subtitle", subtitle },
+                { "AppIconImage", appIconImage },
+                { "AppsToClose", appsToClose },
+                { "CountdownDuration", countdownDuration },
+                { "DeferralsRemaining", deferralsRemaining },
+                { "DeferralDeadline", deferralDeadline },
+                { "CloseAppsMessageText", closeAppsMessageText },
+                { "AlternativeCloseAppsMessageText", alternativeCloseAppsMessageText },
+                { "CustomMessageText", customMessageText },
+                { "DeferralsRemainingText", deferralsRemainingText },
+                { "DeferralDeadlineText", deferralDeadlineText },
+                { "AutomaticStartCountdownText", automaticStartCountdownText },
+                { "DeferButtonText", deferButtonText },
+                { "ContinueButtonText", continueButtonText },
+                { "AlternativeContinueButtonText", alternativeContinueButtonText },
+                { "DynamicProcessEvaluation", true }
+            });
+            var progressDialogOptions = new ProgressDialogOptions(new Hashtable
+            {
+                { "DialogExpiryDuration", dialogExpiryDuration },
+                { "DialogAccentColor", dialogAccentColor },
+                { "DialogPosition", dialogPosition },
+                { "DialogTopMost", dialogTopMost },
+                { "DialogAllowMove", dialogAllowMove },
+                { "AppTitle", appTitle },
+                { "Subtitle", subtitle },
+                { "AppIconImage", appIconImage },
+                { "ProgressMessageText", progressMessageText },
+                { "ProgressDetailMessageText", progressDetailMessageText }
+            });
+            var customDialogOptions = new CustomDialogOptions(new Hashtable
+            {
+                { "DialogExpiryDuration", dialogExpiryDuration },
+                { "DialogAccentColor", dialogAccentColor },
+                { "DialogPosition", dialogPosition },
+                { "DialogTopMost", dialogTopMost },
+                { "DialogAllowMove", dialogAllowMove },
+                { "AppTitle", appTitle },
+                { "Subtitle", subtitle },
+                { "AppIconImage", appIconImage },
+                { "MessageText", customDialogMessageText },
+                { "ButtonLeftText", ButtonLeftText },
+                { "ButtonMiddleText", ButtonMiddleText },
+                { "ButtonRightText", ButtonRightText }
+            });
+            var restartDialogOptions = new RestartDialogOptions(new Hashtable
+            {
+                { "DialogExpiryDuration", dialogExpiryDuration },
+                { "DialogAccentColor", dialogAccentColor },
+                { "DialogPosition", dialogPosition },
+                { "DialogTopMost", dialogTopMost },
+                { "DialogAllowMove", dialogAllowMove },
+                { "AppTitle", appTitle },
+                { "Subtitle", subtitle },
+                { "AppIconImage", appIconImage },
+                { "RestartCountdownDuration", restartCountdownDuration },
+                { "RestartCountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
+                { "RestartMessageText", restartMessageText },
+                { "CustomMessageText", customMessageText },
+                { "CountdownRestartMessageText", countdownRestartMessageText },
+                { "CountdownAutomaticRestartText", countdownAutomaticRestartText },
+                { "DismissButtonText", dismissButtonText },
+                { "RestartButtonText", restartButtonText }
+            });
 
             try
             {
                 // Show CloseApps Dialog
-                var closeAppsResult = DialogManager.ShowCloseAppsDialog(
-                    dialogExpiryDuration,
-                    dialogAccentColor,
-                    dialogPosition,
-                    dialogTopMost,
-                    dialogAllowMove,
-                    appTitle,
-                    subtitle,
-                    appIconImage,
-                    appsToClose,
-                    countdownDuration,
-                    deferralsRemaining,
-                    deferralDeadline,
-                    closeAppsMessageText,
-                    alternativeCloseAppsMessageText,
-                    customMessageText,
-                    deferralsRemainingText,
-                    deferralDeadlineText,
-                    automaticStartCountdownText,
-                    deferButtonText,
-                    continueButtonText,
-                    alternativeContinueButtonText,
-                    processEvaluationService
-                    ); // Pass the service as optional parameter
+                var closeAppsResult = DialogManager.ShowCloseAppsDialog(closeAppsDialogOptions); // Pass the service as optional parameter
 
                 Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
 
@@ -128,17 +176,7 @@ namespace PSADT.UserInterface
                 if (closeAppsResult.Equals("Continue"))
                 {
                     // Show Progress Dialog
-                    DialogManager.ShowProgressDialog(
-                        dialogExpiryDuration,
-                        dialogAccentColor,
-                        dialogPosition,
-                        dialogTopMost,
-                        dialogAllowMove,
-                        appTitle,
-                        subtitle,
-                        appIconImage,
-                        progressMessageText,
-                        progressMessageDetailText);
+                    DialogManager.ShowProgressDialog(progressDialogOptions);
 
                     Thread.Sleep(3000); // Simulate some work being done
 
@@ -146,29 +184,17 @@ namespace PSADT.UserInterface
                     for (int i = 0; i <= 100; i += 10)
                     {
                         // Update progress
-                        DialogManager.UpdateProgress($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
+                        DialogManager.UpdateProgressDialog($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
                         Thread.Sleep(500);  // Simulate work being done
                     }
 
                     // Close Progress Dialog
-                    DialogManager.CloseCurrentDialog();
+                    DialogManager.CloseProgressDialog();
 
                     // #################################################################################
 
                     // Show Custom Dialog for completion
-                    var customResult = DialogManager.ShowCustomDialog(
-                            dialogExpiryDuration,
-                            dialogAccentColor,
-                            dialogPosition,
-                            dialogTopMost,
-                            dialogAllowMove,
-                            appTitle,
-                            subtitle,
-                            appIconImage,
-                            customDialogMessageText,
-                            ButtonLeftText,
-                            ButtonMiddleText,
-                            ButtonRightText);
+                    var customResult = DialogManager.ShowCustomDialog(customDialogOptions);
 
                     Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
                 }
@@ -180,23 +206,7 @@ namespace PSADT.UserInterface
                 // #################################################################################
 
                 // Show Restart Dialog
-                var restartResult = DialogManager.ShowRestartDialog(
-                    dialogExpiryDuration,
-                    dialogAccentColor,
-                    dialogPosition,
-                    dialogTopMost,
-                    dialogAllowMove,
-                    appTitle,
-                    subtitle,
-                    appIconImage,
-                    restartCountdownDuration,
-                    restartCountdownNoMinimizeDuration,
-                    restartMessageText,
-                    customMessageText,
-                    countdownRestartMessageText,
-                    countdownAutomaticRestartText,
-                    dismissButtonText,
-                    restartButtonText);
+                var restartResult = DialogManager.ShowRestartDialog(restartDialogOptions);
 
                 Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
 
@@ -214,12 +224,6 @@ namespace PSADT.UserInterface
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
-            finally
-            {
-                // Dispose the UnifiedAdtApplication when done
-                DialogManager.Dispose();
-            }
-# endif
         }
     }
 }

@@ -49,7 +49,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Resources["SystemAccentColorSecondary"]),
                     ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Resources["SystemAccentColorTertiary"])
                 };
-                ResourceDictionary themeDictionary = Resources.MergedDictionaries[0];
+                ResourceDictionary themeDictionary = new ResourceDictionary(); // Resources.MergedDictionaries[0];
+                #warning // TODO: Fix below dictionary loop, it throws with a XamlParseError. Potential ordering issue in the XAML file?
                 var converter = new ResourceReferenceExpressionConverter();
                 foreach (DictionaryEntry entry in themeDictionary)
                 {
