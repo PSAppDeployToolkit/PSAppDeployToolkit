@@ -1,4 +1,5 @@
-﻿using PSADT.UserInterface.Dialogs;
+﻿using System.Windows.Threading;
+using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.Dialogs.Fluent;
 
 namespace PSADT.UserInterface
@@ -74,8 +75,19 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("A progress dialog is already open. Close it before opening a new one.");
             }
-            progressDialog = new ProgressDialog(options);
-            progressDialog.Show();
+            progressThread = new Thread(() =>
+            {
+                progressDispatcher = Dispatcher.CurrentDispatcher;
+                using (progressDialog = new ProgressDialog(options))
+                {
+                    progressInitialized.Set();
+                    progressDialog.ShowDialog();
+                }
+            });
+            progressThread.SetApartmentState(ApartmentState.STA);
+            progressThread.IsBackground = true;
+            progressThread.Start();
+            progressInitialized.Wait();
         }
 
         /// <summary>
@@ -90,7 +102,11 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
-            progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercent);
+            progressDispatcher!.Invoke(() =>
+            {
+                progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercent);
+            });
+            ;
         }
 
         /// <summary>
@@ -102,22 +118,44 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
-            using (progressDialog)
+            progressDispatcher!.Invoke(() =>
             {
-                progressDialog!.CloseDialog(null);
-                progressDialog = null;
-            }
+                using (progressDialog)
+                {
+                    progressDialog!.CloseDialog(null);
+                    progressDialog = null;
+                }
+            });
+            progressThread!.Join();
+            progressThread = null;
+            progressDispatcher = null;
+            progressInitialized.Reset();
         }
 
         /// <summary>
         /// Checks if a Progress dialog is currently open.
         /// </summary>
         /// <returns></returns>
-        public static bool ProgressDialogOpen() => null != progressDialog;
+        public static bool ProgressDialogOpen() => progressInitialized.IsSet;
 
         /// <summary>
         /// The currently open Progress dialog, if any. Null if no dialog is open.
         /// </summary>
         private static ProgressDialog? progressDialog = null;
+
+        /// <summary>
+        /// Thread for the progress dialog.
+        /// </summary>
+        private static Thread? progressThread = null;
+
+        /// <summary>
+        /// Sets the dispatcher for the progress dialog.
+        /// </summary>
+        private static Dispatcher? progressDispatcher = null;
+
+        /// <summary>
+        /// Thread for the progress dialog.
+        /// </summary>
+        private static ManualResetEventSlim progressInitialized = new ManualResetEventSlim(false);
     }
 }

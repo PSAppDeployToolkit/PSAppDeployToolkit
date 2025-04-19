@@ -268,6 +268,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Clear any existing column definitions.
             ActionButtons.ColumnDefinitions.Clear();
 
+            // Return early if there's no buttons.
+            if (visibleButtons.Count == 0)
+            {
+                return;
+            }
+
             // Special case: if there's only one visible button, limit its width to half of the grid
             if (visibleButtons.Count > 1)
             {
