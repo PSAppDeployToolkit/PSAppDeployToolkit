@@ -44,10 +44,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // See https://github.com/lepoco/wpfui/issues/1188 for more info.
                 var brushes = new Dictionary<string, SolidColorBrush>
                 {
-                    ["SystemAccentColor"] = new SolidColorBrush((Color)Resources["SystemAccentColor"]),
-                    ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Resources["SystemAccentColorPrimary"]),
-                    ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Resources["SystemAccentColorSecondary"]),
-                    ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Resources["SystemAccentColorTertiary"])
+                    ["SystemAccentColor"] = new SolidColorBrush((System.Windows.Media.Color)Resources["SystemAccentColor"]),
+                    ["SystemAccentColorPrimary"] = new SolidColorBrush((System.Windows.Media.Color)Resources["SystemAccentColorPrimary"]),
+                    ["SystemAccentColorSecondary"] = new SolidColorBrush((System.Windows.Media.Color)Resources["SystemAccentColorSecondary"]),
+                    ["SystemAccentColorTertiary"] = new SolidColorBrush((System.Windows.Media.Color)Resources["SystemAccentColorTertiary"])
                 };
                 ResourceDictionary themeDictionary = new ResourceDictionary(); // Resources.MergedDictionaries[0];
                 #warning // TODO: Fix below dictionary loop, it throws with a XamlParseError. Potential ordering issue in the XAML file?
@@ -57,7 +57,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     if (entry.Value is SolidColorBrush brush)
                     {
                         var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
-                        if (dynamicColor is not Color &&
+                        if (dynamicColor is not System.Windows.Media.Color &&
                             converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
                             brushes.ContainsKey((string)dynamicResource.ResourceKey))
                         {
@@ -88,7 +88,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             WindowStartupLocation = WindowStartupLocation.Manual;
             _dialogAllowMove = options.DialogAllowMove;
             Topmost = options.DialogTopMost;
-            _dialogExpiryTimer = new Timer(CloseDialog, null, options.DialogExpiryDuration, Timeout.InfiniteTimeSpan);
+            _dialogExpiryTimer = new System.Threading.Timer(CloseDialog, null, options.DialogExpiryDuration, Timeout.InfiniteTimeSpan);
 
             // Set supplemental options also
             _customMessageText = customMessageText;
@@ -211,7 +211,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The countdown timer for the dialog to automatically close.
         /// </summary>
-        private readonly Timer _dialogExpiryTimer;
+        private readonly System.Threading.Timer _dialogExpiryTimer;
 
         /// <summary>
         /// An optional countdown to zero to commence a preferred action.

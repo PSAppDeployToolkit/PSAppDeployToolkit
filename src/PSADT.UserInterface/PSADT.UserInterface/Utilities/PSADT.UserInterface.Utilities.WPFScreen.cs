@@ -61,7 +61,7 @@ namespace PSADT.UserInterface.Utilities
         /// <summary>
         /// Retrieves a Screen for the display that contains the specified point.
         /// </summary>
-        internal static WPFScreen FromPoint(Point point)
+        internal static WPFScreen FromPoint(System.Windows.Point point)
         {
             var multiMonitorSupport = HaveMultipleMonitors();
             if (multiMonitorSupport)

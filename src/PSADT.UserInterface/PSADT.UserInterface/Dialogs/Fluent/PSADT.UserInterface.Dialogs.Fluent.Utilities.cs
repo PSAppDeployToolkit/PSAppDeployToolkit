@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using PSADT.UserInterface.Utilities;
 using Wpf.Ui.Controls;
@@ -139,13 +138,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <returns></returns>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        private static Color StringToColor(string colorStr)
+        private static System.Windows.Media.Color StringToColor(string colorStr)
         {
             if (!Regex.IsMatch(colorStr, "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"))
             {
                 throw new FormatException("Invalid hex color string.");
             }
-            if (!(TypeDescriptor.GetConverter(typeof(Color)).ConvertFromString(colorStr) is Color result))
+            if (!(TypeDescriptor.GetConverter(typeof(System.Windows.Media.Color)).ConvertFromString(colorStr) is System.Windows.Media.Color result))
             {
                 throw new InvalidOperationException("Failed to convert color string to Color.");
             }
