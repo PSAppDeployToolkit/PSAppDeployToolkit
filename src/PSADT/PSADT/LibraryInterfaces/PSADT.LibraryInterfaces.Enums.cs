@@ -3,7 +3,7 @@
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// The architecture of the executable.
+    /// The architecture of the executable..
     /// </summary>
     public enum IMAGE_FILE_MACHINE : ushort
     {
