@@ -24,10 +24,6 @@
 		<InformationalVersion>4.1.0</InformationalVersion>
 		<ApplicationVersion>4.1.0</ApplicationVersion>
 		<Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
-		<AssemblyVersion>4.0.5.0</AssemblyVersion>
-		<FileVersion>4.0.5</FileVersion>
-		<InformationalVersion>4.0.5</InformationalVersion>
-		<ApplicationVersion>4.0.5</ApplicationVersion>
 		<ApplicationIcon>Resources\appIcon.ico</ApplicationIcon>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
