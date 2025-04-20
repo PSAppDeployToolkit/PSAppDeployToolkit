@@ -14,7 +14,7 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <returns>A string indicating the user's choice: "Continue", "Defer", "Cancel", "Error", or "Disposed".</returns>
-        public static string ShowCloseAppsDialog(CloseAppsDialogOptions options)=> ShowModalDialog<CloseAppsDialog, CloseAppsDialogOptions, String>(options => new CloseAppsDialog(options), options);
+        public static string ShowCloseAppsDialog(CloseAppsDialogOptions options) => ShowModalDialog<CloseAppsDialog, CloseAppsDialogOptions, String>(options => new CloseAppsDialog(options), options);
 
         /// <summary>
         /// Shows a modal Custom dialog with configurable buttons and message.
