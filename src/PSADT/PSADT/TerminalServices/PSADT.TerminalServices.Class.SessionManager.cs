@@ -32,7 +32,7 @@ namespace PSADT.TerminalServices
                 List<SessionInfo> sessions = [];
                 for (int i = 0; i < pCount; i++)
                 {
-                    if (GetSessionInfo(pSessionInfo.ToStructure<WTS_SESSION_INFOW>(objLength * i).SessionId) is SessionInfo session)
+                    if (GetSessionInfo(pSessionInfo.ToStructure<WTS_SESSION_INFOW>(objLength * i)) is SessionInfo session)
                     {
                         sessions.Add(session);
                     }
@@ -46,9 +46,9 @@ namespace PSADT.TerminalServices
         /// </summary>
         /// <param name="sessionId"></param>
         /// <returns></returns>
-        public static SessionInfo? GetSessionInfo(uint sessionId)
+        internal static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {
-            T? GetValue<T>(WTS_INFO_CLASS infoClass)
+            T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
             {
                 WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out var pBuffer);
                 if (!pBuffer.IsInvalid)
@@ -80,24 +80,25 @@ namespace PSADT.TerminalServices
             }
 
             // Bomb out if we have no username (not a proper session).
-            string? userName = GetValue<string>(WTS_INFO_CLASS.WTSUserName);
+            string? userName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSUserName);
             if (null == userName)
             {
                 return null;
             }
 
             // Declare initial variables for data we need to get from a structured object.
-            string? domainName = GetValue<string>(WTS_INFO_CLASS.WTSDomainName);
+            string? domainName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSDomainName);
             NTAccount ntAccount = new NTAccount($"{domainName}\\{userName}");
             SecurityIdentifier sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
-            uint? state = GetValue<uint>(WTS_INFO_CLASS.WTSConnectState);
-            string? clientName = GetValue<string>(WTS_INFO_CLASS.WTSClientName);
+            var state = (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSConnectState)!;
+            string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
+            string pWinStationName = session.pWinStationName.ToString();
             DateTime? logonTime = null;
             TimeSpan? idleTime = null;
             DateTime? disconnectTime = null;
 
             // Get the extended session info and fill the above variables.
-            if (GetValue<WTSINFOEXW>(WTS_INFO_CLASS.WTSSessionInfoEx) is WTSINFOEXW wtsInfoEx && (WTS_INFO_LEVEL)wtsInfoEx.Level == WTS_INFO_LEVEL.WTSINFOEX_LEVEL1)
+            if (GetValue<WTSINFOEXW>(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx) is WTSINFOEXW wtsInfoEx && (WTS_INFO_LEVEL)wtsInfoEx.Level == WTS_INFO_LEVEL.WTSINFOEX_LEVEL1)
             {
                 logonTime = DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.LogonTime);
                 idleTime = DateTime.Now - DateTime.FromFileTime(wtsInfoEx.Data.WTSInfoExLevel1.LastInputTime);
@@ -113,22 +114,22 @@ namespace PSADT.TerminalServices
                 sid,
                 userName,
                 domainName,
-                sessionId,
-                GetValue<string>(WTS_INFO_CLASS.WTSWinStationName),
-                (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)state!,
-                sessionId == CurrentSessionId,
-                sessionId == PInvoke.WTSGetActiveConsoleSessionId(),
-                (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)state == LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive,
-                !GetValue<string>(WTS_INFO_CLASS.WTSWinStationName)!.Equals("services", StringComparison.InvariantCultureIgnoreCase),
-                GetValue<ushort>(WTS_INFO_CLASS.WTSClientProtocolType) != 0,
+                session.SessionId,
+                pWinStationName,
+                state,
+                session.SessionId == CurrentSessionId,
+                session.SessionId == PInvoke.WTSGetActiveConsoleSessionId(),
+                state == LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive,
+                pWinStationName != "Services" && pWinStationName != "RDP-Tcp",
+                GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType) != 0,
                 AccountUtilities.IsSidMemberOfGroup(WellKnownSidType.BuiltinAdministratorsSid, sid),
                 logonTime,
                 idleTime,
                 disconnectTime,
                 clientName,
-                (WTS_PROTOCOL_TYPE)GetValue<ushort>(WTS_INFO_CLASS.WTSClientProtocolType)!,
-                GetValue<string>(WTS_INFO_CLASS.WTSClientDirectory),
-                (null != clientName) ? GetValue<uint>(WTS_INFO_CLASS.WTSClientBuildNumber) : null
+                (WTS_PROTOCOL_TYPE)GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!,
+                GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
+                (null != clientName) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
             );
         }
 
