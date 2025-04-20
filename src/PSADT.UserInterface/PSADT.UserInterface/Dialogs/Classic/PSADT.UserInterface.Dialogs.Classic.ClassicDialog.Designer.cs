@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.pictureBanner = new System.Windows.Forms.PictureBox();
+            this.buttonDefault = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).BeginInit();
             this.SuspendLayout();
             // 
@@ -43,12 +44,31 @@
             this.pictureBanner.TabIndex = 0;
             this.pictureBanner.TabStop = false;
             // 
+            // buttonDefault
+            // 
+            this.buttonDefault.BackColor = System.Drawing.Color.Transparent;
+            this.buttonDefault.Enabled = false;
+            this.buttonDefault.FlatAppearance.BorderSize = 0;
+            this.buttonDefault.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.buttonDefault.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.buttonDefault.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.buttonDefault.ForeColor = System.Drawing.Color.Transparent;
+            this.buttonDefault.Location = new System.Drawing.Point(0, 0);
+            this.buttonDefault.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonDefault.Name = "buttonDefault";
+            this.buttonDefault.Size = new System.Drawing.Size(0, 0);
+            this.buttonDefault.TabIndex = 1;
+            this.buttonDefault.TabStop = false;
+            this.buttonDefault.UseVisualStyleBackColor = true;
+            // 
             // ClassicDialog
             // 
+            this.AcceptButton = this.buttonDefault;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 63);
+            this.Controls.Add(this.buttonDefault);
             this.Controls.Add(this.pictureBanner);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -66,5 +86,6 @@
         #endregion
 
         private PictureBox pictureBanner;
+        private Button buttonDefault;
     }
 }
