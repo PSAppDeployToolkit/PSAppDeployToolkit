@@ -44,23 +44,16 @@ namespace PSADT.UserInterface
         /// <param name="options">Mandatory options needed to construct the window.</param>
         public static void ShowProgressDialog(ProgressDialogOptions options)
         {
-            if (ProgressDialogOpen())
+            if (progressInitialized.IsSet)
             {
                 throw new InvalidOperationException("A progress dialog is already open. Close it before opening a new one.");
             }
-            progressThread = new Thread(() =>
+            InvokeDialogAction(() =>
             {
-                progressDispatcher = Dispatcher.CurrentDispatcher;
-                using (progressDialog = new ProgressDialog(options))
-                {
-                    progressDialog.Loaded += (object sender, RoutedEventArgs e) => progressInitialized.Set();
-                    progressDialog.ShowDialog();
-                }
+                progressDialog = new ProgressDialog(options);
+                progressDialog.Show();
             });
-            progressThread.SetApartmentState(ApartmentState.STA);
-            progressThread.IsBackground = true;
-            progressThread.Start();
-            progressInitialized.Wait();
+            progressInitialized.Set();
         }
 
         /// <summary>
@@ -71,15 +64,14 @@ namespace PSADT.UserInterface
         /// <param name="progressPercent">Optional progress percentage (0-100). If provided, the progress bar becomes determinate.</param>
         public static void UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercent = null)
         {
-            if (!ProgressDialogOpen())
+            if (!progressInitialized.IsSet)
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
-            progressDispatcher!.Invoke(() =>
+            InvokeDialogAction(() =>
             {
                 progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercent);
             });
-            ;
         }
 
         /// <summary>
@@ -87,11 +79,11 @@ namespace PSADT.UserInterface
         /// </summary>
         public static void CloseProgressDialog()
         {
-            if (!ProgressDialogOpen())
+            if (!progressInitialized.IsSet)
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
-            progressDispatcher!.Invoke(() =>
+            InvokeDialogAction(() =>
             {
                 using (progressDialog)
                 {
@@ -99,9 +91,6 @@ namespace PSADT.UserInterface
                     progressDialog = null;
                 }
             });
-            progressThread!.Join();
-            progressThread = null;
-            progressDispatcher = null;
             progressInitialized.Reset();
         }
 
@@ -115,18 +104,41 @@ namespace PSADT.UserInterface
         /// <returns></returns>
         private static TResult ShowModalDialog<TDialog, TOptions, TResult>(Func<TOptions, TDialog> factory, TOptions options) where TDialog : FluentDialog
         {
-            using (var dialog = factory(options))
+            TResult? result = default;
+            InvokeDialogAction(() =>
             {
-                dialog.ShowDialog();
-                return (TResult)(object)dialog.DialogResult;
-            }
+                using (var dialog = factory(options))
+                {
+                    dialog.ShowDialog();
+                    result = (TResult)(object)dialog.DialogResult;
+                }
+            });
+            return result!;
         }
 
         /// <summary>
-        /// Checks if a Progress dialog is currently open.
+        /// Initializes the WPF application and invokes the specified action on the UI thread.
         /// </summary>
-        /// <returns></returns>
-        public static bool ProgressDialogOpen() => progressInitialized.IsSet;
+        private static void InvokeDialogAction(Action callback)
+        {
+            // Initialize the WPF application if necessary, otherwise just invoke the callback.
+            if (!appInitialized.IsSet)
+            {
+                appThread = new Thread(() =>
+                {
+                    app = new System.Windows.Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                    app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary { Theme = Wpf.Ui.Appearance.ApplicationTheme.Dark });
+                    app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
+                    appInitialized.Set();
+                    Dispatcher.Run();
+                });
+                appThread.SetApartmentState(ApartmentState.STA);
+                appThread.IsBackground = true;
+                appThread.Start();
+                appInitialized.Wait();
+            }
+            app!.Dispatcher.Invoke(callback);
+        }
 
         /// <summary>
         /// The currently open Progress dialog, if any. Null if no dialog is open.
@@ -134,18 +146,23 @@ namespace PSADT.UserInterface
         private static ProgressDialog? progressDialog = null;
 
         /// <summary>
-        /// Thread for the progress dialog.
-        /// </summary>
-        private static Thread? progressThread = null;
-
-        /// <summary>
-        /// Sets the dispatcher for the progress dialog.
-        /// </summary>
-        private static Dispatcher? progressDispatcher = null;
-
-        /// <summary>
-        /// Thread for the progress dialog.
+        /// Event to signal that the progress dialog has been initialized.
         /// </summary>
         private static readonly ManualResetEventSlim progressInitialized = new ManualResetEventSlim(false);
+
+        /// <summary>
+        /// Application instance for the WPF dialog.
+        /// </summary>
+        private static System.Windows.Application? app;
+
+        /// <summary>
+        /// Thread for the WPF dialog.
+        /// </summary>
+        private static Thread? appThread;
+
+        /// <summary>
+        /// Event to signal that the application has been initialized.
+        /// </summary>
+        private static readonly ManualResetEventSlim appInitialized = new ManualResetEventSlim(false);
     }
 }

@@ -343,17 +343,17 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (_countdownRemainingTime.TotalSeconds <= 60)
             {
                 // Less than 60 seconds - use critical color
-                CountdownValueTextBlock.Foreground = (Brush)Resources["SystemFillColorCriticalBrush"];
+                CountdownValueTextBlock.Foreground = (Brush)System.Windows.Application.Current.Resources["SystemFillColorCriticalBrush"];
             }
             else if (_countdownNoMinimizeDuration.HasValue && _countdownRemainingTime <= _countdownNoMinimizeDuration)
             {
                 // Less than no-minimize duration - use attention color
-                CountdownValueTextBlock.Foreground = (Brush)Resources["SystemFillColorCautionBrush"];
+                CountdownValueTextBlock.Foreground = (Brush)System.Windows.Application.Current.Resources["SystemFillColorCautionBrush"];
             }
             else
             {
                 // Normal time - use default text color
-                CountdownValueTextBlock.Foreground = (Brush)Resources["TextFillColorPrimaryBrush"];
+                CountdownValueTextBlock.Foreground = (Brush)System.Windows.Application.Current.Resources["TextFillColorPrimaryBrush"];
             }
 
             // Handle countdown no minimize option for Restart dialog

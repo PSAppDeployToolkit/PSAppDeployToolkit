@@ -27,10 +27,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Set up the context for data binding
             DataContext = this;
 
-            // Add in required Wpf.Ui resource dictionaries.
-            Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary { Theme = Wpf.Ui.Appearance.ApplicationTheme.Dark });
-            Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
-
             // Process the given accent color from the options
             if (!string.IsNullOrWhiteSpace(options.DialogAccentColor))
             {
@@ -44,13 +40,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // See https://github.com/lepoco/wpfui/issues/1188 for more info.
                 var brushes = new Dictionary<string, SolidColorBrush>
                 {
-                    ["SystemAccentColor"] = new SolidColorBrush((System.Windows.Media.Color)Resources["SystemAccentColor"]),
-                    ["SystemAccentColorPrimary"] = new SolidColorBrush((System.Windows.Media.Color)Resources["SystemAccentColorPrimary"]),
-                    ["SystemAccentColorSecondary"] = new SolidColorBrush((System.Windows.Media.Color)Resources["SystemAccentColorSecondary"]),
-                    ["SystemAccentColorTertiary"] = new SolidColorBrush((System.Windows.Media.Color)Resources["SystemAccentColorTertiary"])
+                    ["SystemAccentColor"] = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Application.Current.Resources["SystemAccentColor"]),
+                    ["SystemAccentColorPrimary"] = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Application.Current.Resources["SystemAccentColorPrimary"]),
+                    ["SystemAccentColorSecondary"] = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Application.Current.Resources["SystemAccentColorSecondary"]),
+                    ["SystemAccentColorTertiary"] = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Application.Current.Resources["SystemAccentColorTertiary"])
                 };
-                ResourceDictionary themeDictionary = new ResourceDictionary(); // Resources.MergedDictionaries[0];
-                #warning // TODO: Fix below dictionary loop, it throws with a XamlParseError. Potential ordering issue in the XAML file?
+                ResourceDictionary themeDictionary = System.Windows.Application.Current.Resources.MergedDictionaries.First(static d => d.Source.AbsolutePath.StartsWith("/Wpf.Ui;component/Resources/Theme/"));
                 var converter = new ResourceReferenceExpressionConverter();
                 foreach (DictionaryEntry entry in themeDictionary)
                 {

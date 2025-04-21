@@ -112,15 +112,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Update text color based on remaining deferrals
             if (_deferralsRemaining == 0)
             {
-                DeferralDeadlineValueTextBlock.Foreground = (System.Windows.Media.Brush)Resources["SystemFillColorCriticalBrush"];
+                DeferralDeadlineValueTextBlock.Foreground = (System.Windows.Media.Brush)System.Windows.Application.Current.Resources["SystemFillColorCriticalBrush"];
             }
             else if (_deferralsRemaining <= 1)
             {
-                DeferralDeadlineValueTextBlock.Foreground = (System.Windows.Media.Brush)Resources["SystemFillColorCautionBrush"];
+                DeferralDeadlineValueTextBlock.Foreground = (System.Windows.Media.Brush)System.Windows.Application.Current.Resources["SystemFillColorCautionBrush"];
             }
             else
             {
-                DeferralDeadlineValueTextBlock.Foreground = (System.Windows.Media.Brush)Resources["TextFillColorPrimaryBrush"];
+                DeferralDeadlineValueTextBlock.Foreground = (System.Windows.Media.Brush)System.Windows.Application.Current.Resources["TextFillColorPrimaryBrush"];
             }
         }
 
@@ -145,17 +145,17 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 if (timeRemaining < TimeSpan.FromDays(1))
                 {
                     // Less than 1 day remaining - use caution color
-                    textBrush = (System.Windows.Media.Brush)Resources["SystemFillColorCautionBrush"];
+                    textBrush = (System.Windows.Media.Brush)System.Windows.Application.Current.Resources["SystemFillColorCautionBrush"];
                 }
                 else
                 {
-                    textBrush = (System.Windows.Media.Brush)Resources["TextFillColorPrimaryBrush"];
+                    textBrush = (System.Windows.Media.Brush)System.Windows.Application.Current.Resources["TextFillColorPrimaryBrush"];
                 }
             }
             else
             {
                 displayText = "Expired";
-                textBrush = (System.Windows.Media.Brush)Resources["SystemFillColorCriticalBrush"];
+                textBrush = (System.Windows.Media.Brush)System.Windows.Application.Current.Resources["SystemFillColorCriticalBrush"];
             }
             DeferralDeadlineValueTextBlock.Text = displayText;
             DeferralDeadlineValueTextBlock.Foreground = textBrush;
