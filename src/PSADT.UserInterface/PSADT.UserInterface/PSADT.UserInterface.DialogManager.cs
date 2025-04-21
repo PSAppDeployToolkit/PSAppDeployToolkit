@@ -1,4 +1,5 @@
-﻿using System.Windows.Threading;
+﻿using System.Windows;
+using System.Windows.Threading;
 using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.Dialogs.Fluent;
 
@@ -52,7 +53,7 @@ namespace PSADT.UserInterface
                 progressDispatcher = Dispatcher.CurrentDispatcher;
                 using (progressDialog = new ProgressDialog(options))
                 {
-                    progressInitialized.Set();
+                    progressDialog.Loaded += (object sender, RoutedEventArgs e) => progressInitialized.Set();
                     progressDialog.ShowDialog();
                 }
             });
