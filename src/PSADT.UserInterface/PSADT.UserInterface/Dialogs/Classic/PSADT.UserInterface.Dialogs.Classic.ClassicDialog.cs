@@ -12,6 +12,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
 {
     public partial class ClassicDialog : Form
     {
+        static ClassicDialog()
+        {
+            System.Windows.Forms.Application.EnableVisualStyles();
+            System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+        }
+
         public ClassicDialog()
         {
             InitializeComponent();
