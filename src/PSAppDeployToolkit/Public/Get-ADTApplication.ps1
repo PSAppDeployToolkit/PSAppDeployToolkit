@@ -40,9 +40,9 @@ function Get-ADTApplication
         PSADT.Types.InstalledApplication
 
         Returns a custom type with information about an installed application:
-        - UninstallKey
-        - UninstallParentKey
-        - UninstallSubKey
+        - PSPath
+        - PSParentPath
+        - PSChildName
         - ProductCode
         - DisplayName
         - DisplayVersion

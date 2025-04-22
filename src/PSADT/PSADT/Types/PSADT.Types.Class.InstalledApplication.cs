@@ -11,9 +11,9 @@ namespace PSADT.Types
         /// Initializes a new instance of the <see cref="InstalledApplication"/> struct.
         /// Converts the provided install date string to <see cref="DateTime"/> based on the system's culture.
         /// </summary>
-        /// <param name="uninstallKey">The registry key that contains the uninstall entry.</param>
-        /// <param name="uninstallParentKey">The registry key for the subkey's parent.</param>
-        /// <param name="uninstallSubKey">The registry subkey for uninstalling the application.</param>
+        /// <param name="psPath">The registry key that contains the uninstall entry.</param>
+        /// <param name="psParentPath">The registry key for the subkey's parent.</param>
+        /// <param name="psChildName">The registry subkey for uninstalling the application.</param>
         /// <param name="productCode">The product code for the application.</param>
         /// <param name="displayName">The display name of the application.</param>
         /// <param name="displayVersion">The version of the application.</param>
@@ -29,9 +29,9 @@ namespace PSADT.Types
         /// <param name="windowsInstaller">A value indicating whether the application is an MSI.</param>
         /// <param name="is64BitApplication">A value indicating whether the application is a 64-bit application.</param>
         public InstalledApplication(
-            string uninstallKey,
-            string uninstallParentKey,
-            string uninstallSubKey,
+            string psPath,
+            string psParentPath,
+            string psChildName,
             Guid? productCode,
             string displayName,
             string? displayVersion,
@@ -47,9 +47,9 @@ namespace PSADT.Types
             bool windowsInstaller,
             bool is64BitApplication)
         {
-            UninstallKey = uninstallKey;
-            UninstallParentKey = uninstallParentKey;
-            UninstallSubKey = uninstallSubKey;
+            PSPath = psPath;
+            PSParentPath = psParentPath;
+            PSChildName = psChildName;
             ProductCode = productCode;
             DisplayName = displayName;
             DisplayVersion = displayVersion;
@@ -69,17 +69,17 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the registry key that contains the uninstall entry.
         /// </summary>
-        public readonly string UninstallKey;
+        public readonly string PSPath;
 
         /// <summary>
         /// Gets the registry key for the subkey's parent.
         /// </summary>
-        public readonly string UninstallParentKey;
+        public readonly string PSParentPath;
 
         /// <summary>
         /// Gets the registry subkey for uninstalling the application.
         /// </summary>
-        public readonly string UninstallSubKey;
+        public readonly string PSChildName;
 
         /// <summary>
         /// Gets the product code for the application.
