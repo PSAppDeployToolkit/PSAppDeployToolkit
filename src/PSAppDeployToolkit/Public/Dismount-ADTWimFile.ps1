@@ -106,7 +106,7 @@ function Dismount-ADTWimFile
                         foreach ($handle in $pathHandles)
                         {
                             Write-ADTLogEntry -Message "Closing handle [$($handle.HandleInfo.HandleValue)] for process [$($handle.ProcessName) ($($handle.HandleInfo.UniqueProcessId))]."
-                            [PSADT.FileSystem.FileHandleManager]::CloseHandles($handle)
+                            [PSADT.FileSystem.FileHandleManager]::CloseHandles($handle.HandleInfo)
                         }
 
                         # Attempt the dismount again.
