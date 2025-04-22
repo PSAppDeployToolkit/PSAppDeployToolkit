@@ -81,6 +81,7 @@ function ConvertTo-ADTNTAccountOrSID
 
     [CmdletBinding()]
     [OutputType([System.Security.Principal.SecurityIdentifier])]
+    [OutputType([System.Security.Principal.NTAccount])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]
@@ -140,7 +141,21 @@ function ConvertTo-ADTNTAccountOrSID
                     '^SIDToNTAccount'
                     {
                         Write-ADTLogEntry -Message "Converting $(($msg = "the SID [$SID] to an NT Account name"))."
-                        return $SID.Translate([System.Security.Principal.NTAccount])
+                        try
+                        {
+                            return $SID.Translate([System.Security.Principal.NTAccount])
+                        }
+                        catch
+                        {
+                            # Device likely is off the domain network and had no line of sight to a domain controller.
+                            # Attempt to rummage through the group policy cache and see what's available to us.
+                            # Failing this, throw out the original error as there's not much we can do otherwise.
+                            if (!($ntAccount = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\DataStore\$($SID.ToString())" -ErrorAction Ignore | Get-ItemProperty | Select-Object -ExpandProperty szName -Unique -ErrorAction Ignore))
+                            {
+                                throw
+                            }
+                            return [System.Security.Principal.NTAccount]::new($ntAccount)
+                        }
                     }
                     '^NTAccountToSID'
                     {
