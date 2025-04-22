@@ -21,7 +21,7 @@ namespace PSADT.Utilities
         {
             using (var hMsiMsgDll = Kernel32.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE))
             {
-                var bufspan = new Span<char>(new char[4096]);
+                Span<char> bufspan = stackalloc char[4096];
                 User32.LoadString(hMsiMsgDll, msiExitCode, bufspan);
                 var msiMsgString = bufspan.ToString().TrimRemoveNull();
                 return !string.IsNullOrWhiteSpace(msiMsgString) ? Regex.Replace(msiMsgString, @"\s{2,}", " ") : null;

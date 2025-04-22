@@ -47,7 +47,7 @@ namespace PSADT.Security
                 var privilegeCount = buffer.ReadInt32();
                 var bufferOffset = sizeof(int);
                 var increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
-                var charSpan = new Span<char>(new char[256]);
+                Span<char> charSpan = stackalloc char[256];
                 for (int i = 0; i < privilegeCount; i++)
                 {
                     var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset + (increment * i));
