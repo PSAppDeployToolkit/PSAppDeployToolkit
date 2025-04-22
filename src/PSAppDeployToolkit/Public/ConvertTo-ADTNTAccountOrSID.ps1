@@ -150,7 +150,7 @@ function ConvertTo-ADTNTAccountOrSID
                             # Device likely is off the domain network and had no line of sight to a domain controller.
                             # Attempt to rummage through the group policy cache and see what's available to us.
                             # Failing this, throw out the original error as there's not much we can do otherwise.
-                            if (!($ntAccount = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\DataStore\$($SID.ToString())" -ErrorAction Ignore | Get-ItemProperty | Select-Object -ExpandProperty szName -Unique -ErrorAction Ignore))
+                            if (!($ntAccount = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\DataStore\$($SID.ToString())" -ErrorAction Ignore | & { process { if ($_.PSChildName -match '^\d+$') { return $_ } } } | Sort-Object -Property {[System.Int32]$_.PSChildName} -Descending | Get-ItemProperty | Select-Object -ExpandProperty szName -First 1 -ErrorAction Ignore))
                             {
                                 throw
                             }
