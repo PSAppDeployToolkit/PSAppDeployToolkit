@@ -24,7 +24,7 @@ namespace PSADT.TerminalServices
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        public static ReadOnlyCollection<SessionInfo> GetSessionInfo()
+        public static IReadOnlyList<SessionInfo> GetSessionInfo()
         {
             WtsApi32.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out var pSessionInfo, out var pCount);
             using (pSessionInfo)

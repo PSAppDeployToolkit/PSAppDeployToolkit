@@ -86,7 +86,7 @@ function Get-ADTLoggedOnUser
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Collections.ObjectModel.ReadOnlyCollection[PSADT.TerminalServices.SessionInfo]])]
+    [OutputType([System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]])]
     param
     (
     )

@@ -993,7 +993,7 @@ namespace PSADT.Module
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
         /// <param name="hostLogStream">What stream to write the message to.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
+        public IReadOnlyList<LogEntry> WriteLogEntry(string[] message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
         {
             if (null == hostLogStream)
             {
@@ -1001,7 +1001,7 @@ namespace PSADT.Module
                 hostLogStream = GetHostLogStreamMode();
             }
 
-            ReadOnlyCollection<LogEntry> logEntries;
+            IReadOnlyList<LogEntry> logEntries;
             if (!DisableLogging)
             {
                 logEntries = LogUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? LogPath, logFileName ?? LogName, logType);
@@ -1018,7 +1018,7 @@ namespace PSADT.Module
         /// Writes a log entry with a message array.
         /// </summary>
         /// <param name="message">The log message array.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message)
+        public IReadOnlyList<LogEntry> WriteLogEntry(string[] message)
         {
             return WriteLogEntry(message, false, null, null, null, null, null, null, null);
         }
@@ -1027,7 +1027,7 @@ namespace PSADT.Module
         /// Writes a log entry with a single message.
         /// </summary>
         /// <param name="message">The log message.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message)
+        public IReadOnlyList<LogEntry> WriteLogEntry(string message)
         {
             return WriteLogEntry([message], false, null, null, null, null, null, null, null);
         }
@@ -1037,7 +1037,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, LogSeverity severity)
+        public IReadOnlyList<LogEntry> WriteLogEntry(string message, LogSeverity severity)
         {
             return WriteLogEntry([message], false, severity, null, null, null, null, null, null);
         }
@@ -1047,7 +1047,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="source">The source of the message.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, string source)
+        public IReadOnlyList<LogEntry> WriteLogEntry(string message, string source)
         {
             return WriteLogEntry([message], false, null, source, null, null, null, null, null);
         }
@@ -1058,7 +1058,7 @@ namespace PSADT.Module
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the message.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, LogSeverity severity, string source)
+        public IReadOnlyList<LogEntry> WriteLogEntry(string message, LogSeverity severity, string source)
         {
             return WriteLogEntry([message], false, severity, source, null, null, null, null, null);
         }
@@ -1068,7 +1068,7 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="writeHost">Whether to write to the host.</param>
-        public ReadOnlyCollection<LogEntry> WriteLogEntry(string message, bool writeHost)
+        public IReadOnlyList<LogEntry> WriteLogEntry(string message, bool writeHost)
         {
             return WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
         }
@@ -1331,12 +1331,12 @@ namespace PSADT.Module
         /// <summary>
         /// Read-only list of all backing fields in the DeploymentSession class.
         /// </summary>
-        private static readonly IReadOnlyDictionary<string, FieldInfo> BackingFields = new ReadOnlyDictionary<string, FieldInfo> (typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpper(field.Name[1]) + field.Name.Substring(2), static field => field));
+        private static readonly ReadOnlyDictionary<string, FieldInfo> BackingFields = new ReadOnlyDictionary<string, FieldInfo> (typeof(DeploymentSession).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(static field => field.Name.StartsWith("_")).ToDictionary(static field => char.ToUpper(field.Name[1]) + field.Name.Substring(2), static field => field));
 
         /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
-        private static readonly IReadOnlyList<string> DriveLetters = new ReadOnlyCollection<string>(["Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"]);
+        private static readonly ReadOnlyCollection<string> DriveLetters = new ReadOnlyCollection<string>(["Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"]);
 
         /// <summary>
         /// Buffer for log entries.
@@ -1361,7 +1361,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the list of executables found within a Zero-Config MSI file.
         /// </summary>
-        private readonly IReadOnlyList<ProcessObject> DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessObject>([]);
+        private readonly ReadOnlyCollection<ProcessObject> DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessObject>([]);
 
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
@@ -1406,8 +1406,8 @@ namespace PSADT.Module
         private readonly string? _appArch;
         private readonly string? _appLang;
         private readonly string? _appRevision;
-        private readonly IReadOnlyList<int> _appSuccessExitCodes = new ReadOnlyCollection<int>([0]);
-        private readonly IReadOnlyList<int> _appRebootExitCodes = new ReadOnlyCollection<int>([1641, 3010]);
+        private readonly ReadOnlyCollection<int> _appSuccessExitCodes = new ReadOnlyCollection<int>([0]);
+        private readonly ReadOnlyCollection<int> _appRebootExitCodes = new ReadOnlyCollection<int>([1641, 3010]);
         private readonly Version? _appScriptVersion;
         private readonly DateTime? _appScriptDate;
         private readonly string? _appScriptAuthor;
@@ -1415,13 +1415,13 @@ namespace PSADT.Module
         private readonly string _installTitle;
         private readonly string? _deployAppScriptFriendlyName;
         private readonly Version? _deployAppScriptVersion;
-        private readonly IReadOnlyDictionary<string, object>? _deployAppScriptParameters;
+        private readonly ReadOnlyDictionary<string, object>? _deployAppScriptParameters;
         private readonly string _currentDate;
         private readonly string _currentTime;
-        private readonly IReadOnlyList<string>? _scriptDirectory;
+        private readonly ReadOnlyCollection<string>? _scriptDirectory;
         private readonly string? _defaultMsiFile;
         private readonly string? _defaultMstFile;
-        private readonly IReadOnlyList<string> _defaultMspFiles = new ReadOnlyCollection<string>([]);
+        private readonly ReadOnlyCollection<string> _defaultMspFiles = new ReadOnlyCollection<string>([]);
         private readonly string _logName;
         private string? _dirFiles;
         private string? _dirSupportFiles;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace PSADT.Types
@@ -96,12 +97,12 @@ namespace PSADT.Types
         /// <summary>
         /// Gets the list of pending file rename operations.
         /// </summary>
-        public readonly ReadOnlyCollection<string> PendingFileRenameOperations;
+        public readonly IReadOnlyList<string> PendingFileRenameOperations;
 
         /// <summary>
         /// Gets the error messages related to reboot operations.
         /// </summary>
-        public readonly ReadOnlyCollection<string> ErrorMsg;
+        public readonly IReadOnlyList<string> ErrorMsg;
 
         /// <summary>
         /// Returns a value indicating whether any reboot is pending.

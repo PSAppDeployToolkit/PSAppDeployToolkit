@@ -29,7 +29,7 @@ namespace PSADT.FileSystem
         /// </summary>
         /// <param name="directoryPath"></param>
         /// <returns></returns>
-        public static ReadOnlyCollection<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
+        public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
             // Pre-calculate the sizes of the structures we need to read.
             var handleEntryExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
@@ -132,7 +132,7 @@ namespace PSADT.FileSystem
         /// Retrieves a list of open handles for the system.
         /// </summary>
         /// <returns></returns>
-        public static ReadOnlyCollection<FileHandleInfo> GetOpenHandles()
+        public static IReadOnlyList<FileHandleInfo> GetOpenHandles()
         {
             return GetOpenHandles(null);
         }

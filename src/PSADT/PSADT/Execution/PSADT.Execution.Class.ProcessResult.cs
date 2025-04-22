@@ -15,7 +15,7 @@ namespace PSADT.Execution
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
-        public ProcessResult(uint processId, int? exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
+        public ProcessResult(uint processId, int? exitCode, IReadOnlyList<string> stdOut, IReadOnlyList<string> stdErr, IReadOnlyList<string> interleaved)
         {
             ProcessId = processId;
             ExitCode = exitCode;
@@ -46,16 +46,16 @@ namespace PSADT.Execution
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        public readonly ReadOnlyCollection<string> StdOut = new List<string>().AsReadOnly();
+        public readonly IReadOnlyList<string> StdOut = new List<string>().AsReadOnly();
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        public readonly ReadOnlyCollection<string> StdErr = new List<string>().AsReadOnly();
+        public readonly IReadOnlyList<string> StdErr = new List<string>().AsReadOnly();
 
         /// <summary>
         /// Gets the combined standard output and error of the process.
         /// </summary>
-        public readonly ReadOnlyCollection<string> Interleaved = new List<string>().AsReadOnly();
+        public readonly IReadOnlyList<string> Interleaved = new List<string>().AsReadOnly();
     }
 }

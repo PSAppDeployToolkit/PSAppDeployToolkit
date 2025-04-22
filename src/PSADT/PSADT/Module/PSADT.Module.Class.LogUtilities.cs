@@ -27,7 +27,7 @@ namespace PSADT.Module
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
-        public static ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
+        public static IReadOnlyList<LogEntry> WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
         {
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
@@ -91,11 +91,11 @@ namespace PSADT.Module
             }
 
             // Store log string to format with message.
-            IReadOnlyDictionary<string, string> logFormats = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()
+            Dictionary<string, string> logFormats = new Dictionary<string, string>()
             {
                 { "Legacy", $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
                 { "CMTrace", $"<![LOG[{(null != scriptSection && message[0] != LogDivider ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString("HH\\:mm\\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-            });
+            };
 
             // Loop through each message and generate necessary log messages.
             // For CMTrace, we replace all empty lines with a space so OneTrace doesn't trim them.
@@ -218,7 +218,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the log severity colors.
         /// </summary>
-        private static readonly IReadOnlyList<IReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new List<IReadOnlyDictionary<string, ConsoleColor>>()
+        private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new List<ReadOnlyDictionary<string, ConsoleColor>>()
         {
             new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green }, { "BackgroundColor", ConsoleColor.Black } }),
             new ReadOnlyDictionary<string, ConsoleColor>(new Dictionary<string, ConsoleColor>()),
