@@ -127,8 +127,6 @@ namespace PSADT.UserInterface
                 appThread = new Thread(() =>
                 {
                     app = new System.Windows.Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
-                    app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary { Theme = Wpf.Ui.Appearance.ApplicationTheme.Dark });
-                    app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
                     appInitialized.Set();
                     Dispatcher.Run();
                 });

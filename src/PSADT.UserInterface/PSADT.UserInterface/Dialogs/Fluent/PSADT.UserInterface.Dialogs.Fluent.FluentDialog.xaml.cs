@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using Windows.Win32;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using Wpf.Ui.Markup;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -18,6 +19,16 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// </summary>
     internal abstract partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
+        /// <summary>
+        /// Static constructor to set up the theme and resources for the dialog.
+        /// </summary>
+        static FluentDialog()
+        {
+            // Add these dictionaries here so they're available before the constructor is called.
+            System.Windows.Application.Current.Resources.MergedDictionaries.Add(new ThemesDictionary { Theme = ApplicationTheme.Dark });
+            System.Windows.Application.Current.Resources.MergedDictionaries.Add(new ControlsDictionary());
+        }
+
         /// <summary>
         /// Initializes a new instance of FluentDialog
         /// </summary>
