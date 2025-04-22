@@ -29,8 +29,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         static FluentDialog()
         {
             // Add these dictionaries here so they're available before the constructor is called.
-            System.Windows.Application.Current.Resources.MergedDictionaries.Add(new ThemesDictionary { Theme = ApplicationTheme.Dark });
-            System.Windows.Application.Current.Resources.MergedDictionaries.Add(new ControlsDictionary());
+            Application.Current.Resources.MergedDictionaries.Add(new ThemesDictionary { Theme = ApplicationTheme.Dark });
+            Application.Current.Resources.MergedDictionaries.Add(new ControlsDictionary());
         }
 
         /// <summary>
@@ -55,19 +55,19 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // See https://github.com/lepoco/wpfui/issues/1188 for more info.
                 var brushes = new Dictionary<string, SolidColorBrush>
                 {
-                    ["SystemAccentColor"] = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Application.Current.Resources["SystemAccentColor"]),
-                    ["SystemAccentColorPrimary"] = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Application.Current.Resources["SystemAccentColorPrimary"]),
-                    ["SystemAccentColorSecondary"] = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Application.Current.Resources["SystemAccentColorSecondary"]),
-                    ["SystemAccentColorTertiary"] = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Application.Current.Resources["SystemAccentColorTertiary"])
+                    ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
+                    ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
+                    ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
+                    ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"])
                 };
-                ResourceDictionary themeDictionary = System.Windows.Application.Current.Resources.MergedDictionaries.First(static d => d.Source.AbsolutePath.StartsWith("/Wpf.Ui;component/Resources/Theme/"));
+                ResourceDictionary themeDictionary = Application.Current.Resources.MergedDictionaries.First(static d => d.Source.AbsolutePath.StartsWith("/Wpf.Ui;component/Resources/Theme/"));
                 var converter = new ResourceReferenceExpressionConverter();
                 foreach (DictionaryEntry entry in themeDictionary)
                 {
                     if (entry.Value is SolidColorBrush brush)
                     {
                         var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
-                        if (dynamicColor is not System.Windows.Media.Color &&
+                        if (dynamicColor is not Color &&
                             converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
                             brushes.ContainsKey((string)dynamicResource.ResourceKey))
                         {
@@ -98,7 +98,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             WindowStartupLocation = WindowStartupLocation.Manual;
             _dialogAllowMove = options.DialogAllowMove;
             Topmost = options.DialogTopMost;
-            _dialogExpiryTimer = new System.Threading.Timer(CloseDialog, null, options.DialogExpiryDuration, Timeout.InfiniteTimeSpan);
+            _dialogExpiryTimer = new Timer(CloseDialog, null, options.DialogExpiryDuration, Timeout.InfiniteTimeSpan);
 
             // Set supplemental options also
             _customMessageText = customMessageText;
@@ -221,7 +221,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The countdown timer for the dialog to automatically close.
         /// </summary>
-        private readonly System.Threading.Timer _dialogExpiryTimer;
+        private readonly Timer _dialogExpiryTimer;
 
         /// <summary>
         /// An optional countdown to zero to commence a preferred action.

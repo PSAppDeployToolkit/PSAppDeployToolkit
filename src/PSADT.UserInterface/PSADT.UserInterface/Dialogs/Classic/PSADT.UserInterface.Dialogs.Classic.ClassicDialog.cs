@@ -14,8 +14,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
     {
         static ClassicDialog()
         {
-            System.Windows.Forms.Application.EnableVisualStyles();
-            System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
         }
 
         public ClassicDialog()

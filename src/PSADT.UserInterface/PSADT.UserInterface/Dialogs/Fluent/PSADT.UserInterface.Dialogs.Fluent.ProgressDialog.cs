@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
@@ -64,7 +65,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     };
 
                     // Begin the animation
-                    ProgressBar.BeginAnimation(System.Windows.Controls.Primitives.RangeBase.ValueProperty, animation);
+                    ProgressBar.BeginAnimation(RangeBase.ValueProperty, animation);
 
                     // Update the property as well to maintain state
                     ProgressBar.Value = percentComplete.Value;

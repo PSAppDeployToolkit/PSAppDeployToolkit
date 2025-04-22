@@ -128,7 +128,7 @@ namespace PSADT.UserInterface
             {
                 appThread = new Thread(() =>
                 {
-                    app = new System.Windows.Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                    app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
                     appInitialized.Set();
                     Dispatcher.Run();
                 });
@@ -153,7 +153,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Application instance for the WPF dialog.
         /// </summary>
-        private static System.Windows.Application? app;
+        private static Application? app;
 
         /// <summary>
         /// Thread for the WPF dialog.

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using PSADT.UserInterface.Utilities;
 using Wpf.Ui.Controls;
@@ -140,13 +141,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <returns></returns>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        private static System.Windows.Media.Color StringToColor(string colorStr)
+        private static Color StringToColor(string colorStr)
         {
             if (!Regex.IsMatch(colorStr, "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"))
             {
                 throw new FormatException("Invalid hex color string.");
             }
-            if (!(TypeDescriptor.GetConverter(typeof(System.Windows.Media.Color)).ConvertFromString(colorStr) is System.Windows.Media.Color result))
+            if (!(TypeDescriptor.GetConverter(typeof(Color)).ConvertFromString(colorStr) is Color result))
             {
                 throw new InvalidOperationException("Failed to convert color string to Color.");
             }
@@ -345,17 +346,17 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (_countdownRemainingTime.TotalSeconds <= 60)
             {
                 // Less than 60 seconds - use critical color
-                CountdownValueTextBlock.Foreground = (Brush)System.Windows.Application.Current.Resources["SystemFillColorCriticalBrush"];
+                CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
             }
             else if (_countdownNoMinimizeDuration.HasValue && _countdownRemainingTime <= _countdownNoMinimizeDuration)
             {
                 // Less than no-minimize duration - use attention color
-                CountdownValueTextBlock.Foreground = (Brush)System.Windows.Application.Current.Resources["SystemFillColorCautionBrush"];
+                CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
             }
             else
             {
                 // Normal time - use default text color
-                CountdownValueTextBlock.Foreground = (Brush)System.Windows.Application.Current.Resources["TextFillColorPrimaryBrush"];
+                CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
             }
 
             // Handle countdown no minimize option for Restart dialog
