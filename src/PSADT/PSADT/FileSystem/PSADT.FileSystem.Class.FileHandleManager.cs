@@ -143,6 +143,12 @@ namespace PSADT.FileSystem
         /// <param name="handleEntries"></param>
         public static void CloseHandles(NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
+            // Confirm the provided input isn't null.
+            if (null == handleEntries)
+            {
+                throw new ArgumentNullException(nameof(handleEntries));
+            }
+
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
             foreach (var handleEntry in handleEntries)
             {
