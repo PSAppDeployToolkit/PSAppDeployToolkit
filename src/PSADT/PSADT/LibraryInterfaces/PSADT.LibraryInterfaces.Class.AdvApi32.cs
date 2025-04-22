@@ -182,46 +182,5 @@ namespace PSADT.LibraryInterfaces
             cchName = len;
             return res;
         }
-
-        /// <summary>
-        /// Retrieves the name of the specified account for a given security identifier (SID).
-        /// </summary>
-        /// <param name="lpSystemName"></param>
-        /// <param name="Sid"></param>
-        /// <param name="Name"></param>
-        /// <param name="cchName"></param>
-        /// <param name="ReferencedDomainName"></param>
-        /// <param name="cchReferencedDomainName"></param>
-        /// <param name="peUse"></param>
-        /// <returns></returns>
-        internal static BOOL LookupAccountSid(string? lpSystemName, SafeHandle Sid, Span<char> Name, out uint cchName, Span<char> ReferencedDomainName, out uint cchReferencedDomainName, out SID_NAME_USE peUse)
-        {
-            var nameLen = (uint)Name.Length;
-            var refDomainNameLen = (uint)ReferencedDomainName.Length;
-            var res = PInvoke.LookupAccountSid(lpSystemName, Sid, Name, ref nameLen, ReferencedDomainName, ref refDomainNameLen, out peUse);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            cchName = nameLen;
-            cchReferencedDomainName = refDomainNameLen;
-            return res;
-        }
-
-        /// <summary>
-        /// Converts a string SID to a binary SID.
-        /// </summary>
-        /// <param name="StringSid"></param>
-        /// <param name="Sid"></param>
-        /// <returns></returns>
-        internal static BOOL ConvertStringSidToSid(string StringSid, out FreeSidSafeHandle Sid)
-        {
-            var res = PInvoke.ConvertStringSidToSid(StringSid, out Sid);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
-        }
     }
 }
