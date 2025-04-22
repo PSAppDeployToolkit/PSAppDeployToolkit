@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.Utilities;
 using Windows.Win32;
@@ -59,7 +60,7 @@ namespace PSADT.TerminalServices
                         {
                             if (pBuffer.ToStringUni()?.Trim() is string result && !string.IsNullOrWhiteSpace(result))
                             {
-                                return (T)(object)result.Replace("\0", string.Empty).Trim();
+                                return (T)(object)result.TrimRemoveNull();
                             }
                         }
                         if (typeof(T) == typeof(ushort))
@@ -92,7 +93,7 @@ namespace PSADT.TerminalServices
             SecurityIdentifier sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
             var state = (LibraryInterfaces.WTS_CONNECTSTATE_CLASS)GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSConnectState)!;
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
-            string pWinStationName = session.pWinStationName.ToString().Replace("\0", string.Empty).Trim();
+            string pWinStationName = session.pWinStationName.ToString().TrimRemoveNull();
             DateTime? logonTime = null;
             TimeSpan? idleTime = null;
             DateTime? disconnectTime = null;

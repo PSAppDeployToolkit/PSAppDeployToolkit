@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.Security.Principal;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 
 namespace PSADT.Utilities
@@ -101,7 +102,7 @@ namespace PSADT.Utilities
                 var nameLen = (uint)nameBuf.Length;
                 var domainLen = (uint)domainBuf.Length;
                 AdvApi32.LookupAccountSid(null, binarySid, nameBuf, ref nameLen, domainBuf, ref domainLen, out var accountType);
-                return new NTAccount(domainBuf.Slice(0, (int)domainLen).ToString().Replace("\0", string.Empty).Trim(), nameBuf.Slice(0, (int)nameLen).ToString().Replace("\0", string.Empty).Trim());
+                return new NTAccount(domainBuf.Slice(0, (int)domainLen).ToString().TrimRemoveNull(), nameBuf.Slice(0, (int)nameLen).ToString().TrimRemoveNull());
             }
         }
     }

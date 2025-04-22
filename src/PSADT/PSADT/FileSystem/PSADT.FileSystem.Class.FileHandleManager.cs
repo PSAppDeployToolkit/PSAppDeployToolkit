@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Execution;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Types;
@@ -192,7 +193,7 @@ namespace PSADT.FileSystem
                     {
                         return null;
                     }
-                    return buffer.ToStructure<OBJECT_NAME_INFORMATION>().Name.Buffer.ToString()?.Replace("\0", string.Empty).Trim();
+                    return buffer.ToStructure<OBJECT_NAME_INFORMATION>().Name.Buffer.ToString()?.TrimRemoveNull();
                 }
             }
         }
@@ -225,7 +226,7 @@ namespace PSADT.FileSystem
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
                 var typeInfo = typesBufferPtr.ToStructure<NtDll.OBJECT_TYPE_INFORMATION>(ptrOffset);
-                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().Replace("\0", string.Empty).Trim());
+                typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.Buffer.ToString().TrimRemoveNull());
                 ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
             }
             return new ReadOnlyDictionary<ushort, string>(typeTable);

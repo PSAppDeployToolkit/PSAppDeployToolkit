@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -66,7 +67,7 @@ namespace PSADT.Utilities
             {
                 var buffer = new char[textLength + 1];
                 User32.GetWindowText(hwnd, buffer);
-                var text = new string(buffer).Replace("\0", string.Empty).Trim();
+                var text = new string(buffer).TrimRemoveNull();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     return text;

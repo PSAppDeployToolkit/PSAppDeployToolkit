@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.System.LibraryLoader;
 
@@ -22,7 +23,7 @@ namespace PSADT.Utilities
             {
                 var bufspan = new Span<char>(new char[4096]);
                 User32.LoadString(hMsiMsgDll, msiExitCode, bufspan);
-                var msiMsgString = bufspan.ToString().Replace("\0", string.Empty).Trim();
+                var msiMsgString = bufspan.ToString().TrimRemoveNull();
                 return !string.IsNullOrWhiteSpace(msiMsgString) ? Regex.Replace(msiMsgString, @"\s{2,}", " ") : null;
             }
         }

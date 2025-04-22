@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using Windows.Win32.Security;
@@ -51,7 +52,7 @@ namespace PSADT.Security
                 {
                     var attr = buffer.ToStructure<LUID_AND_ATTRIBUTES>(bufferOffset + (increment * i));
                     AdvApi32.LookupPrivilegeName(null, attr.Luid, charSpan, out var retLength);
-                    if (charSpan.Slice(0, (int)retLength).ToString().Replace("\0", string.Empty).Trim().Equals(privilege.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (charSpan.Slice(0, (int)retLength).ToString().TrimRemoveNull().Equals(privilege.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
