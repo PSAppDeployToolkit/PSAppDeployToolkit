@@ -354,20 +354,27 @@ function Open-ADTSession
         # Set up the ScriptDirectory if one wasn't provided.
         if (!$PSBoundParameters.ContainsKey('ScriptDirectory'))
         {
-            [System.String[]]$PSBoundParameters.ScriptDirectory = if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
+            [System.String[]]$PSBoundParameters.ScriptDirectory = if (!$Script:ADT.Initialized -or !$Script:ADT.Directories.Script)
             {
-                if ($compatibilityMode)
+                if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
                 {
-                    [System.IO.Directory]::GetParent($scriptRoot).FullName
+                    if ($compatibilityMode)
+                    {
+                        [System.IO.Directory]::GetParent($scriptRoot).FullName
+                    }
+                    else
+                    {
+                        $scriptRoot
+                    }
                 }
                 else
                 {
-                    $scriptRoot
+                    $ExecutionContext.SessionState.Path.CurrentLocation.Path
                 }
             }
             else
             {
-                $ExecutionContext.SessionState.Path.CurrentLocation.Path
+                $Script:ADT.Directories.Script
             }
         }
 
