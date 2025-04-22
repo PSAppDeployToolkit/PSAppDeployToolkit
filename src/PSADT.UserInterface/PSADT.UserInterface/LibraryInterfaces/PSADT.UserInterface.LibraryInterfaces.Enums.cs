@@ -1,4 +1,6 @@
-﻿namespace PSADT.UserInterface.LibraryInterfaces
+﻿using System;
+
+namespace PSADT.UserInterface.LibraryInterfaces
 {
     /// <summary>
     /// Flags for SHGetFileInfo function.

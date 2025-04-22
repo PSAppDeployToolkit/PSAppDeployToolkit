@@ -1,4 +1,6 @@
-﻿namespace PSADT.UserInterface.Dialogs.Classic
+﻿using System.Windows.Forms;
+
+namespace PSADT.UserInterface.Dialogs.Classic
 {
     partial class ClassicDialog
     {

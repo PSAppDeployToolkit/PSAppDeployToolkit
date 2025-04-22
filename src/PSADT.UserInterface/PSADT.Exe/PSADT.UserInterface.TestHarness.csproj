@@ -11,7 +11,6 @@
       <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
       <LangVersion>latest</LangVersion>
 	  <Nullable>enable</Nullable>
-	  <ImplicitUsings>enable</ImplicitUsings>
 	  <StartupObject>PSADT.UserInterface.Program</StartupObject>
       <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
       <RootNamespace>PSADT</RootNamespace>

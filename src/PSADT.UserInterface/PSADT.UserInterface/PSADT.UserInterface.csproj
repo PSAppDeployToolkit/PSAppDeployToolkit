@@ -10,7 +10,6 @@
 	  <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 	  <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 	  <Nullable>enable</Nullable>
-	  <ImplicitUsings>enable</ImplicitUsings>
 	  <ApplicationManifest>app.manifest</ApplicationManifest>
 	  <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 	  <UserSecretsId>1f9c9b02-c540-4d44-95e4-075d460f0854</UserSecretsId>
