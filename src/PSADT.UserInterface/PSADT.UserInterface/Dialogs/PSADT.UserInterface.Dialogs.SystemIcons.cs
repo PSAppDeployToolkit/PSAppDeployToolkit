@@ -38,7 +38,7 @@ namespace PSADT.UserInterface.Dialogs
         /// Builds a lookup table for system icons.
         /// </summary>
         /// <returns></returns>
-        private static ReadOnlyDictionary<string, Icon> BuildSystemIconLookupTable()
+        private static ReadOnlyDictionary<DialogSystemIcon, Icon> BuildSystemIconLookupTable()
         {
             // Define temporary list of system icons to look up.
             var lookupList = new[]
@@ -59,24 +59,24 @@ namespace PSADT.UserInterface.Dialogs
             }
 
             // Return a translated dictionary that matches System.Drawing.SystemIcons.
-            return new ReadOnlyDictionary<string, Icon>(new Dictionary<string, Icon>
+            return new ReadOnlyDictionary<DialogSystemIcon, Icon>(new Dictionary<DialogSystemIcon, Icon>
             {
-                { "Application", icons[SHSTOCKICONID.SIID_APPLICATION] },
-                { "Asterisk", icons[SHSTOCKICONID.SIID_INFO] },
-                { "Error", icons[SHSTOCKICONID.SIID_ERROR] },
-                { "Exclamation", icons[SHSTOCKICONID.SIID_WARNING] },
-                { "Hand", icons[SHSTOCKICONID.SIID_ERROR] },
-                { "Information", icons[SHSTOCKICONID.SIID_INFO] },
-                { "Question", icons[SHSTOCKICONID.SIID_HELP] },
-                { "Shield", icons[SHSTOCKICONID.SIID_SHIELD] },
-                { "Warning", icons[SHSTOCKICONID.SIID_WARNING] },
-                { "WinLogo", icons[SHSTOCKICONID.SIID_APPLICATION] },
+                { DialogSystemIcon.Application, icons[SHSTOCKICONID.SIID_APPLICATION] },
+                { DialogSystemIcon.Asterisk, icons[SHSTOCKICONID.SIID_INFO] },
+                { DialogSystemIcon.Error, icons[SHSTOCKICONID.SIID_ERROR] },
+                { DialogSystemIcon.Exclamation, icons[SHSTOCKICONID.SIID_WARNING] },
+                { DialogSystemIcon.Hand, icons[SHSTOCKICONID.SIID_ERROR] },
+                { DialogSystemIcon.Information, icons[SHSTOCKICONID.SIID_INFO] },
+                { DialogSystemIcon.Question, icons[SHSTOCKICONID.SIID_HELP] },
+                { DialogSystemIcon.Shield, icons[SHSTOCKICONID.SIID_SHIELD] },
+                { DialogSystemIcon.Warning, icons[SHSTOCKICONID.SIID_WARNING] },
+                { DialogSystemIcon.WinLogo, icons[SHSTOCKICONID.SIID_APPLICATION] },
             });
         }
 
         /// <summary>
         /// A lookup table for system icons.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<string, Icon> SystemIconLookupTable = BuildSystemIconLookupTable();
+        internal static readonly ReadOnlyDictionary<DialogSystemIcon, Icon> SystemIconLookupTable = BuildSystemIconLookupTable();
     }
 }
