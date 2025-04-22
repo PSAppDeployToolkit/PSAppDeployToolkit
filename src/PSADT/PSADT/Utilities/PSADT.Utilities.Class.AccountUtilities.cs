@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.Security.Principal;
-using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
 
 namespace PSADT.Utilities
