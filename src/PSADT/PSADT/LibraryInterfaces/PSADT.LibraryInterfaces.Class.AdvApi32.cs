@@ -194,13 +194,17 @@ namespace PSADT.LibraryInterfaces
         /// <param name="cchReferencedDomainName"></param>
         /// <param name="peUse"></param>
         /// <returns></returns>
-        internal static BOOL LookupAccountSid(string? lpSystemName, SafeHandle Sid, Span<char> Name, ref uint cchName, Span<char> ReferencedDomainName, ref uint cchReferencedDomainName, out SID_NAME_USE peUse)
+        internal static BOOL LookupAccountSid(string? lpSystemName, SafeHandle Sid, Span<char> Name, out uint cchName, Span<char> ReferencedDomainName, out uint cchReferencedDomainName, out SID_NAME_USE peUse)
         {
-            var res = PInvoke.LookupAccountSid(lpSystemName, Sid, Name, ref cchName, ReferencedDomainName, ref cchReferencedDomainName, out peUse);
+            var nameLen = (uint)Name.Length;
+            var refDomainNameLen = (uint)ReferencedDomainName.Length;
+            var res = PInvoke.LookupAccountSid(lpSystemName, Sid, Name, ref nameLen, ReferencedDomainName, ref refDomainNameLen, out peUse);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            cchName = nameLen;
+            cchReferencedDomainName = refDomainNameLen;
             return res;
         }
 

@@ -99,9 +99,7 @@ namespace PSADT.Utilities
             {
                 Span<char> nameBuf = stackalloc char[256];
                 Span<char> domainBuf = stackalloc char[256];
-                var nameLen = (uint)nameBuf.Length;
-                var domainLen = (uint)domainBuf.Length;
-                AdvApi32.LookupAccountSid(null, binarySid, nameBuf, ref nameLen, domainBuf, ref domainLen, out var accountType);
+                AdvApi32.LookupAccountSid(null, binarySid, nameBuf, out var nameLen, domainBuf, out var domainLen, out var accountType);
                 return new NTAccount(domainBuf.Slice(0, (int)domainLen).ToString().TrimRemoveNull(), nameBuf.Slice(0, (int)nameLen).ToString().TrimRemoveNull());
             }
         }
