@@ -171,7 +171,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpLuid"></param>
         /// <param name="lpName"></param>
         /// <returns></returns>
-        internal static unsafe BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
+        internal static BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
         {
             var len = (uint)lpName.Length;
             var res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref len);
@@ -180,6 +180,43 @@ namespace PSADT.LibraryInterfaces
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             cchName = len;
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves the name of the specified account for a given security identifier (SID).
+        /// </summary>
+        /// <param name="lpSystemName"></param>
+        /// <param name="Sid"></param>
+        /// <param name="Name"></param>
+        /// <param name="cchName"></param>
+        /// <param name="ReferencedDomainName"></param>
+        /// <param name="cchReferencedDomainName"></param>
+        /// <param name="peUse"></param>
+        /// <returns></returns>
+        internal static BOOL LookupAccountSid(string? lpSystemName, SafeHandle Sid, Span<char> Name, ref uint cchName, Span<char> ReferencedDomainName, ref uint cchReferencedDomainName, out SID_NAME_USE peUse)
+        {
+            var res = PInvoke.LookupAccountSid(lpSystemName, Sid, Name, ref cchName, ReferencedDomainName, ref cchReferencedDomainName, out peUse);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Converts a string SID to a binary SID.
+        /// </summary>
+        /// <param name="StringSid"></param>
+        /// <param name="Sid"></param>
+        /// <returns></returns>
+        internal static BOOL ConvertStringSidToSid(string StringSid, out FreeSidSafeHandle Sid)
+        {
+            var res = PInvoke.ConvertStringSidToSid(StringSid, out Sid);
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
             return res;
         }
     }

@@ -1,7 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.Security.Principal;
+using Microsoft.Win32.SafeHandles;
+using PSADT.LibraryInterfaces;
 
 namespace PSADT.Utilities
 {
@@ -81,6 +84,25 @@ namespace PSADT.Utilities
             {
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the NTAccount object for a given SID.
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        public static NTAccount GetNtAccountFromSid(SecurityIdentifier sid)
+        {
+            AdvApi32.ConvertStringSidToSid(sid.ToString(), out var binarySid);
+            using (binarySid)
+            {
+                Span<char> nameBuf = stackalloc char[256];
+                Span<char> domainBuf = stackalloc char[256];
+                var nameLen = (uint)nameBuf.Length;
+                var domainLen = (uint)domainBuf.Length;
+                AdvApi32.LookupAccountSid(null, binarySid, nameBuf, ref nameLen, domainBuf, ref domainLen, out var accountType);
+                return new NTAccount(domainBuf.Slice(0, (int)domainLen).ToString().Replace("\0", string.Empty).Trim(), nameBuf.Slice(0, (int)nameLen).ToString().Replace("\0", string.Empty).Trim());
             }
         }
     }

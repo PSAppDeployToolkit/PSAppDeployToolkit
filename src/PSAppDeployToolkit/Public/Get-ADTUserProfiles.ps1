@@ -139,7 +139,7 @@ function Get-ADTUserProfiles
                         }
 
                         # Return early for accounts that have a null NTAccount.
-                        if (!($ntAccount = ConvertTo-ADTNTAccountOrSID -SID $_.PSChildName -InformationAction SilentlyContinue))
+                        if (!($ntAccount = [PSADT.Utilities.AccountUtilities]::GetNtAccountFromSid($_.PSChildName)))
                         {
                             return
                         }

@@ -5,6 +5,7 @@ BringWindowToTop
 CloseHandle
 CoCreateInstance
 CoInitializeEx
+ConvertStringSidToSid
 CoUninitialize
 CreateEnvironmentBlock
 CreateIoCompletionPort
@@ -63,6 +64,7 @@ JOBOBJECT_ASSOCIATE_COMPLETION_PORT
 LoadLibrary
 LoadLibraryEx
 LoadString
+LookupAccountSid
 LookupPrivilegeNameW
 LookupPrivilegeValueW
 MMDeviceEnumerator
