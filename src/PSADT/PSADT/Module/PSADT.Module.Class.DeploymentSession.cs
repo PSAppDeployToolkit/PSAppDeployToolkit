@@ -213,7 +213,7 @@ namespace PSADT.Module
 
                         // Subst the new DirFiles path to eliminate any potential path length issues.
                         IEnumerable<string> usedLetters = DriveInfo.GetDrives().Select(static d => d.Name);
-                        if (DriveLetters.Where(l => !usedLetters.Contains(l)).FirstOrDefault() is string availLetter)
+                        if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is string availLetter)
                         {
                             availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{_dirFiles}].");
                             ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Path $args[1]"), availLetter, _dirFiles);
@@ -252,7 +252,7 @@ namespace PSADT.Module
                             };
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
-                            if (msiFiles.Where(f => !f.EndsWith($".{formattedOSArch}.msi", StringComparison.OrdinalIgnoreCase)).FirstOrDefault() is string msiFile)
+                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{formattedOSArch}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
                             {
                                 _defaultMsiFile = new FileInfo(msiFile).FullName;
                             }
@@ -299,7 +299,7 @@ namespace PSADT.Module
                                 _defaultMspFiles = new ReadOnlyCollection<string>(mspFiles);
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(_dirFiles) && (null != _defaultMspFiles.Where(static f => !Path.IsPathRooted(f)).FirstOrDefault()))
+                        else if (!string.IsNullOrWhiteSpace(_dirFiles) && (null != _defaultMspFiles.FirstOrDefault(static f => !Path.IsPathRooted(f))))
                         {
                             _defaultMspFiles = _defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f).ToList().AsReadOnly();
                         }

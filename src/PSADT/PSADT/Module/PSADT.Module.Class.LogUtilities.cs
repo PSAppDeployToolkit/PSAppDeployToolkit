@@ -50,7 +50,7 @@ namespace PSADT.Module
             // Handle situations where we might be calling this function without an active runspace.
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
             {
-                var invoker = stackFrames.Where(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT")).First(); var method = invoker.GetMethod()!;
+                var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT")); var method = invoker.GetMethod()!;
                 callerFileName = invoker.GetFileName()!;
                 callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
             }

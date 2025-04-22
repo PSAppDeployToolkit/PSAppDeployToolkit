@@ -139,11 +139,11 @@ namespace PSADT.Execution
                         // You can only run a process as a user if they're active.
                         if (!launchInfo.Username.Value.Contains("\\"))
                         {
-                            session = userSessions.Where(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase)).First();
+                            session = userSessions.First(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase));
                         }
                         else
                         {
-                            session = userSessions.Where(s => s.NTAccount == launchInfo.Username).First();
+                            session = userSessions.First(s => s.NTAccount == launchInfo.Username);
                         }
                         if (null == session)
                         {
