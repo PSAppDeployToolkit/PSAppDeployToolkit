@@ -12,6 +12,12 @@ MonitorFromPoint
 MonitorFromWindow
 RECT
 SC_MOVE
+SHGetImageList
+SHGSI_FLAGS
+SHGFI_FLAGS
+SHIL_JUMBO
+SHSTOCKICONID
 SystemParametersInfo
 WIN32_ERROR
+Windows.Win32.UI.Controls.IImageList
 WM_SYSCOMMAND

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using PSADT.UserInterface.LibraryInterfaces;
+using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.Extensions
 {

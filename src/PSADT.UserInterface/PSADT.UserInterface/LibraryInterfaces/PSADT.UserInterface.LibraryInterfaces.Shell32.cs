@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
+using Windows.Win32.UI.Controls;
+using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.LibraryInterfaces
 {
@@ -44,6 +48,34 @@ namespace PSADT.UserInterface.LibraryInterfaces
         }
 
         /// <summary>
+        /// Flags for SHGetStockIconInfo function.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        internal struct SHSTOCKICONINFO
+        {
+            /// <summary>
+            /// Size of the structure.
+            /// </summary>
+            internal uint cbSize;
+
+            /// <summary>
+            /// Handle to the icon.
+            /// </summary>
+            internal IntPtr hIcon;
+
+            /// <summary>
+            /// Index of the icon in the system image list.
+            /// </summary>
+            internal int iSysImageIndex;
+
+            /// <summary>
+            /// Index of the icon in the small image list.
+            /// </summary>
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            internal string szPath;
+        }
+
+        /// <summary>
         /// Flags for SHGetFileInfo function.
         /// </summary>
         /// <param name="pszPath"></param>
@@ -72,6 +104,42 @@ namespace PSADT.UserInterface.LibraryInterfaces
                 throw new InvalidOperationException("Failed to retrieve file information.");
             }
             return shinfo;
+        }
+
+        /// <summary>
+        /// Retrieves information about a stock icon.
+        /// </summary>
+        /// <param name="siid"></param>
+        /// <param name="uFlags"></param>
+        /// <param name="psii"></param>
+        /// <returns></returns>
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, EntryPoint = "SHGetStockIconInfo")]
+        private static extern HRESULT SHGetStockIconInfoNative(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
+
+        /// <summary>
+        /// Retrieves information about a stock icon.
+        /// </summary>
+        /// <param name="siid"></param>
+        /// <param name="uFlags"></param>
+        /// <param name="psii"></param>
+        /// <returns></returns>
+        internal static HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, out SHSTOCKICONINFO psii)
+        {
+            psii = new SHSTOCKICONINFO { cbSize = (uint)Marshal.SizeOf(typeof(SHSTOCKICONINFO)) };
+            return SHGetStockIconInfoNative(siid, uFlags, ref psii).ThrowOnFailure();
+        }
+
+        /// <summary>
+        /// Retrieves a handle to an image list that contains the system icons.
+        /// </summary>
+        /// <param name="iImageList"></param>
+        /// <param name="ppvObj"></param>
+        /// <returns></returns>
+        internal static HRESULT SHGetImageList(SHIL_SIZE iImageList, out IImageList ppvObj)
+        {
+            var res = PInvoke.SHGetImageList((int)iImageList, new System.Guid("46EB5926-582E-4017-9FDF-E8998DAA0950"), out var ppvObjLocal).ThrowOnFailure();
+            ppvObj = (IImageList)ppvObjLocal;
+            return res;
         }
     }
 }

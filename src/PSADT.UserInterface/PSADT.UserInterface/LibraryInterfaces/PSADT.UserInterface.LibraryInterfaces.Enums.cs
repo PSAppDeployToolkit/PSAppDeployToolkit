@@ -3,84 +3,128 @@
 namespace PSADT.UserInterface.LibraryInterfaces
 {
     /// <summary>
-    /// Flags for SHGetFileInfo function.
+    /// Flags for SHGetImageList function.
     /// </summary>
-    [Flags]
-    internal enum SHGFI_FLAGS : uint
+    internal enum SHIL_SIZE
     {
         /// <summary>
-        /// Default value that represents the large icon.
+        /// The image size is normally 32x32 pixels. However, if the Use large icons option is selected from the Effects section of the Appearance tab in Display Properties, the image is 48x48 pixels.
         /// </summary>
-        SHGFI_LARGEICON = 0x00000000,
+        SHIL_LARGE = 0,
 
         /// <summary>
-        /// Retrieve the small icon.
+        /// These images are the Shell standard small icon size of 16x16, but the size can be customized by the user.
         /// </summary>
-        SHGFI_SMALLICON = 0x00000001,
+        SHIL_SMALL = 1,
 
         /// <summary>
-        /// Retrieve the icon for an open object.
+        /// These images are the Shell standard extra-large icon size. This is typically 48x48, but the size can be customized by the user.
         /// </summary>
-        SHGFI_OPENICON = 0x00000002,
+        SHIL_EXTRALARGE = 2,
 
         /// <summary>
-        /// Retrieve the shell-sized icon.
+        /// These images are the size specified by GetSystemMetrics called with SM_CXSMICON and GetSystemMetrics called with SM_CYSMICON.
         /// </summary>
-        SHGFI_SHELLICONSIZE = 0x00000004,
+        SHIL_SYSSMALL = 3,
 
         /// <summary>
-        /// Indicates that the pszPath parameter is actually a PIDL rather than a path.
+        /// Windows Vista and later. The image is normally 256x256 pixels.
         /// </summary>
-        SHGFI_PIDL = 0x00000008,
+        SHIL_JUMBO = 4,
 
         /// <summary>
-        /// Retrieve the handle to the icon that represents the file.
+        /// The largest valid flag value, for validation purposes.
         /// </summary>
-        SHGFI_ICON = 0x00000100,
+        SHIL_LAST,
+    }
+
+    /// <summary>
+    /// Flags that specify how the image is drawn by IImageList.Draw.
+    /// See: https://learn.microsoft.com/en-us/windows/win32/controls/imagelistdrawflags
+    /// </summary>
+    [Flags]
+    public enum IMAGELISTDRAWFLAGS : uint
+    {
+        /// <summary>
+        /// 0x00000000: Draws the image using the background color for the image list.
+        /// If the background color is CLR_NONE, the image is drawn transparently using the mask.
+        /// </summary>
+        ILD_NORMAL = 0x00000000,
 
         /// <summary>
-        /// Retrieve the display name for the file.
+        /// 0x00000001: Draws the image transparently using the mask, regardless of the background color.
+        /// This value has no effect if the image list does not contain a mask.
         /// </summary>
-        SHGFI_DISPLAYNAME = 0x00000200,
+        ILD_TRANSPARENT = 0x00000001,
 
         /// <summary>
-        /// Retrieve the type name for the file.
+        /// 0x00000002: Draws the image, blending 25 percent with the blend color specified by rgbFg.
+        /// This value has no effect if the image list does not contain a mask.
         /// </summary>
-        SHGFI_TYPENAME = 0x00000400,
+        ILD_BLEND25 = 0x00000002,
 
         /// <summary>
-        /// Retrieve the file attributes.
+        /// 0x00000002: Alias for ILD_BLEND25.
         /// </summary>
-        SHGFI_ATTRIBUTES = 0x00000800,
+        ILD_FOCUS = 0x00000002,
 
         /// <summary>
-        /// Retrieve the name of the icon location; for example, the file path of the icon.
+        /// 0x00000004: Draws the image, blending 50 percent with the blend color specified by rgbFg.
+        /// This value has no effect if the image list does not contain a mask.
         /// </summary>
-        SHGFI_ICONLOCATION = 0x00001000,
+        ILD_BLEND50 = 0x00000004,
 
         /// <summary>
-        /// Retrieve the executable type (used with executable files).
+        /// 0x00000004: Alias for ILD_BLEND50.
         /// </summary>
-        SHGFI_EXETYPE = 0x00002000,
+        ILD_SELECTED = 0x00000004,
 
         /// <summary>
-        /// Retrieve the index of the system image list.
+        /// 0x00000004: Alias for ILD_BLEND50.
         /// </summary>
-        SHGFI_SYSICONINDEX = 0x00004000,
+        ILD_BLEND = 0x00000004,
 
         /// <summary>
-        /// Add the link overlay for shortcut files.
+        /// 0x00000010: Draws the mask.
         /// </summary>
-        SHGFI_LINKOVERLAY = 0x00008000,
+        ILD_MASK = 0x00000010,
 
         /// <summary>
-        /// Retrieve the icon for a selected item.
+        /// 0x00000020: If the overlay does not require a mask to be drawn, set this flag.
         /// </summary>
-        SHGFI_SELECTED = 0x00010000,
+        ILD_IMAGE = 0x00000020,
 
         /// <summary>
-        /// Retrieve only the attributes specified in the dwFileAttributes parameter.
+        /// 0x00000040: Draws the image using the raster operation code specified by the dwRop member.
         /// </summary>
-        SHGFI_ATTR_SPECIFIED = 0x00020000,
+        ILD_ROP = 0x00000040,
+
+        /// <summary>
+        /// 0x00000F00: To extract the overlay image from the fStyle member, use the logical AND
+        /// to combine fStyle with this value.
+        /// </summary>
+        ILD_OVERLAYMASK = 0x00000F00,
+
+        /// <summary>
+        /// 0x00001000: Preserves the alpha channel in the destination.
+        /// </summary>
+        ILD_PRESERVEALPHA = 0x00001000,
+
+        /// <summary>
+        /// 0x00002000: Causes the image to be scaled to cx, cy instead of being clipped.
+        /// </summary>
+        ILD_SCALE = 0x00002000,
+
+        /// <summary>
+        /// 0x00004000: Scales the image to the current DPI of the display.
+        /// </summary>
+        ILD_DPISCALE = 0x00004000,
+
+        /// <summary>
+        /// 0x00008000: Windows Vista and later. Draw the image if it is available in the cache.
+        /// Do not extract it automatically; the called draw method returns E_PENDING to the
+        /// calling component, which should then provide an alternative action.
+        /// </summary>
+        ILD_ASYNC = 0x00008000
     }
 }
