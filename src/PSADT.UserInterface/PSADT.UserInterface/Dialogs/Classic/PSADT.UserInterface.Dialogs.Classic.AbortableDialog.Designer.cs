@@ -48,13 +48,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonAbort.Size = new System.Drawing.Size(0, 0);
             this.buttonAbort.TabIndex = 2;
             this.buttonAbort.TabStop = false;
-            this.buttonAbort.Text = "button1";
             this.buttonAbort.UseVisualStyleBackColor = true;
             // 
             // AbortableDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(450, 63);
+            this.ClientSize = new System.Drawing.Size(450, 0);
             this.Controls.Add(this.buttonAbort);
             this.Name = "AbortableDialog";
             this.Text = "AbortableDialog";
