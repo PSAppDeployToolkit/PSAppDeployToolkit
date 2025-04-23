@@ -14,8 +14,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
     {
         static ClassicDialog()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            // Only run in the actual app, not in Visual Studio's designer.
+            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+            }
         }
 
         public ClassicDialog()
