@@ -60,6 +60,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.Text = "AbortableDialog";
             this.Controls.SetChildIndex(this.buttonAbort, 0);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 

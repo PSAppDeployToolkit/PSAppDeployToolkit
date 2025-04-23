@@ -30,21 +30,37 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         private void InitializeComponent()
         {
+            this.baseFlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.pictureBanner = new System.Windows.Forms.PictureBox();
             this.buttonDefault = new System.Windows.Forms.Button();
+            this.baseFlowLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).BeginInit();
             this.SuspendLayout();
             // 
+            // baseFlowLayoutPanel
+            // 
+            this.baseFlowLayoutPanel.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.baseFlowLayoutPanel.AutoSize = true;
+            this.baseFlowLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.baseFlowLayoutPanel.Controls.Add(this.pictureBanner);
+            this.baseFlowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.baseFlowLayoutPanel.Location = new System.Drawing.Point(0, 0);
+            this.baseFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
+            this.baseFlowLayoutPanel.Name = "baseFlowLayoutPanel";
+            this.baseFlowLayoutPanel.Size = new System.Drawing.Size(450, 0);
+            this.baseFlowLayoutPanel.TabIndex = 0;
+            // 
             // pictureBanner
             // 
-            this.pictureBanner.Image = global::PSADT.Properties.Resources.Banner_Classic;
+            this.pictureBanner.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pictureBanner.Location = new System.Drawing.Point(0, 0);
             this.pictureBanner.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBanner.Name = "pictureBanner";
-            this.pictureBanner.Size = new System.Drawing.Size(450, 63);
+            this.pictureBanner.Size = new System.Drawing.Size(450, 0);
             this.pictureBanner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBanner.TabIndex = 0;
             this.pictureBanner.TabStop = false;
+            this.pictureBanner.WaitOnLoad = true;
             // 
             // buttonDefault
             // 
@@ -69,25 +85,31 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 63);
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ClientSize = new System.Drawing.Size(450, 0);
             this.Controls.Add(this.buttonDefault);
-            this.Controls.Add(this.pictureBanner);
+            this.Controls.Add(this.baseFlowLayoutPanel);
+            this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(0);
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(466, 0);
             this.MinimizeBox = false;
             this.Name = "ClassicDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ClassicDialog";
+            this.TopMost = true;
+            this.baseFlowLayoutPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
-
         private PictureBox pictureBanner;
         private Button buttonDefault;
+        protected FlowLayoutPanel baseFlowLayoutPanel;
     }
 }
