@@ -156,9 +156,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // CustomDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 0);
             this.Controls.Add(this.dialogFlowLayoutPanel);
-            this.MaximumSize = new System.Drawing.Size(466, 0);
             this.Name = "CustomDialog";
             this.Text = "CustomDialog";
             this.Controls.SetChildIndex(this.dialogFlowLayoutPanel, 0);
