@@ -18,7 +18,7 @@ namespace PSADT.UserInterface.Dialogs
         /// <param name="siid"></param>
         /// <param name="iImageList"></param>
         /// <returns></returns>
-        private static Icon GetSystemStockIcon(SHSTOCKICONID siid, SHIL_SIZE iImageList)
+        private static Bitmap GetSystemStockIcon(SHSTOCKICONID siid, SHIL_SIZE iImageList)
         {
             // Get a handle to specified stock icon.
             Shell32.SHGetImageList(iImageList, out var imageList);
@@ -26,11 +26,7 @@ namespace PSADT.UserInterface.Dialogs
             imageList.GetIcon(shii.iSysImageIndex, (uint)IMAGELISTDRAWFLAGS.ILD_TRANSPARENT, out var iconHandle);
             using (iconHandle)
             {
-                // Create a new icon to avoid GDI handle issues.
-                using (var icon = Icon.FromHandle(iconHandle.DangerousGetHandle()))
-                {
-                    return (Icon)icon.Clone();
-                }
+                return Bitmap.FromHicon(iconHandle.DangerousGetHandle());
             }
         }
 
@@ -38,7 +34,7 @@ namespace PSADT.UserInterface.Dialogs
         /// Builds a lookup table for system icons.
         /// </summary>
         /// <returns></returns>
-        private static ReadOnlyDictionary<DialogSystemIcon, Icon> BuildSystemIconLookupTable()
+        private static ReadOnlyDictionary<DialogSystemIcon, Bitmap> BuildSystemIconLookupTable()
         {
             // Define temporary list of system icons to look up.
             SHSTOCKICONID[] lookupList = 
@@ -52,14 +48,14 @@ namespace PSADT.UserInterface.Dialogs
             };
 
             // Build an icon out for each stock icon.
-            Dictionary<SHSTOCKICONID, Icon> icons = [];
+            Dictionary<SHSTOCKICONID, Bitmap> icons = [];
             foreach(var iconId in lookupList)
             {
                 icons.Add(iconId, GetSystemStockIcon(iconId, SHIL_SIZE.SHIL_JUMBO));
             }
 
             // Return a translated dictionary that matches System.Drawing.SystemIcons.
-            return new ReadOnlyDictionary<DialogSystemIcon, Icon>(new Dictionary<DialogSystemIcon, Icon>
+            return new ReadOnlyDictionary<DialogSystemIcon, Bitmap>(new Dictionary<DialogSystemIcon, Bitmap>
             {
                 { DialogSystemIcon.Application, icons[SHSTOCKICONID.SIID_APPLICATION] },
                 { DialogSystemIcon.Asterisk, icons[SHSTOCKICONID.SIID_INFO] },
@@ -77,6 +73,6 @@ namespace PSADT.UserInterface.Dialogs
         /// <summary>
         /// A lookup table for system icons.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<DialogSystemIcon, Icon> SystemIconLookupTable = BuildSystemIconLookupTable();
+        internal static readonly ReadOnlyDictionary<DialogSystemIcon, Bitmap> SystemIconLookupTable = BuildSystemIconLookupTable();
     }
 }
