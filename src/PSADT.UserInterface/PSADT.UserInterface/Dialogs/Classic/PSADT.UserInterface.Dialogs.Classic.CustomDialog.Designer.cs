@@ -59,7 +59,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.iconMessageTableLayout.Name = "iconMessageTableLayout";
             this.iconMessageTableLayout.RowCount = 1;
             this.iconMessageTableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.iconMessageTableLayout.Size = new System.Drawing.Size(404, 381);
             this.iconMessageTableLayout.TabIndex = 3;
             // 
             // pictureIcon
@@ -80,7 +79,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.Margin = new System.Windows.Forms.Padding(18, 3, 3, 18);
             this.labelMessage.MaximumSize = new System.Drawing.Size(317, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(317, 360);
             this.labelMessage.TabIndex = 1;
             this.labelMessage.Text = resources.GetString("labelMessage.Text");
             // 
@@ -102,7 +100,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonTableLayoutPanel.RowCount = 1;
             this.buttonTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.buttonTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
-            this.buttonTableLayoutPanel.Size = new System.Drawing.Size(402, 25);
             this.buttonTableLayoutPanel.TabIndex = 4;
             // 
             // buttonLeft
@@ -150,7 +147,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.dialogFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
             this.dialogFlowLayoutPanel.Name = "dialogFlowLayoutPanel";
             this.dialogFlowLayoutPanel.Padding = new System.Windows.Forms.Padding(24);
-            this.dialogFlowLayoutPanel.Size = new System.Drawing.Size(452, 472);
             this.dialogFlowLayoutPanel.TabIndex = 5;
             // 
             // CustomDialog
