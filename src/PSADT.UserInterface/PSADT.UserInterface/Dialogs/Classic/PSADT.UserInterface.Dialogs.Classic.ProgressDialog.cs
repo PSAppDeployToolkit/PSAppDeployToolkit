@@ -5,7 +5,19 @@
     /// </summary>
     public partial class ProgressDialog : ClassicDialog
     {
-        public ProgressDialog()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressDialog"/> class.
+        /// </summary>
+        public ProgressDialog() : this(default!)
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressDialog"/> class with the specified options.
+        /// </summary>
+        /// <param name="options"></param>
+        public ProgressDialog(ProgressDialogOptions options) : base(options)
         {
             InitializeComponent();
         }

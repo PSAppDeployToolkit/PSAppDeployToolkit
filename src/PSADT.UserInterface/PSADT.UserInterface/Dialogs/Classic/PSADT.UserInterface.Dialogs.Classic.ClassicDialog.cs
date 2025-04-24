@@ -21,7 +21,19 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
         }
 
-        public ClassicDialog()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClassicDialog"/> class.
+        /// </summary>
+        public ClassicDialog() : this(default!)
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClassicDialog"/> class with the specified options.
+        /// </summary>
+        /// <param name="options"></param>
+        public ClassicDialog(DialogOptions options) : base()
         {
             InitializeComponent();
         }

@@ -5,7 +5,19 @@
     /// </summary>
     public partial class CustomDialog : AbortableDialog
     {
-        public CustomDialog()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomDialog"/> class.
+        /// </summary>
+        public CustomDialog() : this(default!)
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomDialog"/> class with the specified options.
+        /// </summary>
+        /// <param name="options"></param>
+        public CustomDialog(CustomDialogOptions options) : base(options)
         {
             InitializeComponent();
         }

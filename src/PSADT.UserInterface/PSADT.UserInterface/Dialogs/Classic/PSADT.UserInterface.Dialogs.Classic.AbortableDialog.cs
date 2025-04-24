@@ -5,7 +5,19 @@
     /// </summary>
     public partial class AbortableDialog : ClassicDialog
     {
-        public AbortableDialog()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AbortableDialog"/> class.
+        /// </summary>
+        public AbortableDialog() : this(default!)
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AbortableDialog"/> class with the specified options.
+        /// </summary>
+        /// <param name="options"></param>
+        public AbortableDialog(DialogOptions options) : base(options)
         {
             InitializeComponent();
         }
