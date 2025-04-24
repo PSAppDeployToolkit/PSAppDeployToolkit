@@ -157,11 +157,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelDialog
             // 
+            this.flowLayoutPanelDialog.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.iconMessageTableLayout);
             this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelButton);
-            this.flowLayoutPanelDialog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanelDialog.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelDialog.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelDialog.Margin = new System.Windows.Forms.Padding(0);
