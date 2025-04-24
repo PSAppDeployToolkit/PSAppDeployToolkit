@@ -54,17 +54,22 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.iconMessageTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.iconMessageTableLayout.Controls.Add(this.pictureIcon, 0, 0);
             this.iconMessageTableLayout.Controls.Add(this.labelMessage, 1, 0);
-            this.iconMessageTableLayout.Location = new System.Drawing.Point(24, 24);
-            this.iconMessageTableLayout.Margin = new System.Windows.Forms.Padding(0);
+            this.iconMessageTableLayout.Location = new System.Drawing.Point(23, 23);
+            this.iconMessageTableLayout.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
+            this.iconMessageTableLayout.MaximumSize = new System.Drawing.Size(404, 0);
+            this.iconMessageTableLayout.MinimumSize = new System.Drawing.Size(404, 0);
             this.iconMessageTableLayout.Name = "iconMessageTableLayout";
             this.iconMessageTableLayout.RowCount = 1;
             this.iconMessageTableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.iconMessageTableLayout.Size = new System.Drawing.Size(404, 366);
             this.iconMessageTableLayout.TabIndex = 3;
             // 
             // pictureIcon
             // 
             this.pictureIcon.Location = new System.Drawing.Point(0, 0);
-            this.pictureIcon.Margin = new System.Windows.Forms.Padding(0, 0, 18, 18);
+            this.pictureIcon.Margin = new System.Windows.Forms.Padding(0, 0, 18, 0);
+            this.pictureIcon.MaximumSize = new System.Drawing.Size(48, 48);
+            this.pictureIcon.MinimumSize = new System.Drawing.Size(48, 48);
             this.pictureIcon.Name = "pictureIcon";
             this.pictureIcon.Size = new System.Drawing.Size(48, 48);
             this.pictureIcon.TabIndex = 0;
@@ -76,9 +81,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.labelMessage.AutoSize = true;
             this.labelMessage.Location = new System.Drawing.Point(84, 3);
-            this.labelMessage.Margin = new System.Windows.Forms.Padding(18, 3, 3, 18);
+            this.labelMessage.Margin = new System.Windows.Forms.Padding(18, 3, 3, 3);
             this.labelMessage.MaximumSize = new System.Drawing.Size(317, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(317, 0);
             this.labelMessage.Name = "labelMessage";
+            this.labelMessage.Size = new System.Drawing.Size(317, 360);
             this.labelMessage.TabIndex = 1;
             this.labelMessage.Text = resources.GetString("labelMessage.Text");
             // 
@@ -94,12 +101,15 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonTableLayoutPanel.Controls.Add(this.buttonLeft, 0, 0);
             this.buttonTableLayoutPanel.Controls.Add(this.buttonMiddle, 1, 0);
             this.buttonTableLayoutPanel.Controls.Add(this.buttonRight, 2, 0);
-            this.buttonTableLayoutPanel.Location = new System.Drawing.Point(25, 423);
-            this.buttonTableLayoutPanel.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
+            this.buttonTableLayoutPanel.Location = new System.Drawing.Point(24, 425);
+            this.buttonTableLayoutPanel.Margin = new System.Windows.Forms.Padding(0, 24, 0, 0);
+            this.buttonTableLayoutPanel.MaximumSize = new System.Drawing.Size(402, 0);
+            this.buttonTableLayoutPanel.MinimumSize = new System.Drawing.Size(402, 0);
             this.buttonTableLayoutPanel.Name = "buttonTableLayoutPanel";
             this.buttonTableLayoutPanel.RowCount = 1;
             this.buttonTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.buttonTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
+            this.buttonTableLayoutPanel.Size = new System.Drawing.Size(402, 25);
             this.buttonTableLayoutPanel.TabIndex = 4;
             // 
             // buttonLeft
@@ -107,6 +117,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonLeft.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonLeft.Location = new System.Drawing.Point(0, 0);
             this.buttonLeft.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonLeft.MaximumSize = new System.Drawing.Size(130, 25);
+            this.buttonLeft.MinimumSize = new System.Drawing.Size(130, 25);
             this.buttonLeft.Name = "buttonLeft";
             this.buttonLeft.Size = new System.Drawing.Size(130, 25);
             this.buttonLeft.TabIndex = 0;
@@ -118,6 +130,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonMiddle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.buttonMiddle.Location = new System.Drawing.Point(136, 0);
             this.buttonMiddle.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.buttonMiddle.MaximumSize = new System.Drawing.Size(130, 25);
+            this.buttonMiddle.MinimumSize = new System.Drawing.Size(130, 25);
             this.buttonMiddle.Name = "buttonMiddle";
             this.buttonMiddle.Size = new System.Drawing.Size(130, 25);
             this.buttonMiddle.TabIndex = 1;
@@ -129,6 +143,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonRight.Dock = System.Windows.Forms.DockStyle.Right;
             this.buttonRight.Location = new System.Drawing.Point(272, 0);
             this.buttonRight.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonRight.MaximumSize = new System.Drawing.Size(130, 25);
+            this.buttonRight.MinimumSize = new System.Drawing.Size(130, 25);
             this.buttonRight.Name = "buttonRight";
             this.buttonRight.Size = new System.Drawing.Size(130, 25);
             this.buttonRight.TabIndex = 2;
@@ -145,8 +161,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.dialogFlowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.dialogFlowLayoutPanel.Location = new System.Drawing.Point(0, 0);
             this.dialogFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
+            this.dialogFlowLayoutPanel.MaximumSize = new System.Drawing.Size(450, 0);
+            this.dialogFlowLayoutPanel.MinimumSize = new System.Drawing.Size(450, 0);
             this.dialogFlowLayoutPanel.Name = "dialogFlowLayoutPanel";
-            this.dialogFlowLayoutPanel.Padding = new System.Windows.Forms.Padding(24);
+            this.dialogFlowLayoutPanel.Padding = new System.Windows.Forms.Padding(23);
+            this.dialogFlowLayoutPanel.Size = new System.Drawing.Size(450, 473);
             this.dialogFlowLayoutPanel.TabIndex = 5;
             // 
             // CustomDialog
@@ -155,6 +174,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 0);
             this.Controls.Add(this.dialogFlowLayoutPanel);
+            this.MaximumSize = new System.Drawing.Size(466, 0);
+            this.MinimumSize = new System.Drawing.Size(466, 0);
             this.Name = "CustomDialog";
             this.Text = "CustomDialog";
             this.Controls.SetChildIndex(this.dialogFlowLayoutPanel, 0);

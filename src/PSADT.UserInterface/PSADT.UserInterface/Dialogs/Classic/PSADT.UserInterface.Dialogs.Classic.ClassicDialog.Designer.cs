@@ -45,7 +45,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.baseFlowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.baseFlowLayoutPanel.Location = new System.Drawing.Point(0, 0);
             this.baseFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
+            this.baseFlowLayoutPanel.MaximumSize = new System.Drawing.Size(450, 0);
+            this.baseFlowLayoutPanel.MinimumSize = new System.Drawing.Size(450, 0);
             this.baseFlowLayoutPanel.Name = "baseFlowLayoutPanel";
+            this.baseFlowLayoutPanel.Size = new System.Drawing.Size(450, 0);
             this.baseFlowLayoutPanel.TabIndex = 0;
             // 
             // pictureBanner
@@ -53,6 +56,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.pictureBanner.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pictureBanner.Location = new System.Drawing.Point(0, 0);
             this.pictureBanner.Margin = new System.Windows.Forms.Padding(0);
+            this.pictureBanner.MaximumSize = new System.Drawing.Size(450, 0);
+            this.pictureBanner.MinimumSize = new System.Drawing.Size(450, 0);
             this.pictureBanner.Name = "pictureBanner";
             this.pictureBanner.Size = new System.Drawing.Size(450, 0);
             this.pictureBanner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -94,6 +99,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(466, 0);
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(466, 39);
             this.Name = "ClassicDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ClassicDialog";
