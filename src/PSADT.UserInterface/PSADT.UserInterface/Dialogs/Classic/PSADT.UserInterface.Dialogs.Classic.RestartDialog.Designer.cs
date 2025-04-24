@@ -2,6 +2,9 @@
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
+    /// <summary>
+    /// Restart dialog form.
+    /// </summary>
     partial class RestartDialog
     {
         /// <summary>

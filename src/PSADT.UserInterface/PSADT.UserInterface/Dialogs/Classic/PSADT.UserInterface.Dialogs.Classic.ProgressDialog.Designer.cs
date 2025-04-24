@@ -2,6 +2,9 @@
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
+    /// <summary>
+    /// Progress dialog form.
+    /// </summary>
     partial class ProgressDialog
     {
         /// <summary>

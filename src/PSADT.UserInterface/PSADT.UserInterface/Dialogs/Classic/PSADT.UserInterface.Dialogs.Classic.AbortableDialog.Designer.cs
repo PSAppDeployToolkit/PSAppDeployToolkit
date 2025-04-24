@@ -2,6 +2,9 @@
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
+    /// <summary>
+    /// Abortable dialog form.
+    /// </summary>
     partial class AbortableDialog
     {
         /// <summary>

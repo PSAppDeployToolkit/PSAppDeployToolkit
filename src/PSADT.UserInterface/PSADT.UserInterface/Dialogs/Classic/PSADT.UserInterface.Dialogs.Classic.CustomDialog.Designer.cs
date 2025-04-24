@@ -2,6 +2,9 @@
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
+    /// <summary>
+    /// Custom dialog form.
+    /// </summary>
     partial class CustomDialog
     {
         /// <summary>

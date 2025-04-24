@@ -2,6 +2,9 @@
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
+    /// <summary>
+    /// Base class for classic dialog forms.
+    /// </summary>
     partial class ClassicDialog
     {
         /// <summary>
