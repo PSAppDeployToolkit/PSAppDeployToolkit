@@ -1,4 +1,7 @@
-﻿namespace PSADT.UserInterface.Dialogs.Classic
+﻿using System;
+using System.ComponentModel;
+
+namespace PSADT.UserInterface.Dialogs.Classic
 {
     /// <summary>
     /// Custom classic dialog form.
@@ -10,7 +13,10 @@
         /// </summary>
         public CustomDialog() : this(default!)
         {
-            InitializeComponent();
+            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            {
+                throw new InvalidOperationException("This constructor cannot be used in runtime mode.");
+            }
         }
 
         /// <summary>

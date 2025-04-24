@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace PSADT.UserInterface.Dialogs.Classic
@@ -26,7 +27,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         public ClassicDialog() : this(default!)
         {
-            InitializeComponent();
+            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            {
+                throw new InvalidOperationException("This constructor cannot be used in runtime mode.");
+            }
         }
 
         /// <summary>
