@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Drawing;
 using PSADT.UserInterface.LibraryInterfaces;
+using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.UI.Shell;
 
@@ -10,7 +11,7 @@ namespace PSADT.UserInterface.Dialogs
     /// <summary>
     /// Static class to manage system icons.
     /// </summary>
-    internal static class SystemIcons
+    public static class SystemIcons
     {
         /// <summary>
         /// Retrieves a system stock icon.
@@ -23,10 +24,13 @@ namespace PSADT.UserInterface.Dialogs
             // Get a handle to specified stock icon.
             Shell32.SHGetImageList(iImageList, out var imageList);
             Shell32.SHGetStockIconInfo(siid, SHGSI_FLAGS.SHGSI_SYSICONINDEX, out var shii);
-            imageList.GetIcon(shii.iSysImageIndex, (uint)IMAGELISTDRAWFLAGS.ILD_TRANSPARENT, out var iconHandle);
+            imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGELISTDRAWFLAGS.ILD_TRANSPARENT | IMAGELISTDRAWFLAGS.ILD_PRESERVEALPHA), out var iconHandle);
             using (iconHandle)
             {
-                return Bitmap.FromHicon(iconHandle.DangerousGetHandle());
+                using (var icon = Icon.FromHandle(iconHandle.DangerousGetHandle()))
+                {
+                    return icon.ToBitmap();
+                }
             }
         }
 
@@ -51,7 +55,10 @@ namespace PSADT.UserInterface.Dialogs
             Dictionary<SHSTOCKICONID, Bitmap> icons = [];
             foreach(var iconId in lookupList)
             {
-                icons.Add(iconId, GetSystemStockIcon(iconId, SHIL_SIZE.SHIL_JUMBO));
+                using (var icon = GetSystemStockIcon(iconId, SHIL_SIZE.SHIL_JUMBO))
+                {
+                    icons.Add(iconId, DrawingUtilities.ResizeImage(icon, 48, 48));
+                }
             }
 
             // Return a translated dictionary that matches System.Drawing.SystemIcons.
@@ -73,6 +80,6 @@ namespace PSADT.UserInterface.Dialogs
         /// <summary>
         /// A lookup table for system icons.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<DialogSystemIcon, Bitmap> SystemIconLookupTable = BuildSystemIconLookupTable();
+        public static readonly ReadOnlyDictionary<DialogSystemIcon, Bitmap> SystemIconLookupTable = BuildSystemIconLookupTable();
     }
 }

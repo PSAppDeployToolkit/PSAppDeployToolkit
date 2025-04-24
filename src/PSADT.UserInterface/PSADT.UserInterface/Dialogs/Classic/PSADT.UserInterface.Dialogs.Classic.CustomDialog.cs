@@ -31,6 +31,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.SuspendLayout();
             this.flowLayoutPanelBase.SuspendLayout();
             this.Controls.Remove(this.flowLayoutPanelDialog);
+            this.pictureIcon.Image = SystemIcons.SystemIconLookupTable[DialogSystemIcon.Information];
             this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
             this.flowLayoutPanelBase.ResumeLayout();
             this.ResumeLayout();
