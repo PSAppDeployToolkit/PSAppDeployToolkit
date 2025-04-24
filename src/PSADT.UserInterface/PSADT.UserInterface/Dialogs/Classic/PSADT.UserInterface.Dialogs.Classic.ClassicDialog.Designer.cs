@@ -30,26 +30,26 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         private void InitializeComponent()
         {
-            this.baseFlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
             this.pictureBanner = new System.Windows.Forms.PictureBox();
             this.buttonDefault = new System.Windows.Forms.Button();
-            this.baseFlowLayoutPanel.SuspendLayout();
+            this.flowLayoutPanelBase.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).BeginInit();
             this.SuspendLayout();
             // 
-            // baseFlowLayoutPanel
+            // flowLayoutPanelBase
             // 
-            this.baseFlowLayoutPanel.AutoSize = true;
-            this.baseFlowLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.baseFlowLayoutPanel.Controls.Add(this.pictureBanner);
-            this.baseFlowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.baseFlowLayoutPanel.Location = new System.Drawing.Point(0, 0);
-            this.baseFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
-            this.baseFlowLayoutPanel.MaximumSize = new System.Drawing.Size(450, 0);
-            this.baseFlowLayoutPanel.MinimumSize = new System.Drawing.Size(450, 0);
-            this.baseFlowLayoutPanel.Name = "baseFlowLayoutPanel";
-            this.baseFlowLayoutPanel.Size = new System.Drawing.Size(450, 0);
-            this.baseFlowLayoutPanel.TabIndex = 0;
+            this.flowLayoutPanelBase.AutoSize = true;
+            this.flowLayoutPanelBase.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanelBase.Controls.Add(this.pictureBanner);
+            this.flowLayoutPanelBase.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
+            this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
+            this.flowLayoutPanelBase.MaximumSize = new System.Drawing.Size(450, 0);
+            this.flowLayoutPanelBase.MinimumSize = new System.Drawing.Size(450, 0);
+            this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
+            this.flowLayoutPanelBase.Size = new System.Drawing.Size(450, 0);
+            this.flowLayoutPanelBase.TabIndex = 0;
             // 
             // pictureBanner
             // 
@@ -91,7 +91,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(450, 0);
             this.Controls.Add(this.buttonDefault);
-            this.Controls.Add(this.baseFlowLayoutPanel);
+            this.Controls.Add(this.flowLayoutPanelBase);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -99,12 +99,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(466, 0);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(466, 39);
+            this.MinimumSize = new System.Drawing.Size(466, 0);
             this.Name = "ClassicDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ClassicDialog";
             this.TopMost = true;
-            this.baseFlowLayoutPanel.ResumeLayout(false);
+            this.flowLayoutPanelBase.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -114,6 +114,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         #endregion
         private PictureBox pictureBanner;
         private Button buttonDefault;
-        protected FlowLayoutPanel baseFlowLayoutPanel;
+        protected FlowLayoutPanel flowLayoutPanelBase;
     }
 }

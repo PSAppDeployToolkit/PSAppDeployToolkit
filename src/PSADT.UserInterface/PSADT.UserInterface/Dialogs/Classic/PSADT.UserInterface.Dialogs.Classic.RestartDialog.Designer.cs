@@ -30,67 +30,68 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         private void InitializeComponent()
         {
-            this.dialogFlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.flowLayoutPanelDialog = new System.Windows.Forms.FlowLayoutPanel();
             this.labelMessage = new System.Windows.Forms.Label();
-            this.countdownFlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.flowLayoutPanelCountdown = new System.Windows.Forms.FlowLayoutPanel();
             this.labelRestartMessage = new System.Windows.Forms.Label();
             this.labelTimeRemaining = new System.Windows.Forms.Label();
             this.labelCountdown = new System.Windows.Forms.Label();
-            this.buttonTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
             this.buttonMinimize = new System.Windows.Forms.Button();
             this.buttonRestartNow = new System.Windows.Forms.Button();
-            this.dialogFlowLayoutPanel.SuspendLayout();
-            this.countdownFlowLayoutPanel.SuspendLayout();
-            this.buttonTableLayoutPanel.SuspendLayout();
+            this.flowLayoutPanelDialog.SuspendLayout();
+            this.flowLayoutPanelCountdown.SuspendLayout();
+            this.tableLayoutPanelButton.SuspendLayout();
             this.SuspendLayout();
             // 
-            // dialogFlowLayoutPanel
+            // flowLayoutPanelDialog
             // 
-            this.dialogFlowLayoutPanel.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.dialogFlowLayoutPanel.AutoSize = true;
-            this.dialogFlowLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.dialogFlowLayoutPanel.Controls.Add(this.labelMessage);
-            this.dialogFlowLayoutPanel.Controls.Add(this.countdownFlowLayoutPanel);
-            this.dialogFlowLayoutPanel.Controls.Add(this.buttonTableLayoutPanel);
-            this.dialogFlowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.dialogFlowLayoutPanel.Location = new System.Drawing.Point(0, 0);
-            this.dialogFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
-            this.dialogFlowLayoutPanel.MaximumSize = new System.Drawing.Size(450, 0);
-            this.dialogFlowLayoutPanel.MinimumSize = new System.Drawing.Size(450, 0);
-            this.dialogFlowLayoutPanel.Name = "dialogFlowLayoutPanel";
-            this.dialogFlowLayoutPanel.Padding = new System.Windows.Forms.Padding(23);
-            this.dialogFlowLayoutPanel.Size = new System.Drawing.Size(450, 223);
-            this.dialogFlowLayoutPanel.TabIndex = 2;
+            this.flowLayoutPanelDialog.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.flowLayoutPanelDialog.AutoSize = true;
+            this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanelDialog.Controls.Add(this.labelMessage);
+            this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelCountdown);
+            this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelButton);
+            this.flowLayoutPanelDialog.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelDialog.Location = new System.Drawing.Point(0, 0);
+            this.flowLayoutPanelDialog.Margin = new System.Windows.Forms.Padding(0);
+            this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
+            this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
+            this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
+            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 205);
+            this.flowLayoutPanelDialog.TabIndex = 2;
             // 
             // labelMessage
             // 
             this.labelMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelMessage.AutoSize = true;
-            this.labelMessage.Location = new System.Drawing.Point(23, 23);
-            this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
-            this.labelMessage.MaximumSize = new System.Drawing.Size(404, 0);
-            this.labelMessage.MinimumSize = new System.Drawing.Size(404, 0);
+            this.labelMessage.Location = new System.Drawing.Point(17, 17);
+            this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
+            this.labelMessage.MaximumSize = new System.Drawing.Size(416, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(416, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(404, 30);
+            this.labelMessage.Size = new System.Drawing.Size(416, 15);
             this.labelMessage.TabIndex = 0;
-            this.labelMessage.Text = "In order for the installation to complete, you must restart your computer. Please save your work and restart within the alloted time.";
+            this.labelMessage.Text = "In order for the installation to complete, you must restart your computer.";
             this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // countdownFlowLayoutPanel
+            // flowLayoutPanelCountdown
             // 
-            this.countdownFlowLayoutPanel.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.countdownFlowLayoutPanel.AutoSize = true;
-            this.countdownFlowLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.countdownFlowLayoutPanel.Controls.Add(this.labelRestartMessage);
-            this.countdownFlowLayoutPanel.Controls.Add(this.labelTimeRemaining);
-            this.countdownFlowLayoutPanel.Controls.Add(this.labelCountdown);
-            this.countdownFlowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.countdownFlowLayoutPanel.Location = new System.Drawing.Point(23, 65);
-            this.countdownFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
-            this.countdownFlowLayoutPanel.MinimumSize = new System.Drawing.Size(404, 0);
-            this.countdownFlowLayoutPanel.Name = "countdownFlowLayoutPanel";
-            this.countdownFlowLayoutPanel.Size = new System.Drawing.Size(404, 80);
-            this.countdownFlowLayoutPanel.TabIndex = 4;
+            this.flowLayoutPanelCountdown.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.flowLayoutPanelCountdown.AutoSize = true;
+            this.flowLayoutPanelCountdown.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanelCountdown.Controls.Add(this.labelRestartMessage);
+            this.flowLayoutPanelCountdown.Controls.Add(this.labelTimeRemaining);
+            this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdown);
+            this.flowLayoutPanelCountdown.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(17, 44);
+            this.flowLayoutPanelCountdown.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
+            this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(416, 0);
+            this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(416, 0);
+            this.flowLayoutPanelCountdown.Name = "flowLayoutPanelCountdown";
+            this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(416, 95);
+            this.flowLayoutPanelCountdown.TabIndex = 4;
             // 
             // labelRestartMessage
             // 
@@ -98,12 +99,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelRestartMessage.AutoSize = true;
             this.labelRestartMessage.Location = new System.Drawing.Point(0, 0);
             this.labelRestartMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
-            this.labelRestartMessage.MaximumSize = new System.Drawing.Size(404, 0);
-            this.labelRestartMessage.MinimumSize = new System.Drawing.Size(404, 0);
+            this.labelRestartMessage.MaximumSize = new System.Drawing.Size(416, 0);
+            this.labelRestartMessage.MinimumSize = new System.Drawing.Size(416, 0);
             this.labelRestartMessage.Name = "labelRestartMessage";
-            this.labelRestartMessage.Size = new System.Drawing.Size(404, 15);
+            this.labelRestartMessage.Size = new System.Drawing.Size(416, 30);
             this.labelRestartMessage.TabIndex = 3;
-            this.labelRestartMessage.Text = "Your computer will be automatically restarted at the end of the countdown.";
+            this.labelRestartMessage.Text = "Please save your work and restart within the alloted time. Your computer will be " +
+    "automatically restarted at the end of the countdown.";
             this.labelRestartMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelTimeRemaining
@@ -111,12 +113,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelTimeRemaining.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelTimeRemaining.AutoSize = true;
             this.labelTimeRemaining.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelTimeRemaining.Location = new System.Drawing.Point(0, 27);
+            this.labelTimeRemaining.Location = new System.Drawing.Point(0, 42);
             this.labelTimeRemaining.Margin = new System.Windows.Forms.Padding(0);
-            this.labelTimeRemaining.MaximumSize = new System.Drawing.Size(404, 0);
-            this.labelTimeRemaining.MinimumSize = new System.Drawing.Size(404, 0);
+            this.labelTimeRemaining.MaximumSize = new System.Drawing.Size(416, 0);
+            this.labelTimeRemaining.MinimumSize = new System.Drawing.Size(416, 0);
             this.labelTimeRemaining.Name = "labelTimeRemaining";
-            this.labelTimeRemaining.Size = new System.Drawing.Size(404, 21);
+            this.labelTimeRemaining.Size = new System.Drawing.Size(416, 21);
             this.labelTimeRemaining.TabIndex = 1;
             this.labelTimeRemaining.Text = "Time remaining:";
             this.labelTimeRemaining.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -126,41 +128,40 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelCountdown.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCountdown.AutoSize = true;
             this.labelCountdown.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCountdown.Location = new System.Drawing.Point(0, 48);
+            this.labelCountdown.Location = new System.Drawing.Point(0, 63);
             this.labelCountdown.Margin = new System.Windows.Forms.Padding(0);
-            this.labelCountdown.MaximumSize = new System.Drawing.Size(404, 0);
-            this.labelCountdown.MinimumSize = new System.Drawing.Size(404, 0);
+            this.labelCountdown.MaximumSize = new System.Drawing.Size(416, 0);
+            this.labelCountdown.MinimumSize = new System.Drawing.Size(416, 0);
             this.labelCountdown.Name = "labelCountdown";
-            this.labelCountdown.Size = new System.Drawing.Size(404, 32);
+            this.labelCountdown.Size = new System.Drawing.Size(416, 32);
             this.labelCountdown.TabIndex = 2;
             this.labelCountdown.Text = "1:23:45";
             this.labelCountdown.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // buttonTableLayoutPanel
+            // tableLayoutPanelButton
             // 
-            this.buttonTableLayoutPanel.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.buttonTableLayoutPanel.AutoSize = true;
-            this.buttonTableLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.buttonTableLayoutPanel.ColumnCount = 2;
-            this.buttonTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.buttonTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.buttonTableLayoutPanel.Controls.Add(this.buttonMinimize, 1, 0);
-            this.buttonTableLayoutPanel.Controls.Add(this.buttonRestartNow, 0, 0);
-            this.buttonTableLayoutPanel.Location = new System.Drawing.Point(23, 175);
-            this.buttonTableLayoutPanel.Margin = new System.Windows.Forms.Padding(0, 24, 0, 0);
-            this.buttonTableLayoutPanel.MaximumSize = new System.Drawing.Size(404, 0);
-            this.buttonTableLayoutPanel.MinimumSize = new System.Drawing.Size(404, 0);
-            this.buttonTableLayoutPanel.Name = "buttonTableLayoutPanel";
-            this.buttonTableLayoutPanel.RowCount = 1;
-            this.buttonTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.buttonTableLayoutPanel.Size = new System.Drawing.Size(404, 25);
-            this.buttonTableLayoutPanel.TabIndex = 3;
+            this.tableLayoutPanelButton.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.tableLayoutPanelButton.AutoSize = true;
+            this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanelButton.ColumnCount = 2;
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanelButton.Controls.Add(this.buttonMinimize, 1, 0);
+            this.tableLayoutPanelButton.Controls.Add(this.buttonRestartNow, 0, 0);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 163);
+            this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
+            this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(416, 0);
+            this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(416, 0);
+            this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
+            this.tableLayoutPanelButton.RowCount = 1;
+            this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanelButton.Size = new System.Drawing.Size(416, 25);
+            this.tableLayoutPanelButton.TabIndex = 3;
             // 
             // buttonMinimize
             // 
-            this.buttonMinimize.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonMinimize.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonMinimize.Location = new System.Drawing.Point(209, 0);
+            this.buttonMinimize.Location = new System.Drawing.Point(221, 0);
             this.buttonMinimize.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
             this.buttonMinimize.MaximumSize = new System.Drawing.Size(195, 25);
             this.buttonMinimize.MinimumSize = new System.Drawing.Size(195, 25);
@@ -172,7 +173,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // buttonRestartNow
             // 
-            this.buttonRestartNow.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.buttonRestartNow.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonRestartNow.Location = new System.Drawing.Point(0, 0);
             this.buttonRestartNow.Margin = new System.Windows.Forms.Padding(0);
@@ -188,18 +188,18 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 0);
-            this.Controls.Add(this.dialogFlowLayoutPanel);
+            this.ClientSize = new System.Drawing.Size(450, 205);
+            this.Controls.Add(this.flowLayoutPanelDialog);
             this.MaximumSize = new System.Drawing.Size(466, 0);
             this.MinimumSize = new System.Drawing.Size(466, 0);
             this.Name = "RestartDialog";
             this.Text = "RestartDialog";
-            this.Controls.SetChildIndex(this.dialogFlowLayoutPanel, 0);
-            this.dialogFlowLayoutPanel.ResumeLayout(false);
-            this.dialogFlowLayoutPanel.PerformLayout();
-            this.countdownFlowLayoutPanel.ResumeLayout(false);
-            this.countdownFlowLayoutPanel.PerformLayout();
-            this.buttonTableLayoutPanel.ResumeLayout(false);
+            this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
+            this.flowLayoutPanelDialog.ResumeLayout(false);
+            this.flowLayoutPanelDialog.PerformLayout();
+            this.flowLayoutPanelCountdown.ResumeLayout(false);
+            this.flowLayoutPanelCountdown.PerformLayout();
+            this.tableLayoutPanelButton.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -207,12 +207,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
         #endregion
 
-        private FlowLayoutPanel dialogFlowLayoutPanel;
+        private FlowLayoutPanel flowLayoutPanelDialog;
         private Label labelMessage;
-        private TableLayoutPanel buttonTableLayoutPanel;
+        private TableLayoutPanel tableLayoutPanelButton;
         private Button buttonMinimize;
         private Button buttonRestartNow;
-        private FlowLayoutPanel countdownFlowLayoutPanel;
+        private FlowLayoutPanel flowLayoutPanelCountdown;
         private Label labelRestartMessage;
         private Label labelTimeRemaining;
         private Label labelCountdown;
