@@ -97,6 +97,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.AbortableDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.CloseAppsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.CustomDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.ProgressDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.RestartDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
 	<None Update="Resources\appIcon.png">
 	  <Pack>True</Pack>
 	  <PackagePath>\</PackagePath>
