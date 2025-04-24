@@ -52,20 +52,20 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.dialogFlowLayoutPanel.MinimumSize = new System.Drawing.Size(450, 0);
             this.dialogFlowLayoutPanel.Name = "dialogFlowLayoutPanel";
             this.dialogFlowLayoutPanel.Padding = new System.Windows.Forms.Padding(23);
-            this.dialogFlowLayoutPanel.Size = new System.Drawing.Size(450, 149);
+            this.dialogFlowLayoutPanel.Size = new System.Drawing.Size(450, 151);
             this.dialogFlowLayoutPanel.TabIndex = 2;
             // 
             // labelMessage
             // 
             this.labelMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelMessage.AutoSize = true;
-            this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelMessage.Location = new System.Drawing.Point(23, 23);
             this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
             this.labelMessage.MaximumSize = new System.Drawing.Size(404, 0);
             this.labelMessage.MinimumSize = new System.Drawing.Size(404, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(404, 15);
+            this.labelMessage.Size = new System.Drawing.Size(404, 17);
             this.labelMessage.TabIndex = 0;
             this.labelMessage.Text = "Installation in progress. Please wait...";
             this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -74,7 +74,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.labelDetail.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelDetail.AutoSize = true;
-            this.labelDetail.Location = new System.Drawing.Point(23, 50);
+            this.labelDetail.Location = new System.Drawing.Point(23, 52);
             this.labelDetail.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
             this.labelDetail.MaximumSize = new System.Drawing.Size(404, 0);
             this.labelDetail.MinimumSize = new System.Drawing.Size(404, 0);
@@ -87,7 +87,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // progressBar
             // 
             this.progressBar.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.progressBar.Location = new System.Drawing.Point(24, 101);
+            this.progressBar.Location = new System.Drawing.Point(24, 103);
             this.progressBar.Margin = new System.Windows.Forms.Padding(0, 24, 0, 0);
             this.progressBar.MaximumSize = new System.Drawing.Size(402, 25);
             this.progressBar.MinimumSize = new System.Drawing.Size(402, 25);
