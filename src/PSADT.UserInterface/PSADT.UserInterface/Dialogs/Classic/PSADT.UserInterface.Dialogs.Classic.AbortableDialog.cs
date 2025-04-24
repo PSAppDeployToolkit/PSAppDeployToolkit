@@ -25,7 +25,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="options"></param>
         public AbortableDialog(DialogOptions options) : base(options)
         {
+            // Initialise the form and reset the control order.
+            // The designer tries to add its controls ahead of the base's.
             InitializeComponent();
+            this.SuspendLayout();
+            this.Controls.Remove(this.buttonAbort);
+            this.Controls.Add(this.buttonAbort);
+            this.ResumeLayout();
         }
     }
 }

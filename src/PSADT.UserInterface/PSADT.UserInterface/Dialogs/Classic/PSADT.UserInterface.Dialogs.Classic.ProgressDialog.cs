@@ -25,7 +25,15 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="options"></param>
         public ProgressDialog(ProgressDialogOptions options) : base(options)
         {
+            // Initialise the form and reset the control order.
+            // The designer tries to add its controls ahead of the base's.
             InitializeComponent();
+            this.SuspendLayout();
+            this.flowLayoutPanelBase.SuspendLayout();
+            this.Controls.Remove(this.flowLayoutPanelDialog);
+            this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
+            this.flowLayoutPanelBase.ResumeLayout();
+            this.ResumeLayout();
         }
     }
 }
