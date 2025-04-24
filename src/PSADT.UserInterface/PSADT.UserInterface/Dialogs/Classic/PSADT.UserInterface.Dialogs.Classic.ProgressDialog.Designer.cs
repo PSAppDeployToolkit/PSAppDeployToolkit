@@ -62,10 +62,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelMessage.Location = new System.Drawing.Point(23, 23);
             this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
-            this.labelMessage.MaximumSize = new System.Drawing.Size(402, 0);
-            this.labelMessage.MinimumSize = new System.Drawing.Size(402, 0);
+            this.labelMessage.MaximumSize = new System.Drawing.Size(404, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(404, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(402, 15);
+            this.labelMessage.Size = new System.Drawing.Size(404, 15);
             this.labelMessage.TabIndex = 0;
             this.labelMessage.Text = "Installation in progress. Please wait...";
             this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -76,17 +76,18 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelDetail.AutoSize = true;
             this.labelDetail.Location = new System.Drawing.Point(23, 50);
             this.labelDetail.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
-            this.labelDetail.MaximumSize = new System.Drawing.Size(402, 0);
-            this.labelDetail.MinimumSize = new System.Drawing.Size(402, 0);
+            this.labelDetail.MaximumSize = new System.Drawing.Size(404, 0);
+            this.labelDetail.MinimumSize = new System.Drawing.Size(404, 0);
             this.labelDetail.Name = "labelDetail";
-            this.labelDetail.Size = new System.Drawing.Size(402, 15);
+            this.labelDetail.Size = new System.Drawing.Size(404, 15);
             this.labelDetail.TabIndex = 1;
             this.labelDetail.Text = "This window will close automatically when the installation is complete.";
             this.labelDetail.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(23, 101);
+            this.progressBar.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.progressBar.Location = new System.Drawing.Point(24, 101);
             this.progressBar.Margin = new System.Windows.Forms.Padding(0, 24, 0, 0);
             this.progressBar.MaximumSize = new System.Drawing.Size(402, 25);
             this.progressBar.MinimumSize = new System.Drawing.Size(402, 25);

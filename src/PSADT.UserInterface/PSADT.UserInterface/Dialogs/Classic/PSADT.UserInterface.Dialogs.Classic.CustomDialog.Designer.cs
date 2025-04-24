@@ -47,6 +47,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // iconMessageTableLayout
             // 
+            this.iconMessageTableLayout.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.iconMessageTableLayout.AutoSize = true;
             this.iconMessageTableLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.iconMessageTableLayout.ColumnCount = 2;
@@ -101,19 +102,20 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonTableLayoutPanel.Controls.Add(this.buttonLeft, 0, 0);
             this.buttonTableLayoutPanel.Controls.Add(this.buttonMiddle, 1, 0);
             this.buttonTableLayoutPanel.Controls.Add(this.buttonRight, 2, 0);
-            this.buttonTableLayoutPanel.Location = new System.Drawing.Point(24, 425);
+            this.buttonTableLayoutPanel.Location = new System.Drawing.Point(23, 425);
             this.buttonTableLayoutPanel.Margin = new System.Windows.Forms.Padding(0, 24, 0, 0);
-            this.buttonTableLayoutPanel.MaximumSize = new System.Drawing.Size(402, 0);
-            this.buttonTableLayoutPanel.MinimumSize = new System.Drawing.Size(402, 0);
+            this.buttonTableLayoutPanel.MaximumSize = new System.Drawing.Size(404, 0);
+            this.buttonTableLayoutPanel.MinimumSize = new System.Drawing.Size(404, 0);
             this.buttonTableLayoutPanel.Name = "buttonTableLayoutPanel";
             this.buttonTableLayoutPanel.RowCount = 1;
             this.buttonTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.buttonTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
-            this.buttonTableLayoutPanel.Size = new System.Drawing.Size(402, 25);
+            this.buttonTableLayoutPanel.Size = new System.Drawing.Size(404, 25);
             this.buttonTableLayoutPanel.TabIndex = 4;
             // 
             // buttonLeft
             // 
+            this.buttonLeft.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.buttonLeft.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonLeft.Location = new System.Drawing.Point(0, 0);
             this.buttonLeft.Margin = new System.Windows.Forms.Padding(0);
@@ -140,8 +142,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // buttonRight
             // 
+            this.buttonRight.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonRight.Location = new System.Drawing.Point(272, 0);
+            this.buttonRight.Location = new System.Drawing.Point(274, 0);
             this.buttonRight.Margin = new System.Windows.Forms.Padding(0);
             this.buttonRight.MaximumSize = new System.Drawing.Size(130, 25);
             this.buttonRight.MinimumSize = new System.Drawing.Size(130, 25);

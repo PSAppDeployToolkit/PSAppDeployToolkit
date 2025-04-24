@@ -59,7 +59,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.dialogFlowLayoutPanel.MinimumSize = new System.Drawing.Size(450, 0);
             this.dialogFlowLayoutPanel.Name = "dialogFlowLayoutPanel";
             this.dialogFlowLayoutPanel.Padding = new System.Windows.Forms.Padding(23);
-            this.dialogFlowLayoutPanel.Size = new System.Drawing.Size(450, 217);
+            this.dialogFlowLayoutPanel.Size = new System.Drawing.Size(450, 223);
             this.dialogFlowLayoutPanel.TabIndex = 2;
             // 
             // labelMessage
@@ -73,8 +73,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.Name = "labelMessage";
             this.labelMessage.Size = new System.Drawing.Size(404, 30);
             this.labelMessage.TabIndex = 0;
-            this.labelMessage.Text = "In order for the installation to complete, you must restart your computer. Please" +
-    " save your work and restart within the alloted time.";
+            this.labelMessage.Text = "In order for the installation to complete, you must restart your computer. Please save your work and restart within the alloted time.";
             this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // countdownFlowLayoutPanel
@@ -87,16 +86,20 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.countdownFlowLayoutPanel.Controls.Add(this.labelCountdown);
             this.countdownFlowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.countdownFlowLayoutPanel.Location = new System.Drawing.Point(23, 65);
-            this.countdownFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
+            this.countdownFlowLayoutPanel.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
+            this.countdownFlowLayoutPanel.MinimumSize = new System.Drawing.Size(404, 0);
             this.countdownFlowLayoutPanel.Name = "countdownFlowLayoutPanel";
             this.countdownFlowLayoutPanel.Size = new System.Drawing.Size(404, 80);
             this.countdownFlowLayoutPanel.TabIndex = 4;
             // 
             // labelRestartMessage
             // 
+            this.labelRestartMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelRestartMessage.AutoSize = true;
             this.labelRestartMessage.Location = new System.Drawing.Point(0, 0);
             this.labelRestartMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
+            this.labelRestartMessage.MaximumSize = new System.Drawing.Size(404, 0);
+            this.labelRestartMessage.MinimumSize = new System.Drawing.Size(404, 0);
             this.labelRestartMessage.Name = "labelRestartMessage";
             this.labelRestartMessage.Size = new System.Drawing.Size(404, 15);
             this.labelRestartMessage.TabIndex = 3;
@@ -143,20 +146,21 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.buttonTableLayoutPanel.Controls.Add(this.buttonMinimize, 1, 0);
             this.buttonTableLayoutPanel.Controls.Add(this.buttonRestartNow, 0, 0);
-            this.buttonTableLayoutPanel.Location = new System.Drawing.Point(24, 169);
+            this.buttonTableLayoutPanel.Location = new System.Drawing.Point(23, 175);
             this.buttonTableLayoutPanel.Margin = new System.Windows.Forms.Padding(0, 24, 0, 0);
-            this.buttonTableLayoutPanel.MaximumSize = new System.Drawing.Size(402, 0);
-            this.buttonTableLayoutPanel.MinimumSize = new System.Drawing.Size(402, 0);
+            this.buttonTableLayoutPanel.MaximumSize = new System.Drawing.Size(404, 0);
+            this.buttonTableLayoutPanel.MinimumSize = new System.Drawing.Size(404, 0);
             this.buttonTableLayoutPanel.Name = "buttonTableLayoutPanel";
             this.buttonTableLayoutPanel.RowCount = 1;
             this.buttonTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.buttonTableLayoutPanel.Size = new System.Drawing.Size(402, 25);
+            this.buttonTableLayoutPanel.Size = new System.Drawing.Size(404, 25);
             this.buttonTableLayoutPanel.TabIndex = 3;
             // 
             // buttonMinimize
             // 
-            this.buttonMinimize.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.buttonMinimize.Location = new System.Drawing.Point(207, 0);
+            this.buttonMinimize.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.buttonMinimize.Dock = System.Windows.Forms.DockStyle.Right;
+            this.buttonMinimize.Location = new System.Drawing.Point(209, 0);
             this.buttonMinimize.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
             this.buttonMinimize.MaximumSize = new System.Drawing.Size(195, 25);
             this.buttonMinimize.MinimumSize = new System.Drawing.Size(195, 25);
@@ -169,6 +173,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // buttonRestartNow
             // 
             this.buttonRestartNow.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.buttonRestartNow.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonRestartNow.Location = new System.Drawing.Point(0, 0);
             this.buttonRestartNow.Margin = new System.Windows.Forms.Padding(0);
             this.buttonRestartNow.MaximumSize = new System.Drawing.Size(195, 25);
