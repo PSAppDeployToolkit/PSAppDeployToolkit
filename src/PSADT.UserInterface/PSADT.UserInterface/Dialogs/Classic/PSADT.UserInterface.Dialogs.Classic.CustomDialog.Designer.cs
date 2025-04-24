@@ -33,7 +33,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CustomDialog));
             this.iconMessageTableLayout = new System.Windows.Forms.TableLayoutPanel();
             this.pictureIcon = new System.Windows.Forms.PictureBox();
             this.labelMessage = new System.Windows.Forms.Label();
@@ -65,7 +64,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.iconMessageTableLayout.Name = "iconMessageTableLayout";
             this.iconMessageTableLayout.RowCount = 1;
             this.iconMessageTableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.iconMessageTableLayout.Size = new System.Drawing.Size(416, 351);
+            this.iconMessageTableLayout.Size = new System.Drawing.Size(416, 66);
             this.iconMessageTableLayout.TabIndex = 3;
             // 
             // pictureIcon
@@ -89,9 +88,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.MaximumSize = new System.Drawing.Size(332, 0);
             this.labelMessage.MinimumSize = new System.Drawing.Size(332, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(332, 345);
+            this.labelMessage.Size = new System.Drawing.Size(332, 60);
             this.labelMessage.TabIndex = 1;
-            this.labelMessage.Text = resources.GetString("labelMessage.Text");
+            this.labelMessage.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor in" +
+    "cididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud" +
+    " exercitation ullamco laboris...";
             // 
             // tableLayoutPanelButton
             // 
@@ -105,7 +106,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Controls.Add(this.buttonLeft, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 392);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 107);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(416, 0);
             this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(416, 0);
@@ -169,14 +170,14 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 434);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 149);
             this.flowLayoutPanelDialog.TabIndex = 5;
             // 
             // CustomDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 434);
+            this.ClientSize = new System.Drawing.Size(450, 149);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "CustomDialog";
             this.Text = "CustomDialog";
