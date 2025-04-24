@@ -39,7 +39,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // baseFlowLayoutPanel
             // 
-            this.baseFlowLayoutPanel.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.baseFlowLayoutPanel.AutoSize = true;
             this.baseFlowLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.baseFlowLayoutPanel.Controls.Add(this.pictureBanner);
