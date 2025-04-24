@@ -28,6 +28,10 @@ namespace PSADT.UserInterface.Dialogs
             {
                 throw new ArgumentNullException("AppIconImage cannot be null.", (Exception?)null);
             }
+            if (options["AppBannerImage"] is not string appBannerImage || string.IsNullOrWhiteSpace(appBannerImage))
+            {
+                throw new ArgumentNullException("AppBannerImage cannot be null.", (Exception?)null);
+            }
             if (options["DialogAllowMove"] is not bool dialogAllowMove)
             {
                 throw new ArgumentNullException("DialogAllowMove cannot be null.", (Exception?)null);
@@ -45,6 +49,7 @@ namespace PSADT.UserInterface.Dialogs
             AppTitle = appTitle;
             Subtitle = subTitle;
             AppIconImage = appIconImage;
+            AppBannerImage = appBannerImage;
             DialogAllowMove = dialogAllowMove;
             DialogTopMost = dialogTopMost;
             DialogExpiryDuration = dialogExpiryDuration;
@@ -66,6 +71,11 @@ namespace PSADT.UserInterface.Dialogs
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
         public readonly string AppIconImage;
+
+        /// <summary>
+        /// The image file path for the banner to be displayed in the dialog.
+        /// </summary>
+        public readonly string AppBannerImage;
 
         /// <summary>
         /// The position of the dialog on the screen.

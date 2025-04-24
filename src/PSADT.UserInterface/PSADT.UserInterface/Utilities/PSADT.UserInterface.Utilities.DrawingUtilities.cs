@@ -3,12 +3,12 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 
-namespace PSADT.Utilities
+namespace PSADT.UserInterface.Utilities
 {
     /// <summary>
     /// A collection of utility methods for drawing and image manipulation.
     /// </summary>
-    public static class DrawingUtilities
+    internal static class DrawingUtilities
     {
         /// <summary>
         /// Resize the image to the specified width and height.
@@ -17,7 +17,7 @@ namespace PSADT.Utilities
         /// <param name="width">The width to resize to.</param>
         /// <param name="height">The height to resize to.</param>
         /// <returns>The resized image.</returns>
-        public static Bitmap ResizeImage(Image img, int width, int height)
+        internal static Bitmap ResizeImage(Bitmap img, int width, int height)
         {
             var destRect = new Rectangle(0, 0, width, height);
             var destImage = new Bitmap(width, height);
@@ -47,7 +47,7 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="img">The image to resize.</param>
         /// <returns>The resized image.</returns>
-        public static Icon ConvertImageToIcon(Image img)
+        internal static Icon ConvertBitmapToIcon(Bitmap img)
         {
             // Ensure the incoming image is < 128px in width/height.
             if ((img.Width > 128) || (img.Height > 128))
@@ -80,6 +80,19 @@ namespace PSADT.Utilities
                 }
             }
             return icon;
+        }
+
+        /// <summary>
+        /// Converts an image file to an icon, automatically resizing to the maximum icon size if greater than 128px.
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <returns></returns>
+        internal static Icon ConvertBitmapToIcon(string imagePath)
+        {
+            using (var img = (Bitmap)Bitmap.FromFile(imagePath))
+            {
+                return ConvertBitmapToIcon(img);
+            }
         }
     }
 }

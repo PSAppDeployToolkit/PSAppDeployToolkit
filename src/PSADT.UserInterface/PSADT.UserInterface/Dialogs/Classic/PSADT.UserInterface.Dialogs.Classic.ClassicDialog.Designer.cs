@@ -60,8 +60,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.pictureBanner.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pictureBanner.Location = new System.Drawing.Point(0, 0);
             this.pictureBanner.Margin = new System.Windows.Forms.Padding(0);
-            this.pictureBanner.MaximumSize = new System.Drawing.Size(450, 0);
-            this.pictureBanner.MinimumSize = new System.Drawing.Size(450, 0);
             this.pictureBanner.Name = "pictureBanner";
             this.pictureBanner.Size = new System.Drawing.Size(450, 0);
             this.pictureBanner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
