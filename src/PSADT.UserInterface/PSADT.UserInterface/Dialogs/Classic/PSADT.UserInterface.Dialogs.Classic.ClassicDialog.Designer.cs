@@ -42,6 +42,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase.AutoSize = true;
             this.flowLayoutPanelBase.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelBase.Controls.Add(this.pictureBanner);
+            this.flowLayoutPanelBase.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanelBase.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
