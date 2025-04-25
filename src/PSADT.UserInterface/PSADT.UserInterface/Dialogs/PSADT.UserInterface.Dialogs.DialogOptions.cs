@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 
 namespace PSADT.UserInterface.Dialogs
 {
@@ -43,6 +44,16 @@ namespace PSADT.UserInterface.Dialogs
             if (options["DialogExpiryDuration"] is not TimeSpan dialogExpiryDuration)
             {
                 throw new ArgumentNullException("DialogExpiryDuration cannot be null.", (Exception?)null);
+            }
+
+            // Test that the specified image paths are valid.
+            if (!File.Exists(appIconImage))
+            {
+                throw new FileNotFoundException("The specified AppIconImage cannot be found", appIconImage);
+            }
+            if (!File.Exists(appBannerImage))
+            {
+                throw new FileNotFoundException("The specified AppBannerImage cannot be found", appBannerImage);
             }
 
             // The hashtable was correctly defined, so we can assign the values and continue onwards.
