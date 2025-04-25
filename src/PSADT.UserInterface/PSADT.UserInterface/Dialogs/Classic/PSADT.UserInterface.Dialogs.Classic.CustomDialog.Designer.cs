@@ -53,7 +53,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.iconMessageTableLayout.AutoSize = true;
             this.iconMessageTableLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.iconMessageTableLayout.ColumnCount = 2;
-            this.iconMessageTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.iconMessageTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.iconMessageTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.iconMessageTableLayout.Controls.Add(this.labelMessage, 1, 0);
             this.iconMessageTableLayout.Controls.Add(this.pictureIcon, 0, 0);
@@ -70,12 +70,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // labelMessage
             // 
             this.labelMessage.AutoSize = true;
-            this.labelMessage.Location = new System.Drawing.Point(72, 0);
-            this.labelMessage.Margin = new System.Windows.Forms.Padding(24, 0, 0, 0);
-            this.labelMessage.MaximumSize = new System.Drawing.Size(344, 0);
-            this.labelMessage.MinimumSize = new System.Drawing.Size(344, 0);
+            this.labelMessage.Location = new System.Drawing.Point(67, 0);
+            this.labelMessage.Margin = new System.Windows.Forms.Padding(17, 0, 0, 0);
+            this.labelMessage.MaximumSize = new System.Drawing.Size(349, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(349, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(344, 60);
+            this.labelMessage.Size = new System.Drawing.Size(349, 60);
             this.labelMessage.TabIndex = 1;
             this.labelMessage.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor in" +
     "cididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud" +
