@@ -444,10 +444,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Uses a cache for performance.
         /// </summary>
         /// <param name="appIconImage">Path or URI to the icon image file. Defaults to embedded resource if null.</param>
-        private void SetAppIcon(string? appIconImage)
+        private void SetAppIcon(string appIconImage)
         {
             // Try to get from cache first
-            if (!_iconCache.TryGetValue(appIconImage!, out var iconImage))
+            if (!_iconCache.TryGetValue(appIconImage, out var iconImage))
             {
                 // Use BeginInit/EndInit pattern for better performance.
                 iconImage = new BitmapImage();
