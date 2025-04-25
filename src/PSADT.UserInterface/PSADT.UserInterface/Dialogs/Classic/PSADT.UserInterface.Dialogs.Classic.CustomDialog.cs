@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {

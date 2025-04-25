@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 
-namespace PSADT.UserInterface.Dialogs
+namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the CustomDialog.
     /// </summary>
-    public class CustomDialogOptions : DialogOptions
+    public class CustomDialogOptions : BaseOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialogOptions"/> class.

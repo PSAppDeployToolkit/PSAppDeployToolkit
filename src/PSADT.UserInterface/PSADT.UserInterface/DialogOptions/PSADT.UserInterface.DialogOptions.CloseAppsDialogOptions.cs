@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 
-namespace PSADT.UserInterface.Dialogs
+namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the CloseAppsDialog.
     /// </summary>
-    public sealed class CloseAppsDialogOptions : DialogOptions
+    public sealed class CloseAppsDialogOptions : BaseOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogOptions"/> class.

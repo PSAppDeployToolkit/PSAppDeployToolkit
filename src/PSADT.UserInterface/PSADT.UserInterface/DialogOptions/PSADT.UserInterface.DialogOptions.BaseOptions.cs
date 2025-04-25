@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using PSADT.UserInterface.Dialogs;
 
-namespace PSADT.UserInterface.Dialogs
+namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    public abstract class DialogOptions
+    public abstract class BaseOptions
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DialogOptions"/> class with the specified options.
+        /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified options.
         /// This accepts a hashtable of parameters to ease construction on the PowerShell side of things.
         /// </summary>
         /// <param name="options"></param>
-        public DialogOptions(Hashtable options)
+        public BaseOptions(Hashtable options)
         {
             // Nothing here is allowed to be null.
             if (options["AppTitle"] is not string appTitle || string.IsNullOrWhiteSpace(appTitle))

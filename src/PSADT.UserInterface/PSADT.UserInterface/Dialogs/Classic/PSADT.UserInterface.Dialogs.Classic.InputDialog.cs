@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -23,7 +24,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="InputDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        public InputDialog(DialogOptions options) : base(options)
+        public InputDialog(BaseOptions options) : base(options)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {

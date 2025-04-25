@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
 
 namespace PSADT.UserInterface.Dialogs.Classic
@@ -41,7 +42,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="ClassicDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        public ClassicDialog(DialogOptions options) : base()
+        public ClassicDialog(BaseOptions options) : base()
         {
             InitializeComponent();
             if (null != options)

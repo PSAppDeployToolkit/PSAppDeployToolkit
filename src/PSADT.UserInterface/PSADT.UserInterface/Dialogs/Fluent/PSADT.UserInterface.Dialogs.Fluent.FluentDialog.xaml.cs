@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Wpf.Ui.Appearance;
@@ -44,7 +45,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Initializes a new instance of FluentDialog
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        private protected FluentDialog(DialogOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownNoMinimizeDuration = null, string? countdownDialogResult = null)
+        private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownNoMinimizeDuration = null, string? countdownDialogResult = null)
         {
             // Set up the context for data binding
             DataContext = this;

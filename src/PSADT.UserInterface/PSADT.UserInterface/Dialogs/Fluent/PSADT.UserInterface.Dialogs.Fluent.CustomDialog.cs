@@ -2,6 +2,7 @@
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {

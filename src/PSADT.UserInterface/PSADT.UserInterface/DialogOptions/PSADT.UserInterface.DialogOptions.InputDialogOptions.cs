@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace PSADT.UserInterface.Dialogs
+namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the InputDialog.

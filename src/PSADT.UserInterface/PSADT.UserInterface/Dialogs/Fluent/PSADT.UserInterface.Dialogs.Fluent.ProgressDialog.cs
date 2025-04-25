@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {

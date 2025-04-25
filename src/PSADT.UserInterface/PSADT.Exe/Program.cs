@@ -2,6 +2,7 @@
 using System.Collections;
 using System.IO;
 using System.Threading;
+using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.Services;
 

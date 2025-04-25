@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 
-namespace PSADT.UserInterface.Dialogs
+namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the ProgressDialog.
     /// </summary>
-    public sealed class ProgressDialogOptions : DialogOptions
+    public sealed class ProgressDialogOptions : BaseOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class.
