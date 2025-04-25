@@ -6,7 +6,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Custom classic dialog form.
     /// </summary>
-    public partial class CustomDialog : AbortableDialog
+    public partial class CustomDialog : ClassicDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialog"/> class.

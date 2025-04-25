@@ -6,7 +6,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Close applications dialog form.
     /// </summary>
-    public partial class CloseAppsDialog : AbortableDialog
+    public partial class CloseAppsDialog : ClassicDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class.
