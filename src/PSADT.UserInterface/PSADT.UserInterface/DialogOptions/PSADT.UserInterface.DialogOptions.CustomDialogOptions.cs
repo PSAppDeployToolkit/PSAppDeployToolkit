@@ -20,15 +20,9 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("MessageText cannot be null.", (Exception?)null);
             }
-            if (options["MessageAlignment"] is not string messageAlignment || string.IsNullOrWhiteSpace(messageAlignment))
+            if (options["MessageAlignment"] is not DialogMessageAlignment messageAlignment)
             {
                 throw new ArgumentNullException("MessageAlignment cannot be null.", (Exception?)null);
-            }
-
-            // Test that messageAlignment is valid.
-            if (messageAlignment != "Left" && messageAlignment != "Center" && messageAlignment != "Right")
-            {
-                throw new ArgumentOutOfRangeException("MessageAlignment must be Left, Center, or Right.", (Exception?)null);
             }
 
             // The hashtable was correctly defined, so we can assign the values and continue onwards.
@@ -54,7 +48,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
-        public readonly string MessageAlignment;
+        public readonly DialogMessageAlignment MessageAlignment;
 
         /// <summary>
         /// The text for the left button in the dialog.
