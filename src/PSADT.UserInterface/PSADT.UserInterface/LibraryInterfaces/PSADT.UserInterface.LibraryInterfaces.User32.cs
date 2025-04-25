@@ -217,5 +217,39 @@ namespace PSADT.UserInterface.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Retrieves the display monitor that is nearest to the specified rectangle.
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="bRevert"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static DestroyMenuSafeHandle GetSystemMenu(HWND hWnd, BOOL bRevert)
+        {
+            var res = PInvoke.GetSystemMenu_SafeHandle(hWnd, bRevert);
+            if (res.IsInvalid)
+            {
+                throw new InvalidOperationException("Failed to retrieve the menu handle.");
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Enables or disables a menu item.
+        /// </summary>
+        /// <param name="hMenu"></param>
+        /// <param name="uIDEnableItem"></param>
+        /// <param name="uEnable"></param>
+        /// <returns></returns>
+        internal static BOOL EnableMenuItem(SafeHandle hMenu, uint uIDEnableItem, MENU_ITEM_FLAGS uEnable)
+        {
+            var res = PInvoke.EnableMenuItem(hMenu, uIDEnableItem, uEnable);
+            if (res == -1)
+            {
+                throw new InvalidOperationException("Failed to change menu item.");
+            }
+            return res;
+        }
     }
 }

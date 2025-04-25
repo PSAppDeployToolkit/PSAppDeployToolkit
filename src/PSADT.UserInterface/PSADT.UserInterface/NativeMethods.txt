@@ -1,9 +1,12 @@
 ﻿DeleteObject
 DestroyIcon
+DestroyMenu
 DwmGetColorizationColor
+EnableMenuItem
 EnumDisplayMonitors
 GetMonitorInfo
 GetSystemMetrics
+GetSystemMenu
 FILE_FLAGS_AND_ATTRIBUTES
 HIGHCONTRASTW
 MONITORINFOEXW
@@ -12,6 +15,7 @@ MonitorFromPoint
 MonitorFromWindow
 RECT
 SC_MOVE
+SC_CLOSE
 SHGetImageList
 SHGSI_FLAGS
 SHGFI_FLAGS

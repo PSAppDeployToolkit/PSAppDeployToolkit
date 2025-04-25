@@ -5,7 +5,11 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.LibraryInterfaces;
 using PSADT.UserInterface.Utilities;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -58,15 +62,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.TopMost = options.DialogTopMost;
                 #warning "TODO: DialogAccentColor?"
                 #warning "TODO: DialogPersistInterval?"
+                this.Load += Form_Load;
+                this.FormClosing += Form_FormClosing;
                 this.flowLayoutPanelBase.ResumeLayout();
                 this.ResumeLayout();
             }
         }
-
-        /// <summary>
-        /// Private backing field for the dialog result (let's not overwrite the base class's).
-        /// </summary>
-        private string? _result;
 
         /// <summary>
         /// The result of the dialog.
@@ -78,13 +79,22 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
+        /// Closes the dialog.
+        /// </summary>
+        public void CloseDialog()
+        {
+            canClose = true;
+            Close();
+        }
+
+        /// <summary>
         /// Handles the click event of the left button.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         protected virtual void ButtonLeft_Click(object sender, EventArgs e)
         {
-            Close();
+            CloseDialog();
         }
 
         /// <summary>
@@ -94,7 +104,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected virtual void ButtonMiddle_Click(object sender, EventArgs e)
         {
-            Close();
+            CloseDialog();
         }
 
         /// <summary>
@@ -104,7 +114,42 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected virtual void ButtonRight_Click(object sender, EventArgs e)
         {
-            Close();
+            CloseDialog();
+        }
+
+        /// <summary>
+        /// Handles the form's load event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Form_Load(object? sender, EventArgs e)
+        {
+            // Disable the close button on the form. Failing that, disable the ControlBox.
+            try
+            {
+                using (var menuHandle = User32.GetSystemMenu((HWND)this.Handle, false))
+                {
+                    User32.EnableMenuItem(menuHandle, PInvoke.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
+                }
+            }
+            catch
+            {
+                this.ControlBox = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles the form's closing event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Form_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            // Cancel the event if we can't close (i.e. user has closed from the taskbar)
+            if (!canClose)
+            {
+                e.Cancel = true;
+            }
         }
 
         /// <summary>
@@ -158,6 +203,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 return image;
             }
         }
+
+        /// <summary>
+        /// Private backing field for the dialog result (let's not overwrite the base class's).
+        /// </summary>
+        private string? _result;
+
+        /// <summary>
+        /// Flag to indicate if the dialog can be closed.
+        /// </summary>
+        private bool canClose = false;
 
         /// <summary>
         /// Cache for icons to avoid loading them multiple times.
