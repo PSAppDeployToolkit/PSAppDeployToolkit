@@ -161,12 +161,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="appIconImage">Path or URI to the icon image file. Defaults to embedded resource if null.</param>
         private void SetAppIcon(string? appIconImage)
         {
-            // Use the built-in icon if one isn't specified
-            if (string.IsNullOrWhiteSpace(appIconImage))
-            {
-                appIconImage = "pack://application:,,,/PSADT.UserInterface;component/Resources/appIcon.png";
-            }
-
             // Try to get from cache first
             if (!_iconCache.TryGetValue(appIconImage!, out var iconImage))
             {
