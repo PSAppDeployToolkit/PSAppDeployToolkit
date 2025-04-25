@@ -59,8 +59,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 0);
             this.Controls.Add(this.buttonAbort);
-            this.Name = "AbortableDialog";
-            this.Text = "AbortableDialog";
             this.Controls.SetChildIndex(this.buttonAbort, 0);
             this.ResumeLayout(false);
             this.PerformLayout();

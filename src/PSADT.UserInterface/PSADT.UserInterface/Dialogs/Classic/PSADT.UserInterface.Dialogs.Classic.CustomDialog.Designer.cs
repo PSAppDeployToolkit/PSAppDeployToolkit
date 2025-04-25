@@ -178,8 +178,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 143);
             this.Controls.Add(this.flowLayoutPanelDialog);
-            this.Name = "CustomDialog";
-            this.Text = "CustomDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
             this.iconMessageTableLayout.ResumeLayout(false);
             this.iconMessageTableLayout.PerformLayout();
