@@ -96,5 +96,41 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase.ResumeLayout();
             this.ResumeLayout();
         }
+
+        /// <summary>
+        /// Handles the click event of the left button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void ButtonLeft_Click(object sender, EventArgs e)
+        {
+            // Set the result and call base method to handle window closure.
+            this.Result = this.buttonLeft.Text;
+            base.ButtonLeft_Click(sender, e);
+        }
+
+        /// <summary>
+        /// Handles the click event of the middle button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void ButtonMiddle_Click(object sender, EventArgs e)
+        {
+            // Set the result and call base method to handle window closure.
+            this.Result = this.buttonMiddle.Text;
+            base.ButtonMiddle_Click(sender, e);
+        }
+
+        /// <summary>
+        /// Handles the click event of the right button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void ButtonRight_Click(object sender, EventArgs e)
+        {
+            // Set the result and call base method to handle window closure.
+            this.Result = this.buttonRight.Text;
+            base.ButtonRight_Click(sender, e);
+        }
     }
 }

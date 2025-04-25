@@ -66,6 +66,61 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
+        /// Private backing field for the dialog result (let's not overwrite the base class's).
+        /// </summary>
+        private string? _result;
+
+        /// <summary>
+        /// The result of the dialog.
+        /// </summary>
+        public string? Result
+        {
+            get => _result;
+            protected set => _result = value;
+        }
+
+        /// <summary>
+        /// Handles the click event of the left button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected virtual void ButtonLeft_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        /// <summary>
+        /// Handles the click event of the middle button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected virtual void ButtonMiddle_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        /// <summary>
+        /// Handles the click event of the right button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected virtual void ButtonRight_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        /// <summary>
+        /// Handles the click event of the default button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ButtonAbort_Click(object sender, EventArgs e)
+        {
+            this.Result = "Timeout";
+            Close();
+        }
+
+        /// <summary>
         /// Get the icon for the dialog.
         /// </summary>
         /// <param name="path"></param>

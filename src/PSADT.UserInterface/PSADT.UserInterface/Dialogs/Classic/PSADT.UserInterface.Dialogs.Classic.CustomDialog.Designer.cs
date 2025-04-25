@@ -128,6 +128,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonLeft.TabIndex = 0;
             this.buttonLeft.Text = "ButtonLeft";
             this.buttonLeft.UseVisualStyleBackColor = true;
+            this.buttonLeft.Click += new System.EventHandler(this.ButtonLeft_Click);
             // 
             // buttonMiddle
             // 
@@ -141,6 +142,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonMiddle.TabIndex = 1;
             this.buttonMiddle.Text = "ButtonMiddle";
             this.buttonMiddle.UseVisualStyleBackColor = true;
+            this.buttonMiddle.Click += new System.EventHandler(this.ButtonMiddle_Click);
             // 
             // buttonRight
             // 
@@ -154,6 +156,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonRight.TabIndex = 2;
             this.buttonRight.Text = "ButtonRight";
             this.buttonRight.UseVisualStyleBackColor = true;
+            this.buttonRight.Click += new System.EventHandler(this.ButtonRight_Click);
             // 
             // flowLayoutPanelDialog
             // 
