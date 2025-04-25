@@ -23,6 +23,7 @@ namespace PSADT.UserInterface
             string appTitle = "Adobe Reader CS 2025 x64 EN";
             string subtitle = "Bisto Systems Ltd - App Install";
             string appIconImage = $"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\..\\..\\PSADT.UserInterface\\Resources\\appIcon.png";
+            string appBannerImage = $"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\..\\..\\PSADT.UserInterface\\Resources\\Banner.Classic.png";
             //string? dialogAccentColor = "";
             string dialogAccentColor = "#FFFFB900"; // Yellow
             DialogPosition dialogPosition = DialogPosition.BottomRight;
@@ -103,6 +104,7 @@ namespace PSADT.UserInterface
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppBannerImage", appBannerImage },
                 { "AppsToClose", appsToClose },
                 { "CountdownDuration", countdownDuration },
                 { "DeferralsRemaining", deferralsRemaining },
@@ -128,6 +130,7 @@ namespace PSADT.UserInterface
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppBannerImage", appBannerImage },
                 { "ProgressMessageText", progressMessageText },
                 { "ProgressDetailMessageText", progressDetailMessageText }
             });
@@ -141,6 +144,7 @@ namespace PSADT.UserInterface
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppBannerImage", appBannerImage },
                 { "MessageText", customDialogMessageText },
                 { "ButtonLeftText", ButtonLeftText },
                 { "ButtonMiddleText", ButtonMiddleText },
@@ -156,6 +160,7 @@ namespace PSADT.UserInterface
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppBannerImage", appBannerImage },
                 { "RestartCountdownDuration", restartCountdownDuration },
                 { "RestartCountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
                 { "RestartMessageText", restartMessageText },
