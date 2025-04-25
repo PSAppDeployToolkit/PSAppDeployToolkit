@@ -173,6 +173,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonMinimize.TabIndex = 1;
             this.buttonMinimize.Text = "Minimize";
             this.buttonMinimize.UseVisualStyleBackColor = true;
+            this.buttonMinimize.Click += new System.EventHandler(this.buttonMinimize_Click);
             // 
             // buttonRestartNow
             // 
@@ -186,6 +187,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonRestartNow.TabIndex = 0;
             this.buttonRestartNow.Text = "Restart Now";
             this.buttonRestartNow.UseVisualStyleBackColor = true;
+            this.buttonRestartNow.Click += new System.EventHandler(this.buttonRestartNow_Click);
             // 
             // RestartDialog
             // 

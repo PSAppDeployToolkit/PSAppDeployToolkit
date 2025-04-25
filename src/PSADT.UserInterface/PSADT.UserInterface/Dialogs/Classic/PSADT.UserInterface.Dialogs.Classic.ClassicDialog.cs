@@ -65,16 +65,15 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 #warning "TODO: DialogAllowMove?"
                 this.TopMost = options.DialogTopMost;
                 #warning "TODO: DialogAccentColor?"
-                this.Load += Form_Load;
-                this.FormClosing += Form_FormClosing;
                 this.flowLayoutPanelBase.ResumeLayout();
+                this.FormClosing += Form_FormClosing;
+                this.Load += Form_Load;
                 this.ResumeLayout();
 
                 // PersistPrompt timer code.
                 if (options.DialogExpiryDuration != TimeSpan.Zero)
                 {
-                    this.persistTimer = new Timer();
-                    this.persistTimer.Interval = (int)options.DialogExpiryDuration.TotalMilliseconds;
+                    this.persistTimer = new Timer() { Interval = (int)options.DialogExpiryDuration.TotalMilliseconds };
                     this.persistTimer.Tick += PersistTimer_Tick;
                 }
             }
@@ -238,6 +237,24 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
+        /// Timer for persisting the dialog.
+        /// </summary>
+        protected Timer? PersistTimer
+        {
+            get => persistTimer;
+            private set
+            {
+                persistTimer?.Dispose();
+                persistTimer = value;
+            }
+        }
+
+        /// <summary>
+        /// Private backing field for the persist timer.
+        /// </summary>
+        private Timer? persistTimer = null;
+
+        /// <summary>
         /// Private backing field for the dialog result (let's not overwrite the base class's).
         /// </summary>
         private string? _result;
@@ -246,11 +263,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Flag to indicate if the dialog can be closed.
         /// </summary>
         private bool canClose = false;
-
-        /// <summary>
-        /// Timer for persisting the dialog.
-        /// </summary>
-        private Timer? persistTimer = null;
 
         /// <summary>
         /// Starting point for the dialog.
