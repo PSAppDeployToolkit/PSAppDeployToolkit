@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Dialogs.Classic
@@ -32,7 +33,65 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.SuspendLayout();
             this.flowLayoutPanelBase.SuspendLayout();
             this.Controls.Remove(this.flowLayoutPanelDialog);
-            this.pictureIcon.Image = SystemIcons.SystemIconLookupTable[DialogSystemIcon.Information];
+
+            // Apply options to the form if we have any (i.e. not in the designer).
+            if (null != options)
+            {
+                // Set up the buttons.
+                if (options.ButtonLeftText != null)
+                {
+                    this.buttonLeft.Text = options.ButtonLeftText;
+                    this.buttonLeft.Visible = true;
+                }
+                else
+                {
+                    this.tableLayoutPanelButton.Controls.Remove(buttonLeft);
+                }
+                if (options.ButtonMiddleText != null)
+                {
+                    this.buttonMiddle.Text = options.ButtonMiddleText;
+                    this.buttonMiddle.Visible = true;
+                }
+                else
+                {
+                    this.tableLayoutPanelButton.Controls.Remove(buttonMiddle);
+                }
+                if (options.ButtonRightText != null)
+                {
+                    this.buttonRight.Text = options.ButtonRightText;
+                    this.buttonRight.Visible = true;
+                }
+                else
+                {
+                    this.tableLayoutPanelButton.Controls.Remove(buttonRight);
+                }
+
+                // Set up the icon.
+                if (null == options.Icon)
+                {
+                    this.tableLayoutPanelIconMessage.SuspendLayout();
+                    this.tableLayoutPanelIconMessage.Controls.Remove(this.pictureIcon);
+                    this.tableLayoutPanelIconMessage.SetColumn(this.labelMessage, 0);
+                    this.tableLayoutPanelIconMessage.SetColumnSpan(this.labelMessage, 2);
+                    var extraWidth = (int)this.tableLayoutPanelIconMessage.ColumnStyles[0].Width;
+                    this.labelMessage.MinimumSize = new Size(this.labelMessage.MinimumSize.Width + extraWidth, this.labelMessage.MinimumSize.Height);
+                    this.labelMessage.MaximumSize = new Size(this.labelMessage.MaximumSize.Width + extraWidth, this.labelMessage.MaximumSize.Height);
+                    this.tableLayoutPanelIconMessage.ResumeLayout();
+                }
+                else
+                {
+                    this.pictureIcon.Image = SystemIcons.SystemIconLookupTable[options.Icon.Value];
+                }
+
+                // Set up the message.
+                if (Enum.TryParse<ContentAlignment>($"Middle{options.MessageAlignment}", out var alignment))
+                {
+                    this.labelMessage.TextAlign = alignment;
+                }
+                this.labelMessage.Text = options.MessageText;
+            }
+
+            // Resume the dialog now that we've applied any options.
             this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
             this.flowLayoutPanelBase.ResumeLayout();
             this.ResumeLayout();

@@ -46,6 +46,10 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("DialogExpiryDuration cannot be null.", (Exception?)null);
             }
+            if (options["MinimizeWindows"] is not bool minimizeWindows)
+            {
+                throw new ArgumentNullException("MinimizeWindows cannot be null.", (Exception?)null);
+            }
 
             // Test that the specified image paths are valid.
             if (!File.Exists(appIconImage))
@@ -65,8 +69,10 @@ namespace PSADT.UserInterface.DialogOptions
             DialogAllowMove = dialogAllowMove;
             DialogTopMost = dialogTopMost;
             DialogExpiryDuration = dialogExpiryDuration;
+            DialogPersistInterval = options["DialogPersistInterval"] is TimeSpan dialogPersistInterval ? dialogPersistInterval : null;
             DialogPosition = options["DialogPosition"] is DialogPosition dialogPosition ? dialogPosition : DialogPosition.BottomRight;
             DialogAccentColor = options["DialogAccentColor"] is string dialogAccentColor && !string.IsNullOrWhiteSpace(dialogAccentColor) ? dialogAccentColor : null;
+            MinimizeWindows = minimizeWindows;
         }
 
         /// <summary>
@@ -113,5 +119,15 @@ namespace PSADT.UserInterface.DialogOptions
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
         public readonly TimeSpan DialogExpiryDuration;
+
+        /// <summary>
+        /// The interval for which the dialog will persist on the screen.
+        /// </summary>
+        public readonly TimeSpan? DialogPersistInterval;
+
+        /// <summary>
+        /// Indicates whether the dialog should minimize all other windows when it is displayed.
+        /// </summary>
+        public readonly bool MinimizeWindows;
     }
 }
