@@ -92,6 +92,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.progressBar.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.progressBar.Location = new System.Drawing.Point(18, 85);
             this.progressBar.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
+            this.progressBar.MarqueeAnimationSpeed = 50;
             this.progressBar.MaximumSize = new System.Drawing.Size(414, 25);
             this.progressBar.MinimumSize = new System.Drawing.Size(414, 25);
             this.progressBar.Name = "progressBar";
