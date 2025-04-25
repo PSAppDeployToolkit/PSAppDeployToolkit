@@ -116,6 +116,8 @@ namespace PSADT.UserInterface
                     result = (TResult)(object)dialog.DialogResult;
                 }
             });
+            #warning "TODO: DialogExpiryDuration?"
+            #warning "TODO: MinimizeWindows?"
             return result!;
         }
 

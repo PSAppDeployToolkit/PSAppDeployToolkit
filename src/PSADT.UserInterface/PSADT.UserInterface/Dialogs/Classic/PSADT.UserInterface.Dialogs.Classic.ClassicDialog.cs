@@ -57,9 +57,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 #warning "TODO: DialogAllowMove?"
                 this.TopMost = options.DialogTopMost;
                 #warning "TODO: DialogAccentColor?"
-                #warning "TODO: DialogExpiryDuration?"
                 #warning "TODO: DialogPersistInterval?"
-                #warning "TODO: MinimizeWindows?"
                 this.flowLayoutPanelBase.ResumeLayout();
                 this.ResumeLayout();
             }
@@ -106,17 +104,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected virtual void ButtonRight_Click(object sender, EventArgs e)
         {
-            Close();
-        }
-
-        /// <summary>
-        /// Handles the click event of the default button.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ButtonAbort_Click(object sender, EventArgs e)
-        {
-            this.Result = "Timeout";
             Close();
         }
 

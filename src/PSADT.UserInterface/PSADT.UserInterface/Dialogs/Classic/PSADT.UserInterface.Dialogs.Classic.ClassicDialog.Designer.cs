@@ -36,7 +36,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
             this.pictureBanner = new System.Windows.Forms.PictureBox();
             this.buttonDefault = new System.Windows.Forms.Button();
-            this.buttonAbort = new System.Windows.Forms.Button();
             this.flowLayoutPanelBase.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).BeginInit();
             this.SuspendLayout();
@@ -85,23 +84,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonDefault.TabStop = false;
             this.buttonDefault.UseVisualStyleBackColor = true;
             // 
-            // buttonAbort
-            // 
-            this.buttonAbort.BackColor = System.Drawing.Color.Transparent;
-            this.buttonAbort.DialogResult = System.Windows.Forms.DialogResult.Abort;
-            this.buttonAbort.FlatAppearance.BorderSize = 0;
-            this.buttonAbort.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
-            this.buttonAbort.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            this.buttonAbort.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonAbort.ForeColor = System.Drawing.Color.Transparent;
-            this.buttonAbort.Location = new System.Drawing.Point(0, 0);
-            this.buttonAbort.Margin = new System.Windows.Forms.Padding(0);
-            this.buttonAbort.Name = "buttonAbort";
-            this.buttonAbort.Size = new System.Drawing.Size(0, 0);
-            this.buttonAbort.TabIndex = 2;
-            this.buttonAbort.TabStop = false;
-            this.buttonAbort.UseVisualStyleBackColor = true;
-            // 
             // ClassicDialog
             // 
             this.AcceptButton = this.buttonDefault;
@@ -111,7 +93,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(450, 0);
             this.Controls.Add(this.buttonDefault);
-            this.Controls.Add(this.buttonAbort);
             this.Controls.Add(this.flowLayoutPanelBase);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -133,7 +114,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         #endregion
         private PictureBox pictureBanner;
         private Button buttonDefault;
-        private Button buttonAbort;
         protected FlowLayoutPanel flowLayoutPanelBase;
     }
 }
