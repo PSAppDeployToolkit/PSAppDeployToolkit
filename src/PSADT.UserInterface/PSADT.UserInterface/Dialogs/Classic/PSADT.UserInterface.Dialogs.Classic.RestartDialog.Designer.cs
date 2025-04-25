@@ -42,6 +42,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
             this.buttonMinimize = new System.Windows.Forms.Button();
             this.buttonRestartNow = new System.Windows.Forms.Button();
+            this.labelCustomMessage = new System.Windows.Forms.Label();
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCountdown.SuspendLayout();
             this.tableLayoutPanelButton.SuspendLayout();
@@ -53,6 +54,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.labelMessage);
+            this.flowLayoutPanelDialog.Controls.Add(this.labelCustomMessage);
             this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelCountdown);
             this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelButton);
             this.flowLayoutPanelDialog.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
@@ -62,7 +64,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 205);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 247);
             this.flowLayoutPanelDialog.TabIndex = 2;
             // 
             // labelMessage
@@ -88,7 +90,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.Controls.Add(this.labelTimeRemaining);
             this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdown);
             this.flowLayoutPanelCountdown.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(17, 44);
+            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(17, 86);
             this.flowLayoutPanelCountdown.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(416, 0);
             this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(416, 0);
@@ -151,20 +153,20 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanelButton.Controls.Add(this.buttonMinimize, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRestartNow, 0, 0);
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 163);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(18, 205);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
-            this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(416, 0);
-            this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(416, 0);
+            this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(414, 0);
+            this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(414, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
             this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelButton.Size = new System.Drawing.Size(416, 25);
+            this.tableLayoutPanelButton.Size = new System.Drawing.Size(414, 25);
             this.tableLayoutPanelButton.TabIndex = 3;
             // 
             // buttonMinimize
             // 
             this.buttonMinimize.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonMinimize.Location = new System.Drawing.Point(221, 0);
+            this.buttonMinimize.Location = new System.Drawing.Point(219, 0);
             this.buttonMinimize.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
             this.buttonMinimize.MaximumSize = new System.Drawing.Size(195, 25);
             this.buttonMinimize.MinimumSize = new System.Drawing.Size(195, 25);
@@ -189,11 +191,26 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonRestartNow.UseVisualStyleBackColor = true;
             this.buttonRestartNow.Click += new System.EventHandler(this.buttonRestartNow_Click);
             // 
+            // labelCustomMessage
+            // 
+            this.labelCustomMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.labelCustomMessage.AutoSize = true;
+            this.labelCustomMessage.Location = new System.Drawing.Point(17, 44);
+            this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
+            this.labelCustomMessage.MaximumSize = new System.Drawing.Size(416, 0);
+            this.labelCustomMessage.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelCustomMessage.Name = "labelCustomMessage";
+            this.labelCustomMessage.Size = new System.Drawing.Size(416, 30);
+            this.labelCustomMessage.TabIndex = 5;
+            this.labelCustomMessage.Text = "This is an optional custom text message. It can be used to display specific infor" +
+    "mation to the user before they reboot their device.";
+            this.labelCustomMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // RestartDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 205);
+            this.ClientSize = new System.Drawing.Size(450, 247);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "RestartDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
@@ -218,5 +235,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private Label labelRestartMessage;
         private Label labelTimeRemaining;
         private Label labelCountdown;
+        private Label labelCustomMessage;
     }
 }

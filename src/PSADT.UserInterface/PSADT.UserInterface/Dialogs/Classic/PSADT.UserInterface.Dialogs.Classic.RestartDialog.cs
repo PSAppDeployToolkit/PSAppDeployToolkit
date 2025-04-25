@@ -55,6 +55,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelCountdown);
                 }
 
+                // Set the custom message text if we have one.
+                if (null != options.CustomMessageText)
+                {
+                    this.labelCustomMessage.Text = options.CustomMessageText;
+                }
+                else
+                {
+                    this.flowLayoutPanelDialog.Controls.Remove(this.labelCustomMessage);
+                }
+
                 // Set up remaining options.
                 this.labelMessage.Text = options.RestartMessageText;
                 this.labelRestartMessage.Text = options.CountdownRestartMessageText;
