@@ -17,14 +17,14 @@ namespace PSADT.UserInterface.DialogOptions
             // Nothing here is allowed to be null.
             if (options["ProgressMessageText"] is not string progressMessageText || string.IsNullOrWhiteSpace(progressMessageText))
             {
-                throw new ArgumentNullException("ProgressMessageText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("ProgressMessageText value is null or invalid.", (Exception?)null);
             }
             if (options["ProgressDetailMessageText"] is not string progressDetailMessageText || string.IsNullOrWhiteSpace(progressDetailMessageText))
             {
-                throw new ArgumentNullException("ProgressDetailMessageText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("ProgressDetailMessageText value is null or invalid.", (Exception?)null);
             }
 
-            // The hashtable was correctly defined, so we can assign the values and continue onwards.
+            // The hashtable was correctly defined, assign the remaining values.
             ProgressMessageText = progressMessageText;
             ProgressDetailMessageText = progressDetailMessageText;
         }

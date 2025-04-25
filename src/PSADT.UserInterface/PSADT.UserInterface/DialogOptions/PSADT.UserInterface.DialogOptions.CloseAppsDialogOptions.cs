@@ -17,42 +17,84 @@ namespace PSADT.UserInterface.DialogOptions
             // Nothing here is allowed to be null.
             if (options["CloseAppsMessageText"] is not string closeAppsMessageText || string.IsNullOrWhiteSpace(closeAppsMessageText))
             {
-                throw new ArgumentNullException("CloseAppsMessageText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("CloseAppsMessageText value is null or invalid.", (Exception?)null);
             }
             if (options["AlternativeCloseAppsMessageText"] is not string alternativeCloseAppsMessageText || string.IsNullOrWhiteSpace(alternativeCloseAppsMessageText))
             {
-                throw new ArgumentNullException("AlternativeCloseAppsMessageText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("AlternativeCloseAppsMessageText value is null or invalid.", (Exception?)null);
             }
             if (options["DeferralsRemainingText"] is not string deferralsRemainingText || string.IsNullOrWhiteSpace(deferralsRemainingText))
             {
-                throw new ArgumentNullException("DeferralsRemainingText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("DeferralsRemainingText value is null or invalid.", (Exception?)null);
             }
             if (options["DeferralDeadlineText"] is not string deferralDeadlineText || string.IsNullOrWhiteSpace(deferralDeadlineText))
             {
-                throw new ArgumentNullException("DeferralDeadlineText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("DeferralDeadlineText value is null or invalid.", (Exception?)null);
             }
             if (options["AutomaticStartCountdownText"] is not string automaticStartCountdownText || string.IsNullOrWhiteSpace(automaticStartCountdownText))
             {
-                throw new ArgumentNullException("AutomaticStartCountdownText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("AutomaticStartCountdownText value is null or invalid.", (Exception?)null);
             }
             if (options["DeferButtonText"] is not string deferButtonText || string.IsNullOrWhiteSpace(deferButtonText))
             {
-                throw new ArgumentNullException("DeferButtonText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("DeferButtonText value is null or invalid.", (Exception?)null);
             }
             if (options["ContinueButtonText"] is not string continueButtonText || string.IsNullOrWhiteSpace(continueButtonText))
             {
-                throw new ArgumentNullException("ContinueButtonText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("ContinueButtonText value is null or invalid.", (Exception?)null);
             }
             if (options["AlternativeContinueButtonText"] is not string alternativeContinueButtonText || string.IsNullOrWhiteSpace(alternativeContinueButtonText))
             {
-                throw new ArgumentNullException("AlternativeContinueButtonText cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("AlternativeContinueButtonText value is null or invalid.", (Exception?)null);
             }
             if (options["DynamicProcessEvaluation"] is not bool dynamicProcessEvaluation)
             {
-                throw new ArgumentNullException("dynamicProcessEvaluation cannot be null.", (Exception?)null);
+                throw new ArgumentNullException("dynamicProcessEvaluation value is null or invalid.", (Exception?)null);
             }
 
-            // The hashtable was correctly defined, so we can assign the values and continue onwards.
+            // Test and set optional values.
+            if (options.ContainsKey("CustomMessageText"))
+            {
+                if (options["CustomMessageText"] is not string customMessageText || string.IsNullOrWhiteSpace(customMessageText))
+                {
+                    throw new ArgumentOutOfRangeException("CustomMessageText value is not valid.", (Exception?)null);
+                }
+                CustomMessageText = customMessageText;
+            }
+            if (options.ContainsKey("AppsToClose"))
+            {
+                if (options["AppsToClose"] is not Services.AppProcessInfo[] appsToClose)
+                {
+                    throw new ArgumentOutOfRangeException("AppsToClose value is not valid.", (Exception?)null);
+                }
+                AppsToClose = appsToClose;
+            }
+            if (options.ContainsKey("CountdownDuration"))
+            {
+                if (options["CountdownDuration"] is not TimeSpan countdownDuration)
+                {
+                    throw new ArgumentOutOfRangeException("CountdownDuration value is not valid.", (Exception?)null);
+                }
+                CountdownDuration = countdownDuration;
+            }
+            if (options.ContainsKey("DeferralsRemaining"))
+            {
+                if (options["DeferralsRemaining"] is not int deferralsRemaining)
+                {
+                    throw new ArgumentOutOfRangeException("DeferralsRemaining value is not valid.", (Exception?)null);
+                }
+                DeferralsRemaining = deferralsRemaining;
+            }
+            if (options.ContainsKey("DeferralDeadline"))
+            {
+                if (options["DeferralDeadline"] is not DateTime deferralDeadline)
+                {
+                    throw new ArgumentOutOfRangeException("DeferralDeadline value is not valid.", (Exception?)null);
+                }
+                DeferralDeadline = deferralDeadline;
+            }
+
+            // The hashtable was correctly defined, assign the remaining values.
             CloseAppsMessageText = closeAppsMessageText;
             AlternativeCloseAppsMessageText = alternativeCloseAppsMessageText;
             DeferralsRemainingText = deferralsRemainingText;
@@ -62,11 +104,6 @@ namespace PSADT.UserInterface.DialogOptions
             ContinueButtonText = continueButtonText;
             AlternativeContinueButtonText = alternativeContinueButtonText;
             DynamicProcessEvaluation = dynamicProcessEvaluation;
-            AppsToClose = options["AppsToClose"] as Services.AppProcessInfo[];
-            CountdownDuration = options["CountdownDuration"] as TimeSpan?;
-            DeferralsRemaining = options["DeferralsRemaining"] as int?;
-            DeferralDeadline = options["DeferralDeadline"] as DateTime?;
-            CustomMessageText = options["CustomMessageText"] is string customMessageText && !string.IsNullOrWhiteSpace(customMessageText) ? customMessageText : null;
         }
 
         /// <summary>

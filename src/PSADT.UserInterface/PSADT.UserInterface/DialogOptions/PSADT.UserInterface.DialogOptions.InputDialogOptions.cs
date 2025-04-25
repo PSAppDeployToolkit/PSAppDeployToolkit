@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -14,7 +15,11 @@ namespace PSADT.UserInterface.DialogOptions
         public InputDialogOptions(Hashtable options) : base(options)
         {
             // Just set our one and only field.
-            InitialInputText = options["InitialInputText"] is string initialInputText && !string.IsNullOrWhiteSpace(initialInputText) ? initialInputText : null;
+            if (options["InitialInputText"] is not string initialInputText || string.IsNullOrWhiteSpace(initialInputText))
+            {
+                throw new ArgumentNullException("InitialInputText value is null or invalid.", (Exception?)null);
+            }
+            InitialInputText = initialInputText;
         }
 
         /// <summary>
