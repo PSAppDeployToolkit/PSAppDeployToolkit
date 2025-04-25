@@ -107,6 +107,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             _dialogAllowMove = options.DialogAllowMove;
             Topmost = options.DialogTopMost;
             _dialogExpiryTimer = new Timer(CloseDialog, null, options.DialogExpiryDuration, Timeout.InfiniteTimeSpan);
+            #warning "TODO: DialogExpiryDuration?"
+            #warning "TODO: DialogPersistInterval?"
 
             // Set supplemental options also
             _customMessageText = customMessageText;
