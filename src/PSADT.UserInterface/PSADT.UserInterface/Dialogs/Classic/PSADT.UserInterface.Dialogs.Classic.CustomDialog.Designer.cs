@@ -33,7 +33,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         private void InitializeComponent()
         {
-            this.iconMessageTableLayout = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanelIconMessage = new System.Windows.Forms.TableLayoutPanel();
             this.labelMessage = new System.Windows.Forms.Label();
             this.pictureIcon = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
@@ -41,31 +41,31 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonMiddle = new System.Windows.Forms.Button();
             this.buttonRight = new System.Windows.Forms.Button();
             this.flowLayoutPanelDialog = new System.Windows.Forms.FlowLayoutPanel();
-            this.iconMessageTableLayout.SuspendLayout();
+            this.tableLayoutPanelIconMessage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureIcon)).BeginInit();
             this.tableLayoutPanelButton.SuspendLayout();
             this.flowLayoutPanelDialog.SuspendLayout();
             this.SuspendLayout();
             // 
-            // iconMessageTableLayout
+            // tableLayoutPanelIconMessage
             // 
-            this.iconMessageTableLayout.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.iconMessageTableLayout.AutoSize = true;
-            this.iconMessageTableLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.iconMessageTableLayout.ColumnCount = 2;
-            this.iconMessageTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
-            this.iconMessageTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.iconMessageTableLayout.Controls.Add(this.labelMessage, 1, 0);
-            this.iconMessageTableLayout.Controls.Add(this.pictureIcon, 0, 0);
-            this.iconMessageTableLayout.Location = new System.Drawing.Point(17, 17);
-            this.iconMessageTableLayout.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
-            this.iconMessageTableLayout.MaximumSize = new System.Drawing.Size(416, 0);
-            this.iconMessageTableLayout.MinimumSize = new System.Drawing.Size(416, 0);
-            this.iconMessageTableLayout.Name = "iconMessageTableLayout";
-            this.iconMessageTableLayout.RowCount = 1;
-            this.iconMessageTableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.iconMessageTableLayout.Size = new System.Drawing.Size(416, 60);
-            this.iconMessageTableLayout.TabIndex = 3;
+            this.tableLayoutPanelIconMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.tableLayoutPanelIconMessage.AutoSize = true;
+            this.tableLayoutPanelIconMessage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanelIconMessage.ColumnCount = 2;
+            this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
+            this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanelIconMessage.Controls.Add(this.labelMessage, 1, 0);
+            this.tableLayoutPanelIconMessage.Controls.Add(this.pictureIcon, 0, 0);
+            this.tableLayoutPanelIconMessage.Location = new System.Drawing.Point(17, 17);
+            this.tableLayoutPanelIconMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
+            this.tableLayoutPanelIconMessage.MaximumSize = new System.Drawing.Size(416, 0);
+            this.tableLayoutPanelIconMessage.MinimumSize = new System.Drawing.Size(416, 0);
+            this.tableLayoutPanelIconMessage.Name = "tableLayoutPanelIconMessage";
+            this.tableLayoutPanelIconMessage.RowCount = 1;
+            this.tableLayoutPanelIconMessage.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanelIconMessage.Size = new System.Drawing.Size(416, 60);
+            this.tableLayoutPanelIconMessage.TabIndex = 3;
             // 
             // labelMessage
             // 
@@ -160,7 +160,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.flowLayoutPanelDialog.Controls.Add(this.iconMessageTableLayout);
+            this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelIconMessage);
             this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelButton);
             this.flowLayoutPanelDialog.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelDialog.Location = new System.Drawing.Point(0, 0);
@@ -180,8 +180,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "CustomDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
-            this.iconMessageTableLayout.ResumeLayout(false);
-            this.iconMessageTableLayout.PerformLayout();
+            this.tableLayoutPanelIconMessage.ResumeLayout(false);
+            this.tableLayoutPanelIconMessage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureIcon)).EndInit();
             this.tableLayoutPanelButton.ResumeLayout(false);
             this.flowLayoutPanelDialog.ResumeLayout(false);
@@ -193,7 +193,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
         #endregion
 
-        private TableLayoutPanel iconMessageTableLayout;
+        private TableLayoutPanel tableLayoutPanelIconMessage;
         private PictureBox pictureIcon;
         private TableLayoutPanel tableLayoutPanelButton;
         private Label labelMessage;
