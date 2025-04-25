@@ -32,6 +32,7 @@ namespace PSADT.UserInterface
             // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
+            bool minimizeWindows = false;
 
 
             AppProcessInfo[] appsToClose =
@@ -67,7 +68,7 @@ namespace PSADT.UserInterface
             string alternativeCloseAppsMessageText = "Please select \'Install\' to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.";
             string customMessageText = "This is a custom message that can be added using the -CustomText parameter on Show-ADTInstallationWelcome (also now available on Show-ADTInstallationRestartPrompt).";
 
-            int? deferralsRemaining = null;
+            int deferralsRemaining = 3;
             DateTime deferralDeadline = DateTime.Parse("2025-04-20T13:00:00");
             // DateTime? deferralDeadline = null;
             string deferralsRemainingText = "Remaining Deferrals";
@@ -91,9 +92,9 @@ namespace PSADT.UserInterface
             string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed?";
 
 
-            string ButtonLeftText = "";
-            string ButtonMiddleText = "";
-            string ButtonRightText = "_Only one button!";
+            string ButtonLeftText = "LeftButton";
+            string ButtonMiddleText = "MiddleButton";
+            string ButtonRightText = "RightButton";
 
             // Set up options for the dialogs
             var closeAppsDialogOptions = new CloseAppsDialogOptions(new Hashtable
@@ -103,6 +104,7 @@ namespace PSADT.UserInterface
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
+                { "MinimizeWindows", minimizeWindows },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
@@ -129,6 +131,7 @@ namespace PSADT.UserInterface
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
+                { "MinimizeWindows", minimizeWindows },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
@@ -143,6 +146,7 @@ namespace PSADT.UserInterface
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
+                { "MinimizeWindows", minimizeWindows },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
@@ -150,7 +154,8 @@ namespace PSADT.UserInterface
                 { "MessageText", customDialogMessageText },
                 { "ButtonLeftText", ButtonLeftText },
                 { "ButtonMiddleText", ButtonMiddleText },
-                { "ButtonRightText", ButtonRightText }
+                { "ButtonRightText", ButtonRightText },
+                { "MessageAlignment", DialogMessageAlignment.Left }
             });
             var restartDialogOptions = new RestartDialogOptions(new Hashtable
             {
@@ -159,6 +164,7 @@ namespace PSADT.UserInterface
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
+                { "MinimizeWindows", minimizeWindows },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
