@@ -24,7 +24,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="InputDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        public InputDialog(BaseOptions options) : base(options)
+        public InputDialog(InputDialogOptions options) : base(options)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
