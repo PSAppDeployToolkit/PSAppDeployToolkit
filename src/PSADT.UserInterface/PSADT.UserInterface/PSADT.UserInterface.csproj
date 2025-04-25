@@ -106,6 +106,9 @@
     <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.CustomDialog.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.InputDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.ProgressDialog.cs">
       <SubType>Form</SubType>
     </Compile>
