@@ -347,6 +347,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 503);
             this.Controls.Add(this.flowLayoutPanelDialog);
+            this.Name = "CloseAppsDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
             this.flowLayoutPanelDialog.ResumeLayout(false);
             this.flowLayoutPanelDialog.PerformLayout();

@@ -105,6 +105,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 127);
             this.Controls.Add(this.flowLayoutPanelDialog);
+            this.Name = "ProgressDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
             this.flowLayoutPanelDialog.ResumeLayout(false);
             this.flowLayoutPanelDialog.PerformLayout();
