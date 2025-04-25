@@ -48,9 +48,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="options"></param>
         public ClassicDialog(BaseOptions options) : base()
         {
+            // Initialise the underlying form as set up by the designer.
             InitializeComponent();
+
+            // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
             {
+                // Base properties.
                 this.SuspendLayout();   
                 this.flowLayoutPanelBase.SuspendLayout();
                 this.Text = options.AppTitle;
@@ -61,11 +65,18 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 #warning "TODO: DialogAllowMove?"
                 this.TopMost = options.DialogTopMost;
                 #warning "TODO: DialogAccentColor?"
-                #warning "TODO: DialogPersistInterval?"
                 this.Load += Form_Load;
                 this.FormClosing += Form_FormClosing;
                 this.flowLayoutPanelBase.ResumeLayout();
                 this.ResumeLayout();
+
+                // PersistPrompt timer code.
+                if (options.DialogExpiryDuration != TimeSpan.Zero)
+                {
+                    this.persistTimer = new Timer();
+                    this.persistTimer.Interval = (int)options.DialogExpiryDuration.TotalMilliseconds;
+                    this.persistTimer.Tick += PersistTimer_Tick;
+                }
             }
         }
 
@@ -136,6 +147,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 this.ControlBox = false;
             }
+
+            // Start the persist timer if it's available.
+            startingPoint = this.Location;
+            persistTimer?.Start();
         }
 
         /// <summary>
@@ -149,7 +164,25 @@ namespace PSADT.UserInterface.Dialogs.Classic
             if (!canClose)
             {
                 e.Cancel = true;
+                return;
             }
+
+            // We're actually closing. Perform certain disposals here
+            // since we can't mess with the designer's Dispose override.
+            persistTimer?.Dispose();
+        }
+
+        /// <summary>
+        /// Handles the timer tick event for persisting the dialog.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PersistTimer_Tick(object? sender, EventArgs e)
+        {
+            // Reset the window and restore its location.
+            this.WindowState = FormWindowState.Normal;
+            this.Location = startingPoint;
+            this.BringToFront();
         }
 
         /// <summary>
@@ -213,6 +246,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Flag to indicate if the dialog can be closed.
         /// </summary>
         private bool canClose = false;
+
+        /// <summary>
+        /// Timer for persisting the dialog.
+        /// </summary>
+        private Timer? persistTimer = null;
+
+        /// <summary>
+        /// Starting point for the dialog.
+        /// </summary>
+        private Point startingPoint;
 
         /// <summary>
         /// Cache for icons to avoid loading them multiple times.
