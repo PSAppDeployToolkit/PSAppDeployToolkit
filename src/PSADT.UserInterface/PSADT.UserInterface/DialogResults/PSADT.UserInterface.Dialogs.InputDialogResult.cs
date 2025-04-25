@@ -1,4 +1,4 @@
-﻿namespace PSADT.UserInterface.Dialogs
+﻿namespace PSADT.UserInterface.DialogResults
 {
     /// <summary>
     /// Represents the result of an input dialog.
