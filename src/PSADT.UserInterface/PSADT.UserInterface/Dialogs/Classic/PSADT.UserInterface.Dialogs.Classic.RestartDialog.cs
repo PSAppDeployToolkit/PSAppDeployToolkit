@@ -66,11 +66,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set up remaining options.
-                this.labelMessage.Text = options.RestartMessageText;
-                this.labelRestartMessage.Text = options.CountdownRestartMessageText;
-                this.labelTimeRemaining.Text = options.CountdownAutomaticRestartText;
-                this.buttonRestartNow.Text = options.RestartButtonText;
-                this.buttonMinimize.Text = options.DismissButtonText;
+                this.labelMessage.Text = options.Strings.Message;
+                this.labelRestartMessage.Text = $"{options.Strings.MessageTime} {options.Strings.MessageRestart}";
+                this.labelTimeRemaining.Text = options.Strings.TimeRemaining;
+                this.buttonRestartNow.Text = options.Strings.ButtonRestartNow;
+                this.buttonMinimize.Text = options.Strings.ButtonRestartLater;
             }
 
             // Resume the dialog now that we've applied any options.

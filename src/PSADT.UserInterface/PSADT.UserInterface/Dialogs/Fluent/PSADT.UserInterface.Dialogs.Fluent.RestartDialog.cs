@@ -19,25 +19,25 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Set up UI
             if (null != options.CountdownDuration)
             {
-                FormatMessageWithHyperlinks(MessageTextBlock, options.CountdownRestartMessageText);
-                CountdownHeadingTextBlock.Text = options.CountdownAutomaticRestartText;
+                FormatMessageWithHyperlinks(MessageTextBlock, options.Strings.MessageRestart);
+                CountdownHeadingTextBlock.Text = options.Strings.TimeRemaining;
                 CountdownStackPanel.Visibility = Visibility.Visible;
             }
             else
             {
-                FormatMessageWithHyperlinks(MessageTextBlock, options.RestartMessageText);
+                FormatMessageWithHyperlinks(MessageTextBlock, options.Strings.Message);
             }
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons
-            SetButtonContentWithAccelerator(ButtonLeft, options.DismissButtonText);
+            SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartLater);
             ButtonLeft.Visibility = Visibility.Visible;
-            SetButtonContentWithAccelerator(ButtonRight, options.RestartButtonText);
+            SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartNow);
             ButtonRight.Visibility = Visibility.Visible;
 
             // Set button automation properties
-            AutomationProperties.SetName(ButtonLeft, options.DismissButtonText);
-            AutomationProperties.SetName(ButtonRight, options.RestartButtonText);
+            AutomationProperties.SetName(ButtonLeft, options.Strings.ButtonRestartLater);
+            AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartNow);
 
             // Focus the restart button by default
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>

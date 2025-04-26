@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PSADT.UserInterface.Dialogs;
+using System;
 using System.Collections;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -12,28 +13,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// Initializes a new instance of the <see cref="RestartDialogOptions"/> class.
         /// </summary>
         /// <param name="options"></param>
-        public RestartDialogOptions(Hashtable options) : base(options)
+        public RestartDialogOptions(Hashtable options, DeploymentType deploymentType) : base(options)
         {
             // Nothing here is allowed to be null.
-            if (options["RestartMessageText"] is not string restartMessageText || string.IsNullOrWhiteSpace(restartMessageText))
+            if (options["Strings"] is not Hashtable strings || strings.Count == 0)
             {
-                throw new ArgumentNullException("RestartMessageText value is null or invalid.", (Exception?)null);
-            }
-            if (options["DismissButtonText"] is not string dismissButtonText || string.IsNullOrWhiteSpace(dismissButtonText))
-            {
-                throw new ArgumentNullException("DismissButtonText value is null or invalid.", (Exception?)null);
-            }
-            if (options["RestartButtonText"] is not string restartButtonText || string.IsNullOrWhiteSpace(restartButtonText))
-            {
-                throw new ArgumentNullException("RestartButtonText value is null or invalid.", (Exception?)null);
-            }
-            if (options["CountdownRestartMessageText"] is not string countdownRestartMessageText || string.IsNullOrWhiteSpace(countdownRestartMessageText))
-            {
-                throw new ArgumentNullException("CountdownRestartMessageText value is null or invalid.", (Exception?)null);
-            }
-            if (options["CountdownAutomaticRestartText"] is not string countdownAutomaticRestartText || string.IsNullOrWhiteSpace(countdownAutomaticRestartText))
-            {
-                throw new ArgumentNullException("CountdownAutomaticRestartText value is null or invalid.", (Exception?)null);
+                throw new ArgumentNullException("Strings value is null or invalid.", (Exception?)null);
             }
 
             // Test and set optional values.
@@ -63,37 +48,13 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // The hashtable was correctly defined, assign the remaining values.
-            RestartMessageText = restartMessageText;
-            DismissButtonText = dismissButtonText;
-            RestartButtonText = restartButtonText;
-            CountdownRestartMessageText = countdownRestartMessageText;
-            CountdownAutomaticRestartText = countdownAutomaticRestartText;
+            Strings = new RestartDialogStrings(strings, deploymentType);
         }
 
         /// <summary>
-        /// The text to be displayed in the restart message.
+        /// The strings used for the RestartDialog.
         /// </summary>
-        public readonly string RestartMessageText;
-
-        /// <summary>
-        /// The text for the dismiss button.
-        /// </summary>
-        public readonly string DismissButtonText;
-
-        /// <summary>
-        /// The text for the restart button.
-        /// </summary>
-        public readonly string RestartButtonText;
-
-        /// <summary>
-        /// The text to be displayed in the countdown restart message.
-        /// </summary>
-        public readonly string CountdownRestartMessageText;
-
-        /// <summary>
-        /// The text to be displayed in the countdown automatic restart message.
-        /// </summary>
-        public readonly string CountdownAutomaticRestartText;
+        public readonly RestartDialogStrings Strings;
 
         /// <summary>
         /// The duration for which the countdown will be displayed.
@@ -109,5 +70,94 @@ namespace PSADT.UserInterface.DialogOptions
         /// The text to be displayed in the custom message.
         /// </summary>
         public readonly string? CustomMessageText;
+
+        /// <summary>
+        /// The strings used for the RestartDialog.
+        /// </summary>
+        public sealed class RestartDialogStrings
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="RestartDialogStrings"/> class with the specified strings.
+            /// </summary>
+            /// <param name="strings"></param>
+            /// <param name="deploymentType"></param>
+            /// <exception cref="ArgumentNullException"></exception>
+            public RestartDialogStrings(Hashtable strings, DeploymentType deploymentType)
+            {
+                // Nothing here is allowed to be null.
+                if (strings["Title"] is not string title || string.IsNullOrWhiteSpace(title))
+                {
+                    throw new ArgumentNullException("Title value is null or invalid.", (Exception?)null);
+                }
+                if (strings["Message"] is not Hashtable messageTable || messageTable[deploymentType.ToString()] is not string message || string.IsNullOrWhiteSpace(message))
+                {
+                    throw new ArgumentNullException("Message value is null or invalid.", (Exception?)null);
+                }
+                if (strings["MessageTime"] is not string messageTime || string.IsNullOrWhiteSpace(messageTime))
+                {
+                    throw new ArgumentNullException("MessageTime value is null or invalid.", (Exception?)null);
+                }
+                if (strings["MessageRestart"] is not string messageRestart || string.IsNullOrWhiteSpace(messageRestart))
+                {
+                    throw new ArgumentNullException("MessageRestart value is null or invalid.", (Exception?)null);
+                }
+                if (strings["TimeRemaining"] is not string timeRemaining || string.IsNullOrWhiteSpace(timeRemaining))
+                {
+                    throw new ArgumentNullException("TimeRemaining value is null or invalid.", (Exception?)null);
+                }
+                if (strings["ButtonRestartNow"] is not string buttonRestartNow || string.IsNullOrWhiteSpace(buttonRestartNow))
+                {
+                    throw new ArgumentNullException("ButtonRestartNow value is null or invalid.", (Exception?)null);
+                }
+                if (strings["ButtonRestartLater"] is not string buttonRestartLater || string.IsNullOrWhiteSpace(buttonRestartLater))
+                {
+                    throw new ArgumentNullException("ButtonRestartLater value is null or invalid.", (Exception?)null);
+                }
+
+                // The hashtable was correctly defined, assign the remaining values.
+                Title = title;
+                Message = message;
+                MessageTime = messageTime;
+                MessageRestart = messageRestart;
+                TimeRemaining = timeRemaining;
+                ButtonRestartNow = buttonRestartNow;
+                ButtonRestartLater = buttonRestartLater;
+            }
+
+            /// <summary>
+            /// Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it.
+            /// </summary>
+            public readonly string Title;
+
+            /// <summary>
+            /// Text displayed when the device requires a restart.
+            /// </summary>
+            public readonly string Message;
+
+            /// <summary>
+            /// Text displayed as a prefix to the time remaining, indicating that users should save their work, etc.
+            /// </summary>
+            public readonly string MessageTime;
+
+            /// <summary>
+            /// Text displayed when indicating when the device will be restarted.
+            /// </summary>
+            public readonly string MessageRestart;
+
+            /// <summary>
+            /// Text displayed to indicate the amount of time remaining until a restart will occur.
+            /// </summary>
+            public readonly string TimeRemaining;
+
+            /// <summary>
+            /// Button text for when wanting to restart the device now.
+            /// </summary>
+            public readonly string ButtonRestartNow;
+
+            /// <summary>
+            /// Button text for allowing the user to restart later.
+            /// </summary>
+            public readonly string ButtonRestartLater;
+        }
     }
 }
