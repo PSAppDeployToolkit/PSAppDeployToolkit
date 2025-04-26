@@ -57,7 +57,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanelIconMessage.Controls.Add(this.labelMessage, 1, 0);
             this.tableLayoutPanelIconMessage.Controls.Add(this.pictureIcon, 0, 0);
-            this.tableLayoutPanelIconMessage.Location = new System.Drawing.Point(17, 17);
+            this.tableLayoutPanelIconMessage.Location = new System.Drawing.Point(17, 14);
             this.tableLayoutPanelIconMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
             this.tableLayoutPanelIconMessage.MaximumSize = new System.Drawing.Size(416, 0);
             this.tableLayoutPanelIconMessage.MinimumSize = new System.Drawing.Size(416, 0);
@@ -105,7 +105,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Controls.Add(this.buttonLeft, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(18, 101);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(18, 98);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(414, 0);
             this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(414, 0);
@@ -171,15 +171,15 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
-            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 143);
+            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 140);
             this.flowLayoutPanelDialog.TabIndex = 5;
             // 
             // CustomDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 143);
+            this.ClientSize = new System.Drawing.Size(450, 140);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "CustomDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);

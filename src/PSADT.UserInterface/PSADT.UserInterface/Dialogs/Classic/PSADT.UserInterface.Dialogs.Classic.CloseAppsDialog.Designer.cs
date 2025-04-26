@@ -76,15 +76,15 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
-            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 503);
+            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 500);
             this.flowLayoutPanelDialog.TabIndex = 3;
             // 
             // labelWelcomeMessage
             // 
             this.labelWelcomeMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelWelcomeMessage.AutoSize = true;
-            this.labelWelcomeMessage.Location = new System.Drawing.Point(17, 17);
+            this.labelWelcomeMessage.Location = new System.Drawing.Point(17, 14);
             this.labelWelcomeMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
             this.labelWelcomeMessage.MaximumSize = new System.Drawing.Size(416, 0);
             this.labelWelcomeMessage.MinimumSize = new System.Drawing.Size(416, 0);
@@ -99,7 +99,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelAppName.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelAppName.AutoSize = true;
             this.labelAppName.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelAppName.Location = new System.Drawing.Point(17, 44);
+            this.labelAppName.Location = new System.Drawing.Point(17, 41);
             this.labelAppName.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
             this.labelAppName.MaximumSize = new System.Drawing.Size(416, 0);
             this.labelAppName.MinimumSize = new System.Drawing.Size(416, 0);
@@ -113,7 +113,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.labelCustomMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCustomMessage.AutoSize = true;
-            this.labelCustomMessage.Location = new System.Drawing.Point(17, 77);
+            this.labelCustomMessage.Location = new System.Drawing.Point(17, 74);
             this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.labelCustomMessage.MaximumSize = new System.Drawing.Size(416, 0);
             this.labelCustomMessage.MinimumSize = new System.Drawing.Size(416, 0);
@@ -132,7 +132,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCloseApps.Controls.Add(this.labelCloseProcessesMessage);
             this.flowLayoutPanelCloseApps.Controls.Add(this.listBoxCloseProcesses);
             this.flowLayoutPanelCloseApps.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelCloseApps.Location = new System.Drawing.Point(17, 119);
+            this.flowLayoutPanelCloseApps.Location = new System.Drawing.Point(17, 116);
             this.flowLayoutPanelCloseApps.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelCloseApps.MaximumSize = new System.Drawing.Size(416, 0);
             this.flowLayoutPanelCloseApps.MinimumSize = new System.Drawing.Size(416, 0);
@@ -182,7 +182,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDeferral.Controls.Add(this.labelDeferDeadline);
             this.flowLayoutPanelDeferral.Controls.Add(this.labelDeferWarningMessage);
             this.flowLayoutPanelDeferral.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelDeferral.Location = new System.Drawing.Point(17, 309);
+            this.flowLayoutPanelDeferral.Location = new System.Drawing.Point(17, 306);
             this.flowLayoutPanelDeferral.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelDeferral.MaximumSize = new System.Drawing.Size(416, 0);
             this.flowLayoutPanelDeferral.MinimumSize = new System.Drawing.Size(416, 0);
@@ -241,7 +241,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdownMessage);
             this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdown);
             this.flowLayoutPanelCountdown.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(17, 384);
+            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(17, 381);
             this.flowLayoutPanelCountdown.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(416, 0);
             this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(416, 0);
@@ -291,7 +291,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Controls.Add(this.buttonLeft, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(18, 461);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(18, 458);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(414, 0);
             this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(414, 0);
@@ -345,7 +345,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 503);
+            this.ClientSize = new System.Drawing.Size(450, 500);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "CloseAppsDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);

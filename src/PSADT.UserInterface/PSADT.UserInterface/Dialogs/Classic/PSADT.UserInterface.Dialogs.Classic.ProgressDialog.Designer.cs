@@ -54,8 +54,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
-            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 127);
+            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 124);
             this.flowLayoutPanelDialog.TabIndex = 2;
             // 
             // labelMessage
@@ -63,7 +63,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelMessage.AutoSize = true;
             this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelMessage.Location = new System.Drawing.Point(17, 17);
+            this.labelMessage.Location = new System.Drawing.Point(17, 14);
             this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
             this.labelMessage.MaximumSize = new System.Drawing.Size(416, 0);
             this.labelMessage.MinimumSize = new System.Drawing.Size(416, 0);
@@ -77,7 +77,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.labelDetail.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelDetail.AutoSize = true;
-            this.labelDetail.Location = new System.Drawing.Point(17, 46);
+            this.labelDetail.Location = new System.Drawing.Point(17, 43);
             this.labelDetail.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
             this.labelDetail.MaximumSize = new System.Drawing.Size(416, 0);
             this.labelDetail.MinimumSize = new System.Drawing.Size(416, 0);
@@ -90,7 +90,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // progressBar
             // 
             this.progressBar.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.progressBar.Location = new System.Drawing.Point(18, 85);
+            this.progressBar.Location = new System.Drawing.Point(18, 82);
             this.progressBar.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.progressBar.MarqueeAnimationSpeed = 50;
             this.progressBar.MaximumSize = new System.Drawing.Size(414, 25);
@@ -104,7 +104,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 127);
+            this.ClientSize = new System.Drawing.Size(450, 124);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "ProgressDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
