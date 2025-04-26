@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Management.Automation.Language;
 using System.Threading;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
@@ -21,6 +22,16 @@ namespace PSADT.UserInterface
                 throw new ArgumentNullException(nameof(args));
             }
 
+            // Read PSADT's string table into memory.
+            var stringsAst = Parser.ParseFile(Path.GetFullPath($"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\..\\..\\PSAppDeployToolkit\\Strings\\strings.psd1"), out var tokens, out var errors);
+            if (errors.Length > 0)
+            {
+                throw new InvalidDataException($"Error parsing strings.psd1 file.");
+            }
+
+            // Read out the hashtable
+            var stringTable = (Hashtable)stringsAst.Find(x => x is HashtableAst, false).SafeGetValue();
+
             // Set up parameters for testing
             string appTitle = "Adobe Reader CS 2025 x64 EN";
             string subtitle = "Bisto Systems Ltd - App Install";
@@ -33,6 +44,7 @@ namespace PSADT.UserInterface
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
             bool minimizeWindows = false;
+            DeploymentType deploymentType = DeploymentType.Install;
 
 
             AppProcessInfo[] appsToClose =
@@ -64,30 +76,17 @@ namespace PSADT.UserInterface
 
             TimeSpan countdownDuration = TimeSpan.FromSeconds(90);
 
-            string closeAppsMessageText = "Please save your work before continuing as the following applications will be closed automatically.";
-            string alternativeCloseAppsMessageText = "Please select \'Install\' to continue with the installation. If you have any deferrals remaining, you may also choose to delay the installation.";
             string customMessageText = "This is a custom message that can be added using the -CustomText parameter on Show-ADTInstallationWelcome (also now available on Show-ADTInstallationRestartPrompt).";
 
             int deferralsRemaining = 3;
             DateTime deferralDeadline = DateTime.Parse("2025-04-20T13:00:00");
             // DateTime? deferralDeadline = null;
-            string deferralsRemainingText = "Remaining Deferrals";
-            string deferralDeadlineText = "Deferral Deadline";
-            string automaticStartCountdownText = "Automatic Start Countdown";
-            string deferButtonText = "_Defer";
-            string continueButtonText = "_Close Apps & Install";
-            string alternativeContinueButtonText = "_Install";
             string progressMessageText = "Performing pre-flight checks...";
             string progressDetailMessageText = "Testing your system to ensure the installation can proceed, please wait ...";
 
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(80);
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(70);
 
-            string countdownAutomaticRestartText = "Automatic Restart Countdown";
-            string restartMessageText = "Your computer needs to be restarted. Please save your work before continuing.";
-            string countdownRestartMessageText = "Your computer needs to be restarted. Please save your work before continuing, then click Restart Now.  You can restart your computer now or wait for the countdown to complete.";
-            string dismissButtonText = "_Minimize";
-            string restartButtonText = "_Restart Now";
 
             string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed?";
 
@@ -97,7 +96,7 @@ namespace PSADT.UserInterface
             string ButtonRightText = "RightButton";
 
             // Set up options for the dialogs
-            var closeAppsDialogOptions = new CloseAppsDialogOptions(new Hashtable
+            var closeAppsDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "DialogAccentColor", dialogAccentColor },
@@ -113,17 +112,9 @@ namespace PSADT.UserInterface
                 { "CountdownDuration", countdownDuration },
                 { "DeferralsRemaining", deferralsRemaining },
                 { "DeferralDeadline", deferralDeadline },
-                { "CloseAppsMessageText", closeAppsMessageText },
-                { "AlternativeCloseAppsMessageText", alternativeCloseAppsMessageText },
                 { "CustomMessageText", customMessageText },
-                { "DeferralsRemainingText", deferralsRemainingText },
-                { "DeferralDeadlineText", deferralDeadlineText },
-                { "AutomaticStartCountdownText", automaticStartCountdownText },
-                { "DeferButtonText", deferButtonText },
-                { "ContinueButtonText", continueButtonText },
-                { "AlternativeContinueButtonText", alternativeContinueButtonText },
-                { "DynamicProcessEvaluation", true }
-            });
+                { "Strings", (Hashtable)stringTable["WelcomePrompt"] },
+            };
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
@@ -157,7 +148,7 @@ namespace PSADT.UserInterface
                 { "ButtonRightText", ButtonRightText },
                 { "MessageAlignment", DialogMessageAlignment.Left }
             });
-            var restartDialogOptions = new RestartDialogOptions(new Hashtable
+            var restartDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
                 { "DialogAccentColor", dialogAccentColor },
@@ -171,18 +162,14 @@ namespace PSADT.UserInterface
                 { "AppBannerImage", appBannerImage },
                 { "RestartCountdownDuration", restartCountdownDuration },
                 { "RestartCountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
-                { "RestartMessageText", restartMessageText },
                 { "CustomMessageText", customMessageText },
-                { "CountdownRestartMessageText", countdownRestartMessageText },
-                { "CountdownAutomaticRestartText", countdownAutomaticRestartText },
-                { "DismissButtonText", dismissButtonText },
-                { "RestartButtonText", restartButtonText }
-            });
+                { "Strings", (Hashtable)stringTable["RestartPrompt"] },
+            };
 
             try
             {
                 // Show CloseApps Dialog
-                var closeAppsResult = DialogManager.ShowCloseAppsDialog(closeAppsDialogOptions); // Pass the service as optional parameter
+                var closeAppsResult = DialogManager.ShowCloseAppsDialog(new CloseAppsDialogOptions(closeAppsDialogOptions, deploymentType)); // Pass the service as optional parameter
 
                 Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
 
@@ -221,7 +208,7 @@ namespace PSADT.UserInterface
                 // #################################################################################
 
                 // Show Restart Dialog
-                var restartResult = DialogManager.ShowRestartDialog(restartDialogOptions);
+                var restartResult = DialogManager.ShowRestartDialog(new RestartDialogOptions(restartDialogOptions, deploymentType));
 
                 Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
 
