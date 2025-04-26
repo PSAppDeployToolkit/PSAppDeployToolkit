@@ -19,11 +19,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, null, "Continue")
         {
             // Store original and alternative texts
-            _closeAppsMessageText = options.CloseAppsMessageText;
-            _alternativeCloseAppsMessageText = options.AlternativeCloseAppsMessageText;
-            _buttonLeftOriginalText = options.DeferButtonText;
-            _buttonRightOriginalText = options.ContinueButtonText;
-            _buttonRightAlternativeText = options.AlternativeContinueButtonText;
+            _closeAppsMessageText = options.Strings.Fluent.DialogMessage;
+            _alternativeCloseAppsMessageText = options.Strings.Fluent.DialogMessageNoProcesses;
+            _buttonLeftOriginalText = options.Strings.Fluent.ButtonLeftText;
+            _buttonRightOriginalText = options.Strings.Fluent.ButtonRightText;
+            _buttonRightAlternativeText = options.Strings.Fluent.ButtonRightTextNoProcesses;
             _deferralsRemaining = options.DeferralsRemaining;
             _deferralDeadline = options.DeferralDeadline;
 
@@ -31,8 +31,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
             CloseAppsStackPanel.Visibility = Visibility.Visible;
             DeferStackPanel.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
-            DeferralDeadlineHeadingTextBlock.Text = !_deferralDeadline.HasValue ? options.DeferralsRemainingText : options.DeferralDeadlineText;
-            CountdownHeadingTextBlock.Text = options.AutomaticStartCountdownText;
+            DeferralDeadlineHeadingTextBlock.Text = !_deferralDeadline.HasValue ? options.Strings.Fluent.DeferralsRemaining : options.Strings.Fluent.DeferralDeadline;
+            CountdownHeadingTextBlock.Text = options.Strings.Fluent.AutomaticStartCountdown;
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons

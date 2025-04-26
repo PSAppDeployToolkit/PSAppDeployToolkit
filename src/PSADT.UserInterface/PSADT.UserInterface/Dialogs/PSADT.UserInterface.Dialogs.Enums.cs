@@ -97,4 +97,25 @@
         /// </summary>
         WinLogo,
     }
+
+    /// <summary>
+    /// Defines the type of deployment for the application.
+    /// </summary>
+    public enum DeploymentType
+    {
+        /// <summary>
+        /// The deployment type is specified as an install.
+        /// </summary>
+        Install,
+
+        /// <summary>
+        /// The deployment type is specified as an uninstall.
+        /// </summary>
+        Uninstall,
+
+        /// <summary>
+        /// The deployment type is specified as a repair.
+        /// </summary>
+        Repair,
+    }
 }
