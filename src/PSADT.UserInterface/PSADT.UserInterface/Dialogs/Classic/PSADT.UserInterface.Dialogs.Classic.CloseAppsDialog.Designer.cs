@@ -285,28 +285,25 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelButton.Controls.Add(this.buttonLeft, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(18, 458);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 458);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
-            this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(414, 0);
-            this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(414, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
             this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
-            this.tableLayoutPanelButton.Size = new System.Drawing.Size(414, 25);
+            this.tableLayoutPanelButton.Size = new System.Drawing.Size(416, 25);
             this.tableLayoutPanelButton.TabIndex = 4;
             // 
             // buttonLeft
             // 
             this.buttonLeft.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonLeft.Location = new System.Drawing.Point(0, 0);
-            this.buttonLeft.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonLeft.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
             this.buttonLeft.MaximumSize = new System.Drawing.Size(133, 25);
             this.buttonLeft.MinimumSize = new System.Drawing.Size(133, 25);
             this.buttonLeft.Name = "buttonLeft";
@@ -318,12 +315,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // buttonMiddle
             // 
             this.buttonMiddle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonMiddle.Location = new System.Drawing.Point(140, 0);
-            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.buttonMiddle.MaximumSize = new System.Drawing.Size(133, 25);
-            this.buttonMiddle.MinimumSize = new System.Drawing.Size(133, 25);
+            this.buttonMiddle.Location = new System.Drawing.Point(141, 0);
+            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonMiddle.MaximumSize = new System.Drawing.Size(134, 25);
+            this.buttonMiddle.MinimumSize = new System.Drawing.Size(134, 25);
             this.buttonMiddle.Name = "buttonMiddle";
-            this.buttonMiddle.Size = new System.Drawing.Size(133, 25);
+            this.buttonMiddle.Size = new System.Drawing.Size(134, 25);
             this.buttonMiddle.TabIndex = 1;
             this.buttonMiddle.Text = "Defer";
             this.buttonMiddle.UseVisualStyleBackColor = true;
@@ -331,8 +328,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // buttonRight
             // 
             this.buttonRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonRight.Location = new System.Drawing.Point(281, 0);
-            this.buttonRight.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonRight.Location = new System.Drawing.Point(283, 0);
+            this.buttonRight.Margin = new System.Windows.Forms.Padding(8, 0, 0, 0);
             this.buttonRight.MaximumSize = new System.Drawing.Size(133, 25);
             this.buttonRight.MinimumSize = new System.Drawing.Size(133, 25);
             this.buttonRight.Name = "buttonRight";

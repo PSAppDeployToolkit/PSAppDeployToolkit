@@ -53,7 +53,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelIconMessage.AutoSize = true;
             this.tableLayoutPanelIconMessage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelIconMessage.ColumnCount = 2;
-            this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
+            this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 66F));
             this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanelIconMessage.Controls.Add(this.labelMessage, 1, 0);
             this.tableLayoutPanelIconMessage.Controls.Add(this.pictureIcon, 0, 0);
@@ -64,18 +64,18 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelIconMessage.Name = "tableLayoutPanelIconMessage";
             this.tableLayoutPanelIconMessage.RowCount = 1;
             this.tableLayoutPanelIconMessage.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelIconMessage.Size = new System.Drawing.Size(416, 60);
+            this.tableLayoutPanelIconMessage.Size = new System.Drawing.Size(416, 61);
             this.tableLayoutPanelIconMessage.TabIndex = 3;
             // 
             // labelMessage
             // 
             this.labelMessage.AutoSize = true;
-            this.labelMessage.Location = new System.Drawing.Point(67, 0);
-            this.labelMessage.Margin = new System.Windows.Forms.Padding(0);
-            this.labelMessage.MaximumSize = new System.Drawing.Size(349, 0);
-            this.labelMessage.MinimumSize = new System.Drawing.Size(349, 0);
+            this.labelMessage.Location = new System.Drawing.Point(66, 1);
+            this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.labelMessage.MaximumSize = new System.Drawing.Size(350, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(350, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(349, 60);
+            this.labelMessage.Size = new System.Drawing.Size(350, 60);
             this.labelMessage.TabIndex = 1;
             this.labelMessage.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor in" +
     "cididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud" +
@@ -83,8 +83,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // pictureIcon
             // 
-            this.pictureIcon.Location = new System.Drawing.Point(3, 1);
-            this.pictureIcon.Margin = new System.Windows.Forms.Padding(3, 1, 0, 0);
+            this.pictureIcon.Location = new System.Drawing.Point(2, 2);
+            this.pictureIcon.Margin = new System.Windows.Forms.Padding(2, 2, 0, 0);
             this.pictureIcon.MaximumSize = new System.Drawing.Size(48, 48);
             this.pictureIcon.MinimumSize = new System.Drawing.Size(48, 48);
             this.pictureIcon.Name = "pictureIcon";
@@ -99,28 +99,25 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelButton.Controls.Add(this.buttonLeft, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(18, 98);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 99);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
-            this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(414, 0);
-            this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(414, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
             this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
-            this.tableLayoutPanelButton.Size = new System.Drawing.Size(414, 25);
+            this.tableLayoutPanelButton.Size = new System.Drawing.Size(416, 25);
             this.tableLayoutPanelButton.TabIndex = 4;
             // 
             // buttonLeft
             // 
             this.buttonLeft.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonLeft.Location = new System.Drawing.Point(0, 0);
-            this.buttonLeft.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonLeft.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
             this.buttonLeft.MaximumSize = new System.Drawing.Size(133, 25);
             this.buttonLeft.MinimumSize = new System.Drawing.Size(133, 25);
             this.buttonLeft.Name = "buttonLeft";
@@ -133,12 +130,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // buttonMiddle
             // 
             this.buttonMiddle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonMiddle.Location = new System.Drawing.Point(140, 0);
-            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.buttonMiddle.MaximumSize = new System.Drawing.Size(133, 25);
-            this.buttonMiddle.MinimumSize = new System.Drawing.Size(133, 25);
+            this.buttonMiddle.Location = new System.Drawing.Point(141, 0);
+            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonMiddle.MaximumSize = new System.Drawing.Size(134, 25);
+            this.buttonMiddle.MinimumSize = new System.Drawing.Size(134, 25);
             this.buttonMiddle.Name = "buttonMiddle";
-            this.buttonMiddle.Size = new System.Drawing.Size(133, 25);
+            this.buttonMiddle.Size = new System.Drawing.Size(134, 25);
             this.buttonMiddle.TabIndex = 1;
             this.buttonMiddle.Text = "ButtonMiddle";
             this.buttonMiddle.UseVisualStyleBackColor = true;
@@ -147,8 +144,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // buttonRight
             // 
             this.buttonRight.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.buttonRight.Location = new System.Drawing.Point(281, 0);
-            this.buttonRight.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonRight.Location = new System.Drawing.Point(283, 0);
+            this.buttonRight.Margin = new System.Windows.Forms.Padding(8, 0, 0, 0);
             this.buttonRight.MaximumSize = new System.Drawing.Size(133, 25);
             this.buttonRight.MinimumSize = new System.Drawing.Size(133, 25);
             this.buttonRight.Name = "buttonRight";
@@ -172,14 +169,14 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 140);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 141);
             this.flowLayoutPanelDialog.TabIndex = 5;
             // 
             // CustomDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 140);
+            this.ClientSize = new System.Drawing.Size(450, 141);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "CustomDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);

@@ -164,25 +164,23 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 2;
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelButton.Controls.Add(this.buttonMinimize, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRestartNow, 0, 0);
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(18, 202);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 202);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
-            this.tableLayoutPanelButton.MaximumSize = new System.Drawing.Size(414, 0);
-            this.tableLayoutPanelButton.MinimumSize = new System.Drawing.Size(414, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
-            this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelButton.Size = new System.Drawing.Size(414, 25);
+            this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanelButton.Size = new System.Drawing.Size(416, 25);
             this.tableLayoutPanelButton.TabIndex = 3;
             // 
             // buttonMinimize
             // 
             this.buttonMinimize.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonMinimize.Location = new System.Drawing.Point(219, 0);
-            this.buttonMinimize.Margin = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            this.buttonMinimize.Location = new System.Drawing.Point(221, 0);
+            this.buttonMinimize.Margin = new System.Windows.Forms.Padding(13, 0, 0, 0);
             this.buttonMinimize.MaximumSize = new System.Drawing.Size(195, 25);
             this.buttonMinimize.MinimumSize = new System.Drawing.Size(195, 25);
             this.buttonMinimize.Name = "buttonMinimize";
@@ -196,7 +194,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.buttonRestartNow.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonRestartNow.Location = new System.Drawing.Point(0, 0);
-            this.buttonRestartNow.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonRestartNow.Margin = new System.Windows.Forms.Padding(0, 0, 13, 0);
             this.buttonRestartNow.MaximumSize = new System.Drawing.Size(195, 25);
             this.buttonRestartNow.MinimumSize = new System.Drawing.Size(195, 25);
             this.buttonRestartNow.Name = "buttonRestartNow";
