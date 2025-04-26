@@ -14,7 +14,7 @@
 	  <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 	  <UserSecretsId>1f9c9b02-c540-4d44-95e4-075d460f0854</UserSecretsId>
 	  <AssemblyName>PSADT.UserInterface</AssemblyName>
-	  <RootNamespace>PSADT</RootNamespace>
+	  <RootNamespace>PSADT.UserInterface</RootNamespace>
 	  <Authors>PSAppDeployToolkit Team</Authors>
 	  <Company>PSAppDeployToolkit Team</Company>
 		<Description>PSAppDeployToolkit User Interface Library</Description>
