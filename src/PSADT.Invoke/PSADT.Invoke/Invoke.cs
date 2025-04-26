@@ -338,7 +338,7 @@ namespace PSADT.Invoke
                 }
 
                 // Test that the local config is a hashtable.
-                if ((localConfigAst.Find(p => p.GetType() == typeof(HashtableAst), false) is HashtableAst localConfig) && (((Hashtable)localConfig.SafeGetValue())["Toolkit"] is Hashtable localConfigToolkit) && (localConfigToolkit["RequireAdmin"] is bool requireAdmin))
+                if ((localConfigAst.Find(p => p is HashtableAst, false) is HashtableAst localConfig) && (((Hashtable)localConfig.SafeGetValue())["Toolkit"] is Hashtable localConfigToolkit) && (localConfigToolkit["RequireAdmin"] is bool requireAdmin))
                 {
                     if (requireAdmin)
                     {
@@ -363,7 +363,7 @@ namespace PSADT.Invoke
             }
 
             // Determine whether we require admin rights or not.
-            if ((bool)((Hashtable)((Hashtable)configAst.EndBlock.Find(p => p.GetType() == typeof(HashtableAst), false).SafeGetValue())["Toolkit"])["RequireAdmin"])
+            if ((bool)((Hashtable)((Hashtable)configAst.EndBlock.Find(p => p is HashtableAst, false).SafeGetValue())["Toolkit"])["RequireAdmin"])
             {
                 return true;
             }
