@@ -251,5 +251,39 @@ namespace PSADT.UserInterface.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Sends a message to the specified window handle.
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="Msg"></param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <returns></returns>
+        internal static LRESULT SendMessage(HWND hWnd, uint Msg, WPARAM wParam, LPARAM lParam)
+        {
+            PInvoke.SetLastError(0);
+            var res = PInvoke.SendMessage(hWnd, Msg, wParam, lParam);
+            var err = (WIN32_ERROR)Marshal.GetLastWin32Error();
+            if (err != WIN32_ERROR.NO_ERROR)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error(err);
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Releases the mouse capture from the window.
+        /// </summary>
+        /// <returns></returns>
+        internal static BOOL ReleaseCapture()
+        {
+            var res = PInvoke.ReleaseCapture();
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
     }
 }

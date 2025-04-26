@@ -1,6 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Windows.Forms;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.LibraryInterfaces;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -46,6 +50,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
             this.flowLayoutPanelBase.ResumeLayout();
             this.ResumeLayout();
+            EnableDragMove(this);
         }
 
         /// <summary>
@@ -72,6 +77,34 @@ namespace PSADT.UserInterface.Dialogs.Classic
             if (null != percentComplete)
             {
                 throw new NotSupportedException("Progress percentage is not supported in the classic dialog.");
+            }
+        }
+
+        /// <summary>
+        /// Enables the drag move functionality for the form and its child controls.
+        /// </summary>
+        /// <param name="parent"></param>
+        private void EnableDragMove(Control parent)
+        {
+            // Attach to this control, then recurse into its children.
+            parent.MouseDown += AnyControl_MouseDown;
+            foreach (Control child in parent.Controls)
+            {
+                EnableDragMove(child);
+            }
+        }
+
+        /// <summary>
+        /// Handles the mouse down event for the form and allows it to be moved.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AnyControl_MouseDown(object? sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                User32.ReleaseCapture();
+                User32.SendMessage((HWND)this.Handle, PInvoke.WM_NCLBUTTONDOWN, PInvoke.HTCAPTION, IntPtr.Zero);
             }
         }
     }
