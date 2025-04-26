@@ -49,7 +49,7 @@ namespace PSADT.UserInterface.DialogOptions
             }
             if (options["DynamicProcessEvaluation"] is not bool dynamicProcessEvaluation)
             {
-                throw new ArgumentNullException("dynamicProcessEvaluation value is null or invalid.", (Exception?)null);
+                throw new ArgumentNullException("DynamicProcessEvaluation value is null or invalid.", (Exception?)null);
             }
 
             // Test and set optional values.
