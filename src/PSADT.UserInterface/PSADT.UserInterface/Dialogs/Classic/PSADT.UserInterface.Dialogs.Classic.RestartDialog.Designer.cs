@@ -35,6 +35,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         {
             this.flowLayoutPanelDialog = new System.Windows.Forms.FlowLayoutPanel();
             this.labelMessage = new System.Windows.Forms.Label();
+            this.labelCustomMessage = new System.Windows.Forms.Label();
             this.flowLayoutPanelCountdown = new System.Windows.Forms.FlowLayoutPanel();
             this.labelRestartMessage = new System.Windows.Forms.Label();
             this.labelTimeRemaining = new System.Windows.Forms.Label();
@@ -42,7 +43,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
             this.buttonMinimize = new System.Windows.Forms.Button();
             this.buttonRestartNow = new System.Windows.Forms.Button();
-            this.labelCustomMessage = new System.Windows.Forms.Label();
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCountdown.SuspendLayout();
             this.tableLayoutPanelButton.SuspendLayout();
@@ -80,6 +80,21 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.TabIndex = 0;
             this.labelMessage.Text = "In order for the installation to complete, you must restart your computer.";
             this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // labelCustomMessage
+            // 
+            this.labelCustomMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.labelCustomMessage.AutoSize = true;
+            this.labelCustomMessage.Location = new System.Drawing.Point(17, 41);
+            this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
+            this.labelCustomMessage.MaximumSize = new System.Drawing.Size(416, 0);
+            this.labelCustomMessage.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelCustomMessage.Name = "labelCustomMessage";
+            this.labelCustomMessage.Size = new System.Drawing.Size(416, 30);
+            this.labelCustomMessage.TabIndex = 5;
+            this.labelCustomMessage.Text = "This is an optional custom text message. It can be used to display specific infor" +
+    "mation to the user before they reboot their device.";
+            this.labelCustomMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // flowLayoutPanelCountdown
             // 
@@ -190,21 +205,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonRestartNow.Text = "Restart Now";
             this.buttonRestartNow.UseVisualStyleBackColor = true;
             this.buttonRestartNow.Click += new System.EventHandler(this.buttonRestartNow_Click);
-            // 
-            // labelCustomMessage
-            // 
-            this.labelCustomMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.labelCustomMessage.AutoSize = true;
-            this.labelCustomMessage.Location = new System.Drawing.Point(17, 44);
-            this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
-            this.labelCustomMessage.MaximumSize = new System.Drawing.Size(416, 0);
-            this.labelCustomMessage.MinimumSize = new System.Drawing.Size(416, 0);
-            this.labelCustomMessage.Name = "labelCustomMessage";
-            this.labelCustomMessage.Size = new System.Drawing.Size(416, 30);
-            this.labelCustomMessage.TabIndex = 5;
-            this.labelCustomMessage.Text = "This is an optional custom text message. It can be used to display specific infor" +
-    "mation to the user before they reboot their device.";
-            this.labelCustomMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // RestartDialog
             // 
