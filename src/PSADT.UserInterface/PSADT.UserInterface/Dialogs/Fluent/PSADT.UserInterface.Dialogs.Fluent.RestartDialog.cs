@@ -16,6 +16,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="options">Mandatory options needed to construct the window.</param>
         internal RestartDialog(RestartDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, options.CountdownNoMinimizeDuration)
         {
+            // Reset the dialog's title. It must be that of the string table in the options.
+            Title = options.Strings.Title;
+
             // Set up UI
             if (null != options.CountdownDuration)
             {
