@@ -12,6 +12,23 @@ namespace PSADT.UserInterface.LibraryInterfaces
     internal static class NtDll
     {
         /// <summary>
+        /// Enumeration of process information classes.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct SYSTEM_PROCESS_ID_INFORMATION
+        {
+            /// <summary>
+            /// The number of processes in the system.
+            /// </summary>
+            internal IntPtr ProcessId;
+
+            /// <summary>
+            /// The number of threads in the system.
+            /// </summary>
+            internal UNICODE_STRING ImageName;
+        }
+
+        /// <summary>
         /// Queries information about a specified process.
         /// </summary>
         /// <param name="ProcessHandle"></param>
@@ -48,6 +65,35 @@ namespace PSADT.UserInterface.LibraryInterfaces
                     ProcessHandle.DangerousRelease();
                 }
             }
+        }
+
+        /// <summary>
+        /// Queries system information.
+        /// </summary>
+        /// <param name="SystemInformationClass"></param>
+        /// <param name="SystemInformation"></param>
+        /// <param name="SystemInformationLength"></param>
+        /// <param name="ReturnLength"></param>
+        /// <returns></returns>
+        [DllImport("ntdll.dll", EntryPoint = "NtQuerySystemInformation")]
+        internal static extern NTSTATUS NtQuerySystemInformationNative(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, uint SystemInformationLength, out uint ReturnLength);
+
+        /// <summary>
+        /// Queries system information.
+        /// </summary>
+        /// <param name="SystemInformationClass"></param>
+        /// <param name="SystemInformation"></param>
+        /// <param name="SystemInformationLength"></param>
+        /// <param name="ReturnLength"></param>
+        /// <returns></returns>
+        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, uint SystemInformationLength, out uint ReturnLength)
+        {
+            var res = NtQuerySystemInformationNative(SystemInformationClass, SystemInformation, SystemInformationLength, out ReturnLength);
+            if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+            }
+            return res;
         }
     }
 }

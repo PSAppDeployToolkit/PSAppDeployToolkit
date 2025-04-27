@@ -127,4 +127,12 @@ namespace PSADT.UserInterface.LibraryInterfaces
         /// </summary>
         ILD_ASYNC = 0x00008000
     }
+
+    /// <summary>
+    /// Flags that specify the type of information to retrieve from the system (the flags we support).
+    /// </summary>
+    internal enum SYSTEM_INFORMATION_CLASS : int
+    {
+        SystemProcessIdInformation = 0x58
+    }
 }

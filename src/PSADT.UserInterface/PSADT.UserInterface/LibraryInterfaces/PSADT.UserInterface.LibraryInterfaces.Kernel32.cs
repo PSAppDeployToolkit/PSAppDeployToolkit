@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿using System;
+using Microsoft.Win32.SafeHandles;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -37,6 +38,22 @@ namespace PSADT.UserInterface.LibraryInterfaces
         {
             var res = PInvoke.LocalFree(hMem);
             if (!res.IsNull)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Wrapper around QueryDosDevice to manage error handling.
+        /// </summary>
+        /// <param name="lpDeviceName"></param>
+        /// <param name="lpTargetPath"></param>
+        /// <returns></returns>
+        internal static uint QueryDosDevice(string lpDeviceName, Span<char> lpTargetPath)
+        {
+            var res = PInvoke.QueryDosDevice(lpDeviceName, lpTargetPath);
+            if (res == 0)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
