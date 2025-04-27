@@ -41,7 +41,6 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// <param name="processHandle"></param>
         /// <param name="processInformationClass"></param>
         /// <param name="processInformation"></param>
-        /// <param name="returnLength"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
         internal static int NtQueryInformationProcess(IntPtr processHandle, PROCESSINFOCLASS processInformationClass, out PROCESS_BASIC_INFORMATION processInformation)
