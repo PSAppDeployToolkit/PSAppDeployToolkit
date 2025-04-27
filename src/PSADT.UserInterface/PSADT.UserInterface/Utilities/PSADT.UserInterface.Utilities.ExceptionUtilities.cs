@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 
-namespace PSADT.Utilities
+namespace PSADT.UserInterface.Utilities
 {
     /// <summary>
     /// Provides error handling for Win32 errors.

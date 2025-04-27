@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using PSADT.Utilities;
+using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
