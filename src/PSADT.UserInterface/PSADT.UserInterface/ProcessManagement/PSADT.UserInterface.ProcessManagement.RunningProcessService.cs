@@ -238,17 +238,17 @@ namespace PSADT.UserInterface.Processes
         /// <summary>
         /// Gets the list of running processes.
         /// </summary>
-        private volatile IReadOnlyList<RunningProcess> _runningProcesses = new List<RunningProcess>().AsReadOnly();
+        private volatile IReadOnlyList<RunningProcess> _runningProcesses = [];
 
         /// <summary>
         /// Gets the list of processes to display on a CloseAppsDialog.
         /// </summary>
-        private volatile IReadOnlyList<RunningProcess> _processesToClose = new List<RunningProcess>().AsReadOnly();
+        private volatile IReadOnlyList<RunningProcess> _processesToClose = [];
 
         /// <summary>
         /// Gets the list of process descriptions.
         /// </summary>
-        private volatile IReadOnlyList<string> _lastProcessDescriptions = new List<string>().AsReadOnly();
+        private volatile IReadOnlyList<string> _lastProcessDescriptions = [];
 
         /// <summary>
         /// Disposal flag for the <see cref="RunningProcessService"/> class.
