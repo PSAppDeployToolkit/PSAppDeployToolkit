@@ -14,8 +14,11 @@ MONITORINFOEXW
 MONITORINFOF_PRIMARY
 MonitorFromPoint
 MonitorFromWindow
+NtQueryInformationProcess
+OpenProcess
 RECT
 ReleaseCapture
+RtlNtStatusToDosError
 SC_MOVE
 SC_CLOSE
 SendMessage
@@ -25,7 +28,10 @@ SHGFI_FLAGS
 SHIL_JUMBO
 SHSTOCKICONID
 SetLastError
+STATUS_INFO_LENGTH_MISMATCH
+STATUS_SUCCESS
 SystemParametersInfo
+UNICODE_STRING
 WIN32_ERROR
 Windows.Win32.UI.Controls.IImageList
 WM_NCLBUTTONDOWN
