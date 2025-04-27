@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
+using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
@@ -140,6 +142,33 @@ namespace PSADT.UserInterface.LibraryInterfaces
             var res = PInvoke.SHGetImageList((int)iImageList, new System.Guid("46EB5926-582E-4017-9FDF-E8998DAA0950"), out var ppvObjLocal).ThrowOnFailure();
             ppvObj = (IImageList)ppvObjLocal;
             return res;
+        }
+
+        /// <summary>
+        /// Converts a command line string into an array of arguments.
+        /// </summary>
+        /// <param name="lpCmdLine"></param>
+        /// <returns></returns>
+        internal static unsafe string[] CommandLineToArgv(string lpCmdLine)
+        {
+            var res = PInvoke.CommandLineToArgv(lpCmdLine, out var pNumArgs);
+            if (null == res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            try
+            {
+                var args = new string[pNumArgs];
+                for (var i = 0; i < pNumArgs; i++)
+                {
+                    args[i] = res[i].ToString().Replace("\0", string.Empty).Trim();
+                }
+                return args.Where(static str => !string.IsNullOrWhiteSpace(str)).ToArray();
+            }
+            finally
+            {
+                Kernel32.LocalFree((HLOCAL)res);
+            }
         }
     }
 }

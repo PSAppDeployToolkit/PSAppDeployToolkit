@@ -27,5 +27,20 @@ namespace PSADT.UserInterface.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Allocates a specified number of bytes in the local heap.
+        /// </summary>
+        /// <param name="hMem"></param>
+        /// <returns></returns>
+        internal static HLOCAL LocalFree(HLOCAL hMem)
+        {
+            var res = PInvoke.LocalFree(hMem);
+            if (!res.IsNull)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
     }
 }
