@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.Processes
         public static ReadOnlyCollection<RunningProcess> GetRunningProcesses(ProcessDefinition[] processDefinitions)
         {
             // Set up some caches for performance.
-            ReadOnlyDictionary<string, string>? ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+            var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
             Dictionary<Process, string[]> processCommandLines = [];
 
             // Inline lambda to get the command line from the given process.
