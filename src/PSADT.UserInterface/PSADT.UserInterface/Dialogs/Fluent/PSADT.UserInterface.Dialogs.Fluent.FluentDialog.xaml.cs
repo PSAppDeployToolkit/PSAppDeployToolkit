@@ -132,7 +132,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonRight.Visibility = Visibility.Collapsed;
 
             // Set app icon
-            SetAppIcon(options.AppIconImage);
+            SetDialogIcon(options.AppIconImage);
 
             // Initialize countdown if specified
             if (countdownDuration.HasValue)
@@ -445,28 +445,28 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Sets the application icon displayed in the header and the window's taskbar icon.
         /// Uses a cache for performance.
         /// </summary>
-        /// <param name="appIconImage">Path or URI to the icon image file. Defaults to embedded resource if null.</param>
-        private void SetAppIcon(string appIconImage)
+        /// <param name="dialogIconPath">Path or URI to the icon image file. Defaults to embedded resource if null.</param>
+        private void SetDialogIcon(string dialogIconPath)
         {
             // Try to get from cache first
-            if (!_iconCache.TryGetValue(appIconImage, out var iconImage))
+            if (!_dialogIconCache.TryGetValue(dialogIconPath, out var bitmapImage))
             {
                 // Use BeginInit/EndInit pattern for better performance.
-                iconImage = new BitmapImage();
-                iconImage.BeginInit();
-                iconImage.CacheOption = BitmapCacheOption.OnLoad;
-                iconImage.UriSource = new Uri(appIconImage, UriKind.Absolute);
-                iconImage.EndInit();
+                bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
+                bitmapImage.EndInit();
 
                 // Make it shareable across threads
-                if (iconImage.CanFreeze)
+                if (bitmapImage.CanFreeze)
                 {
-                    iconImage.Freeze();
+                    bitmapImage.Freeze();
                 }
-                _iconCache[appIconImage!] = iconImage;
+                _dialogIconCache[dialogIconPath] = bitmapImage;
             }
-            AppIconImage.Source = iconImage;
-            Icon = iconImage;
+            AppIconImage.Source = bitmapImage;
+            Icon = bitmapImage;
         }
 
         /// <summary>
@@ -773,9 +773,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private readonly TimeSpan? _countdownNoMinimizeDuration;
 
         /// <summary>
-        /// Icon cache for improved performance
+        /// Dialog icon cache for improved performance
         /// </summary>
-        private static readonly Dictionary<string, BitmapImage> _iconCache = [];
+        private static readonly Dictionary<string, BitmapImage> _dialogIconCache = [];
 
         /// <summary>
         /// Event handler for when a window property has changed.
