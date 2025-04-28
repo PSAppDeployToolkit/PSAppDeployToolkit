@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using PSADT.UserInterface.LibraryInterfaces;
 using Windows.Win32;
