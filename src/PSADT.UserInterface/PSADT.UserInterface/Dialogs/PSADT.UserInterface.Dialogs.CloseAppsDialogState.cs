@@ -1,5 +1,5 @@
 ﻿using System;
-using PSADT.UserInterface.Processes;
+using PSADT.UserInterface.ProcessManagement;
 
 namespace PSADT.UserInterface.Dialogs
 {

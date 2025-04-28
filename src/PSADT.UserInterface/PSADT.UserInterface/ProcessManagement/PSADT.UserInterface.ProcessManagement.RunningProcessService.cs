@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.UserInterface.LibraryInterfaces;
-using PSADT.UserInterface.ProcessManagement;
 using PSADT.UserInterface.Utilities;
 
-namespace PSADT.UserInterface.Processes
+namespace PSADT.UserInterface.ProcessManagement
 {
     /// <summary>
     /// Service for managing running processes.
