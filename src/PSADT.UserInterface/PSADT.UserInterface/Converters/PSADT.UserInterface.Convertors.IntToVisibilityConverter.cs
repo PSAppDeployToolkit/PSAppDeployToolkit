@@ -23,52 +23,7 @@ namespace PSADT.UserInterface.Converters
         /// <returns></returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == null)
-            {
-                return Visibility.Collapsed;
-            }
-
-            // Handle parameter-specific thresholds and behaviors
-            bool reverseLogic = false;
-            int threshold = 0;
-            if (parameter is string paramStr)
-            {
-                // Check for reversed logic
-                if (paramStr.Equals("True", StringComparison.OrdinalIgnoreCase))
-                {
-                    reverseLogic = true;
-                }
-                // Special case for ListView scrollbar appearance
-                else if (paramStr.Equals("ListView", StringComparison.OrdinalIgnoreCase))
-                {
-                    threshold = 4; // Show scrollbar only when more than 4 items
-                }
-                // Check if parameter is a number for custom threshold
-                else if (int.TryParse(paramStr, out int parsedThreshold))
-                {
-                    threshold = parsedThreshold;
-                }
-            }
-
-            int intValue = 0;
-            if (value is int i)
-            {
-                intValue = i;
-            }
-            else if (int.TryParse(value?.ToString(), out int parsedInt))
-            {
-                intValue = parsedInt;
-            }
-
-            // When reversed, collapse when count > threshold, otherwise it's visible
-            if (reverseLogic)
-            {
-                return intValue > threshold ? Visibility.Collapsed : Visibility.Visible;
-            }
-            else
-            {
-                return intValue > threshold ? Visibility.Visible : Visibility.Collapsed;
-            }
+            return value is int count && count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         /// <summary>
