@@ -156,7 +156,7 @@ namespace PSADT.UserInterface.Processes
                 foreach (var process in allProcesses)
                 {
                     // Continue if the process has since terminated.
-                    if (process.HasExited)
+                    if (!ProcessUtilities.IsProcessRunning(process.Id))
                     {
                         continue;
                     }

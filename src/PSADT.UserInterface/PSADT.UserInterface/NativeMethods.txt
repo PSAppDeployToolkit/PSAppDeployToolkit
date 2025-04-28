@@ -6,6 +6,7 @@ DwmGetColorizationColor
 EnableMenuItem
 EnumDisplayMonitors
 GetMonitorInfo
+GetExitCodeProcess
 GetSystemMetrics
 GetSystemMenu
 FILE_FLAGS_AND_ATTRIBUTES
@@ -33,6 +34,7 @@ SHSTOCKICONID
 SetLastError
 STATUS_INFO_LENGTH_MISMATCH
 STATUS_SUCCESS
+STILL_ACTIVE
 SystemParametersInfo
 UNICODE_STRING
 WIN32_ERROR

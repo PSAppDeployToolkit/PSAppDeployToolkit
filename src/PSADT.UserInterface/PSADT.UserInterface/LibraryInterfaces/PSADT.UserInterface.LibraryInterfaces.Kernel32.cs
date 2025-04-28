@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
@@ -54,6 +55,22 @@ namespace PSADT.UserInterface.LibraryInterfaces
         {
             var res = PInvoke.QueryDosDevice(lpDeviceName, lpTargetPath);
             if (res == 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Retrieves the exit code of a specified process.
+        /// </summary>
+        /// <param name="hProcess"></param>
+        /// <param name="lpExitCode"></param>
+        /// <returns></returns>
+        internal static BOOL GetExitCodeProcess(SafeHandle hProcess, out uint lpExitCode)
+        {
+            var res = PInvoke.GetExitCodeProcess(hProcess, out lpExitCode);
+            if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
