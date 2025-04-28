@@ -118,6 +118,10 @@ namespace PSADT.UserInterface.ProcessManagement
             {
                 return false;
             }
+            catch (UnauthorizedAccessException)
+            {
+                return true;
+            }
         }
     }
 }
