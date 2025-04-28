@@ -7,9 +7,9 @@ using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
 
-namespace PSADT.UserInterface.Utilities
+namespace PSADT.UserInterface.ProcessManagement
 {
-    internal static class ProcessUtilities
+    internal static class ProcessTools
     {
         /// <summary>
         /// Retrieves the command line arguments of a process given its process ID.
