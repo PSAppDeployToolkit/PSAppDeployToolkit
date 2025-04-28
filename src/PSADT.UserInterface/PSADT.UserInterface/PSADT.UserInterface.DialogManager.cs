@@ -113,7 +113,7 @@ namespace PSADT.UserInterface
                 using (var dialog = factory(options))
                 {
                     dialog.ShowDialog();
-                    result = (TResult)(object)dialog.DialogResult;
+                    result = (TResult)(object)dialog.Result;
                 }
             });
             #warning "TODO: DialogExpiryDuration?"

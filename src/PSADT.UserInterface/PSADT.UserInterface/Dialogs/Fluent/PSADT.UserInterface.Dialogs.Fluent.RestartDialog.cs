@@ -56,9 +56,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
-            // Set the result but don't call the base method, we just want to return here.
+            // Just minimise the window.
             WindowState = WindowState.Minimized;
-            DialogResult = "Dismiss";
         }
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = "Restart";
+            #warning "TODO: Restart computer here"
             base.ButtonLeft_Click(sender, e);
         }
     }

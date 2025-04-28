@@ -241,7 +241,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            DialogResult = "Defer";
+            Result = "Defer";
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -257,7 +257,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            DialogResult = "Continue";
+            Result = "Continue";
             base.ButtonLeft_Click(sender, e);
         }
 

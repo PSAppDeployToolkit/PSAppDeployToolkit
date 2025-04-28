@@ -37,8 +37,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", ""), InputBoxText.Text);
-            base.DialogResult = "Bypass";
+            Result = new InputDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", ""), InputBoxText.Text);
+            base.Result = "Bypass";
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -50,8 +50,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", ""), InputBoxText.Text);
-            base.DialogResult = "Bypass";
+            Result = new InputDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", ""), InputBoxText.Text);
+            base.Result = "Bypass";
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -63,20 +63,20 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", ""), InputBoxText.Text);
-            base.DialogResult = "Bypass";
+            Result = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", ""), InputBoxText.Text);
+            base.Result = "Bypass";
             base.ButtonRight_Click(sender, e);
         }
 
         /// <summary>
         /// The result of the dialog interaction.
         /// </summary>
-        internal new InputDialogResult DialogResult
+        internal new InputDialogResult Result
         {
-            get => _dialogResult;
+            get => _result;
             private set
             {
-                _dialogResult = value;
+                _result = value;
                 OnPropertyChanged();
             }
         }
@@ -84,6 +84,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The cancellation token source for the dialog.
         /// </summary>
-        private InputDialogResult _dialogResult = new InputDialogResult("Timeout", null);
+        private InputDialogResult _result = new InputDialogResult("Timeout", null);
     }
 }

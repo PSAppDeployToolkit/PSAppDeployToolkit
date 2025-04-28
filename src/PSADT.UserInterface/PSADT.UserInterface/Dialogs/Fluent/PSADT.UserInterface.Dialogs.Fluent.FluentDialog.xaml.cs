@@ -713,12 +713,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The result of the dialog interaction.
         /// </summary>
-        internal new string DialogResult
+        internal virtual string Result
         {
-            get => _dialogResult;
+            get => _result;
             private protected set
             {
-                _dialogResult = value;
+                _result = value;
                 OnPropertyChanged();
             }
         }
@@ -731,7 +731,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The cancellation token source for the dialog.
         /// </summary>
-        private string _dialogResult = "Timeout";
+        private string _result = "Timeout";
 
         /// <summary>
         /// Whether this window has been disposed.

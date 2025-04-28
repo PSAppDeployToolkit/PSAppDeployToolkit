@@ -70,9 +70,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (this.DialogResult != "Bypass")
+            if (this.Result != "Bypass")
             {
-                DialogResult = ((AccessText)ButtonLeft.Content).Text.Replace("_", "");
+                Result = ((AccessText)ButtonLeft.Content).Text.Replace("_", "");
             }
             base.ButtonLeft_Click(sender, e);
         }
@@ -85,9 +85,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (this.DialogResult != "Bypass")
+            if (this.Result != "Bypass")
             {
-                DialogResult = ((AccessText)ButtonMiddle.Content).Text.Replace("_", "");
+                Result = ((AccessText)ButtonMiddle.Content).Text.Replace("_", "");
             }
             base.ButtonMiddle_Click(sender, e);
         }
@@ -100,9 +100,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            if (this.DialogResult != "Bypass")
+            if (this.Result != "Bypass")
             {
-                DialogResult = ((AccessText)ButtonRight.Content).Text.Replace("_", "");
+                Result = ((AccessText)ButtonRight.Content).Text.Replace("_", "");
             }
             base.ButtonRight_Click(sender, e);
         }
