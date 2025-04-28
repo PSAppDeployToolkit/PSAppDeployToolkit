@@ -12,15 +12,15 @@ namespace PSADT.UserInterface.ProcessManagement
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessesToCloseChangedEventArgs"/> class with the specified list of running processes.
         /// </summary>
-        /// <param name="runningProcs"></param>
-        public ProcessesToCloseChangedEventArgs(IEnumerable<ProcessToClose> runningProcs)
+        /// <param name="processesToClose"></param>
+        public ProcessesToCloseChangedEventArgs(IEnumerable<ProcessToClose> processesToClose)
         {
-            RunningProcesses = runningProcs.ToList().AsReadOnly();
+            ProcessesToClose = processesToClose.ToList().AsReadOnly();
         }
 
         /// <summary>
         /// Gets the list of running processes.
         /// </summary>
-        public IReadOnlyList<ProcessToClose> RunningProcesses { get; }
+        public IReadOnlyList<ProcessToClose> ProcessesToClose { get; }
     }
 }
