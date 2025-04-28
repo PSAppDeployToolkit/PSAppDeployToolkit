@@ -46,7 +46,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Initializes a new instance of FluentDialog
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownNoMinimizeDuration = null, string? countdownDialogResult = null)
+        private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, string? countdownDialogResult = null)
         {
             // Process the given accent color from the options
             if (!string.IsNullOrWhiteSpace(options.DialogAccentColor))
@@ -109,7 +109,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Set supplemental options also
             _customMessageText = customMessageText;
             _countdownDuration = countdownDuration;
-            _countdownNoMinimizeDuration = countdownNoMinimizeDuration;
+            _countdownWarningDuration = countdownWarningDuration;
             CountdownStackPanel.Visibility = _countdownDuration.HasValue ? Visibility.Visible : Visibility.Collapsed;
 
             // Pre-format the custom message if we have one
@@ -131,9 +131,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             SetDialogIcon(options.AppIconImage);
 
             // Initialize countdown if specified
-            if (countdownDuration.HasValue)
+            if (null != _countdownDuration)
             {
-                //InitializeCountdown(countdownDuration.Value);
+                CountdownStackPanel.Visibility = Visibility.Visible;
+                _countdownTimer = new DispatcherTimer(DispatcherPriority.Send, Dispatcher)
+                {
+                    Interval = TimeSpan.FromMilliseconds(100)
+                };
             }
 
             // Configure window events
@@ -253,10 +257,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             UpdateLayout();
 
             // Initialize countdown display if needed
-            if (_countdownDuration.HasValue)
-            {
-                //UpdateCountdownDisplay();
-            }
+            InitializeCountdown();
 
             // Update row definitions based on current content
             UpdateRowDefinition();
@@ -589,21 +590,35 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
         }
 
-#if false
         /// <summary>
         /// Initializes the countdown timer and display for dialogs that support it (CloseApps, Restart).
         /// </summary>
         /// <param name="duration">The total duration of the countdown.</param>
-        private void InitializeCountdown(TimeSpan duration)
+        private void InitializeCountdown()
         {
-            _countdownRemainingTime = duration;
-            _deferralDeadlineRemainingTime = duration;
+            // Return early if there's no countdown to set.
+            if (null == _countdownTimer)
+            {
+                return;
+            }
 
-            // Update the display initially
+            // Set our end times if they're not set (first load).
+            var dateTime = DateTime.Now;
+            if (null == _countdownEnd)
+            {
+                _countdownEnd = dateTime.Add(_countdownDuration!.Value);
+            }
+
+            // Set the warning end time if it's set.
+            if (null != _countdownWarningDuration && null == _countdownWarningEnd)
+            {
+                _countdownWarningEnd = dateTime.Add(_countdownWarningDuration.Value);
+            }
+
+            // Update the display initially before starting the timer.
             UpdateCountdownDisplay();
-
-            // Set up the timer to update every second
-            _countdownTimer = new Timer(CountdownTimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            _countdownTimer.Tick += CountdownTimer_Tick;
+            _countdownTimer.Start();
         }
 
         /// <summary>
@@ -612,44 +627,30 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         private void UpdateCountdownDisplay()
         {
-            // Format the remaining time as hh:mm:ss
-            CountdownValueTextBlock.Text = $"{_countdownRemainingTime.Hours}h {_countdownRemainingTime.Minutes}m {_countdownRemainingTime.Seconds}s";
+            // Get the current remaining time.
+            var dateTime = DateTime.Now;
+            var countdownRemainingTime = _countdownEnd!.Value - dateTime;
+            if (countdownRemainingTime < TimeSpan.Zero)
+            {
+                countdownRemainingTime = TimeSpan.Zero;
+            }
 
-            // Update accessibility properties
-            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {_countdownRemainingTime.Hours} hours, {_countdownRemainingTime.Minutes} minutes, {_countdownRemainingTime.Seconds} seconds");
+            // Format the remaining time as hh:mm:ss
+            CountdownValueTextBlock.Text = $"{countdownRemainingTime.Hours}h {countdownRemainingTime.Minutes}m {countdownRemainingTime.Seconds}s";
+            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {countdownRemainingTime.Hours} hours, {countdownRemainingTime.Minutes} minutes, {countdownRemainingTime.Seconds} seconds");
 
             // Update text color based on remaining time
-            if (_countdownRemainingTime.TotalSeconds <= 60)
+            if (countdownRemainingTime.TotalSeconds <= 60)
             {
-                // Less than 60 seconds - use critical color
                 CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
             }
-            else if (_countdownNoMinimizeDuration.HasValue && _countdownRemainingTime <= _countdownNoMinimizeDuration)
+            else if ((null != _countdownWarningEnd) && (_countdownWarningEnd - dateTime) < TimeSpan.Zero)
             {
-                // Less than no-minimize duration - use attention color
                 CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
             }
             else
             {
-                // Normal time - use default text color
                 CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
-            }
-
-            // Handle countdown no minimize option for Restart dialog
-            if (DialogType == DialogType.Restart && _countdownNoMinimizeDuration.HasValue)
-            {
-                bool canDismiss = _countdownRemainingTime > _countdownNoMinimizeDuration.Value;
-                ButtonLeft.IsEnabled = canDismiss;
-
-                // Update the button for accessibility
-                if (canDismiss)
-                {
-                    AutomationProperties.SetHelpText(ButtonLeft, "Minimize the restart dialog");
-                }
-                else
-                {
-                    AutomationProperties.SetHelpText(ButtonLeft, "Button disabled, restart imminent");
-                }
             }
         }
 
@@ -657,57 +658,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Callback executed by the countdown timer every second. Decrements remaining time, updates display, and handles auto-action on timeout.
         /// </summary>
         /// <param name="state">Timer state object (not used).</param>
-        private void CountdownTimerCallback(object? state)
+        protected virtual void CountdownTimer_Tick(object? sender, EventArgs e)
         {
-            if (_isDisposed)
-                return;
-
-            if (_countdownRemainingTime.TotalSeconds <= 0)
-            {
-                // Stop the timer
-                _countdownTimer?.Change(Timeout.Infinite, Timeout.Infinite);
-
-                // Trigger appropriate action based on dialog type
-                if (DialogType == DialogType.Restart)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        if (_isDisposed) return;
-
-                        // Auto-click the "Restart Now" button
-                        DialogResult = "Restart";
-                        CloseDialog(null);
-                    });
-                }
-                else if (DialogType == DialogType.CloseApps)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        if (_isDisposed) return;
-
-                        // Auto-click the "Continue" button
-                        DialogResult = "Continue";
-                        CloseDialog(null);
-                    });
-                }
-
-                return;
-            }
-
-            // Decrement the remaining time
-            _countdownRemainingTime = _countdownRemainingTime.Subtract(TimeSpan.FromSeconds(1));
-
-            // Update the display on the UI thread
-            try
-            {
-                Dispatcher.Invoke(UpdateCountdownDisplay);
-            }
-            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-            {
-                // Application is shutting down, just ignore
-            }
+            UpdateCountdownDisplay();
         }
-#endif
 
         /// <summary>
         /// The result of the dialog interaction.
@@ -753,16 +707,29 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private readonly bool _dialogAllowMove;
 
         /// <summary>
+        /// The countdown duration for the dialog.
+        /// </summary>
+        private readonly DispatcherTimer? _countdownTimer;
+
+        /// <summary>
         /// An optional countdown to zero to commence a preferred action.
         /// </summary>
-        #warning "TODO: Move _countdownDuration into new CountdownDialog."
         protected readonly TimeSpan? _countdownDuration;
+
+        /// <summary>
+        /// The end date/time for the countdown duration, as determined during form load.
+        /// </summary>
+        protected DateTime? _countdownEnd;
 
         /// <summary>
         /// An optional countdown to zero for when the dialog can be no longer minimised.
         /// </summary>
-        #warning "TODO: Move _countdownNoMinimizeDuration into new CountdownDialog."
-        protected readonly TimeSpan? _countdownNoMinimizeDuration;
+        protected readonly TimeSpan? _countdownWarningDuration;
+
+        /// <summary>
+        /// The end date/time for the countdown warning duration, as determined during form load.
+        /// </summary>
+        protected DateTime? _countdownWarningEnd;
 
         /// <summary>
         /// Dialog icon cache for improved performance

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
@@ -24,7 +25,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, options.Strings.MessageRestart);
                 CountdownHeadingTextBlock.Text = options.Strings.TimeRemaining;
-                CountdownStackPanel.Visibility = Visibility.Visible;
             }
             else
             {
@@ -67,9 +67,29 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
-            // Set the result and call base method to handle window closure.
-            #warning "TODO: Restart computer here"
+            // Immediately restart the computer.
+            DialogTools.RestartComputer();
             base.ButtonLeft_Click(sender, e);
+        }
+
+        /// <summary>
+        /// Handles the countdown timer tick event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void CountdownTimer_Tick(object? sender, EventArgs e)
+        {
+            // Call the base timer and test local expiration.
+            base.CountdownTimer_Tick(sender, e);
+            var dateTime = DateTime.Now;
+            if ((_countdownEnd - dateTime) < TimeSpan.Zero)
+            {
+                DialogTools.RestartComputer();
+            }
+            else if (null != _countdownWarningEnd && (_countdownWarningEnd - dateTime) < TimeSpan.Zero)
+            {
+                ButtonLeft.IsEnabled = false;
+            }
         }
     }
 }

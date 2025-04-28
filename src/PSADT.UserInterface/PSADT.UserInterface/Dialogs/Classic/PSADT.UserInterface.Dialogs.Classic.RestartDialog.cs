@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows.Forms;
 using PSADT.UserInterface.DialogOptions;
 
@@ -110,7 +109,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected void buttonRestartNow_Click(object sender, EventArgs e)
         {
             // Restart the computer immediately.
-            RestartComputer();
+            DialogTools.RestartComputer();
         }
 
         /// <summary>
@@ -135,37 +134,17 @@ namespace PSADT.UserInterface.Dialogs.Classic
         {
             var dateTime = DateTime.Now;
             var remaining = countdownEnd - dateTime;
+            labelCountdown.Text = FormatTime(remaining);
             if (remaining <= TimeSpan.Zero)
             {
                 // Reboot the system and hard-exit this process.
-                RestartComputer();
+                DialogTools.RestartComputer();
             }
             else if ((minimizeEnd - dateTime) <= TimeSpan.Zero)
             {
                 // No minimize for you!
                 buttonMinimize.Enabled = false;
             }
-
-            // Update the time remaining.
-            labelCountdown.Text = FormatTime(remaining);
-        }
-
-        /// <summary>
-        /// Reboots the computer and terminates this process.
-        /// </summary>
-        private static void RestartComputer()
-        {
-            // Reboot the system and hard-exit this process.
-            using (var process = new Process())
-            {
-                process.StartInfo.FileName = "shutdown.exe";
-                process.StartInfo.Arguments = "/r /f /t 0";
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.Start();
-                process.WaitForExit();
-            }
-            Environment.Exit(0);
         }
 
         /// <summary>

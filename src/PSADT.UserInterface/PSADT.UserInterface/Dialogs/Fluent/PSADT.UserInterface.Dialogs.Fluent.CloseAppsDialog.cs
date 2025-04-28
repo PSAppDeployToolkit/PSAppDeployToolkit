@@ -262,6 +262,23 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
+        /// Handles the click event of the close button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void CountdownTimer_Tick(object? sender, EventArgs e)
+        {
+            // Call the base timer and test local expiration.
+            base.CountdownTimer_Tick(sender, e);
+            var dateTime = DateTime.Now;
+            if (_countdownEnd - dateTime < TimeSpan.Zero)
+            {
+                Result = "Continue";
+                CloseDialog();
+            }
+        }
+
+        /// <summary>
         /// Gets the icon for a given process.
         /// </summary>
         /// <param name="appFilePath"></param>
