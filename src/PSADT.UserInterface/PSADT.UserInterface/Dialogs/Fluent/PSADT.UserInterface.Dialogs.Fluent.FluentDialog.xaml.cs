@@ -104,8 +104,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             WindowStartupLocation = WindowStartupLocation.Manual;
             _dialogAllowMove = options.DialogAllowMove;
             Topmost = options.DialogTopMost;
-            _dialogExpiryTimer = new Timer(CloseDialog, null, options.DialogExpiryDuration, Timeout.InfiniteTimeSpan);
-            #warning "TODO: DialogExpiryDuration?"
             #warning "TODO: DialogPersistInterval?"
 
             // Set supplemental options also
@@ -756,11 +754,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private readonly bool _dialogAllowMove;
 
         /// <summary>
-        /// The countdown timer for the dialog to automatically close.
-        /// </summary>
-        private readonly Timer _dialogExpiryTimer;
-
-        /// <summary>
         /// An optional countdown to zero to commence a preferred action.
         /// </summary>
         #warning "TODO: Move _countdownDuration into new CountdownDialog."
@@ -806,9 +799,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-
-            // Dispose timers
-            _dialogExpiryTimer.Dispose();
 
             // Detach event handlers
             Loaded -= FluentDialog_Loaded;

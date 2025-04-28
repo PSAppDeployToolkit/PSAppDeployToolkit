@@ -42,10 +42,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("DialogTopMost value is null or invalid.", (Exception?)null);
             }
-            if (options["DialogExpiryDuration"] is not TimeSpan dialogExpiryDuration)
-            {
-                throw new ArgumentNullException("DialogExpiryDuration value is null or invalid.", (Exception?)null);
-            }
             if (options["MinimizeWindows"] is not bool minimizeWindows)
             {
                 throw new ArgumentNullException("MinimizeWindows value is null or invalid.", (Exception?)null);
@@ -62,6 +58,14 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // Test and set optional values.
+            if (options.ContainsKey("DialogExpiryDuration"))
+            {
+                if (options["DialogExpiryDuration"] is not TimeSpan dialogExpiryDuration)
+                {
+                    throw new ArgumentOutOfRangeException("DialogExpiryDuration value is not valid.", (Exception?)null);
+                }
+                DialogExpiryDuration = dialogExpiryDuration;
+            }
             if (options.ContainsKey("DialogPersistInterval"))
             {
                 if (options["DialogPersistInterval"] is not TimeSpan dialogPersistInterval)
@@ -94,7 +98,6 @@ namespace PSADT.UserInterface.DialogOptions
             AppBannerImage = appBannerImage;
             DialogAllowMove = dialogAllowMove;
             DialogTopMost = dialogTopMost;
-            DialogExpiryDuration = dialogExpiryDuration;
             MinimizeWindows = minimizeWindows;
         }
 
@@ -141,7 +144,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
-        public readonly TimeSpan DialogExpiryDuration;
+        public readonly TimeSpan? DialogExpiryDuration;
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.

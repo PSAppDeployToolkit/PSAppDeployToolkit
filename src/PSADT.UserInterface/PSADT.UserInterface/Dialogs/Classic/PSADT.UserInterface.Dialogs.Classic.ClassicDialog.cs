@@ -72,9 +72,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.ResumeLayout();
 
                 // PersistPrompt timer code.
-                if (options.DialogExpiryDuration != TimeSpan.Zero)
+                if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
                 {
-                    this.persistTimer = new Timer() { Interval = (int)options.DialogExpiryDuration.TotalMilliseconds };
+                    this.persistTimer = new Timer() { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
                     this.persistTimer.Tick += PersistTimer_Tick;
                 }
             }
