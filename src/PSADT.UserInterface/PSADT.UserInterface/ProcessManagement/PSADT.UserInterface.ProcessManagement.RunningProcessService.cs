@@ -155,14 +155,18 @@ namespace PSADT.UserInterface.ProcessManagement
                 // Loop through each process and check if it matches the definition.
                 foreach (var process in allProcesses)
                 {
-                    // Continue if the process has since terminated.
-                    if (!ProcessUtilities.IsProcessRunning(process.Id))
+                    // Try to get the command line. If we can't, skip this process.
+                    string[] commandLine;
+                    try
+                    {
+                        commandLine = GetCommandLine(process);
+                    }
+                    catch (ArgumentException)
                     {
                         continue;
                     }
 
                     // Continue if this isn't our process or it's ended since we cached it.
-                    var commandLine = GetCommandLine(process);
                     if (Path.IsPathRooted(processDefinition.Name))
                     {
                         if (!commandLine[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
