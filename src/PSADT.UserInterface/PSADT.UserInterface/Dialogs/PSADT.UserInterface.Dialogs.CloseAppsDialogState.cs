@@ -13,9 +13,18 @@ namespace PSADT.UserInterface.Dialogs
         /// </summary>
         /// <param name="runningProcessService"></param>
         /// <param name="countdownEnd"></param>
-        public CloseAppsDialogState(RunningProcessService? runningProcessService, DateTime? countdownEnd)
+        public CloseAppsDialogState(RunningProcessService? runningProcessService)
         {
             RunningProcessService = runningProcessService;
+        }
+
+        /// <summary>
+        /// Sets the countdown end time for the close processes dialog.
+        /// Should only be set under explicit circumstances.
+        /// </summary>
+        /// <param name="countdownEnd"></param>
+        public void SetCountdownEnd(DateTime countdownEnd)
+        {
             CountdownEnd = countdownEnd;
         }
 
@@ -57,6 +66,6 @@ namespace PSADT.UserInterface.Dialogs
         /// <summary>
         /// Gets/sets the InstallationWelcome's CloseProcesses countdown.
         /// </summary>
-        public readonly DateTime? CountdownEnd;
+        public DateTime? CountdownEnd { get; private set; }
     }
 }
