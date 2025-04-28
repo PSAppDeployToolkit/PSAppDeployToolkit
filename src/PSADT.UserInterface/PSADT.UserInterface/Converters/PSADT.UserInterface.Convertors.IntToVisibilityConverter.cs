@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Converters
     /// Can be reversed with the parameter 'True' to collapse when value > 0.
     /// Special cases can be handled with string parameters like 'ListView' for ListView scrollbar behavior.
     /// </summary>
-    internal sealed class IntToVisibilityConverter : IValueConverter
+    public sealed class IntToVisibilityConverter : IValueConverter
     {
         /// <summary>
         /// Converts an integer value to a Visibility enum value.
