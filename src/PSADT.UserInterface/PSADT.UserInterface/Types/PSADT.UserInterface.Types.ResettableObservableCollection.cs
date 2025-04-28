@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.Types
     /// An ObservableCollection that allows for resettings its items while only firing a single OnCollectionChanged event.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ResettableObservableCollection<T> : ObservableCollection<T>
+    public sealed class ResettableObservableCollection<T> : ObservableCollection<T>
     {
         /// <summary>
         /// Resets the underlying ObservableCollection with the provided items.
