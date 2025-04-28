@@ -1,9 +1,19 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.LibraryInterfaces;
+using PSADT.UserInterface.ProcessManagement;
+using PSADT.UserInterface.Types;
+using PSADT.UserInterface.Utilities;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -13,58 +23,75 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     internal sealed class CloseAppsDialog : FluentDialog, IDisposable
     {
         /// <summary>
+        /// The required data for displaying an app to close on the CloseAppsDialog.
+        /// </summary>
+        public sealed class AppToClose
+        {
+            /// <summary>
+            /// Constructor for the ProcessToClose class.
+            /// </summary>
+            /// <param name="processToClose"></param>
+            public AppToClose(ProcessToClose processToClose)
+            {
+                Name = Path.GetFileName(processToClose.Path);
+                Description = processToClose.Description;
+                Icon = GetAppIcon(processToClose.Path);
+            }
+
+            /// <summary>
+            /// The name of the process to close.
+            /// </summary>
+            public string Name { get; }
+
+            /// <summary>
+            /// The description of the process to close.
+            /// </summary>
+            public string Description { get; }
+
+            /// <summary>
+            /// The icon of the process to close.
+            /// </summary>
+            public BitmapSource Icon { get; }
+        }
+
+        /// <summary>
         /// Instantiates a new CloseApps dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, null, "Continue")
         {
+            // Set up the context for data binding
+            DataContext = this;
+
             // Store original and alternative texts
+            _closeAppsNoProcessesMessageText = options.Strings.Fluent.DialogMessageNoProcesses;
             _closeAppsMessageText = options.Strings.Fluent.DialogMessage;
-            _alternativeCloseAppsMessageText = options.Strings.Fluent.DialogMessageNoProcesses;
-            _buttonLeftOriginalText = options.Strings.Fluent.ButtonLeftText;
-            _buttonRightOriginalText = options.Strings.Fluent.ButtonRightText;
-            _buttonRightAlternativeText = options.Strings.Fluent.ButtonRightTextNoProcesses;
+            _buttonRightNoProcessesText = options.Strings.Fluent.ButtonRightTextNoProcesses;
+            _buttonRightText = options.Strings.Fluent.ButtonRightText;
             _deferralsRemaining = options.DeferralsRemaining;
             _deferralDeadline = options.DeferralDeadline;
 
             // Set up UI
-            FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
-            CloseAppsStackPanel.Visibility = Visibility.Visible;
+            FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
             DeferStackPanel.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
             DeferralDeadlineHeadingTextBlock.Text = !_deferralDeadline.HasValue ? options.Strings.Fluent.DeferralsRemaining : options.Strings.Fluent.DeferralDeadline;
             CountdownHeadingTextBlock.Text = options.Strings.Fluent.AutomaticStartCountdown;
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons
-            SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftOriginalText);
+            SetButtonContentWithAccelerator(ButtonLeft, options.Strings.Fluent.ButtonLeftText);
             ButtonLeft.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
-            SetButtonContentWithAccelerator(ButtonRight, _buttonRightOriginalText);
+            AutomationProperties.SetName(ButtonLeft, options.Strings.Fluent.ButtonLeftText);
+            SetButtonContentWithAccelerator(ButtonRight, _buttonRightNoProcessesText);
             ButtonRight.Visibility = Visibility.Visible;
+            AutomationProperties.SetName(ButtonRight, _buttonRightNoProcessesText);
 
-            // Set button automation properties
-            AutomationProperties.SetName(ButtonLeft, _buttonLeftOriginalText);
-            AutomationProperties.SetName(ButtonRight, _buttonRightOriginalText);
+            // Set up/process optional values.
+            if (null != options.RunningProcessService)
+            {
+                _runningProcessService = options.RunningProcessService;
+            }
             UpdateDeferralValues();
-
-            // Attach to window events specific to this dialog type
-            if (options.AppsToClose != null && options.AppsToClose.Length > 0)
-            {
-                //_processEvaluationService = new ProcessEvaluationService();
-                //_processEvaluationService.ProcessStarted += ProcessEvaluationService_ProcessStarted;
-                //_processEvaluationService.ProcessExited += ProcessEvaluationService_ProcessExited;
-
-                // Start monitoring processes
-                //UpdateAppsToCloseList();
-                //_processCancellationTokenSource = new CancellationTokenSource();
-                //_ = StartProcessEvaluationLoopAsync(_appsToClose!, _processCancellationTokenSource.Token);
-            }
-            else
-            {
-                // No apps to close. CloseAppsStackPanel.Visibility = Visibility.Collapsed;
-                FormatMessageWithHyperlinks(MessageTextBlock, _alternativeCloseAppsMessageText); // Use helper method
-                SetButtonContentWithAccelerator(ButtonRight, _buttonRightAlternativeText);
-                AutomationProperties.SetName(ButtonRight, "Install");
-            }
 
             // Focus the continue button by default
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
@@ -85,86 +112,121 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 return;
             }
 
-            // Handle deferrals remaining counter
+            // Handle deferral values
             if (_deferralsRemaining.HasValue)
             {
-                UpdateDeferralsRemainingUI();
-            }
-            // Handle deferral deadline
-            else if (_deferralDeadline.HasValue)
-            {
-                UpdateDeferralDeadlineUI();
-            }
-        }
+                // Only enable the button if there are deferrals remaining
+                ButtonLeft.IsEnabled = _deferralsRemaining > 0;
 
-        /// <summary>
-        /// Updates the UI to reflect the number of deferrals remaining.
-        /// </summary>
-        private void UpdateDeferralsRemainingUI()
-        {
-            // Only enable the button if there are deferrals remaining
-            ButtonLeft.IsEnabled = _deferralsRemaining > 0;
+                // Update text value
+                var displayText = $"{_deferralsRemaining} remain";
+                DeferralDeadlineValueTextBlock.Text = displayText;
 
-            // Update text value
-            var displayText = $"{_deferralsRemaining} remain";
-            DeferralDeadlineValueTextBlock.Text = displayText;
+                // Update accessibility properties
+                AutomationProperties.SetName(DeferralDeadlineValueTextBlock, displayText);
 
-            // Update accessibility properties
-            AutomationProperties.SetName(DeferralDeadlineValueTextBlock, displayText);
-
-            // Update text color based on remaining deferrals
-            if (_deferralsRemaining == 0)
-            {
-                DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-            }
-            else if (_deferralsRemaining <= 1)
-            {
-                DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-            }
-            else
-            {
-                DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
-            }
-        }
-
-        /// <summary>
-        /// Updates the UI to reflect the deferral deadline.
-        /// </summary>
-        private void UpdateDeferralDeadlineUI()
-        {
-            // Calculate time remaining until deadline
-            TimeSpan timeRemaining = _deferralDeadline!.Value - DateTime.Now;
-            bool isExpired = timeRemaining <= TimeSpan.Zero;
-
-            // Set button state based on deadline
-            ButtonLeft.IsEnabled = !isExpired;
-
-            // Update text content
-            string displayText;
-            Brush textBrush;
-            if (!isExpired)
-            {
-                displayText = _deferralDeadline.Value.ToString("r");
-                if (timeRemaining < TimeSpan.FromDays(1))
+                // Update text color based on remaining deferrals
+                if (_deferralsRemaining == 0)
                 {
-                    // Less than 1 day remaining - use caution color
-                    textBrush = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+                    DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                }
+                else if (_deferralsRemaining <= 1)
+                {
+                    DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
                 }
                 else
                 {
-                    textBrush = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+                    DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
                 }
+            }
+            else if (_deferralDeadline.HasValue)
+            {
+                // Set button state based on deadline
+                TimeSpan timeRemaining = _deferralDeadline!.Value - DateTime.Now;
+                ButtonLeft.IsEnabled = timeRemaining > TimeSpan.Zero;
+
+                // Update text content
+                string displayText; Brush textBrush;
+                if (ButtonLeft.IsEnabled)
+                {
+                    displayText = _deferralDeadline.Value.ToString("r");
+                    if (timeRemaining < TimeSpan.FromDays(1))
+                    {
+                        // Less than 1 day remaining - use caution color
+                        textBrush = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+                    }
+                    else
+                    {
+                        textBrush = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+                    }
+                }
+                else
+                {
+                    displayText = "Expired";
+                    textBrush = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                }
+                DeferralDeadlineValueTextBlock.Text = displayText;
+                DeferralDeadlineValueTextBlock.Foreground = textBrush;
+                AutomationProperties.SetName(DeferralDeadlineValueTextBlock, displayText);
+            }
+        }
+
+        /// <summary>
+        /// Handles the event when the list of processes to close changes.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
+        {
+            Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(p => new AppToClose(p))));
+        }
+
+        /// <summary>
+        /// Handles the event when the collection of apps to close changes.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Update the UI based on the changes in the collection.
+            AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
+            UpdateRowDefinition();
+            if (AppsToCloseCollection.Count == 0)
+            {
+                FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
+                SetButtonContentWithAccelerator(ButtonRight, _buttonRightNoProcessesText);
+                AutomationProperties.SetName(ButtonRight, _buttonRightNoProcessesText);
+                CloseAppsStackPanel.Visibility = Visibility.Collapsed;
+                CloseAppsSeparator.Visibility = Visibility.Collapsed;
             }
             else
             {
-                displayText = "Expired";
-                textBrush = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
+                SetButtonContentWithAccelerator(ButtonRight, _buttonRightText);
+                AutomationProperties.SetName(ButtonRight, _buttonRightText);
+                CloseAppsStackPanel.Visibility = Visibility.Visible;
+                CloseAppsSeparator.Visibility = Visibility.Visible;
             }
-            DeferralDeadlineValueTextBlock.Text = displayText;
-            DeferralDeadlineValueTextBlock.Foreground = textBrush;
+        }
 
-            // Update accessibility properties
-            AutomationProperties.SetName(DeferralDeadlineValueTextBlock, displayText);
+        /// <summary>
+        /// Handles the loading event of the dialog.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void FluentDialog_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Call the base method to ensure proper loading.
+            base.FluentDialog_Loaded(sender, e);
+
+            // Initialize the running process service and set up event handlers.
+            if (null != _runningProcessService)
+            {
+                _runningProcessService.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
+                AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
+                AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(p => new AppToClose(p)));
+                _runningProcessService.Start();
+            }
         }
 
         /// <summary>
@@ -200,29 +262,64 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
+        /// Gets the icon for a given process.
+        /// </summary>
+        /// <param name="appFilePath"></param>
+        /// <returns></returns>
+        private static BitmapSource GetAppIcon(string appFilePath)
+        {
+            // Try to get from cache first
+            if (!_appIconCache.TryGetValue(appFilePath, out var bitmapSource))
+            {
+                // Get the icon as a System.Drawing.Bitmap.
+                using (var drawingBitmap = DrawingUtilities.ExtractBitmapFromExecutable(appFilePath))
+                {
+                    // Create a BitmapSource from the System.Drawing.Bitmap and cache it before returning it.
+                    IntPtr hBitmap = drawingBitmap.GetHbitmap();
+                    try
+                    {
+                        bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                        bitmapSource.Freeze();
+                        _appIconCache[appFilePath] = bitmapSource;
+                    }
+                    finally
+                    {
+                        Gdi32.DeleteObject(hBitmap);
+                    }
+                }
+            }
+            return bitmapSource;
+        }
+
+        /// <summary>
+        /// The message to display when there's no apps to close.
+        /// </summary>
+        private readonly string _closeAppsNoProcessesMessageText;
+
+        /// <summary>
         /// The message to display when there's apps to close.
         /// </summary>
         private readonly string _closeAppsMessageText;
 
         /// <summary>
-        /// The message to display when there's no apps to close.
+        /// The text for the right button when there's no apps to close.
         /// </summary>
-        private readonly string _alternativeCloseAppsMessageText;
-
-        /// <summary>
-        /// The text for the left button.
-        /// </summary>
-        private readonly string _buttonLeftOriginalText;
+        private readonly string _buttonRightNoProcessesText;
 
         /// <summary>
         /// The text for the right button when there's apps to close.
         /// </summary>
-        private readonly string _buttonRightOriginalText;
+        private readonly string _buttonRightText;
 
         /// <summary>
-        /// The text for the right button when there's no apps to close.
+        /// The service object for processing running applications.
         /// </summary>
-        private readonly string _buttonRightAlternativeText;
+        private readonly RunningProcessService? _runningProcessService;
+
+        /// <summary>
+        /// A collection of running apps on the device that require closing.
+        /// </summary>
+        public ResettableObservableCollection<AppToClose> AppsToCloseCollection { get; } = [];
 
         /// <summary>
         /// The deadline for deferral, if applicable.
@@ -238,6 +335,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Whether this window has been disposed.
         /// </summary>
         private bool _disposed = false;
+
+        /// <summary>
+        /// App/process icon cache for improved performance
+        /// </summary>
+        private static readonly Dictionary<string, BitmapSource> _appIconCache = [];
 
         /// <summary>
         /// Dispose managed and unmanaged resources

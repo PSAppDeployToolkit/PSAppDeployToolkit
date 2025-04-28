@@ -340,7 +340,7 @@
                                         Margin="8"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        AutomationProperties.Name="{Binding ProcessName, StringFormat=Icon for \{0\}}"
+                                        AutomationProperties.Name="{Binding Name, StringFormat=Icon for \{0\}}"
                                         RenderOptions.BitmapScalingMode="HighQuality"
                                         Source="{Binding Icon, Mode=OneWay}"
                                         />
@@ -352,7 +352,7 @@
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Description"
                                         FontTypography="BodyStrong"
-                                        Text="{Binding ProcessDescription, Mode=OneWay}"
+                                        Text="{Binding Description, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis"
                                         TextWrapping="Wrap"
                                         />
@@ -365,7 +365,7 @@
                                         AutomationProperties.Name="Process Name"
                                         FontSize="12"
                                         Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
-                                        Text="{Binding ProcessName, Mode=OneWay}"
+                                        Text="{Binding Name, Mode=OneWay}"
                                         TextAlignment="Left"
                                         TextTrimming="CharacterEllipsis"
                                         TextWrapping="Wrap"

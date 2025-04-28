@@ -5,7 +5,7 @@ using System.Management.Automation.Language;
 using System.Threading;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
-using PSADT.UserInterface.Services;
+using PSADT.UserInterface.ProcessManagement;
 
 namespace PSADT.UserInterface
 {
@@ -47,29 +47,29 @@ namespace PSADT.UserInterface
             DeploymentType deploymentType = DeploymentType.Install;
 
 
-            AppProcessInfo[] appsToClose =
+            ProcessDefinition[] appsToClose =
             {
-                new("excel", "Microsoft Office Excel", null, null, null),
-                // new("notepad", "Microsoft Notepad", null, null, null),
-                // new("cmd", "Command Prompt", null, null, null),
-                new("chrome", "Google Chrome", null, null, null),
-                new("firefox", null, null, null, null),
+                new("excel", "Microsoft Office Excel"),
+                // new("notepad", "Microsoft Notepad"),
+                // new("cmd", "Command Prompt"),
+                new("chrome", "Google Chrome"),
+                new("firefox"),
                 // new("msedge", "Microsoft Edge", null, null, null),
                 // new("explorer", null, null, null, null),
-                new("spotify", null, null, null, null),
-                new("code", "Visual Studio Code", null, null, null),
-                new("taskmgr", "Task Manager", null, null, null),
-                new("regedit", "Registry Editor", null, null, null),
-                new("powerpnt", "Microsoft Office PowerPoint", null, null, null),
-                new("winword", "Microsoft Office Word", null, null, null),
-                new("outlook", "Microsoft Office Outlook", null, null, null),
-                new("onenote", "Microsoft Office OneNote", null, null, null),
-                new("skype", "Skype", null, null, null),
-                new("slack", "Slack", null, null, null),
-                new("zoom", "Zoom", null, null, null),
-                new("webex", "WebEx", null, null, null),
-                new("acrobat", "Adobe Acrobat Reader", null, null, null),
-                new("photoshop", "Adobe Photoshop", null, null, null),
+                new("spotify"),
+                new("code", "Visual Studio Code"),
+                new("taskmgr", "Task Manager"),
+                new("regedit", "Registry Editor"),
+                new("powerpnt", "Microsoft Office PowerPoint"),
+                new("winword", "Microsoft Office Word"),
+                new("outlook", "Microsoft Office Outlook"),
+                new("onenote", "Microsoft Office OneNote"),
+                new("skype", "Skype"),
+                new("slack", "Slack"),
+                new("zoom", "Zoom"),
+                new("webex", "WebEx"),
+                new("acrobat", "Adobe Acrobat Reader"),
+                new("photoshop", "Adobe Photoshop"),
             };
 
             TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(90);
@@ -108,7 +108,7 @@ namespace PSADT.UserInterface
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
                 { "AppBannerImage", appBannerImage },
-                { "AppsToClose", appsToClose },
+                { "RunningProcessService", new RunningProcessService(appsToClose, TimeSpan.FromSeconds(1)) },
                 { "CountdownDuration", countdownDuration },
                 { "DeferralsRemaining", deferralsRemaining },
                 { "DeferralDeadline", deferralDeadline },

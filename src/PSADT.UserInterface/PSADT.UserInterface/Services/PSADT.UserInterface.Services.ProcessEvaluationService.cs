@@ -8,8 +8,6 @@ using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using PSADT.UserInterface.Extensions;
-using PSADT.UserInterface.Services;
 
 namespace PSADT.UserInterface.Services
 {
@@ -230,23 +228,6 @@ namespace PSADT.UserInterface.Services
 
                         // Extract icon
                         ImageSource? icon = null;
-                        await Task.Run(() =>
-                        {
-                            try
-                            {
-                                using var extractedIcon = process.GetIcon(true);
-                                if (extractedIcon != null)
-                                {
-                                    using var bitmap = extractedIcon.ToBitmap();
-                                    icon = bitmap.ConvertToImageSource();
-                                    icon?.Freeze(); // Make thread-safe
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.WriteLine($"Error extracting icon: {ex.Message}");
-                            }
-                        }, cancellationToken).ConfigureAwait(false);
 
                         // Create and return the process info
                         return new AppProcessInfo(

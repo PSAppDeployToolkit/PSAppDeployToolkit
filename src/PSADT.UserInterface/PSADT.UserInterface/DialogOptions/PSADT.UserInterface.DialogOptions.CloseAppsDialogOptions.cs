@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using PSADT.UserInterface.Dialogs;
-using PSADT.UserInterface.Services;
+using PSADT.UserInterface.ProcessManagement;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -23,13 +23,13 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // Test and set optional values.
-            if (options.ContainsKey("AppsToClose"))
+            if (options.ContainsKey("RunningProcessService"))
             {
-                if (options["AppsToClose"] is not Services.AppProcessInfo[] appsToClose)
+                if (options["RunningProcessService"] is not RunningProcessService runningProcessService)
                 {
-                    throw new ArgumentOutOfRangeException("AppsToClose value is not valid.", (Exception?)null);
+                    throw new ArgumentOutOfRangeException("RunningProcessService value is not valid.", (Exception?)null);
                 }
-                AppsToClose = appsToClose;
+                RunningProcessService = runningProcessService;
             }
             if (options.ContainsKey("DeferralsRemaining"))
             {
@@ -76,7 +76,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The list of applications that should be closed.
         /// </summary>
-        public readonly AppProcessInfo[] AppsToClose = [];
+        public readonly RunningProcessService? RunningProcessService;
 
         /// <summary>
         /// The number of deferrals remaining for the user.

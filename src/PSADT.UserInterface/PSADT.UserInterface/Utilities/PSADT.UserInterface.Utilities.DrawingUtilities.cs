@@ -1,7 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
+using PSADT.UserInterface.LibraryInterfaces;
+using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.Utilities
 {
@@ -92,6 +95,42 @@ namespace PSADT.UserInterface.Utilities
             using (var img = (Bitmap)Bitmap.FromFile(imagePath))
             {
                 return ConvertBitmapToIcon(img);
+            }
+        }
+
+        /// <summary>
+        /// Get the icon from a given executable path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        internal static Icon ExtractIconFromExecutable(string path)
+        {
+            // Check if the process is null or if the main module's file name is not a string.
+            if (!Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(nameof(path));
+            }
+
+            // Get the icon handle using SHGetFileInfo, clone it, then return it.
+            var shinfo = Shell32.SHGetFileInfo(path, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
+            Icon icon = (Icon)Icon.FromHandle(shinfo.hIcon).Clone();
+            User32.DestroyIcon(shinfo.hIcon);
+            return icon;
+        }
+
+        /// <summary>
+        /// Get the bitmap from a given executable path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        internal static Bitmap ExtractBitmapFromExecutable(string path)
+        {
+            // Convert the icon to a bitmap and return it.
+            using (var icon = ExtractIconFromExecutable(path))
+            {
+                return icon.ToBitmap();
             }
         }
     }

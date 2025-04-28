@@ -48,9 +48,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="options">Mandatory options needed to construct the window.</param>
         private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownNoMinimizeDuration = null, string? countdownDialogResult = null)
         {
-            // Set up the context for data binding
-            DataContext = this;
-
             // Process the given accent color from the options
             if (!string.IsNullOrWhiteSpace(options.DialogAccentColor))
             {
@@ -252,7 +249,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void FluentDialog_Loaded(object sender, RoutedEventArgs e)
+        protected virtual void FluentDialog_Loaded(object sender, RoutedEventArgs e)
         {
             // Update dialog layout
             UpdateButtonLayout();
