@@ -43,7 +43,7 @@ namespace PSADT.UserInterface.LibraryInterfaces
     /// See: https://learn.microsoft.com/en-us/windows/win32/controls/imagelistdrawflags
     /// </summary>
     [Flags]
-    public enum IMAGELISTDRAWFLAGS : uint
+    internal enum IMAGELISTDRAWFLAGS : uint
     {
         /// <summary>
         /// 0x00000000: Draws the image using the background color for the image list.

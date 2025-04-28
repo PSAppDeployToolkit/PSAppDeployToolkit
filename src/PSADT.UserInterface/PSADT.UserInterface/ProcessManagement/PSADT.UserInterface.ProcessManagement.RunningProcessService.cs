@@ -214,7 +214,7 @@ namespace PSADT.UserInterface.ProcessManagement
         /// <summary>
         /// Event that is raised when the list of processes to show on a CloseAppsDialog changes.
         /// </summary>
-        public event EventHandler<ProcessesToCloseChangedEventArgs>? ProcessesToCloseChanged;
+        internal event EventHandler<ProcessesToCloseChangedEventArgs>? ProcessesToCloseChanged;
 
         /// <summary>
         /// Event that is raised when the list of running processes changes.

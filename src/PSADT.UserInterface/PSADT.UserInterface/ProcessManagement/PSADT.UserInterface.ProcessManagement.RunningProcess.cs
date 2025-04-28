@@ -14,7 +14,7 @@ namespace PSADT.UserInterface.ProcessManagement
         /// <param name="description"></param>
         /// <param name="fileName"></param>
         /// <param name="arguments"></param>
-        public RunningProcess(Process process, string description, string fileName, string? arguments)
+        internal RunningProcess(Process process, string description, string fileName, string? arguments)
         {
             Process = process;
             Description = description;

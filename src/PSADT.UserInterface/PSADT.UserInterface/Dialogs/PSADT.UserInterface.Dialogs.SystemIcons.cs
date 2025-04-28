@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Dialogs
     /// <summary>
     /// Static class to manage system icons.
     /// </summary>
-    public static class SystemIcons
+    internal static class SystemIcons
     {
         /// <summary>
         /// Retrieves a system stock icon.
@@ -80,6 +80,6 @@ namespace PSADT.UserInterface.Dialogs
         /// <summary>
         /// A lookup table for system icons.
         /// </summary>
-        public static readonly ReadOnlyDictionary<DialogSystemIcon, Bitmap> SystemIconLookupTable = BuildSystemIconLookupTable();
+        internal static readonly ReadOnlyDictionary<DialogSystemIcon, Bitmap> SystemIconLookupTable = BuildSystemIconLookupTable();
     }
 }
