@@ -63,104 +63,27 @@ namespace PSADT.UserInterface.Processes
             var token = _cancellationTokenSource.Token;
             while (!token.IsCancellationRequested)
             {
-                // Set up some caches for performance.
-                var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
-                Dictionary<Process, string[]> processCommandLines = [];
-
-                // Inline lambda to get the command line from the given process.
-                string[] GetCommandLine(Process process)
-                {
-                    // Get the command line from the cache if we have it.
-                    if (processCommandLines.TryGetValue(process, out var commandLine))
-                    {
-                        return commandLine;
-                    }
-
-                    // Get the image path for this process. We use this instead of what we get
-                    // from GetProcessCommandLine() because POSIX applications render incorrectly.
-                    var imagePath = ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
-
-                    // Get the command line for the process. If this fails due to lack
-                    // of privileges, we simply just return the image path and that's it.
-                    try
-                    {
-                        commandLine = Shell32.CommandLineToArgv(ProcessUtilities.GetProcessCommandLine(process.Id));
-                        commandLine[0] = imagePath;
-                    }
-                    catch
-                    {
-                        commandLine = [imagePath];
-                    }
-                    processCommandLines[process] = commandLine;
-                    return commandLine;
-                }
-
-                // Pre-cache running processes and start looping through to find matches.
-                var processNames = _processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToLower());
-                var allProcesses = Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToLower()));
-                List<RunningProcess> runningProcesses = [];
-                foreach (var processDefinition in _processDefinitions)
-                {
-                    // Loop through each process and check if it matches the definition.
-                    foreach (var process in allProcesses)
-                    {
-                        // Continue if the process has since terminated.
-                        if (process.HasExited)
-                        {
-                            continue;
-                        }
-
-                        // Continue if this isn't our process or it's ended since we cached it.
-                        var commandLine = GetCommandLine(process);
-                        if (Path.IsPathRooted(processDefinition.Name))
-                        {
-                            if (!commandLine[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
-                            {
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            if (!process.ProcessName.Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
-                            {
-                                continue;
-                            }
-                        }
-
-                        // Calculate a description for the running application.
-                        var procInfo = FileVersionInfo.GetVersionInfo(commandLine[0]); string procDescription;
-                        if (!string.IsNullOrWhiteSpace(processDefinition.Description))
-                        {
-                            procDescription = processDefinition.Description!;
-                        }
-                        else if (!string.IsNullOrWhiteSpace(procInfo.FileDescription))
-                        {
-                            procDescription = procInfo.FileDescription;
-                        }
-                        else
-                        {
-                            procDescription = process.ProcessName;
-                        }
-
-                        // Store the process information.
-                        var runningProcess = new RunningProcess(process, procDescription, commandLine[0], commandLine.Length > 1 ? string.Join(" ", commandLine.Skip(1)) : null);
-                        if ((null == processDefinition.Filter) || processDefinition.Filter(runningProcess))
-                        {
-                            runningProcesses.Add(runningProcess);
-                        }
-                    }
-                }
-
                 // Update the list of running processes.
-                _runningProcesses = runningProcesses.OrderBy(runningProc => runningProc.Description).ToList().AsReadOnly();
-                _processesToClose = _runningProcesses.GroupBy(runningProcess => runningProcess.Description).Select(runningProcess => runningProcess.First()).ToList().AsReadOnly();
-                var processDescs = _processesToClose.Select(runningProcess => runningProcess.Description).ToList().AsReadOnly();
+                await _mutex.WaitAsync(token).ConfigureAwait(false);
+                try
+                {
+                    UpdateRunningProcesses();
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                    break;
+                }
+                finally
+                {
+                    _mutex.Release();
+                }
 
                 // Raise the event if the list of processes to close has changed.
+                var processDescs = _processesToClose.Select(runningProcess => runningProcess.Description).ToList().AsReadOnly();
                 if (!_lastProcessDescriptions.SequenceEqual(processDescs))
                 {
                     _lastProcessDescriptions = processDescs;
-                    ProcessListChanged?.Invoke(this, new ProcessesToCloseChangedEventArgs(_processesToClose));
+                    ProcessesToCloseChanged?.Invoke(this, new ProcessesToCloseChangedEventArgs(_processesToClose));
                 }
 
                 // Wait for the specified interval before polling again.
@@ -168,7 +91,7 @@ namespace PSADT.UserInterface.Processes
                 {
                     await Task.Delay(_pollInterval, token).ConfigureAwait(false);
                 }
-                catch (TaskCanceledException)
+                catch (TaskCanceledException) when (token.IsCancellationRequested)
                 {
                     break;
                 }
@@ -176,9 +99,107 @@ namespace PSADT.UserInterface.Processes
         }
 
         /// <summary>
+        /// Updates the list of running processes based on the specified definitions.
+        /// </summary>
+        private void UpdateRunningProcesses()
+        {
+            // Set up some caches for performance.
+            var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+            Dictionary<Process, string[]> processCommandLines = [];
+
+            // Inline lambda to get the command line from the given process.
+            string[] GetCommandLine(Process process)
+            {
+                // Get the command line from the cache if we have it.
+                if (processCommandLines.TryGetValue(process, out var commandLine))
+                {
+                    return commandLine;
+                }
+
+                // Get the image path for this process. We use this instead of what we get
+                // from GetProcessCommandLine() because POSIX applications render incorrectly.
+                var imagePath = ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
+
+                // Get the command line for the process. If this fails due to lack
+                // of privileges, we simply just return the image path and that's it.
+                try
+                {
+                    commandLine = Shell32.CommandLineToArgv(ProcessUtilities.GetProcessCommandLine(process.Id));
+                    commandLine[0] = imagePath;
+                }
+                catch
+                {
+                    commandLine = [imagePath];
+                }
+                processCommandLines[process] = commandLine;
+                return commandLine;
+            }
+
+            // Pre-cache running processes and start looping through to find matches.
+            var processNames = _processDefinitions.Select(p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToLower());
+            var allProcesses = Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToLower()));
+            List<RunningProcess> runningProcesses = [];
+            foreach (var processDefinition in _processDefinitions)
+            {
+                // Loop through each process and check if it matches the definition.
+                foreach (var process in allProcesses)
+                {
+                    // Continue if the process has since terminated.
+                    if (process.HasExited)
+                    {
+                        continue;
+                    }
+
+                    // Continue if this isn't our process or it's ended since we cached it.
+                    var commandLine = GetCommandLine(process);
+                    if (Path.IsPathRooted(processDefinition.Name))
+                    {
+                        if (!commandLine[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (!process.ProcessName.Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                    }
+
+                    // Calculate a description for the running application.
+                    var procInfo = FileVersionInfo.GetVersionInfo(commandLine[0]); string procDescription;
+                    if (!string.IsNullOrWhiteSpace(processDefinition.Description))
+                    {
+                        procDescription = processDefinition.Description!;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(procInfo.FileDescription))
+                    {
+                        procDescription = procInfo.FileDescription;
+                    }
+                    else
+                    {
+                        procDescription = process.ProcessName;
+                    }
+
+                    // Store the process information.
+                    var runningProcess = new RunningProcess(process, procDescription, commandLine[0], commandLine.Length > 1 ? string.Join(" ", commandLine.Skip(1)) : null);
+                    if ((null == processDefinition.Filter) || processDefinition.Filter(runningProcess))
+                    {
+                        runningProcesses.Add(runningProcess);
+                    }
+                }
+            }
+
+            // Update the list of running processes.
+            _runningProcesses = runningProcesses.OrderBy(runningProc => runningProc.Description).ToList().AsReadOnly();
+            _processesToClose = _runningProcesses.GroupBy(runningProcess => runningProcess.Description).Select(runningProcess => runningProcess.First()).ToList().AsReadOnly();
+        }
+
+        /// <summary>
         /// Event that is raised when the list of processes to show on a CloseAppsDialog changes.
         /// </summary>
-        public event EventHandler<ProcessesToCloseChangedEventArgs>? ProcessListChanged;
+        public event EventHandler<ProcessesToCloseChangedEventArgs>? ProcessesToCloseChanged;
 
         /// <summary>
         /// Event that is raised when the list of running processes changes.
@@ -191,7 +212,16 @@ namespace PSADT.UserInterface.Processes
                 {
                     throw new ObjectDisposedException(nameof(RunningProcessService));
                 }
-                return _runningProcesses;
+                _mutex.Wait();
+                try
+                {
+                    UpdateRunningProcesses();
+                    return _runningProcesses;
+                }
+                finally
+                {
+                    _mutex.Release();
+                }
             }
         }
 
@@ -206,7 +236,16 @@ namespace PSADT.UserInterface.Processes
                 {
                     throw new ObjectDisposedException(nameof(RunningProcessService));
                 }
-                return _processesToClose;
+                _mutex.Wait();
+                try
+                {
+                    UpdateRunningProcesses();
+                    return _processesToClose;
+                }
+                finally
+                {
+                    _mutex.Release();
+                }
             }
         }
 
@@ -222,7 +261,9 @@ namespace PSADT.UserInterface.Processes
             }
             if (disposing)
             {
-                Stop(); _cancellationTokenSource.Dispose();
+                Stop();
+                _mutex.Dispose();
+                _cancellationTokenSource.Dispose();
             }
             _disposed = true;
         }
@@ -238,17 +279,17 @@ namespace PSADT.UserInterface.Processes
         /// <summary>
         /// Gets the list of running processes.
         /// </summary>
-        private volatile IReadOnlyList<RunningProcess> _runningProcesses = [];
+        private IReadOnlyList<RunningProcess> _runningProcesses = [];
 
         /// <summary>
         /// Gets the list of processes to display on a CloseAppsDialog.
         /// </summary>
-        private volatile IReadOnlyList<RunningProcess> _processesToClose = [];
+        private IReadOnlyList<RunningProcess> _processesToClose = [];
 
         /// <summary>
         /// Gets the list of process descriptions.
         /// </summary>
-        private volatile IReadOnlyList<string> _lastProcessDescriptions = [];
+        private IReadOnlyList<string> _lastProcessDescriptions = [];
 
         /// <summary>
         /// Disposal flag for the <see cref="RunningProcessService"/> class.
@@ -264,6 +305,11 @@ namespace PSADT.UserInterface.Processes
         /// The interval at which to poll for running processes.
         /// </summary>
         private readonly TimeSpan _pollInterval;
+
+        /// <summary>
+        /// The mutex used to synchronize access to the running processes list.
+        /// </summary>
+        private readonly SemaphoreSlim _mutex = new(1, 1);
 
         /// <summary>
         /// The cancellation token source for the polling task.
