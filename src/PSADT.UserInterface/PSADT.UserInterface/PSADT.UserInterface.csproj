@@ -117,11 +117,4 @@
     </Compile>
   </ItemGroup>
 
-  <ItemGroup>
-	<None Update="Resources\appIcon.png">
-	  <Pack>True</Pack>
-	  <PackagePath>\</PackagePath>
-	</None>
-  </ItemGroup>
-
 </Project>
