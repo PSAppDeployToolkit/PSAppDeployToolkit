@@ -31,10 +31,14 @@ namespace PSADT.UserInterface.Processes
         /// <exception cref="InvalidOperationException"></exception>
         public void Start()
         {
+            // We can't restart the polling task if it's already running.
             if (_pollingTask != null)
             {
                 throw new InvalidOperationException("The polling task is already running.");
             }
+
+            // Renew the cancellation token as once they're cancelled, they're not usable.
+            _cancellationTokenSource = new CancellationTokenSource();
             _pollingTask = Task.Run(GetRunningProcesses, _cancellationTokenSource.Token);
         }
 
@@ -44,14 +48,21 @@ namespace PSADT.UserInterface.Processes
         /// <exception cref="InvalidOperationException"></exception>
         public void Stop()
         {
-            if (_pollingTask == null)
+            // We can't stop the polling task if it's not running.
+            if (null == _pollingTask)
             {
                 throw new InvalidOperationException("The polling task is not running.");
             }
-            _cancellationTokenSource.Cancel();
+
+            // Cancel the task and wait for it to complete.
+            _cancellationTokenSource!.Cancel();
             _pollingTask.Wait();
             _pollingTask.Dispose();
             _pollingTask = null;
+
+            // Dispose of the cancellation token as once they're cancelled, they're not usable.
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = null;
         }
 
         /// <summary>
@@ -60,7 +71,7 @@ namespace PSADT.UserInterface.Processes
         /// <returns></returns>
         private async Task GetRunningProcesses()
         {
-            var token = _cancellationTokenSource.Token;
+            var token = _cancellationTokenSource!.Token;
             while (!token.IsCancellationRequested)
             {
                 // Update the list of running processes.
@@ -261,9 +272,7 @@ namespace PSADT.UserInterface.Processes
             }
             if (disposing)
             {
-                Stop();
-                _mutex.Dispose();
-                _cancellationTokenSource.Dispose();
+                Stop(); _mutex.Dispose();
             }
             _disposed = true;
         }
@@ -302,6 +311,11 @@ namespace PSADT.UserInterface.Processes
         private Task? _pollingTask;
 
         /// <summary>
+        /// The cancellation token source for the polling task.
+        /// </summary>
+        private CancellationTokenSource? _cancellationTokenSource;
+
+        /// <summary>
         /// The interval at which to poll for running processes.
         /// </summary>
         private readonly TimeSpan _pollInterval;
@@ -310,11 +324,6 @@ namespace PSADT.UserInterface.Processes
         /// The mutex used to synchronize access to the running processes list.
         /// </summary>
         private readonly SemaphoreSlim _mutex = new(1, 1);
-
-        /// <summary>
-        /// The cancellation token source for the polling task.
-        /// </summary>
-        private readonly CancellationTokenSource _cancellationTokenSource = new();
 
         /// <summary>
         /// The caller's specified process definitions.
