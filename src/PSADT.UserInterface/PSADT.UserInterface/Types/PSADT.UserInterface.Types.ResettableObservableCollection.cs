@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace PSADT.UserInterface.Types
 {
@@ -16,6 +17,10 @@ namespace PSADT.UserInterface.Types
         /// <param name="items"></param>
         public void ResetItems(IEnumerable<T> items)
         {
+            if (items.Count() == 0 && Count == 0)
+            {
+                return;
+            }
             _suppressNotification = true;
             ClearItems();
             foreach (var item in items)
