@@ -82,11 +82,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// The result of the dialog.
         /// </summary>
-        public string? Result
-        {
-            get => _result;
-            protected set => _result = value;
-        }
+        public string? Result { get; protected set; }
 
         /// <summary>
         /// Closes the dialog.
@@ -253,11 +249,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Private backing field for the persist timer.
         /// </summary>
         private Timer? persistTimer = null;
-
-        /// <summary>
-        /// Private backing field for the dialog result (let's not overwrite the base class's).
-        /// </summary>
-        private string? _result;
 
         /// <summary>
         /// Flag to indicate if the dialog can be closed.
