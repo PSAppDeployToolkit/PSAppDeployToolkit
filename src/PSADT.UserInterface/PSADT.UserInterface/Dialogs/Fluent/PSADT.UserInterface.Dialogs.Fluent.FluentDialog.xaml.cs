@@ -144,8 +144,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Closes the dialog window and cancels associated operations. Can be called by timers or button clicks.
         /// </summary>
-        /// <param name="state">State object, typically from a timer callback (not used).</param>
-        internal void CloseDialog(object? state)
+        internal void CloseDialog()
         {
             // If we're already processing, just return.
             if (_disposed)
@@ -192,7 +191,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            CloseDialog(null);
+            CloseDialog();
         }
 
         /// <summary>
@@ -206,7 +205,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            CloseDialog(null);
+            CloseDialog();
         }
 
         /// <summary>
@@ -220,7 +219,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            CloseDialog(null);
+            CloseDialog();
         }
 
         /// <summary>

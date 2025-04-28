@@ -90,7 +90,7 @@ namespace PSADT.UserInterface
             {
                 using (progressDialog)
                 {
-                    progressDialog!.CloseDialog(null);
+                    progressDialog!.CloseDialog();
                     progressDialog = null;
                 }
             });
