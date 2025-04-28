@@ -28,6 +28,11 @@ function Get-ADTSession
 
         This example retrieves the most recent ADT session.
 
+    .EXAMPLE
+        (Get-ADTSession).GetExitCode()
+
+        This example retrieves the PSADT Exitcode after a PSADT session is closed.
+
     .NOTES
         An active ADT session is required to use this function.
 
