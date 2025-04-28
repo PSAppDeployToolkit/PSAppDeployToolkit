@@ -192,8 +192,8 @@ namespace PSADT.UserInterface.Processes
             }
 
             // Update the list of running processes.
-            _runningProcesses = runningProcesses.OrderBy(runningProc => runningProc.Description).ToList().AsReadOnly();
-            _processesToClose = _runningProcesses.GroupBy(runningProcess => runningProcess.Description).Select(runningProcess => runningProcess.First()).ToList().AsReadOnly();
+            _runningProcesses = runningProcesses.OrderBy(runningProcess => runningProcess.Description).ToList().AsReadOnly();
+            _processesToClose = _runningProcesses.GroupBy(p => p.Description).Select(p => new ProcessToClose(p.First())).ToList().AsReadOnly();
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace PSADT.UserInterface.Processes
         /// <summary>
         /// Gets the list of processes to display on a CloseAppsDialog.
         /// </summary>
-        public IReadOnlyList<RunningProcess> ProcessesToClose
+        public IReadOnlyList<ProcessToClose> ProcessesToClose
         {
             get
             {
@@ -284,7 +284,7 @@ namespace PSADT.UserInterface.Processes
         /// <summary>
         /// Gets the list of processes to display on a CloseAppsDialog.
         /// </summary>
-        private IReadOnlyList<RunningProcess> _processesToClose = [];
+        private IReadOnlyList<ProcessToClose> _processesToClose = [];
 
         /// <summary>
         /// Gets the list of process descriptions.
