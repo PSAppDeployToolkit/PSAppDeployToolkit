@@ -16,6 +16,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Base class for classic dialog forms.
     /// </summary>
+    #warning "TODO: Add public contract for dialogs."
     public partial class ClassicDialog : Form
     {
         /// <summary>

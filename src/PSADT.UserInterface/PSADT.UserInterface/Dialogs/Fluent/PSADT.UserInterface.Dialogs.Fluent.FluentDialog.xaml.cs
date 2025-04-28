@@ -29,6 +29,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
+    #warning "TODO: Add public contract for dialogs."
     internal abstract partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
     {
         /// <summary>
@@ -765,12 +766,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// An optional countdown to zero to commence a preferred action.
         /// </summary>
-        private readonly TimeSpan? _countdownDuration;
+        #warning "TODO: Move _countdownDuration into new CountdownDialog."
+        protected readonly TimeSpan? _countdownDuration;
 
         /// <summary>
         /// An optional countdown to zero for when the dialog can be no longer minimised.
         /// </summary>
-        private readonly TimeSpan? _countdownNoMinimizeDuration;
+        #warning "TODO: Move _countdownNoMinimizeDuration into new CountdownDialog."
+        protected readonly TimeSpan? _countdownNoMinimizeDuration;
 
         /// <summary>
         /// Dialog icon cache for improved performance
