@@ -29,9 +29,12 @@ function Get-ADTSession
         This example retrieves the most recent ADT session.
 
     .EXAMPLE
-        (Get-ADTSession).GetExitCode()
+        PS C:\>$adtSession = Get-ADTSession
+        PS C:\>...
+        PS C:\>Close-ADTSession
+        PS C:\>$adtSession.GetExitCode()
 
-        This example retrieves the PSADT Exitcode after a PSADT session is closed.
+        This example retrieves the given deployment session's exit code after the session has closed.
 
     .NOTES
         An active ADT session is required to use this function.

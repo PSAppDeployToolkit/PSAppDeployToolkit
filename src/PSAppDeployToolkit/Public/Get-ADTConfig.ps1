@@ -29,9 +29,9 @@ function Get-ADTConfig
         This example retrieves the configuration data for the ADT module and stores it in the $config variable.
 
     .NOTES
-        An active ADT session is NOT required to use this function 
-        But you must run Initialize-ADTModule function before using Get-ADTConfig
-        
+        The module must be initialized via `Initialize-ADTModule` prior to calling this function.
+
+        An active ADT session is NOT required to use this function.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
