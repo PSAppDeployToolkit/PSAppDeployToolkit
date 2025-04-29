@@ -33,7 +33,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             /// <param name="processToClose"></param>
             public AppToClose(ProcessToClose processToClose)
             {
-                Name = Path.GetFileName(processToClose.Path);
+                Name = Path.GetFileName(processToClose.Path).ToLower();
                 Description = processToClose.Description;
                 Icon = GetAppIcon(processToClose.Path);
             }
