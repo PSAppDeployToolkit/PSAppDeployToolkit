@@ -259,6 +259,7 @@ function Start-ADTMsiProcess
 
     process
     {
+        $ExecuteProcessSplat = $null
         try
         {
             try
@@ -608,11 +609,29 @@ function Start-ADTMsiProcess
                 {
                     $ExecuteProcessSplat.Add('ExitOnProcessFailure', $ExitOnProcessFailure)
                 }
+                if ($PSBoundParameters.ContainsKey('ErrorAction'))
+                {
+                    $ExecuteProcessSplat.Add('ErrorAction', $PSBoundParameters.ErrorAction)
+                }
+            }
+            catch
+            {
+                $ExecuteProcessSplat = $null
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
 
-                # Call the Start-ADTProcess function.
+        # If we've got no parameters, we error'd out above.
+        if ($null -ne $ExecuteProcessSplat)
+        {
+            try
+            {
+                # Commence the MSI operation, then refresh Explorer as Windows does not consistently update environment variables created by MSIs.
                 $result = Start-ADTProcess @ExecuteProcessSplat
-
-                # Refresh environment variables for Windows Explorer process as Windows does not consistently update environment variables created by MSIs.
                 Update-ADTDesktop
 
                 # Return the results if passing through.
@@ -623,12 +642,8 @@ function Start-ADTMsiProcess
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                $PSCmdlet.ThrowTerminatingError($_)
             }
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
