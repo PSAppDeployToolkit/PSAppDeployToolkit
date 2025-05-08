@@ -41,7 +41,7 @@ namespace PSADT.UserInterface.Dialogs
         private static ReadOnlyDictionary<DialogSystemIcon, Bitmap> BuildSystemIconLookupTable()
         {
             // Define temporary list of system icons to look up.
-            SHSTOCKICONID[] lookupList = 
+            SHSTOCKICONID[] lookupList =
             {
                 SHSTOCKICONID.SIID_APPLICATION,
                 SHSTOCKICONID.SIID_ERROR,

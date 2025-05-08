@@ -154,7 +154,7 @@
             DeferralsRemaining = 'Remaining Deferrals:'
 
             # Text displayed when there is a specific deferral deadline.
-            DeferralDeadline = 'Deadline:'                
+            DeferralDeadline = 'Deadline:'
 
             # Text displayed after the deferral options.
             ExpiryWarning = 'Once the deferral has expired, you will no longer have the option to defer.'

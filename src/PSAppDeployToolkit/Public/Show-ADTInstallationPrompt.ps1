@@ -132,7 +132,7 @@ function Show-ADTInstallationPrompt
         # Add in parameters we need as mandatory when there's no active ADTSession.
         $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Title', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the prompt.' } 
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the prompt.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                     ($defaultValue = [System.Management.Automation.PSDefaultValueAttribute]::new())
                     $defaultValue.Help = "(Get-ADTSession).InstallTitle"
@@ -140,7 +140,7 @@ function Show-ADTInstallationPrompt
             ))
         $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Subtitle', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Subtitle of the prompt.' } 
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Subtitle of the prompt.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                     ($defaultValue = [System.Management.Automation.PSDefaultValueAttribute]::new())
                     $defaultValue.Help = "(Get-ADTStringTable).Prompt.Subtitle.((Get-ADTSession).DeploymentType.ToString())"
