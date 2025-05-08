@@ -15,7 +15,7 @@ namespace PSADT.FileSystem
         /// <param name="filePath"></param>
         /// <param name="ntPath"></param>
         /// <param name="handleType"></param>
-        public FileHandleInfo(NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleInfo, string filePath, string ntPath, string handleType)
+        public FileHandleInfo(in NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleInfo, string filePath, string ntPath, string handleType)
         {
             ProcessName = Process.GetProcessById((int)handleInfo.UniqueProcessId).ProcessName;
             FilePath = filePath;
