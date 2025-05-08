@@ -50,6 +50,19 @@ namespace PSADT.SafeHandles
         }
 
         /// <summary>
+        /// Converts the handle to a structure of type <typeparamref name="T"/>. The structure must be a value type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="structure"></param>
+        /// <param name="fDeleteOld"></param>
+        /// <param name="offset"></param>
+        internal SafeMemoryHandle FromStructure<T>(T structure, bool fDeleteOld, int offset = 0) where T : struct
+        {
+            Marshal.StructureToPtr(structure, handle + offset, fDeleteOld);
+            return this;
+        }
+
+        /// <summary>
         /// Reads a byte from the memory block at the specified offset.
         /// </summary>
         /// <param name="offset"></param>

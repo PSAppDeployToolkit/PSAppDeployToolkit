@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
+using PSADT.SafeHandles;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
@@ -22,16 +23,11 @@ namespace PSADT.ProcessManagement
             using (var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId))
             {
                 // Get the required length we need for the buffer, then retrieve the actual command line string.
-                NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, null, 0, out var requiredLength);
-                IntPtr buffer = Marshal.AllocHGlobal((int)requiredLength);
-                try
+                NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, SafeMemoryHandle.Null, out var requiredLength);
+                using (var buffer = SafeHGlobalHandle.Alloc((int)requiredLength))
                 {
-                    NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer.ToPointer(), requiredLength, out _);
-                    return Marshal.PtrToStructure<UNICODE_STRING>(buffer).Buffer.ToString().Replace("\0", string.Empty).Trim();
-                }
-                finally
-                {
-                    Marshal.FreeHGlobal(buffer);
+                    NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
+                    return buffer.ToStructure<UNICODE_STRING>().Buffer.ToString().Replace("\0", string.Empty).Trim();
                 }
             }
         }
@@ -43,57 +39,35 @@ namespace PSADT.ProcessManagement
         /// <returns></returns>
         internal static string GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
-            // Set up initial buffer that we need to query the process information and required length.
+            // Set up initial buffer that we need to query the process information.
             var processIdInfo = new NtDll.SYSTEM_PROCESS_ID_INFORMATION { ProcessId = (IntPtr)processId };
             var processIdInfoSize = Marshal.SizeOf<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
-            var processIdInfoPtr = Marshal.AllocHGlobal(processIdInfoSize);
-            Marshal.StructureToPtr(processIdInfo, processIdInfoPtr, false);
-            ushort stringLength;
-            try
+            using (var processIdInfoPtr = SafeHGlobalHandle.Alloc(processIdInfoSize).FromStructure(processIdInfo, false))
             {
-                NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, (uint)processIdInfoSize, out _);
-                stringLength = Marshal.PtrToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>(processIdInfoPtr).ImageName.MaximumLength;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(processIdInfoPtr);
-            }
-
-            // Redo the call now that we have the correct information.
-            processIdInfoPtr = Marshal.AllocHGlobal(processIdInfoSize);
-            var imageNamePtr = Marshal.AllocHGlobal(stringLength);
-            processIdInfo = new NtDll.SYSTEM_PROCESS_ID_INFORMATION
-            {
-                ProcessId = (IntPtr)processId,
-                ImageName = new UNICODE_STRING
+                // Perform initial query so we can reallocate with the required length.
+                NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
+                ushort stringLength = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.MaximumLength;
+                using (var imageNamePtr = SafeHGlobalHandle.Alloc(stringLength))
                 {
-                    MaximumLength = stringLength,
-                }
-            };
-            unsafe { processIdInfo.ImageName.Buffer = (PWSTR)imageNamePtr.ToPointer(); }
-            Marshal.StructureToPtr(processIdInfo, processIdInfoPtr, false);
-            try
-            {
-                // Fill our buffer and extract out the image name.
-                NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, (uint)processIdInfoSize, out _);
-                var imagePath = Marshal.PtrToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>(processIdInfoPtr).ImageName.Buffer.ToString().Replace("\0", string.Empty).Trim();
+                    // Reallocate the buffer to the required size and perform the query again.
+                    processIdInfo.ImageName = new UNICODE_STRING { MaximumLength = stringLength, };
+                    unsafe { processIdInfo.ImageName.Buffer = (PWSTR)imageNamePtr.DangerousGetHandle().ToPointer(); }
+                    processIdInfoPtr.FromStructure(processIdInfo, false);
+                    NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
+                    var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().Replace("\0", string.Empty).Trim();
 
-                // If we have a lookup table, replace the NT path with the drive letter.
-                if (ntPathLookupTable != null)
-                {
-                    var ntDeviceName = $"\\{string.Join("\\", imagePath.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                    if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
+                    // If we have a lookup table, replace the NT path with the drive letter before returning.
+                    if (ntPathLookupTable != null)
                     {
-                        throw new InvalidOperationException($"Unable to find drive letter for NT path: {ntDeviceName}.");
+                        var ntDeviceName = $"\\{string.Join("\\", imagePath.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                        if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
+                        {
+                            throw new InvalidOperationException($"Unable to find drive letter for NT path: {ntDeviceName}.");
+                        }
+                        return imagePath.Replace(ntDeviceName, driveLetter);
                     }
-                    return imagePath.Replace(ntDeviceName, driveLetter);
+                    return imagePath;
                 }
-                return imagePath;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(processIdInfoPtr);
-                Marshal.FreeHGlobal(imageNamePtr);
             }
         }
 

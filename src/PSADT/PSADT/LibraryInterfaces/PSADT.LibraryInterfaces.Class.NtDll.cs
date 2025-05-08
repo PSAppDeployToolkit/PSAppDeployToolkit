@@ -272,7 +272,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="SystemInformation"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
-        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, SafeHGlobalHandle SystemInformation, out int ReturnLength)
+        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, SafeMemoryHandle SystemInformation, out int ReturnLength)
         {
             var res = NtQuerySystemInformationNative(SystemInformationClass, SystemInformation.DangerousGetHandle(), SystemInformation.Length, out ReturnLength);
             if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
@@ -393,21 +393,27 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ProcessInformationLength"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
-        internal static unsafe NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, void* ProcessInformation, uint ProcessInformationLength, out uint ReturnLength)
+        internal static unsafe NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, SafeMemoryHandle ProcessInformation, out uint ReturnLength)
         {
             if (ProcessHandle is not object || ProcessHandle.IsClosed || ProcessHandle.IsInvalid)
             {
                 throw new ArgumentNullException(nameof(ProcessHandle));
             }
+            if (ProcessInformation is not object || ProcessInformation.IsClosed)
+            {
+                throw new ArgumentNullException(nameof(ProcessInformation));
+            }
 
             bool ProcessHandleAddRef = false;
+            bool ProcessInformationAddRef = false;
             try
             {
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
+                ProcessInformation.DangerousAddRef(ref ProcessInformationAddRef);
                 fixed (uint* ReturnLengthLocal = &ReturnLength)
                 {
-                    var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformation, ProcessInformationLength, ReturnLengthLocal);
-                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || !ProcessInformationLength.Equals(0)))
+                    var res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformation.DangerousGetHandle().ToPointer(), (uint)ProcessInformation.Length, ReturnLengthLocal);
+                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || !ProcessInformation.Length.Equals(0)))
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
                     }
@@ -420,36 +426,11 @@ namespace PSADT.LibraryInterfaces
                 {
                     ProcessHandle.DangerousRelease();
                 }
+                if (ProcessInformationAddRef)
+                {
+                    ProcessInformation.DangerousRelease();
+                }
             }
-        }
-
-        /// <summary>
-        /// Queries system information.
-        /// </summary>
-        /// <param name="SystemInformationClass"></param>
-        /// <param name="SystemInformation"></param>
-        /// <param name="SystemInformationLength"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        [DllImport("ntdll.dll", EntryPoint = "NtQuerySystemInformation")]
-        internal static extern NTSTATUS NtQuerySystemInformationNative(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, uint SystemInformationLength, out uint ReturnLength);
-
-        /// <summary>
-        /// Queries system information.
-        /// </summary>
-        /// <param name="SystemInformationClass"></param>
-        /// <param name="SystemInformation"></param>
-        /// <param name="SystemInformationLength"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, uint SystemInformationLength, out uint ReturnLength)
-        {
-            var res = NtQuerySystemInformationNative(SystemInformationClass, SystemInformation, SystemInformationLength, out ReturnLength);
-            if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
-            }
-            return res;
         }
 
         /// <summary>
