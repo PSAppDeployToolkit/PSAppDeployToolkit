@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents the base class for shortcuts, containing common properties.
     /// </summary>
-    public abstract class ShortcutBase
+    public abstract record ShortcutBase
     {
         /// <summary>
         /// The path to the shortcut file.

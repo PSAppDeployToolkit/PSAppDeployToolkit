@@ -6,7 +6,7 @@ namespace PSADT.TerminalServices
     /// <summary>
     /// A class to hold all information for a given WTS session.
     /// </summary>
-    public sealed class SessionInfo
+    public sealed record SessionInfo
     {
         /// <summary>
         /// Default constructor.

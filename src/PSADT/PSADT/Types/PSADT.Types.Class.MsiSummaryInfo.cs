@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents MSI (Microsoft Installer) summary information.
     /// </summary>
-    public sealed class MsiSummaryInfo
+    public sealed record MsiSummaryInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MsiSummaryInfo"/> struct.

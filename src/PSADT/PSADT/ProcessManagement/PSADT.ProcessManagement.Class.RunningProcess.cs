@@ -5,7 +5,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Represents a running process.
     /// </summary>
-    public sealed class RunningProcess
+    public sealed record RunningProcess
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RunningProcess"/> class with specified properties.

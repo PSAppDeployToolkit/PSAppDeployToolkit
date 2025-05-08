@@ -6,7 +6,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Represents basic information about a process.
     /// </summary>
-    public sealed class ProcessDefinition
+    public sealed record ProcessDefinition
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessDefinition"/> struct.

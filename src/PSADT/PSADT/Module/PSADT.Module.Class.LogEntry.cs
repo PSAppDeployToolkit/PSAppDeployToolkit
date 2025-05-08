@@ -5,7 +5,7 @@ namespace PSADT.Module
     /// <summary>
     /// Represents all data used as the basis for logging a PSAppDeployToolkit PowerShell log entry via `[ADTSession]::WriteLogEntry()`.
     /// </summary>
-    public sealed class LogEntry
+    public sealed record LogEntry
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LogEntry"/> struct.

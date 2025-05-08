@@ -7,7 +7,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about reboot and pending operations on the system.
     /// </summary>
-    public sealed class RebootInfo
+    public sealed record RebootInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RebootInfo"/> struct with the specified values.

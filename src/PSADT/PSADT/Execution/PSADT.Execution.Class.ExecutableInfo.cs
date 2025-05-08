@@ -6,7 +6,7 @@ namespace PSADT.Execution
     /// <summary>
     /// Provides information about a PE file.
     /// </summary>
-    public sealed class ExecutableInfo
+    public sealed record ExecutableInfo
     {
         /// <summary>
         /// Creates a new instance of the ExecutableInfo class.

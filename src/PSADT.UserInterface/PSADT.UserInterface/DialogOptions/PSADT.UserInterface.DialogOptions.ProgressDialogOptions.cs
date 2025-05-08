@@ -6,7 +6,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for the ProgressDialog.
     /// </summary>
-    public sealed class ProgressDialogOptions : BaseOptions
+    public sealed record ProgressDialogOptions : BaseOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressDialogOptions"/> class.

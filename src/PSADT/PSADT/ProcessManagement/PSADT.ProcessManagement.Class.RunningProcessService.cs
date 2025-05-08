@@ -13,7 +13,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
-    public sealed class RunningProcessService : IDisposable
+    public sealed record RunningProcessService : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RunningProcessService"/> class.

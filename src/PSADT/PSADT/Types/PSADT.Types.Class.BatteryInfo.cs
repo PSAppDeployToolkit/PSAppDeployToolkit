@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about the system's battery.
     /// </summary>
-    public sealed class BatteryInfo
+    public sealed record BatteryInfo
     {
         /// <summary>
         /// Gets the current AC power line status.

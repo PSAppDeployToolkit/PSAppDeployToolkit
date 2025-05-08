@@ -8,7 +8,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
-    public abstract class BaseOptions
+    public abstract record BaseOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseOptions"/> class with the specified options.

@@ -7,7 +7,7 @@ namespace PSADT.Execution
     /// <summary>
     /// Represents the result of a process execution, including exit code and standard output/error.
     /// </summary>
-    public sealed class ProcessResult
+    public sealed record ProcessResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.

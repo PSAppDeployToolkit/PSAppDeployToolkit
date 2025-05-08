@@ -7,7 +7,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about a user profile.
     /// </summary>
-    public sealed class UserProfile
+    public sealed record UserProfile
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserProfile"/> struct.

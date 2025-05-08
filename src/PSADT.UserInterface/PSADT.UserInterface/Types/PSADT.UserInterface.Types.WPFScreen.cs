@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Types
     /// <summary>
     /// Represents a display device or multiple display devices on a single system.
     /// </summary>
-    internal sealed class WPFScreen
+    internal sealed record WPFScreen
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WPFScreen"/> class.
@@ -172,26 +172,6 @@ namespace PSADT.UserInterface.Types
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Determines whether the specified object is equal to this Screen.
-        /// </summary>
-        public override bool Equals(object? obj)
-        {
-            if (obj is WPFScreen other)
-            {
-                return hMonitor == other.hMonitor;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Returns a hash code for this Screen.
-        /// </summary>
-        public override int GetHashCode()
-        {
-            return hMonitor.GetHashCode();
         }
 
         /// <summary>

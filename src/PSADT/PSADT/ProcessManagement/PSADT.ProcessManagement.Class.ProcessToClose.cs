@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a process that needs to be closed.
     /// </summary>
-    public sealed class ProcessToClose
+    public sealed record ProcessToClose
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessToClose"/> class.

@@ -6,7 +6,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for the InputDialog.
     /// </summary>
-    public sealed class InputDialogOptions : CustomDialogOptions
+    public sealed record InputDialogOptions : CustomDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InputDialogOptions"/> class.

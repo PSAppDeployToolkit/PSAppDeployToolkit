@@ -1,13 +1,13 @@
-﻿using PSADT.UserInterface.Dialogs;
-using System;
+﻿using System;
 using System.Collections;
+using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the RestartDialog.
     /// </summary>
-    public sealed class RestartDialogOptions : BaseOptions
+    public sealed record RestartDialogOptions : BaseOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RestartDialogOptions"/> class.

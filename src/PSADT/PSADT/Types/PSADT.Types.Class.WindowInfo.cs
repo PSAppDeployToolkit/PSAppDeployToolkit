@@ -5,7 +5,7 @@ namespace PSADT.Types
     /// <summary>
     /// Represents information about a window in the system.
     /// </summary>
-    public sealed class WindowInfo
+    public sealed record WindowInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowInfo"/> struct.

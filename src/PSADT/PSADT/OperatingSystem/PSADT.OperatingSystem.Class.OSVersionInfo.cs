@@ -11,7 +11,7 @@ namespace PSADT.OperatingSystem
     /// <summary>
     /// Utility singleton class for getting OS version info.
     /// </summary>
-    public sealed class OSVersionInfo
+    public sealed record OSVersionInfo
     {
         /// <summary>
         /// This operating system's version information.

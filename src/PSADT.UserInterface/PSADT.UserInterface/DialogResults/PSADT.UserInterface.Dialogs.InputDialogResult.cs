@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents the result of an input dialog.
     /// </summary>
-    public sealed class InputDialogResult
+    public sealed record InputDialogResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InputDialogResult"/> class.
