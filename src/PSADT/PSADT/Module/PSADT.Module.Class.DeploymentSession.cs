@@ -13,8 +13,8 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
-using PSADT.Types;
 using PSADT.Utilities;
 
 namespace PSADT.Module
@@ -312,7 +312,7 @@ namespace PSADT.Module
                         if (((bool)parameters?.TryGetValue("DisableDefaultMsiProcessList", out paramValue)! && (SwitchParameter)paramValue!))
                         {
                             var exeProps = (IReadOnlyDictionary<string, object>)ModuleDatabase.InvokeScript(ScriptBlock.Create("$gmtpParams = @{ Path = $args[0] }; if ($args[1]) { $gmtpParams.Add('TransformPath', $args[1]) }; & $Script:CommandTable.'Get-ADTMsiTableProperty' @gmtpParams -Table File"), DefaultMsiFile!, DefaultMstFile!).First().BaseObject;
-                            List<ProcessObject> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessObject(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
+                            List<ProcessDefinition> msiExecList = exeProps.Where(static p => Path.GetExtension(p.Key).Equals(".exe")).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty))).ToList();
 
                             // Generate list of MSI executables for testing later on.
                             if (msiExecList.Count > 0)
@@ -1256,7 +1256,7 @@ namespace PSADT.Module
         /// Gets the default MSI executables list.
         /// </summary>
         /// <returns>An array of default MSI executables.</returns>
-        public IReadOnlyList<ProcessObject> GetDefaultMsiExecutablesList()
+        public IReadOnlyList<ProcessDefinition> GetDefaultMsiExecutablesList()
         {
             return DefaultMsiExecutablesList;
         }
@@ -1361,7 +1361,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the list of executables found within a Zero-Config MSI file.
         /// </summary>
-        private readonly ReadOnlyCollection<ProcessObject> DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessObject>([]);
+        private readonly IReadOnlyList<ProcessDefinition> DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessDefinition>([]);
 
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.

@@ -49,12 +49,6 @@ $ModuleName = [System.Text.RegularExpressions.Regex]::Match((Get-Item $BuildFile
 # Define our C# solutions to compile.
 $buildItems = @(
     @{
-        SourcePath = 'src\PSADT'
-        SolutionPath = 'src\PSADT\PSADT.sln'
-        OutputPath = 'src\PSAppDeployToolkit\lib'
-        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.dll'
-    },
-    @{
         SourcePath = 'src\PSADT.Invoke'
         SolutionPath = 'src\PSADT.Invoke\PSADT.Invoke.sln'
         OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'

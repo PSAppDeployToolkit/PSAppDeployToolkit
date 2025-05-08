@@ -44,7 +44,7 @@ function Private:Get-ADTRunningApplications
     (
         [Parameter(Mandatory = $true)]
         [AllowNull()][AllowEmptyCollection()]
-        [PSADT.Types.ProcessObject[]]$ProcessObjects
+        [PSADT.ProcessManagement.ProcessDefinition[]]$ProcessObjects
     )
 
     # Return early if we've received no input.

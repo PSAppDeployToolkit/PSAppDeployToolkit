@@ -190,7 +190,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'SilentCloseProcesses', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
         [Parameter(Mandatory = $true, ParameterSetName = 'SilentCloseProcessesCheckDiskSpace', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.ProcessObject[]]$CloseProcesses,
+        [PSADT.ProcessManagement.ProcessDefinition[]]$CloseProcesses,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferCheckDiskSpace', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]

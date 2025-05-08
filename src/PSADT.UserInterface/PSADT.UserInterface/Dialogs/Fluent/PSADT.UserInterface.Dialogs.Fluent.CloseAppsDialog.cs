@@ -9,9 +9,9 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using PSADT.LibraryInterfaces;
+using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.UserInterface.LibraryInterfaces;
-using PSADT.UserInterface.ProcessManagement;
 using PSADT.UserInterface.Types;
 using PSADT.UserInterface.Utilities;
 

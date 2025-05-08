@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Media;
-using PSADT.UserInterface.LibraryInterfaces;
+using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;

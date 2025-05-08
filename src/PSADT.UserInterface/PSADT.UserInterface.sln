@@ -5,6 +5,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface", "PSADT.UserInterface\PSADT.UserInterface.csproj", "{5C650CD5-0AAC-410B-992B-68C690F885CA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{78D29136-B01A-4D59-9BB1-72FC8FECC054} = {78D29136-B01A-4D59-9BB1-72FC8FECC054}
+		{9C49D0E5-7139-12D7-AAF4-05D3217DF2C8} = {9C49D0E5-7139-12D7-AAF4-05D3217DF2C8}
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface.TestHarness", "PSADT.Exe\PSADT.UserInterface.TestHarness.csproj", "{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}"
@@ -16,6 +17,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wpf.Ui.Abstractions", "..\..\lib\wpfui\src\Wpf.Ui.Abstractions\Wpf.Ui.Abstractions.csproj", "{051CFC97-39F6-477E-B4A4-D1BEA7156196}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wpf.Ui.Tray", "..\..\lib\wpfui\src\Wpf.Ui.Tray\Wpf.Ui.Tray.csproj", "{78D29136-B01A-4D59-9BB1-72FC8FECC054}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PSADT", "..\PSADT\PSADT\PSADT.csproj", "{9C49D0E5-7139-12D7-AAF4-05D3217DF2C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +46,10 @@ Global
 		{78D29136-B01A-4D59-9BB1-72FC8FECC054}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78D29136-B01A-4D59-9BB1-72FC8FECC054}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78D29136-B01A-4D59-9BB1-72FC8FECC054}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C49D0E5-7139-12D7-AAF4-05D3217DF2C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C49D0E5-7139-12D7-AAF4-05D3217DF2C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C49D0E5-7139-12D7-AAF4-05D3217DF2C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C49D0E5-7139-12D7-AAF4-05D3217DF2C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

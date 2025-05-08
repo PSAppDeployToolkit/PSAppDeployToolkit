@@ -21,7 +21,7 @@ function Private:Show-ADTWelcomePromptClassic
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.ProcessObject[]]$ProcessObjects,
+        [PSADT.ProcessManagement.ProcessDefinition[]]$ProcessObjects,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
-using PSADT.UserInterface.LibraryInterfaces;
+using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.UI.Shell;

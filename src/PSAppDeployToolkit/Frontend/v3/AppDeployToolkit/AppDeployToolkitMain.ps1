@@ -1362,11 +1362,11 @@ function Show-InstallationWelcome
                 $name, $description = $_.Split('=')
                 if ($description)
                 {
-                    return [PSADT.Types.ProcessObject]::new($name, $description)
+                    return [PSADT.ProcessManagement.ProcessDefinition]::new($name, $description)
                 }
                 else
                 {
-                    return [PSADT.Types.ProcessObject]::new($name)
+                    return [PSADT.ProcessManagement.ProcessDefinition]::new($name)
                 }
             }
         }

@@ -3,7 +3,7 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
-using PSADT.UserInterface.LibraryInterfaces;
+using PSADT.LibraryInterfaces;
 using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.Utilities
