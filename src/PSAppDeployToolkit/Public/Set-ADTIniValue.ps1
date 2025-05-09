@@ -20,10 +20,10 @@ function Set-ADTIniValue
         Section within the INI file.
 
     .PARAMETER Key
-        Key within the section of the INI file.
+        Key within the section of the INI file. To remove a section, set this parameter to $null.
 
     .PARAMETER Value
-        Value for the key within the section of the INI file. Empty and $null values are supported.
+        Value for the key within the section of the INI file. To remove a value, set this parameter to $null.
 
     .PARAMETER Force
         Specifies whether the INI file should be created if it does not already exist.
@@ -67,12 +67,12 @@ function Set-ADTIniValue
         [System.String]$Section,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [AllowNull()][AllowEmptyString()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $true)]
-        [AllowNull()]
-        [System.Object]$Value,
+        [AllowNull()][AllowEmptyString()]
+        [System.String]$Value,
 
         [System.Management.Automation.SwitchParameter]$Force
     )
@@ -88,6 +88,7 @@ function Set-ADTIniValue
         {
             try
             {
+                # Create the INI file if it does not exist.
                 if (![System.IO.File]::Exists($FilePath))
                 {
                     if (!$Force)
@@ -105,8 +106,22 @@ function Set-ADTIniValue
                     $null = New-Item -Path $FilePath -ItemType File -Force
                 }
 
-                Write-ADTLogEntry -Message "Writing INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]."
-                [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $Value, $FilePath)
+                # Null keys/values removes the section/key, respectively.
+                if ([System.String]::IsNullOrWhiteSpace($Key))
+                {
+                    Write-ADTLogEntry -Message "Removing INI Section: [$Section]."
+                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $null, $null, $FilePath)
+                }
+                elseif ([System.String]::IsNullOrWhiteSpace($Value))
+                {
+                    Write-ADTLogEntry -Message "Removing INI Key Value: [Section = $Section] [Key = $Key]."
+                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $null, $FilePath)
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "Writing INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]."
+                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $Value, $FilePath)
+                }
             }
             catch
             {

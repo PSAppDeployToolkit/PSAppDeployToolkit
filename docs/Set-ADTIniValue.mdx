@@ -12,7 +12,8 @@ Opens an INI file and sets the value of the specified section and key.
 ## SYNTAX
 
 ```powershell
-Set-ADTIniValue [-FilePath] <String> [-Section] <String> [-Key] <String> [-Value] <Object> [<CommonParameters>]
+Set-ADTIniValue [-FilePath] <String> [-Section] <String> [-Key] <String> [-Value] <String> [-Force]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -67,6 +68,7 @@ Accept wildcard characters: False
 ### -Key
 
 Key within the section of the INI file.
+To remove a section, set this parameter to $null.
 
 ```yaml
 Type: String
@@ -83,16 +85,32 @@ Accept wildcard characters: False
 ### -Value
 
 Value for the key within the section of the INI file.
-To remove a value, set this variable to $null.
+To remove a value, set this parameter to $null.
 
 ```yaml
-Type: Object
+Type: String
 Parameter Sets: (All)
 Aliases:
 
 Required: True
 Position: 4
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+
+Specifies whether the INI file should be created if it does not already exist.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

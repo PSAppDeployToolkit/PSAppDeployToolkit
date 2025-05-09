@@ -350,7 +350,8 @@ Accept wildcard characters: False
 
 ### -PassThru
 
-Returns ExitCode, STDOut, and STDErr output from the process.
+Returns ExitCode, StdOut, and StdErr output from the process.
+Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
 
 ```yaml
 Type: SwitchParameter

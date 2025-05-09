@@ -28,7 +28,7 @@ namespace PSADT.Utilities
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="filepath"></param>
-        public static void WriteSectionKeyValue(string section, string key, string value, string filepath)
+        public static void WriteSectionKeyValue(string section, string? key, string? value, string filepath)
         {
             Kernel32.WritePrivateProfileString(section, key, value, filepath);
         }

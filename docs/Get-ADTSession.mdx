@@ -30,6 +30,18 @@ Get-ADTSession
 
 This example retrieves the most recent ADT session.
 
+### EXAMPLE 2
+
+```powershell
+$adtSession = Get-ADTSession
+...
+Close-ADTSession
+$adtSession.GetExitCode()
+```
+
+
+This example retrieves the given deployment session's exit code after the session has closed.
+
 ## PARAMETERS
 
 ### CommonParameters

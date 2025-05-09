@@ -119,14 +119,20 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpFileName"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static BOOL WritePrivateProfileString(string lpAppName, string lpKeyName, string lpString, string lpFileName)
+        internal static unsafe BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
         {
-            var res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName);
-            if (!res)
+            fixed (char* lpFileNameLocal = lpFileName)
+            fixed (char* lpStringLocal = lpString)
+            fixed (char* lpKeyNameLocal = lpKeyName)
+            fixed (char* lpAppNameLocal = lpAppName)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                var res = PInvoke.WritePrivateProfileString(lpAppNameLocal, !string.IsNullOrWhiteSpace(lpKeyName) ? lpKeyNameLocal : null, !string.IsNullOrWhiteSpace(lpString) ? lpStringLocal : null, lpFileNameLocal);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
             }
-            return res;
         }
 
         /// <summary>
