@@ -4,6 +4,7 @@ using System.Drawing;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
+using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.Dialogs
@@ -24,7 +25,7 @@ namespace PSADT.UserInterface.Dialogs
             // Get a handle to specified stock icon.
             Shell32.SHGetImageList(iImageList, out var imageList);
             Shell32.SHGetStockIconInfo(siid, SHGSI_FLAGS.SHGSI_SYSICONINDEX, out var shii);
-            imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGELISTDRAWFLAGS.ILD_TRANSPARENT | IMAGELISTDRAWFLAGS.ILD_PRESERVEALPHA), out var iconHandle);
+            imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out var iconHandle);
             using (iconHandle)
             {
                 using (var icon = Icon.FromHandle(iconHandle.DangerousGetHandle()))
