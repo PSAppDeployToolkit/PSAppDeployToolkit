@@ -23,7 +23,7 @@ function Set-ADTIniValue
         Key within the section of the INI file.
 
     .PARAMETER Value
-        Value for the key within the section of the INI file. To remove a value, set this variable to $null.
+        Value for the key within the section of the INI file. Empty and $null values are supported.
 
     .PARAMETER Force
         Specifies whether the INI file should be created if it does not already exist.
