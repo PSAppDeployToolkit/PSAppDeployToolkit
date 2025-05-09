@@ -113,19 +113,6 @@ namespace PSADT.Execution
         }
 
         /// <summary>
-        /// Initializes a new instance of the ManagedProcessOptions class.
-        /// </summary>
-        /// <param name="filePath"></param>
-        public ProcessLaunchInfo(string filePath) : this(filePath, null!) { }
-
-        /// <summary>
-        /// Initializes a new instance of the ManagedProcessOptions class.
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="argumentList"></param>
-        public ProcessLaunchInfo(string filePath, string[] argumentList) : this(filePath, argumentList, null) { }
-
-        /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
         private static readonly ReadOnlyDictionary<ProcessWindowStyle, ushort> WindowStyleMap = new ReadOnlyDictionary<ProcessWindowStyle, ushort>(new Dictionary<ProcessWindowStyle, ushort>
