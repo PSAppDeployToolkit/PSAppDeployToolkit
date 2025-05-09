@@ -90,11 +90,14 @@ namespace PSADT.ProcessManagement
 
                 // Raise the event if the list of processes to close has changed.
                 // On init, _lastProcessDescriptions is null so we always fire once.
-                var processDescs = _processesToClose.Select(runningProcess => runningProcess.Description).ToList().AsReadOnly();
-                if (null == _lastProcessDescriptions || !_lastProcessDescriptions.SequenceEqual(processDescs))
+                if (null != ProcessesToCloseChanged)
                 {
-                    _lastProcessDescriptions = processDescs;
-                    ProcessesToCloseChanged?.Invoke(this, new ProcessesToCloseChangedEventArgs(_processesToClose));
+                    var processDescs = _processesToClose.Select(runningProcess => runningProcess.Description).ToList().AsReadOnly();
+                    if (null == _lastProcessDescriptions || !_lastProcessDescriptions.SequenceEqual(processDescs))
+                    {
+                        _lastProcessDescriptions = processDescs;
+                        ProcessesToCloseChanged.Invoke(this, new ProcessesToCloseChangedEventArgs(_processesToClose));
+                    }
                 }
 
                 // Wait for the specified interval before polling again.
