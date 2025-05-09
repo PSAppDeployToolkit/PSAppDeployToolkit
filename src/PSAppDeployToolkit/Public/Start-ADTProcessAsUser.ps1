@@ -78,7 +78,7 @@ function Start-ADTProcessAsUser
         Specifies the encoding type to use when reading stdout/stderr. Some apps like WinGet encode using UTF8, which will corrupt if incorrectly set.
 
     .PARAMETER PassThru
-        If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process. If NoWait is specified, returns an object with Id, Handle and ProcessName.
+        If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process. If NoWait is specified, returns an object with Id, Handle and ProcessName. Note that a failed execution will only return an object if either ErrorAction is set to SilentlyContinue / Ignored, or if IgnoreExitCodes / SuccessExitCodes are used.
 
     .EXAMPLE
         Start-ADTProcessAsUser -FilePath 'setup.exe' -ArgumentList '/S' -IgnoreExitCodes 1,2

@@ -67,7 +67,7 @@ function Start-ADTMsiProcess
         Immediately continue after executing the process.
 
     .PARAMETER PassThru
-        Returns ExitCode, STDOut, and STDErr output from the process.
+        Returns ExitCode, STDOut, and STDErr output from the process.  Note that a failed execution will only return an object if either ErrorAction is set to SilentlyContinue / Ignored, or if IgnoreExitCodes / SuccessExitCodes are used.
 
     .PARAMETER SuccessExitCodes
         List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
