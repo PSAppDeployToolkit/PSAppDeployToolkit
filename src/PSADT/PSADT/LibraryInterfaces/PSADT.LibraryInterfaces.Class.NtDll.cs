@@ -434,14 +434,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Lookup table for object system class struct sizes.
-        /// </summary>
-        internal static ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int>(new Dictionary<SYSTEM_INFORMATION_CLASS, int>
-        {
-            { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
-        });
-
-        /// <summary>
         /// Lookup table for object information class struct sizes.
         /// </summary>
         internal static ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int>(new Dictionary<OBJECT_INFORMATION_CLASS, int>
