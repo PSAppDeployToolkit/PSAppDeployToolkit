@@ -27,6 +27,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Only run in the actual app, not in Visual Studio's designer.
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
+                #warning "TODO: Move to DialogManager"
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
             }
