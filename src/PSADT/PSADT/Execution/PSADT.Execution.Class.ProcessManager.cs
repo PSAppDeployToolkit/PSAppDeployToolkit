@@ -38,7 +38,7 @@ namespace PSADT.Execution
         public static async Task<ProcessResult?> LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up the job object and I/O completion port for the process.
-            using var iocp = Kernel32.CreateIoCompletionPort(new SafeFileHandle(HANDLE.INVALID_HANDLE_VALUE, false), new SafeFileHandle(IntPtr.Zero, false), UIntPtr.Zero, 1);
+            using var iocp = Kernel32.CreateIoCompletionPort(SafeBaseHandle.InvalidHandle, SafeBaseHandle.NullHandle, UIntPtr.Zero, 1);
             using var job = Kernel32.CreateJobObject(null, default);
             Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
 

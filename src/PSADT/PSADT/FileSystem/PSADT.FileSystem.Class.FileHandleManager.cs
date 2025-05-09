@@ -216,12 +216,11 @@ namespace PSADT.FileSystem
 
             // Query the system for all object type info.
             using var typesBufferPtr = SafeHGlobalHandle.Alloc(objectTypesSize);
-            using var nullHandle = new SafeFileHandle(IntPtr.Zero, false);
-            var status = NtDll.NtQueryObject(nullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
+            var status = NtDll.NtQueryObject(SafeBaseHandle.NullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
             {
                 typesBufferPtr.ReAlloc(typesBufferReqLength);
-                status = NtDll.NtQueryObject(nullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
+                status = NtDll.NtQueryObject(SafeBaseHandle.NullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out typesBufferReqLength);
             }
 
             // Read the number of types from the buffer and return a built-out dictionary.
