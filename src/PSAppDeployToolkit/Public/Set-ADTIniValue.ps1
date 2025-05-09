@@ -90,12 +90,7 @@ function Set-ADTIniValue
             {
                 if (![System.IO.File]::Exists($FilePath))
                 {
-                    if ($Force)
-                    {
-                        Write-ADTLogEntry -Message "Creating INI file: $FilePath."
-                        $null = New-Item -Path $FilePath -ItemType File -Force
-                    }
-                    else
+                    if (!$Force)
                     {
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
@@ -106,6 +101,8 @@ function Set-ADTIniValue
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
+                    Write-ADTLogEntry -Message "Creating INI file: $FilePath."
+                    $null = New-Item -Path $FilePath -ItemType File -Force
                 }
 
                 Write-ADTLogEntry -Message "Writing INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]."
