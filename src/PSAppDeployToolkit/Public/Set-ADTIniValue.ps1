@@ -25,6 +25,9 @@ function Set-ADTIniValue
     .PARAMETER Value
         Value for the key within the section of the INI file. To remove a value, set this variable to $null.
 
+    .PARAMETER Force
+        Specifies whether the INI file should be created if it does not already exist.
+
     .INPUTS
         None
 
@@ -56,13 +59,7 @@ function Set-ADTIniValue
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({
-                if (![System.IO.File]::Exists($_))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
-                }
-                return ![System.String]::IsNullOrWhiteSpace($_)
-            })]
+        [ValidateNotNullOrEmpty()]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
@@ -75,7 +72,9 @@ function Set-ADTIniValue
 
         [Parameter(Mandatory = $true)]
         [AllowNull()]
-        [System.Object]$Value
+        [System.Object]$Value,
+
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     begin
@@ -85,11 +84,31 @@ function Set-ADTIniValue
 
     process
     {
-        Write-ADTLogEntry -Message "Writing INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]."
         try
         {
             try
             {
+                if (![System.IO.File]::Exists($FilePath))
+                {
+                    if ($Force)
+                    {
+                        Write-ADTLogEntry -Message "Creating INI file: $FilePath."
+                        $null = New-Item -Path $FilePath -ItemType File -Force
+                    }
+                    else
+                    {
+                        $naerParams = @{
+                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
+                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                            ErrorId = 'PathFileNotFound'
+                            TargetObject = $FilePath
+                            RecommendedAction = "Please confirm the path of the specified file and try again, or add -Force to create a new file."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
+                }
+
+                Write-ADTLogEntry -Message "Writing INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]."
                 [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $Value, $FilePath)
             }
             catch
