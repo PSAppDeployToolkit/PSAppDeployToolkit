@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 using PSADT.LibraryInterfaces;
 using Windows.Win32.System.Memory;
 
@@ -9,18 +8,8 @@ namespace PSADT.SafeHandles
     /// <summary>
     /// Represents a wrapper for a virtual memory allocation handle that ensures the handle is properly released.
     /// </summary>
-    internal sealed class SafeVirtualAllocHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal sealed class SafeVirtualAllocHandle(IntPtr handle, bool ownsHandle) : SafeBaseHandle(handle, ownsHandle)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SafeVirtualAllocHandle"/> class with the specified handle and ownership.
-        /// </summary>
-        /// <param name="handle"></param>
-        /// <param name="ownsHandle"></param>
-        internal SafeVirtualAllocHandle(IntPtr handle, bool ownsHandle) : base(ownsHandle)
-        {
-            SetHandle(handle);
-        }
-
         /// <summary>
         /// Writes the provided data to the allocated memory.
         /// </summary>

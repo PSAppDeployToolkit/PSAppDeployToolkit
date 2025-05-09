@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 using Windows.Win32.Foundation;
 
 namespace PSADT.SafeHandles
@@ -8,20 +7,8 @@ namespace PSADT.SafeHandles
     /// <summary>
     /// Represents a wrapper for a handle to a block of memory allocated from the Marshal class.
     /// </summary>
-    internal abstract class SafeMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal abstract class SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : SafeBaseHandle(handle, ownsHandle)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SafeMemoryHandle"/> class with the specified handle and size.
-        /// </summary>
-        /// <param name="handle"></param>
-        /// <param name="length"></param>
-        /// <param name="ownsHandle"></param>
-        protected SafeMemoryHandle(IntPtr handle, int length, bool ownsHandle) : base(ownsHandle)
-        {
-            SetHandle(handle);
-            Length = length;
-        }
-
         /// <summary>
         /// Reallocates the memory block to the specified size.
         /// </summary>
@@ -128,7 +115,7 @@ namespace PSADT.SafeHandles
         /// <summary>
         /// Gets the size of the allocated memory block.
         /// </summary>
-        public int Length { get; protected set; }
+        public int Length { get; protected set; } = length;
 
         /// <summary>
         /// Represents a null safe handle for memory.
