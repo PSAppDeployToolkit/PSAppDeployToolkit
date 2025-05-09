@@ -46,14 +46,12 @@ namespace PSADT.ProcessManagement
             {
                 // Perform initial query so we can reallocate with the required length.
                 NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
-                ushort stringLength = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.MaximumLength;
-                using (var imageNamePtr = SafeHGlobalHandle.Alloc(stringLength))
+                processIdInfo = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>();
+                using (var imageNamePtr = SafeHGlobalHandle.Alloc(processIdInfo.ImageName.MaximumLength))
                 {
-                    // Reallocate the buffer to the required size and perform the query again.
-                    processIdInfo.ImageName = new UNICODE_STRING { MaximumLength = stringLength, };
-                    unsafe { processIdInfo.ImageName.Buffer = (PWSTR)imageNamePtr.DangerousGetHandle().ToPointer(); }
-                    processIdInfoPtr.FromStructure(processIdInfo, false);
-                    NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr, out _);
+                    // Assign the ImageName buffer and perform the query again.
+                    processIdInfo.ImageName.Buffer = imageNamePtr.ToPWSTR();
+                    NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr.FromStructure(processIdInfo, false), out _);
                     var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().Replace("\0", string.Empty).Trim();
 
                     // If we have a lookup table, replace the NT path with the drive letter before returning.
