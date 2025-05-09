@@ -390,7 +390,6 @@ namespace PSADT.LibraryInterfaces
         /// <param name="ProcessHandle"></param>
         /// <param name="ProcessInformationClass"></param>
         /// <param name="ProcessInformation"></param>
-        /// <param name="ProcessInformationLength"></param>
         /// <param name="ReturnLength"></param>
         /// <returns></returns>
         internal static unsafe NTSTATUS NtQueryInformationProcess(SafeHandle ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, SafeMemoryHandle ProcessInformation, out uint ReturnLength)
