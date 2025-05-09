@@ -90,7 +90,7 @@ function Start-ADTProcess
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
     .PARAMETER PassThru
-        If NoWait is not specified, returns an object with ExitCode, STDOut and STDErr output from the process. If NoWait is specified, returns an object with Id, Handle and ProcessName. Note that a failed execution will only return an object if either ErrorAction is set to SilentlyContinue / Ignored, or if IgnoreExitCodes / SuccessExitCodes are used.
+        If `-NoWait` is not specified, returns an object with ExitCode, StdOut, and StdErr output from the process. If `-NoWait` is specified, returns a task that can be awaited. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-IgnoreExitCodes`/`-SuccessExitCodes` are used.
 
     .EXAMPLE
         Start-ADTProcess -FilePath 'setup.exe' -ArgumentList '/S' -IgnoreExitCodes 1,2
