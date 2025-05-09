@@ -21,7 +21,7 @@ namespace PSADT.ProcessManagement
         public RunningProcessService(ProcessDefinition[] processDefinitions, TimeSpan pollInterval)
         {
             _processDefinitions = processDefinitions ?? throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
-            _pollInterval = pollInterval.Ticks > 0 ? pollInterval : throw new ArgumentOutOfRangeException(nameof(pollInterval), "Poll interval needs to be greater than zero");
+            _pollInterval = pollInterval > TimeSpan.Zero ? pollInterval : throw new ArgumentOutOfRangeException(nameof(pollInterval), "Poll interval needs to be greater than zero");
         }
 
         /// <summary>
