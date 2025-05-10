@@ -97,7 +97,7 @@ function Set-ADTIniSectionKeyValue
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
                             Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                            ErrorId = 'PathFileNotFound'
+                            ErrorId = 'FilePathNotFound'
                             TargetObject = $FilePath
                             RecommendedAction = "Please confirm the path of the specified file and try again, or add -Force to create a new file."
                         }
