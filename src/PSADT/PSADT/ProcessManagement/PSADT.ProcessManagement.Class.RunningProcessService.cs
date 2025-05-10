@@ -13,17 +13,8 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
-    public sealed record RunningProcessService : IDisposable
+    public sealed class RunningProcessService(ProcessDefinition[] processDefinitions, TimeSpan pollInterval) : IDisposable
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RunningProcessService"/> class.
-        /// </summary>
-        public RunningProcessService(ProcessDefinition[] processDefinitions, TimeSpan pollInterval)
-        {
-            _processDefinitions = processDefinitions ?? throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
-            _pollInterval = pollInterval > TimeSpan.Zero ? pollInterval : throw new ArgumentOutOfRangeException(nameof(pollInterval), "Poll interval needs to be greater than zero");
-        }
-
         /// <summary>
         /// Starts the polling task to check for running processes.
         /// </summary>
@@ -323,11 +314,6 @@ namespace PSADT.ProcessManagement
         private CancellationTokenSource? _cancellationTokenSource;
 
         /// <summary>
-        /// The interval at which to poll for running processes.
-        /// </summary>
-        private readonly TimeSpan _pollInterval;
-
-        /// <summary>
         /// The mutex used to synchronize access to the running processes list.
         /// </summary>
         private readonly SemaphoreSlim _mutex = new(1, 1);
@@ -335,6 +321,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// The caller's specified process definitions.
         /// </summary>
-        private readonly ProcessDefinition[] _processDefinitions;
+        private readonly ProcessDefinition[] _processDefinitions = null != processDefinitions && processDefinitions.Length > 0 ? processDefinitions : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
+
+        /// <summary>
+        /// The interval at which to poll for running processes.
+        /// </summary>
+        private readonly TimeSpan _pollInterval = pollInterval > TimeSpan.Zero ? pollInterval : throw new ArgumentOutOfRangeException(nameof(pollInterval), "Poll interval needs to be greater than zero");
     }
 }
