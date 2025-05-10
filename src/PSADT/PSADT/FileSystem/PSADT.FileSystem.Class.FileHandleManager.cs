@@ -153,8 +153,9 @@ namespace PSADT.FileSystem
             foreach (var handleEntry in handleEntries)
             {
                 using (var processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32()))
+                using (var fileHandle = new SafeFileHandle((HANDLE)handleEntry.HandleValue, false))
                 {
-                    Kernel32.DuplicateHandle(processHandle, new SafeFileHandle((HANDLE)handleEntry.HandleValue, false), Kernel32.GetCurrentProcess(), out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                    Kernel32.DuplicateHandle(processHandle, fileHandle, Kernel32.GetCurrentProcess(), out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                     localHandle.Dispose();
                 }
             }
@@ -163,43 +164,68 @@ namespace PSADT.FileSystem
         /// <summary>
         /// Retrieves the name of an object associated with a handle.
         /// </summary>
-        /// <param name="handle"></param>
+        /// <param name="fileHandle"></param>
         /// <param name="ntQueryObject"></param>
         /// <param name="exitThread"></param>
-        /// <param name="buffer"></param>
+        /// <param name="objectBuffer"></param>
         /// <returns></returns>
-        private static string? GetObjectName(SafeFileHandle handle, FARPROC ntQueryObject, FARPROC exitThread, SafeHGlobalHandle buffer)
+        private static string? GetObjectName(SafeFileHandle fileHandle, FARPROC ntQueryObject, FARPROC exitThread, SafeHGlobalHandle objectBuffer)
         {
-            // Start the thread to retrieve the object name and wait for the outcome.
-            using (var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, OBJECT_INFORMATION_CLASS.ObjectNameInformation, handle, buffer))
+            if (fileHandle is not object || fileHandle.IsClosed || fileHandle.IsInvalid)
             {
-                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, Kernel32.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
-                using (hThread)
-                {
-                    // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
-                    if (PInvoke.WaitForSingleObject(hThread, (uint)GetObjectNameThreadTimeout.Milliseconds) == WAIT_EVENT.WAIT_TIMEOUT)
-                    {
-                        NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
-                    }
+                throw new ArgumentNullException(nameof(fileHandle));
+            }
+            if (objectBuffer is not object || objectBuffer.IsClosed || objectBuffer.IsInvalid)
+            {
+                throw new ArgumentNullException(nameof(objectBuffer));
+            }
 
-                    // Get the exit code of the thread and throw an exception if it failed.
-                    Kernel32.GetExitCodeThread(hThread, out var exitCode);
-                    try
+            bool fileHandleAddRef = false;
+            bool objectBufferAddRef = false;
+            try
+            {
+                // Start the thread to retrieve the object name and wait for the outcome.
+                using (var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, fileHandle.DangerousGetHandle(), OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length))
+                {
+                    NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, Kernel32.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                    using (hThread)
                     {
-                        if ((NTSTATUS)ValueTypeConverter<int>.Convert(exitCode) is NTSTATUS res && res != NTSTATUS.STATUS_SUCCESS)
+                        // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
+                        if (PInvoke.WaitForSingleObject(hThread, (uint)GetObjectNameThreadTimeout.Milliseconds) == WAIT_EVENT.WAIT_TIMEOUT)
                         {
-                            throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
+                            NtDll.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                         }
+
+                        // Get the exit code of the thread and throw an exception if it failed.
+                        Kernel32.GetExitCodeThread(hThread, out var exitCode);
+                        try
+                        {
+                            if ((NTSTATUS)ValueTypeConverter<int>.Convert(exitCode) is NTSTATUS res && res != NTSTATUS.STATUS_SUCCESS)
+                            {
+                                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)PInvoke.RtlNtStatusToDosError(res));
+                            }
+                        }
+                        catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING))
+                        {
+                            return null;
+                        }
+                        catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+                        {
+                            return null;
+                        }
+                        return objectBuffer.ToStructure<OBJECT_NAME_INFORMATION>().Name.Buffer.ToString()?.TrimRemoveNull();
                     }
-                    catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BAD_PATHNAME) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_TIMEOUT) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_IO_PENDING))
-                    {
-                        return null;
-                    }
-                    catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
-                    {
-                        return null;
-                    }
-                    return buffer.ToStructure<OBJECT_NAME_INFORMATION>().Name.Buffer.ToString()?.TrimRemoveNull();
+                }
+            }
+            finally
+            {
+                if (fileHandleAddRef)
+                {
+                    fileHandle.DangerousRelease();
+                }
+                if (objectBufferAddRef)
+                {
+                    objectBuffer.DangerousRelease();
                 }
             }
         }
@@ -242,12 +268,12 @@ namespace PSADT.FileSystem
         /// </summary>
         /// <param name="exitThread"></param>
         /// <param name="ntQueryObject"></param>
+        /// <param name="fileHandle"></param>
         /// <param name="infoClass"></param>
-        /// <param name="handle"></param>
-        /// <param name="buffer"></param>
+        /// <param name="infoBuffer"></param>
         /// <returns></returns>
         /// <exception cref="PlatformNotSupportedException"></exception>
-        private static SafeVirtualAllocHandle GetObjectTypeShellcode(IntPtr exitThread, IntPtr ntQueryObject, OBJECT_INFORMATION_CLASS infoClass, SafeFileHandle handle, SafeHGlobalHandle buffer)
+        private static SafeVirtualAllocHandle GetObjectTypeShellcode(IntPtr exitThread, IntPtr ntQueryObject, IntPtr fileHandle, OBJECT_INFORMATION_CLASS infoClass, IntPtr infoBuffer, int infoBufferLength)
         {
             // Build the shellcode stub to call NtQueryObject.
             var shellcode = new List<byte>();
@@ -256,7 +282,7 @@ namespace PSADT.FileSystem
                 case SystemArchitecture.AMD64:
                     // mov rcx, handle
                     shellcode.Add(0x48); shellcode.Add(0xB9);
-                    shellcode.AddRange(BitConverter.GetBytes((ulong)handle.DangerousGetHandle()));
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)fileHandle));
 
                     // mov rdx, infoClass
                     shellcode.Add(0x48); shellcode.Add(0xBA);
@@ -264,11 +290,11 @@ namespace PSADT.FileSystem
 
                     // mov r8, buffer
                     shellcode.Add(0x49); shellcode.Add(0xB8);
-                    shellcode.AddRange(BitConverter.GetBytes((ulong)buffer.DangerousGetHandle()));
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)infoBuffer));
 
                     // mov r9, bufferSize
                     shellcode.Add(0x49); shellcode.Add(0xB9);
-                    shellcode.AddRange(BitConverter.GetBytes((ulong)buffer.Length));
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)infoBufferLength));
 
                     // sub rsp, 0x28 — shadow space + ReturnLength
                     shellcode.Add(0x48); shellcode.Add(0x83); shellcode.Add(0xEC); shellcode.Add(0x28);
@@ -301,11 +327,11 @@ namespace PSADT.FileSystem
 
                     // push bufferSize
                     shellcode.Add(0x68);
-                    shellcode.AddRange(BitConverter.GetBytes(buffer.Length));
+                    shellcode.AddRange(BitConverter.GetBytes(infoBufferLength));
 
                     // push buffer
                     shellcode.Add(0x68);
-                    shellcode.AddRange(BitConverter.GetBytes(buffer.DangerousGetHandle().ToInt32()));
+                    shellcode.AddRange(BitConverter.GetBytes(infoBuffer.ToInt32()));
 
                     // push infoClass
                     shellcode.Add(0x68);
@@ -313,7 +339,7 @@ namespace PSADT.FileSystem
 
                     // push handle
                     shellcode.Add(0x68);
-                    shellcode.AddRange(BitConverter.GetBytes(handle.DangerousGetHandle().ToInt32()));
+                    shellcode.AddRange(BitConverter.GetBytes(fileHandle.ToInt32()));
 
                     // mov eax, NtQueryObject
                     shellcode.Add(0xB8);
@@ -335,16 +361,16 @@ namespace PSADT.FileSystem
                 case SystemArchitecture.ARM64:
                     // x0 = handle
                     var code = new List<uint>();
-                    code.AddRange(NativeUtilities.Load64(0, (ulong)handle.DangerousGetHandle().ToInt64()));
+                    code.AddRange(NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()));
 
                     // x1 = infoClass (zero-extended)
                     code.AddRange(NativeUtilities.Load64(1, (ulong)(uint)infoClass));
 
                     // x2 = buffer
-                    code.AddRange(NativeUtilities.Load64(2, (ulong)buffer.DangerousGetHandle().ToInt64()));
+                    code.AddRange(NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64()));
 
                     // x3 = bufferSize
-                    code.AddRange(NativeUtilities.Load64(3, (ulong)buffer.Length));
+                    code.AddRange(NativeUtilities.Load64(3, (ulong)infoBufferLength));
 
                     // x4 = NULL (for ReturnLength)
                     code.AddRange(NativeUtilities.Load64(4, 0));
