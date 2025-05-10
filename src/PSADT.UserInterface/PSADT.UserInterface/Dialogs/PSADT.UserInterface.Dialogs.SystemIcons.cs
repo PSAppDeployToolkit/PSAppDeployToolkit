@@ -28,9 +28,21 @@ namespace PSADT.UserInterface.Dialogs
             imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out var iconHandle);
             using (iconHandle)
             {
-                using (var icon = Icon.FromHandle(iconHandle.DangerousGetHandle()))
+                bool iconHandleAddRef = false;
+                try
                 {
-                    return icon.ToBitmap();
+                    iconHandle.DangerousAddRef(ref iconHandleAddRef);
+                    using (var icon = Icon.FromHandle(iconHandle.DangerousGetHandle()))
+                    {
+                        return icon.ToBitmap();
+                    }
+                }
+                finally
+                {
+                    if (iconHandleAddRef)
+                    {
+                        iconHandle.DangerousRelease();
+                    }
                 }
             }
         }
