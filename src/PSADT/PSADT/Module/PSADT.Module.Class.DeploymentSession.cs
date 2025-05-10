@@ -1018,18 +1018,18 @@ namespace PSADT.Module
         /// Writes a log entry with a message array.
         /// </summary>
         /// <param name="message">The log message array.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(string[] message)
+        public void WriteLogEntry(string[] message)
         {
-            return WriteLogEntry(message, false, null, null, null, null, null, null, null);
+            WriteLogEntry(message, false, null, null, null, null, null, null, null);
         }
 
         /// <summary>
         /// Writes a log entry with a single message.
         /// </summary>
         /// <param name="message">The log message.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(string message)
+        public void WriteLogEntry(string message)
         {
-            return WriteLogEntry([message], false, null, null, null, null, null, null, null);
+            WriteLogEntry([message], false, null, null, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1037,9 +1037,9 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(string message, LogSeverity severity)
+        public void WriteLogEntry(string message, LogSeverity severity)
         {
-            return WriteLogEntry([message], false, severity, null, null, null, null, null, null);
+            WriteLogEntry([message], false, severity, null, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1047,9 +1047,9 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="source">The source of the message.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(string message, string source)
+        public void WriteLogEntry(string message, string source)
         {
-            return WriteLogEntry([message], false, null, source, null, null, null, null, null);
+            WriteLogEntry([message], false, null, source, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1058,9 +1058,9 @@ namespace PSADT.Module
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the message.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(string message, LogSeverity severity, string source)
+        public void WriteLogEntry(string message, LogSeverity severity, string source)
         {
-            return WriteLogEntry([message], false, severity, source, null, null, null, null, null);
+            WriteLogEntry([message], false, severity, source, null, null, null, null, null);
         }
 
         /// <summary>
@@ -1068,9 +1068,9 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="writeHost">Whether to write to the host.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(string message, bool writeHost)
+        public void WriteLogEntry(string message, bool writeHost)
         {
-            return WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
+            WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamMode(writeHost));
         }
 
         /// <summary>
