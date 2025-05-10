@@ -57,7 +57,7 @@ namespace PSADT.ProcessManagement
                     // If we have a lookup table, replace the NT path with the drive letter before returning.
                     if (ntPathLookupTable != null)
                     {
-                        var ntDeviceName = $"\\{string.Join("\\", imagePath.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                        var ntDeviceName = $"\\{string.Join("\\", imagePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                         if (!ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter))
                         {
                             throw new InvalidOperationException($"Unable to find drive letter for NT path: {ntDeviceName}.");
