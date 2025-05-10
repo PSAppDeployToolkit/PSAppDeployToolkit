@@ -171,6 +171,7 @@ namespace PSADT.FileSystem
         /// <summary>
         /// Retrieves the name of an object associated with a handle.
         /// </summary>
+        /// <param name="currentProcessHandle"></param>
         /// <param name="fileHandle"></param>
         /// <param name="ntQueryObject"></param>
         /// <param name="exitThread"></param>
