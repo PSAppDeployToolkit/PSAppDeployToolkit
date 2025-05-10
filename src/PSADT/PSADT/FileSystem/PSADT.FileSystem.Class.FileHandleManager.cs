@@ -173,7 +173,7 @@ namespace PSADT.FileSystem
             // Start the thread to retrieve the object name and wait for the outcome.
             using (var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, OBJECT_INFORMATION_CLASS.ObjectNameInformation, handle, buffer))
             {
-                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, PInvoke.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, Kernel32.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
                 using (hThread)
                 {
                     // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).

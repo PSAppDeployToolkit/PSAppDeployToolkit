@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Wdk.Foundation;
@@ -274,12 +275,29 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, SafeMemoryHandle SystemInformation, out int ReturnLength)
         {
-            var res = NtQuerySystemInformationNative(SystemInformationClass, SystemInformation.DangerousGetHandle(), SystemInformation.Length, out ReturnLength);
-            if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+            if (SystemInformation is not object || SystemInformation.IsClosed || SystemInformation.IsInvalid)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                throw new ArgumentNullException(nameof(SystemInformation));
             }
-            return res;
+
+            bool SystemInformationAddRef = false;
+            try
+            {
+                SystemInformation.DangerousAddRef(ref SystemInformationAddRef);
+                var res = NtQuerySystemInformationNative(SystemInformationClass, SystemInformation.DangerousGetHandle(), SystemInformation.Length, out ReturnLength);
+                if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                return res;
+            }
+            finally
+            {
+                if (SystemInformationAddRef)
+                {
+                    SystemInformation.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>
@@ -305,12 +323,39 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static NTSTATUS NtQueryObject(SafeHandle Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, SafeHGlobalHandle ObjectInformation, out int ReturnLength)
         {
-            var res = NtQueryObjectNative(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation.DangerousGetHandle(), ObjectInformation.Length, out ReturnLength);
-            if (res != NTSTATUS.STATUS_SUCCESS && ((null != Handle && !Handle.IsInvalid && !ObjectInformation.IsInvalid && 0 != ObjectInformation.Length) || ((null == Handle || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
+            if (ObjectInformation is not object || ObjectInformation.IsClosed || ObjectInformation.IsInvalid)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                throw new ArgumentNullException(nameof(ObjectInformation));
             }
-            return res;
+            if (Handle is not object || Handle.IsClosed)
+            {
+                throw new ArgumentNullException(nameof(Handle));
+            }
+
+            bool ObjectInformationAddRef = false;
+            bool HandleAddRef = false;
+            try
+            {
+                ObjectInformation.DangerousAddRef(ref ObjectInformationAddRef);
+                Handle.DangerousAddRef(ref HandleAddRef);
+                var res = NtQueryObjectNative(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation.DangerousGetHandle(), ObjectInformation.Length, out ReturnLength);
+                if (res != NTSTATUS.STATUS_SUCCESS && ((null != Handle && !Handle.IsInvalid && !ObjectInformation.IsInvalid && 0 != ObjectInformation.Length) || ((null == Handle || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                return res;
+            }
+            finally
+            {
+                if (ObjectInformationAddRef)
+                {
+                    ObjectInformation.DangerousRelease();
+                }
+                if (HandleAddRef)
+                {
+                    Handle.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>
@@ -347,15 +392,42 @@ namespace PSADT.LibraryInterfaces
         /// <param name="maximumStackSize"></param>
         /// <param name="attributeList"></param>
         /// <returns></returns>
-        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, SafeVirtualAllocHandle startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
+        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, SafeFileHandle processHandle, SafeVirtualAllocHandle startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList)
         {
-            var res = NtCreateThreadExNative(out var hThread, desiredAccess, objectAttributes, processHandle, startAddress.DangerousGetHandle(), parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
-            if (res != NTSTATUS.STATUS_SUCCESS)
+            if (startAddress is not object || startAddress.IsClosed || startAddress.IsInvalid)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                throw new ArgumentNullException(nameof(startAddress));
             }
-            threadHandle = new SafeThreadHandle(hThread, true);
-            return res;
+            if (processHandle is not object || processHandle.IsClosed || processHandle.IsInvalid)
+            {
+                throw new ArgumentNullException(nameof(processHandle));
+            }
+
+            bool startAddressAddRef = false;
+            bool processHandleAddRef = false;
+            try
+            {
+                startAddress.DangerousAddRef(ref startAddressAddRef);
+                processHandle.DangerousAddRef(ref processHandleAddRef);
+                var res = NtCreateThreadExNative(out var hThread, desiredAccess, objectAttributes, processHandle.DangerousGetHandle(), startAddress.DangerousGetHandle(), parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
+                if (res != NTSTATUS.STATUS_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                threadHandle = new SafeThreadHandle(hThread, true);
+                return res;
+            }
+            finally
+            {
+                if (startAddressAddRef)
+                {
+                    startAddress.DangerousRelease();
+                }
+                if (processHandleAddRef)
+                {
+                    processHandle.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>
@@ -376,12 +448,29 @@ namespace PSADT.LibraryInterfaces
         /// <returns></returns>
         internal static NTSTATUS NtTerminateThread(SafeThreadHandle threadHandle, NTSTATUS exitStatus)
         {
-            var res = NtTerminateThreadNative(threadHandle.DangerousGetHandle(), exitStatus);
-            if (res != NTSTATUS.STATUS_SUCCESS && res != exitStatus)
+            if (threadHandle is not object || threadHandle.IsClosed)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                throw new ArgumentNullException(nameof(threadHandle));
             }
-            return res;
+
+            bool threadHandleAddRef = false;
+            try
+            {
+                threadHandle.DangerousAddRef(ref threadHandleAddRef);
+                var res = NtTerminateThreadNative(threadHandle.DangerousGetHandle(), exitStatus);
+                if (res != NTSTATUS.STATUS_SUCCESS && res != exitStatus)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
+                }
+                return res;
+            }
+            finally
+            {
+                if (threadHandleAddRef)
+                {
+                    threadHandle.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>

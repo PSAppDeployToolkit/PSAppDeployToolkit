@@ -219,13 +219,30 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateProcess(string? lpApplicationName, string lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            var lpCommandLineSpan = new Span<char>(lpCommandLine.ToCharArray());
-            var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLineSpan, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
-            if (!res)
+            if (lpEnvironment is not object || lpEnvironment.IsClosed)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                throw new ArgumentNullException(nameof(lpEnvironment));
             }
-            return res;
+
+            bool lpEnvironmentAddRef = false;
+            try
+            {
+                lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
+                var lpCommandLineSpan = new Span<char>(lpCommandLine.ToCharArray());
+                var res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLineSpan, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+            finally
+            {
+                if (lpEnvironmentAddRef)
+                {
+                    lpEnvironment.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>
@@ -246,13 +263,30 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, string lpCommandLine, SECURITY_ATTRIBUTES? lpProcessAttributes, SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            var lpCommandLineSpan = new Span<char>(lpCommandLine.ToCharArray());
-            var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLineSpan, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
-            if (!res)
+            if (lpEnvironment is not object || lpEnvironment.IsClosed || lpEnvironment.IsInvalid)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                throw new ArgumentNullException(nameof(lpEnvironment));
             }
-            return res;
+
+            bool lpEnvironmentAddRef = false;
+            try
+            {
+                lpEnvironment.DangerousAddRef(ref lpEnvironmentAddRef);
+                var lpCommandLineSpan = new Span<char>(lpCommandLine.ToCharArray());
+                var res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLineSpan, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment.DangerousGetHandle().ToPointer(), lpCurrentDirectory, lpStartupInfo, out lpProcessInformation);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+            finally
+            {
+                if (lpEnvironmentAddRef)
+                {
+                    lpEnvironment.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>

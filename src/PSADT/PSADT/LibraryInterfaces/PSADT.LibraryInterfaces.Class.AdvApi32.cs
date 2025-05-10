@@ -132,12 +132,29 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL GetTokenInformation(SafeHandle TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, SafeMemoryHandle TokenInformation, out uint ReturnLength)
         {
-            var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.DangerousGetHandle().ToPointer(), (uint)TokenInformation.Length, out ReturnLength);
-            if (!res && !TokenInformation.IsInvalid && 0 != TokenInformation.Length)
+            if (TokenInformation is not object || TokenInformation.IsClosed)
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                throw new ArgumentNullException(nameof(TokenInformation));
             }
-            return res;
+
+            bool TokenInformationAddRef = false;
+            try
+            {
+                TokenInformation.DangerousAddRef(ref TokenInformationAddRef);
+                var res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation.DangerousGetHandle().ToPointer(), (uint)TokenInformation.Length, out ReturnLength);
+                if (!res && !TokenInformation.IsInvalid && 0 != TokenInformation.Length)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
+            finally
+            {
+                if (TokenInformationAddRef)
+                {
+                    TokenInformation.DangerousRelease();
+                }
+            }
         }
 
         /// <summary>

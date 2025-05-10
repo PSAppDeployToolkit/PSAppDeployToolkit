@@ -285,14 +285,31 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe LRESULT SendMessageTimeout(HWND hWnd, uint Msg, WPARAM wParam, SafeMemoryHandle lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, out nuint lpdwResult)
         {
-            fixed (nuint* lpdwResultPointer = &lpdwResult)
+            if (lParam is not object || lParam.IsClosed)
             {
-                var res = PInvoke.SendMessageTimeout(hWnd, Msg, wParam, lParam.DangerousGetHandle(), fuFlags, uTimeout, lpdwResultPointer);
-                if (res == IntPtr.Zero)
+                throw new ArgumentNullException(nameof(lParam));
+            }
+
+            bool lParamAddRef = false;
+            try
+            {
+                lParam.DangerousAddRef(ref lParamAddRef);
+                fixed (nuint* lpdwResultPointer = &lpdwResult)
                 {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    var res = PInvoke.SendMessageTimeout(hWnd, Msg, wParam, lParam.DangerousGetHandle(), fuFlags, uTimeout, lpdwResultPointer);
+                    if (res == IntPtr.Zero)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    }
+                    return res;
                 }
-                return res;
+            }
+            finally
+            {
+                if (lParamAddRef)
+                {
+                    lParam.DangerousRelease();
+                }
             }
         }
 
