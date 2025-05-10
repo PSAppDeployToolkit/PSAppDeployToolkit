@@ -371,7 +371,7 @@ namespace PSADT.FileSystem
                     code.AddRange(NativeUtilities.Load64(0, (ulong)fileHandle.ToInt64()));
 
                     // x1 = infoClass (zero-extended)
-                    code.AddRange(NativeUtilities.Load64(1, (ulong)(uint)infoClass));
+                    code.AddRange(NativeUtilities.Load64(1, (ulong)infoClass));
 
                     // x2 = buffer
                     code.AddRange(NativeUtilities.Load64(2, (ulong)infoBuffer.ToInt64()));
