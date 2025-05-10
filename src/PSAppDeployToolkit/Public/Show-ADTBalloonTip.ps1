@@ -152,7 +152,7 @@ function Show-ADTBalloonTip
                 $notifyIcon = [System.Windows.Forms.NotifyIcon]$nabtParams
 
                 # Add an event to manage disposal of the object before displaying.
-                $null = Register-ObjectEvent -InputObject $notifyIcon -EventName BalloonTipShown -Action { $Sender.Dispose() }
+                $null = Register-ObjectEvent -InputObject $notifyIcon -EventName BalloonTipClosed -Action { $Sender.Dispose() }
                 $notifyIcon.ShowBalloonTip($null)
             }
             catch
