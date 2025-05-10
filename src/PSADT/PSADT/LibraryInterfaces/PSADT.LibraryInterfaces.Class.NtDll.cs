@@ -398,7 +398,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw new ArgumentNullException(nameof(startAddress));
             }
-            if (processHandle is not object || processHandle.IsClosed || processHandle.IsInvalid)
+            if (processHandle is not object || processHandle.IsClosed)
             {
                 throw new ArgumentNullException(nameof(processHandle));
             }

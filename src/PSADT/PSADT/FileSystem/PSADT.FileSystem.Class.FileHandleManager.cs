@@ -45,6 +45,7 @@ namespace PSADT.FileSystem
             }
 
             // Set up required pointers for GetObjectName().
+            using var currentProcessHandle = Kernel32.GetCurrentProcess();
             using var objectBufferPtr = SafeHGlobalHandle.Alloc(1024);
             using var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
             using var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll");
@@ -69,10 +70,10 @@ namespace PSADT.FileSystem
                 }
 
                 // Open the owning process with rights to duplicate handles.
-                SafeFileHandle processHandle;
+                SafeFileHandle fileProcessHandle;
                 try
                 {
-                    processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, sysHandle.UniqueProcessId.ToUInt32());
+                    fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, sysHandle.UniqueProcessId.ToUInt32());
                 }
                 catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
                 {
@@ -84,10 +85,13 @@ namespace PSADT.FileSystem
                 }
 
                 // Duplicate the remote handle into our process.
-                SafeFileHandle localHandle;
+                SafeFileHandle fileDupHandle;
                 try
                 {
-                    Kernel32.DuplicateHandle(processHandle, new SafeFileHandle((HANDLE)sysHandle.HandleValue, false), Kernel32.GetCurrentProcess(), out localHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                    using (var fileOpenHandle = new SafeFileHandle((HANDLE)sysHandle.HandleValue, false))
+                    {
+                        Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, true, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                    }
                 }
                 catch (Win32Exception ex) when ((ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_NOT_SUPPORTED) || (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_INVALID_HANDLE))
                 {
@@ -99,14 +103,14 @@ namespace PSADT.FileSystem
                 }
                 finally
                 {
-                    processHandle.Dispose();
+                    fileProcessHandle.Dispose();
                 }
 
                 // Get the handle's name to check if it's a hard drive path.
                 string? objectName;
                 try
                 {
-                    objectName = GetObjectName(localHandle, ntQueryObject, exitThread, objectBufferPtr);
+                    objectName = GetObjectName(currentProcessHandle, fileDupHandle, ntQueryObject, exitThread, objectBufferPtr);
                     if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith("\\Device\\HarddiskVolume"))
                     {
                         continue;
@@ -115,7 +119,7 @@ namespace PSADT.FileSystem
                 finally
                 {
                     objectBufferPtr.Clear();
-                    localHandle.Dispose();
+                    fileDupHandle.Dispose();
                 }
 
                 // Add the handle information to the list if it matches the specified directory path.
@@ -150,13 +154,16 @@ namespace PSADT.FileSystem
             }
 
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
-            foreach (var handleEntry in handleEntries)
+            using (var currentProcessHandle = Kernel32.GetCurrentProcess())
             {
-                using (var processHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32()))
-                using (var fileHandle = new SafeFileHandle((HANDLE)handleEntry.HandleValue, false))
+                foreach (var handleEntry in handleEntries)
                 {
-                    Kernel32.DuplicateHandle(processHandle, fileHandle, Kernel32.GetCurrentProcess(), out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
-                    localHandle.Dispose();
+                    using (var fileProcessHandle = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, handleEntry.UniqueProcessId.ToUInt32()))
+                    using (var fileOpenHandle = new SafeFileHandle((HANDLE)handleEntry.HandleValue, false))
+                    {
+                        Kernel32.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out var localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                        localHandle.Dispose();
+                    }
                 }
             }
         }
@@ -169,7 +176,7 @@ namespace PSADT.FileSystem
         /// <param name="exitThread"></param>
         /// <param name="objectBuffer"></param>
         /// <returns></returns>
-        private static string? GetObjectName(SafeFileHandle fileHandle, FARPROC ntQueryObject, FARPROC exitThread, SafeHGlobalHandle objectBuffer)
+        private static string? GetObjectName(SafeFileHandle currentProcessHandle, SafeFileHandle fileHandle, FARPROC ntQueryObject, FARPROC exitThread, SafeHGlobalHandle objectBuffer)
         {
             if (fileHandle is not object || fileHandle.IsClosed || fileHandle.IsInvalid)
             {
@@ -187,7 +194,7 @@ namespace PSADT.FileSystem
                 // Start the thread to retrieve the object name and wait for the outcome.
                 using (var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, fileHandle.DangerousGetHandle(), OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length))
                 {
-                    NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, Kernel32.GetCurrentProcess(), shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
+                    NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, currentProcessHandle, shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
                     using (hThread)
                     {
                         // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung).
