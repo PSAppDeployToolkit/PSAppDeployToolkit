@@ -8,12 +8,12 @@ function Get-ADTEnvironment
 {
     <#
     .SYNOPSIS
-        Retrieves the environment data for the ADT module. This function has been replaced by Get-ADTEnvironmentTable and will be removed from a future release.
+        Retrieves the environment data for the ADT module. This function has been replaced by [Get-ADTEnvironmentTable]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
 
     .DESCRIPTION
         The Get-ADTEnvironment function retrieves the environment data for the ADT module. This function ensures that the ADT module has been initialized before attempting to retrieve the environment data. If the module is not initialized, it throws an error.
 
-        This function has been replaced by Get-ADTEnvironmentTable and will be removed from a future release.
+        This function has been replaced by [Get-ADTEnvironmentTable]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
 
     .INPUTS
         None
@@ -48,6 +48,6 @@ function Get-ADTEnvironment
     )
 
     # Announce deprecation and return the environment database if initialized.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTEnvironmentTable]. Please migrate your scripts as this will be removed in a future update." -Severity 2
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTEnvironmentTable]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
     return (Get-ADTEnvironmentTable)
 }

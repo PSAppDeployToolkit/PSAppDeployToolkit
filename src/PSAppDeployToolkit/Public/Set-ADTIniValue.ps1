@@ -8,10 +8,10 @@ function Set-ADTIniValue
 {
     <#
     .SYNOPSIS
-        Opens an INI file and sets the value of the specified section and key.
+        Opens an INI file and sets the value of the specified section and key. This function has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
 
     .DESCRIPTION
-        Opens an INI file and sets the value of the specified section and key. If the value is set to $null, the key will be removed from the section.
+        Opens an INI file and sets the value of the specified section and key. This function has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
 
     .PARAMETER FilePath
         Path to the INI file.
@@ -20,10 +20,10 @@ function Set-ADTIniValue
         Section within the INI file.
 
     .PARAMETER Key
-        Key within the section of the INI file. To remove a section, set this parameter to $null.
+        Key within the section of the INI file.
 
     .PARAMETER Value
-        Value for the key within the section of the INI file. To remove a value, set this parameter to $null.
+        Value for the key within the section of the INI file.
 
     .PARAMETER Force
         Specifies whether the INI file should be created if it does not already exist.
@@ -67,75 +67,25 @@ function Set-ADTIniValue
         [System.String]$Section,
 
         [Parameter(Mandatory = $true)]
-        [AllowNull()][AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $true)]
-        [AllowNull()][AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$Value,
 
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force
     )
 
-    begin
+    # Announce deprecation and reroute through to the replacement function.
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
+    try
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        Set-ADTIniSectionKeyValue @PSBoundParameters
     }
-
-    process
+    catch
     {
-        try
-        {
-            try
-            {
-                # Create the INI file if it does not exist.
-                if (![System.IO.File]::Exists($FilePath))
-                {
-                    if (!$Force)
-                    {
-                        $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
-                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                            ErrorId = 'PathFileNotFound'
-                            TargetObject = $FilePath
-                            RecommendedAction = "Please confirm the path of the specified file and try again, or add -Force to create a new file."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
-                    }
-                    Write-ADTLogEntry -Message "Creating INI file: $FilePath."
-                    $null = New-Item -Path $FilePath -ItemType File -Force
-                }
-
-                # Null keys/values removes the section/key, respectively.
-                if ([System.String]::IsNullOrWhiteSpace($Key))
-                {
-                    Write-ADTLogEntry -Message "Removing INI Section: [$Section]."
-                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $null, $null, $FilePath)
-                }
-                elseif ([System.String]::IsNullOrWhiteSpace($Value))
-                {
-                    Write-ADTLogEntry -Message "Removing INI Key Value: [Section = $Section] [Key = $Key]."
-                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $null, $FilePath)
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "Writing INI Key Value: [Section = $Section] [Key = $Key] [Value = $Value]."
-                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $Value, $FilePath)
-                }
-            }
-            catch
-            {
-                Write-Error -ErrorRecord $_
-            }
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to write INI file key value."
-        }
-    }
-
-    end
-    {
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 }

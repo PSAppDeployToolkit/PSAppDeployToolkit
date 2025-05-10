@@ -1,17 +1,17 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Get-ADTIniValue
+# MARK: Get-ADTIniSectionKeyValue
 #
 #-----------------------------------------------------------------------------
 
-function Get-ADTIniValue
+function Get-ADTIniSectionKeyValue
 {
     <#
     .SYNOPSIS
-        Parses an INI file and returns the value of the specified section and key. This function has been replaced by [Get-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
+        Parses an INI file and returns the value of the specified section and key.
 
     .DESCRIPTION
-        The Get-ADTIniValue function parses an INI file and returns the value of the specified section and key. This function has been replaced by [Get-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
+        The Get-ADTIniSectionKeyValue function parses an INI file and returns the value of the specified section and key.
 
     .PARAMETER FilePath
         Path to the INI file.
@@ -33,7 +33,7 @@ function Get-ADTIniValue
         Returns the value of the specified section and key.
 
     .EXAMPLE
-        Get-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
+        Get-ADTIniSectionKeyValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 
         This example retrieves the value of the 'KeyFileName' key in the 'Notes' section of the specified INI file.
 
@@ -46,7 +46,7 @@ function Get-ADTIniValue
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniValue
+        https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniSectionKeyValue
     #>
 
     [CmdletBinding()]
@@ -72,14 +72,35 @@ function Get-ADTIniValue
         [System.String]$Key
     )
 
-    # Announce deprecation and reroute through to the replacement function.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
-    try
+    begin
     {
-        return Get-ADTIniSectionKeyValue @PSBoundParameters
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
-    catch
+
+    process
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        Write-ADTLogEntry -Message "Reading INI Key: [Section = $Section] [Key = $Key]."
+        try
+        {
+            try
+            {
+                $iniValue = [PSADT.Utilities.IniUtilities]::GetSectionKeyValue($Section, $Key, $FilePath)
+                Write-ADTLogEntry -Message "INI Key Value: [Section = $Section] [Key = $Key] [Value = $iniValue]."
+                return $iniValue
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read INI file key value."
+        }
+    }
+
+    end
+    {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

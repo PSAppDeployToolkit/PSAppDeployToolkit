@@ -1,36 +1,33 @@
 ---
-id: Set-ADTIniValue
-title: Set-ADTIniValue
+id: Get-ADTIniSectionKeyValue
+title: Get-ADTIniSectionKeyValue
 hide_title: false
 hide_table_of_contents: false
 ---
 
 ## SYNOPSIS
 
-Opens an INI file and sets the value of the specified section and key.
-This function has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
+Parses an INI file and returns the value of the specified section and key.
 
 ## SYNTAX
 
 ```powershell
-Set-ADTIniValue [-FilePath] <String> [-Section] <String> [-Key] <String> [-Value] <String> [-Force]
- [<CommonParameters>]
+Get-ADTIniSectionKeyValue [-FilePath] <String> [-Section] <String> [-Key] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-Opens an INI file and sets the value of the specified section and key.
-This function has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
+The Get-ADTIniSectionKeyValue function parses an INI file and returns the value of the specified section and key.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Set-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
+Get-ADTIniSectionKeyValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 ```
 
-Sets the 'KeyFileName' key in the 'Notes' section of the 'notes.ini' file to 'MyFile.ID'.
+This example retrieves the value of the 'KeyFileName' key in the 'Notes' section of the specified INI file.
 
 ## PARAMETERS
 
@@ -82,38 +79,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Value
-
-Value for the key within the section of the INI file.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Force
-
-Specifies whether the INI file should be created if it does not already exist.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
@@ -125,9 +90,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### None
+### System.String
 
-### This function does not return any output.
+### Returns the value of the specified section and key.
 ## NOTES
 An active ADT session is NOT required to use this function.
 
@@ -138,4 +103,4 @@ License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniValue](https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniValue)
+[https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniSectionKeyValue](https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTIniSectionKeyValue)

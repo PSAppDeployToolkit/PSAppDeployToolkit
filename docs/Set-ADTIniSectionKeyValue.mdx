@@ -1,6 +1,6 @@
 ---
-id: Set-ADTIniValue
-title: Set-ADTIniValue
+id: Set-ADTIniSectionKeyValue
+title: Set-ADTIniSectionKeyValue
 hide_title: false
 hide_table_of_contents: false
 ---
@@ -8,26 +8,24 @@ hide_table_of_contents: false
 ## SYNOPSIS
 
 Opens an INI file and sets the value of the specified section and key.
-This function has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
 
 ## SYNTAX
 
 ```powershell
-Set-ADTIniValue [-FilePath] <String> [-Section] <String> [-Key] <String> [-Value] <String> [-Force]
+Set-ADTIniSectionKeyValue [-FilePath] <String> [-Section] <String> [-Key] <String> [-Value] <String> [-Force]
  [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
 Opens an INI file and sets the value of the specified section and key.
-This function has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Set-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
+Set-ADTIniSectionKeyValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
 ```
 
 Sets the 'KeyFileName' key in the 'Notes' section of the 'notes.ini' file to 'MyFile.ID'.
@@ -138,4 +136,4 @@ License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniValue](https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniValue)
+[https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniSectionKeyValue](https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniSectionKeyValue)
