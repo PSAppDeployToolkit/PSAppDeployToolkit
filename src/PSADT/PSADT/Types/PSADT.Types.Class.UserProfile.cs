@@ -104,14 +104,5 @@ namespace PSADT.Types
         /// Gets the path to the user's OneDrive for Business directory.
         /// </summary>
         public readonly DirectoryInfo? OneDriveCommercialPath;
-
-        /// <summary>
-        /// Returns a string that represents the current <see cref="UserProfile"/> object.
-        /// </summary>
-        /// <returns>A string that represents the user profile information.</returns>
-        public override string ToString()
-        {
-            return $"NT Account: [{NTAccount}], SID: [{SID}], Profile Path: [{ProfilePath}].";
-        }
     }
 }

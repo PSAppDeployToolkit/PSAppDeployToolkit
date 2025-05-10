@@ -136,14 +136,5 @@ namespace PSADT.Types
         /// Gets the security descriptor for the MSI package.
         /// </summary>
         public readonly int Security;
-
-        /// <summary>
-        /// Returns a string representation of the MSI summary information.
-        /// </summary>
-        /// <returns>A formatted string with the MSI summary details.</returns>
-        public override string ToString()
-        {
-            return $"Title: {Title}, Subject: {Subject}, Author: {Author}, Revision Number: {RevisionNumber}";
-        }
     }
 }

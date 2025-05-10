@@ -136,14 +136,5 @@ namespace PSADT.ProcessManagement
         /// Gets the filter script for the process.
         /// </summary>
         public readonly Func<RunningProcess, bool>? Filter;
-
-        /// <summary>
-        /// Returns a string that represents the current <see cref="ProcessObject"/> object.
-        /// </summary>
-        /// <returns>A formatted string containing the name and description of the process.</returns>
-        public override string ToString()
-        {
-            return $"Process Name: {Name}, Description: {Description}";
-        }
     }
 }

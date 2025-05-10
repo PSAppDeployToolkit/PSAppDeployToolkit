@@ -40,15 +40,6 @@ namespace PSADT.Execution
         }
 
         /// <summary>
-        /// Returns a string representation of the object.
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return $"[{Architecture}] {ExecutableType} - {(IsDotNetExecutable ? ".NET" : "Native")} - {FileInfo.Name}";
-        }
-
-        /// <summary>
         /// The FileInfo object for the executable.
         /// </summary>
         public readonly FileInfo FileInfo;

@@ -48,18 +48,5 @@ namespace PSADT.Types
         /// Gets the ID of the parent process.
         /// </summary>
         public readonly int ParentProcessId;
-
-        /// <summary>
-        /// Provides a string representation of the <see cref="WindowInfo"/> struct.
-        /// </summary>
-        /// <returns>A string representing the window information.</returns>
-        public override string ToString()
-        {
-            return $@"Window Title: {WindowTitle}, 
-                      Window Handle: {WindowHandle}, 
-                      Parent Process Name: {ParentProcess ?? "[Unknown]"}, 
-                      Parent Process Handle: {ParentProcessMainWindowHandle}, 
-                      Parent Process ID: {ParentProcessId}";
-        }
     }
 }
