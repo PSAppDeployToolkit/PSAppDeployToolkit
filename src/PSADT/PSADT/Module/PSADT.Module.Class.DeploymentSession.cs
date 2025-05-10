@@ -1361,7 +1361,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the list of executables found within a Zero-Config MSI file.
         /// </summary>
-        private readonly IReadOnlyList<ProcessDefinition> DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessDefinition>([]);
+        private readonly ReadOnlyCollection<ProcessDefinition> DefaultMsiExecutablesList = new ReadOnlyCollection<ProcessDefinition>([]);
 
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
