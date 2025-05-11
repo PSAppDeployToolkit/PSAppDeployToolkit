@@ -15,13 +15,8 @@ namespace PSADT.UserInterface
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        public static void Main(string[] args)
+        internal static void Main()
         {
-            if (args is null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
-
             // Read PSADT's string table into memory.
             var stringsAst = Parser.ParseFile(Path.GetFullPath($"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\..\\..\\PSAppDeployToolkit\\Strings\\strings.psd1"), out var tokens, out var errors);
             if (errors.Length > 0)
