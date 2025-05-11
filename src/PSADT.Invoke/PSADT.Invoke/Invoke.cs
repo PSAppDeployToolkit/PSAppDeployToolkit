@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using System.Security.Principal;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation.Language;
+using Microsoft.VisualBasic;
 using PSADT.Invoke.LibraryInterfaces;
 using PSADT.Invoke.Utilities;
-using Microsoft.VisualBasic;
 
 namespace PSADT.Invoke
 {
