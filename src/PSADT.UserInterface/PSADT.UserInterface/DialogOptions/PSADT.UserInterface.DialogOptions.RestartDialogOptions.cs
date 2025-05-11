@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using PSADT.UserInterface.Dialogs;
+using PSADT.Module;
 
 namespace PSADT.UserInterface.DialogOptions
 {

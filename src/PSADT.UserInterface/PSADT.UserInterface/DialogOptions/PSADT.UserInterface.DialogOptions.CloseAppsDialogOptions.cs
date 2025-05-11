@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
+using PSADT.Module;
 using PSADT.ProcessManagement;
-using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
 {
