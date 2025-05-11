@@ -189,27 +189,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <returns></returns>
         private static Icon GetIcon(string path)
         {
-            // Check if the icon is already cached.
-            if (iconCache.TryGetValue(path, out Icon? icon))
+            // Use a cached icon if available, otherwise load and cache it before returning it.
+            if (!iconCache.TryGetValue(path, out Icon? icon))
             {
-                return icon;
+                using (var source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new Icon(path))
+                {
+                    icon = (Icon)source.Clone();
+                    iconCache.Add(path, icon);
+                }
             }
-
-            // If we're not dealing with an icon, convert it and return it.
-            if (!Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase))
-            {
-                icon = DrawingUtilities.ConvertBitmapToIcon(path);
-                iconCache.Add(path, icon);
-                return icon;
-            }
-
-            // We've got an actual icon! Let's load it and cache it.
-            using (var source = new Icon(path))
-            {
-                icon = (Icon)source.Clone();
-                iconCache.Add(path, icon);
-                return icon;
-            }
+            return icon;
         }
 
         /// <summary>
@@ -219,19 +208,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <returns></returns>
         private static Bitmap GetBanner(string path)
         {
-            // Check if the image is already cached.
-            if (imageCache.TryGetValue(path, out Bitmap? image))
+            // Use a cached image if available, otherwise load and cache it before returning it.
+            if (!imageCache.TryGetValue(path, out Bitmap? image))
             {
-                return image;
+                using (var source = Bitmap.FromFile(path))
+                {
+                    image = (Bitmap)source.Clone();
+                    imageCache.Add(path, image);
+                }
             }
-
-            // Load the image and cache it before returning.
-            using (var source = Bitmap.FromFile(path))
-            {
-                image = (Bitmap)source.Clone();
-                imageCache.Add(path, image);
-                return image;
-            }
+            return image;
         }
 
         /// <summary>
