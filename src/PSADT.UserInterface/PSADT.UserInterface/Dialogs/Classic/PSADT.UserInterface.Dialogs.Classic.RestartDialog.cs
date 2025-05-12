@@ -58,9 +58,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set the custom message text if we have one.
-                if (null != options.CustomMessageText)
+                if (null != options.Strings.CustomMessage)
                 {
-                    this.labelCustomMessage.Text = options.CustomMessageText;
+                    this.labelCustomMessage.Text = options.Strings.CustomMessage;
                 }
                 else
                 {

@@ -47,14 +47,6 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 DeferralDeadline = deferralDeadline;
             }
-            if (options.ContainsKey("CustomMessageText"))
-            {
-                if (options["CustomMessageText"] is not string customMessageText || string.IsNullOrWhiteSpace(customMessageText))
-                {
-                    throw new ArgumentOutOfRangeException("CustomMessageText value is not valid.", (Exception?)null);
-                }
-                CustomMessageText = customMessageText;
-            }
             if (options.ContainsKey("CountdownDuration"))
             {
                 if (options["CountdownDuration"] is not TimeSpan countdownDuration)
@@ -94,11 +86,6 @@ namespace PSADT.UserInterface.DialogOptions
         public readonly TimeSpan? CountdownDuration;
 
         /// <summary>
-        /// The custom message text to be displayed in the dialog.
-        /// </summary>
-        public readonly string? CustomMessageText;
-
-        /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>
         public sealed class CloseAppsDialogStrings
@@ -120,10 +107,15 @@ namespace PSADT.UserInterface.DialogOptions
                 {
                     throw new ArgumentNullException("Fluent string table value is null or invalid.", (Exception?)null);
                 }
+                if (strings["CustomMessage"] is not string customMessage)
+                {
+                    throw new ArgumentNullException("CustomMessage value is null or invalid.", (Exception?)null);
+                }
 
                 // The hashtable was correctly defined, assign the remaining values.
                 Classic = new CloseAppsDialogClassicStrings(classicStrings, deploymentType);
                 Fluent = new CloseAppsDialogFluentStrings(fluentStrings, deploymentType);
+                CustomMessage = !string.IsNullOrWhiteSpace(customMessage) ? customMessage : null;
             }
 
             /// <summary>
@@ -135,6 +127,11 @@ namespace PSADT.UserInterface.DialogOptions
             /// The strings used for the Fluent CloseAppsDialog.
             /// </summary>
             public readonly CloseAppsDialogFluentStrings Fluent;
+
+            /// <summary>
+            /// The custom message text to be displayed in the dialog.
+            /// </summary>
+            public readonly string? CustomMessage;
 
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.

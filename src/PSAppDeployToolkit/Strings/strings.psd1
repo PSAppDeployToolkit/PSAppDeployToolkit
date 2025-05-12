@@ -100,6 +100,9 @@
         # Button text for when wanting to restart the device now.
         ButtonRestartNow = 'Restart Now'
 
+        # This is a custom message to display at the Restart window.
+        CustomMessage = ''
+
         # Text displayed when the device requires a restart.
         Message = @{
             Install = 'In order for the installation to complete, you must restart your computer.'

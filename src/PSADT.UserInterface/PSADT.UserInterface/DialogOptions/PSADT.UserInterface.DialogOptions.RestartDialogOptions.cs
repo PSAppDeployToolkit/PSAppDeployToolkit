@@ -38,14 +38,6 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 CountdownNoMinimizeDuration = countdownNoMinimizeDuration;
             }
-            if (options.ContainsKey("CustomMessageText"))
-            {
-                if (options["CustomMessageText"] is not string customMessageText || string.IsNullOrWhiteSpace(customMessageText))
-                {
-                    throw new ArgumentOutOfRangeException("CustomMessageText value is not valid.", (Exception?)null);
-                }
-                CustomMessageText = customMessageText;
-            }
 
             // The hashtable was correctly defined, assign the remaining values.
             Strings = new RestartDialogStrings(strings, deploymentType);
@@ -65,11 +57,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// The duration for which the countdown will be displayed without minimizing the dialog.
         /// </summary>
         public readonly TimeSpan? CountdownNoMinimizeDuration;
-
-        /// <summary>
-        /// The text to be displayed in the custom message.
-        /// </summary>
-        public readonly string? CustomMessageText;
 
         /// <summary>
         /// The strings used for the RestartDialog.
@@ -113,6 +100,10 @@ namespace PSADT.UserInterface.DialogOptions
                 {
                     throw new ArgumentNullException("ButtonRestartLater value is null or invalid.", (Exception?)null);
                 }
+                if (strings["CustomMessage"] is not string customMessage)
+                {
+                    throw new ArgumentNullException("CustomMessage value is null or invalid.", (Exception?)null);
+                }
 
                 // The hashtable was correctly defined, assign the remaining values.
                 Title = title;
@@ -122,6 +113,7 @@ namespace PSADT.UserInterface.DialogOptions
                 TimeRemaining = timeRemaining;
                 ButtonRestartNow = buttonRestartNow;
                 ButtonRestartLater = buttonRestartLater;
+                CustomMessage = !string.IsNullOrWhiteSpace(customMessage) ? customMessage : null;
             }
 
             /// <summary>
@@ -158,6 +150,11 @@ namespace PSADT.UserInterface.DialogOptions
             /// Button text for allowing the user to restart later.
             /// </summary>
             public readonly string ButtonRestartLater;
+
+            /// <summary>
+            /// The custom message text to be displayed in the dialog.
+            /// </summary>
+            public readonly string? CustomMessage;
         }
     }
 }
