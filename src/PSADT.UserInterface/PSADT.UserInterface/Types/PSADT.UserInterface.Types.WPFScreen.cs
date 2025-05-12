@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Types
     /// <summary>
     /// Represents a display device or multiple display devices on a single system.
     /// </summary>
-    internal sealed record WPFScreen
+    internal sealed class WPFScreen
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WPFScreen"/> class.
