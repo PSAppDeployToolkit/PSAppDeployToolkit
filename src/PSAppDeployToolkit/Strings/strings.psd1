@@ -1,5 +1,5 @@
 ﻿@{
-    BalloonText = @{
+    BalloonTip = @{
         # Text displayed in the balloon tip for successful completion of a deployment type.
         Complete = @{
             Install = 'Installation complete.'
@@ -36,7 +36,7 @@
         }
     }
 
-    BlockExecution = @{
+    BlockExecutionText = @{
         # Text displayed when prompting user that an application has been blocked.
         Message = @{
             Install = 'Launching this application has been temporarily blocked so that an installation operation can complete.'
@@ -52,7 +52,7 @@
         }
     }
 
-    DiskSpace = @{
+    DiskSpaceText = @{
         # Text displayed when the system does not have sufficient free disk space available to complete the installation.
         Message = @{
             Install = "You do not have enough disk space to complete the installation of:`n{0}`n`nSpace required: {1}MB`nSpace available: {2}MB`n`nPlease free up enough disk space in order to proceed with the installation."
@@ -61,7 +61,7 @@
         }
     }
 
-    Progress = @{
+    ProgressPrompt = @{
         # Default message displayed in the progress bar.
         Message = @{
             Install = 'Installation in progress. Please wait...'
@@ -84,7 +84,7 @@
         }
     }
 
-    Prompt = @{
+    InstallationPrompt = @{
         # The subtitle underneath the Install Title, e.g. Company Name. Only for Fluent dialogs.
         Subtitle = @{
             Install = 'PSAppDeployToolkit - App Installation'
@@ -130,7 +130,7 @@
         }
     }
 
-    WelcomePrompt = @{
+    CloseAppsPrompt = @{
         Classic = @{
             # Text displayed when only the deferral dialog is to be displayed and there are no applications to close.
             WelcomeMessage = @{
