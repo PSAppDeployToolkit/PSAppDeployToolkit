@@ -88,7 +88,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the CloseAppsDialog.
         /// </summary>
-        public sealed class CloseAppsDialogStrings
+        public sealed record CloseAppsDialogStrings
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="CloseAppsDialogStrings"/> class.
@@ -136,7 +136,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.
             /// </summary>
-            public sealed class CloseAppsDialogClassicStrings
+            public sealed record CloseAppsDialogClassicStrings
             {
                 /// <summary>
                 /// Initializes a new instance of the <see cref="CloseAppsDialogClassicStrings"/> class.
@@ -275,7 +275,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// Strings used for the Fluent CloseAppsDialog.
             /// </summary>
-            public sealed class CloseAppsDialogFluentStrings
+            public sealed record CloseAppsDialogFluentStrings
             {
                 /// <summary>
                 /// Initializes a new instance of the <see cref="CloseAppsDialogFluentStrings"/> class.

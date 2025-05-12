@@ -61,7 +61,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
-        public sealed class RestartDialogStrings
+        public sealed record RestartDialogStrings
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="RestartDialogStrings"/> class with the specified strings.
