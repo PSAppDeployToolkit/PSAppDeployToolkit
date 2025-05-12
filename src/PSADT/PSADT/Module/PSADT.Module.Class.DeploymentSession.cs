@@ -201,7 +201,7 @@ namespace PSADT.Module
                 if (string.IsNullOrWhiteSpace(_appName) || ((bool)parameters?.TryGetValue("ForceWimDetection", out paramValue)! && (SwitchParameter)paramValue!))
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
-                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.wim", SearchOption.TopDirectoryOnly).FirstOrDefault() is string wimFile))
+                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).First(static f => f.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is string wimFile))
                     {
                         // Mount the WIM file and reset DirFiles to the mount point.
                         WriteInitialDivider(ref writtenDivider); Settings |= DeploymentSettings.ZeroConfigInitiated;
@@ -238,7 +238,7 @@ namespace PSADT.Module
                         if (!string.IsNullOrWhiteSpace(_dirFiles))
                         {
                             // Get the first MSI file in the Files directory.
-                            string[] msiFiles = Directory.GetFiles(_dirFiles, "*.msi", SearchOption.TopDirectoryOnly);
+                            string[] msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase)).ToArray();
                             var envOSArchitecture = adtEnv["envOSArchitecture"]!.ToString();
                             var formattedOSArch = string.Empty;
 
@@ -294,7 +294,7 @@ namespace PSADT.Module
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
                         if (_defaultMspFiles.Count == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*.msp", SearchOption.TopDirectoryOnly) is string[] mspFiles) && (mspFiles.Length > 0))
+                            if (!string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase)).ToArray() is string[] mspFiles) && (mspFiles.Length > 0))
                             {
                                 _defaultMspFiles = new ReadOnlyCollection<string>(mspFiles);
                             }
@@ -472,7 +472,7 @@ namespace PSADT.Module
                         }
 
                         // Get all log files sorted by last write time.
-                        IOrderedEnumerable<FileInfo> logFiles = new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").OrderBy(static f => f.LastWriteTime);
+                        IOrderedEnumerable<FileInfo> logFiles = new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
                         int logFilesCount = logFiles.Count();
 
                         // Keep only the max number of log files.
@@ -926,7 +926,7 @@ namespace PSADT.Module
                     try
                     {
                         // Get all archive files sorted by last write time.
-                        IOrderedEnumerable<FileInfo> archiveFiles = destArchiveFilePath.GetFiles(string.Format(destArchiveFileName, "*")).OrderBy(static f => f.LastWriteTime);
+                        IOrderedEnumerable<FileInfo> archiveFiles = destArchiveFilePath.GetFiles(string.Format(destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
                         destArchiveFileName = string.Format(destArchiveFileName, DateTime.Now.ToString("O").Split('.')[0].Replace(":", null));
 
                         // Keep only the max number of archive files
