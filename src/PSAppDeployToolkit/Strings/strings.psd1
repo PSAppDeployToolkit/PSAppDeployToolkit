@@ -1,24 +1,17 @@
 ﻿@{
     BalloonTip = @{
+        # Text displayed in the balloon tip for the start of a deployment type.
+        Start = @{
+            Install = 'Installation started.'
+            Repair = 'Repair started.'
+            Uninstall = 'Uninstallation started.'
+        }
+
         # Text displayed in the balloon tip for successful completion of a deployment type.
         Complete = @{
             Install = 'Installation complete.'
             Repair = 'Repair complete.'
             Uninstall = 'Uninstallation complete.'
-        }
-
-        # Text displayed in the balloon tip for a failed deployment type.
-        Error = @{
-            Install = 'Installation failed.'
-            Repair = 'Repair failed.'
-            Uninstall = 'Uninstallation failed.'
-        }
-
-        # Text displayed in the balloon tip for fast retry of a deployment.
-        FastRetry = @{
-            Install = 'Installation not complete.'
-            Repair = 'Repair not complete.'
-            Uninstall = 'Uninstallation not complete.'
         }
 
         # Text displayed in the balloon tip for successful completion of a deployment type.
@@ -28,11 +21,18 @@
             Uninstall = 'Uninstallation complete. A reboot is required.'
         }
 
-        # Text displayed in the balloon tip for the start of a deployment type.
-        Start = @{
-            Install = 'Installation started.'
-            Repair = 'Repair started.'
-            Uninstall = 'Uninstallation started.'
+        # Text displayed in the balloon tip for fast retry of a deployment.
+        FastRetry = @{
+            Install = 'Installation not complete.'
+            Repair = 'Repair not complete.'
+            Uninstall = 'Uninstallation not complete.'
+        }
+
+        # Text displayed in the balloon tip for a failed deployment type.
+        Error = @{
+            Install = 'Installation failed.'
+            Repair = 'Repair failed.'
+            Uninstall = 'Uninstallation failed.'
         }
     }
 
@@ -61,6 +61,15 @@
         }
     }
 
+    InstallationPrompt = @{
+        # The subtitle underneath the Install Title, e.g. Company Name. Only for Fluent dialogs.
+        Subtitle = @{
+            Install = 'PSAppDeployToolkit - App Installation'
+            Repair = 'PSAppDeployToolkit - App Repair'
+            Uninstall = 'PSAppDeployToolkit - App Uninstallation'
+        }
+    }
+
     ProgressPrompt = @{
         # Default message displayed in the progress bar.
         Message = @{
@@ -84,15 +93,6 @@
         }
     }
 
-    InstallationPrompt = @{
-        # The subtitle underneath the Install Title, e.g. Company Name. Only for Fluent dialogs.
-        Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installation'
-            Repair = 'PSAppDeployToolkit - App Repair'
-            Uninstall = 'PSAppDeployToolkit - App Uninstallation'
-        }
-    }
-
     RestartPrompt = @{
         # Button text for allowing the user to restart later.
         ButtonRestartLater = 'Minimize'
@@ -100,15 +100,15 @@
         # Button text for when wanting to restart the device now.
         ButtonRestartNow = 'Restart Now'
 
-        # This is a custom message to display at the Restart window.
-        CustomMessage = ''
-
         # Text displayed when the device requires a restart.
         Message = @{
             Install = 'In order for the installation to complete, you must restart your computer.'
             Repair = 'In order for the repair to complete, you must restart your computer.'
             Uninstall = 'In order for the uninstallation to complete, you must restart your computer.'
         }
+
+        # This is a custom message to display at the Restart window.
+        CustomMessage = ''
 
         # Text displayed when indicating when the device will be restarted.
         MessageRestart = 'Your computer will be automatically restarted at the end of the countdown.'
@@ -186,13 +186,6 @@
         }
 
         Fluent = @{
-            # The subtitle underneath the Install Title, e.g. Company Name. Only for Fluent dialogs.
-            Subtitle = @{
-                Install = 'PSAppDeployToolkit - App Installation'
-                Repair = 'PSAppDeployToolkit - App Repair'
-                Uninstall = 'PSAppDeployToolkit - App Uninstallation'
-            }
-
             # This is a message to prompt users to save their work.
             DialogMessage = 'Please save your work before continuing as the following applications will be closed automatically.'
 
@@ -227,6 +220,13 @@
                 Install = 'Install'
                 Repair = 'Repair'
                 Uninstall = 'Uninstall'
+            }
+
+            # The subtitle underneath the Install Title, e.g. Company Name.
+            Subtitle = @{
+                Install = 'PSAppDeployToolkit - App Installation'
+                Repair = 'PSAppDeployToolkit - App Repair'
+                Uninstall = 'PSAppDeployToolkit - App Uninstallation'
             }
         }
 
