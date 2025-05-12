@@ -9,6 +9,7 @@ using System.Security.Principal;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
@@ -827,7 +828,7 @@ namespace PSADT.Module
                 WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", LogSeverity.Error);
                 SetExitCode(60008);
                 Close();
-                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex).Throw();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }
