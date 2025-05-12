@@ -109,7 +109,7 @@ namespace PSADT.UserInterface
                 { "DeferralsRemaining", deferralsRemaining },
                 { "DeferralDeadline", deferralDeadline },
                 { "CustomMessageText", customMessageText },
-                { "Strings", (Hashtable)stringTable["WelcomePrompt"] },
+                { "Strings", (Hashtable)stringTable["CloseAppsPrompt"] },
             };
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
             {
