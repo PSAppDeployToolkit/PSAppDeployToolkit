@@ -843,120 +843,113 @@ namespace PSADT.Module
         /// <returns>The exit code.</returns>
         public int Close()
         {
-            try
+            // Throw if this object has already been disposed.
+            if (Settings.HasFlag(DeploymentSettings.Disposed))
             {
-                // Throw if this object has already been disposed.
-                if (Settings.HasFlag(DeploymentSettings.Disposed))
-                {
-                    throw new ObjectDisposedException(this.GetType().Name, "This object has already been disposed.");
-                }
-
-                // Establish initial variable values.
-                var adtExitCode = ModuleDatabase.Get().Properties["LastExitCode"];
-
-                // If terminal server mode was specified, revert the installation mode to support it.
-                if (TerminalServerMode)
-                {
-                    ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
-                }
-
-                // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
-                string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentType.ToString().ToLower()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment";
-
-                // Process resulting exit code.
-                DeploymentStatus deploymentStatus = GetDeploymentStatus();
-                switch (deploymentStatus)
-                {
-                    case DeploymentStatus.FastRetry:
-                        // Just advise of the exit code with the appropriate severity.
-                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverity.Warning);
-                        break;
-                    case DeploymentStatus.Error:
-                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverity.Error);
-                        break;
-                    default:
-                        // Clean up app deferral history.
-                        ResetDeferHistory();
-
-                        // Handle reboot prompts on successful script completion.
-                        if (deploymentStatus.Equals(DeploymentStatus.RestartRequired) && AllowRebootPassThru)
-                        {
-                            WriteLogEntry("A restart has been flagged as required.");
-                        }
-                        else
-                        {
-                            ExitCode = 0;
-                        }
-                        WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 0);
-                        break;
-                }
-
-                // Update the module's last tracked exit code.
-                if (ExitCode != 0)
-                {
-                    adtExitCode.Value = ExitCode;
-                }
-
-                // Remove any subst paths if created in the zero-config WIM code.
-                if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
-                {
-                    ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Delete"), DirFilesSubstDrive!);
-                }
-
-                // Unmount any stored WIM file entries.
-                if (MountedWimFiles.Count > 0)
-                {
-                    MountedWimFiles.Reverse(); ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
-                    MountedWimFiles.Clear();
-                }
-
-                // Write out a log divider to indicate the end of logging.
-                WriteLogDivider();
-                Settings |= DeploymentSettings.Disposed;
-
-                // Extrapolate the Toolkit options from the config hashtable.
-                var configToolkit = (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!;
-
-                // Compress log files if configured to do so.
-                if ((bool)configToolkit["CompressLogs"]!)
-                {
-                    // Archive the log files to zip format and then delete the temporary logs folder.
-                    string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
-                    var destArchiveFilePath = Directory.CreateDirectory((string)configToolkit["LogPath"]!);
-                    try
-                    {
-                        // Get all archive files sorted by last write time.
-                        IOrderedEnumerable<FileInfo> archiveFiles = destArchiveFilePath.GetFiles(string.Format(destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
-                        destArchiveFileName = string.Format(destArchiveFileName, DateTime.Now.ToString("O").Split('.')[0].Replace(":", null));
-
-                        // Keep only the max number of archive files
-                        var logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
-                        int archiveFilesCount = archiveFiles.Count();
-                        if (archiveFilesCount > logMaxHistory)
-                        {
-                            foreach (FileInfo file in archiveFiles.Take(archiveFilesCount - logMaxHistory))
-                            {
-                                file.Delete();
-                            }
-                        }
-
-                        // Compression of the log files.
-                        ZipFile.CreateFromDirectory(LogPath, Path.Combine(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
-                        Directory.Delete(LogPath, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex.Message}", LogSeverity.Error);
-                    }
-                }
-
-                // Return the module's cached exit code to the caller.
-                return (int)adtExitCode.Value;
+                throw new ObjectDisposedException(this.GetType().Name, "This object has already been disposed.");
             }
-            catch
+
+            // Establish initial variable values.
+            var adtExitCode = ModuleDatabase.Get().Properties["LastExitCode"];
+
+            // If terminal server mode was specified, revert the installation mode to support it.
+            if (TerminalServerMode)
             {
-                throw;
+                ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
             }
+
+            // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
+            string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentType.ToString().ToLower()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment";
+
+            // Process resulting exit code.
+            DeploymentStatus deploymentStatus = GetDeploymentStatus();
+            switch (deploymentStatus)
+            {
+                case DeploymentStatus.FastRetry:
+                    // Just advise of the exit code with the appropriate severity.
+                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverity.Warning);
+                    break;
+                case DeploymentStatus.Error:
+                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverity.Error);
+                    break;
+                default:
+                    // Clean up app deferral history.
+                    ResetDeferHistory();
+
+                    // Handle reboot prompts on successful script completion.
+                    if (deploymentStatus.Equals(DeploymentStatus.RestartRequired) && AllowRebootPassThru)
+                    {
+                        WriteLogEntry("A restart has been flagged as required.");
+                    }
+                    else
+                    {
+                        ExitCode = 0;
+                    }
+                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 0);
+                    break;
+            }
+
+            // Update the module's last tracked exit code.
+            if (ExitCode != 0)
+            {
+                adtExitCode.Value = ExitCode;
+            }
+
+            // Remove any subst paths if created in the zero-config WIM code.
+            if (!string.IsNullOrWhiteSpace(DirFilesSubstDrive))
+            {
+                ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Invoke-ADTSubstOperation' -Drive $args[0] -Delete"), DirFilesSubstDrive!);
+            }
+
+            // Unmount any stored WIM file entries.
+            if (MountedWimFiles.Count > 0)
+            {
+                MountedWimFiles.Reverse(); ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
+                MountedWimFiles.Clear();
+            }
+
+            // Write out a log divider to indicate the end of logging.
+            WriteLogDivider();
+            Settings |= DeploymentSettings.Disposed;
+
+            // Extrapolate the Toolkit options from the config hashtable.
+            var configToolkit = (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!;
+
+            // Compress log files if configured to do so.
+            if ((bool)configToolkit["CompressLogs"]!)
+            {
+                // Archive the log files to zip format and then delete the temporary logs folder.
+                string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
+                var destArchiveFilePath = Directory.CreateDirectory((string)configToolkit["LogPath"]!);
+                try
+                {
+                    // Get all archive files sorted by last write time.
+                    IOrderedEnumerable<FileInfo> archiveFiles = destArchiveFilePath.GetFiles(string.Format(destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
+                    destArchiveFileName = string.Format(destArchiveFileName, DateTime.Now.ToString("O").Split('.')[0].Replace(":", null));
+
+                    // Keep only the max number of archive files
+                    var logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+                    int archiveFilesCount = archiveFiles.Count();
+                    if (archiveFilesCount > logMaxHistory)
+                    {
+                        foreach (FileInfo file in archiveFiles.Take(archiveFilesCount - logMaxHistory))
+                        {
+                            file.Delete();
+                        }
+                    }
+
+                    // Compression of the log files.
+                    ZipFile.CreateFromDirectory(LogPath, Path.Combine(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
+                    Directory.Delete(LogPath, true);
+                }
+                catch (Exception ex)
+                {
+                    WriteLogEntry($"Failed to manage archive file [{destArchiveFileName}]: {ex.Message}", LogSeverity.Error);
+                }
+            }
+
+            // Return the module's cached exit code to the caller.
+            return (int)adtExitCode.Value;
         }
 
         /// <summary>
