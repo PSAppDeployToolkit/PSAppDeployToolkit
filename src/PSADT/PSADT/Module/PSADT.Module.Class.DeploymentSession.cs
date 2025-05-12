@@ -925,7 +925,7 @@ namespace PSADT.Module
                 {
                     // Get all archive files sorted by last write time.
                     IOrderedEnumerable<FileInfo> archiveFiles = destArchiveFilePath.GetFiles(string.Format(destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime);
-                    destArchiveFileName = string.Format(destArchiveFileName, DateTime.Now.ToString("O").Split('.')[0].Replace(":", null));
+                    destArchiveFileName = string.Format(destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
 
                     // Keep only the max number of archive files
                     var logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
