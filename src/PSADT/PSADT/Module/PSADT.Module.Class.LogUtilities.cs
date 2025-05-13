@@ -57,7 +57,7 @@ namespace PSADT.Module
             }
             else
             {
-                CallStackFrame invoker = GetLogEntryCaller(ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
+                var invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, @"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$") || (Regex.IsMatch(command, @"^(<ScriptBlock>(<\w+>)?)$") && Regex.IsMatch(f.GetScriptLocation(), "^<.+>$"))));
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
                 callerSource = invoker.GetCommand();
             }
@@ -178,24 +178,6 @@ namespace PSADT.Module
                 }
             }
             return logEntries.AsReadOnly();
-        }
-
-        /// <summary>
-        /// Gets the caller of the log entry from the call stack frames.
-        /// </summary>
-        /// <param name="stackFrames">The call stack frames.</param>
-        /// <returns>The call stack frame of the log entry caller.</returns>
-        private static CallStackFrame GetLogEntryCaller(IEnumerable<CallStackFrame> stackFrames)
-        {
-            foreach (var frame in stackFrames)
-            {
-                // Get the command from the frame and test its validity.
-                if (frame.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, @"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$") || (Regex.IsMatch(command, @"^(<ScriptBlock>(<\w+>)?)$") && Regex.IsMatch(frame.GetScriptLocation(), "^<.+>$"))))
-                {
-                    return frame;
-                }
-            }
-            return null!;
         }
 
         /// <summary>
