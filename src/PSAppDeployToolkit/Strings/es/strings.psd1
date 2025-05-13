@@ -1,151 +1,151 @@
 ﻿@{
     BalloonText = @{
         Complete = @{
-            Install = 'Η εγκατάσταση ολοκληρώθηκε.'
-            Repair = 'Η επισκευή ολοκληρώθηκε.'
-            Uninstall = 'Ολοκλήρωση της απεγκατάστασης.'
+            Install = 'Instalación completada.'
+            Repair = 'Reparación completada.'
+            Uninstall = 'Desinstalación completada.'
         }
         Error = @{
-            Install = 'Η εγκατάσταση απέτυχε.'
-            Repair = 'Η επισκευή απέτυχε.'
-            Uninstall = 'Η απεγκατάσταση απέτυχε.'
+            Install = 'Instalación fallida.'
+            Repair = 'Reparación fallida.'
+            Uninstall = 'Falló la desinstalación.'
         }
         FastRetry = @{
-            Install = 'Η εγκατάσταση δεν ολοκληρώθηκε.'
-            Repair = 'Η επισκευή δεν ολοκληρώθηκε.'
-            Uninstall = 'Η απεγκατάσταση δεν ολοκληρώθηκε.'
+            Install = 'Instalación no completada.'
+            Repair = 'Reparación no completada.'
+            Uninstall = 'Desinstalación no completada.'
         }
         RestartRequired = @{
-            Install = 'Η εγκατάσταση ολοκληρώθηκε. Απαιτείται επανεκκίνηση.'
-            Repair = 'Η επισκευή ολοκληρώθηκε. Απαιτείται επανεκκίνηση.'
-            Uninstall = 'Η απεγκατάσταση ολοκληρώθηκε. Απαιτείται επανεκκίνηση.'
+            Install = 'Instalación completada. Se requiere un reinicio.'
+            Repair = 'Reparación completada. Se requiere un reinicio.'
+            Uninstall = 'Desinstalación completada. Se requiere un reinicio.'
         }
         Start = @{
-            Install = 'Η εγκατάσταση ξεκίνησε.'
-            Repair = 'Η επισκευή ξεκίνησε.'
-            Uninstall = 'Ξεκίνησε η απεγκατάσταση.'
+            Install = 'Instalación iniciada.'
+            Repair = 'Reparación iniciada.'
+            Uninstall = 'Desinstalación iniciada.'
         }
     }
     BlockExecution = @{
         Message = @{
-            Install = 'Η εκκίνηση αυτής της εφαρμογής έχει μπλοκαριστεί προσωρινά, ώστε να μπορέσει να ολοκληρωθεί μια λειτουργία εγκατάστασης.'
-            Repair = 'Η εκκίνηση αυτής της εφαρμογής έχει προσωρινά μπλοκαριστεί ώστε να μπορεί να ολοκληρωθεί μια λειτουργία επισκευής.'
-            Uninstall = 'Η εκκίνηση αυτής της εφαρμογής έχει μπλοκαριστεί προσωρινά ώστε να μπορεί να ολοκληρωθεί μια λειτουργία απεγκατάστασης.'
+            Install = 'Se ha bloqueado temporalmente el inicio de esta aplicación para que pueda completarse una operación de instalación.'
+            Repair = 'Se ha bloqueado temporalmente el inicio de esta aplicación para que pueda completarse una operación de reparación'.
+            Uninstall = 'Se ha bloqueado temporalmente el inicio de esta aplicación para que pueda completarse una operación de desinstalación.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-            Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'
-            Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+            Install = 'PSAppDeployToolkit - Instalación de la aplicación'
+            Repair = 'PSAppDeployToolkit - Reparación de la aplicación'
+            Uninstall = 'PSAppDeployToolkit - Desinstalación de la aplicación'
         }
     }
     DiskSpace = @{
         Message = @{
-            Install = "Δεν έχετε αρκετό χώρο στο δίσκο για να ολοκληρώσετε την εγκατάσταση του:`n{0}`n`nΑπαιτούμενος χώρος: {1}MB`nΔιαθέσιμος χώρος: {2}MB`n`nΠαρακαλούμε ελευθερώστε αρκετό χώρο στο δίσκο για να συνεχίσετε την εγκατάσταση."
-            Repair = "Δεν έχετε αρκετό χώρο στο δίσκο για να ολοκληρώσετε την επισκευή της:`n{0}`n`nΑπαιτούμενος χώρος: {1}MB`nΔιαθέσιμος χώρος: {2}MB`n`nΠαρακαλούμε ελευθερώστε αρκετό χώρο στο δίσκο για να προχωρήσετε με την επισκευή."
-            Uninstall = "Δεν έχετε αρκετό χώρο στο δίσκο για να ολοκληρώσετε την απεγκατάσταση του:`n{0}`n`nΑπαιτούμενος χώρος: {1}MB`nΔιαθέσιμος χώρος: {2}MB`n`nΠαρακαλούμε ελευθερώστε αρκετό χώρο στο δίσκο για να προχωρήσετε στην απεγκατάσταση."
+            Install = "No tiene suficiente espacio en disco para completar la instalación de:`n{0}`n`nespacio requerido: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para poder proceder con la instalación."
+            Repair = "No dispone de suficiente espacio en disco para completar la reparación de:`n{0}`n`nespacio necesario: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para proceder con la reparación."
+            Uninstall = "No dispone de suficiente espacio en disco para completar la desinstalación de:`n{0}`n`nespacio necesario: {1}MB`nEspacio disponible: {2}MB`n`nPor favor, libere suficiente espacio en disco para poder proceder con la desinstalación."
         }
     }
     Progress = @{
         Message = @{
-            Install = 'Η εγκατάσταση βρίσκεται σε εξέλιξη. Παρακαλώ περιμένετε...'
-            Repair = 'Επισκευή σε εξέλιξη. Παρακαλώ περιμένετε...'
-            Uninstall = 'Απεγκατάσταση σε εξέλιξη. Παρακαλώ περιμένετε...'
+            Install = 'Instalación en curso. Por favor espere...'
+            Repair = 'Reparación en curso. Por favor espere...'
+            Uninstall = 'Desinstalación en curso. Por favor espere...'
         }
         MessageDetail = @{
-            Install = 'Αυτό το παράθυρο θα κλείσει αυτόματα όταν ολοκληρωθεί η εγκατάσταση.'
-            Repair = 'Αυτό το παράθυρο θα κλείσει αυτόματα όταν ολοκληρωθεί η επισκευή.'
-            Uninstall = 'Αυτό το παράθυρο θα κλείσει αυτόματα όταν ολοκληρωθεί η απεγκατάσταση.'
+            Install = 'Esta ventana se cerrará automáticamente cuando finalice la instalación.'
+            Repair = 'Esta ventana se cerrará automáticamente cuando finalice la reparación.'
+            Uninstall = 'Esta ventana se cerrará automáticamente cuando finalice la desinstalación.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-            Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'
-            Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+            Install = 'PSAppDeployToolkit - Instalación de la aplicación'
+            Repair = 'PSAppDeployToolkit - Reparación de la aplicación'
+            Uninstall = 'PSAppDeployToolkit - Desinstalación de la aplicación'
         }
     }
     Prompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-            Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογών'
-            Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+            Install = 'PSAppDeployToolkit - Instalación de App'
+            Repair = 'PSAppDeployToolkit - Reparación de la aplicación'
+            Uninstall = 'PSAppDeployToolkit - Desinstalación de la aplicación'
         }
     }
     RestartPrompt = @{
-        ButtonRestartLater = 'Ελαχιστοποίηση'
-        ButtonRestartNow = 'Επανεκκίνηση τώρα'
+        ButtonRestartLater = 'Minimizar'
+        ButtonRestartNow = 'Reiniciar ahora'
         Message = @{
-            Install = 'Προκειμένου να ολοκληρωθεί η εγκατάσταση, πρέπει να επανεκκινήσετε τον υπολογιστή σας.'
-            Repair = 'Για να ολοκληρωθεί η επισκευή, πρέπει να επανεκκινήσετε τον υπολογιστή σας.'
-            Uninstall = 'Για να ολοκληρωθεί η απεγκατάσταση, πρέπει να επανεκκινήσετε τον υπολογιστή σας.'
+            Install = 'Para que la instalación se complete, debe reiniciar su ordenador'.
+            Repair = 'Para que la reparación se complete, debe reiniciar su ordenador.'
+            Uninstall = 'Para que la desinstalación se complete, debe reiniciar su ordenador.'
         }
-        MessageRestart = 'Ο υπολογιστής σας θα επανεκκινηθεί αυτόματα στο τέλος της αντίστροφης μέτρησης.'
-        MessageTime = 'Παρακαλούμε αποθηκεύστε την εργασία σας και επανεκκινήστε εντός του προβλεπόμενου χρόνου.'
-        TimeRemaining = 'Υπολειπόμενος χρόνος:'
-        Title = 'Απαιτείται επανεκκίνηση'
+        MessageRestart = 'Su ordenador se reiniciará automáticamente al final de la cuenta atrás.'
+        MessageTime = 'Por favor, guarde su trabajo y reinicie dentro del tiempo asignado.'
+        TimeRemaining = 'Tiempo restante:'
+        Title = 'Es necesario reiniciar'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-            Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'
-            Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+            Install = 'PSAppDeployToolkit - Instalación de la aplicación'
+            Repair = 'PSAppDeployToolkit - Reparación de la aplicación'
+            Uninstall = 'PSAppDeployToolkit - Desinstalación de la aplicación'
         }
     }
     WelcomePrompt = @{
         Classic = @{
             Close = @{
-                ButtonClose = 'Κλείσιμο προγραμμάτων'
-                ButtonContinue = '&Συνεχίστε'
-                ButtonContinueTooltip = 'Επιλέξτε «Συνέχεια» μόνο αφού κλείσετε την/τις παραπάνω αναφερόμενη/ες εφαρμογή/ες.'
-                ButtonDefer = '&Αναβολή'
-                CountdownMessage = 'ΣΗΜΕΙΩΣΗ: Το(τα) πρόγραμμα(α) θα κλείσει(-ουν) αυτόματα σε:'
+                ButtonClose = 'Cerrar &Programas'
+                ButtonContinue = '&Continuar'
+                ButtonContinueTooltip = 'Sólo seleccione «Continuar» después de cerrar la(s) aplicación(es) arriba indicada(s).'
+                ButtonDefer = '&Defer'
+                CountdownMessage = 'NOTA: El programa o programas se cerrarán automáticamente en:'
                 Message = @{
-                    Install = "Τα παρακάτω προγράμματα πρέπει να κλείσουν πριν προχωρήσει η εγκατάσταση.`n`nΠαρακαλούμε να αποθηκεύσετε την εργασία σας, να κλείσετε τα προγράμματα και στη συνέχεια να συνεχίσετε. Εναλλακτικά, αποθηκεύστε την εργασία σας και κάντε κλικ στο «Κλείσιμο προγραμμάτων»."
-                    Repair = "Τα παρακάτω προγράμματα πρέπει να κλείσουν πριν προχωρήσει η επισκευή.`n`nΠαρακαλούμε αποθηκεύστε την εργασία σας, κλείστε τα προγράμματα και, στη συνέχεια, συνεχίστε. Εναλλακτικά, αποθηκεύστε την εργασία σας και κάντε κλικ στο «Κλείσιμο προγραμμάτων»."
-                    Uninstall = "Τα ακόλουθα προγράμματα πρέπει να κλείσουν πριν προχωρήσει η απεγκατάσταση.`n`nΠαρακαλούμε αποθηκεύστε την εργασία σας, κλείστε τα προγράμματα και, στη συνέχεια, συνεχίστε. Εναλλακτικά, αποθηκεύστε την εργασία σας και κάντε κλικ στο «Close Programs»."
+                    Install = "Los siguientes programas deben cerrarse antes de que la instalación pueda continuar.`n`nPor favor, guarde su trabajo, cierre los programas y continúe. Alternativamente, guarde su trabajo y haga clic en «Cerrar programas»."
+                    Repair = "Los siguientes programas deben cerrarse antes de proceder a la reparación.`n`nPor favor, guarde su trabajo y haga clic en «Cerrar programas»."
+                    Uninstall = "Los siguientes programas deben cerrarse antes de proceder a la desinstalación.`n`nPor favor, guarde su trabajo, cierre los programas y continúe. Alternativamente, guarde su trabajo y haga clic en «Cerrar Programas»."
                 }
             }
             Defer = @{
-                Deadline = 'Προθεσμία:'
+                Deadline = 'Fecha límite:'
                 ExpiryMessage = @{
-                    Install = 'Μπορείτε να επιλέξετε να αναβάλλετε την εγκατάσταση μέχρι να λήξει η αναβολή:'
-                    Repair = 'Μπορείτε να επιλέξετε να αναβάλλετε την επισκευή μέχρι να λήξει η αναβολή:'
-                    Uninstall = 'Μπορείτε να επιλέξετε να αναβάλλετε την απεγκατάσταση έως ότου λήξει η αναβολή:'
+                    Install = 'Puede elegir aplazar la instalación hasta que expire el aplazamiento:'
+                    Repair = 'Puede elegir aplazar la reparación hasta que expire el aplazamiento:'
+                    Uninstall = 'Puede elegir aplazar la desinstalación hasta que expire el aplazamiento:'
                 }
-                RemainingDeferrals = 'Υπόλοιπες αναβολές:'
-                WarningMessage = 'Μόλις λήξει η αναβολή, δεν θα έχετε πλέον τη δυνατότητα αναβολής.'
+                RemainingDeferrals = 'Aplazamientos restantes:'
+                WarningMessage = 'Una vez que haya expirado el aplazamiento, ya no tendrá la opción de aplazarlo.'
                 WelcomeMessage = @{
-                    Install = 'Η ακόλουθη εφαρμογή πρόκειται να εγκατασταθεί:'
-                    Repair = 'Η ακόλουθη εφαρμογή πρόκειται να επισκευαστεί:'
-                    Uninstall = 'Η ακόλουθη εφαρμογή πρόκειται να απεγκατασταθεί:'
+                    Install = 'La siguiente aplicación está a punto de ser instalada:'
+                    Repair = 'La siguiente aplicación está a punto de ser reparada:'
+                    Uninstall = 'La siguiente aplicación está a punto de ser desinstalada:'
                 }
             }
             CountdownMessage = @{
-                Install = 'Η εγκατάσταση θα συνεχιστεί αυτόματα σε:'
-                Repair = 'Η επισκευή θα συνεχιστεί αυτόματα σε:'
-                Uninstall = 'Η απεγκατάσταση θα συνεχιστεί αυτόματα σε:'
+                Install = 'La instalación continuará automáticamente en:'
+                Repair = 'La reparación continuará automáticamente en:'
+                Uninstall = 'La desinstalación continuará automáticamente en:'
             }
             CustomMessage = ''
         }
         Fluent = @{
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-                Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'
-                Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+                Install = 'PSAppDeployToolkit - Instalación de la aplicación'
+                Repair = 'PSAppDeployToolkit - Reparación de la aplicación'
+                Uninstall = 'PSAppDeployToolkit - Desinstalación de App'
             }
-            DialogMessage = 'Παρακαλώ αποθηκεύστε την εργασία σας πριν συνεχίσετε, καθώς οι ακόλουθες εφαρμογές θα κλείσουν αυτόματα.'
+            DialogMessage = 'Por favor, guarde su trabajo antes de continuar ya que las siguientes aplicaciones se cerrarán automáticamente.'
             DialogMessageNoProcesses = @{
-                Install = 'Παρακαλώ επιλέξτε Install για να συνεχίσετε την εγκατάσταση. Εάν σας έχουν απομείνει αναβολές, μπορείτε επίσης να επιλέξετε να καθυστερήσετε την εγκατάσταση.'
-                Repair = 'Παρακαλώ επιλέξτε Επισκευή για να συνεχίσετε με την επισκευή. Αν σας απομένουν αναβολές, μπορείτε επίσης να επιλέξετε να καθυστερήσετε την επισκευή.'
-                Uninstall = 'Παρακαλούμε επιλέξτε Απεγκατάσταση για να συνεχίσετε με την απεγκατάσταση. Αν σας απομένουν αναβολές, μπορείτε επίσης να επιλέξετε να καθυστερήσετε την απεγκατάσταση.'
+                Install = 'Por favor, seleccione Instalar para continuar con la instalación. Si le queda algún aplazamiento, también puede optar por retrasar la instalación.'
+                Repair = 'Por favor, seleccione Reparar para continuar con la reparación. Si le queda algún aplazamiento, también puede optar por retrasar la reparación.'
+                Uninstall = 'Por favor, seleccione Desinstalar para continuar con la desinstalación. Si le queda algún aplazamiento, también puede optar por retrasar la desinstalación.'
             }
-            ButtonDeferRemaining = 'παραμένουν'
-            ButtonLeftText = 'Αναβολή'
+            ButtonDeferRemaining = 'Quedan'
+            ButtonLeftText = 'Aplazar'
             ButtonRightText = @{
-                Install = 'Κλείσιμο εφαρμογών & εγκατάσταση'
-                Repair = 'Κλείσιμο εφαρμογών & επισκευή'
-                Uninstall = 'Κλείσιμο εφαρμογών & απεγκατάσταση'
+                Install = 'Cerrar Aplicaciones e Instalar'
+                Repair = 'Cerrar Aplicaciones y Reparar'
+                Uninstall = 'Cerrar Aplicaciones y Desinstalar'
             }
-            ButtonRightTextNoProcesses = @{
-                Install = 'Εγκατάσταση'
-                Repair = 'Επισκευή'
-                Uninstall = 'Απεγκατάσταση'
+            ButtonRightTextNoProcesos = @{
+                Install = 'Instalar'
+                Repair = 'Reparar'
+                Uninstall = 'Desinstalar'
             }
         }
     }
