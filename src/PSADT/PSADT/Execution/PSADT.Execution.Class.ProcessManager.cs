@@ -147,7 +147,7 @@ namespace PSADT.Execution
                                 }
 
                                 // You can only run a process as a user if they're active.
-                                if (!launchInfo.Username.Value.Contains("\\"))
+                                if (!launchInfo.Username.Value.Contains('\\'))
                                 {
                                     session = userSessions.First(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase));
                                 }
@@ -214,7 +214,7 @@ namespace PSADT.Execution
                                             // This is important so that a windowed application can be shown.
                                             if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
                                             {
-                                                using (var lpDesktop = SafeCoTaskMemHandle.StringToUni("winsta0\\default"))
+                                                using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
                                                 {
                                                     startupInfo.lpDesktop = lpDesktop.ToPWSTR();
                                                     Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);

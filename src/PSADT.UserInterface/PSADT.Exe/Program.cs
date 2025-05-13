@@ -19,7 +19,7 @@ namespace PSADT.UserInterface
         internal static void Main()
         {
             // Read PSADT's string table into memory.
-            var stringsAst = Parser.ParseFile(Path.GetFullPath($"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\..\\..\\PSAppDeployToolkit\\Strings\\strings.psd1"), out var tokens, out var errors);
+            var stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Strings\strings.psd1"), out var tokens, out var errors);
             if (errors.Length > 0)
             {
                 throw new InvalidDataException($"Error parsing strings.psd1 file.");
@@ -31,8 +31,8 @@ namespace PSADT.UserInterface
             // Set up parameters for testing
             string appTitle = "Adobe Reader CS 2025 x64 EN";
             string subtitle = "Bisto Systems Ltd - App Install";
-            string appIconImage = Path.GetFullPath($"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\..\\PSADT.UserInterface\\Resources\\appIcon.png");
-            string appBannerImage = Path.GetFullPath($"{AppDomain.CurrentDomain.BaseDirectory}\\..\\..\\..\\..\\PSADT.UserInterface\\Resources\\Banner.Classic.png");
+            string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\PSADT.UserInterface\Resources\appIcon.png");
+            string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\PSADT.UserInterface\Resources\Banner.Classic.png");
             //string? dialogAccentColor = "";
             string dialogAccentColor = "#FFFFB900"; // Yellow
             DialogPosition dialogPosition = DialogPosition.BottomRight;

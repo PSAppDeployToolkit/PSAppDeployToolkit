@@ -111,7 +111,7 @@ namespace PSADT.FileSystem
                 try
                 {
                     objectName = GetObjectName(currentProcessHandle, fileDupHandle, ntQueryObject, exitThread, objectBufferPtr);
-                    if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith("\\Device\\HarddiskVolume"))
+                    if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
                     {
                         continue;
                     }
@@ -123,7 +123,7 @@ namespace PSADT.FileSystem
                 }
 
                 // Add the handle information to the list if it matches the specified directory path.
-                string objectNameKey = $"\\{string.Join("\\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                 if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (null == directoryPath || dosPath.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase)))
                 {
                     openHandles.Add(new FileHandleInfo(sysHandle, dosPath, objectName, objectType));

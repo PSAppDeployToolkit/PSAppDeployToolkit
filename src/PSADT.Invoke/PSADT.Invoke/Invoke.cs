@@ -281,7 +281,7 @@ namespace PSADT.Invoke
                 cliArguments.RemoveAll(x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
                 if (Kernel32.GetNativeSystemInfo().uProcessorInfo.wProcessorArchitecture.ToString().EndsWith("64"))
                 {
-                    pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "WindowsPowerShell\\v1.0\\PowerShell.exe");
+                    pwshExecutablePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), @"WindowsPowerShell\v1.0\PowerShell.exe");
                 }
             }
 
@@ -328,7 +328,7 @@ namespace PSADT.Invoke
             }
 
             // Test whether we've got a local config before continuing.
-            if ((Path.Combine(currentPath, "Config\\config.psd1") is string adtLocalConfigPath) && File.Exists(adtLocalConfigPath))
+            if ((Path.Combine(currentPath, @"Config\config.psd1") is string adtLocalConfigPath) && File.Exists(adtLocalConfigPath))
             {
                 // Test the file for validity prior to just blindly using it.
                 var localConfigAst = Parser.ParseFile(adtLocalConfigPath, out Token[] localConfigTokens, out ParseError[] localConfigErrors);
@@ -349,7 +349,7 @@ namespace PSADT.Invoke
             }
 
             // Verify if the PSAppDeployToolkit config file exists.
-            var adtConfigPath = Path.Combine(currentPath, $"{GetToolkitPath()}\\Config\\config.psd1");
+            var adtConfigPath = Path.Combine(currentPath, $@"{GetToolkitPath()}\Config\config.psd1");
             if (!File.Exists(adtConfigPath))
             {
                 throw new FileNotFoundException($"A critical component of PSAppDeployToolkit is missing.\n\nUnable to find the [config.psd1] file at [{adtConfigPath}].\n\nPlease ensure you have all of the required files available to start the installation.");
@@ -437,7 +437,7 @@ namespace PSADT.Invoke
         /// <summary>
         /// The default path to PowerShell.
         /// </summary>
-        private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell\\v1.0\\PowerShell.exe");
+        private static readonly string pwshDefaultPath = Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\PowerShell.exe");
 
         /// <summary>
         /// The default arguments to pass to PowerShell.
@@ -462,7 +462,7 @@ namespace PSADT.Invoke
         /// <summary>
         /// The path to the PSAppDeployToolkit module.
         /// </summary>
-        private static readonly string v3ToolkitPath = Path.Combine(currentPath, "AppDeployToolkit\\PSAppDeployToolkit");
+        private static readonly string v3ToolkitPath = Path.Combine(currentPath, @"AppDeployToolkit\PSAppDeployToolkit");
 
         /// <summary>
         /// The path to the PSAppDeployToolkit module.
@@ -472,7 +472,7 @@ namespace PSADT.Invoke
         /// <summary>
         /// The path to the PSAppDeployToolkit module.
         /// </summary>
-        private static readonly string devToolkitPath = Path.Combine(currentPath, "..\\..\\..\\PSAppDeployToolkit");
+        private static readonly string devToolkitPath = Path.Combine(currentPath, @"..\..\..\PSAppDeployToolkit");
 
         /// <summary>
         /// The path to the logging directory.

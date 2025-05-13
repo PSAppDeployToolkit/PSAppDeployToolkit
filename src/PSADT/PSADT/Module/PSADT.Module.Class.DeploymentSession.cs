@@ -384,7 +384,7 @@ namespace PSADT.Module
                 {
                     _installTitle = $"{_appVendor} {_appName} {_appVersion}".Trim();
                 }
-                _installTitle = Regex.Replace(_installTitle, "\\s{2,}", string.Empty);
+                _installTitle = Regex.Replace(_installTitle, @"\s{2,}", string.Empty);
 
                 // Build the Installation Name.
                 if (string.IsNullOrWhiteSpace(_installName))
@@ -395,8 +395,8 @@ namespace PSADT.Module
                 _installName = Regex.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_"), invalidChars, string.Empty);
 
                 // Set the Defer History registry path.
-                RegKeyDeferBase = $"{configToolkit["RegPath"]}\\{adtEnv["appDeployToolkitName"]}\\DeferHistory";
-                RegKeyDeferHistory = $"{RegKeyDeferBase}\\{_installName}";
+                RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{adtEnv["appDeployToolkitName"]}\DeferHistory";
+                RegKeyDeferHistory = $@"{RegKeyDeferBase}\{_installName}";
 
 
                 #endregion
@@ -612,13 +612,13 @@ namespace PSADT.Module
                         {
                             // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
                             WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
-                            var apRegKey = "Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Provisioning\\Diagnostics\\AutoPilot";
+                            var apRegKey = @"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot";
                             if (!string.IsNullOrWhiteSpace((string)moduleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
                             {
                                 WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
                                 if (((SessionInfo)adtEnv["RunAsActiveUser"])?.SID is SecurityIdentifier userSid)
                                 {
-                                    var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$"Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Enrollments\\*\\FirstSync\\{userSid}"], null, false).FirstOrDefault();
+                                    var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
                                     if (null != fsRegData)
                                     {
                                         if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo syncDone)
@@ -1330,7 +1330,7 @@ namespace PSADT.Module
         /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
-        private static readonly ReadOnlyCollection<string> DriveLetters = new ReadOnlyCollection<string>(["Z:\\", "Y:\\", "X:\\", "W:\\", "V:\\", "U:\\", "T:\\", "S:\\", "R:\\", "Q:\\", "P:\\", "O:\\", "N:\\", "M:\\", "L:\\", "K:\\", "J:\\", "I:\\", "H:\\", "G:\\", "F:\\", "E:\\", "D:\\", "C:\\", "B:\\", "A:\\"]);
+        private static readonly ReadOnlyCollection<string> DriveLetters = new ReadOnlyCollection<string>([@"Z:\", @"Y:\", @"X:\", @"W:\", @"V:\", @"U:\", @"T:\", @"S:\", @"R:\", @"Q:\", @"P:\", @"O:\", @"N:\", @"M:\", @"L:\", @"K:\", @"J:\", @"I:\", @"H:\", @"G:\", @"F:\", @"E:\", @"D:\", @"C:\", @"B:\", @"A:\"]);
 
         /// <summary>
         /// Buffer for log entries.
