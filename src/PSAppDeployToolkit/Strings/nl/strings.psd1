@@ -135,7 +135,7 @@
                 Repair = 'Sluit Apps & repareer.'
                 Uninstall = 'Sluit Apps & de-installeer.'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Installeren.'
                 Repair = 'Repareren.'
                 Uninstall = 'De-installeren.'

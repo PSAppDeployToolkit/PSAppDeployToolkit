@@ -135,7 +135,7 @@
                 Repair = 'Κλείσιμο εφαρμογών & επισκευή'
                 Uninstall = 'Κλείσιμο εφαρμογών & απεγκατάσταση'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Εγκατάσταση'
                 Repair = 'Επισκευή'
                 Uninstall = 'Απεγκατάσταση'

@@ -135,7 +135,7 @@
                 Repair = 'Uygulamaları Kapat ve Onar'
                 Uninstall = 'Uygulamaları Kapat ve Kaldır'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Yükle'
                 Repair = 'Onarım'
                 Uninstall = 'Kaldır'

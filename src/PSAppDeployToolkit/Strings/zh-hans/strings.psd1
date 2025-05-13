@@ -135,7 +135,7 @@
                 Repair = '关闭应用程序并修复'
                 Uninstall = '关闭应用程序并卸载'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = '安装'
                 Repair = '修复'
                 Uninstall = '卸载'

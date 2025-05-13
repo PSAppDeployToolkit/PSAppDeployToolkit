@@ -135,7 +135,7 @@
                 Repair = 'إغلاق التطبيقات وإصلاحها'
                 Uninstall = 'إغلاق التطبيقات وإلغاء التثبيت'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'تثبيت'
                 Repair = 'إصلاح'
                 Uninstall = 'إلغاء التثبيت'

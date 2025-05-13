@@ -135,7 +135,7 @@
                 Repair = 'Zatvoriť aplikácie a Opraviť'
                 Uninstall = 'Zatvoriť aplikácie a Odinštalovať'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Inštalovať'
                 Repair = 'Opraviť'
                 Uninstall = 'Odinštalovať'

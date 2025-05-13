@@ -135,7 +135,7 @@
                 Repair = 'Aizvērt programmas un Labot'
                 Uninstall = 'Aizvērt programmas un Atinstalēt'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Instalēt'
                 Repair = 'Labot'
                 Uninstall = 'Atinstalēt'

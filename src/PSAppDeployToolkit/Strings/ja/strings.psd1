@@ -135,7 +135,7 @@
                 Repair = 'アプリを終了して修理'
                 Uninstall = 'アプリを終了してアンインストールします。'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'インストールする'
                 Repair = '修理'
                 Uninstall = 'アンインストール'

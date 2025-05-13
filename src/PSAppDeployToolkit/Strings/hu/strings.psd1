@@ -135,7 +135,7 @@
                 Repair = 'Alkalmazások Bezárása és Javítása'
                 Uninstall = 'Alkalmazások Bezárása és Eltávolítása'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Telepítés'
                 Repair = 'Javítás'
                 Uninstall = 'Eltávolítás'

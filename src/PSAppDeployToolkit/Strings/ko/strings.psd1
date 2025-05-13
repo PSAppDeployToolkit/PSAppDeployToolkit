@@ -135,7 +135,7 @@
                 Repair = '앱 닫기 & 복구'
                 Uninstall = '앱 닫기 및 제거'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = '설치'
                 Repair = '복구'
                 Uninstall = '제거'

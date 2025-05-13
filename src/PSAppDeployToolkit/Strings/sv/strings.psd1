@@ -135,7 +135,7 @@
                 Repair = 'Stäng Appar och Reparera'
                 Uninstall = 'Stäng Appar & Avinstallera'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Installera'
                 Repair = 'Reparation'
                 Uninstall = 'Avinstallera'

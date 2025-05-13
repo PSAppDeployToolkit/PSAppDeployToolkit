@@ -135,7 +135,7 @@
                 Repair = 'Sulje Sovellukset ja Korjaa'
                 Uninstall = 'Sulje Sovellukset & Poista Asennus'
             }
-            ButtonRightTextNoProcesses = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Asenna'
                 Repair = 'Korjaa'
                 Uninstall = 'Poista Asennus'
