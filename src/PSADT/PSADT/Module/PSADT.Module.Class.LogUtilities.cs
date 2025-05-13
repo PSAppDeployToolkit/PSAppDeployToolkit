@@ -95,7 +95,7 @@ namespace PSADT.Module
             Dictionary<string, string> logFormats = new Dictionary<string, string>()
             {
                 { "Legacy", $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-                { "CMTrace", $"<![LOG[{(null != scriptSection && message[0] != LogDivider ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{Username}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
+                { "CMTrace", $"<![LOG[{(null != scriptSection && message[0] != LogDivider ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
             };
 
             // Loop through each message and generate necessary log messages.
@@ -205,11 +205,6 @@ namespace PSADT.Module
         /// Gets the current process ID.
         /// </summary>
         private static readonly int PID = Process.GetCurrentProcess().Id;
-
-        /// <summary>
-        /// Gets the session caller's username.
-        /// </summary>
-        private static readonly string Username = AccountUtilities.CallerUsername();
 
         /// <summary>
         /// Gets the session's default log file encoding.

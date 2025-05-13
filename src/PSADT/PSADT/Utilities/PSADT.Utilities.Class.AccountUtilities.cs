@@ -11,6 +11,18 @@ namespace PSADT.Utilities
     public static class AccountUtilities
     {
         /// <summary>
+        /// Static constructor for readonly constant values.
+        /// </summary>
+        static AccountUtilities()
+        {
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+                CallerUsername = identity.Name;
+            }
+        }
+
+        /// <summary>
         /// Tests whether a given SID is a member of a given well known group.
         /// </summary>
         /// <param name="wellKnownSid"></param>
@@ -75,25 +87,12 @@ namespace PSADT.Utilities
         /// Determines whether the current process is elevated.
         /// </summary>
         /// <returns></returns>
-        public static bool CallerIsAdmin()
-        {
-            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-            {
-                WindowsPrincipal principal = new WindowsPrincipal(identity);
-                return principal.IsInRole(WindowsBuiltInRole.Administrator);
-            }
-        }
+        public static readonly bool CallerIsAdmin;
 
         /// <summary>
         /// Returns the current user's username.
         /// </summary>
         /// <returns></returns>
-        public static string CallerUsername()
-        {
-            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-            {
-                return identity.Name;
-            }
-        }
+        public static readonly string CallerUsername;
     }
 }
