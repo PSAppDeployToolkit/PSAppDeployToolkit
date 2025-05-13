@@ -190,7 +190,7 @@ namespace PSADT.Module
             foreach (var frame in stackFrames)
             {
                 // Get the command from the frame and test its validity.
-                if (frame.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, "^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\\w+>)?)$") || (Regex.IsMatch(command, "^(<ScriptBlock>(<\\w+>)?)$") && frame.GetScriptLocation().Equals("<No file>"))))
+                if (frame.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, "^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\\w+>)?)$") || (Regex.IsMatch(command, "^(<ScriptBlock>(<\\w+>)?)$") && Regex.IsMatch(frame.GetScriptLocation(), "^<.+>$"))))
                 {
                     return frame;
                 }
