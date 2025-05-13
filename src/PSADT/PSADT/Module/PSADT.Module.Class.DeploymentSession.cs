@@ -1080,10 +1080,11 @@ namespace PSADT.Module
         /// </summary>
         private void WriteInitialDivider(ref bool write)
         {
-            if (!write)
+            if (write)
             {
-                WriteLogDivider();
+                return;
             }
+            WriteLogDivider();
             write = true;
         }
 
