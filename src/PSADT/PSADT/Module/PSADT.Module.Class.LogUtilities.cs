@@ -57,7 +57,7 @@ namespace PSADT.Module
             }
             else
             {
-                CallStackFrame invoker = GetLogEntryCaller(ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).ToArray());
+                CallStackFrame invoker = GetLogEntryCaller(ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject));
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
                 callerSource = invoker.GetCommand();
             }
@@ -185,9 +185,9 @@ namespace PSADT.Module
         /// </summary>
         /// <param name="stackFrames">The call stack frames.</param>
         /// <returns>The call stack frame of the log entry caller.</returns>
-        private static CallStackFrame GetLogEntryCaller(CallStackFrame[] stackFrames)
+        private static CallStackFrame GetLogEntryCaller(IEnumerable<CallStackFrame> stackFrames)
         {
-            foreach (CallStackFrame frame in stackFrames)
+            foreach (var frame in stackFrames)
             {
                 // Get the command from the frame and test its validity.
                 if (frame.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, "^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\\w+>)?)$") || (Regex.IsMatch(command, "^(<ScriptBlock>(<\\w+>)?)$") && frame.GetScriptLocation().Equals("<No file>"))))
