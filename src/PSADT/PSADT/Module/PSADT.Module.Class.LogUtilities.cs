@@ -33,22 +33,18 @@ namespace PSADT.Module
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
 
-            // Determine whether we're able to log to disk.
-            bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
-            bool noRunspace = (null == Runspace.DefaultRunspace) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
-
             // Perform early return checks before wasting time.
+            bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
             if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogDebugMessage"]!))
             {
                 return new List<LogEntry>().AsReadOnly();
             }
 
-            // Variables used to determine the caller's source and filename.
+            // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
+            bool noRunspace = (null == Runspace.DefaultRunspace) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
             var stackFrames = new StackTrace(true).GetFrames().Skip(1);
             string callerFileName = string.Empty;
             string callerSource = string.Empty;
-
-            // Handle situations where we might be calling this function without an active runspace.
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
             {
                 var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT")); var method = invoker.GetMethod()!;
@@ -71,7 +67,7 @@ namespace PSADT.Module
             {
                 source = callerSource;
             }
-            if (string.IsNullOrWhiteSpace(logType))
+            if (canLogToDisk && string.IsNullOrWhiteSpace(logType))
             {
                 try
                 {
@@ -91,13 +87,6 @@ namespace PSADT.Module
                 scriptSection = null;
             }
 
-            // Store log string to format with message.
-            Dictionary<string, string> logFormats = new Dictionary<string, string>()
-            {
-                { "Legacy", $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-                { "CMTrace", $"<![LOG[{(null != scriptSection && message[0] != LogDivider ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}") },
-            };
-
             // Loop through each message and generate necessary log messages.
             // For CMTrace, we replace all empty lines with a space so OneTrace doesn't trim them.
             // When splitting the message, we want to trim all lines but not replace genuine
@@ -107,10 +96,10 @@ namespace PSADT.Module
             List<LogEntry> logEntries = new List<LogEntry>(message.Length);
             List<string> dskOutput = new List<string>(message.Length);
             List<string> conOutput = new List<string>(message.Length);
-            var dskFormat = logFormats[logType!]!;
-            var conFormat = logFormats["Legacy"]!;
-            if (logType == "CMTrace")
+            var conFormat = $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}");
+            if (logType != "Legacy")
             {
+                var dskFormat = $"<![LOG[{(null != scriptSection && message[0] != LogDivider ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}");
                 foreach (string msg in message)
                 {
                     var safeMsg = msg.Replace("\0", string.Empty).TrimEnd();
@@ -126,6 +115,7 @@ namespace PSADT.Module
             }
             else
             {
+                var dskFormat = conFormat;
                 foreach (var msg in message)
                 {
                     var safeMsg = msg.Replace("\0", string.Empty).TrimEnd();
