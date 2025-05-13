@@ -70,8 +70,8 @@
         }
     }
     RestartPrompt = @{
-        ButtonRestartLater = 'Minimaliseren'.
-        ButtonRestartNow = 'Nu opnieuw opstarten'.
+        ButtonRestartLater = 'Minimaliseren.'
+        ButtonRestartNow = 'Nu opnieuw opstarten.'
         Message = @{
             Install = 'Om de installatie te voltooien, moet u uw computer opnieuw opstarten.'
             Repair = 'Om de reparatie te voltooien, moet u uw computer opnieuw opstarten.'

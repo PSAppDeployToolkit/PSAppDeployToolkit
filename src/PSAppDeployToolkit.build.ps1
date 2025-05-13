@@ -46,6 +46,54 @@ Set-StrictMode -Version 3
 $ModuleName = [System.Text.RegularExpressions.Regex]::Match((Get-Item $BuildFile).Name, '^(.*)\.build\.ps1$').Groups[1].Value
 [System.Version]$requiredPSVersion = '5.1.0'
 
+# Helper function for comparing hashtable key structures.
+function Test-HashtableKeyStructure
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Hashtable]$Reference,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Hashtable]$Comparison
+    )
+
+    # Throw if there's any missing/extra keys.
+    $refKeys = $Reference.Keys; $cmpKeys = $Comparison.Keys
+    if ($missing = $refKeys | & { process { if (!$cmpKeys.Contains($_)) { return $_ } } })
+    {
+        throw "The following hashtable keys are missing: ['$([System.String]::Join($missing, "', '"))']."
+    }
+    if ($extras = $cmpKeys | & { process { if (!$refKeys.Contains($_)) { return $_ } } })
+    {
+        throw "The following hashtable keys are extras: ['$([System.String]::Join($extras, "', '"))']."
+    }
+
+    # Test each key's value, recursively processing child hashtables.
+    foreach ($key in $refKeys)
+    {
+        # Cache each hashtable's key value and whether it's a hashtable.
+        $vRef = $Reference[$key]; $vCmp = $Comparison[$key]
+        $vRefIsHash = $vRef -is [System.Collections.Hashtable]
+        $vCmpIsHash = $vCmp -is [System.Collections.Hashtable]
+
+        # If one is hashtable and the other isn’t, that’s a mismatch.
+        if ($vRefIsHash -xor $vCmpIsHash)
+        {
+            throw "The key value [$key] is a hashtable on one side and not the other."
+        }
+        elseif ($vRefIsHash -and $vCmpIsHash)
+        {
+            Test-HashtableKeyStructure -Reference $vRef -Comparison $vCmp
+        }
+    }
+    return $true
+}
+
 # Define our C# solutions to compile.
 $buildItems = @(
     @{
@@ -300,6 +348,33 @@ Add-BuildTask Analyze {
         throw '      One or more PSScriptAnalyzer errors/warnings where found.'
     }
     Write-Build Green '      ...Module Analyze Complete!'
+}
+
+# Synopsis: Analyze all translation files to ensure they match the structure of the English file.
+Add-BuildTask EncodingCheck {
+    Write-Build White '      Performing language translation file checks...'
+    Get-ChildItem -LiteralPath $ModuleSourcePath\Strings -Directory | Get-ChildItem -File | & {
+        begin
+        {
+            # Load and cache the English strings.psd1 file.
+            $Reference = Import-PowerShellDataFile -LiteralPath $ModuleSourcePath\Strings\strings.psd1
+        }
+
+        process
+        {
+            # Throw if there's any missing/extra keys.
+            Write-Build Gray "      Testing [$($_.FullName)]..."
+            try
+            {
+                $null = Test-HashtableKeyStructure -Reference $Reference -Comparison (Import-PowerShellDataFile -LiteralPath $_.FullName)
+            }
+            catch
+            {
+                throw "      $($_.Exception.Message)"
+            }
+        }
+    }
+    Write-Build Green '      ...Language Translation File Tests Complete!'
 }
 
 # Synopsis: Invokes all Pester Unit Tests in the Tests\Unit folder (if it exists).

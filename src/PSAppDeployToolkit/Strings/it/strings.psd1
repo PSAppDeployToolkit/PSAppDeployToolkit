@@ -70,8 +70,8 @@
         }
     }
     RestartPrompt = @{
-        ButtonRestartLater = 'Riduci a icona'.
-        ButtonRestartNow = 'Riavvia ora'.
+        ButtonRestartLater = 'Riduci a icona.'
+        ButtonRestartNow = 'Riavvia ora.'
         Message = @{
             Install = "Per completare l'installazione, deve riavviare il computer."
             Repair = "Affinché la riparazione sia completata, deve riavviare il computer."
@@ -117,10 +117,10 @@
             ButtonClose = 'Chiudere &Programmi'
             ButtonDefer = '&Rinviare'
             ButtonContinue = '&Continuare'
-            ButtonContinueTooltip = 'Selezioni “Continua” solo dopo aver chiuso le applicazioni sopra elencate'.
+            ButtonContinueTooltip = 'Selezioni “Continua” solo dopo aver chiuso le applicazioni sopra elencate.'
         }
         Fluent = @{
-            DialogMessage = 'Salvi il suo lavoro prima di continuare, perché le applicazioni seguenti verranno chiuse automaticamente'.
+            DialogMessage = 'Salvi il suo lavoro prima di continuare, perché le applicazioni seguenti verranno chiuse automaticamente.'
             DialogMessageNoProcesses = @{
                 Install = "Selezioni Install per continuare l'installazione. Se sono rimasti dei rinvii, può anche scegliere di ritardare l'installazione."
                 Repair = "Selezioni Repair per continuare con la riparazione. Se sono rimasti dei rinvii, può anche scegliere di ritardare la riparazione."

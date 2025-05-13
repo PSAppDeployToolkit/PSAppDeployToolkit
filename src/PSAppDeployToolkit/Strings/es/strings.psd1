@@ -29,7 +29,7 @@
     BlockExecutionText = @{
         Message = @{
             Install = 'Se ha bloqueado temporalmente el inicio de esta aplicación para que pueda completarse una operación de instalación.'
-            Repair = 'Se ha bloqueado temporalmente el inicio de esta aplicación para que pueda completarse una operación de reparación'.
+            Repair = 'Se ha bloqueado temporalmente el inicio de esta aplicación para que pueda completarse una operación de reparación.'
             Uninstall = 'Se ha bloqueado temporalmente el inicio de esta aplicación para que pueda completarse una operación de desinstalación.'
         }
         Subtitle = @{
@@ -73,7 +73,7 @@
         ButtonRestartLater = 'Minimizar'
         ButtonRestartNow = 'Reiniciar ahora'
         Message = @{
-            Install = 'Para que la instalación se complete, debe reiniciar su ordenador'.
+            Install = 'Para que la instalación se complete, debe reiniciar su ordenador.'
             Repair = 'Para que la reparación se complete, debe reiniciar su ordenador.'
             Uninstall = 'Para que la desinstalación se complete, debe reiniciar su ordenador.'
         }
@@ -135,7 +135,7 @@
                 Repair = 'Cerrar Aplicaciones y Reparar'
                 Uninstall = 'Cerrar Aplicaciones y Desinstalar'
             }
-            ButtonRightTextNoProcesos = @{
+            ButtonRightNoProcessesText = @{
                 Install = 'Instalar'
                 Repair = 'Reparar'
                 Uninstall = 'Desinstalar'

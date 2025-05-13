@@ -54,7 +54,7 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Asennus käynnissä. Odota...'.
+            Install = 'Asennus käynnissä. Odota...'
             Repair = 'Korjaus käynnissä. Odota...'
             Uninstall = 'Asennuksen poisto käynnissä. Odota...'
         }

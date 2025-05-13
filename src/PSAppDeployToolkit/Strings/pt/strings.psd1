@@ -107,7 +107,7 @@
             }
             DeferralsRemaining = 'Restantes adiamentos:'
             DeferralDeadline = 'Prazo:'
-            ExpiryWarning = 'Quando o adiamento expirar, deixará de ter a opção de adiar'.
+            ExpiryWarning = 'Quando o adiamento expirar, deixará de ter a opção de adiar.'
             CountdownDefer = @{
                 Install = 'A instalação continuará automaticamente em:'
                 Repair = 'A reparação continuará automaticamente em:'
@@ -117,10 +117,10 @@
             ButtonClose = 'Fechar &Programas'
             ButtonDefer = '&Deferir'
             ButtonContinue = '&Continuar'
-            ButtonContinueTooltip = 'Selecione “Continuar” apenas depois de fechar a(s) aplicação(ões) acima indicada(s)'.
+            ButtonContinueTooltip = 'Selecione “Continuar” apenas depois de fechar a(s) aplicação(ões) acima indicada(s).'
         }
         Fluent = @{
-            DialogMessage = 'Por favor, guarde o seu trabalho antes de continuar, pois as seguintes aplicações serão fechadas automaticamente'.
+            DialogMessage = 'Por favor, guarde o seu trabalho antes de continuar, pois as seguintes aplicações serão fechadas automaticamente.'
             DialogMessageNoProcesses = @{
                 Install = 'Selecione Install para continuar com a instalação. Se ainda tiver alguns adiamentos, também pode optar por adiar a instalação.'
                 Repair = 'Selecione Reparar para continuar com a reparação. Se ainda tiver alguns adiamentos, também pode optar por adiar a reparação.'
