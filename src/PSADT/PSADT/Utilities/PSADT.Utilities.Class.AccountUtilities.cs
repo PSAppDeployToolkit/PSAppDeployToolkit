@@ -83,5 +83,17 @@ namespace PSADT.Utilities
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
         }
+
+        /// <summary>
+        /// Returns the current user's username.
+        /// </summary>
+        /// <returns></returns>
+        public static string CallerUsername()
+        {
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                return identity.Name;
+            }
+        }
     }
 }

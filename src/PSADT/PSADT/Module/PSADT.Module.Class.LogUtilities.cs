@@ -7,10 +7,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Security.Principal;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using PSADT.Extensions;
+using PSADT.Utilities;
 
 namespace PSADT.Module
 {
@@ -209,7 +209,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the session caller's username.
         /// </summary>
-        private static readonly string Username = WindowsIdentity.GetCurrent().Name;
+        private static readonly string Username = AccountUtilities.CallerUsername();
 
         /// <summary>
         /// Gets the session's default log file encoding.
