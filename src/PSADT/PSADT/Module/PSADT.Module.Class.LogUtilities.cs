@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Security.Principal;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using PSADT.Extensions;
 
 namespace PSADT.Module
 {
@@ -58,7 +59,7 @@ namespace PSADT.Module
             {
                 CallStackFrame invoker = GetLogEntryCaller(ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).ToArray());
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
-                callerSource = GetPowerShellCallStackFrameCommand(invoker);
+                callerSource = invoker.GetCommand();
             }
 
             // Set up default values if not specified.
@@ -189,36 +190,12 @@ namespace PSADT.Module
             foreach (CallStackFrame frame in stackFrames)
             {
                 // Get the command from the frame and test its validity.
-                string command = GetPowerShellCallStackFrameCommand(frame);
-                if (!string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, "^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\\w+>)?)$") || (Regex.IsMatch(command, "^(<ScriptBlock>(<\\w+>)?)$") && frame.GetScriptLocation().Equals("<No file>"))))
+                if (frame.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, "^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\\w+>)?)$") || (Regex.IsMatch(command, "^(<ScriptBlock>(<\\w+>)?)$") && frame.GetScriptLocation().Equals("<No file>"))))
                 {
                     return frame;
                 }
             }
             return null!;
-        }
-
-        /// <summary>
-        /// Gets the PowerShell call stack frame command.
-        /// </summary>
-        /// <param name="frame">The call stack frame.</param>
-        /// <returns>The PowerShell call stack frame command.</returns>
-        private static string GetPowerShellCallStackFrameCommand(CallStackFrame frame)
-        {
-            // We must re-create the "Command" ScriptProperty as it's only available in PowerShell.
-            if (null == frame.InvocationInfo)
-            {
-                return frame.FunctionName;
-            }
-            if (null == frame.InvocationInfo.MyCommand)
-            {
-                return frame.InvocationInfo.InvocationName;
-            }
-            if (frame.InvocationInfo.MyCommand.Name != string.Empty)
-            {
-                return frame.InvocationInfo.MyCommand.Name;
-            }
-            return frame.FunctionName;
         }
 
         /// <summary>
