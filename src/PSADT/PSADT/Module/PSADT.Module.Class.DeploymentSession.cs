@@ -1088,6 +1088,15 @@ namespace PSADT.Module
         }
 
         /// <summary>
+        /// Gets the log buffer as a read-only list.
+        /// </summary>
+        /// <returns></returns>
+        public IReadOnlyList<LogEntry> GetLogBuffer()
+        {
+            return LogBuffer.AsReadOnly();
+        }
+
+        /// <summary>
         /// Gets the value of a property.
         /// </summary>
         /// <typeparam name="T"></typeparam>
