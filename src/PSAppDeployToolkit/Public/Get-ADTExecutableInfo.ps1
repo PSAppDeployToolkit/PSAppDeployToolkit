@@ -51,8 +51,8 @@ function Get-ADTExecutableInfo
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'InputObject', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding()]
+    [OutputType([PSADT.Execution.ExecutableInfo])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -61,6 +61,7 @@ function Get-ADTExecutableInfo
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
         [ValidateNotNullOrEmpty()]
+        [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InputObject', ValueFromPipeline = $true)]
@@ -70,39 +71,42 @@ function Get-ADTExecutableInfo
 
     begin
     {
-        # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
-        try
+        # Grab and cache all files.
+        $files = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
+        {
+            $gciParams = @{$PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+            Get-ChildItem @gciParams -File
+        }
+        else
+        {
+            $InputObject
+        }
+
+        # Return the executable info for each file, continuing to the next file on error by default.
+        Write-ADTLogEntry -Message "Retrieving executable info for ['$([System.String]::Join("', '", $files.FullName))']."
+        foreach ($file in $files)
         {
             try
             {
-                # Sanitise inputs via Get-ChildItem before farming it out to the backend.
-                ($values = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly) | Get-ChildItem | & {
-                    begin
-                    {
-                        Write-ADTLogEntry -Message "Retrieiving executable info for ['$([System.String]::Join($values, "', '"))']."
-                    }
-
-                    process
-                    {
-                        [PSADT.Execution.ExecutableUtilities]::GetExecutableInfo($_.FullName)
-                    }
+                try
+                {
+                    [PSADT.Execution.ExecutableUtilities]::GetExecutableInfo($file.FullName)
+                }
+                catch
+                {
+                    Write-Error -ErrorRecord $_
                 }
             }
             catch
             {
-                # Re-writing the ErrorRecord with Write-Error ensures the correct PositionMessage is used.
-                Write-Error -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
-        }
-        catch
-        {
-            # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
