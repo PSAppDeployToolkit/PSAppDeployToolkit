@@ -15,8 +15,14 @@ function Get-ADTPEFileArchitecture
 
         PE file extensions: .exe, .dll, .ocx, .drv, .sys, .scr, .efi, .cpl, .fon
 
-    .PARAMETER FilePath
-        Path to the PE file to examine.
+    .PARAMETER Path
+        One or more expandable executable paths to retrieve info from.
+
+    .PARAMETER LiteralPath
+        One or more literal executable paths to retrieve info from.
+
+    .PARAMETER InputObject
+        A FileInfo object to retrieve executable info from. Available for pipelining.
 
     .PARAMETER PassThru
         Get the file object, attach a property indicating the file binary type, and write to pipeline.
@@ -46,20 +52,24 @@ function Get-ADTPEFileArchitecture
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTPEFileArchitecture
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding()]
-    [OutputType([System.IO.FileInfo])]
     [OutputType([PSADT.Types.SystemArchitecture])]
     param
     (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateScript({
-                if (!$_.Exists -or ($_ -notmatch '\.(exe|dll|ocx|drv|sys|scr|efi|cpl|fon)$'))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'One or more files either does not exist or has an invalid extension.'))
-                }
-                return !!$_
-            })]
-        [System.IO.FileInfo[]]$FilePath,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$Path,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
+        [ValidateNotNullOrEmpty()]
+        [Alias('PSPath', 'FilePath')]
+        [System.String[]]$LiteralPath,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'InputObject', ValueFromPipeline = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.IO.FileInfo]$InputObject,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
@@ -67,7 +77,8 @@ function Get-ADTPEFileArchitecture
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        # Make this function continue on error.
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
         [System.Int32]$MACHINE_OFFSET = 4
         [System.Int32]$PE_POINTER_OFFSET = 60
         [System.Byte[]]$data = [System.Byte[]]::new(4096)
@@ -75,14 +86,26 @@ function Get-ADTPEFileArchitecture
 
     process
     {
-        foreach ($Path in $filePath)
+        # Grab and cache all files.
+        $files = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
+        {
+            $gciParams = @{$PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+            Get-ChildItem @gciParams -File
+        }
+        else
+        {
+            $InputObject
+        }
+
+        # Process each found file.
+        foreach ($file in $files)
         {
             try
             {
                 try
                 {
                     # Read the first 4096 bytes of the file.
-                    $stream = [System.IO.FileStream]::new($Path.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
+                    $stream = [System.IO.FileStream]::new($file.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
                     $null = $stream.Read($data, 0, $data.Count)
                     $stream.Flush()
                     $stream.Close()
@@ -90,12 +113,15 @@ function Get-ADTPEFileArchitecture
                     # Get the file header from the header's address, factoring in any offsets.
                     $peArchValue = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)
                     $peArchEnum = [PSADT.Types.SystemArchitecture]::Unknown; $null = [PSADT.Types.SystemArchitecture]::TryParse($peArchValue, [ref]$peArchEnum)
-                    Write-ADTLogEntry -Message "File [$($Path.FullName)] has a detected file architecture of [$peArchEnum]."
+                    Write-ADTLogEntry -Message "File [$($file.FullName)] has a detected file architecture of [$peArchEnum]."
                     if ($PassThru)
                     {
-                        return ($Path | Add-Member -MemberType NoteProperty -Name BinaryType -Value $peArchEnum -Force -PassThru)
+                        $file | Add-Member -MemberType NoteProperty -Name BinaryType -Value $peArchEnum -Force -PassThru
                     }
-                    return $peArchEnum
+                    else
+                    {
+                        $peArchEnum
+                    }
                 }
                 catch
                 {
@@ -111,6 +137,7 @@ function Get-ADTPEFileArchitecture
 
     end
     {
+        # Finalize function.
         Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
