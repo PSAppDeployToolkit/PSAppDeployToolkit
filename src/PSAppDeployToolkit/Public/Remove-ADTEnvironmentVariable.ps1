@@ -78,10 +78,10 @@ function Remove-ADTEnvironmentVariable
                 if ($Target)
                 {
                     Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$Variable] for [$Target]"))."
-                    return [System.Environment]::SetEnvironmentVariable($Variable, $null, $Target)
+                    [System.Environment]::SetEnvironmentVariable($Variable, $null, $Target)
                 }
                 Write-ADTLogEntry -Message "Removing $(($logSuffix = "the environment variable [$Variable]"))."
-                return [System.Environment]::SetEnvironmentVariable($Variable, $null)
+                [System.Environment]::SetEnvironmentVariable($Variable, $null)
             }
             catch
             {

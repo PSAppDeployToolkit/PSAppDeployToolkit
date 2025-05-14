@@ -85,10 +85,10 @@ function Set-ADTEnvironmentVariable
                 if ($Target)
                 {
                     Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$Target] to [$Value]"))."
-                    return [System.Environment]::SetEnvironmentVariable($Variable, $Value, $Target)
+                    [System.Environment]::SetEnvironmentVariable($Variable, $Value, $Target)
                 }
                 Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] to [$Value]"))."
-                return [System.Environment]::SetEnvironmentVariable($Variable, $Value)
+                [System.Environment]::SetEnvironmentVariable($Variable, $Value)
             }
             catch
             {
