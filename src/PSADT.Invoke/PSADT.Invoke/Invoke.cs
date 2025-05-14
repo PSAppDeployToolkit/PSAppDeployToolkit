@@ -426,7 +426,7 @@ namespace PSADT.Invoke
             {
                 pwshArguments += $" {string.Join(" ", cliArguments)}";
             }
-            return pwshArguments + "; [System.Environment]::Exit($Global:LASTEXITCODE)";
+            return pwshArguments + "; exit $Global:LASTEXITCODE";
         }
 
         /// <summary>
