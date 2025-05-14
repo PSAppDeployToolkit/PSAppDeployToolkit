@@ -88,8 +88,8 @@ function Remove-ADTFile
             {
                 try
                 {
-                    $rpParams = @{ $PSCmdlet.ParameterSetName = $Value }
-                    if (!($Item = Resolve-Path @rpParams | Select-Object -ExpandProperty Path))
+                    $giParams = @{ $PSCmdlet.ParameterSetName = $Value }
+                    if (!($Item = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
                     {
                         Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity 2
                         continue
