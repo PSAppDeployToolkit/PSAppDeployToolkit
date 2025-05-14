@@ -11,8 +11,22 @@ Determine if a PE file is a 32-bit or a 64-bit file.
 
 ## SYNTAX
 
+### Path
+
 ```powershell
-Get-ADTPEFileArchitecture [-FilePath] <FileInfo[]> [-PassThru] [<CommonParameters>]
+Get-ADTPEFileArchitecture -Path <String[]> [-PassThru] [<CommonParameters>]
+```
+
+### LiteralPath
+
+```powershell
+Get-ADTPEFileArchitecture -LiteralPath <String[]> [-PassThru] [<CommonParameters>]
+```
+
+### InputObject
+
+```powershell
+Get-ADTPEFileArchitecture -InputObject <FileInfo> [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,19 +45,52 @@ Get-ADTPEFileArchitecture -FilePath "$env:windir\notepad.exe"
 
 ## PARAMETERS
 
-### -FilePath
+### -Path
 
-Path to the PE file to examine.
+One or more expandable executable paths to retrieve info from.
 
 ```yaml
-Type: FileInfo[]
-Parameter Sets: (All)
+Type: String[]
+Parameter Sets: Path
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LiteralPath
+
+One or more literal executable paths to retrieve info from.
+
+```yaml
+Type: String[]
+Parameter Sets: LiteralPath
+Aliases: PSPath, FilePath
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InputObject
+
+A FileInfo object to retrieve executable info from.
+Available for pipelining.
+
+```yaml
+Type: FileInfo
+Parameter Sets: InputObject
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
