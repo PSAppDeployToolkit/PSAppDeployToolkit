@@ -215,8 +215,8 @@ function Copy-ADTFile
                         # Trim ending backslash from paths which can cause problems with Robocopy.
                         # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
-                        $robocopySource = (Resolve-Path -Path $srcPath.TrimEnd('\') -Force).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
-                        $robocopyDestination = Join-Path ((Resolve-Path -LiteralPath $Destination -Force).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (Split-Path -Path $srcPath -Leaf)
+                        $robocopySource = (Resolve-Path -Path $srcPath.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                        $robocopyDestination = Join-Path ((Resolve-Path -LiteralPath $Destination).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::') (Split-Path -Path $srcPath -Leaf)
                         $robocopyFile = '*'
                     }
                     else
@@ -232,9 +232,9 @@ function Copy-ADTFile
                         }
                         else
                         {
-                           (Resolve-Path -LiteralPath $ParentPath -Force).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                           (Resolve-Path -LiteralPath $ParentPath).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         }
-                        $robocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\') -Force).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
+                        $robocopyDestination = (Resolve-Path -LiteralPath $Destination.TrimEnd('\')).Path -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
                         $robocopyFile = (Split-Path -Path $srcPath -Leaf)
                     }
 
