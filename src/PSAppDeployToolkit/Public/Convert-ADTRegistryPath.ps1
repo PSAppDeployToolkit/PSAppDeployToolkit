@@ -123,7 +123,7 @@ function Convert-ADTRegistryPath
                 # Append the PowerShell provider to the registry key path.
                 if ($Key -notmatch '^Microsoft\.PowerShell\.Core\\Registry::')
                 {
-                    $Key = "Microsoft.PowerShell.Core\Registry::$key"
+                    $Key = "Microsoft.PowerShell.Core\Registry::$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($key))"
                 }
 
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
