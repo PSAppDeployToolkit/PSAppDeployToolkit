@@ -338,7 +338,7 @@ function Set-ADTActiveSetup
             $srkParams = if ($SID) { @{ SID = $SID } } else { @{} }
             Set-ADTRegistryKey -Key $RegPath -Name '(Default)' -Value $Description @srkParams
             Set-ADTRegistryKey -Key $RegPath -Name 'Version' -Value $Version @srkParams
-            Set-ADTRegistryKey -Key $RegPath -Name 'StubPath' -Value $StubPath -Type 'String' @srkParams
+            Set-ADTRegistryKey -Key $RegPath -Name 'StubPath' -Value $StubPath -Type ExpandString @srkParams
             if (![System.String]::IsNullOrWhiteSpace($Locale))
             {
                 Set-ADTRegistryKey -Key $RegPath -Name 'Locale' -Value $Locale @srkParams
@@ -389,7 +389,6 @@ function Set-ADTActiveSetup
                 }
 
                 # Copy file to $StubExePath from the 'Files' subdirectory of the script directory (if it exists there).
-                $StubExePath = [System.Environment]::ExpandEnvironmentVariables($StubExePath)
                 if ($adtSession -and $adtSession.DirFiles)
                 {
                     $StubExeFile = Join-Path -Path $adtSession.DirFiles -ChildPath $ActiveSetupFileName
