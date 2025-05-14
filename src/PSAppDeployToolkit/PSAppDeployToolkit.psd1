@@ -137,6 +137,7 @@
         'Register-ADTDll'
         'Remove-ADTContentFromCache'
         'Remove-ADTEdgeExtension'
+        'Remove-ADTEnvironmentVariable'
         'Remove-ADTFile'
         'Remove-ADTFileFromUserProfiles'
         'Remove-ADTFolder'
