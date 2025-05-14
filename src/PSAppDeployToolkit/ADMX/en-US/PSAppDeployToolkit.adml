@@ -61,8 +61,6 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<string id="RegPath_Explain">Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.</string>
 			<string id="RegPathNoAdminRights_Display">RegPathNoAdminRights</string>
 			<string id="RegPathNoAdminRights_Explain">Same as RegPath but used when RequireAdmin is False. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.</string>
-			<string id="RequireAdmin_Display">RequireAdmin</string>
-			<string id="RequireAdmin_Explain">Specify if Administrator Rights are required. Note: Some functions won't work if this is set to false, such as deferral, block execution, file &amp; registry RW access and potentially logging.</string>
 			<string id="SessionDetection_Display">SessionDetection</string>
 			<string id="SessionDetection_Explain">Automatically changes DeployMode for session zero (SYSTEM) operations.</string>
 			<string id="TempPath_Display">TempPath</string>

@@ -243,16 +243,6 @@
 				<text id="RegPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="RegPathNoAdminRights" required="true" />
 			</elements>
 		</policy>
-		<policy name="RequireAdmin" class="Machine" displayName="$(string.RequireAdmin_Display)" explainText="$(string.RequireAdmin_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="RequireAdmin">
-			<parentCategory ref="Toolkit" />
-			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
-			<enabledValue>
-				<string>True</string>
-			</enabledValue>
-			<disabledValue>
-				<string>False</string>
-			</disabledValue>
-		</policy>
 		<policy name="SessionDetection" class="Machine" displayName="$(string.SessionDetection_Display)" explainText="$(string.SessionDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="SessionDetection">
 			<parentCategory ref="Toolkit" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
