@@ -400,7 +400,7 @@ function Set-ADTActiveSetup
                 }
 
                 # Check if the $StubExePath file exists.
-                if (($StubExePath -notmatch '%\w+%')!(Test-Path -LiteralPath $StubExePath -PathType Leaf))
+                if (($StubExePath -notmatch '%\w+%') -and !(Test-Path -LiteralPath $StubExePath -PathType Leaf))
                 {
                     $naerParams = @{
                         Exception = [System.IO.FileNotFoundException]::new("Active Setup StubPath file [$ActiveSetupFileName] is missing.")
