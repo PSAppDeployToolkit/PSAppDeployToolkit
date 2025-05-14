@@ -32,7 +32,7 @@ function Remove-ADTFolder
     .EXAMPLE
         Remove-ADTFolder -Path "$envWinDir\Downloaded Program Files"
 
-        Deletes all files and subfolders in the Windows\Downloads Program Files folder.
+        Deletes all files and subfolders in the Windows\Downloaded Program Files folder.
 
     .EXAMPLE
         Remove-ADTFolder -Path "$envTemp\MyAppCache" -DisableRecursion
