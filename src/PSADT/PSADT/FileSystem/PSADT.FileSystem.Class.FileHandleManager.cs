@@ -25,17 +25,31 @@ namespace PSADT.FileSystem
     public static class FileHandleManager
     {
         /// <summary>
+        /// Static constructor to set up the necessary function pointers.
+        /// </summary>
+        static FileHandleManager()
+        {
+            // Load the necessary libraries and get the function pointers.
+            using (var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll"))
+            {
+                NtQueryObjectProcAddr = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
+            }
+            using (var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll"))
+            {
+                ExitThreadProcAddr = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
+            }
+        }
+
+        /// <summary>
         /// Retrieves a list of open handles, optionally filtered by path.
         /// </summary>
         /// <param name="directoryPath"></param>
         /// <returns></returns>
         public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? directoryPath = null)
         {
-            // Pre-calculate the sizes of the structures we need to read.
+            // Query the total system handle information.
             var handleEntryExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
             var handleInfoExSize = Marshal.SizeOf<NtDll.SYSTEM_HANDLE_INFORMATION_EX>();
-
-            // Query the total system handle information.
             using var handleBufferPtr = SafeHGlobalHandle.Alloc(handleInfoExSize + handleEntryExSize);
             var status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out int handleBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
@@ -44,17 +58,13 @@ namespace PSADT.FileSystem
                 status = NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBufferPtr, out handleBufferReqLength);
             }
 
-            // Set up required pointers for GetObjectName().
-            using var currentProcessHandle = Kernel32.GetCurrentProcess();
-            using var objectBufferPtr = SafeHGlobalHandle.Alloc(1024);
-            using var hKernel32Ptr = Kernel32.LoadLibrary("kernel32.dll");
-            using var hNtdllPtr = Kernel32.LoadLibrary("ntdll.dll");
-            var ntQueryObject = Kernel32.GetProcAddress(hNtdllPtr, "NtQueryObject");
-            var exitThread = Kernel32.GetProcAddress(hKernel32Ptr, "ExitThread");
-
             // Build a lookup table of NT device names. This must be built at runtime
             // as the device names are not static and can change between invocations.
             var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
+
+            // Set up required pointers for GetObjectName().
+            using var currentProcessHandle = Kernel32.GetCurrentProcess();
+            using var objectBufferPtr = SafeHGlobalHandle.Alloc(1024);
 
             // Start looping through all handles.
             var handleCount = handleBufferPtr.ToStructure<NtDll.SYSTEM_HANDLE_INFORMATION_EX>().NumberOfHandles.ToUInt32();
@@ -110,7 +120,7 @@ namespace PSADT.FileSystem
                 string? objectName;
                 try
                 {
-                    objectName = GetObjectName(currentProcessHandle, fileDupHandle, ntQueryObject, exitThread, objectBufferPtr);
+                    objectName = GetObjectName(currentProcessHandle, fileDupHandle, objectBufferPtr);
                     if (string.IsNullOrWhiteSpace(objectName) || !objectName!.StartsWith(@"\Device\HarddiskVolume"))
                     {
                         continue;
@@ -177,7 +187,7 @@ namespace PSADT.FileSystem
         /// <param name="exitThread"></param>
         /// <param name="objectBuffer"></param>
         /// <returns></returns>
-        private static string? GetObjectName(SafeFileHandle currentProcessHandle, SafeFileHandle fileHandle, FARPROC ntQueryObject, FARPROC exitThread, SafeHGlobalHandle objectBuffer)
+        private static string? GetObjectName(SafeFileHandle currentProcessHandle, SafeFileHandle fileHandle, SafeHGlobalHandle objectBuffer)
         {
             if (fileHandle is not object || fileHandle.IsClosed || fileHandle.IsInvalid)
             {
@@ -193,7 +203,7 @@ namespace PSADT.FileSystem
             try
             {
                 // Start the thread to retrieve the object name and wait for the outcome.
-                using (var shellcode = GetObjectTypeShellcode(exitThread, ntQueryObject, fileHandle.DangerousGetHandle(), OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length))
+                using (var shellcode = GetObjectTypeShellcode(NtQueryObjectProcAddr, fileHandle.DangerousGetHandle(), OBJECT_INFORMATION_CLASS.ObjectNameInformation, objectBuffer.DangerousGetHandle(), objectBuffer.Length, ExitThreadProcAddr))
                 {
                     NtDll.NtCreateThreadEx(out var hThread, THREAD_ACCESS_RIGHTS.THREAD_ALL_ACCESS, IntPtr.Zero, currentProcessHandle, shellcode, IntPtr.Zero, 0, 0, 0, 0, IntPtr.Zero);
                     using (hThread)
@@ -244,11 +254,9 @@ namespace PSADT.FileSystem
         /// <returns></returns>
         private static ReadOnlyDictionary<ushort, string> GetObjectTypeLookupTable()
         {
-            // Pre-calculate the sizes of the structures we need to read.
+            // Query the system for all object type info.
             var objectTypesSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
             var objectTypeSize = NtDll.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
-
-            // Query the system for all object type info.
             using var typesBufferPtr = SafeHGlobalHandle.Alloc(objectTypesSize);
             var status = NtDll.NtQueryObject(SafeBaseHandle.NullHandle, OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out int typesBufferReqLength);
             while (status == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
@@ -281,7 +289,7 @@ namespace PSADT.FileSystem
         /// <param name="infoBuffer"></param>
         /// <returns></returns>
         /// <exception cref="PlatformNotSupportedException"></exception>
-        private static SafeVirtualAllocHandle GetObjectTypeShellcode(IntPtr exitThread, IntPtr ntQueryObject, IntPtr fileHandle, OBJECT_INFORMATION_CLASS infoClass, IntPtr infoBuffer, int infoBufferLength)
+        private static SafeVirtualAllocHandle GetObjectTypeShellcode(FARPROC ntQueryObject, IntPtr fileHandle, OBJECT_INFORMATION_CLASS infoClass, IntPtr infoBuffer, int infoBufferLength, FARPROC exitThread)
         {
             // Build the shellcode stub to call NtQueryObject.
             var shellcode = new List<byte>();
@@ -313,7 +321,7 @@ namespace PSADT.FileSystem
 
                     // mov rax, NtQueryObject
                     shellcode.Add(0x48); shellcode.Add(0xB8);
-                    shellcode.AddRange(BitConverter.GetBytes((ulong)ntQueryObject));
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)ntQueryObject.Value));
 
                     // call rax
                     shellcode.Add(0xFF); shellcode.Add(0xD0);
@@ -323,7 +331,7 @@ namespace PSADT.FileSystem
 
                     // mov rax, ExitThread
                     shellcode.Add(0x48); shellcode.Add(0xB8);
-                    shellcode.AddRange(BitConverter.GetBytes((ulong)exitThread));
+                    shellcode.AddRange(BitConverter.GetBytes((ulong)exitThread.Value));
 
                     // call rax
                     shellcode.Add(0xFF); shellcode.Add(0xD0);
@@ -351,7 +359,7 @@ namespace PSADT.FileSystem
 
                     // mov eax, NtQueryObject
                     shellcode.Add(0xB8);
-                    shellcode.AddRange(BitConverter.GetBytes(ntQueryObject.ToInt32()));
+                    shellcode.AddRange(BitConverter.GetBytes(ntQueryObject.Value.ToInt32()));
 
                     // call eax
                     shellcode.Add(0xFF); shellcode.Add(0xD0);
@@ -361,7 +369,7 @@ namespace PSADT.FileSystem
 
                     // mov eax, ExitThread
                     shellcode.Add(0xB8);
-                    shellcode.AddRange(BitConverter.GetBytes(exitThread.ToInt32()));
+                    shellcode.AddRange(BitConverter.GetBytes(exitThread.Value.ToInt32()));
 
                     // call eax
                     shellcode.Add(0xFF); shellcode.Add(0xD0);
@@ -384,13 +392,13 @@ namespace PSADT.FileSystem
                     code.AddRange(NativeUtilities.Load64(4, 0));
 
                     // x16 = NtQueryObject
-                    code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject.ToInt64()));
+                    code.AddRange(NativeUtilities.Load64(16, (ulong)ntQueryObject.Value.ToInt64()));
 
                     // br x16
                     code.Add(NativeUtilities.EncodeBr(16));
 
                     // x16 = ExitThread. result is in x0 → already correct for ExitThread
-                    code.AddRange(NativeUtilities.Load64(16, (ulong)exitThread.ToInt64()));
+                    code.AddRange(NativeUtilities.Load64(16, (ulong)exitThread.Value.ToInt64()));
 
                     // br x16
                     code.Add(NativeUtilities.EncodeBr(16));
@@ -418,5 +426,17 @@ namespace PSADT.FileSystem
         /// The duration to wait for a hung NtQueryObject thread to terminate.
         /// </summary>
         private static readonly TimeSpan GetObjectNameThreadTimeout = TimeSpan.FromMilliseconds(125);
+
+        /// <summary>
+        /// Represents the function pointer for the NtQueryObject native API method.
+        /// </summary>
+        /// <remarks>This field holds the address of the NtQueryObject function, which is resolved at runtime. It is intended for internal use only and should not be accessed directly by external code.</remarks>
+        private static readonly FARPROC NtQueryObjectProcAddr;
+
+        /// <summary>
+        /// Represents the address of the ExitThread procedure in the native library.
+        /// </summary>
+        /// <remarks>This field holds a function pointer to the ExitThread procedure, which is typically used in low-level interop scenarios. It is initialized to the appropriate address during runtime and should not be modified directly.</remarks>
+        private static readonly FARPROC ExitThreadProcAddr;
     }
 }
