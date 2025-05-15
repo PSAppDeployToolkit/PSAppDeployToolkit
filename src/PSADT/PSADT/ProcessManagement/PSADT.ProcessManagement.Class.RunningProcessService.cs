@@ -177,18 +177,22 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Calculate a description for the running application.
-                    var procInfo = FileVersionInfo.GetVersionInfo(commandLine[0]); string procDescription;
+                    string procDescription;
                     if (!string.IsNullOrWhiteSpace(processDefinition.Description))
                     {
                         procDescription = processDefinition.Description!;
                     }
-                    else if (!string.IsNullOrWhiteSpace(procInfo.FileDescription))
-                    {
-                        procDescription = procInfo.FileDescription;
-                    }
                     else
                     {
-                        procDescription = process.ProcessName;
+                        var procInfo = FileVersionInfo.GetVersionInfo(commandLine[0]);
+                        if (!string.IsNullOrWhiteSpace(procInfo.FileDescription))
+                        {
+                            procDescription = procInfo.FileDescription;
+                        }
+                        else
+                        {
+                            procDescription = process.ProcessName;
+                        }
                     }
 
                     // Store the process information.
