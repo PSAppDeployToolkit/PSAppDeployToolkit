@@ -8,7 +8,7 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessToClose"/> class.
         /// </summary>
-        /// <param name="process"></param>
+        /// <param name="runningProcess"></param>
         internal ProcessToClose(RunningProcess runningProcess)
         {
             Name = runningProcess.Process.ProcessName;
