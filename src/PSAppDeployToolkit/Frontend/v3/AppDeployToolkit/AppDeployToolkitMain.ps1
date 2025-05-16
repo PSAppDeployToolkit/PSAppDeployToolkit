@@ -5054,6 +5054,9 @@ function Write-FunctionHeaderOrFooter
         [System.Management.Automation.SwitchParameter]$Footer
     )
 
+    # Set strict mode to the highest within this function's scope.
+    Set-StrictMode -Version 3
+
     if ($Header)
     {
         Write-ADTLogEntry -Message 'Function Start' -Source ${CmdletName} -DebugMessage
