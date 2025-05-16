@@ -58,7 +58,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Instantiates a new CloseApps dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.Strings.CustomMessage, options.CountdownDuration, null, "Continue")
+        internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.Strings.CustomMessage, options.CountdownDuration, null, options.CountdownStopwatch, "Continue")
         {
             // Set up the context for data binding
             DataContext = this;
@@ -264,17 +264,18 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Handles the click event of the close button.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected override void CountdownTimer_Tick(object? sender, EventArgs e)
+        /// <param name="state"></param>
+        protected override void CountdownTimer_Tick(object? state)
         {
             // Call the base timer and test local expiration.
-            base.CountdownTimer_Tick(sender, e);
-            var dateTime = DateTime.Now;
-            if (_countdownEnd - dateTime < TimeSpan.Zero)
+            base.CountdownTimer_Tick(state);
+            if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                Result = "Continue";
-                CloseDialog();
+                Dispatcher.Invoke(() =>
+                {
+                    Result = "Continue";
+                    CloseDialog();
+                });
             }
         }
 

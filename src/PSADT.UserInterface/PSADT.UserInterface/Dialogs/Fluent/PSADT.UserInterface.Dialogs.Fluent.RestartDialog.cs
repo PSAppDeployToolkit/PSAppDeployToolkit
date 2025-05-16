@@ -75,20 +75,18 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Handles the countdown timer tick event.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected override void CountdownTimer_Tick(object? sender, EventArgs e)
+        /// <param name="state"></param>
+        protected override void CountdownTimer_Tick(object? state)
         {
             // Call the base timer and test local expiration.
-            base.CountdownTimer_Tick(sender, e);
-            var dateTime = DateTime.Now;
-            if ((_countdownEnd - dateTime) < TimeSpan.Zero)
+            base.CountdownTimer_Tick(state);
+            if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
                 DialogTools.RestartComputer();
             }
-            else if (null != _countdownWarningEnd && (_countdownWarningEnd - dateTime) < TimeSpan.Zero)
+            else if (null != _countdownWarningDuration && _countdownStopwatch.Elapsed >= _countdownWarningDuration)
             {
-                ButtonLeft.IsEnabled = false;
+                Dispatcher.Invoke(() => ButtonLeft.IsEnabled = false);
             }
         }
     }
