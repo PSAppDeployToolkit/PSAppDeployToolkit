@@ -102,7 +102,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="FileCopyMode" class="Machine" displayName="$(string.FileCopyMode_Display)" explainText="$(string.FileCopyMode_Explain)" presentation="$(presentation.FileCopyMode)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -130,7 +130,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="LogDebugMessage" class="Machine" displayName="$(string.LogDebugMessage_Display)" explainText="$(string.LogDebugMessage_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogDebugMessage">
@@ -140,7 +140,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="LogMaxHistory" class="Machine" displayName="$(string.LogMaxHistory_Display)" explainText="$(string.LogMaxHistory_Explain)" presentation="$(presentation.LogMaxHistory)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -178,7 +178,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="LogStyle" class="Machine" displayName="$(string.LogStyle_Display)" explainText="$(string.LogStyle_Explain)" presentation="$(presentation.LogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -206,7 +206,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="LogHostOutputToStdStreams" class="Machine" displayName="$(string.LogHostOutputToStdStreams_Display)" explainText="$(string.LogHostOutputToStdStreams_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogHostOutputToStdStreams">
@@ -216,7 +216,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="OobeDetection" class="Machine" displayName="$(string.OobeDetection_Display)" explainText="$(string.OobeDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="OobeDetection">
@@ -226,7 +226,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="RegPath" class="Machine" displayName="$(string.RegPath_Display)" explainText="$(string.RegPath_Explain)" presentation="$(presentation.RegPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -250,7 +250,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="TempPath" class="Machine" displayName="$(string.TempPath_Display)" explainText="$(string.TempPath_Explain)" presentation="$(presentation.TempPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
@@ -274,7 +274,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="BalloonTitle" class="Machine" displayName="$(string.BalloonTitle_Display)" explainText="$(string.BalloonTitle_Explain)" presentation="$(presentation.BalloonTitle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
@@ -344,7 +344,7 @@
 				<string>True</string>
 			</enabledValue>
 			<disabledValue>
-				<string>False</string>
+				<disabled />
 			</disabledValue>
 		</policy>
 		<policy name="DynamicProcessEvaluationInterval" class="Machine" displayName="$(string.DynamicProcessEvaluationInterval_Display)" explainText="$(string.DynamicProcessEvaluationInterval_Explain)" presentation="$(presentation.DynamicProcessEvaluationInterval)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
