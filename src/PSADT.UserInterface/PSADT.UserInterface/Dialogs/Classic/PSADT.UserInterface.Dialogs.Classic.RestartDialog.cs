@@ -136,7 +136,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.Invoke(() => labelCountdown.Text = FormatTime(remaining));
             if (remaining <= TimeSpan.Zero)
             {
-                DialogTools.RestartComputer();
+                buttonRestartNow.PerformClick();
             }
             else if ((null != minimizeDuration) && (countdownStopwatch.Elapsed >= minimizeDuration))
             {
