@@ -145,13 +145,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
-        /// Format the time span to a string.
-        /// </summary>
-        /// <param name="ts"></param>
-        /// <returns></returns>
-        private static string FormatTime(TimeSpan ts) => $"{ts.Days * 24 + ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
-
-        /// <summary>
         /// A restart countdown timer to perform an automatic reboot.
         /// </summary>
         private readonly System.Threading.Timer? countdownTimer;

@@ -96,6 +96,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
+        /// Format the time span to a string.
+        /// </summary>
+        /// <param name="ts"></param>
+        /// <returns></returns>
+        protected static string FormatTime(TimeSpan ts) => $"{ts.Days * 24 + ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
+
+        /// <summary>
         /// Handles the click event of the left button.
         /// </summary>
         /// <param name="sender"></param>
