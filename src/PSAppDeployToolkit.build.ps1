@@ -47,7 +47,7 @@ $ModuleName = [System.Text.RegularExpressions.Regex]::Match((Get-Item $BuildFile
 [System.Version]$requiredPSVersion = '5.1.0'
 
 # Helper function for comparing hashtable key structures.
-function Test-HashtableKeyStructure
+function Confirm-HashtableStructuresAreEqual
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
@@ -66,11 +66,11 @@ function Test-HashtableKeyStructure
     $refKeys = $Reference.Keys; $cmpKeys = $Comparison.Keys
     if ($missing = $refKeys | & { process { if (!$cmpKeys.Contains($_)) { return $_ } } })
     {
-        throw "The following hashtable keys are missing: ['$([System.String]::Join($missing, "', '"))']."
+        throw "The following hashtable keys are missing: ['$([System.String]::Join("', '", $missing))']."
     }
     if ($extras = $cmpKeys | & { process { if (!$refKeys.Contains($_)) { return $_ } } })
     {
-        throw "The following hashtable keys are extras: ['$([System.String]::Join($extras, "', '"))']."
+        throw "The following hashtable keys are extras: ['$([System.String]::Join("', '", $extras))']."
     }
 
     # Test each key's value, recursively processing child hashtables.
@@ -88,8 +88,80 @@ function Test-HashtableKeyStructure
         }
         elseif ($vRefIsHash -and $vCmpIsHash)
         {
-            Test-HashtableKeyStructure -Reference $vRef -Comparison $vCmp
+            Confirm-HashtableStructuresAreEqual -Reference $vRef -Comparison $vCmp
         }
+    }
+    return $true
+}
+function Confirm-ADTAdmxTemplateMatchesConfig
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ConfigPath,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$AdmxPath
+    )
+
+    # Internal worker function for processing each hashtable.
+    function Confirm-ADTAdmxCategoryMatchesConfigSection
+    {
+        [CmdletBinding()]
+        param
+        (
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.String]$Category,
+
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [System.Collections.Hashtable]$Section
+        )
+
+        # Recursively process subsections that are hashtables.
+        $sectionProps = foreach ($kvp in $Section.GetEnumerator())
+        {
+            if ($kvp.Value -is [System.Collections.Hashtable])
+            {
+                Confirm-ADTAdmxCategoryMatchesConfigSection -Category $kvp.Key -Section $kvp.Value
+            }
+            else
+            {
+                $kvp.Key
+            }
+        }
+
+        # Test our collected session properties.
+        $admxProps = $admxData.policyDefinitions.policies.policy | & { process { if ($_.parentCategory.ref.Equals($Category)) { return $_.Name.Split('_')[0] } } }
+        if ($missing = $sectionProps | & { process { if (($admxProps -notcontains $_) -and (!$categoryExclusions.ContainsKey($Category) -or ($categoryExclusions.$Category -notcontains $_))) { return $_ } } })
+        {
+            throw "The ADMX category [$Category] is missing the following config options: ['$([System.String]::Join("', '", $missing))']."
+        }
+        if ($extras = $admxProps | & { process { if ($sectionProps -notcontains $_) { return $_ } } })
+        {
+            throw "The ADMX category [$Category] has the following extra config options: ['$([System.String]::Join("', '", $extras))']."
+        }
+    }
+
+    # Define list of category exclusions.
+    $categoryExclusions = @{
+        Toolkit = @('RequireAdmin')
+    }
+
+    # Import config and XML as required.
+    $adtConfig = Import-PowerShellDataFile -LiteralPath $ConfigPath
+    $admxData = [System.Xml.XmlDocument]::new()
+    $admxData.Load($AdmxPath)
+
+    # Process the hashtable. We assume that each initial section is a hashtable.
+    foreach ($kvp in $adtConfig.GetEnumerator())
+    {
+        Confirm-ADTAdmxCategoryMatchesConfigSection -Category $kvp.Key -Section $kvp.Value
     }
     return $true
 }
@@ -118,7 +190,10 @@ $str += 'DotNetBuild'
 $str += 'ImportModuleManifest'
 $str += 'EncodingCheck'
 $str += 'FormattingCheck'
-$str += 'Analyze', 'Test'
+$str += 'ConfigCheck'
+$str += 'StringTableCheck'
+$str += 'Analyze'
+$str += 'Test'
 $str += 'CreateHelpStart'
 $str2 = $str
 $str2 += 'Build'
@@ -350,8 +425,22 @@ Add-BuildTask Analyze {
     Write-Build Green '      ...Module Analyze Complete!'
 }
 
+# Synopsis: Analyze config and sure all options are properly represented within the ADMX template.
+Add-BuildTask ConfigCheck {
+    Write-Build White '      Performing config ADMX template check...'
+    try
+    {
+        $null = Confirm-ADTAdmxTemplateMatchesConfig -ConfigPath $ModuleSourcePath\Config\config.psd1 -AdmxPath $ModuleSourcePath\ADMX\$ModuleName.admx
+    }
+    catch
+    {
+        throw "      $($_.Exception.Message)"
+    }
+    Write-Build Green '      ...ADMX Template Checks Complete!'
+}
+
 # Synopsis: Analyze all translation files to ensure they match the structure of the English file.
-Add-BuildTask EncodingCheck {
+Add-BuildTask StringTableCheck {
     Write-Build White '      Performing language translation file checks...'
     Get-ChildItem -LiteralPath $ModuleSourcePath\Strings -Directory | Get-ChildItem -File | & {
         begin
@@ -366,7 +455,7 @@ Add-BuildTask EncodingCheck {
             Write-Build Gray "      Testing [$($_.FullName)]..."
             try
             {
-                $null = Test-HashtableKeyStructure -Reference $Reference -Comparison (Import-PowerShellDataFile -LiteralPath $_.FullName)
+                $null = Confirm-HashtableStructuresAreEqual -Reference $Reference -Comparison (Import-PowerShellDataFile -LiteralPath $_.FullName)
             }
             catch
             {

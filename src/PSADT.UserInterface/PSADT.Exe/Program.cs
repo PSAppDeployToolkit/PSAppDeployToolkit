@@ -5,6 +5,7 @@ using System.Management.Automation.Language;
 using System.Threading;
 using PSADT.Module;
 using PSADT.ProcessManagement;
+using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
 
@@ -33,8 +34,7 @@ namespace PSADT.UserInterface
             string subtitle = "Bisto Systems Ltd - App Install";
             string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\PSADT.UserInterface\Resources\appIcon.png");
             string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\PSADT.UserInterface\Resources\Banner.Classic.png");
-            //string? dialogAccentColor = "";
-            string dialogAccentColor = "#FFFFB900"; // Yellow
+            var dialogAccentColor = ValueTypeConverter.ToInt(0xFFFFB900); // Yellow
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;

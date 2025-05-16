@@ -76,7 +76,7 @@ namespace PSADT.UserInterface.DialogOptions
             }
             if (options.ContainsKey("DialogAccentColor"))
             {
-                if (options["DialogAccentColor"] is not string dialogAccentColor || string.IsNullOrWhiteSpace(dialogAccentColor))
+                if (options["DialogAccentColor"] is not int dialogAccentColor)
                 {
                     throw new ArgumentOutOfRangeException("DialogAccentColor value is not valid.", (Exception?)null);
                 }
@@ -139,7 +139,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
-        public readonly string? DialogAccentColor;
+        public readonly int? DialogAccentColor;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.

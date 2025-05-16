@@ -48,13 +48,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, string? countdownDialogResult = null)
         {
             // Process the given accent color from the options
-            if (!string.IsNullOrWhiteSpace(options.DialogAccentColor))
+            if (null != options.DialogAccentColor)
             {
                 // Don't update the window accent as we're setting it manually
                 SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
 
                 // Apply the accent color to the application theme
-                ApplicationAccentColorManager.Apply(StringToColor(options.DialogAccentColor!), ApplicationThemeManager.GetAppTheme(), true);
+                ApplicationAccentColorManager.Apply(StringToColor(options.DialogAccentColor.Value), ApplicationThemeManager.GetAppTheme(), true);
 
                 // Update the accent color in the theme dictionary
                 // See https://github.com/lepoco/wpfui/issues/1188 for more info.
@@ -421,19 +421,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="colorStr"></param>
         /// <returns></returns>
-        /// <exception cref="FormatException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
-        private static Color StringToColor(string colorStr)
+        private static Color StringToColor(int color)
         {
-            if (!Regex.IsMatch(colorStr, "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"))
-            {
-                throw new FormatException("Invalid hex color string.");
-            }
-            if (!(TypeDescriptor.GetConverter(typeof(Color)).ConvertFromString(colorStr) is Color result))
-            {
-                throw new InvalidOperationException("Failed to convert color string to Color.");
-            }
-            return result;
+            var colorBytes = BitConverter.GetBytes(color);
+            return Color.FromArgb(colorBytes[3], colorBytes[2], colorBytes[1], colorBytes[0]);
         }
 
         /// <summary>

@@ -100,23 +100,11 @@
         # The name to show by default for all balloon notifications.
         BalloonTitle = 'PSAppDeployToolkit'
 
+        # Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.
+        DialogAccentColor = $null
+
         # Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.
         DialogStyle = 'Fluent'
-
-        DialogStyleFluentOptions = @{
-
-            # Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. '#FF0078D7'. This is used to highlight UI elements such as buttons and progress bars, as well as the vertical sidebar.
-            AccentColor = ''
-
-            # Specify whether the user should be allowed to move the dialog from its default position. Valid options are: True, False (Default).
-            AllowMove = $false
-
-            # Specify the length of time in minutes before the dialog should time out / expire. Default: 55 minutes (5 mins below the default Intune timeout).
-            ExpiryDuration = 55
-
-            # Specify where the dialog should be positioned on screen. Valid options are: Center, TopCenter and BottomRight (Default).
-            Position = 'BottomRight'
-        }
 
         # Exit code used when a UI prompt times out.
         DefaultExitCode = 1618
