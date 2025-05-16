@@ -55,12 +55,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessage);
                 }
 
-                if (percentComplete != null)
+                if (!(ProgressBar.IsIndeterminate = percentComplete == null))
                 {
                     // Create a smooth animation for the progress value
                     var animation = new DoubleAnimation
                     {
-                        To = percentComplete.Value,
+                        To = percentComplete!.Value,
                         Duration = TimeSpan.FromMilliseconds(300),
                         EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
                     };
@@ -73,13 +73,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
                     // Update accessibility properties
                     AutomationProperties.SetName(ProgressBar, $"Progress: {percentComplete:F0}%");
-
-                    // Turn off indeterminate mode if it was on
-                    ProgressBar.IsIndeterminate = false;
-                }
-                else
-                {
-                    ProgressBar.IsIndeterminate = true;
                 }
             });
         }
