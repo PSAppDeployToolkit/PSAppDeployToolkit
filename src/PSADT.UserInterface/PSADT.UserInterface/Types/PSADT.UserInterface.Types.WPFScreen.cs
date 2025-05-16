@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -23,7 +24,7 @@ namespace PSADT.UserInterface.Types
             if (multiMonitorSupport && monitor != PRIMARY_MONITOR)
             {
                 User32.GetMonitorInfo((HMONITOR)monitor, out MONITORINFOEXW info);
-                DeviceName = info.szDevice.ToString().Replace("\0", string.Empty).Trim();
+                DeviceName = info.szDevice.ToString().TrimRemoveNull();
                 Primary = (info.monitorInfo.dwFlags & PInvoke.MONITORINFOF_PRIMARY) != 0;
                 Bounds = new Rect(
                     info.monitorInfo.rcMonitor.left,

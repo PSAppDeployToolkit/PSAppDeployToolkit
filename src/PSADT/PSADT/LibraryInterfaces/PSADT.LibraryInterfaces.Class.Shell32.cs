@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
+using PSADT.Extensions;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -319,7 +320,7 @@ namespace PSADT.LibraryInterfaces
                 var args = new string[pNumArgs];
                 for (var i = 0; i < pNumArgs; i++)
                 {
-                    args[i] = res[i].ToString().Replace("\0", string.Empty).Trim();
+                    args[i] = res[i].ToString().TrimRemoveNull();
                 }
                 return args.Where(static str => !string.IsNullOrWhiteSpace(str)).ToArray();
             }

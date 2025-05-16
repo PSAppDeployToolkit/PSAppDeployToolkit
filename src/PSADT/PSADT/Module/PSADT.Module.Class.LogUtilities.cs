@@ -105,7 +105,7 @@ namespace PSADT.Module
                     var safeMsg = msg.Replace("\0", string.Empty).TrimEnd();
                     if (!string.IsNullOrWhiteSpace(safeMsg))
                     {
-                        var dskLine = string.Format(dskFormat, safeMsg.Contains((char)10) ? (string.Join(Environment.NewLine, safeMsg.Trim().Split((char)10).Select(static m => Regex.Replace(m.Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : safeMsg.Replace("\0", string.Empty));
+                        var dskLine = string.Format(dskFormat, safeMsg.Contains((char)10) ? (string.Join(Environment.NewLine, safeMsg.Trim().Split((char)10).Select(static m => Regex.Replace(m.Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : safeMsg);
                         var conLine = string.Format(conFormat, safeMsg);
                         logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource, conLine, dskLine));
                         dskOutput.Add(dskLine);

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using Windows.Wdk.System.Threading;
@@ -27,7 +28,7 @@ namespace PSADT.ProcessManagement
                 using (var buffer = SafeHGlobalHandle.Alloc((int)requiredLength))
                 {
                     NtDll.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
-                    return buffer.ToStructure<UNICODE_STRING>().Buffer.ToString().Replace("\0", string.Empty).Trim();
+                    return buffer.ToStructure<UNICODE_STRING>().Buffer.ToString().TrimRemoveNull();
                 }
             }
         }
@@ -52,7 +53,7 @@ namespace PSADT.ProcessManagement
                     // Assign the ImageName buffer and perform the query again.
                     processIdInfo.ImageName.Buffer = imageNamePtr.ToPWSTR();
                     NtDll.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, processIdInfoPtr.FromStructure(processIdInfo, false), out _);
-                    var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().Replace("\0", string.Empty).Trim();
+                    var imagePath = processIdInfoPtr.ToStructure<NtDll.SYSTEM_PROCESS_ID_INFORMATION>().ImageName.Buffer.ToString().TrimRemoveNull();
 
                     // If we have a lookup table, replace the NT path with the drive letter before returning.
                     if (ntPathLookupTable != null)
