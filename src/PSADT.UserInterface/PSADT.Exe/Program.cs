@@ -165,7 +165,7 @@ namespace PSADT.UserInterface
             try
             {
                 // Show CloseApps Dialog
-                var closeAppsResult = DialogManager.ShowCloseAppsDialog(new CloseAppsDialogOptions(closeAppsDialogOptions, deploymentType)); // Pass the service as optional parameter
+                var closeAppsResult = DialogManager.ShowCloseAppsDialog(new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions)); // Pass the service as optional parameter
 
                 Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
 
@@ -204,7 +204,7 @@ namespace PSADT.UserInterface
                 // #################################################################################
 
                 // Show Restart Dialog
-                var restartResult = DialogManager.ShowRestartDialog(new RestartDialogOptions(restartDialogOptions, deploymentType));
+                var restartResult = DialogManager.ShowRestartDialog(new RestartDialogOptions(deploymentType, restartDialogOptions));
 
                 Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
 
