@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Forms;
 using PSADT.UserInterface.DialogOptions;
 
@@ -44,8 +45,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set the countdown timer.
                 if (null != options.CountdownDuration)
                 {
-                    this.countdownTimer = new Timer() { Interval = 1000 };
-                    this.countdownTimer.Tick += CountdownTimer_Tick;
+                    this.countdownTimer = new System.Threading.Timer(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     this.countdownDuration = options.CountdownDuration.Value;
                     if (null != options.CountdownNoMinimizeDuration)
                     {
@@ -93,11 +93,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Start the counterdown timer if we have one.
             if (null != countdownTimer)
             {
-                var dateTime = DateTime.Now;
-                countdownEnd = dateTime.Add(countdownDuration);
-                minimizeEnd = dateTime.Add(minimizeDuration);
-                labelCountdown.Text = FormatTime(countdownDuration);
-                countdownTimer.Start();
+                countdownStopwatch.Start();
+                countdownTimer.Change(0, 1000);
             }
         }
 
@@ -128,22 +125,22 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Ticker for the countdown timer.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CountdownTimer_Tick(object? sender, EventArgs e)
+        /// <param name="state"></param>
+        private void CountdownTimer_Tick(object? state)
         {
-            var dateTime = DateTime.Now;
-            var remaining = countdownEnd - dateTime;
-            labelCountdown.Text = FormatTime(remaining);
+            var remaining = countdownDuration - countdownStopwatch.Elapsed;
+            if (remaining < TimeSpan.Zero)
+            {
+                remaining = TimeSpan.Zero;
+            }
+            this.Invoke(() => labelCountdown.Text = FormatTime(remaining));
             if (remaining <= TimeSpan.Zero)
             {
-                // Reboot the system and hard-exit this process.
                 DialogTools.RestartComputer();
             }
-            else if ((minimizeEnd - dateTime) <= TimeSpan.Zero)
+            else if ((null != minimizeDuration) && (countdownStopwatch.Elapsed >= minimizeDuration))
             {
-                // No minimize for you!
-                buttonMinimize.Enabled = false;
+                this.Invoke(() => buttonMinimize.Enabled = false);
             }
         }
 
@@ -157,26 +154,21 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// A restart countdown timer to perform an automatic reboot.
         /// </summary>
-        private Timer? countdownTimer;
+        private readonly System.Threading.Timer? countdownTimer;
+
+        /// <summary>
+        /// The stopwatch to keep track of the elapsed time.
+        /// </summary>
+        private readonly Stopwatch countdownStopwatch = new();
 
         /// <summary>
         /// The time span until the automatic restart is required.
         /// </summary>
-        private TimeSpan countdownDuration;
-
-        /// <summary>
-        /// The end time for our timer. We do it like this to avoid clock drift.
-        /// </summary>
-        private DateTime countdownEnd;
+        private readonly TimeSpan countdownDuration;
 
         /// <summary>
         /// The time span until the minimize button is disabled.
         /// </summary>
-        private TimeSpan minimizeDuration;
-
-        /// <summary>
-        /// The end time for being able to minimise the dialog.
-        /// </summary>
-        private DateTime minimizeEnd;
+        private readonly TimeSpan? minimizeDuration;
     }
 }
