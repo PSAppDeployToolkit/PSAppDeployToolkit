@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using PSADT.Module;
 using PSADT.ProcessManagement;
 
@@ -84,6 +85,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// The duration of the countdown before the dialog automatically closes.
         /// </summary>
         public readonly TimeSpan? CountdownDuration;
+
+        /// <summary>
+        /// The countdown timer used to track the time remaining before the dialog closes automatically.
+        /// </summary>
+        public readonly Stopwatch CountdownStopwatch = new();
 
         /// <summary>
         /// The strings used for the CloseAppsDialog.
