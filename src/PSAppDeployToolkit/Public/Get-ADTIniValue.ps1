@@ -8,10 +8,10 @@ function Get-ADTIniValue
 {
     <#
     .SYNOPSIS
-        Parses an INI file and returns the value of the specified section and key. This function has been replaced by [Get-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
+        Parses an INI file and returns the value of the specified section and key.
 
     .DESCRIPTION
-        The Get-ADTIniValue function parses an INI file and returns the value of the specified section and key. This function has been replaced by [Get-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
+        The Get-ADTIniValue function parses an INI file and returns the value of the specified section and key.
 
     .PARAMETER FilePath
         Path to the INI file.
@@ -72,14 +72,35 @@ function Get-ADTIniValue
         [System.String]$Key
     )
 
-    # Announce deprecation and reroute through to the replacement function.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
-    try
+    begin
     {
-        return Get-ADTIniSectionKeyValue @PSBoundParameters
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
-    catch
+
+    process
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        Write-ADTLogEntry -Message "Reading INI value: [FilePath = $FilePath] [Section = $Section] [Key = $Key]."
+        try
+        {
+            try
+            {
+                $iniValue = [PSADT.Utilities.IniUtilities]::GetSectionKeyValue($Section, $Key, $FilePath)
+                Write-ADTLogEntry -Message "INI value: [Value = $iniValue]."
+                return $iniValue
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read INI value."
+        }
+    }
+
+    end
+    {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }

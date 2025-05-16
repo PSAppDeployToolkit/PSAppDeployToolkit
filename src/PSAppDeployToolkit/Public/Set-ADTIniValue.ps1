@@ -8,10 +8,10 @@ function Set-ADTIniValue
 {
     <#
     .SYNOPSIS
-        Opens an INI file and sets the value of the specified section and key. This function has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
+        Opens an INI file and sets the value of the specified section and key.
 
     .DESCRIPTION
-        Opens an INI file and sets the value of the specified section and key. This function has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0.
+        Opens an INI file and sets the value of the specified section and key.
 
     .PARAMETER FilePath
         Path to the INI file.
@@ -71,21 +71,66 @@ function Set-ADTIniValue
         [System.String]$Key,
 
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [AllowNull()]
+        [AllowEmptyString()]
         [System.String]$Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force
     )
 
-    # Announce deprecation and reroute through to the replacement function.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTIniSectionKeyValue]. Please migrate your scripts as this will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
-    try
+    begin
     {
-        Set-ADTIniSectionKeyValue @PSBoundParameters
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
-    catch
+
+    process
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        try
+        {
+            try
+            {
+                # Create the INI file if it does not exist.
+                if (![System.IO.File]::Exists($FilePath))
+                {
+                    if (!$Force)
+                    {
+                        $naerParams = @{
+                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.")
+                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                            ErrorId = 'FilePathNotFound'
+                            TargetObject = $FilePath
+                            RecommendedAction = "Please confirm the path of the specified file and try again, or add -Force to create a new file."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
+                    Write-ADTLogEntry -Message "Creating INI file: $FilePath."
+                    $null = New-Item -Path $FilePath -ItemType File -Force
+                }
+
+                # Kernel32.WritePrivateProfileString will erase values if sent a null value, we would like this function to set an empty value instead, and to use Remove-ADTIniValue if specifically wanting to remove entries.
+                if ([string]::IsNullOrWhiteSpace($Value))
+                {
+                    $Value = ''
+                }
+
+                # Write out the section key/value pair to the file.
+                Write-ADTLogEntry -Message "Writing INI value: [FilePath = $FilePath] [Section = $Section] [Key = $Key] [Value = $Value]."
+                [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $Value, $FilePath)
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to write INI value."
+        }
+    }
+
+    end
+    {
+        Complete-ADTFunction -Cmdlet $PSCmdlet
     }
 }
