@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<policyDefinitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" revision="1.0" schemaVersion="1.0" xmlns="http://www.microsoft.com/GroupPolicy/PolicyDefinitions">
+<policyDefinitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" revision="4.1.0" schemaVersion="1.0" xmlns="http://www.microsoft.com/GroupPolicy/PolicyDefinitions">
 	<policyNamespaces>
 		<target prefix="PSAppDeployToolkit" namespace="PSAppDeployToolkit" />
 	</policyNamespaces>
-	<resources minRequiredRevision="1.0" />
+	<resources minRequiredRevision="4.1.0" />
 	<supportedOn>
 		<definitions>
 			<definition name="SUPPORTED_Windows_10_0_RS1" displayName="$(string.SUPPORTED_Windows_10_0_RS1_Definition)" />
