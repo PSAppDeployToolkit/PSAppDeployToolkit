@@ -340,9 +340,12 @@
 		<policy name="DynamicProcessEvaluation" class="Machine" displayName="$(string.DynamicProcessEvaluation_Display)" explainText="$(string.DynamicProcessEvaluation_Explain)" presentation="$(presentation.DynamicProcessEvaluation)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
 			<parentCategory ref="UI" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
-			<elements>
-				<text id="DynamicProcessEvaluation" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DynamicProcessEvaluation" required="true" />
-			</elements>
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<string>False</string>
+			</disabledValue>
 		</policy>
 		<policy name="DynamicProcessEvaluationInterval" class="Machine" displayName="$(string.DynamicProcessEvaluationInterval_Display)" explainText="$(string.DynamicProcessEvaluationInterval_Explain)" presentation="$(presentation.DynamicProcessEvaluationInterval)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
 			<parentCategory ref="UI" />

@@ -246,11 +246,6 @@ If the running applications change (new CloseProcesses launched or running proce
 			<presentation id="DialogStyle">
 				<dropdownList refId="DialogStyle" noSort="true" defaultItem="0">DialogStyle</dropdownList>
 			</presentation>
-			<presentation id="DynamicProcessEvaluation">
-				<textBox refId="DynamicProcessEvaluation">
-					<label>DynamicProcessEvaluation</label>
-				</textBox>
-			</presentation>
 			<presentation id="DynamicProcessEvaluationInterval">
 				<decimalTextBox refId="DynamicProcessEvaluationInterval">DynamicProcessEvaluationInterval</decimalTextBox>
 			</presentation>
