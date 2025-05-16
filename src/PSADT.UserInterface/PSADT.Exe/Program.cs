@@ -156,8 +156,8 @@ namespace PSADT.UserInterface
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
                 { "AppBannerImage", appBannerImage },
-                { "RestartCountdownDuration", restartCountdownDuration },
-                { "RestartCountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
+                { "CountdownDuration", restartCountdownDuration },
+                { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
                 { "CustomMessageText", customMessageText },
                 { "Strings", (Hashtable)stringTable["RestartPrompt"] },
             };
