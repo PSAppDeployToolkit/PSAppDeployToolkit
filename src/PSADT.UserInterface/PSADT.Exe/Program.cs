@@ -17,7 +17,7 @@ namespace PSADT.UserInterface
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        internal static void Main()
+        private static void Main()
         {
             // Read PSADT's string table into memory.
             var stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Strings\strings.psd1"), out var tokens, out var errors);

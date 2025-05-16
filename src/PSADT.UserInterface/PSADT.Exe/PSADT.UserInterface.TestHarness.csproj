@@ -5,7 +5,7 @@
 	  <TargetFramework>net462</TargetFramework>
 	  <PlatformTarget>AnyCPU</PlatformTarget>
 	  <UseWPF>true</UseWPF>
-	  <ApplicationManifest>app.manifest</ApplicationManifest>
+	  <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
       <Deterministic>true</Deterministic>
       <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
       <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
@@ -52,7 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Content Include="appIcon.ico" />
+	<Content Include="Resources\appIcon.ico" />
   </ItemGroup>
 
   <ItemGroup>
