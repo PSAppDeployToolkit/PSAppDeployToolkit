@@ -1,34 +1,41 @@
 ---
-id: Set-ADTIniSectionKeyValue
-title: Set-ADTIniSectionKeyValue
+id: Remove-ADTIniValue
+title: Remove-ADTIniValue
 hide_title: false
 hide_table_of_contents: false
 ---
 
 ## SYNOPSIS
 
-Opens an INI file and sets the value of the specified section and key.
+Opens an INI file and removes the specified key or section.
 
 ## SYNTAX
 
 ```powershell
-Set-ADTIniSectionKeyValue [-FilePath] <String> [-Section] <String> [-Key] <String> [-Value] <String> [-Force]
- [<CommonParameters>]
+Remove-ADTIniValue [-FilePath] <String> [-Section] <String> [[-Key] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-Opens an INI file and sets the value of the specified section and key.
+Opens an INI file and removes the specified key or section.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Set-ADTIniSectionKeyValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName' -Value 'MyFile.ID'
+Remove-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Key 'KeyFileName'
 ```
 
-Sets the 'KeyFileName' key in the 'Notes' section of the 'notes.ini' file to 'MyFile.ID'.
+Removes the 'KeyFileName' key from the 'Notes' section of the 'notes.ini' file.
+
+### EXAMPLE 2
+
+```powershell
+Remove-ADTIniValue -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes'
+```
+
+Removes the entire 'Notes' section of the 'notes.ini' file.
 
 ## PARAMETERS
 
@@ -73,41 +80,9 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 3
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Value
-
-Value for the key within the section of the INI file.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Force
-
-Specifies whether the INI file should be created if it does not already exist.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -136,4 +111,4 @@ License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniSectionKeyValue](https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniSectionKeyValue)
+[https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTIniValue](https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTIniValue)
