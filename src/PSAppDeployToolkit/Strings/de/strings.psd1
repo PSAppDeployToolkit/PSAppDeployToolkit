@@ -1,29 +1,29 @@
 ﻿@{
     BalloonText = @{
         Complete = @{
-            Install = 'Installation abgeschlossen.'
-            Repair = 'Reparatur abgeschlossen.'
-            Uninstall = 'Deinstallation abgeschlossen.'
+            Install = 'Installation wurde abgeschlossen.'
+            Repair = 'Reparatur wurde abgeschlossen.'
+            Uninstall = 'Deinstallation wurde abgeschlossen.'
         }
         Error = @{
-            Install = 'Installation fehlgeschlagen.'
-            Repair = 'Reparatur fehlgeschlagen.'
-            Uninstall = 'Deinstallation fehlgeschlagen.'
+            Install = 'Installation ist fehlgeschlagen.'
+            Repair = 'Reparatur ist fehlgeschlagen.'
+            Uninstall = 'Deinstallation ist fehlgeschlagen.'
         }
         FastRetry = @{
-            Install = 'Installation nicht abgeschlossen.'
-            Repair = 'Reparatur nicht abgeschlossen.'
-            Uninstall = 'Deinstallation nicht abgeschlossen.'
+            Install = 'Installation wurde nicht abgeschlossen.'
+            Repair = 'Reparatur wurde nicht abgeschlossen.'
+            Uninstall = 'Deinstallation wurde nicht abgeschlossen.'
         }
         RestartRequired = @{
-            Install = 'Installation abgeschlossen. Neustart erforderlich.'
-            Repair = 'Reparatur abgeschlossen. Neustart erforderlich.'
-            Uninstall = 'Deinstallation abgeschlossen. Neustart erforderlich.'
+            Install = 'Installation wurde abgeschlossen. Neustart erforderlich.'
+            Repair = 'Reparatur wurde abgeschlossen. Neustart erforderlich.'
+            Uninstall = 'Deinstallation wurde abgeschlossen. Neustart erforderlich.'
         }
         Start = @{
-            Install = 'Installation gestartet.'
-            Repair = 'Reparatur gestartet.'
-            Uninstall = 'Deinstallation gestartet.'
+            Install = 'Installation wurde gestartet.'
+            Repair = 'Reparatur wurde gestartet.'
+            Uninstall = 'Deinstallation wurde gestartet.'
         }
     }
     BlockExecution = @{
@@ -33,16 +33,16 @@
             Uninstall = 'Das Starten dieser Anwendung wurde vorübergehend blockiert, damit ein Deinstallationsvorgang abgeschlossen werden kann.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installieren'
-            Repair = 'PSAppDeployToolkit - App Reparatur'
-            Uninstall = 'PSAppDeployToolkit - App Deinstallieren'
+            Install = 'PSAppDeployToolkit - Installation der Anwendung'
+            Repair = 'PSAppDeployToolkit - Reparatur der Anwendung'
+            Uninstall = 'PSAppDeployToolkit - Neuinstallieren der Anwendung'
         }
     }
     DiskSpace = @{
         Message = @{
-            Install = "Sie haben nicht genügend Speicherplatz, um die Installation abzuschließen:`n{0}`n`nErforderlicher Speicherplatz: {1} MB`nVerfügbarer Speicherplatz: {2} MB`n`nBitte geben Sie genügend Speicherplatz frei, um mit der Installation fortzufahren."
-            Repair = "Sie haben nicht genügend Speicherplatz, um die Reparatur von:`n{0}`n`nErforderlicher Speicherplatz: {1} MB`nVerfügbarer Speicherplatz: {2} MB`n`nBitte geben Sie ausreichend Speicherplatz frei, um mit der Reparatur fortzufahren."
-            Uninstall = "Sie haben nicht genügend Speicherplatz, um die Deinstallation von:`n{0}`n`nSpace abzuschließen. Erforderlich: {1} MB`nVerfügbar: {2} MB`n`nBitte geben Sie ausreichend Speicherplatz frei, um mit der Deinstallation fortzufahren."
+            Install = "Der Speicherplatz reicht nicht aus, um die Installation abzuschließen:`n{0}`n`nErforderlicher Speicherplatz: {1} MB`nVerfügbarer Speicherplatz: {2} MB`n`nBitte geben Sie genügend Speicherplatz frei, um mit der Installation fortzufahren."
+            Repair = "Der Speicherplatz reicht nicht aus, um die Reparatur von:`n{0}`n`nErforderlicher Speicherplatz: {1} MB`nVerfügbarer Speicherplatz: {2} MB`n`nBitte geben Sie ausreichend Speicherplatz frei, um mit der Reparatur fortzufahren."
+            Uninstall = "Der Speicherplatz reicht nicht aus, um die Deinstallation von:`n{0}`n`nErforderlicher Speicherplatz: {1} MB`nVerfügbarer Speicherplatz: {2} MB`n`nBitte geben Sie ausreichend Speicherplatz frei, um mit der Deinstallation fortzufahren."
         }
     }
     Progress = @{
@@ -57,16 +57,16 @@
             Uninstall = 'Dieses Fenster wird automatisch geschlossen, wenn die Deinstallation abgeschlossen ist.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installieren'
-            Repair = 'PSAppDeployToolkit - App Reparatur'
-            Uninstall = 'PSAppDeployToolkit - App Deinstallieren'
+            Install = 'PSAppDeployToolkit - Installation der Anwendung'
+            Repair = 'PSAppDeployToolkit - Reparatur der Anwendung'
+            Uninstall = 'PSAppDeployToolkit - Deinstallieren der Anwendung'
         }
     }
     Prompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installieren'
-            Repair = 'PSAppDeployToolkit - App Reparatur'
-            Uninstall = 'PSAppDeployToolkit - App Deinstallieren'
+            Install = 'PSAppDeployToolkit - Installation der Anwendung'
+            Repair = 'PSAppDeployToolkit - Reparatur der Anwendung'
+            Uninstall = 'PSAppDeployToolkit - Deinstallieren der Anwendung'
         }
     }
     RestartPrompt = @{
@@ -82,9 +82,9 @@
         TimeRemaining = 'Restzeit:'
         Title = 'Neustart erforderlich'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installieren'
-            Repair = 'PSAppDeployToolkit - App Reparatur'
-            Uninstall = 'PSAppDeployToolkit - App Deinstallieren'
+            Install = 'PSAppDeployToolkit - Installation der Anwendung'
+            Repair = 'PSAppDeployToolkit - Reparatur der Anwendung'
+            Uninstall = 'PSAppDeployToolkit - Deinstallieren der Anwendung'
         }
     }
     WelcomePrompt = @{
@@ -92,7 +92,7 @@
             Close = @{
                 ButtonClose = 'Programme &schließen'
                 ButtonContinue = '&Weiter'
-                ButtonContinueTooltip = 'Wählen Sie erst „Weiter“, nachdem Sie die oben aufgeführten Anwendungen geschlossen haben.'
+                ButtonContinueTooltip = 'Wählen Sie erst „Weiter“, nachdem Sie die oben aufgeführten Anwendung(en) geschlossen haben.'
                 ButtonDefer = '&Aufschieben'
                 CountdownMessage = 'HINWEIS: Die Programme werden automatisch geschlossen in:'
                 Message = @{
@@ -104,12 +104,12 @@
             Defer = @{
                 Deadline = 'Frist:'
                 ExpiryMessage = @{
-                    Install = 'Sie können die Installation zurückstellen, bis die Zurückstellung abläuft:'
-                    Repair = 'Sie können die Reparatur verschieben, bis die Verschiebung abläuft:'
-                    Uninstall = 'Sie können die Deinstallation verschieben, bis die Verschiebung abläuft:'
+                    Install = 'Die Installation kann bis zum Ablauf der Aufschiebungsfrist aufschoben werden:'
+                    Repair = 'Die Reparatur kann bis zum Ablauf der Aufschiebungsfrist aufschoben werden:'
+                    Uninstall = 'Die Deinstallation kann bis zum Ablauf der Aufschiebungsfrist aufschoben werden:'
                 }
-                RemainingDeferrals = 'Verbleibende Verschiebungen:'
-                WarningMessage = 'Nach Ablauf der Verschiebung haben Sie keine Möglichkeit mehr, die Verschiebung zu nutzen.'
+                RemainingDeferrals = 'Verbleibende Aufschiebungen:'
+                WarningMessage = 'Nach Ablauf der Aufschiebung haben Sie keine Möglichkeit mehr, die Aufschiebung zu nutzen.'
                 WelcomeMessage = @{
                     Install = 'Die folgende Anwendung wird installiert:'
                     Repair = 'Die folgende Anwendung wird repariert:'
@@ -125,9 +125,9 @@
         }
         Fluent = @{
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - App Installieren'
-                Repair = 'PSAppDeployToolkit - App Reparatur'
-                Uninstall = 'PSAppDeployToolkit - App Deinstallieren'
+                Install = 'PSAppDeployToolkit - Installation der Anwendung'
+                Repair = 'PSAppDeployToolkit - Reparatur der Anwendung'
+                Uninstall = 'PSAppDeployToolkit - Deinstallieren der Anwendung'
             }
             DialogMessage = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
             DialogMessageNoProcesses = @{
@@ -135,12 +135,12 @@
                 Repair = 'Wählen Sie Reparieren aus, um mit der Reparatur fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Reparatur aufschieben.'
                 Uninstall = 'Wählen Sie Deinstallieren aus, um mit der Deinstallation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Deinstallation aufschieben.'
             }
-            ButtonDeferRemaining = 'bleiben'
+            ButtonDeferRemaining = 'Beibehalten'
             ButtonLeftText = 'Aufschieben'
             ButtonRightText = @{
-                Install = 'Schließen Sie Apps & Installieren Sie'
-                Repair = 'Schließen Sie Apps & Reparieren Sie'
-                Uninstall = 'Schließen Sie Apps & Deinstallieren Sie'
+                Install = 'Anwendungen schließen und Installieren'
+                Repair = 'Anwendungen schließen und Reparieren'
+                Uninstall = 'Anwendungen schließen und Deinstallieren'
             }
             ButtonRightTextNoProcesses = @{
                 Install = 'Installieren'
