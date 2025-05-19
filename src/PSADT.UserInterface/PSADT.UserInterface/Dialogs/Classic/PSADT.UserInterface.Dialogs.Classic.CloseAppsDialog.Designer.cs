@@ -120,7 +120,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelCustomMessage.Name = "labelCustomMessage";
             this.labelCustomMessage.Size = new System.Drawing.Size(416, 30);
             this.labelCustomMessage.TabIndex = 5;
-            this.labelCustomMessage.Text = "This is a custom message that you can optionally display here  This could include" +
+            this.labelCustomMessage.Text = "This is a custom message that you can optionally display here. This could include" +
     " info specific to the app, or general info for your end users.";
             this.labelCustomMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
