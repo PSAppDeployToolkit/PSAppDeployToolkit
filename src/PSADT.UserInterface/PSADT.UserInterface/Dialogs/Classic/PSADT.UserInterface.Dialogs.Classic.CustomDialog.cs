@@ -8,12 +8,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Custom classic dialog form.
     /// </summary>
-    public partial class CustomDialog : ClassicDialog
+    internal partial class CustomDialog : ClassicDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialog"/> class.
         /// </summary>
-        public CustomDialog() : this(default!)
+        internal CustomDialog() : this(default!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -25,7 +25,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="CustomDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        public CustomDialog(CustomDialogOptions options) : base(options)
+        internal CustomDialog(CustomDialogOptions options) : base(options)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
@@ -107,7 +107,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            this.Result = this.buttonLeft.Text;
+            SetResult(this.buttonLeft.Text);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -119,7 +119,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            this.Result = this.buttonMiddle.Text;
+            SetResult(this.buttonMiddle.Text);
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -131,7 +131,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            this.Result = this.buttonRight.Text;
+            SetResult(this.buttonRight.Text);
             base.ButtonRight_Click(sender, e);
         }
     }

@@ -17,12 +17,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// Base class for classic dialog forms.
     /// </summary>
     #warning "TODO: Add public contract for dialogs."
-    public partial class ClassicDialog : Form
+    internal partial class ClassicDialog : Form
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ClassicDialog"/> class.
         /// </summary>
-        public ClassicDialog() : this(default!)
+        internal ClassicDialog() : this(default!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -34,7 +34,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="ClassicDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        public ClassicDialog(BaseOptions options) : base()
+        internal ClassicDialog(BaseOptions options) : base()
         {
             // Initialise the underlying form as set up by the designer.
             InitializeComponent();
@@ -70,15 +70,24 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// The result of the dialog.
         /// </summary>
-        public string? Result { get; protected set; }
+        internal string? Result { get; private set; }
 
         /// <summary>
         /// Closes the dialog.
         /// </summary>
-        public void CloseDialog()
+        internal void CloseDialog()
         {
             canClose = true;
             Close();
+        }
+
+        /// <summary>
+        /// Setter for Result to get around some C# malarkey.
+        /// </summary>
+        /// <param name="result"></param>
+        protected void SetResult(string result)
+        {
+            Result = result;
         }
 
         /// <summary>

@@ -11,12 +11,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Progress dialog form.
     /// </summary>
-    public partial class ProgressDialog : ClassicDialog
+    internal partial class ProgressDialog : ClassicDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressDialog"/> class.
         /// </summary>
-        public ProgressDialog() : this(default!)
+        internal ProgressDialog() : this(default!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -28,7 +28,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="ProgressDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        public ProgressDialog(ProgressDialogOptions options) : base(options)
+        internal ProgressDialog(ProgressDialogOptions options) : base(options)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.

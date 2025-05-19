@@ -12,12 +12,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Close applications dialog form.
     /// </summary>
-    public partial class CloseAppsDialog : ClassicDialog
+    internal partial class CloseAppsDialog : ClassicDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class.
         /// </summary>
-        public CloseAppsDialog() : this(default!)
+        internal CloseAppsDialog() : this(default!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -29,7 +29,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        public CloseAppsDialog(CloseAppsDialogOptions options) : base(options)
+        internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
@@ -219,7 +219,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
-            this.Result = "Close";
+            SetResult("Close");
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -230,7 +230,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
-            this.Result = "Defer";
+            SetResult("Defer");
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -241,7 +241,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected override void ButtonRight_Click(object sender, EventArgs e)
         {
-            this.Result = "Continue";
+            SetResult("Continue");
             base.ButtonRight_Click(sender, e);
         }
 
