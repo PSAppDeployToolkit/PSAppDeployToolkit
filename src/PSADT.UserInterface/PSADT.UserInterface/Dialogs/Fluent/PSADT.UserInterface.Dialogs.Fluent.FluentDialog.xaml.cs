@@ -28,8 +28,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
-    #warning "TODO: Add public contract for dialogs."
-    internal abstract partial class FluentDialog : FluentWindow, IDisposable, INotifyPropertyChanged
+    internal abstract partial class FluentDialog : FluentWindow, IDeploymentDialog, INotifyPropertyChanged
     {
         /// <summary>
         /// Static constructor to set up the theme and resources for the dialog.
@@ -143,9 +142,17 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
+        /// Redefined ShowDialog method to allow for custom behavior.
+        /// </summary>
+        public new void ShowDialog()
+        {
+            base.ShowDialog();
+        }
+
+        /// <summary>
         /// Closes the dialog window and cancels associated operations. Can be called by timers or button clicks.
         /// </summary>
-        internal void CloseDialog()
+        public void CloseDialog()
         {
             // If we're already processing, just return.
             if (_disposed)
@@ -640,12 +647,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The result of the dialog interaction.
         /// </summary>
-        internal virtual string Result
+        public new virtual object DialogResult
         {
-            get => _result;
+            get => _dialogResult;
             private protected set
             {
-                _result = value;
+                _dialogResult = value;
                 OnPropertyChanged();
             }
         }
@@ -658,7 +665,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The cancellation token source for the dialog.
         /// </summary>
-        private string _result = "Timeout";
+        private object _dialogResult = "Timeout";
 
         /// <summary>
         /// Whether this window has been disposed.

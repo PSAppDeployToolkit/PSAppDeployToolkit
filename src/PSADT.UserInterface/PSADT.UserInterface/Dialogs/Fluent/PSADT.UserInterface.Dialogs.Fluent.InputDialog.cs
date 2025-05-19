@@ -37,8 +37,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            Result = new InputDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", ""), InputBoxText.Text);
-            base.Result = "Bypass";
+            DialogResult = new InputDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", ""), InputBoxText.Text);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -50,8 +49,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            Result = new InputDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", ""), InputBoxText.Text);
-            base.Result = "Bypass";
+            DialogResult = new InputDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", ""), InputBoxText.Text);
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -63,22 +61,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            Result = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", ""), InputBoxText.Text);
-            base.Result = "Bypass";
+            DialogResult = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", ""), InputBoxText.Text);
             base.ButtonRight_Click(sender, e);
-        }
-
-        /// <summary>
-        /// The result of the dialog interaction.
-        /// </summary>
-        internal new InputDialogResult Result
-        {
-            get => _result;
-            private set
-            {
-                _result = value;
-                OnPropertyChanged();
-            }
         }
 
         /// <summary>

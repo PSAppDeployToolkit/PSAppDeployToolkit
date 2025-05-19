@@ -16,8 +16,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Base class for classic dialog forms.
     /// </summary>
-    #warning "TODO: Add public contract for dialogs."
-    internal partial class ClassicDialog : Form
+    internal partial class ClassicDialog : Form, IDeploymentDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ClassicDialog"/> class.
@@ -68,14 +67,17 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
-        /// The result of the dialog.
+        /// Redefined ShowDialog method to allow for custom behavior.
         /// </summary>
-        internal string? Result { get; private set; }
+        public new void ShowDialog()
+        {
+            base.ShowDialog();
+        }
 
         /// <summary>
         /// Closes the dialog.
         /// </summary>
-        internal void CloseDialog()
+        public void CloseDialog()
         {
             canClose = true;
             Close();
@@ -87,7 +89,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="result"></param>
         protected void SetResult(string result)
         {
-            Result = result;
+            DialogResult = result;
         }
 
         /// <summary>
@@ -227,6 +229,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
             return image;
         }
+
+        /// <summary>
+        /// The result of the dialog.
+        /// </summary>
+        public new object DialogResult { get; private set; } = "Timeout";
 
         /// <summary>
         /// Timer for persisting the dialog.
