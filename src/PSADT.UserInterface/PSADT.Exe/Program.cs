@@ -19,6 +19,9 @@ namespace PSADT.UserInterface
         [STAThread]
         private static void Main()
         {
+            // What dialog style are we running with?
+            var dialogStyle = DialogStyle.Classic; // or DialogStyle.Fluent
+
             // Read PSADT's string table into memory.
             var stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Strings\strings.psd1"), out var tokens, out var errors);
             if (errors.Length > 0)
@@ -165,7 +168,7 @@ namespace PSADT.UserInterface
             try
             {
                 // Show CloseApps Dialog
-                var closeAppsResult = DialogManager.ShowCloseAppsDialog(new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions)); // Pass the service as optional parameter
+                var closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions)); // Pass the service as optional parameter
 
                 Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
 
@@ -192,7 +195,7 @@ namespace PSADT.UserInterface
                     // #################################################################################
 
                     // Show Custom Dialog for completion
-                    var customResult = DialogManager.ShowCustomDialog(customDialogOptions);
+                    var customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
 
                     Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
                 }
@@ -204,7 +207,7 @@ namespace PSADT.UserInterface
                 // #################################################################################
 
                 // Show Restart Dialog
-                var restartResult = DialogManager.ShowRestartDialog(new RestartDialogOptions(deploymentType, restartDialogOptions));
+                var restartResult = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
 
                 Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");
 

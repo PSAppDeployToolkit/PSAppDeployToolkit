@@ -1,6 +1,50 @@
 ﻿namespace PSADT.UserInterface.Dialogs
 {
     /// <summary>
+    /// Defines the type of dialog to be displayed.
+    /// </summary>
+    public enum DialogStyle
+    {
+        /// <summary>
+        /// Presents a dialog using the classic interface.
+        /// </summary>
+        Classic,
+
+        /// <summary>
+        /// Presents a dialog using the fluent interface.
+        /// </summary>
+        Fluent,
+    }
+
+    internal enum DialogType
+    {
+        /// <summary>
+        /// Represents the CloseAppsDialog type.
+        /// </summary>
+        CloseApps,
+
+        /// <summary>
+        /// Represents the CustomDialog type.
+        /// </summary>
+        Custom,
+
+        /// <summary>
+        /// Represents the InputDialog type.
+        /// </summary>
+        Input,
+
+        /// <summary>
+        /// Represents the ProgressDialog type.
+        /// </summary>
+        Progress,
+
+        /// <summary>
+        /// Represents the RestartDialog type.
+        /// </summary>
+        Restart,
+    }
+
+    /// <summary>
     /// Defines the position of the dialog window on the screen
     /// </summary>
     public enum DialogPosition
