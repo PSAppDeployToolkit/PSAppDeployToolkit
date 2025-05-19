@@ -81,18 +81,16 @@ function Remove-ADTIniValue
         {
             try
             {
-                if ($null -eq $Key)
+                if (!$PSBoundParameters.ContainsKey('Key'))
                 {
                     Write-ADTLogEntry -Message "Removing INI section: [$Section]."
+                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, [NullString]::Value, [NullString]::Value, $FilePath)
                 }
                 else
                 {
                     Write-ADTLogEntry -Message "Removing INI value: [Section = $Section] [Key = $Key]."
+                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, [NullString]::Value, $FilePath)
                 }
-
-                # If $Key is null, it will remove the entire section, otherwise it will remove just the key. [NullString]::Value is used as $null was being interpreted as an empty string.
-                [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, [NullString]::Value, $FilePath)
-
             }
             catch
             {
