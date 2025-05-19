@@ -20,20 +20,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
     public partial class ClassicDialog : Form
     {
         /// <summary>
-        /// Static constructor to initialize the application settings.
-        /// </summary>
-        static ClassicDialog()
-        {
-            // Only run in the actual app, not in Visual Studio's designer.
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
-            {
-                #warning "TODO: Move to DialogManager"
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-            }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ClassicDialog"/> class.
         /// </summary>
         public ClassicDialog() : this(default!)

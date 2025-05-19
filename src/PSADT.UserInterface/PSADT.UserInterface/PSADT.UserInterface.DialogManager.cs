@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Windows;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -13,6 +12,15 @@ namespace PSADT.UserInterface
     /// </summary>
     public static class DialogManager
     {
+        /// <summary>
+        /// Static constructor to properly initialise WinForms dialogs.
+        /// </summary>
+        static DialogManager()
+        {
+            System.Windows.Forms.Application.EnableVisualStyles();
+            System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+        }
+
         /// <summary>
         /// Shows the CloseApps dialog, prompting the user to close specified applications.
         /// </summary>
@@ -131,7 +139,7 @@ namespace PSADT.UserInterface
             {
                 appThread = new Thread(() =>
                 {
-                    app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                    app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
                     appInitialized.Set();
                     Dispatcher.Run();
                 });
@@ -156,7 +164,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Application instance for the WPF dialog.
         /// </summary>
-        private static Application? app;
+        private static System.Windows.Application? app;
 
         /// <summary>
         /// Thread for the WPF dialog.
