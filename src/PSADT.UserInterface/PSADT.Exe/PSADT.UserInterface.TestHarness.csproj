@@ -18,7 +18,7 @@
       <Company>PSAppDeployToolkit Team</Company>
       <Description>PSAppDeployToolkit User Interface Test Harness</Description>
       <Copyright>Copyright © 2025 PSAppDeployToolkit Team</Copyright>
-      <ApplicationIcon>..\PSADT.UserInterface\Resources\appIcon.ico</ApplicationIcon>
+      <ApplicationIcon>..\PSADT.UserInterface\Properties\appIcon.ico</ApplicationIcon>
       <GenerateDocumentationFile>False</GenerateDocumentationFile>
       <SignAssembly>False</SignAssembly>
       <Title>PSAppDeployToolkit User Interface Test Harness</Title>
@@ -31,7 +31,6 @@
       <PublishTrimmed>false</PublishTrimmed>
       <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
       <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-      <PackageIcon>..\PSADT.UserInterface\Resources\appIcon.png</PackageIcon>
       <RepositoryType>git</RepositoryType>
 
   </PropertyGroup>
@@ -49,10 +48,6 @@
       <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
       <Private>False</Private>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-	<Content Include="Resources\appIcon.ico" />
   </ItemGroup>
 
   <ItemGroup>

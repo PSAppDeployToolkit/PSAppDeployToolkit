@@ -24,7 +24,7 @@
 		<InformationalVersion>4.1.0</InformationalVersion>
 		<ApplicationVersion>4.1.0</ApplicationVersion>
 		<Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
-		<ApplicationIcon>Resources\appIcon.ico</ApplicationIcon>
+		<ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<Title>PSAppDeployToolkit User Interface Libray</Title>
@@ -40,7 +40,6 @@
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<PackageIcon>Assets\appIcon.png</PackageIcon>
 		<RepositoryType>git</RepositoryType>
 
   </PropertyGroup>

@@ -32,8 +32,8 @@ namespace PSADT.UserInterface
             // Set up parameters for testing
             string appTitle = "Adobe Reader CS 2025 x64 EN";
             string subtitle = "Bisto Systems Ltd - App Install";
-            string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\PSADT.UserInterface\Resources\appIcon.png");
-            string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\PSADT.UserInterface\Resources\Banner.Classic.png");
+            string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
+            string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\Banner.Classic.png");
             var dialogAccentColor = ValueTypeConverter.ToInt(0xFFFFB900); // Yellow
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             // DialogPosition dialogPosition = DialogPosition.Center;
