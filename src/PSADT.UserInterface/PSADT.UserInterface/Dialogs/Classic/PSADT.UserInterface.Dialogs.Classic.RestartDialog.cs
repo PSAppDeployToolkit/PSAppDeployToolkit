@@ -96,30 +96,57 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Start the counterdown timer if we have one.
             if (null != countdownTimer)
             {
-                countdownStopwatch.Start();
+                if (!countdownStopwatch.IsRunning)
+                {
+                    countdownStopwatch.Start();
+                }
                 countdownTimer.Change(0, 1000);
             }
         }
 
         /// <summary>
-        /// Handles the click event of the left button.
+        /// Handles the form's closing event.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void buttonRestartNow_Click(object sender, EventArgs e)
+        protected override void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
-            // Restart the computer immediately.
-            DialogTools.RestartComputer();
+            // Cancel the event if we can't close (i.e. user has closed from the taskbar)
+            if (!CanClose())
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            // We're actually closing. Perform certain disposals here
+            // since we can't mess with the designer's Dispose override.
+            countdownTimer?.Dispose();
+
+            // Call through to the base method to ensure it's processed also.
+            base.Form_FormClosing(sender, e);
         }
 
         /// <summary>
-        /// Handles the click event of the right button.
+        /// Handles the click event of the left button (Restart Now).
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void buttonMinimize_Click(object sender, EventArgs e)
+        protected override void ButtonLeft_Click(object sender, EventArgs e)
+        {
+            // Restart the computer immediately.
+            DialogTools.RestartComputer();
+            base.ButtonLeft_Click(sender, e);
+        }
+
+        /// <summary>
+        /// Handles the click event of the right button (Minimise).
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Minimise the window and restart the persistence timer.
+            // Note that we deliberately do not call the base handler!
             this.WindowState = FormWindowState.Minimized;
             this.PersistTimer?.Stop();
             this.PersistTimer?.Start();
@@ -131,7 +158,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="state"></param>
         private void CountdownTimer_Tick(object? state)
         {
-            var remaining = countdownDuration - countdownStopwatch.Elapsed;
+            var remaining = countdownDuration!.Value - countdownStopwatch.Elapsed;
             if (remaining < TimeSpan.Zero)
             {
                 remaining = TimeSpan.Zero;
@@ -160,7 +187,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// The time span until the automatic restart is required.
         /// </summary>
-        private readonly TimeSpan countdownDuration;
+        private readonly TimeSpan? countdownDuration;
 
         /// <summary>
         /// The time span until the minimize button is disabled.
