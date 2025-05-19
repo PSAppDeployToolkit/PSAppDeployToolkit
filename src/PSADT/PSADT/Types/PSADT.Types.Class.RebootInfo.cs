@@ -34,7 +34,7 @@ namespace PSADT.Types
             bool isAppVRebootPending,
             bool? isFileRenameRebootPending,
             string[]? pendingFileRenameOperations,
-            string[]? errorMsg)
+            IReadOnlyList<string> errorMsg)
         {
             ComputerName = computerName;
             LastBootUpTime = lastBootUpTime;
@@ -46,7 +46,7 @@ namespace PSADT.Types
             IsAppVRebootPending = isAppVRebootPending;
             IsFileRenameRebootPending = isFileRenameRebootPending;
             PendingFileRenameOperations = new ReadOnlyCollection<string>(pendingFileRenameOperations ?? []);
-            ErrorMsg = new ReadOnlyCollection<string>(errorMsg ?? []);
+            ErrorMsg = errorMsg;
         }
 
         /// <summary>

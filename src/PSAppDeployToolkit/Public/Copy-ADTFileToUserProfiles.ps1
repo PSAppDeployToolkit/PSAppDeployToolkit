@@ -190,7 +190,7 @@ function Copy-ADTFileToUserProfiles
         }
 
         # Collector for all provided paths.
-        $sourcePaths = [System.Collections.Specialized.StringCollection]::new()
+        $sourcePaths = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process

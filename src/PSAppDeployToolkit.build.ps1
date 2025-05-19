@@ -283,7 +283,7 @@ Add-BuildTask DotNetBuild {
     foreach ($buildItem in $Script:buildItems)
     {
         # Define default build actions. We always need to do a release build.
-        $buildConfigs = [System.Collections.Specialized.StringCollection]'Release'
+        $buildConfigs = [System.Collections.Generic.List[System.String]]'Release'
 
         # Only build a debug version if files have been modified.
         if ($env:GITHUB_ACTIONS -ne 'true')

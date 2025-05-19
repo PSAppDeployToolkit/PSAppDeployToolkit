@@ -183,7 +183,7 @@ function Resolve-ADTErrorRecord
         if (!$ExcludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
         {
             # Set up initial variables.
-            $innerExceptions = [System.Collections.Specialized.StringCollection]::new()
+            $innerExceptions = [System.Collections.Generic.List[System.String]]::new()
             $errInnerException = $ErrorRecord.Exception.InnerException
 
             # Get all inner exceptions.
@@ -192,11 +192,11 @@ function Resolve-ADTErrorRecord
                 # Add a divider if we've already added a record.
                 if ($innerExceptions.Count)
                 {
-                    $null = $innerExceptions.Add("`n$('~' * 40)`n")
+                    $innerExceptions.Add("`n$('~' * 40)`n")
                 }
 
                 # Add error record and get next inner exception.
-                $null = $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
+                $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
                 $errInnerException = $errInnerException.InnerException
             }
 

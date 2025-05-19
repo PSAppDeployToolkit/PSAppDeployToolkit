@@ -137,13 +137,13 @@ function Write-Log
         }
 
         # Set up collector for piped in messages.
-        $messages = [System.Collections.Specialized.StringCollection]::new()
+        $messages = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process
     {
         # Add all non-null messages to the collector.
-        $null = $Message | & {
+        $Message | & {
             process
             {
                 if (![System.String]::IsNullOrWhiteSpace($_))
@@ -348,7 +348,7 @@ function Remove-InvalidFileNameChars
 
         # Announce deprecation of function and set up accumulator for all piped in names.
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
-        $names = [System.Collections.Specialized.StringCollection]::new()
+        $names = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process
@@ -356,7 +356,7 @@ function Remove-InvalidFileNameChars
         # Add all non-null names to the collector.
         if (![System.String]::IsNullOrWhiteSpace($Name))
         {
-            $null = $names.Add($Name)
+            $names.Add($Name)
         }
     }
 
@@ -1020,13 +1020,13 @@ function Copy-FileToUserProfiles
         }
 
         # Set up collector for piped in path objects.
-        $srcPaths = [System.Collections.Specialized.StringCollection]::new()
+        $srcPaths = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process
     {
         # Add all non-null strings to the collector.
-        $null = $Path | & {
+        $Path | & {
             process
             {
                 if (![System.String]::IsNullOrWhiteSpace($_))
@@ -4117,7 +4117,7 @@ function Set-Shortcut
         }
 
         # Set up collector for piped in path objects.
-        $paths = [System.Collections.Specialized.StringCollection]::new()
+        $paths = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process
@@ -4412,7 +4412,7 @@ function ConvertTo-NTAccountOrSID
         Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [ConvertTo-ADTNTAccountOrSID]. Please migrate your scripts to use the new function." -Severity 2 -DebugMessage:$noDepWarnings
 
         # Set up collector for pipelined input.
-        $pipedInput = [System.Collections.Specialized.StringCollection]::new()
+        $pipedInput = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process
@@ -4420,7 +4420,7 @@ function ConvertTo-NTAccountOrSID
         # Only add non-null strings to our collector.
         if (![System.String]::IsNullOrWhiteSpace(($thisInput = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly)))
         {
-            $null = $pipedInput.Add($thisInput)
+            $pipedInput.Add($thisInput)
         }
     }
 

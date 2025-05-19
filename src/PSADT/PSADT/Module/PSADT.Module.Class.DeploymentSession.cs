@@ -987,7 +987,7 @@ namespace PSADT.Module
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
         /// <param name="hostLogStream">What stream to write the message to.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(string[] message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
+        public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null, HostLogStream? hostLogStream = null)
         {
             if (null == hostLogStream)
             {
@@ -1012,7 +1012,7 @@ namespace PSADT.Module
         /// Writes a log entry with a message array.
         /// </summary>
         /// <param name="message">The log message array.</param>
-        public void WriteLogEntry(string[] message)
+        public void WriteLogEntry(IReadOnlyList<string> message)
         {
             WriteLogEntry(message, false, null, null, null, null, null, null, null);
         }

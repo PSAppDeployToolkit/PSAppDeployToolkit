@@ -74,7 +74,6 @@ function Write-ADTLogEntry
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Collections.Specialized.StringCollection])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -118,7 +117,7 @@ function Write-ADTLogEntry
         Set-ADTPreferenceVariables -SessionState $ExecutionContext.SessionState
 
         # Set up collector for piped in messages.
-        $messages = [System.Collections.Specialized.StringCollection]::new()
+        $messages = [System.Collections.Generic.List[System.String]]::new()
     }
 
     process
@@ -130,7 +129,7 @@ function Write-ADTLogEntry
         }
 
         # Add all non-null messages to the collector.
-        $null = $Message | & {
+        $Message | & {
             process
             {
                 if (![System.String]::IsNullOrWhiteSpace($_))

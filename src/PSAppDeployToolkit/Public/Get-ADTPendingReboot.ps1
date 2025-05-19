@@ -73,7 +73,7 @@ function Get-ADTPendingReboot
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $PendRebootErrorMsg = [System.Collections.Specialized.StringCollection]::new()
+        $PendRebootErrorMsg = [System.Collections.Generic.List[System.String]]::new()
         $HostName = [System.Net.Dns]::GetHostName()
     }
 
@@ -119,7 +119,7 @@ function Get-ADTPendingReboot
                     catch
                     {
                         Write-ADTLogEntry -Message "Failed to get IsSCCMClientRebootPending.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                        $null = $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
+                        $PendRebootErrorMsg.Add("Failed to get IsSCCMClientRebootPending: $($_.Exception.Message)")
                     }
                 }
 

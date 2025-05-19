@@ -28,7 +28,7 @@ namespace PSADT.Module
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
-        public static IReadOnlyList<LogEntry> WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
+        public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
         {
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
@@ -93,9 +93,9 @@ namespace PSADT.Module
             // spaces. As such, replace all spaces and empty lines with a punctuation space.
             // C# identifies this character as whitespace but OneTrace does not so it works.
             // The empty line feed at the end is required by OneTrace to format correctly.
-            List<LogEntry> logEntries = new List<LogEntry>(message.Length);
-            List<string> dskOutput = new List<string>(message.Length);
-            List<string> conOutput = new List<string>(message.Length);
+            List<LogEntry> logEntries = new List<LogEntry>(message.Count);
+            List<string> dskOutput = new List<string>(message.Count);
+            List<string> conOutput = new List<string>(message.Count);
             var conFormat = $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}");
             if (logType != "Legacy")
             {
