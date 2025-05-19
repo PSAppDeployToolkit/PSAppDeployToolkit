@@ -88,8 +88,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Form_Load(object? sender, EventArgs e)
+        protected override void Form_Load(object? sender, EventArgs e)
         {
+            // Perform the base event.
+            base.Form_Load(sender, e);
+
             // Start the counterdown timer if we have one.
             if (null != countdownTimer)
             {

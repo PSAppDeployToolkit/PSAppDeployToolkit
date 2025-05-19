@@ -137,7 +137,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Form_Load(object? sender, EventArgs e)
+        protected virtual void Form_Load(object? sender, EventArgs e)
         {
             // Disable the close button on the form. Failing that, disable the ControlBox.
             try
