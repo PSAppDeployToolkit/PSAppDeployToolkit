@@ -24,6 +24,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     {
         /// <summary>
         /// The required data for displaying an app to close on the CloseAppsDialog.
+        /// This class is deliberately public as it's required by WPF to be so.
         /// </summary>
         public sealed class AppToClose
         {
@@ -336,6 +337,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
         /// <summary>
         /// A collection of running apps on the device that require closing.
+        /// This property is deliberately public as it's required by WPF to be so.
         /// </summary>
         public ResettableObservableCollection<AppToClose> AppsToCloseCollection { get; } = [];
 
