@@ -48,9 +48,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelCountdownMessage = new System.Windows.Forms.Label();
             this.labelCountdown = new System.Windows.Forms.Label();
             this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
-            this.buttonLeft = new System.Windows.Forms.Button();
-            this.buttonMiddle = new System.Windows.Forms.Button();
-            this.buttonRight = new System.Windows.Forms.Button();
+            this.buttonCloseProcesses = new System.Windows.Forms.Button();
+            this.buttonDefer = new System.Windows.Forms.Button();
+            this.buttonContinue = new System.Windows.Forms.Button();
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCloseApps.SuspendLayout();
             this.flowLayoutPanelDeferral.SuspendLayout();
@@ -288,9 +288,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelButton.Controls.Add(this.buttonLeft, 0, 0);
-            this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
-            this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
+            this.tableLayoutPanelButton.Controls.Add(this.buttonCloseProcesses, 0, 0);
+            this.tableLayoutPanelButton.Controls.Add(this.buttonDefer, 1, 0);
+            this.tableLayoutPanelButton.Controls.Add(this.buttonContinue, 2, 0);
             this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 458);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
@@ -299,44 +299,44 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Size = new System.Drawing.Size(416, 25);
             this.tableLayoutPanelButton.TabIndex = 4;
             // 
-            // buttonLeft
+            // buttonCloseProcesses
             // 
-            this.buttonLeft.Dock = System.Windows.Forms.DockStyle.Left;
-            this.buttonLeft.Location = new System.Drawing.Point(0, 0);
-            this.buttonLeft.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
-            this.buttonLeft.MaximumSize = new System.Drawing.Size(133, 25);
-            this.buttonLeft.MinimumSize = new System.Drawing.Size(133, 25);
-            this.buttonLeft.Name = "buttonLeft";
-            this.buttonLeft.Size = new System.Drawing.Size(133, 25);
-            this.buttonLeft.TabIndex = 0;
-            this.buttonLeft.Text = "Close Programs";
-            this.buttonLeft.UseVisualStyleBackColor = true;
+            this.buttonCloseProcesses.Dock = System.Windows.Forms.DockStyle.Left;
+            this.buttonCloseProcesses.Location = new System.Drawing.Point(0, 0);
+            this.buttonCloseProcesses.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
+            this.buttonCloseProcesses.MaximumSize = new System.Drawing.Size(133, 25);
+            this.buttonCloseProcesses.MinimumSize = new System.Drawing.Size(133, 25);
+            this.buttonCloseProcesses.Name = "buttonCloseProcesses";
+            this.buttonCloseProcesses.Size = new System.Drawing.Size(133, 25);
+            this.buttonCloseProcesses.TabIndex = 0;
+            this.buttonCloseProcesses.Text = "Close Programs";
+            this.buttonCloseProcesses.UseVisualStyleBackColor = true;
             // 
-            // buttonMiddle
+            // buttonDefer
             // 
-            this.buttonMiddle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonMiddle.Location = new System.Drawing.Point(141, 0);
-            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(0);
-            this.buttonMiddle.MaximumSize = new System.Drawing.Size(134, 25);
-            this.buttonMiddle.MinimumSize = new System.Drawing.Size(134, 25);
-            this.buttonMiddle.Name = "buttonMiddle";
-            this.buttonMiddle.Size = new System.Drawing.Size(134, 25);
-            this.buttonMiddle.TabIndex = 1;
-            this.buttonMiddle.Text = "Defer";
-            this.buttonMiddle.UseVisualStyleBackColor = true;
+            this.buttonDefer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonDefer.Location = new System.Drawing.Point(141, 0);
+            this.buttonDefer.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonDefer.MaximumSize = new System.Drawing.Size(134, 25);
+            this.buttonDefer.MinimumSize = new System.Drawing.Size(134, 25);
+            this.buttonDefer.Name = "buttonDefer";
+            this.buttonDefer.Size = new System.Drawing.Size(134, 25);
+            this.buttonDefer.TabIndex = 1;
+            this.buttonDefer.Text = "Defer";
+            this.buttonDefer.UseVisualStyleBackColor = true;
             // 
-            // buttonRight
+            // buttonContinue
             // 
-            this.buttonRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonRight.Location = new System.Drawing.Point(283, 0);
-            this.buttonRight.Margin = new System.Windows.Forms.Padding(8, 0, 0, 0);
-            this.buttonRight.MaximumSize = new System.Drawing.Size(133, 25);
-            this.buttonRight.MinimumSize = new System.Drawing.Size(133, 25);
-            this.buttonRight.Name = "buttonRight";
-            this.buttonRight.Size = new System.Drawing.Size(133, 25);
-            this.buttonRight.TabIndex = 2;
-            this.buttonRight.Text = "Continue";
-            this.buttonRight.UseVisualStyleBackColor = true;
+            this.buttonContinue.Dock = System.Windows.Forms.DockStyle.Right;
+            this.buttonContinue.Location = new System.Drawing.Point(283, 0);
+            this.buttonContinue.Margin = new System.Windows.Forms.Padding(8, 0, 0, 0);
+            this.buttonContinue.MaximumSize = new System.Drawing.Size(133, 25);
+            this.buttonContinue.MinimumSize = new System.Drawing.Size(133, 25);
+            this.buttonContinue.Name = "buttonContinue";
+            this.buttonContinue.Size = new System.Drawing.Size(133, 25);
+            this.buttonContinue.TabIndex = 2;
+            this.buttonContinue.Text = "Continue";
+            this.buttonContinue.UseVisualStyleBackColor = true;
             // 
             // CloseAppsDialog
             // 
@@ -376,9 +376,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private Label labelCountdownMessage;
         private Label labelCountdown;
         private TableLayoutPanel tableLayoutPanelButton;
-        private Button buttonLeft;
-        private Button buttonRight;
-        private Button buttonMiddle;
+        private Button buttonCloseProcesses;
+        private Button buttonContinue;
+        private Button buttonDefer;
         private Label labelCustomMessage;
     }
 }
