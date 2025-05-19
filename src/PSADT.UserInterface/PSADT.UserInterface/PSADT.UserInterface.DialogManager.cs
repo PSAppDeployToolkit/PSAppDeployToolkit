@@ -194,7 +194,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Event to signal that the progress dialog has been initialized.
         /// </summary>
-        private static readonly ManualResetEventSlim progressInitialized = new ManualResetEventSlim(false);
+        private static readonly ManualResetEventSlim progressInitialized = new(false);
 
         /// <summary>
         /// Application instance for the WPF dialog.
@@ -209,6 +209,6 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Event to signal that the application has been initialized.
         /// </summary>
-        private static readonly ManualResetEventSlim appInitialized = new ManualResetEventSlim(false);
+        private static readonly ManualResetEventSlim appInitialized = new(false);
     }
 }
