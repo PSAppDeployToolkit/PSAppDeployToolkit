@@ -263,6 +263,11 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Indicates whether the service is running or not.
+        /// </summary>
+        public bool IsRunning => null != _pollingTask;
+
+        /// <summary>
         /// Disposes of the resources used by the <see cref="RunningProcessService"/> class.
         /// </summary>
         /// <param name="disposing"></param>
