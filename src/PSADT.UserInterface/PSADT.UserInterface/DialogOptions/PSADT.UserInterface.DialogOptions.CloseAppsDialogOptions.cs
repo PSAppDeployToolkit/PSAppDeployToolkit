@@ -102,7 +102,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="strings"></param>
             /// <param name="deploymentType"></param>
             /// <exception cref="ArgumentNullException"></exception>
-            public CloseAppsDialogStrings(Hashtable strings, DeploymentType deploymentType)
+            internal CloseAppsDialogStrings(Hashtable strings, DeploymentType deploymentType)
             {
                 // Nothing here is allowed to be null.
                 if (strings["Classic"] is not Hashtable classicStrings)
@@ -150,7 +150,7 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="strings"></param>
                 /// <param name="deploymentType"></param>
                 /// <exception cref="ArgumentNullException"></exception>
-                public CloseAppsDialogClassicStrings(Hashtable strings, DeploymentType deploymentType)
+                internal CloseAppsDialogClassicStrings(Hashtable strings, DeploymentType deploymentType)
                 {
                     // Nothing here is allowed to be null.
                     if (strings["WelcomeMessage"] is not Hashtable welcomeMessageTable || welcomeMessageTable[deploymentType.ToString()] is not string welcomeMessage || string.IsNullOrWhiteSpace(welcomeMessage))
@@ -289,7 +289,7 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="strings"></param>
                 /// <param name="deploymentType"></param>
                 /// <exception cref="ArgumentNullException"></exception>
-                public CloseAppsDialogFluentStrings(Hashtable strings, DeploymentType deploymentType)
+                internal CloseAppsDialogFluentStrings(Hashtable strings, DeploymentType deploymentType)
                 {
                     // Nothing here is allowed to be null.
                     if (strings["DialogMessage"] is not string dialogMessage || string.IsNullOrWhiteSpace(dialogMessage))

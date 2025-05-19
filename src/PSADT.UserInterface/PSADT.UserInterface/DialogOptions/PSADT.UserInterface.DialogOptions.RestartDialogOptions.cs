@@ -69,7 +69,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="strings"></param>
             /// <param name="deploymentType"></param>
             /// <exception cref="ArgumentNullException"></exception>
-            public RestartDialogStrings(Hashtable strings, DeploymentType deploymentType)
+            internal RestartDialogStrings(Hashtable strings, DeploymentType deploymentType)
             {
                 // Nothing here is allowed to be null.
                 if (strings["Title"] is not string title || string.IsNullOrWhiteSpace(title))
