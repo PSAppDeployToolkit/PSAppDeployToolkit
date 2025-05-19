@@ -108,12 +108,6 @@ function Set-ADTIniValue
                     $null = New-Item -Path $FilePath -ItemType File -Force
                 }
 
-                # Kernel32.WritePrivateProfileString will erase values if sent a null value, we would like this function to set an empty value instead, and to use Remove-ADTIniValue if specifically wanting to remove entries.
-                if ([string]::IsNullOrWhiteSpace($Value))
-                {
-                    $Value = ''
-                }
-
                 # Write out the section key/value pair to the file.
                 Write-ADTLogEntry -Message "Writing INI value: [FilePath = $FilePath] [Section = $Section] [Key = $Key] [Value = $Value]."
                 [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $Value, $FilePath)
