@@ -162,10 +162,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Form_FormClosing(object? sender, FormClosingEventArgs e)
+        protected virtual void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Cancel the event if we can't close (i.e. user has closed from the taskbar)
-            if (!canClose)
+            if (!CanClose())
             {
                 e.Cancel = true;
                 return;
@@ -175,6 +175,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // since we can't mess with the designer's Dispose override.
             persistTimer?.Dispose();
         }
+
+        /// <summary>
+        /// Tests whether this form is allowed to close down.
+        /// </summary>
+        /// <returns></returns>
+        protected bool CanClose() => canClose;
 
         /// <summary>
         /// Handles the timer tick event for persisting the dialog.

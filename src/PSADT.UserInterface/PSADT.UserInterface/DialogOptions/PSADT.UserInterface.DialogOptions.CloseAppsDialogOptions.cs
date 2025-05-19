@@ -87,6 +87,11 @@ namespace PSADT.UserInterface.DialogOptions
         public readonly TimeSpan? CountdownDuration;
 
         /// <summary>
+        /// Specifies whether the countdown is "forced" or not (affects countdown decisions).
+        /// </summary>
+        public readonly bool ForcedCountdown;
+
+        /// <summary>
         /// The countdown timer used to track the time remaining before the dialog closes automatically.
         /// </summary>
         public readonly Stopwatch CountdownStopwatch = new();

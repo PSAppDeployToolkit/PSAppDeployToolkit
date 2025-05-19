@@ -33,6 +33,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.flowLayoutPanelDialog = new System.Windows.Forms.FlowLayoutPanel();
             this.labelWelcomeMessage = new System.Windows.Forms.Label();
             this.labelAppName = new System.Windows.Forms.Label();
@@ -51,6 +52,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonCloseProcesses = new System.Windows.Forms.Button();
             this.buttonDefer = new System.Windows.Forms.Button();
             this.buttonContinue = new System.Windows.Forms.Button();
+            this.toolTipButtonContinue = new System.Windows.Forms.ToolTip(this.components);
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCloseApps.SuspendLayout();
             this.flowLayoutPanelDeferral.SuspendLayout();
@@ -311,6 +313,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonCloseProcesses.TabIndex = 0;
             this.buttonCloseProcesses.Text = "Close Programs";
             this.buttonCloseProcesses.UseVisualStyleBackColor = true;
+            this.buttonCloseProcesses.Click += new System.EventHandler(this.ButtonLeft_Click);
             // 
             // buttonDefer
             // 
@@ -324,6 +327,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonDefer.TabIndex = 1;
             this.buttonDefer.Text = "Defer";
             this.buttonDefer.UseVisualStyleBackColor = true;
+            this.buttonDefer.Click += new System.EventHandler(this.ButtonMiddle_Click);
             // 
             // buttonContinue
             // 
@@ -336,7 +340,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonContinue.Size = new System.Drawing.Size(133, 25);
             this.buttonContinue.TabIndex = 2;
             this.buttonContinue.Text = "Continue";
+            this.toolTipButtonContinue.SetToolTip(this.buttonContinue, "Only select \"Continue\" after closing the above listed application(s).");
             this.buttonContinue.UseVisualStyleBackColor = true;
+            this.buttonContinue.Click += new System.EventHandler(this.ButtonRight_Click);
+            // 
+            // toolTipButtonContinue
+            // 
+            this.toolTipButtonContinue.AutoPopDelay = 5000;
+            this.toolTipButtonContinue.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+            this.toolTipButtonContinue.InitialDelay = 100;
+            this.toolTipButtonContinue.ReshowDelay = 100;
             // 
             // CloseAppsDialog
             // 
@@ -380,5 +393,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private Button buttonContinue;
         private Button buttonDefer;
         private Label labelCustomMessage;
+        private ToolTip toolTipButtonContinue;
     }
 }
