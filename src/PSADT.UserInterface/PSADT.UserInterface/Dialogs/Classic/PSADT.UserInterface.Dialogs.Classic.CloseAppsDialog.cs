@@ -159,7 +159,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.ResumeLayout();
             this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
             this.flowLayoutPanelBase.ResumeLayout();
-            this.Load += Form_Load;
             this.ResumeLayout();
         }
 
