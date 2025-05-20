@@ -2,9 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualBasic;
+using Microsoft.Win32;
+using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
+using PSADT.Utilities;
 
 namespace PSADT.UserInterface
 {
@@ -137,6 +142,71 @@ namespace PSADT.UserInterface
             #warning "TODO: DialogExpiryDuration?"
             #warning "TODO: MinimizeWindows?"
             return result!;
+        }
+
+        /// <summary>
+        /// Displays a balloon tip notification in the system tray with the specified title, text, and icon.
+        /// </summary>
+        /// <remarks>This method sets the AppUserModelID for the current process to ensure compatibility with Windows 10 toast notifications. It also updates the registry with the provided application title and icon to correct stale information from previous runs. The balloon tip is displayed for a default duration of 7 seconds or until the user closes it.</remarks>
+        /// <param name="TrayTitle">The title of the application to associate with the notification. This is used to set the AppUserModelID for Windows toast notifications.</param>
+        /// <param name="TrayIcon">The file path or resource identifier of the icon to display in the system tray and notification.</param>
+        /// <param name="BalloonTipTitle">The title of the balloon tip notification.</param>
+        /// <param name="BalloonTipText">The text content of the balloon tip notification.</param>
+        /// <param name="BalloonTipIcon">The icon to display in the balloon tip, such as <see cref="System.Windows.Forms.ToolTipIcon.Info"/> or <see cref="System.Windows.Forms.ToolTipIcon.Error"/>.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous operation. The task completes when the balloon tip is closed.</returns>
+        public static void ShowBalloonTip(string TrayTitle, string TrayIcon, string BalloonTipTitle, string BalloonTipText, System.Windows.Forms.ToolTipIcon BalloonTipIcon)
+        {
+            // Set the AUMID for this process so the Windows 10 toast has the correct title.
+            Shell32.SetCurrentProcessExplicitAppUserModelID(TrayTitle);
+
+            // Correct the registry data for the AUMID. This can reference stale info from a previous run.
+            var regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{TrayTitle}";
+            Registry.SetValue(regKey, "DisplayName", TrayTitle, RegistryValueKind.String);
+            Registry.SetValue(regKey, "IconUri", TrayIcon, RegistryValueKind.ExpandString);
+
+            // Create a new NotifyIcon instance and set its properties. If the NotifyIcon is
+            // disposed too soon, it doesn't render right as a toast notification. As such,
+            // we set up a CancellationToken and cancel it as soon as the balloon tip is closed.
+            using (var notifyIcon = new System.Windows.Forms.NotifyIcon())
+            using (var cancelToken = new CancellationTokenSource())
+            {
+                notifyIcon.Icon = Dialogs.Classic.AssetManagement.GetIcon(TrayIcon);
+                notifyIcon.BalloonTipTitle = BalloonTipTitle;
+                notifyIcon.BalloonTipText = BalloonTipText;
+                notifyIcon.BalloonTipIcon = BalloonTipIcon;
+                notifyIcon.Visible = true;
+                notifyIcon.BalloonTipClosed += (s, e) => cancelToken.Cancel();
+                notifyIcon.ShowBalloonTip(7000); // Default timeout for a Windows 10 toast is 7 seconds.
+                ThreadingUtilities.WaitForCancellationAsync(cancelToken.Token).GetAwaiter().GetResult();
+            }
+        }
+
+        /// <summary>
+        /// Displays a message box with the specified title, prompt, buttons, icon, default button, and topmost
+        /// behavior.
+        /// </summary>
+        /// <param name="Title">The title of the message box.</param>
+        /// <param name="Prompt">The message to display in the message box.</param>
+        /// <param name="Buttons">The set of buttons to display in the message box, such as OK, Cancel, or Yes/No.</param>
+        /// <param name="Icon">The icon to display in the message box, such as Information, Warning, or Error.</param>
+        /// <param name="DefaultButton">The button that is selected by default when the message box is displayed.</param>
+        /// <param name="TopMost">A value indicating whether the message box should appear as a topmost window. <see langword="true"/> to make the message box topmost; otherwise, <see langword="false"/>.</param>
+        /// <returns>A <see cref="MsgBoxResult"/> value indicating the button clicked by the user.</returns>
+        public static MsgBoxResult ShowMessageBox(string Title, string Prompt, MessageBoxButtons Buttons, MessageBoxIcon Icon, MessageBoxDefaultButton DefaultButton, bool TopMost)
+        {
+            return ShowMessageBox(Title, Prompt, (MsgBoxStyle)Buttons | (MsgBoxStyle)Icon | (MsgBoxStyle)DefaultButton | (TopMost ? MsgBoxStyle.SystemModal : 0));
+        }
+
+        /// <summary>
+        /// Displays a message box with the specified prompt, buttons, and title.
+        /// </summary>
+        /// <param name="Title">The title text to display in the message box's title bar.</param>
+        /// <param name="Prompt">The text to display in the message box.</param>
+        /// <param name="Buttons">A <see cref="MsgBoxStyle"/> value that specifies the buttons and icons to display in the message box.</param>
+        /// <returns>A <see cref="MsgBoxResult"/> value that indicates which button the user clicked in the message box.</returns>
+        public static MsgBoxResult ShowMessageBox(string Title, string Prompt, MsgBoxStyle Buttons)
+        {
+            return Interaction.MsgBox(Prompt, Buttons, Title);
         }
 
         /// <summary>

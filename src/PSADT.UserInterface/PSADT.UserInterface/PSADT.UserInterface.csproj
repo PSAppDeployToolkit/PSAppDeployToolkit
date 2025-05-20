@@ -62,8 +62,9 @@
 	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="System.Windows.Forms" Condition="'$(TargetFramework)' == 'net462'" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 
   <ItemGroup>

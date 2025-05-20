@@ -45,8 +45,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.SuspendLayout();   
                 this.flowLayoutPanelBase.SuspendLayout();
                 this.Text = options.AppTitle;
-                this.Icon = GetIcon(options.AppIconImage);
-                this.pictureBanner.Image = GetBanner(options.AppBannerImage);
+                this.Icon = AssetManagement.GetIcon(options.AppIconImage);
+                this.pictureBanner.Image = AssetManagement.GetBanner(options.AppBannerImage);
                 this.pictureBanner.Size = new Size(450, (int)Math.Ceiling(450.0 * ((double)this.pictureBanner.Image.Height / (double)this.pictureBanner.Image.Width)));
                 #warning "TODO: DialogPosition?"
                 #warning "TODO: DialogAllowMove?"
@@ -192,44 +192,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
-        /// Get the icon for the dialog.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private static Icon GetIcon(string path)
-        {
-            // Use a cached icon if available, otherwise load and cache it before returning it.
-            if (!iconCache.TryGetValue(path, out Icon? icon))
-            {
-                using (var source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new Icon(path))
-                {
-                    icon = (Icon)source.Clone();
-                    iconCache.Add(path, icon);
-                }
-            }
-            return icon;
-        }
-
-        /// <summary>
-        /// Get the banner image for the dialog.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private static Bitmap GetBanner(string path)
-        {
-            // Use a cached image if available, otherwise load and cache it before returning it.
-            if (!imageCache.TryGetValue(path, out Bitmap? image))
-            {
-                using (var source = Bitmap.FromFile(path))
-                {
-                    image = (Bitmap)source.Clone();
-                    imageCache.Add(path, image);
-                }
-            }
-            return image;
-        }
-
-        /// <summary>
         /// The result of the dialog.
         /// </summary>
         public new object DialogResult { get; private set; } = "Timeout";
@@ -261,15 +223,5 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Starting point for the dialog.
         /// </summary>
         private Point startingPoint;
-
-        /// <summary>
-        /// Cache for icons to avoid loading them multiple times.
-        /// </summary>
-        private static readonly Dictionary<string, Icon> iconCache = [];
-
-        /// <summary>
-        /// Cache for banners to avoid loading them multiple times.
-        /// </summary>
-        private static readonly Dictionary<string, Bitmap> imageCache = [];
     }
 }

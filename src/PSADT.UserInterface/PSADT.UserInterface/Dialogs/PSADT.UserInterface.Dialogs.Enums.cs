@@ -1,4 +1,7 @@
-﻿namespace PSADT.UserInterface.Dialogs
+﻿using System;
+using Microsoft.VisualBasic;
+
+namespace PSADT.UserInterface.Dialogs
 {
     /// <summary>
     /// Defines the type of dialog to be displayed.
@@ -140,5 +143,99 @@
         /// Icon for the Windows logo
         /// </summary>
         WinLogo,
+    }
+
+    /// <summary>
+    /// Specifies the set of buttons to display in a message box.
+    /// </summary>
+    /// <remarks>This enumeration is used to define the button options available in a message box, such as "OK", "Cancel", "Yes", "No", etc. It supports a combination of values due to the <see cref="FlagsAttribute"/> applied to the enumeration.</remarks>
+    [Flags]
+    public enum MessageBoxButtons
+    {
+        /// <summary>
+        /// OK button only (default). This member is equivalent to the Visual Basic constant vbOKOnly.
+        /// </summary>
+        Ok = MsgBoxStyle.OkOnly,
+
+        /// <summary>
+        /// OK and Cancel buttons. This member is equivalent to the Visual Basic constant vbOKCancel.
+        /// </summary>
+        OkCancel = MsgBoxStyle.OkCancel,
+
+        /// <summary>
+        /// Abort, Retry, and Ignore buttons. This member is equivalent to the Visual Basic constant vbAbortRetryIgnore.
+        /// </summary>
+        AbortRetryIgnore = MsgBoxStyle.AbortRetryIgnore,
+
+        /// <summary>
+        /// Yes, No, and Cancel buttons. This member is equivalent to the Visual Basic constant vbYesNoCancel.
+        /// </summary>
+        YesNoCancel = MsgBoxStyle.YesNoCancel,
+
+        /// <summary>
+        /// Yes and No buttons. This member is equivalent to the Visual Basic constant vbYesNo.
+        /// </summary>
+        YesNo = MsgBoxStyle.YesNo,
+
+        /// <summary>
+        /// Retry and Cancel buttons. This member is equivalent to the Visual Basic constant vbRetryCancel.
+        /// </summary>
+        RetryCancel = MsgBoxStyle.RetryCancel,
+    }
+
+    /// <summary>
+    /// Specifies the icon to display in a message box to convey the nature of the message.
+    /// </summary>
+    /// <remarks>This enumeration is used to indicate the type of message being displayed in a message box, such as an error, warning, or informational message. The icon helps users quickly understand the context or severity of the message. Multiple values can be combined using a bitwise OR  operation due to the <see cref="FlagsAttribute"/> applied to this enumeration.</remarks>
+    [Flags]
+    public enum MessageBoxIcon
+    {
+        /// <summary>
+        /// Represents the absence of any specific value or state.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Critical message. This member is equivalent to the Visual Basic constant vbCritical.
+        /// </summary>
+        Stop = MsgBoxStyle.Critical,
+
+        /// <summary>
+        /// Warning query. This member is equivalent to the Visual Basic constant vbQuestion.
+        /// </summary>
+        Question = MsgBoxStyle.Question,
+
+        /// <summary>
+        /// Warning message. This member is equivalent to the Visual Basic constant vbExclamation.
+        /// </summary>
+        Exclamation = MsgBoxStyle.Exclamation,
+
+        /// <summary>
+        /// Information message. This member is equivalent to the Visual Basic constant vbInformation.
+        /// </summary>
+        Information = MsgBoxStyle.Information,
+    }
+
+    /// <summary>
+    /// Specifies the default button for a message box displayed to the user.
+    /// </summary>
+    /// <remarks>This enumeration is used to indicate which button in a message box is preselected by default when the dialog is displayed. The default button is typically activated when the user presses the Enter key without explicitly selecting a button.</remarks>
+    [Flags]
+    public enum MessageBoxDefaultButton
+    {
+        /// <summary>
+        /// Default button is the first button in the dialog box.
+        /// </summary>
+        First = MsgBoxStyle.DefaultButton1,
+
+        /// <summary>
+        /// Default button is the second button in the dialog box.
+        /// </summary>
+        Second = MsgBoxStyle.DefaultButton2,
+
+        /// <summary>
+        /// Default button is the third button in the dialog box.
+        /// </summary>
+        Third = MsgBoxStyle.DefaultButton3,
     }
 }
