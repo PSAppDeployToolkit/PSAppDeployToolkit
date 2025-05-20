@@ -45,8 +45,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.SuspendLayout();   
                 this.flowLayoutPanelBase.SuspendLayout();
                 this.Text = options.AppTitle;
-                this.Icon = AssetManagement.GetIcon(options.AppIconImage);
-                this.pictureBanner.Image = AssetManagement.GetBanner(options.AppBannerImage);
+                this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
+                this.pictureBanner.Image = ClassicAssets.GetBanner(options.AppBannerImage);
                 this.pictureBanner.Size = new Size(450, (int)Math.Ceiling(450.0 * ((double)this.pictureBanner.Image.Height / (double)this.pictureBanner.Image.Width)));
                 #warning "TODO: DialogPosition?"
                 #warning "TODO: DialogAllowMove?"

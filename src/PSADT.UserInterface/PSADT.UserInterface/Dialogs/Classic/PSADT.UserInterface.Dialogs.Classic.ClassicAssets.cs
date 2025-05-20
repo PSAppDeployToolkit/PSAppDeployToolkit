@@ -6,7 +6,7 @@ using PSADT.UserInterface.Utilities;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
-    internal static class AssetManagement
+    internal static class ClassicAssets
     {
         /// <summary>
         /// Get the icon for the dialog.

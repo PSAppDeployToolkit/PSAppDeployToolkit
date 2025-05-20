@@ -181,7 +181,7 @@ namespace PSADT.UserInterface
             // by the garbage collector, or when our BalloonTipClosed event fires.
             System.Windows.Forms.NotifyIcon notifyIcon = new()
             {
-                Icon = Dialogs.Classic.AssetManagement.GetIcon(TrayIcon),
+                Icon = Dialogs.Classic.ClassicAssets.GetIcon(TrayIcon),
                 BalloonTipTitle = BalloonTipTitle,
                 BalloonTipText = BalloonTipText,
                 BalloonTipIcon = BalloonTipIcon,
