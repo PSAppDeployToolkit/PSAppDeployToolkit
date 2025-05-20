@@ -102,7 +102,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             WindowStartupLocation = WindowStartupLocation.Manual;
             _dialogAllowMove = options.DialogAllowMove;
             Topmost = options.DialogTopMost;
-#warning "TODO: DialogPersistInterval?"
+            #warning "TODO: DialogPersistInterval?"
 
             // Set supplemental options also
             _customMessageText = customMessageText;
@@ -586,7 +586,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Set to Primary appearance for single button
                 button.Appearance = ControlAppearance.Primary;
             }
-
         }
 
         /// <summary>

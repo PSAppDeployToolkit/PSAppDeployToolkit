@@ -131,7 +131,7 @@
             DeferralDeadline = 'מועד אחרון לדחייה'
             ButtonLeftText = @{
                 Install = 'סגור אפליקציות והתקן'
-                Repair = 'סגור אפליקציות ותקן'
+                Repair = 'סגור אפליקציות ותיקון'
                 Uninstall = 'סגור אפליקציות והסר התקנה'
             }
             ButtonLeftNoProcessesText = @{

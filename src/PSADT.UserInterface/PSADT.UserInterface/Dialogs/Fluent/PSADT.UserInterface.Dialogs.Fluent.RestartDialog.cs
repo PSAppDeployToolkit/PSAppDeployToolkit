@@ -58,7 +58,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         {
             // Immediately restart the computer.
             DialogTools.RestartComputer();
-            base.ButtonRight_Click(sender, e);
+            base.ButtonLeft_Click(sender, e);
         }
 
         /// <summary>
