@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
-using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
@@ -148,8 +147,7 @@ namespace PSADT.UserInterface
                 appThread = new Thread(() =>
                 {
                     app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
-                    appInitialized.Set();
-                    Dispatcher.Run();
+                    appInitialized.Set(); System.Windows.Threading.Dispatcher.Run();
                 });
                 appThread.SetApartmentState(ApartmentState.STA);
                 appThread.IsBackground = true;
