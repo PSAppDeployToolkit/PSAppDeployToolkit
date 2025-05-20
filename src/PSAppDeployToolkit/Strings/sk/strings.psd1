@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automatické odpočítavanie začiatku'
             DeferralsRemaining = 'Zostávajúce odklady'
             DeferralDeadline = 'Lehota odkladu'
-            ButtonRightText = 'Odložiť'
             ButtonLeftText = @{
                 Install = 'Zavrieť aplikácie a Nainštalovať'
                 Repair = 'Zatvoriť aplikácie a Opraviť'
@@ -140,6 +139,7 @@
                 Repair = 'Opraviť'
                 Uninstall = 'Odinštalovať'
             }
+            ButtonRightText = 'Odložiť'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Inštalácia Aplikácie'
                 Repair = 'PSAppDeployToolkit - Oprava Aplikácií'

@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automatische start aftellen'
             DeferralsRemaining = 'Resterende uitstel'
             DeferralDeadline = 'Uitsteltermijn'
-            ButtonRightText = 'Uitstellen'
             ButtonLeftText = @{
                 Install = 'Sluit Apps & installeer.'
                 Repair = 'Sluit Apps & repareer.'
@@ -140,6 +139,7 @@
                 Repair = 'Repareren.'
                 Uninstall = 'De-installeren.'
             }
+            ButtonRightText = 'Uitstellen'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - App Installatie'
                 Repair = 'PSAppDeployToolkit - App Reparatie'

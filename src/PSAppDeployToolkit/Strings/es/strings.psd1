@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Cuenta regresiva de inicio automático'
             DeferralsRemaining = 'Aplazamientos restantes'
             DeferralDeadline = 'Fecha límite de aplazamiento'
-            ButtonRightText = 'Aplazar'
             ButtonLeftText = @{
                 Install = 'Cerrar Aplicaciones e Instalar'
                 Repair = 'Cerrar Aplicaciones y Reparar'
@@ -140,6 +139,7 @@
                 Repair = 'Reparar'
                 Uninstall = 'Desinstalar'
             }
+            ButtonRightText = 'Aplazar'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Instalación de la aplicación'
                 Repair = 'PSAppDeployToolkit - Reparación de la aplicación'

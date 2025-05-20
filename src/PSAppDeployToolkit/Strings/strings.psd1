@@ -205,9 +205,6 @@
             # Text displayed when there is a specific deferral deadline.
             DeferralDeadline = 'Deferral Deadline'
 
-            # This is a phrase used to describe the process of deferring a deployment.
-            ButtonRightText = 'Defer'
-
             # This is a phrase used to describe the process of closing applications and commencing the deployment.
             ButtonLeftText = @{
                 Install = 'Close Apps & Install'
@@ -221,6 +218,9 @@
                 Repair = 'Repair'
                 Uninstall = 'Uninstall'
             }
+
+            # This is a phrase used to describe the process of deferring a deployment.
+            ButtonRightText = 'Defer'
 
             # The subtitle underneath the Install Title, e.g. Company Name.
             Subtitle = @{

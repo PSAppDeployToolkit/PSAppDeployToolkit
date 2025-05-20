@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automātiska sākuma atpakaļskaitīšana'
             DeferralsRemaining = 'Atlikušie atlikumi'
             DeferralDeadline = 'Atlikšanas termiņš'
-            ButtonRightText = 'Atlikt'
             ButtonLeftText = @{
                 Install = 'Aizvērt programmas un Instalēt'
                 Repair = 'Aizvērt programmas un Labot'
@@ -140,6 +139,7 @@
                 Repair = 'Labot'
                 Uninstall = 'Atinstalēt'
             }
+            ButtonRightText = 'Atlikt'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Lietotņu Instalēšana'
                 Repair = 'PSAppDeployToolkit - Lietotņu Labošana'

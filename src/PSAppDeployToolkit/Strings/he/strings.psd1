@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'ספירה לאחור אוטומטית להתחלה'
             DeferralsRemaining = 'דחיות שנותרו'
             DeferralDeadline = 'מועד אחרון לדחייה'
-            ButtonRightText = 'לִדחוֹת'
             ButtonLeftText = @{
                 Install = 'סגור אפליקציות והתקן'
                 Repair = 'סגור אפליקציות ותקן'
@@ -140,6 +139,7 @@
                 Repair = 'לְתַקֵן'
                 Uninstall = 'הסר את ההתקנה'
             }
+            ButtonRightText = 'לִדחוֹת'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - התקנת אפליקציה'
                 Repair = 'PSAppDeployToolkit - תיקון אפליקציות'

@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automatisk nedtelling til start'
             DeferralsRemaining = 'Gjenværende utsettelser'
             DeferralDeadline = 'Frist for utsettelse'
-            ButtonRightText = 'Utsett'
             ButtonLeftText = @{
                 Install = 'Lukk apper og installer'
                 Repair = 'Lukk apper og reparer'
@@ -140,6 +139,7 @@
                 Repair = 'Reparer'
                 Uninstall = 'Avinstaller'
             }
+            ButtonRightText = 'Utsett'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Appinstallasjon'
                 Repair = 'PSAppDeployToolkit - Appreparasjon'

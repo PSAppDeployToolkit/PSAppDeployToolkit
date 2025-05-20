@@ -129,8 +129,7 @@
             AutomaticStartCountdown = 'Automatischer Start-Countdown'
             DeferralsRemaining = 'Verbleibende Stundungen'
             DeferralDeadline = 'Frist für die Stundung'
-            ButtonLeftText = 'Aufschieben'
-            ButtonRightText = @{
+            ButtonLeftText = @{
                 Install = 'Schließen Sie Apps & Installieren Sie'
                 Repair = 'Schließen Sie Apps & Reparieren Sie'
                 Uninstall = 'Schließen Sie Apps & Deinstallieren Sie'
@@ -140,6 +139,7 @@
                 Repair = 'Reparatur'
                 Uninstall = 'Deinstallieren'
             }
+            ButtonRightText = 'Aufschieben'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - App Installieren'
                 Repair = 'PSAppDeployToolkit - App Reparatur'

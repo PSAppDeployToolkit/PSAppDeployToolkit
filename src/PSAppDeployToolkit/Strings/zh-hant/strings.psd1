@@ -129,7 +129,6 @@
             AutomaticStartCountdown = '自動啟動倒數計時'
             DeferralsRemaining = '剩餘延期'
             DeferralDeadline = '延期截止日期'
-            ButtonRightText = '延遲'
             ButtonLeftText = @{
                 Install = '關閉應用程式並安裝'
                 Repair = '關閉應用程式與修復'
@@ -140,6 +139,7 @@
                 Repair = '修復'
                 Uninstall = '解除安裝'
             }
+            ButtonRightText = '延遲'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - 應用程式安裝'
                 Repair = 'PSAppDeployToolkit - 應用程式維修'

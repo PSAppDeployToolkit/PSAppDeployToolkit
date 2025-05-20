@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Compte à rebours de démarrage automatique'
             DeferralsRemaining = 'Reports restants'
             DeferralDeadline = 'Date limite de report'
-            ButtonRightText = 'Différer'
             ButtonLeftText = @{
                 Install = 'Fermer les applications et installer'
                 Repair = 'Fermer les applications et réparer'
@@ -140,6 +139,7 @@
                 Repair = 'Réparer'
                 Uninstall = 'Désinstaller'
             }
+            ButtonRightText = 'Différer'
             Subtitle = @{
                 Install = "PSAppDeployToolkit - Installation de l'application"
                 Repair = "PSAppDeployToolkit - Réparation de l'application"

@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automaattinen käynnistyslaskenta'
             DeferralsRemaining = 'Jäljellä olevat lykkäykset'
             DeferralDeadline = 'Lykkäyksen määräaika'
-            ButtonRightText = 'Lykkää'
             ButtonLeftText = @{
                 Install = 'Sulje Sovellukset ja Asenna'
                 Repair = 'Sulje Sovellukset ja Korjaa'
@@ -140,6 +139,7 @@
                 Repair = 'Korjaa'
                 Uninstall = 'Poista Asennus'
             }
+            ButtonRightText = 'Lykkää'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Sovelluksen Asennus'
                 Repair = 'PSAppDeployToolkit - Sovelluksen Korjaus'

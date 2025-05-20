@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automatikus indítási visszaszámlálás'
             DeferralsRemaining = 'Fennmaradó halasztások'
             DeferralDeadline = 'Halasztási határidő'
-            ButtonRightText = 'Halasztás'
             ButtonLeftText = @{
                 Install = 'Alkalmazások Bezárása és Telepítése'
                 Repair = 'Alkalmazások Bezárása és Javítása'
@@ -140,6 +139,7 @@
                 Repair = 'Javítás'
                 Uninstall = 'Eltávolítás'
             }
+            ButtonRightText = 'Halasztás'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
                 Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'

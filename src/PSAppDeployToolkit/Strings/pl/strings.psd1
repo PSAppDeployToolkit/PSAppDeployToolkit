@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automatyczne odliczanie do rozpoczęcia'
             DeferralsRemaining = 'Pozostałe odroczenia'
             DeferralDeadline = 'Termin odroczenia'
-            ButtonRightText = 'Odroczyć'
             ButtonLeftText = @{
                 Install = 'Zamknij aplikacje i zainstaluj'
                 Repair = 'Zamknij aplikacje i napraw'
@@ -140,6 +139,7 @@
                 Repair = 'Napraw'
                 Uninstall = 'Odinstaluj'
             }
+            ButtonRightText = 'Odroczyć'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Instalacja Aplikacji'
                 Repair = 'PSAppDeployToolkit - Naprawa Aplikacji'

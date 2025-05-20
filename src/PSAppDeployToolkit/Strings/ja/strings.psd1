@@ -129,7 +129,6 @@
             AutomaticStartCountdown = '自動スタートカウントダウン'
             DeferralsRemaining = '残りの延期'
             DeferralDeadline = '延期期限'
-            ButtonRightText = '延期'
             ButtonLeftText = @{
                 Install = 'アプリを終了してインストールします。'
                 Repair = 'アプリを終了して修理'
@@ -140,6 +139,7 @@
                 Repair = '修理'
                 Uninstall = 'アンインストール'
             }
+            ButtonRightText = '延期'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - アプリのインストール'
                 Repair = 'PSAppDeployToolkit - アプリケーションの修復'

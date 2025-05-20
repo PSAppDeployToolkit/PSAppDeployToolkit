@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Otomatik Başlatma Geri Sayımı'
             DeferralsRemaining = 'Kalan Ertelemeler'
             DeferralDeadline = 'Erteleme Son Tarihi'
-            ButtonRightText = 'Ertele'
             ButtonLeftText = @{
                 Install = 'Uygulamaları Kapat ve Yükle'
                 Repair = 'Uygulamaları Kapat ve Onar'
@@ -140,6 +139,7 @@
                 Repair = 'Onarım'
                 Uninstall = 'Kaldır'
             }
+            ButtonRightText = 'Ertele'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Uygulama Yükleme'
                 Repair = 'PSAppDeployToolkit - Uygulama Onarımı'

@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Αυτόματη αντίστροφη μέτρηση έναρξης'
             DeferralsRemaining = 'Υπόλοιπες αναβολές'
             DeferralDeadline = 'Προθεσμία αναβολής'
-            ButtonRightText = 'Αναβολή'
             ButtonLeftText = @{
                 Install = 'Κλείσιμο εφαρμογών & εγκατάσταση'
                 Repair = 'Κλείσιμο εφαρμογών & επισκευή'
@@ -140,6 +139,7 @@
                 Repair = 'Επισκευή'
                 Uninstall = 'Απεγκατάσταση'
             }
+            ButtonRightText = 'Αναβολή'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
                 Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'

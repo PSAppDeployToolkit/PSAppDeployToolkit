@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Автоматический обратный отсчет до начала'
             DeferralsRemaining = 'Оставшиеся отсрочки'
             DeferralDeadline = 'Крайний срок отсрочки'
-            ButtonRightText = 'Отложить'
             ButtonLeftText = @{
                 Install = 'Закрыть приложения и установить'
                 Repair = 'Закрыть приложения и восстановить'
@@ -140,6 +139,7 @@
                 Repair = 'Восстановление'
                 Uninstall = 'Удалить'
             }
+            ButtonRightText = 'Отложить'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Установка приложений'
                 Repair = 'PSAppDeployToolkit - Восстановление приложений'

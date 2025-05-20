@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automatisk startnedräkning'
             DeferralsRemaining = 'Återstående uppskjutningar'
             DeferralDeadline = 'Sista datum för uppskjutning'
-            ButtonRightText = 'Skjut upp'
             ButtonLeftText = @{
                 Install = 'Stäng Appar och Installera'
                 Repair = 'Stäng Appar och Reparera'
@@ -140,6 +139,7 @@
                 Repair = 'Reparation'
                 Uninstall = 'Avinstallera'
             }
+            ButtonRightText = 'Skjut upp'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Installation av App'
                 Repair = 'PSAppDeployToolkit - Reparation av App'

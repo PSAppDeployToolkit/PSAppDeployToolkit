@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'العد التنازلي لبدء التشغيل التلقائي'
             DeferralsRemaining = 'التأجيلات المتبقية'
             DeferralDeadline = 'الموعد النهائي للتأجيل'
-            ButtonRightText = 'تأجيل'
             ButtonLeftText = @{
                 Install = 'إغلاق التطبيقات والتثبيت'
                 Repair = 'إغلاق التطبيقات وإصلاحها'
@@ -140,6 +139,7 @@
                 Repair = 'إصلاح'
                 Uninstall = 'إلغاء التثبيت'
             }
+            ButtonRightText = 'تأجيل'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - تثبيت التطبيق'
                 Repair = 'PSAppDeployToolkit - إصلاح التطبيق'

@@ -129,7 +129,6 @@
             AutomaticStartCountdown = 'Automatisk startnedtælling'
             DeferralsRemaining = 'Resterende udsættelser'
             DeferralDeadline = 'Udsættelsesfrist'
-            ButtonRightText = 'Udskyd'
             ButtonLeftText = @{
                 Install = 'Luk Apps og Installer'
                 Repair = 'Luk Apps og Reparer'
@@ -140,6 +139,7 @@
                 Repair = 'Reparation'
                 Uninstall = 'Afinstaller'
             }
+            ButtonRightText = 'Udskyd'
             Subtitle = @{
                 Install = 'PSAppDeployToolkit - Installation af App'
                 Repair = 'PSAppDeployToolkit - Reparation af App'
