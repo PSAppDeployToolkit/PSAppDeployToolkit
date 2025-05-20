@@ -174,21 +174,21 @@ namespace PSADT.UserInterface
             Registry.SetValue(regKey, "DisplayName", TrayTitle, RegistryValueKind.String);
             Registry.SetValue(regKey, "IconUri", TrayIcon, RegistryValueKind.ExpandString);
 
-            // Create a new NotifyIcon instance and set its properties. If the NotifyIcon is
-            // disposed too soon, it doesn't render right as a toast notification. As such,
-            // we set up a CancellationToken and cancel it as soon as the balloon tip is closed.
-            using (var notifyIcon = new System.Windows.Forms.NotifyIcon())
-            using (var cancelToken = new CancellationTokenSource())
+            // Create a new NotifyIcon instance and set its properties. We don't
+            // have this in a using statement because if disposal occurs too soon,
+            // the resulting toast notification on Windows 10/11 renders incorrectly.
+            // The NotifyIcon object will still be disposed at some point, either
+            // by the garbage collector, or when our BalloonTipClosed event fires.
+            System.Windows.Forms.NotifyIcon notifyIcon = new()
             {
-                notifyIcon.Icon = Dialogs.Classic.AssetManagement.GetIcon(TrayIcon);
-                notifyIcon.BalloonTipTitle = BalloonTipTitle;
-                notifyIcon.BalloonTipText = BalloonTipText;
-                notifyIcon.BalloonTipIcon = BalloonTipIcon;
-                notifyIcon.Visible = true;
-                notifyIcon.BalloonTipClosed += (s, e) => cancelToken.Cancel();
-                notifyIcon.ShowBalloonTip(7000); // Default timeout for a Windows 10 toast is 7 seconds.
-                ThreadingUtilities.WaitForCancellationAsync(cancelToken.Token).GetAwaiter().GetResult();
-            }
+                Icon = Dialogs.Classic.AssetManagement.GetIcon(TrayIcon),
+                BalloonTipTitle = BalloonTipTitle,
+                BalloonTipText = BalloonTipText,
+                BalloonTipIcon = BalloonTipIcon,
+                Visible = true,
+            };
+            notifyIcon.BalloonTipClosed += (s, _) => ((System.Windows.Forms.NotifyIcon?)s)?.Dispose();
+            notifyIcon.ShowBalloonTip(7000); // Default timeout for a Windows 10 toast is 7 seconds.
         }
 
         /// <summary>
