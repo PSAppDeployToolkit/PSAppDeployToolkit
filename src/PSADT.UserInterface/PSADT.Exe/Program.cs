@@ -112,7 +112,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "DeferralsRemaining", deferralsRemaining },
                 { "DeferralDeadline", deferralDeadline },
                 { "CustomMessageText", customMessageText },
-                { "Strings", (Hashtable)stringTable["CloseAppsPrompt"] },
+                { "Strings", (Hashtable)stringTable["CloseAppsPrompt"]! },
             };
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
             {
@@ -162,7 +162,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "CountdownDuration", restartCountdownDuration },
                 { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
                 { "CustomMessageText", customMessageText },
-                { "Strings", (Hashtable)stringTable["RestartPrompt"] },
+                { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
             };
 
             try

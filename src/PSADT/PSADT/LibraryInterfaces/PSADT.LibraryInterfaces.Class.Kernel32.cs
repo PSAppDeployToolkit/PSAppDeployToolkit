@@ -78,7 +78,7 @@ namespace PSADT.LibraryInterfaces
         internal static FARPROC GetProcAddress(SafeHandle hModule, string lpProcName)
         {
             var res = PInvoke.GetProcAddress(hModule, lpProcName);
-            if (null == res)
+            if (res.IsNull)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }

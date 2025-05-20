@@ -47,15 +47,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
 	  <DebugSymbols>true</DebugSymbols>
 	  <DebugType>full</DebugType>
-	  <WarningLevel>3</WarningLevel>
+	  <WarningLevel>9999</WarningLevel>
 	  <Optimize>false</Optimize>
+	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
 	  <DebugSymbols>false</DebugSymbols>
 	  <DebugType>none</DebugType>
-	  <WarningLevel>3</WarningLevel>
+	  <WarningLevel>9999</WarningLevel>
 	  <Optimize>true</Optimize>
+	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -75,6 +79,20 @@
 
 	<PropertyGroup>
 	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.17763|AnyCPU'">
+	  <DebugType>full</DebugType>
+	  <WarningLevel>9999</WarningLevel>
+	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.17763|AnyCPU'">
+	  <DebugType>none</DebugType>
+	  <WarningLevel>9999</WarningLevel>
+	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
 	</PropertyGroup>
 
   <ItemGroup>
