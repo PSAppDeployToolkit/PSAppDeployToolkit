@@ -98,7 +98,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     }
                     else
                     {
-                        this.flowLayoutPanelDeferral.Visible = false;
+                        this.flowLayoutPanelCloseApps.Visible = false;
                         this.buttonCloseProcesses.Enabled = false;
                     }
                 }
