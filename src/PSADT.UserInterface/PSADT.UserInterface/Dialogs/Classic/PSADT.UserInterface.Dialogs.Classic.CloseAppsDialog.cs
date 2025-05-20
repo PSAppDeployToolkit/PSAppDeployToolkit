@@ -258,28 +258,31 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.Invoke(() => labelCountdown.Text = FormatTime(remaining));
             if (remaining <= TimeSpan.Zero)
             {
-                if (forcedCountdown && (null == runningProcessService || listBoxCloseProcesses.Items.Count == 0))
+                this.Invoke(() =>
                 {
-                    adtSession?.WriteLogEntry("Countdown timer has elapsed and no processes running. Force continue.");
-                    buttonContinue.PerformClick();
-                }
-                else if (forcedCountdown && this.flowLayoutPanelDialog.Controls.Contains(this.flowLayoutPanelDeferral))
-                {
-                    adtSession?.WriteLogEntry("Countdown timer has elapsed and deferrals remaining. Force deferral.");
-                    buttonDefer.PerformClick();
-                }
-                else
-                {
-                    adtSession?.WriteLogEntry("Close application(s) countdown timer has elapsed. Force closing application(s).");
-                    if (buttonCloseProcesses.CanFocus)
+                    if (forcedCountdown && (null == runningProcessService || listBoxCloseProcesses.Items.Count == 0))
                     {
-                        buttonCloseProcesses.PerformClick();
+                        adtSession?.WriteLogEntry("Countdown timer has elapsed and no processes running. Force continue.");
+                        buttonContinue.PerformClick();
+                    }
+                    else if (forcedCountdown && this.flowLayoutPanelDialog.Controls.Contains(this.flowLayoutPanelDeferral))
+                    {
+                        adtSession?.WriteLogEntry("Countdown timer has elapsed and deferrals remaining. Force deferral.");
+                        buttonDefer.PerformClick();
                     }
                     else
                     {
-                        buttonContinue.PerformClick();
+                        adtSession?.WriteLogEntry("Close application(s) countdown timer has elapsed. Force closing application(s).");
+                        if (buttonCloseProcesses.CanFocus)
+                        {
+                            buttonCloseProcesses.PerformClick();
+                        }
+                        else
+                        {
+                            buttonContinue.PerformClick();
+                        }
                     }
-                }
+                });
             }
         }
 
