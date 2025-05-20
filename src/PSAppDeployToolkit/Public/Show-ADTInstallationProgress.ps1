@@ -142,22 +142,22 @@ function Show-ADTInstallationProgress
         }
         if (!$PSBoundParameters.ContainsKey('WindowSubtitle'))
         {
-            $PSBoundParameters.Add('WindowSubtitle', $adtStrings.Progress.Subtitle.($adtSession.DeploymentType.ToString()))
+            $PSBoundParameters.Add('WindowSubtitle', $adtStrings.ProgressPrompt.Subtitle.($adtSession.DeploymentType.ToString()))
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessage'))
         {
-            $PSBoundParameters.Add('StatusMessage', $adtStrings.Progress.Message.($adtSession.DeploymentType.ToString()))
+            $PSBoundParameters.Add('StatusMessage', $adtStrings.ProgressPrompt.Message.($adtSession.DeploymentType.ToString()))
         }
-        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail') -and ($adtConfig.UI.DialogStyle -eq 'Fluent'))
+        if (!$PSBoundParameters.ContainsKey('StatusMessageDetail'))
         {
-            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.Progress.MessageDetail.($adtSession.DeploymentType.ToString()))
+            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.ProgressPrompt.MessageDetail.($adtSession.DeploymentType.ToString()))
         }
     }
 
     process
     {
         # Determine if progress window is open before proceeding.
-        $progressOpen = Test-ADTInstallationProgressRunning
+        $progressOpen = [PSADT.UserInterface.DialogManager]::ProgressDialogOpen()
 
         # Return early in silent mode.
         if ($adtSession)
@@ -173,7 +173,7 @@ function Show-ADTInstallationProgress
             {
                 try
                 {
-                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonText.Start.($adtSession.DeploymentType.ToString())
+                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.Start.($adtSession.DeploymentType.ToString())
                 }
                 catch
                 {
@@ -190,18 +190,32 @@ function Show-ADTInstallationProgress
                 # Perform the dialog action.
                 if (!$progressOpen)
                 {
+                    # Create the new progress dialog.
+                    $dialogOptions = @{
+                        AppTitle = $PSBoundParameters.WindowTitle
+                        Subtitle = $PSBoundParameters.WindowSubtitle
+                        AppIconImage = $adtConfig.Assets.Logo
+                        AppBannerImage = $adtConfig.Assets.Banner
+                        DialogAllowMove = $true
+                        DialogTopMost = !$NotTopMost
+                        MinimizeWindows = $false
+                        ProgressMessageText = $PSBoundParameters.StatusMessage
+                        ProgressDetailMessageText = $PSBoundParameters.StatusMessageDetail
+                    }
+                    if ($null -ne $adtConfig.UI.FluentAccentColor)
+                    {
+                        $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
+                    }
                     Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$($PSBoundParameters.StatusMessage)]."
+                    [PSADT.UserInterface.DialogManager]::ShowProgressDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+
+                    # Add a callback to close it as we've opened for the first time.
+                    Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
                 }
                 else
                 {
                     Write-ADTLogEntry -Message "Updating the progress dialog with message: [$($PSBoundParameters.StatusMessage)]."
-                }
-                & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
-
-                # Add a callback to close it if we've opened for the first time.
-                if (!(Test-ADTInstallationProgressRunning).Equals($progressOpen))
-                {
-                    Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
+                    [PSADT.UserInterface.DialogManager]::UpdateProgressDialog($PSBoundParameters.StatusMessage, $PSBoundParameters.StatusMessageDetail)
                 }
             }
             catch

@@ -12,10 +12,10 @@ Displays a custom installation prompt with the toolkit branding and optional but
 ## SYNTAX
 
 ```powershell
-Show-ADTInstallationPrompt [-Message] <String> [[-MessageAlignment] <String>] [[-ButtonRightText] <String>]
- [[-ButtonLeftText] <String>] [[-ButtonMiddleText] <String>] [[-Icon] <String>] [-NoWait] [-PersistPrompt]
- [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] -Title <String> -Subtitle <String> [-Timeout <UInt32>]
- [<CommonParameters>]
+Show-ADTInstallationPrompt [-Message] <String> [[-MessageAlignment] <DialogMessageAlignment>]
+ [[-ButtonRightText] <String>] [[-ButtonLeftText] <String>] [[-ButtonMiddleText] <String>]
+ [[-Icon] <DialogSystemIcon>] [-NoWait] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost]
+ -Title <String> -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -42,7 +42,7 @@ Show-ADTInstallationPrompt -Title 'Funny Prompt' -Message 'How are you feeling t
 ### EXAMPLE 3
 
 ```powershell
-Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait
+Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install, or remove it completely for unattended installations.' -ButtonLeftText 'OK' -Icon Information -NoWait
 ```
 
 ## PARAMETERS
@@ -68,9 +68,10 @@ Accept wildcard characters: False
 Alignment of the message text.
 
 ```yaml
-Type: String
+Type: DialogMessageAlignment
 Parameter Sets: (All)
 Aliases:
+Accepted values: Left, Center, Right
 
 Required: False
 Position: 2
@@ -132,9 +133,10 @@ Accept wildcard characters: False
 Show a system icon in the prompt.
 
 ```yaml
-Type: String
+Type: DialogSystemIcon
 Parameter Sets: (All)
 Aliases:
+Accepted values: Application, Asterisk, Error, Exclamation, Hand, Information, Question, Shield, Warning, WinLogo
 
 Required: False
 Position: 6
@@ -242,10 +244,10 @@ Accept wildcard characters: False
 
 ### -Timeout
 
-Specifies how long, in seconds, to show the message prompt before aborting.
+Specifies how long to show the message prompt before aborting.
 
 ```yaml
-Type: UInt32
+Type: TimeSpan
 Parameter Sets: (All)
 Aliases:
 

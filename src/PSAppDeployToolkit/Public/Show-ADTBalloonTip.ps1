@@ -100,9 +100,6 @@ function Show-ADTBalloonTip
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtConfig = Get-ADTConfig
 
-        # Initalise the classic assets.
-        Initialize-ADTClassicAssets
-
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
         {
@@ -145,15 +142,9 @@ function Show-ADTBalloonTip
                     return
                 }
 
-                # Set up the balloon tip.
+                # Display the balloon tip via the dialog manager, it'll handle lifetime and disposal for us.
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                $nabtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude BalloonTipTime
-                $nabtParams.Add('Icon', $Script:Dialogs.Classic.Assets.Icon); $nabtParams.Add('Visible', $true)
-                $notifyIcon = [System.Windows.Forms.NotifyIcon]$nabtParams
-
-                # Add an event to manage disposal of the object before displaying.
-                $null = Register-ObjectEvent -InputObject $notifyIcon -EventName BalloonTipClosed -Action { $Sender.Dispose() }
-                $notifyIcon.ShowBalloonTip($null)
+                [PSADT.UserInterface.DialogManager]::ShowBalloonTip($adtConfig.UI.BalloonTitle, $adtConfig.Assets.Logo, $PSBoundParameters.BalloonTipTitle, $BalloonTipText, $BalloonTipIcon)
             }
             catch
             {

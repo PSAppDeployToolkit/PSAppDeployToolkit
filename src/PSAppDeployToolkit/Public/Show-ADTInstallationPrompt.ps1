@@ -85,8 +85,8 @@ function Show-ADTInstallationPrompt
         [System.String]$Message,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Left', 'Center', 'Right')]
-        [System.String]$MessageAlignment = 'Center',
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.DialogMessageAlignment]$MessageAlignment = [PSADT.UserInterface.Dialogs.DialogMessageAlignment]::Center,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -101,8 +101,8 @@ function Show-ADTInstallationPrompt
         [System.String]$ButtonMiddleText,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Application', 'Asterisk', 'Error', 'Exclamation', 'Hand', 'Information', 'Question', 'Shield', 'Warning', 'WinLogo')]
-        [System.String]$Icon,
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.DialogSystemIcon]$Icon,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,
@@ -147,10 +147,10 @@ function Show-ADTInstallationPrompt
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Timeout', [System.UInt32], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long, in seconds, to show the message prompt before aborting.' }
+                'Timeout', [System.TimeSpan], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long to show the message prompt before aborting.' }
                     [System.Management.Automation.ValidateScriptAttribute]::new({
-                            if ($_ -gt $adtConfig.UI.DefaultTimeout)
+                            if ($_ -gt [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout))
                             {
                                 $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the config.psd1 file.'))
                             }
@@ -184,11 +184,11 @@ function Show-ADTInstallationPrompt
         # Set up DeploymentType.
         $DeploymentType = if ($adtSession)
         {
-            $adtSession.DeploymentType.ToString()
+            $adtSession.DeploymentType
         }
         else
         {
-            'Install'
+            [PSADT.Module.DeploymentType]::Install
         }
 
         # Set up defaults if not specified.
@@ -198,11 +198,11 @@ function Show-ADTInstallationPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', (Get-ADTStringTable).Prompt.Subtitle.$DeploymentType)
+            $PSBoundParameters.Add('Subtitle', (Get-ADTStringTable).InstallationPrompt.Subtitle.($DeploymentType.ToString()))
         }
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
-            $PSBoundParameters.Add('Timeout', $adtConfig.UI.DefaultTimeout)
+            $PSBoundParameters.Add('Timeout', [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout))
         }
     }
 
@@ -219,14 +219,55 @@ function Show-ADTInstallationPrompt
                     return
                 }
 
+                # Build out hashtable of parameters needed to construct the dialog.
+                $dialogOptions = @{
+                    AppTitle = $PSBoundParameters.Title
+                    Subtitle = $PSBoundParameters.Subtitle
+                    AppIconImage = $adtConfig.Assets.Logo
+                    AppBannerImage = $adtConfig.Assets.Banner
+                    DialogAllowMove = $true
+                    DialogTopMost = !$NotTopMost
+                    MinimizeWindows = !!$MinimizeWindows
+                    DialogExpiryDuration = $PSBoundParameters.Timeout
+                    MessageText = $Message
+                }
+                if ($MessageAlignment)
+                {
+                    $dialogOptions.Add('MessageAlignment', $MessageAlignment)
+                }
+                if ($ButtonRightText)
+                {
+                    $dialogOptions.Add('ButtonRightText', $ButtonRightText)
+                }
+                if ($ButtonLeftText)
+                {
+                    $dialogOptions.Add('ButtonLeftText', $ButtonLeftText)
+                }
+                if ($ButtonMiddleText)
+                {
+                    $dialogOptions.Add('ButtonMiddleText', $ButtonMiddleText)
+                }
+                if ($Icon)
+                {
+                    $dialogOptions.Add('Icon', $Icon)
+                }
+                if ($PersistPrompt)
+                {
+                    $dialogOptions.Add('DialogPersistInterval', [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultPromptPersistInterval))
+                }
+                if ($null -ne $adtConfig.UI.FluentAccentColor)
+                {
+                    $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
+                }
+
                 # Resolve the bound parameters to a string.
-                $paramsString = [PSADT.Utilities.PowerShellUtilities]::ConvertDictToPowerShellArgs($PSBoundParameters)
+                $paramsString = $dialogOptions | Convert-ADTHashtableToString
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously with the parameters: [$($paramsString.Replace("''", "'"))]."
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "$(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & (Import-Module -FullyQualifiedName @{ ModuleName = '$("$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1".Replace("'", "''"))'; Guid = '$($MyInvocation.MyCommand.Module.Guid)'; ModuleVersion = '$($MyInvocation.MyCommand.Module.Version)' } -PassThru) { & `$CommandTable.'Initialize-ADTModule' -ScriptDirectory '$([System.String]::Join("', '", $Script:ADT.Directories.Script.Replace("'", "''")))'; `$null = & `$CommandTable.'$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)' $($paramsString.Replace('"', '\"')) }" -WindowStyle Hidden -ErrorAction Ignore
+                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -LiteralPath '$Script:PSScriptRoot\lib\PSADT.UserInterface.dll'; return [PSADT.UserInterface.DialogManager]::ShowCustomDialog('$($adtConfig.UI.DialogStyle)', $($paramsString.Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
@@ -238,7 +279,23 @@ function Show-ADTInstallationPrompt
 
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($paramsString.Replace("''", "'"))]."
-                return & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
+                $result = [PSADT.UserInterface.DialogManager]::ShowCustomDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+                if ($result -eq 'Timeout')
+                {
+                    Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.'
+                    if (!$NoExitOnTimeout)
+                    {
+                        if (Test-ADTSessionActive)
+                        {
+                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                        }
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message 'UI timed out but -NoExitOnTimeout specified. Continue...'
+                    }
+                }
+                return $result
             }
             catch
             {

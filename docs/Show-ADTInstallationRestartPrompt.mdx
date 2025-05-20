@@ -14,22 +14,22 @@ Displays a restart prompt with a countdown to a forced restart.
 ### Countdown (Default)
 
 ```powershell
-Show-ADTInstallationRestartPrompt [-CountdownSeconds <UInt32>] [-CountdownNoHideSeconds <UInt32>]
- [-CustomMessageText <String>] [-NotTopMost] -Title <String> -Subtitle <String> [<CommonParameters>]
+Show-ADTInstallationRestartPrompt [-CountdownSeconds <UInt32>] [-CountdownNoHideSeconds <UInt32>] [-NotTopMost]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### NoCountdown
 
 ```powershell
-Show-ADTInstallationRestartPrompt [-NoCountdown] [-CustomMessageText <String>] [-NotTopMost] -Title <String>
- -Subtitle <String> [<CommonParameters>]
+Show-ADTInstallationRestartPrompt [-NoCountdown] [-NotTopMost] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ### SilentRestart
 
 ```powershell
-Show-ADTInstallationRestartPrompt [-SilentRestart] [-SilentCountdownSeconds <UInt32>]
- [-CustomMessageText <String>] [-NotTopMost] -Title <String> -Subtitle <String> [<CommonParameters>]
+Show-ADTInstallationRestartPrompt [-SilentRestart] [-SilentCountdownSeconds <UInt32>] [-NotTopMost]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -142,22 +142,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: 5
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CustomMessageText
-
-Specify the custom message text to display in the dialog (Fluent UI only).
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

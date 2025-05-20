@@ -66,16 +66,16 @@ function Show-ADTDialogBox
         [System.String]$Text,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('OK', 'OKCancel', 'AbortRetryIgnore', 'YesNoCancel', 'YesNo', 'RetryCancel', 'CancelTryAgainContinue')]
-        [System.String]$Buttons = 'OK',
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.MessageBoxButtons]$Buttons = [PSADT.UserInterface.Dialogs.MessageBoxButtons]::Ok,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('First', 'Second', 'Third')]
-        [System.String]$DefaultButton = 'First',
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.MessageBoxDefaultButton]$DefaultButton = [PSADT.UserInterface.Dialogs.MessageBoxDefaultButton]::First,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Exclamation', 'Information', 'None', 'Stop', 'Question')]
-        [System.String]$Icon = 'None',
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.MessageBoxIcon]$Icon = [PSADT.UserInterface.Dialogs.MessageBoxIcon]::None,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
@@ -88,7 +88,6 @@ function Show-ADTDialogBox
     {
         # Initialize the module if there's no session and it hasn't been previously initialized.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -98,18 +97,6 @@ function Show-ADTDialogBox
                 'Title', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the message dialog box.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-                )
-            ))
-        $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Timeout', [System.UInt32], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long, in seconds, to show the message prompt before aborting.' }
-                    [System.Management.Automation.ValidateScriptAttribute]::new({
-                            if ($_ -gt $adtConfig.UI.DefaultTimeout)
-                            {
-                                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the config.psd1 file.'))
-                            }
-                            return !!$_
-                        })
                 )
             ))
 
@@ -130,14 +117,6 @@ function Show-ADTDialogBox
         else
         {
             $PSBoundParameters.Title
-        }
-        $Timeout = if (!$PSBoundParameters.ContainsKey('Timeout'))
-        {
-            $adtConfig.UI.DefaultTimeout
-        }
-        else
-        {
-            $PSBoundParameters.Timeout
         }
     }
 
@@ -162,21 +141,7 @@ function Show-ADTDialogBox
         {
             try
             {
-                $result = switch ((Get-ADTEnvironmentTable).Shell.Popup($Text, $Timeout, $Title, ($Script:Dialogs.Box.Buttons.$Buttons + $Script:Dialogs.Box.Icons.$Icon + $Script:Dialogs.Box.DefaultButtons.$DefaultButton + (4096 * !$NotTopMost))))
-                {
-                    1 { 'OK'; break }
-                    2 { 'Cancel'; break }
-                    3 { 'Abort'; break }
-                    4 { 'Retry'; break }
-                    5 { 'Ignore'; break }
-                    6 { 'Yes'; break }
-                    7 { 'No'; break }
-                    10 { 'Try Again'; break }
-                    11 { 'Continue'; break }
-                    -1 { 'Timeout'; break }
-                    default { 'Unknown'; break }
-                }
-
+                $result = [PSADT.UserInterface.DialogManager]::ShowMessageBox($Title, $Text, $Buttons, $Icon, $DefaultButton, !$NotTopMost)
                 Write-ADTLogEntry -Message "Dialog box response: $result"
                 return $result
             }

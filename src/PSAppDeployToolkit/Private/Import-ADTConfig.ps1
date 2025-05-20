@@ -107,29 +107,18 @@ function Private:Import-ADTConfig
             'Classic'
         }
     }
-    if (!$Script:Dialogs.Contains($config.UI.DialogStyle))
+    try
     {
-        $naerParams = @{
-            Exception = [System.NotSupportedException]::new("The specified dialog style [$($config.UI.DialogStyle)] is not valid. Valid styles are ['$($Script:Dialogs.Keys -join "', '")'].")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidData
-            ErrorId = 'DialogStyleInvalid'
-            TargetObject = $config
-            RecommendedAction = "Please review the supplied configuration file and try again."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        $null = [PSADT.UserInterface.Dialogs.DialogStyle]$config.UI.DialogStyle
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 
     # Expand out environment variables and asset file paths.
     ($adtEnv = Get-ADTEnvironmentTable).GetEnumerator() | & { process { New-Variable -Name $_.Key -Value $_.Value -Option Constant } end { $config | Expand-ADTVariablesInConfig } }
     $config.Assets | Update-ADTAssetFilePath
-
-    # Set the app's AUMID so it doesn't just say "Windows PowerShell".
-    if ($config.UI.BalloonNotifications -and ![PSADT.LibraryInterfaces.Shell32]::SetCurrentProcessExplicitAppUserModelID($config.UI.BalloonTitle))
-    {
-        $regKey = "$(if ($adtEnv.IsAdmin) { 'HKEY_CLASSES_ROOT' } else { 'HKEY_CURRENT_USER\Software\Classes' })\AppUserModelId\$($config.UI.BalloonTitle)"
-        [Microsoft.Win32.Registry]::SetValue($regKey, 'DisplayName', $config.UI.BalloonTitle, [Microsoft.Win32.RegistryValueKind]::String)
-        [Microsoft.Win32.Registry]::SetValue($regKey, 'IconUri', $config.Assets.Logo, [Microsoft.Win32.RegistryValueKind]::ExpandString)
-    }
 
     # Change paths to user accessible ones if user isn't an admin.
     if (!$adtEnv.IsAdmin)

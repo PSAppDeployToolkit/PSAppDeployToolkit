@@ -123,9 +123,6 @@ function Initialize-ADTModule
                     }
                 }
 
-                # De-init the classic dialog assets.
-                $Script:Dialogs.Classic.BannerHeight = $null
-
                 # Invoke all callbacks.
                 foreach ($callback in $($Script:ADT.Callbacks.OnInit))
                 {

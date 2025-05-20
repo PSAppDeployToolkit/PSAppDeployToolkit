@@ -21,7 +21,7 @@ function Private:Exit-ADTInvocation
     )
 
     # Attempt to close down any progress dialog here as an additional safety item.
-    $progressOpen = if (Test-ADTInstallationProgressRunning)
+    $progressOpen = if ([PSADT.UserInterface.DialogManager]::ProgressDialogOpen())
     {
         try
         {

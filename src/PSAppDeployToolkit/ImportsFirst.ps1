@@ -108,11 +108,6 @@ try
                 # Add in system assemblies.
                 Add-Type -AssemblyName @(
                     'System.ServiceProcess'
-                    'System.Drawing'
-                    'System.Windows.Forms'
-                    'PresentationCore'
-                    'PresentationFramework'
-                    'WindowsBase'
                 )
             }
 
@@ -155,30 +150,6 @@ try
                     Add-Type -LiteralPath $_
                 }
             }
-        }
-
-        # Set the process as HiDPI so long as we're in a real console.
-        if ($Host.Name.Equals('ConsoleHost'))
-        {
-            try
-            {
-                [PSADT.Utilities.DisplayUtilities]::SetProcessDpiAwarenessForOSVersion()
-            }
-            catch
-            {
-                $null = $null
-            }
-        }
-
-        # All WinForms-specific initialization code.
-        try
-        {
-            [System.Windows.Forms.Application]::EnableVisualStyles()
-            [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)
-        }
-        catch
-        {
-            $null = $null
         }
     }
 

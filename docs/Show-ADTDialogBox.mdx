@@ -12,8 +12,8 @@ Display a custom dialog box with optional title, buttons, icon, and timeout.
 ## SYNTAX
 
 ```powershell
-Show-ADTDialogBox [-Text] <String> [-Buttons <String>] [-DefaultButton <String>] [-Icon <String>] [-NotTopMost]
- [-Force] -Title <String> [-Timeout <UInt32>] [<CommonParameters>]
+Show-ADTDialogBox [-Text] <String> [-Buttons <MessageBoxButtons>] [-DefaultButton <MessageBoxDefaultButton>]
+ [-Icon <MessageBoxIcon>] [-NotTopMost] [-Force] -Title <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -54,13 +54,14 @@ Accept wildcard characters: False
 The button(s) to display on the dialog box.
 
 ```yaml
-Type: String
+Type: MessageBoxButtons
 Parameter Sets: (All)
 Aliases:
+Accepted values: Ok, OkCancel, AbortRetryIgnore, YesNoCancel, YesNo, RetryCancel
 
 Required: False
 Position: Named
-Default value: OK
+Default value: Ok
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -71,9 +72,10 @@ The Default button that is selected.
 Options: First, Second, Third.
 
 ```yaml
-Type: String
+Type: MessageBoxDefaultButton
 Parameter Sets: (All)
 Aliases:
+Accepted values: First, Second, Third
 
 Required: False
 Position: Named
@@ -88,9 +90,10 @@ Icon to display on the dialog box.
 Options: None, Stop, Question, Exclamation, Information.
 
 ```yaml
-Type: String
+Type: MessageBoxIcon
 Parameter Sets: (All)
 Aliases:
+Accepted values: None, Stop, Question, Exclamation, Information
 
 Required: False
 Position: Named
@@ -127,22 +130,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Timeout
-
-Specifies how long, in seconds, to show the message prompt before aborting.
-
-```yaml
-Type: UInt32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

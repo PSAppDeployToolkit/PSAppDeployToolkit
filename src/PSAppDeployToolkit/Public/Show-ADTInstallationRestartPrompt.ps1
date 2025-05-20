@@ -28,9 +28,6 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER NoCountdown
         Specifies whether the user should receive a prompt to immediately restart their workstation.
 
-    .PARAMETER CustomMessageText
-    Specify the custom message text to display in the dialog (Fluent UI only).
-
     .PARAMETER NotTopMost
         Specifies whether the prompt shouldn't be topmost, above all other windows.
 
@@ -91,9 +88,6 @@ function Show-ADTInstallationRestartPrompt
         [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$SilentCountdownSeconds = 5,
-
-        [Parameter(Mandatory = $false)]
-        [System.String]$CustomMessageText,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost
@@ -163,10 +157,6 @@ function Show-ADTInstallationRestartPrompt
         {
             $PSBoundParameters.Add('CountdownNoHideSeconds', $CountdownNoHideSeconds)
         }
-        if (!$PSBoundParameters.ContainsKey('CustomMessageText'))
-        {
-            $PSBoundParameters.Add('CustomMessageText', $CustomMessageText)
-        }
     }
 
     process
@@ -197,6 +187,27 @@ function Show-ADTInstallationRestartPrompt
                     return
                 }
 
+                # Build out hashtable of parameters needed to construct the dialog.
+                $dialogOptions = @{
+                    AppTitle = $PSBoundParameters.Title
+                    Subtitle = $PSBoundParameters.Subtitle
+                    AppIconImage = $adtConfig.Assets.Logo
+                    AppBannerImage = $adtConfig.Assets.Banner
+                    DialogAllowMove = $true
+                    DialogTopMost = !$NotTopMost
+                    Strings = $adtStrings.RestartPrompt
+
+                }
+                if (!$NoCountdown)
+                {
+                    $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CountdownSeconds))
+                    $dialogOptions.Add('CountdownNoMinimizeDuration', [System.TimeSpan]::FromSeconds($CountdownNoHideSeconds))
+                }
+                if ($null -ne $adtConfig.UI.FluentAccentColor)
+                {
+                    $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
+                }
+
                 # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.
                 if ($adtSession)
                 {
@@ -210,12 +221,12 @@ function Show-ADTInstallationRestartPrompt
                     }
 
                     # Start another powershell instance silently with function parameters from this function.
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "$(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command & (Import-Module -FullyQualifiedName @{ ModuleName = '$("$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1".Replace("'", "''"))'; Guid = '$($MyInvocation.MyCommand.Module.Guid)'; ModuleVersion = '$($MyInvocation.MyCommand.Module.Version)' } -PassThru) { & `$CommandTable.'Initialize-ADTModule' -ScriptDirectory '$([System.String]::Join("', '", $Script:ADT.Directories.Script.Replace("'", "''")))'; `$null = & `$CommandTable.'$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)' $([PSADT.Utilities.PowerShellUtilities]::ConvertDictToPowerShellArgs($PSBoundParameters, ('SilentRestart', 'SilentCountdownSeconds')).Replace('"', '\"')) }" -WindowStyle Hidden -ErrorAction Ignore
+                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -LiteralPath '$Script:PSScriptRoot\lib\PSADT.UserInterface.dll'; return [PSADT.UserInterface.DialogManager]::ShowRestartDialog('$($adtConfig.UI.DialogStyle)', $(($dialogOptions | Convert-ADTHashtableToString).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
                 # Call the underlying function to open the restart prompt.
-                return & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)" @PSBoundParameters
+                $null = [PSADT.UserInterface.DialogManager]::ShowRestartDialog($adtConfig.UI.DialogStyle, $dialogOptions)
             }
             catch
             {

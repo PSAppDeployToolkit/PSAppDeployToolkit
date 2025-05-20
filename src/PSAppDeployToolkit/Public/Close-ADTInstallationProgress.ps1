@@ -48,7 +48,6 @@ function Close-ADTInstallationProgress
     begin
     {
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-        $adtConfig = Get-ADTConfig
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -58,11 +57,13 @@ function Close-ADTInstallationProgress
         {
             try
             {
-                # Return early if we're silent, a window wouldn't have ever opened.
-                if (!(Test-ADTInstallationProgressRunning))
+                # Return early if there's no progress dialog open at all.
+                if (![PSADT.UserInterface.DialogManager]::ProgressDialogOpen())
                 {
                     return
                 }
+
+                # Return early if we're silent, a window wouldn't have ever opened.
                 if ($adtSession -and $adtSession.IsSilent())
                 {
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]"
@@ -70,7 +71,8 @@ function Close-ADTInstallationProgress
                 }
 
                 # Call the underlying function to close the progress window.
-                & $Script:CommandTable."$($MyInvocation.MyCommand.Name)$($adtConfig.UI.DialogStyle)"
+                Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
+                [PSADT.UserInterface.DialogManager]::CloseProgressDialog()
                 Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $MyInvocation.MyCommand
 
                 # We only send balloon tips when a session is active.
@@ -84,17 +86,17 @@ function Close-ADTInstallationProgress
                 {
                     ([PSADT.Module.DeploymentStatus]::FastRetry)
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText (Get-ADTStringTable).BalloonText.($_.ToString()).($adtSession.DeploymentType.ToString())
+                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText (Get-ADTStringTable).BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString())
                         break
                     }
                     ([PSADT.Module.DeploymentStatus]::Error)
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText (Get-ADTStringTable).BalloonText.($_.ToString()).($adtSession.DeploymentType.ToString())
+                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText (Get-ADTStringTable).BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString())
                         break
                     }
                     default
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText (Get-ADTStringTable).BalloonText.($_.ToString()).($adtSession.DeploymentType.ToString())
+                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText (Get-ADTStringTable).BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString())
                         break
                     }
                 }

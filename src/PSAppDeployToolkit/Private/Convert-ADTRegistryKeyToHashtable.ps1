@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Convert-RegistryKeyToHashtable
+# MARK: Convert-ADTRegistryKeyToHashtable
 #
 #-----------------------------------------------------------------------------
 
-function Private:Convert-RegistryKeyToHashtable
+function Private:Convert-ADTRegistryKeyToHashtable
 {
     begin
     {

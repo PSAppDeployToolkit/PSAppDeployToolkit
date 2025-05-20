@@ -130,6 +130,7 @@ function Install-ADTDeployment
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
+    Start-Sleep -Seconds 5
 
     ## <Perform Pre-Installation tasks here>
 
