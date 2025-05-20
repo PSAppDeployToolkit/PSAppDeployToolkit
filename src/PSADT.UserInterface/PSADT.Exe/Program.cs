@@ -145,6 +145,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "ButtonLeftText", ButtonLeftText },
                 { "ButtonMiddleText", ButtonMiddleText },
                 { "ButtonRightText", ButtonRightText },
+                { "Icon", DialogSystemIcon.Information },
                 { "MessageAlignment", DialogMessageAlignment.Left }
             });
             var restartDialogOptions = new Hashtable
