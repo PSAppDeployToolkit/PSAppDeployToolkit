@@ -54,6 +54,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
             this.flowLayoutPanelBase.Size = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelBase.TabIndex = 0;
+            this.flowLayoutPanelBase.WrapContents = false;
             // 
             // pictureBanner
             // 

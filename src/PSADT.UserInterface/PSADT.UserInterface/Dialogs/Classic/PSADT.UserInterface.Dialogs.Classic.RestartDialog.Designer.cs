@@ -66,6 +66,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
             this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 244);
             this.flowLayoutPanelDialog.TabIndex = 2;
+            this.flowLayoutPanelDialog.WrapContents = false;
             // 
             // labelMessage
             // 
@@ -112,6 +113,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.Name = "flowLayoutPanelCountdown";
             this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(416, 95);
             this.flowLayoutPanelCountdown.TabIndex = 4;
+            this.flowLayoutPanelCountdown.WrapContents = false;
             // 
             // labelRestartMessage
             // 

@@ -81,6 +81,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
             this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 500);
             this.flowLayoutPanelDialog.TabIndex = 3;
+            this.flowLayoutPanelDialog.WrapContents = false;
             // 
             // labelWelcomeMessage
             // 
@@ -141,6 +142,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCloseApps.Name = "flowLayoutPanelCloseApps";
             this.flowLayoutPanelCloseApps.Size = new System.Drawing.Size(416, 178);
             this.flowLayoutPanelCloseApps.TabIndex = 2;
+            this.flowLayoutPanelCloseApps.WrapContents = false;
             // 
             // labelCloseProcessesMessage
             // 
@@ -191,6 +193,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDeferral.Name = "flowLayoutPanelDeferral";
             this.flowLayoutPanelDeferral.Size = new System.Drawing.Size(416, 63);
             this.flowLayoutPanelDeferral.TabIndex = 3;
+            this.flowLayoutPanelDeferral.WrapContents = false;
             // 
             // labelDeferralExpiryMessage
             // 
@@ -250,6 +253,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.Name = "flowLayoutPanelCountdown";
             this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(416, 53);
             this.flowLayoutPanelCountdown.TabIndex = 4;
+            this.flowLayoutPanelCountdown.WrapContents = false;
             // 
             // labelCountdownMessage
             // 

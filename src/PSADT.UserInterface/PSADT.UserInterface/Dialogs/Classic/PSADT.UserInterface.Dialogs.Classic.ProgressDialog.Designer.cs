@@ -57,6 +57,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
             this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 124);
             this.flowLayoutPanelDialog.TabIndex = 2;
+            this.flowLayoutPanelDialog.WrapContents = false;
             // 
             // labelMessage
             // 
