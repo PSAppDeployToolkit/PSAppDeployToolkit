@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automatyczne odliczanie do rozpoczęcia'
             DeferralsRemaining = 'Pozostałe odroczenia'
             DeferralDeadline = 'Termin odroczenia'
-            ButtonLeftText = 'Odroczyć'
-            ButtonRightText = @{
+            ButtonRightText = 'Odroczyć'
+            ButtonLeftText = @{
                 Install = 'Zamknij aplikacje i zainstaluj'
                 Repair = 'Zamknij aplikacje i napraw'
                 Uninstall = 'Zamknij aplikacje i odinstaluj'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Zainstaluj'
                 Repair = 'Napraw'
                 Uninstall = 'Odinstaluj'

@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Contagem regressiva de início automático'
             DeferralsRemaining = 'Diferimentos Restantes'
             DeferralDeadline = 'Prazo de Adiamento'
-            ButtonLeftText = 'Deferir'
-            ButtonRightText = @{
+            ButtonRightText = 'Deferir'
+            ButtonLeftText = @{
                 Install = 'Fechar Aplicativos e Instalar'
                 Repair = 'Fechar Aplicativos & Reparar'
                 Uninstall = 'Fechar Aplicativos e Desinstalar'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Instalar'
                 Repair = 'Reparar'
                 Uninstall = 'Desinstalar'

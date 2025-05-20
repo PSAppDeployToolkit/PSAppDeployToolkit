@@ -221,7 +221,7 @@ Try {
 
         ## Display a message at the end of the install
         If (-not $useDefaultMsi) {
-            Show-InstallationPrompt -Message "$appName installation complete." -ButtonRightText 'OK' -Icon Information -NoWait
+            Show-InstallationPrompt -Message "$appName installation complete." -ButtonLeftText 'OK' -Icon Information -NoWait
         }
     }
     ElseIf ($deploymentType -ieq 'Uninstall') {

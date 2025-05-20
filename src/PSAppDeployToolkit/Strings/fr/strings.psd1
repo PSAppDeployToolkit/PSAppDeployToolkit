@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Compte à rebours de démarrage automatique'
             DeferralsRemaining = 'Reports restants'
             DeferralDeadline = 'Date limite de report'
-            ButtonLeftText = 'Différer'
-            ButtonRightText = @{
+            ButtonRightText = 'Différer'
+            ButtonLeftText = @{
                 Install = 'Fermer les applications et installer'
                 Repair = 'Fermer les applications et réparer'
                 Uninstall = 'Fermer les applications et désinstaller'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Installer'
                 Repair = 'Réparer'
                 Uninstall = 'Désinstaller'

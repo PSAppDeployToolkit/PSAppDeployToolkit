@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Otomatik Başlatma Geri Sayımı'
             DeferralsRemaining = 'Kalan Ertelemeler'
             DeferralDeadline = 'Erteleme Son Tarihi'
-            ButtonLeftText = 'Ertele'
-            ButtonRightText = @{
+            ButtonRightText = 'Ertele'
+            ButtonLeftText = @{
                 Install = 'Uygulamaları Kapat ve Yükle'
                 Repair = 'Uygulamaları Kapat ve Onar'
                 Uninstall = 'Uygulamaları Kapat ve Kaldır'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Yükle'
                 Repair = 'Onarım'
                 Uninstall = 'Kaldır'

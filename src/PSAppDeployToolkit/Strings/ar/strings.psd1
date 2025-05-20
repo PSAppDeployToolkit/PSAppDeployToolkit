@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'العد التنازلي لبدء التشغيل التلقائي'
             DeferralsRemaining = 'التأجيلات المتبقية'
             DeferralDeadline = 'الموعد النهائي للتأجيل'
-            ButtonLeftText = 'تأجيل'
-            ButtonRightText = @{
+            ButtonRightText = 'تأجيل'
+            ButtonLeftText = @{
                 Install = 'إغلاق التطبيقات والتثبيت'
                 Repair = 'إغلاق التطبيقات وإصلاحها'
                 Uninstall = 'إغلاق التطبيقات وإلغاء التثبيت'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'تثبيت'
                 Repair = 'إصلاح'
                 Uninstall = 'إلغاء التثبيت'

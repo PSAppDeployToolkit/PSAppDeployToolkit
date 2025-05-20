@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automatisk nedtelling til start'
             DeferralsRemaining = 'Gjenværende utsettelser'
             DeferralDeadline = 'Frist for utsettelse'
-            ButtonLeftText = 'Utsett'
-            ButtonRightText = @{
+            ButtonRightText = 'Utsett'
+            ButtonLeftText = @{
                 Install = 'Lukk apper og installer'
                 Repair = 'Lukk apper og reparer'
                 Uninstall = 'Lukk apper og avinstaller'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Installere'
                 Repair = 'Reparer'
                 Uninstall = 'Avinstaller'

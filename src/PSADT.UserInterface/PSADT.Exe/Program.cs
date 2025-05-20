@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using System.Management.Automation.Language;
@@ -20,7 +20,7 @@ namespace PSADT.UserInterface.TestHarness
         private static void Main()
         {
             // What dialog style are we running with?
-            var dialogStyle = DialogStyle.Fluent;
+            var dialogStyle = DialogStyle.Fluent; // or DialogStyle.Classic
 
             // Read PSADT's string table into memory.
             var stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Strings\strings.psd1"), out var tokens, out var errors);

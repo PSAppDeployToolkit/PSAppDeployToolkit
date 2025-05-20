@@ -33,19 +33,19 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons
-            SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartLater);
+            SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartNow);
             ButtonLeft.Visibility = Visibility.Visible;
-            SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartNow);
+            SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
             ButtonRight.Visibility = Visibility.Visible;
 
             // Set button automation properties
-            AutomationProperties.SetName(ButtonLeft, options.Strings.ButtonRestartLater);
-            AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartNow);
+            AutomationProperties.SetName(ButtonLeft, options.Strings.ButtonRestartNow);
+            AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
 
             // Focus the restart button by default
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
             {
-                ButtonRight.Focus();
+                ButtonLeft.Focus();
             });
         }
 
@@ -56,8 +56,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
-            // Just minimise the window.
-            WindowState = WindowState.Minimized;
+            // Immediately restart the computer.
+            DialogTools.RestartComputer();
+            base.ButtonRight_Click(sender, e);
         }
 
         /// <summary>
@@ -67,9 +68,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
-            // Immediately restart the computer.
-            DialogTools.RestartComputer();
-            base.ButtonLeft_Click(sender, e);
+            // Just minimise the window.
+            WindowState = WindowState.Minimized;
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else if (null != _countdownWarningDuration && _countdownStopwatch.Elapsed >= _countdownWarningDuration)
             {
-                Dispatcher.Invoke(() => ButtonLeft.IsEnabled = false);
+                Dispatcher.Invoke(() => ButtonRight.IsEnabled = false);
             }
         }
     }

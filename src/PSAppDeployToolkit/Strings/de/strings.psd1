@@ -135,7 +135,7 @@
                 Repair = 'Schließen Sie Apps & Reparieren Sie'
                 Uninstall = 'Schließen Sie Apps & Deinstallieren Sie'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Installieren'
                 Repair = 'Reparatur'
                 Uninstall = 'Deinstallieren'

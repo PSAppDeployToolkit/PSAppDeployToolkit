@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automatické odpočítavanie začiatku'
             DeferralsRemaining = 'Zostávajúce odklady'
             DeferralDeadline = 'Lehota odkladu'
-            ButtonLeftText = 'Odložiť'
-            ButtonRightText = @{
+            ButtonRightText = 'Odložiť'
+            ButtonLeftText = @{
                 Install = 'Zavrieť aplikácie a Nainštalovať'
                 Repair = 'Zatvoriť aplikácie a Opraviť'
                 Uninstall = 'Zatvoriť aplikácie a Odinštalovať'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Inštalovať'
                 Repair = 'Opraviť'
                 Uninstall = 'Odinštalovať'

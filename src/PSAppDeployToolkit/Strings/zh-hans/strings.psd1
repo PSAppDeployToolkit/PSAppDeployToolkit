@@ -129,13 +129,13 @@
             AutomaticStartCountdown = '自动启动倒计时'
             DeferralsRemaining = '剩余延期'
             DeferralDeadline = '延期截止日期'
-            ButtonLeftText = '延迟'
-            ButtonRightText = @{
+            ButtonRightText = '延迟'
+            ButtonLeftText = @{
                 Install = '关闭应用程序并安装'
                 Repair = '关闭应用程序并修复'
                 Uninstall = '关闭应用程序并卸载'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = '安装'
                 Repair = '修复'
                 Uninstall = '卸载'

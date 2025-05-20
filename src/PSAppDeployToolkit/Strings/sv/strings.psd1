@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automatisk startnedräkning'
             DeferralsRemaining = 'Återstående uppskjutningar'
             DeferralDeadline = 'Sista datum för uppskjutning'
-            ButtonLeftText = 'Skjut upp'
-            ButtonRightText = @{
+            ButtonRightText = 'Skjut upp'
+            ButtonLeftText = @{
                 Install = 'Stäng Appar och Installera'
                 Repair = 'Stäng Appar och Reparera'
                 Uninstall = 'Stäng Appar & Avinstallera'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Installera'
                 Repair = 'Reparation'
                 Uninstall = 'Avinstallera'

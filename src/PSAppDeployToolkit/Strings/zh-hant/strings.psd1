@@ -129,13 +129,13 @@
             AutomaticStartCountdown = '自動啟動倒數計時'
             DeferralsRemaining = '剩餘延期'
             DeferralDeadline = '延期截止日期'
-            ButtonLeftText = '延遲'
-            ButtonRightText = @{
+            ButtonRightText = '延遲'
+            ButtonLeftText = @{
                 Install = '關閉應用程式並安裝'
                 Repair = '關閉應用程式與修復'
                 Uninstall = '關閉應用程式並卸載'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = '安裝'
                 Repair = '修復'
                 Uninstall = '解除安裝'

@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Αυτόματη αντίστροφη μέτρηση έναρξης'
             DeferralsRemaining = 'Υπόλοιπες αναβολές'
             DeferralDeadline = 'Προθεσμία αναβολής'
-            ButtonLeftText = 'Αναβολή'
-            ButtonRightText = @{
+            ButtonRightText = 'Αναβολή'
+            ButtonLeftText = @{
                 Install = 'Κλείσιμο εφαρμογών & εγκατάσταση'
                 Repair = 'Κλείσιμο εφαρμογών & επισκευή'
                 Uninstall = 'Κλείσιμο εφαρμογών & απεγκατάσταση'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Εγκατάσταση'
                 Repair = 'Επισκευή'
                 Uninstall = 'Απεγκατάσταση'

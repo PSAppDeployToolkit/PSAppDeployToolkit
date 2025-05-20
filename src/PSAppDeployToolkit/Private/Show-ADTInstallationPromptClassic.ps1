@@ -251,7 +251,7 @@ function Private:Show-ADTInstallationPromptClassic
             $buttonLeft.MinimumSize = $buttonLeft.ClientSize = $buttonLeft.MaximumSize = $buttonSize
             $buttonLeft.Margin = $buttonLeft.Padding = $paddingNone
             $buttonLeft.Location = [System.Drawing.Point]::new(14, 4)
-            $buttonLeft.DialogResult = [System.Windows.Forms.DialogResult]::No
+            $buttonLeft.DialogResult = [System.Windows.Forms.DialogResult]::Yes
             $buttonLeft.Font = $Script:Dialogs.Classic.Font
             $buttonLeft.Name = 'ButtonLeft'
             $buttonLeft.Text = $ButtonLeftText
@@ -283,7 +283,7 @@ function Private:Show-ADTInstallationPromptClassic
             $buttonRight.MinimumSize = $buttonRight.ClientSize = $buttonRight.MaximumSize = $buttonSize
             $buttonRight.Margin = $buttonRight.Padding = $paddingNone
             $buttonRight.Location = [System.Drawing.Point]::new(306, 4)
-            $buttonRight.DialogResult = [System.Windows.Forms.DialogResult]::Yes
+            $buttonRight.DialogResult = [System.Windows.Forms.DialogResult]::No
             $buttonRight.Font = $Script:Dialogs.Classic.Font
             $buttonRight.Name = 'ButtonRight'
             $buttonRight.Text = $ButtonRightText
@@ -354,11 +354,11 @@ function Private:Show-ADTInstallationPromptClassic
     {
         Yes
         {
-            return $ButtonRightText
+            return $ButtonLeftText
         }
         No
         {
-            return $ButtonLeftText
+            return $ButtonRightText
         }
         Ignore
         {

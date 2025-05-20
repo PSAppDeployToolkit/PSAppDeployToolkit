@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automatische start aftellen'
             DeferralsRemaining = 'Resterende uitstel'
             DeferralDeadline = 'Uitsteltermijn'
-            ButtonLeftText = 'Uitstellen'
-            ButtonRightText = @{
+            ButtonRightText = 'Uitstellen'
+            ButtonLeftText = @{
                 Install = 'Sluit Apps & installeer.'
                 Repair = 'Sluit Apps & repareer.'
                 Uninstall = 'Sluit Apps & de-installeer.'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Installeren.'
                 Repair = 'Repareren.'
                 Uninstall = 'De-installeren.'

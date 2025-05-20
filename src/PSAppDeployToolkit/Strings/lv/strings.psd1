@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automātiska sākuma atpakaļskaitīšana'
             DeferralsRemaining = 'Atlikušie atlikumi'
             DeferralDeadline = 'Atlikšanas termiņš'
-            ButtonLeftText = 'Atlikt'
-            ButtonRightText = @{
+            ButtonRightText = 'Atlikt'
+            ButtonLeftText = @{
                 Install = 'Aizvērt programmas un Instalēt'
                 Repair = 'Aizvērt programmas un Labot'
                 Uninstall = 'Aizvērt programmas un Atinstalēt'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Instalēt'
                 Repair = 'Labot'
                 Uninstall = 'Atinstalēt'

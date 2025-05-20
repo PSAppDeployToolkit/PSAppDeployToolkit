@@ -129,13 +129,13 @@
             AutomaticStartCountdown = '自動スタートカウントダウン'
             DeferralsRemaining = '残りの延期'
             DeferralDeadline = '延期期限'
-            ButtonLeftText = '延期'
-            ButtonRightText = @{
+            ButtonRightText = '延期'
+            ButtonLeftText = @{
                 Install = 'アプリを終了してインストールします。'
                 Repair = 'アプリを終了して修理'
                 Uninstall = 'アプリを終了してアンインストールします。'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'インストールする'
                 Repair = '修理'
                 Uninstall = 'アンインストール'

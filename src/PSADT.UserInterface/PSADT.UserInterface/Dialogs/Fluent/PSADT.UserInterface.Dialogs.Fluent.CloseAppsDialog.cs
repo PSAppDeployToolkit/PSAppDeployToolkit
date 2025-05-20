@@ -67,8 +67,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Store original and alternative texts
             _closeAppsNoProcessesMessageText = options.Strings.Fluent.DialogMessageNoProcesses;
             _closeAppsMessageText = options.Strings.Fluent.DialogMessage;
-            _buttonRightNoProcessesText = options.Strings.Fluent.ButtonRightTextNoProcesses;
-            _buttonRightText = options.Strings.Fluent.ButtonRightText;
+            _buttonLeftText = options.Strings.Fluent.ButtonLeftText;
+            _buttonLeftNoProcessesText = options.Strings.Fluent.ButtonLeftTextNoProcesses;
             _deferralsRemaining = options.DeferralsRemaining;
             _deferralDeadline = options.DeferralDeadline;
 
@@ -80,12 +80,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons
-            SetButtonContentWithAccelerator(ButtonLeft, options.Strings.Fluent.ButtonLeftText);
-            ButtonLeft.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
-            AutomationProperties.SetName(ButtonLeft, options.Strings.Fluent.ButtonLeftText);
-            SetButtonContentWithAccelerator(ButtonRight, _buttonRightNoProcessesText);
-            ButtonRight.Visibility = Visibility.Visible;
-            AutomationProperties.SetName(ButtonRight, _buttonRightNoProcessesText);
+            SetButtonContentWithAccelerator(ButtonRight, options.Strings.Fluent.ButtonRightText);
+            ButtonRight.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            AutomationProperties.SetName(ButtonRight, options.Strings.Fluent.ButtonRightText);
+            SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
+            ButtonLeft.Visibility = Visibility.Visible;
+            AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
 
             // Set up/process optional values.
             if (null != options.RunningProcessService)
@@ -97,7 +97,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Focus the continue button by default
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
             {
-                ButtonRight.Focus();
+                ButtonLeft.Focus();
             });
         }
 
@@ -109,7 +109,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // First handle default case - if no deferral settings, just disable the button
             if (!_deferralsRemaining.HasValue && !_deferralDeadline.HasValue)
             {
-                ButtonLeft.IsEnabled = false;
+                ButtonRight.IsEnabled = false;
                 return;
             }
 
@@ -117,7 +117,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (_deferralsRemaining.HasValue)
             {
                 // Only enable the button if there are deferrals remaining
-                ButtonLeft.IsEnabled = _deferralsRemaining > 0;
+                ButtonRight.IsEnabled = _deferralsRemaining > 0;
 
                 // Update text value
                 var displayText = $"{_deferralsRemaining} remain";
@@ -144,11 +144,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 // Set button state based on deadline
                 TimeSpan timeRemaining = _deferralDeadline!.Value - DateTime.Now;
-                ButtonLeft.IsEnabled = timeRemaining > TimeSpan.Zero;
+                ButtonRight.IsEnabled = timeRemaining > TimeSpan.Zero;
 
                 // Update text content
                 string displayText; Brush textBrush;
-                if (ButtonLeft.IsEnabled)
+                if (ButtonRight.IsEnabled)
                 {
                     displayText = _deferralDeadline.Value.ToString("r");
                     if (timeRemaining < TimeSpan.FromDays(1))
@@ -195,16 +195,16 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (AppsToCloseCollection.Count == 0)
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
-                SetButtonContentWithAccelerator(ButtonRight, _buttonRightNoProcessesText);
-                AutomationProperties.SetName(ButtonRight, _buttonRightNoProcessesText);
+                SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
+                AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                 CloseAppsStackPanel.Visibility = Visibility.Collapsed;
                 CloseAppsSeparator.Visibility = Visibility.Collapsed;
             }
             else
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
-                SetButtonContentWithAccelerator(ButtonRight, _buttonRightText);
-                AutomationProperties.SetName(ButtonRight, _buttonRightText);
+                SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftText);
+                AutomationProperties.SetName(ButtonLeft, _buttonLeftText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 CloseAppsSeparator.Visibility = Visibility.Visible;
             }
@@ -242,7 +242,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            DialogResult = "Defer";
+            DialogResult = "Continue";
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -258,8 +258,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            DialogResult = "Continue";
-            base.ButtonLeft_Click(sender, e);
+            DialogResult = "Defer";
+            base.ButtonRight_Click(sender, e);
         }
 
         /// <summary>
@@ -323,12 +323,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The text for the right button when there's no apps to close.
         /// </summary>
-        private readonly string _buttonRightNoProcessesText;
+        private readonly string _buttonLeftNoProcessesText;
 
         /// <summary>
-        /// The text for the right button when there's apps to close.
+        /// The text for the left button when there's apps to close.
         /// </summary>
-        private readonly string _buttonRightText;
+        private readonly string _buttonLeftText;
 
         /// <summary>
         /// The service object for processing running applications.

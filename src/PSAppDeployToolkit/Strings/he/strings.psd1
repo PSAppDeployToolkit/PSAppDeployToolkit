@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'ספירה לאחור אוטומטית להתחלה'
             DeferralsRemaining = 'דחיות שנותרו'
             DeferralDeadline = 'מועד אחרון לדחייה'
-            ButtonLeftText = 'לִדחוֹת'
-            ButtonRightText = @{
+            ButtonRightText = 'לִדחוֹת'
+            ButtonLeftText = @{
                 Install = 'סגור אפליקציות והתקן'
-                Repair = 'סגור אפליקציות ותיקון'
+                Repair = 'סגור אפליקציות ותקן'
                 Uninstall = 'סגור אפליקציות והסר התקנה'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'לְהַתְקִין'
                 Repair = 'לְתַקֵן'
                 Uninstall = 'הסר את ההתקנה'

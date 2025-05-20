@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automatikus indítási visszaszámlálás'
             DeferralsRemaining = 'Fennmaradó halasztások'
             DeferralDeadline = 'Halasztási határidő'
-            ButtonLeftText = 'Halasztás'
-            ButtonRightText = @{
+            ButtonRightText = 'Halasztás'
+            ButtonLeftText = @{
                 Install = 'Alkalmazások Bezárása és Telepítése'
                 Repair = 'Alkalmazások Bezárása és Javítása'
                 Uninstall = 'Alkalmazások Bezárása és Eltávolítása'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Telepítés'
                 Repair = 'Javítás'
                 Uninstall = 'Eltávolítás'

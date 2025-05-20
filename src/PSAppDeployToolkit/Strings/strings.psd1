@@ -206,17 +206,17 @@
             DeferralDeadline = 'Deferral Deadline'
 
             # This is a phrase used to describe the process of deferring a deployment.
-            ButtonLeftText = 'Defer'
+            ButtonRightText = 'Defer'
 
             # This is a phrase used to describe the process of closing applications and commencing the deployment.
-            ButtonRightText = @{
+            ButtonLeftText = @{
                 Install = 'Close Apps & Install'
                 Repair = 'Close Apps & Repair'
                 Uninstall = 'Close Apps & Uninstall'
             }
 
             # This is a phrase used to describe the process of commencing the deployment.
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Install'
                 Repair = 'Repair'
                 Uninstall = 'Uninstall'

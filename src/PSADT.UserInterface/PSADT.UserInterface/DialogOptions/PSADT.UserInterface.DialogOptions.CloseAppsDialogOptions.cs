@@ -317,17 +317,17 @@ namespace PSADT.UserInterface.DialogOptions
                     {
                         throw new ArgumentNullException("DeferralDeadline value is null or invalid.", (Exception?)null);
                     }
-                    if (strings["ButtonLeftText"] is not string buttonLeftText || string.IsNullOrWhiteSpace(buttonLeftText))
+                    if (strings["ButtonLeftText"] is not Hashtable buttonLeftTextTable || buttonLeftTextTable[deploymentType.ToString()] is not string buttonLeftText || string.IsNullOrWhiteSpace(buttonLeftText))
                     {
                         throw new ArgumentNullException("ButtonLeftText value is null or invalid.", (Exception?)null);
                     }
-                    if (strings["ButtonRightText"] is not Hashtable buttonRightTextTable || buttonRightTextTable[deploymentType.ToString()] is not string buttonRightText || string.IsNullOrWhiteSpace(buttonRightText))
+                    if (strings["ButtonRightText"] is not string buttonRightText || string.IsNullOrWhiteSpace(buttonRightText))
                     {
                         throw new ArgumentNullException("ButtonRightText value is null or invalid.", (Exception?)null);
                     }
-                    if (strings["ButtonRightNoProcessesText"] is not Hashtable buttonRightNoProcessesTextTable || buttonRightNoProcessesTextTable[deploymentType.ToString()] is not string buttonRightNoProcessesText || string.IsNullOrWhiteSpace(buttonRightNoProcessesText))
+                    if (strings["ButtonLeftNoProcessesText"] is not Hashtable buttonLeftNoProcessesTextTable || buttonLeftNoProcessesTextTable[deploymentType.ToString()] is not string buttonLeftNoProcessesText || string.IsNullOrWhiteSpace(buttonLeftNoProcessesText))
                     {
-                        throw new ArgumentNullException("ButtonRightNoProcessesText value is null or invalid.", (Exception?)null);
+                        throw new ArgumentNullException("ButtonLeftNoProcessesText value is null or invalid.", (Exception?)null);
                     }
 
                     // The hashtable was correctly defined, assign the remaining values.
@@ -338,7 +338,7 @@ namespace PSADT.UserInterface.DialogOptions
                     DeferralDeadline = deferralDeadline;
                     ButtonLeftText = buttonLeftText;
                     ButtonRightText = buttonRightText;
-                    ButtonRightTextNoProcesses = buttonRightNoProcessesText;
+                    ButtonLeftTextNoProcesses = buttonLeftNoProcessesText;
                 }
 
                 /// <summary>
@@ -379,7 +379,7 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <summary>
                 /// This is a phrase used to describe the process of commencing the deployment.
                 /// </summary>
-                public readonly string ButtonRightTextNoProcesses;
+                public readonly string ButtonLeftTextNoProcesses;
             }
         }
     }

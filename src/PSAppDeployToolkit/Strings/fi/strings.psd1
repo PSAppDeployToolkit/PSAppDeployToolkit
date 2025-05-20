@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automaattinen käynnistyslaskenta'
             DeferralsRemaining = 'Jäljellä olevat lykkäykset'
             DeferralDeadline = 'Lykkäyksen määräaika'
-            ButtonLeftText = 'Lykkää'
-            ButtonRightText = @{
+            ButtonRightText = 'Lykkää'
+            ButtonLeftText = @{
                 Install = 'Sulje Sovellukset ja Asenna'
                 Repair = 'Sulje Sovellukset ja Korjaa'
                 Uninstall = 'Sulje Sovellukset & Poista Asennus'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Asenna'
                 Repair = 'Korjaa'
                 Uninstall = 'Poista Asennus'

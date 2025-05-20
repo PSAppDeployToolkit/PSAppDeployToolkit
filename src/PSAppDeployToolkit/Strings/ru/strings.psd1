@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Автоматический обратный отсчет до начала'
             DeferralsRemaining = 'Оставшиеся отсрочки'
             DeferralDeadline = 'Крайний срок отсрочки'
-            ButtonLeftText = 'Отложить'
-            ButtonRightText = @{
+            ButtonRightText = 'Отложить'
+            ButtonLeftText = @{
                 Install = 'Закрыть приложения и установить'
                 Repair = 'Закрыть приложения и восстановить'
                 Uninstall = 'Закройте приложения и удалите их'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Установить'
                 Repair = 'Восстановление'
                 Uninstall = 'Удалить'

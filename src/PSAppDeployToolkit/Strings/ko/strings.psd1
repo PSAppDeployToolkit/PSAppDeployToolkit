@@ -129,13 +129,13 @@
             AutomaticStartCountdown = '자동 시작 카운트다운'
             DeferralsRemaining = '남은 연기금'
             DeferralDeadline = '연기 기한'
-            ButtonLeftText = '연기'
-            ButtonRightText = @{
+            ButtonRightText = '연기'
+            ButtonLeftText = @{
                 Install = '앱 닫기 및 설치'
                 Repair = '앱 닫기 & 복구'
                 Uninstall = '앱 닫기 및 제거'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = '설치'
                 Repair = '복구'
                 Uninstall = '제거'

@@ -129,13 +129,13 @@
             AutomaticStartCountdown = 'Automatisk startnedtælling'
             DeferralsRemaining = 'Resterende udsættelser'
             DeferralDeadline = 'Udsættelsesfrist'
-            ButtonLeftText = 'Udskyd'
-            ButtonRightText = @{
+            ButtonRightText = 'Udskyd'
+            ButtonLeftText = @{
                 Install = 'Luk Apps og Installer'
                 Repair = 'Luk Apps og Reparer'
                 Uninstall = 'Luk Apps og Afinstaller'
             }
-            ButtonRightNoProcessesText = @{
+            ButtonLeftNoProcessesText = @{
                 Install = 'Installer'
                 Repair = 'Reparation'
                 Uninstall = 'Afinstaller'

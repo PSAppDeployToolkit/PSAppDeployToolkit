@@ -150,9 +150,9 @@ function Private:Show-ADTWelcomePromptFluent
         deferralsRemainingText          = $adtStrings.WelcomePrompt.Fluent.TextBlockDeferralsRemaining
         deferralDeadlineText            = $adtStrings.WelcomePrompt.Fluent.TextBlockDeferralDeadline
         automaticStartCountdownText     = $adtStrings.WelcomePrompt.Fluent.TextBlockAutomaticStartCountdown
-        deferButtonText                 = $adtStrings.WelcomePrompt.Fluent.ButtonLeftText
-        continueButtonText              = $adtStrings.WelcomePrompt.Fluent.ButtonRightText.$DeploymentType
-        alternativeContinueButtonText   = $adtStrings.WelcomePrompt.Fluent.ButtonRightTextNoProcesses.$DeploymentType
+        deferButtonText                 = $adtStrings.WelcomePrompt.Fluent.ButtonRightText
+        continueButtonText              = $adtStrings.WelcomePrompt.Fluent.ButtonLeftText.$DeploymentType
+        alternativeContinueButtonText   = $adtStrings.WelcomePrompt.Fluent.ButtonLeftTextNoProcesses.$DeploymentType
         processEvaluationService        = $(if ($adtConfig.UI.DynamicProcessEvaluation) { [PSADT.UserInterface.Services.ProcessEvaluationService]::new() })
     }
 
