@@ -85,7 +85,7 @@ function Private:Show-ADTInstallationPromptFluent
     # Map parameters for the C# ShowCustomDialog method.
     $dialogParams = @{
         dialogExpiryDuration = [System.TimeSpan]::FromMinutes($adtConfig.UI.DialogStyleFluentOptions.ExpiryDuration)
-        dialogAccentColor    = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
+        FluentAccentColor    = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
         dialogPosition       = $adtConfig.UI.DialogStyleFluentOptions.Position
         dialogTopMost        = !$NotTopMost
         dialogAllowMove      = $adtConfig.UI.DialogStyleFluentOptions.AllowMove
@@ -101,7 +101,7 @@ function Private:Show-ADTInstallationPromptFluent
     # Call the C# method with positional parameters
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowCustomDialog(
         $dialogParams.dialogExpiryDuration,
-        $dialogParams.dialogAccentColor,
+        $dialogParams.FluentAccentColor,
         $dialogParams.dialogPosition,
         $dialogParams.dialogTopMost,
         $dialogParams.dialogAllowMove,

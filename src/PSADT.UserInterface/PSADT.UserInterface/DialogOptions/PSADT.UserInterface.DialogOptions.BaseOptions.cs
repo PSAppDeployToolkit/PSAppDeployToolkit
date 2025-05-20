@@ -74,13 +74,13 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 DialogPersistInterval = dialogPersistInterval;
             }
-            if (options.ContainsKey("DialogAccentColor"))
+            if (options.ContainsKey("FluentAccentColor"))
             {
-                if (options["DialogAccentColor"] is not int dialogAccentColor)
+                if (options["FluentAccentColor"] is not int fluentAccentColor)
                 {
-                    throw new ArgumentOutOfRangeException("DialogAccentColor value is not valid.", (Exception?)null);
+                    throw new ArgumentOutOfRangeException("FluentAccentColor value is not valid.", (Exception?)null);
                 }
-                DialogAccentColor = dialogAccentColor;
+                FluentAccentColor = fluentAccentColor;
             }
             if (options.ContainsKey("DialogPosition"))
             {
@@ -139,7 +139,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
-        public readonly int? DialogAccentColor;
+        public readonly int? FluentAccentColor;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.

@@ -133,7 +133,7 @@ function Private:Show-ADTWelcomePromptFluent
     # Map parameters and call the updated C# ShowCloseAppsDialog method.
     $dialogParams = @{
         dialogExpiryDuration            = [System.TimeSpan]::FromMinutes($adtConfig.UI.DialogStyleFluentOptions.ExpiryDuration)
-        dialogAccentColor               = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
+        FluentAccentColor               = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
         dialogPosition                  = $adtConfig.UI.DialogStyleFluentOptions.Position
         dialogTopMost                   = !$NotTopMost
         dialogAllowMove                 = $adtConfig.UI.DialogStyleFluentOptions.AllowMove
@@ -159,7 +159,7 @@ function Private:Show-ADTWelcomePromptFluent
     # Call the C# method with positional parameters
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowCloseAppsDialog(
         $dialogParams.dialogExpiryDuration,
-        $dialogParams.dialogAccentColor,
+        $dialogParams.FluentAccentColor,
         $dialogParams.dialogPosition,
         $dialogParams.dialogTopMost,
         $dialogParams.dialogAllowMove,

@@ -81,7 +81,7 @@ function Private:Show-ADTInstallationRestartPromptFluent
     # Map parameters for the C# ShowRestartDialog method.
     $dialogParams = @{
         dialogExpiryDuration            = [System.TimeSpan]::FromMinutes($adtConfig.UI.DialogStyleFluentOptions.ExpiryDuration)
-        dialogAccentColor               = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
+        FluentAccentColor               = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
         dialogPosition                  = $adtConfig.UI.DialogStyleFluentOptions.Position
         dialogTopMost                   = !$NotTopMost
         dialogAllowMove                 = $adtConfig.UI.DialogStyleFluentOptions.AllowMove
@@ -102,7 +102,7 @@ function Private:Show-ADTInstallationRestartPromptFluent
     Write-ADTLogEntry -Message "Displaying restart prompt with $(if ($NoCountdown) { 'no' } else { "a [$CountdownSeconds] second" }) countdown."
     $result = [PSADT.UserInterface.UnifiedADTApplication]::ShowRestartDialog(
         $dialogParams.dialogExpiryDuration,
-        $dialogParams.dialogAccentColor,
+        $dialogParams.FluentAccentColor,
         $dialogParams.dialogPosition,
         $dialogParams.dialogTopMost,
         $dialogParams.dialogAllowMove,

@@ -284,11 +284,11 @@
 				<text id="BalloonTitle" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="BalloonTitle" required="true" />
 			</elements>
 		</policy>
-		<policy name="DialogAccentColor" class="Machine" displayName="$(string.DialogAccentColor_Display)" explainText="$(string.DialogAccentColor_Explain)" presentation="$(presentation.DialogAccentColor)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+		<policy name="FluentAccentColor" class="Machine" displayName="$(string.FluentAccentColor_Display)" explainText="$(string.FluentAccentColor_Explain)" presentation="$(presentation.FluentAccentColor)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
 			<parentCategory ref="UI" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
 			<elements>
-				<decimal id="DialogAccentColor" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DialogAccentColor" required="true" />
+				<decimal id="FluentAccentColor" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="FluentAccentColor" required="true" />
 			</elements>
 		</policy>
 		<policy name="DialogStyle" class="Machine" displayName="$(string.DialogStyle_Display)" explainText="$(string.DialogStyle_Explain)" presentation="$(presentation.DialogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">

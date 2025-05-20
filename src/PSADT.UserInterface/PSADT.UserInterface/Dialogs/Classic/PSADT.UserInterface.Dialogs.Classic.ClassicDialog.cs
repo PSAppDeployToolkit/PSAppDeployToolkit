@@ -51,7 +51,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 #warning "TODO: DialogPosition?"
                 #warning "TODO: DialogAllowMove?"
                 this.TopMost = options.DialogTopMost;
-                #warning "TODO: DialogAccentColor?"
                 this.flowLayoutPanelBase.ResumeLayout();
                 this.FormClosing += Form_FormClosing;
                 this.Load += Form_Load;

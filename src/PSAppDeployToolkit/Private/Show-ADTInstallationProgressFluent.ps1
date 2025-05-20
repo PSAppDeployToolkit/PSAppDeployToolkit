@@ -81,7 +81,7 @@ function Private:Show-ADTInstallationProgressFluent
         # Map parameters for ShowProgressDialog
         $dialogParams = @{
             dialogExpiryDuration = [System.TimeSpan]::FromMinutes($adtConfig.UI.DialogStyleFluentOptions.ExpiryDuration)
-            dialogAccentColor    = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
+            FluentAccentColor    = $adtConfig.UI.DialogStyleFluentOptions.AccentColor
             dialogPosition       = $adtConfig.UI.DialogStyleFluentOptions.Position
             dialogTopMost        = !$NotTopMost
             dialogAllowMove      = $adtConfig.UI.DialogStyleFluentOptions.AllowMove
@@ -95,7 +95,7 @@ function Private:Show-ADTInstallationProgressFluent
         # Instantiate a new progress window object and start it up.
         [PSADT.UserInterface.UnifiedADTApplication]::ShowProgressDialog(
             $dialogParams.dialogExpiryDuration,
-            $dialogParams.dialogAccentColor,
+            $dialogParams.FluentAccentColor,
             $dialogParams.dialogPosition,
             $dialogParams.dialogTopMost,
             $dialogParams.dialogAllowMove,

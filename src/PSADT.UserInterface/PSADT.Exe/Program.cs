@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.TestHarness
             string subtitle = "Bisto Systems Ltd - App Install";
             string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
             string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\Banner.Classic.png");
-            var dialogAccentColor = ValueTypeConverter.ToInt(0xFFFFB900); // Yellow
+            var FluentAccentColor = ValueTypeConverter.ToInt(0xFFFFB900); // Yellow
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
@@ -98,7 +98,7 @@ namespace PSADT.UserInterface.TestHarness
             var closeAppsDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "DialogAccentColor", dialogAccentColor },
+                { "FluentAccentColor", FluentAccentColor },
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -117,7 +117,7 @@ namespace PSADT.UserInterface.TestHarness
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "DialogAccentColor", dialogAccentColor },
+                { "FluentAccentColor", FluentAccentColor },
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -132,7 +132,7 @@ namespace PSADT.UserInterface.TestHarness
             var customDialogOptions = new CustomDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "DialogAccentColor", dialogAccentColor },
+                { "FluentAccentColor", FluentAccentColor },
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -151,7 +151,7 @@ namespace PSADT.UserInterface.TestHarness
             var restartDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "DialogAccentColor", dialogAccentColor },
+                { "FluentAccentColor", FluentAccentColor },
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },

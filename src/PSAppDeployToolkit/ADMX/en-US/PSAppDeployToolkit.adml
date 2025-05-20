@@ -72,8 +72,8 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<string id="BalloonNotifications_Explain">Used to turn automatic balloon notifications on or off.</string>
 			<string id="BalloonTitle_Display">BalloonTitle</string>
 			<string id="BalloonTitle_Explain">The name to show by default for all balloon notifications.</string>
-			<string id="DialogAccentColor_Display">DialogAccentColor</string>
-			<string id="DialogAccentColor_Explain">Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.</string>
+			<string id="FluentAccentColor_Display">FluentAccentColor</string>
+			<string id="FluentAccentColor_Explain">Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.</string>
 			<string id="DialogStyle_Display">DialogStyle</string>
 			<string id="DialogStyle_Explain">Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.</string>
 			<string id="DefaultExitCode_Display">DefaultExitCode</string>
@@ -240,7 +240,7 @@ If the running applications change (new CloseProcesses launched or running proce
 			<presentation id="DeferExitCode">
 				<decimalTextBox refId="DeferExitCode">DeferExitCode</decimalTextBox>
 			</presentation>
-			<presentation id="DialogAccentColor">
+			<presentation id="FluentAccentColor">
 				<decimalTextBox refId="HexValue" spin="true" spinStep="1"/>
 			</presentation>
 			<presentation id="DialogStyle">

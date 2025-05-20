@@ -47,13 +47,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null, string? countdownDialogResult = null)
         {
             // Process the given accent color from the options
-            if (null != options.DialogAccentColor)
+            if (null != options.FluentAccentColor)
             {
                 // Don't update the window accent as we're setting it manually
                 SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
 
                 // Apply the accent color to the application theme
-                ApplicationAccentColorManager.Apply(StringToColor(options.DialogAccentColor.Value), ApplicationThemeManager.GetAppTheme(), true);
+                ApplicationAccentColorManager.Apply(StringToColor(options.FluentAccentColor.Value), ApplicationThemeManager.GetAppTheme(), true);
 
                 // Update the accent color in the theme dictionary
                 // See https://github.com/lepoco/wpfui/issues/1188 for more info.

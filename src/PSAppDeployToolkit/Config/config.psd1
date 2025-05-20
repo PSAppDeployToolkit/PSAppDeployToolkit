@@ -100,11 +100,11 @@
         # The name to show by default for all balloon notifications.
         BalloonTitle = 'PSAppDeployToolkit'
 
-        # Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.
-        DialogAccentColor = $null
-
         # Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.
         DialogStyle = 'Fluent'
+
+        # Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.
+        FluentAccentColor = $null
 
         # Exit code used when a UI prompt times out.
         DefaultExitCode = 1618
