@@ -58,7 +58,7 @@
     <StartupObject>PSADT.Invoke.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>appIcon.ico</ApplicationIcon>
+    <ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -83,7 +83,7 @@
     <Compile Include="Invoke.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="appIcon.ico" />
+    <Content Include="Properties\appIcon.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.2">
