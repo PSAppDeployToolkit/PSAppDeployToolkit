@@ -12,7 +12,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's ProgressDialog dialog.
     /// </summary>
-    internal sealed class ProgressDialog : FluentDialog
+    internal sealed class ProgressDialog : FluentDialog, IProgressDialog
     {
         /// <summary>
         /// Instantiates a new ProgressDialog dialog.
@@ -39,7 +39,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="progressMessage">Optional new main progress message.</param>
         /// <param name="progressMessageDetail">Optional new detail message.</param>
         /// <param name="percentComplete">Optional progress percentage (0-100). If provided, the progress bar becomes determinate and animates.</param>
-        internal void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null)
+        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null)
         {
             Dispatcher.Invoke(() =>
             {

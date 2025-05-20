@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Progress dialog form.
     /// </summary>
-    internal partial class ProgressDialog : ClassicDialog
+    internal partial class ProgressDialog : ClassicDialog, IProgressDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressDialog"/> class.
@@ -59,7 +59,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="progressMessage"></param>
         /// <param name="progressMessageDetail"></param>
         /// <param name="percentComplete"></param>
-        internal void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null)
+        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null)
         {
             // Update the progress message.
             if (!string.IsNullOrWhiteSpace(progressMessage))
@@ -76,7 +76,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Update the progress percentage.
             if (null != percentComplete)
             {
-                throw new NotSupportedException("Progress percentage is not supported in the classic dialog.");
+                this.progressBar.Style = ProgressBarStyle.Blocks;
+                this.progressBar.Value = (int)percentComplete.Value;
+            }
+            else
+            {
+                this.progressBar.Style = ProgressBarStyle.Marquee;
             }
         }
 

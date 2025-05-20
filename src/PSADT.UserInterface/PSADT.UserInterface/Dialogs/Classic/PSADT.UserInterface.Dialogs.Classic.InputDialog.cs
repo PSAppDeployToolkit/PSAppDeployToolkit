@@ -7,7 +7,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Abortable classic dialog form.
     /// </summary>
-    internal partial class InputDialog : ClassicDialog
+    internal partial class InputDialog : ClassicDialog, IModalDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InputDialog"/> class.

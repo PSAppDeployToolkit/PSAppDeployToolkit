@@ -61,7 +61,7 @@ namespace PSADT.UserInterface
         /// Shows a non-modal Progress dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        public static void ShowProgressDialog(ProgressDialogOptions options)
+        public static void ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
             if (progressInitialized.IsSet)
             {
@@ -69,7 +69,7 @@ namespace PSADT.UserInterface
             }
             InvokeDialogAction(() =>
             {
-                progressDialog = new Dialogs.Fluent.ProgressDialog(options);
+                progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.Progress](options);
                 progressDialog.Show();
             });
             progressInitialized.Set();
@@ -126,7 +126,7 @@ namespace PSADT.UserInterface
             TResult? result = default;
             InvokeDialogAction(() =>
             {
-                using (var dialog = dialogDispatcher[dialogStyle][dialogType](options))
+                using (var dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options))
                 {
                     dialog.ShowDialog();
                     result = (TResult)dialog.DialogResult;
@@ -162,10 +162,10 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
         /// </summary>
-        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, IDeploymentDialog>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, IDeploymentDialog>>>
+        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>>
         {
             {
-                DialogStyle.Classic, new ReadOnlyDictionary<DialogType, Func<BaseOptions, IDeploymentDialog>>(new Dictionary<DialogType, Func<BaseOptions, IDeploymentDialog>>
+                DialogStyle.Classic, new ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, IDialogBase>>
                 {
                     { DialogType.CloseApps, options => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options) },
                     { DialogType.Custom, options => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
@@ -175,7 +175,7 @@ namespace PSADT.UserInterface
                 })
             },
             {
-                DialogStyle.Fluent, new ReadOnlyDictionary<DialogType, Func<BaseOptions, IDeploymentDialog>>(new Dictionary<DialogType, Func<BaseOptions, IDeploymentDialog>>
+                DialogStyle.Fluent, new ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, IDialogBase>>
                 {
                     { DialogType.CloseApps, options => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options) },
                     { DialogType.Custom, options => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
@@ -189,7 +189,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// The currently open Progress dialog, if any. Null if no dialog is open.
         /// </summary>
-        private static Dialogs.Fluent.ProgressDialog? progressDialog = null;
+        private static IProgressDialog? progressDialog = null;
 
         /// <summary>
         /// Event to signal that the progress dialog has been initialized.

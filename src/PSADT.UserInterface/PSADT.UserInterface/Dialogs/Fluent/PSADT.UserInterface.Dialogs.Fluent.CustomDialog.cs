@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's Custom dialog.
     /// </summary>
-    internal class CustomDialog : FluentDialog
+    internal class CustomDialog : FluentDialog, IModalDialog
     {
         /// <summary>
         /// Instantiates a new Custom dialog.

@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's Input dialog.
     /// </summary>
-    internal sealed class InputDialog : CustomDialog
+    internal sealed class InputDialog : CustomDialog, IModalDialog
     {
         /// <summary>
         /// Initializes the UI elements and behavior for the Input dialog type.

@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Restart dialog form.
     /// </summary>
-    internal partial class RestartDialog : ClassicDialog
+    internal partial class RestartDialog : ClassicDialog, IModalDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RestartDialog"/> class.

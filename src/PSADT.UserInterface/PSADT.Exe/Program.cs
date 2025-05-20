@@ -177,7 +177,7 @@ namespace PSADT.UserInterface.TestHarness
                 if (closeAppsResult.Equals("Continue"))
                 {
                     // Show Progress Dialog
-                    DialogManager.ShowProgressDialog(progressDialogOptions);
+                    DialogManager.ShowProgressDialog(dialogStyle, progressDialogOptions);
 
                     Thread.Sleep(3000); // Simulate some work being done
 

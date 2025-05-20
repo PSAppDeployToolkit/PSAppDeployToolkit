@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's RestartDialog dialog.
     /// </summary>
-    internal sealed class RestartDialog : FluentDialog
+    internal sealed class RestartDialog : FluentDialog, IModalDialog
     {
         /// <summary>
         /// Instantiates a new RestartDialog dialog.

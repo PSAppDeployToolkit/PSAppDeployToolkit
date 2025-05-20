@@ -20,7 +20,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
     /// <summary>
     /// A fluent implementation of PSAppDeployToolkit's CloseApps dialog.
     /// </summary>
-    internal sealed class CloseAppsDialog : FluentDialog, IDisposable
+    internal sealed class CloseAppsDialog : FluentDialog, IModalDialog
     {
         /// <summary>
         /// The required data for displaying an app to close on the CloseAppsDialog.

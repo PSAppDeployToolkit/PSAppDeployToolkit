@@ -8,7 +8,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
     /// <summary>
     /// Custom classic dialog form.
     /// </summary>
-    internal partial class CustomDialog : ClassicDialog
+    internal partial class CustomDialog : ClassicDialog, IModalDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDialog"/> class.
