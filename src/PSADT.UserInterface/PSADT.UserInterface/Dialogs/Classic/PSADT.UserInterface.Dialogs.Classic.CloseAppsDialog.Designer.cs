@@ -79,7 +79,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 500);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 499);
             this.flowLayoutPanelDialog.TabIndex = 3;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
@@ -251,7 +251,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(416, 0);
             this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(416, 0);
             this.flowLayoutPanelCountdown.Name = "flowLayoutPanelCountdown";
-            this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(416, 53);
+            this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(416, 52);
             this.flowLayoutPanelCountdown.TabIndex = 4;
             this.flowLayoutPanelCountdown.WrapContents = false;
             // 
@@ -259,13 +259,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.labelCountdownMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCountdownMessage.AutoSize = true;
-            this.labelCountdownMessage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCountdownMessage.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdownMessage.Location = new System.Drawing.Point(0, 0);
             this.labelCountdownMessage.Margin = new System.Windows.Forms.Padding(0);
             this.labelCountdownMessage.MaximumSize = new System.Drawing.Size(416, 0);
             this.labelCountdownMessage.MinimumSize = new System.Drawing.Size(416, 0);
             this.labelCountdownMessage.Name = "labelCountdownMessage";
-            this.labelCountdownMessage.Size = new System.Drawing.Size(416, 21);
+            this.labelCountdownMessage.Size = new System.Drawing.Size(416, 20);
             this.labelCountdownMessage.TabIndex = 0;
             this.labelCountdownMessage.Text = "The installation will automatically continue in:";
             this.labelCountdownMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -275,7 +275,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelCountdown.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCountdown.AutoSize = true;
             this.labelCountdown.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCountdown.Location = new System.Drawing.Point(0, 21);
+            this.labelCountdown.Location = new System.Drawing.Point(0, 20);
             this.labelCountdown.Margin = new System.Windows.Forms.Padding(0);
             this.labelCountdown.MaximumSize = new System.Drawing.Size(416, 0);
             this.labelCountdown.MinimumSize = new System.Drawing.Size(416, 0);
@@ -297,7 +297,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Controls.Add(this.buttonCloseProcesses, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonDefer, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonContinue, 2, 0);
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 458);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 457);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
@@ -359,7 +359,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 500);
+            this.ClientSize = new System.Drawing.Size(450, 499);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "CloseAppsDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
