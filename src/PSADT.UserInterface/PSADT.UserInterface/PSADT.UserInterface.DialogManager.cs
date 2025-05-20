@@ -150,7 +150,8 @@ namespace PSADT.UserInterface
                 appThread = new Thread(() =>
                 {
                     app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
-                    appInitialized.Set(); System.Windows.Threading.Dispatcher.Run();
+                    app.Startup += (_, _) => appInitialized.Set();
+                    app.Run();
                 });
                 appThread.SetApartmentState(ApartmentState.STA);
                 appThread.IsBackground = true;
