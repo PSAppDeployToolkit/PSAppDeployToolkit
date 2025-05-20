@@ -5,7 +5,6 @@
 	  <TargetFramework>net462</TargetFramework>
 	  <PlatformTarget>AnyCPU</PlatformTarget>
 	  <UseWPF>true</UseWPF>
-	  <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
       <Deterministic>true</Deterministic>
       <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
       <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
@@ -32,6 +31,7 @@
       <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
       <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
       <RepositoryType>git</RepositoryType>
+      <NoWin32Manifest>true</NoWin32Manifest>
 
   </PropertyGroup>
 
