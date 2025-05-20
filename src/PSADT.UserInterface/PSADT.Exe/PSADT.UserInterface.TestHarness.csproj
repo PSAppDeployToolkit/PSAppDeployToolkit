@@ -10,9 +10,9 @@
       <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
       <LangVersion>latest</LangVersion>
 	  <Nullable>enable</Nullable>
-	  <StartupObject>PSADT.UserInterface.Program</StartupObject>
+	  <StartupObject>PSADT.UserInterface.TestHarness.Program</StartupObject>
       <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
-      <RootNamespace>PSADT</RootNamespace>
+      <RootNamespace>PSADT.UserInterface.TestHarness</RootNamespace>
       <Authors>PSAppDeployToolkit Team</Authors>
       <Company>PSAppDeployToolkit Team</Company>
       <Description>PSAppDeployToolkit User Interface Test Harness</Description>

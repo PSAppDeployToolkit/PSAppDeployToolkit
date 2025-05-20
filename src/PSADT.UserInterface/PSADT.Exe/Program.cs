@@ -9,7 +9,7 @@ using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
 
-namespace PSADT.UserInterface
+namespace PSADT.UserInterface.TestHarness
 {
     internal static class Program
     {
