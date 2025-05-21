@@ -665,12 +665,6 @@ function Show-ADTInstallationWelcome
                 Write-ADTLogEntry -Message "Prompting the user to close application(s) ['$([System.String]::Join("', '", $procsToClose.Description))']..."
             }
 
-            # Announce whether the user can defer.
-            if ($Options.DeferralsRemaining -or $Options.DeferralDeadline)
-            {
-                Write-ADTLogEntry -Message "The user has the option to defer."
-            }
-
             # Announce the current countdown information.
             if ($Options.CountdownDuration)
             {
