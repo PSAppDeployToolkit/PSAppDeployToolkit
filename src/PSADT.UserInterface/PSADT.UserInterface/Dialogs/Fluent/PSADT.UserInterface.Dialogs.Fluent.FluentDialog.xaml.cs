@@ -454,7 +454,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 {
                     bitmapImage.Freeze();
                 }
-                _dialogIconCache[dialogIconPath] = bitmapImage;
+                _dialogIconCache.Add(dialogIconPath, bitmapImage);
             }
             AppIconImage.Source = bitmapImage;
             Icon = bitmapImage;

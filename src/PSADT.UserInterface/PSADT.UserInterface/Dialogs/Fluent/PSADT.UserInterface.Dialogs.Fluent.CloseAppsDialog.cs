@@ -299,7 +299,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     {
                         bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                         bitmapSource.Freeze();
-                        _appIconCache[appFilePath] = bitmapSource;
+                        _appIconCache.Add(appFilePath, bitmapSource);
                     }
                     finally
                     {

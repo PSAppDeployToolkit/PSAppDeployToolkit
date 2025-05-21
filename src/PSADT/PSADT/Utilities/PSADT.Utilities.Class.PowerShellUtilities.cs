@@ -40,7 +40,7 @@ namespace PSADT.Utilities
                     }
                     else if (!string.IsNullOrWhiteSpace(currentKey))
                     {
-                        values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null;
+                        values.Add(currentKey, !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null);
                         currentKey = string.Empty;
                     }
                 }

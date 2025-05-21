@@ -50,7 +50,7 @@ namespace PSADT.ProcessManagement
                 {
                     commandLine = [imagePath];
                 }
-                processCommandLines[process] = commandLine;
+                processCommandLines.Add(process, commandLine);
                 return commandLine;
             }
 
