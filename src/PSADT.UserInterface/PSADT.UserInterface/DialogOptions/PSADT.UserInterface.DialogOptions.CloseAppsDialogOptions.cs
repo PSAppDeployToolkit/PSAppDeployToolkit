@@ -56,6 +56,14 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 CountdownDuration = countdownDuration;
             }
+            if (options.ContainsKey("CustomMessageText"))
+            {
+                if (options["CustomMessageText"] is not string customMessageText || string.IsNullOrWhiteSpace(customMessageText))
+                {
+                    throw new ArgumentOutOfRangeException("CustomMessageText value is not valid.", (Exception?)null);
+                }
+                CustomMessageText = customMessageText;
+            }
 
             // The hashtable was correctly defined, assign the remaining values.
             Strings = new CloseAppsDialogStrings(strings, deploymentType);
@@ -92,6 +100,11 @@ namespace PSADT.UserInterface.DialogOptions
         public readonly bool ForcedCountdown;
 
         /// <summary>
+        /// Represents a custom message text that can be optionally provided.
+        /// </summary>
+        public readonly string? CustomMessageText;
+
+        /// <summary>
         /// The countdown timer used to track the time remaining before the dialog closes automatically.
         /// </summary>
         public readonly Stopwatch CountdownStopwatch = new();
@@ -118,15 +131,10 @@ namespace PSADT.UserInterface.DialogOptions
                 {
                     throw new ArgumentNullException("Fluent string table value is null or invalid.", (Exception?)null);
                 }
-                if (strings["CustomMessage"] is not string customMessage)
-                {
-                    throw new ArgumentNullException("CustomMessage value is null or invalid.", (Exception?)null);
-                }
 
                 // The hashtable was correctly defined, assign the remaining values.
                 Classic = new CloseAppsDialogClassicStrings(classicStrings, deploymentType);
                 Fluent = new CloseAppsDialogFluentStrings(fluentStrings, deploymentType);
-                CustomMessage = !string.IsNullOrWhiteSpace(customMessage) ? customMessage : null;
             }
 
             /// <summary>
@@ -138,11 +146,6 @@ namespace PSADT.UserInterface.DialogOptions
             /// The strings used for the Fluent CloseAppsDialog.
             /// </summary>
             public readonly CloseAppsDialogFluentStrings Fluent;
-
-            /// <summary>
-            /// The custom message text to be displayed in the dialog.
-            /// </summary>
-            public readonly string? CustomMessage;
 
             /// <summary>
             /// The strings used for the classic CloseAppsDialog.

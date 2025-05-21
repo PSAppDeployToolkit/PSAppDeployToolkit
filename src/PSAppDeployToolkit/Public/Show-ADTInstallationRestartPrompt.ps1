@@ -28,6 +28,9 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER NoCountdown
         Specifies whether the user should receive a prompt to immediately restart their workstation.
 
+    .PARAMETER CustomText
+        Specify whether to display a custom message specified in the `strings.psd1` file. Custom message must be populated for each language section in the `strings.psd1` file.
+
     .PARAMETER NotTopMost
         Specifies whether the prompt shouldn't be topmost, above all other windows.
 
@@ -88,6 +91,10 @@ function Show-ADTInstallationRestartPrompt
         [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$SilentCountdownSeconds = 5,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [System.Management.Automation.SwitchParameter]$CustomText,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost
@@ -197,6 +204,10 @@ function Show-ADTInstallationRestartPrompt
                     DialogTopMost = !$NotTopMost
                     Strings = $adtStrings.RestartPrompt
 
+                }
+                if ($CustomText)
+                {
+                    $dialogOptions.CustomMessageText = $adtStrings.RestartPrompt.CustomMessage
                 }
                 if (!$NoCountdown)
                 {

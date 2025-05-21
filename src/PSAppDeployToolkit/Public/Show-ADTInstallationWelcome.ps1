@@ -890,6 +890,10 @@ function Show-ADTInstallationWelcome
                             $dialogOptions.Add('DeferralDeadline', [System.DateTime]$deferDeadlineUniversal)
                         }
                     }
+                    if ($CustomText)
+                    {
+                        $dialogOptions.CustomMessageText = $adtStrings.CloseAppsPrompt.CustomMessage
+                    }
                     if ($null -ne $CloseProcesses)
                     {
                         $dialogOptions.Add('RunningProcessService', [PSADT.ProcessManagement.RunningProcessService]::new($CloseProcesses))

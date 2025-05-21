@@ -14,14 +14,14 @@ Displays a restart prompt with a countdown to a forced restart.
 ### Countdown (Default)
 
 ```powershell
-Show-ADTInstallationRestartPrompt [-CountdownSeconds <UInt32>] [-CountdownNoHideSeconds <UInt32>] [-NotTopMost]
- -Title <String> -Subtitle <String> [<CommonParameters>]
+Show-ADTInstallationRestartPrompt [-CountdownSeconds <UInt32>] [-CountdownNoHideSeconds <UInt32>] [-CustomText]
+ [-NotTopMost] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### NoCountdown
 
 ```powershell
-Show-ADTInstallationRestartPrompt [-NoCountdown] [-NotTopMost] -Title <String> -Subtitle <String>
+Show-ADTInstallationRestartPrompt [-NoCountdown] [-CustomText] [-NotTopMost] -Title <String> -Subtitle <String>
  [<CommonParameters>]
 ```
 
@@ -142,6 +142,23 @@ Aliases:
 Required: False
 Position: Named
 Default value: 5
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CustomText
+
+Specify whether to display a custom message specified in the `strings.psd1` file.
+Custom message must be populated for each language section in the `strings.psd1` file.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Countdown, NoCountdown
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
