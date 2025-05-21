@@ -175,7 +175,7 @@ namespace PSADT.UserInterface.TestHarness
 
                 // #################################################################################
 
-                if (closeAppsResult.Equals("Continue"))
+                if (!closeAppsResult.Equals("Defer"))
                 {
                     // Show Progress Dialog
                     DialogManager.ShowProgressDialog(dialogStyle, progressDialogOptions);
