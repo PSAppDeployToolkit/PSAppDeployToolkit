@@ -815,7 +815,10 @@ function Show-ADTInstallationWelcome
                     }
                     if ($AllowDefer)
                     {
-                        $dialogOptions.Add('DeferralsRemaining', $DeferTimes + 1)
+                        if ($PSBoundParameters.ContainsKey('DeferTimes'))
+                        {
+                            $dialogOptions.Add('DeferralsRemaining', $DeferTimes + 1)
+                        }
                         if ($deferDeadlineUniversal)
                         {
                             $dialogOptions.Add('DeferralDeadline', [System.DateTime]$deferDeadlineUniversal)
