@@ -230,10 +230,7 @@ function Show-ADTInstallationPrompt
                     MinimizeWindows = !!$MinimizeWindows
                     DialogExpiryDuration = $PSBoundParameters.Timeout
                     MessageText = $Message
-                }
-                if ($MessageAlignment)
-                {
-                    $dialogOptions.Add('MessageAlignment', $MessageAlignment)
+                    MessageAlignment = $MessageAlignment
                 }
                 if ($ButtonRightText)
                 {
