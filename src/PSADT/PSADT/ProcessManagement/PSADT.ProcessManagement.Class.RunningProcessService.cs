@@ -9,7 +9,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
-    public sealed class RunningProcessService(ProcessDefinition[] processDefinitions, TimeSpan pollInterval) : IDisposable
+    public sealed class RunningProcessService(ProcessDefinition[] processDefinitions) : IDisposable
     {
         /// <summary>
         /// Starts the polling task to check for running processes.
@@ -236,6 +236,6 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// The interval at which to poll for running processes.
         /// </summary>
-        private readonly TimeSpan _pollInterval = pollInterval > TimeSpan.Zero ? pollInterval : throw new ArgumentOutOfRangeException(nameof(pollInterval), "Poll interval needs to be greater than zero");
+        private readonly TimeSpan _pollInterval = TimeSpan.FromSeconds(1);
     }
 }

@@ -337,13 +337,6 @@
 				<decimal id="DeferExitCode" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DeferExitCode" required="true" />
 			</elements>
 		</policy>
-		<policy name="DynamicProcessEvaluationInterval" class="Machine" displayName="$(string.DynamicProcessEvaluationInterval_Display)" explainText="$(string.DynamicProcessEvaluationInterval_Explain)" presentation="$(presentation.DynamicProcessEvaluationInterval)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
-			<parentCategory ref="UI" />
-			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
-			<elements>
-				<decimal id="DynamicProcessEvaluationInterval" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="DynamicProcessEvaluationInterval" required="true" />
-			</elements>
-		</policy>
 		<policy name="LanguageOverride" class="Machine" displayName="$(string.LanguageOverride_Display)" explainText="$(string.LanguageOverride_Explain)" presentation="$(presentation.LanguageOverride)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
 			<parentCategory ref="UI" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />

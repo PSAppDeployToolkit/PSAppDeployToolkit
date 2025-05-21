@@ -84,8 +84,6 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<string id="DefaultTimeout_Explain">Time in seconds to automatically timeout installation dialogs.</string>
 			<string id="DeferExitCode_Display">DeferExitCode</string>
 			<string id="DeferExitCode_Explain">Exit code used when a user opts to defer.</string>
-			<string id="DynamicProcessEvaluationInterval_Display">DynamicProcessEvaluationInterval</string>
-			<string id="DynamicProcessEvaluationInterval_Explain">Time in seconds after which to re-enumerate running processes while displaying the Show-ADTInstallationWelcome prompt.</string>
 			<string id="LanguageOverride_Display">LanguageOverride</string>
 			<string id="LanguageOverride_Explain">Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.</string>
 			<string id="PromptToSaveTimeout_Display">PromptToSaveTimeout</string>
@@ -237,9 +235,6 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			</presentation>
 			<presentation id="DialogStyle">
 				<dropdownList refId="DialogStyle" noSort="true" defaultItem="0">DialogStyle</dropdownList>
-			</presentation>
-			<presentation id="DynamicProcessEvaluationInterval">
-				<decimalTextBox refId="DynamicProcessEvaluationInterval">DynamicProcessEvaluationInterval</decimalTextBox>
 			</presentation>
 			<presentation id="LanguageOverride">
 				<dropdownList refId="LanguageOverride" noSort="false">LanguageOverride</dropdownList>

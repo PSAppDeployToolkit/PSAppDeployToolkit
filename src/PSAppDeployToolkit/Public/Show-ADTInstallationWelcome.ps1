@@ -826,7 +826,7 @@ function Show-ADTInstallationWelcome
                     }
                     if ($null -ne $CloseProcesses)
                     {
-                        $dialogOptions.Add('RunningProcessService', [PSADT.ProcessManagement.RunningProcessService]::new($CloseProcesses, [System.TimeSpan]::FromSeconds($adtConfig.UI.DynamicProcessEvaluationInterval)))
+                        $dialogOptions.Add('RunningProcessService', [PSADT.ProcessManagement.RunningProcessService]::new($CloseProcesses))
                     }
                     if ($CloseProcessesCountdown -gt 0)
                     {

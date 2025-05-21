@@ -118,9 +118,6 @@
         # Exit code used when a user opts to defer.
         DeferExitCode = 60012
 
-        # Time in seconds after which to re-enumerate running processes while displaying the Show-ADTInstallationWelcome prompt. Default is 2 seconds.
-        DynamicProcessEvaluationInterval = 2
-
         <# Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.
             Language Code    Language
             =============    ========

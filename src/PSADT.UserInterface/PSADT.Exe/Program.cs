@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Management.Automation.Language;
@@ -107,7 +107,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
                 { "AppBannerImage", appBannerImage },
-                { "RunningProcessService", new RunningProcessService(appsToClose, TimeSpan.FromSeconds(1)) },
+                { "RunningProcessService", new RunningProcessService(appsToClose) },
                 { "CountdownDuration", countdownDuration },
                 { "DeferralsRemaining", deferralsRemaining },
                 { "DeferralDeadline", deferralDeadline },
