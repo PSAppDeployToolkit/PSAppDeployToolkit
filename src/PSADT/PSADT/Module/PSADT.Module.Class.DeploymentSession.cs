@@ -910,7 +910,7 @@ namespace PSADT.Module
             }
 
             // Write out a log divider to indicate the end of logging.
-            WriteLogEntry($"{deployString} elapsed time was [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds.", 0);
+            WriteLogEntry($"{deployString} elapsed time was [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds.");
             WriteLogDivider();
             Settings |= DeploymentSettings.Disposed;
 
