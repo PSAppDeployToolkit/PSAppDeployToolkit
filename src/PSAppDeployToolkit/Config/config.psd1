@@ -118,12 +118,6 @@
         # Exit code used when a user opts to defer.
         DeferExitCode = 60012
 
-        # Specify whether to re-enumerate running processes dynamically while displaying Show-ADTInstallationWelcome.
-        # If the CloseProcesses items were not running when the prompt was displayed, and are subsequently detected to be running, the prompt will be updated with the apps to close.
-        # If the CloseProcesses items were running when the prompt was displayed and are subsequently detected not to be running then the installation will automatically continue if deferral is not available.
-        # If the running applications change (new CloseProcesses launched or running processes closed), the list box will dynamically update to reflect the currently running applications.
-        DynamicProcessEvaluation = $true
-
         # Time in seconds after which to re-enumerate running processes while displaying the Show-ADTInstallationWelcome prompt. Default is 2 seconds.
         DynamicProcessEvaluationInterval = 2
 
