@@ -107,6 +107,7 @@
         'Get-ADTPresentationSettingsEnabledUsers'
         'Get-ADTRegistryKey'
         'Get-ADTRunAsActiveUser'
+        'Get-ADTRunningProcesses'
         'Get-ADTServiceStartMode'
         'Get-ADTSession'
         'Get-ADTShortcut'

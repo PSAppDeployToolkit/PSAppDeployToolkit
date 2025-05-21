@@ -1,0 +1,75 @@
+---
+id: Get-ADTRunningProcesses
+title: Get-ADTRunningProcesses
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Gets the processes that are running from a list of process objects.
+
+## SYNTAX
+
+```powershell
+Get-ADTRunningProcesses [-ProcessObjects] <ProcessDefinition[]> [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+Gets the processes that are running from a list of process objects.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Get-ADTRunningProcesses -ProcessObjects $processObjects
+```
+
+Returns a list of running processes.
+If nothing is found nothing will be returned.
+
+## PARAMETERS
+
+### -ProcessObjects
+
+One or more process objects to search for.
+
+```yaml
+Type: ProcessDefinition[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None.
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### System.Collections.Generic.IReadOnlyList`1[[PSADT.ProcessManagement.RunningProcess]].
+
+### Returns one or more RunningProcess objects representing each running process.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt<br />
+Website: https://psappdeploytoolkit.com<br />
+Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTServiceStartMode](https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTServiceStartMode)
