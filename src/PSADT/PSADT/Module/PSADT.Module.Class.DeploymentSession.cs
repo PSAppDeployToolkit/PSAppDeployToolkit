@@ -859,19 +859,17 @@ namespace PSADT.Module
                 ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
             }
 
-            // Store app/deployment details string. If we're exiting before properties are set, use a generic string.
-            string deployString = !string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentType.ToString().ToLower()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment";
-
             // Process resulting exit code.
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallName}] {DeploymentType.ToString().ToLower()}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} completed in [{{0}}] seconds with exit code [{{1}}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
                 case DeploymentStatus.FastRetry:
                     // Just advise of the exit code with the appropriate severity.
-                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverity.Warning);
+                    WriteLogEntry(string.Format(deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Warning);
                     break;
                 case DeploymentStatus.Error:
-                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", LogSeverity.Error);
+                    WriteLogEntry(string.Format(deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), LogSeverity.Error);
                     break;
                 default:
                     // Clean up app deferral history.
@@ -886,7 +884,7 @@ namespace PSADT.Module
                     {
                         ExitCode = 0;
                     }
-                    WriteLogEntry($"{deployString} completed with exit code [{ExitCode}].", 0);
+                    WriteLogEntry(string.Format(deployString, (DateTime.Now - CurrentDateTime).TotalSeconds, ExitCode), 0);
                     break;
             }
 
@@ -910,7 +908,6 @@ namespace PSADT.Module
             }
 
             // Write out a log divider to indicate the end of logging.
-            WriteLogEntry($"{deployString} elapsed time was [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds.");
             WriteLogDivider();
             Settings |= DeploymentSettings.Disposed;
 
