@@ -79,14 +79,15 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     else
                     {
                         this.flowLayoutPanelCloseApps.Visible = false;
-                        this.flowLayoutPanelCloseApps.Enabled = false;
                         this.buttonCloseProcesses.Enabled = false;
+                        this.buttonCloseProcesses.Visible = false;
                     }
                 }
                 else
                 {
                     this.flowLayoutPanelDialog.Controls.Remove(flowLayoutPanelCloseApps);
                     this.buttonCloseProcesses.Enabled = false;
+                    this.buttonCloseProcesses.Visible = false;
                 }
 
                 // Set up our deferrals display.
@@ -284,16 +285,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.listBoxCloseProcesses.Items.AddRange(runningApps);
                     this.labelCountdownMessage.Text = countdownClose;
                     this.flowLayoutPanelCloseApps.Visible = true;
-                    this.flowLayoutPanelCloseApps.Enabled = true;
                     this.buttonCloseProcesses.Enabled = true;
+                    this.buttonCloseProcesses.Visible = true;
                 }
                 else
                 {
                     this.toolTipButtonContinue.RemoveAll();
                     this.labelCountdownMessage.Text = countdownDefer;
                     this.flowLayoutPanelCloseApps.Visible = false;
-                    this.flowLayoutPanelCloseApps.Enabled = false;
                     this.buttonCloseProcesses.Enabled = false;
+                    this.buttonCloseProcesses.Visible = false;
                 }
             });
         }
