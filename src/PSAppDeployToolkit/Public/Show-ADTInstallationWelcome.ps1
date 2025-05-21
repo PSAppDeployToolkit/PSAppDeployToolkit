@@ -932,7 +932,7 @@ function Show-ADTInstallationWelcome
                                 if ($DeferRunInterval)
                                 {
                                     Write-ADTLogEntry -Message "DeferRunInterval of [$DeferRunInterval] is specified. Checking DeferRunIntervalLastTime."
-                                    if (-not ([String]::IsNullOrEmpty($deferHistoryRunIntervalLastTime)))
+                                    if (![System.String]::IsNullOrWhiteSpace($deferHistoryRunIntervalLastTime))
                                     {
                                         $deferRunIntervalLastTime = Get-ADTUniversalDate -DateTime $deferHistoryRunIntervalLastTime
                                         $deferRunIntervalNextTime = Get-ADTUniversalDate -DateTime ([System.DateTime]::Parse($deferRunIntervalLastTime).ToUniversalTime().Add($DeferRunInterval).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
