@@ -80,7 +80,7 @@ function Show-ADTInstallationProgress
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'Center')]
-        [System.Windows.TextAlignment]$MessageAlignment,
+        [PSADT.UserInterface.Dialogs.DialogMessageAlignment]$MessageAlignment,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,

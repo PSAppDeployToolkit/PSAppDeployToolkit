@@ -12,8 +12,8 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 ## SYNTAX
 
 ```powershell
-Show-ADTInstallationProgress [[-WindowLocation] <String>] [[-MessageAlignment] <TextAlignment>] [-NotTopMost]
- [-NoRelocation] -WindowTitle <String> -WindowSubtitle <String> -StatusMessage <String>
+Show-ADTInstallationProgress [[-WindowLocation] <String>] [[-MessageAlignment] <DialogMessageAlignment>]
+ [-NotTopMost] [-NoRelocation] -WindowTitle <String> -WindowSubtitle <String> -StatusMessage <String>
  -StatusMessageDetail <String> [<CommonParameters>]
 ```
 
@@ -81,10 +81,10 @@ Accept wildcard characters: False
 The text alignment to use for the status message.
 
 ```yaml
-Type: TextAlignment
+Type: DialogMessageAlignment
 Parameter Sets: (All)
 Aliases:
-Accepted values: Left, Right, Center, Justify
+Accepted values: Left, Center, Right
 
 Required: False
 Position: 2
