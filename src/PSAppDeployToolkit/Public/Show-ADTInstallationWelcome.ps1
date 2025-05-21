@@ -822,7 +822,7 @@ function Show-ADTInstallationWelcome
                             }
                             Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
 
-                            if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
+                            if ((Get-ADTUniversalDate -InformationAction SilentlyContinue) -gt $deferDeadlineUniversal)
                             {
                                 Write-ADTLogEntry -Message 'Deferral has expired.'
                                 $AllowDefer = $false
@@ -838,7 +838,7 @@ function Show-ADTInstallationWelcome
                                 $deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
                                 Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
 
-                                if ((Get-ADTUniversalDate) -gt $deferDeadlineUniversal)
+                                if ((Get-ADTUniversalDate -InformationAction SilentlyContinue) -gt $deferDeadlineUniversal)
                                 {
                                     Write-ADTLogEntry -Message 'Deferral has expired.'
                                     $AllowDefer = $false
