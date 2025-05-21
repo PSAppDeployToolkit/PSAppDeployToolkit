@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
-using PSADT.Module;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 
@@ -42,17 +41,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
             {
-                // Get a hold of the current deployment session if it's available.
-                // This is only used for logging purposes and nothing else.
-                try
-                {
-                    adtSession = ModuleDatabase.GetDeploymentSession();
-                }
-                catch
-                {
-                    adtSession = null;
-                }
-
                 // Set up main options.
                 this.labelWelcomeMessage.Text = options.Strings.Classic.WelcomeMessage;
                 this.labelAppName.Text = options.AppTitle.Replace("&", "&&");
@@ -81,18 +69,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.listBoxCloseProcesses.Items.Clear();
                 if (null != options.RunningProcessService)
                 {
-                    // Store a ref to it and start the service if it's not running.
-                    runningProcessService = options.RunningProcessService;
-                    if (!runningProcessService.IsRunning)
-                    {
-                        runningProcessService.Start();
-                    }
-
                     // Get the current running apps and amend the form accordingly.
-                    var runningApps = runningProcessService.ProcessesToClose.Select(static p => p.Description).Distinct().ToArray();
+                    var runningApps = (runningProcessService = options.RunningProcessService).ProcessesToClose.Select(static p => p.Description).ToArray();
                     if (runningApps.Length > 0)
                     {
-                        adtSession?.WriteLogEntry($"Prompting the user to close application(s) ['{string.Join("', '", runningApps)}']...");
                         this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
                         this.listBoxCloseProcesses.Items.AddRange(runningApps);
                     }
@@ -111,7 +91,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set up our deferrals display.
                 if (!((null == options.DeferralsRemaining) && (null == options.DeferralDeadline)))
                 {
-                    adtSession?.WriteLogEntry("The user has the option to defer.");
                     if (null != options.DeferralsRemaining)
                     {
                         this.labelDeferDeadline.Text = $"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}";
@@ -133,7 +112,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     countdownStopwatch = options.CountdownStopwatch;
                     if (this.listBoxCloseProcesses.Items.Count > 0)
                     {
-                        adtSession?.WriteLogEntry($"Close applications countdown has [{countdownDuration - countdownStopwatch.Elapsed}] seconds remaining.");
                         if (forcedCountdown)
                         {
                             this.labelCountdownMessage.Text = countdownDefer;
@@ -145,7 +123,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     }
                     else
                     {
-                        adtSession?.WriteLogEntry($"Countdown has [{countdownDuration - countdownStopwatch.Elapsed}] seconds remaining.");
                         this.labelCountdownMessage.Text = countdownDefer;
                     }
                 }
@@ -207,6 +184,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // since we can't mess with the designer's Dispose override.
             countdownTimer?.Dispose();
 
+            // Unhook the event handlers.
+            if (null != runningProcessService)
+            {
+                runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
+            }
+
             // Call through to the base method to ensure it's processed also.
             base.Form_FormClosing(sender, e);
         }
@@ -262,17 +245,14 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     if (forcedCountdown && (null == runningProcessService || listBoxCloseProcesses.Items.Count == 0))
                     {
-                        adtSession?.WriteLogEntry("Countdown timer has elapsed and no processes running. Force continue.");
                         buttonContinue.PerformClick();
                     }
                     else if (forcedCountdown && this.flowLayoutPanelDialog.Controls.Contains(this.flowLayoutPanelDeferral))
                     {
-                        adtSession?.WriteLogEntry("Countdown timer has elapsed and deferrals remaining. Force deferral.");
                         buttonDefer.PerformClick();
                     }
                     else
                     {
-                        adtSession?.WriteLogEntry("Close application(s) countdown timer has elapsed. Force closing application(s).");
                         if (buttonCloseProcesses.CanFocus)
                         {
                             buttonCloseProcesses.PerformClick();
@@ -298,8 +278,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.listBoxCloseProcesses.Items.Clear();
                 if (e.ProcessesToClose.Count > 0)
                 {
-                    var runningApps = e.ProcessesToClose.Select(static p => p.Description).Distinct().ToArray();
-                    adtSession?.WriteLogEntry($"The following running app processes require closing: ['{string.Join("', '", runningApps)}']...");
+                    var runningApps = e.ProcessesToClose.Select(static p => p.Description).ToArray();
                     this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
                     this.listBoxCloseProcesses.Items.AddRange(runningApps);
                     this.labelCountdownMessage.Text = countdownClose;
@@ -308,7 +287,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
-                    adtSession?.WriteLogEntry($"There are no running app processes that require closing.");
                     this.toolTipButtonContinue.RemoveAll();
                     this.labelCountdownMessage.Text = countdownDefer;
                     this.flowLayoutPanelCloseApps.Visible = false;
@@ -316,11 +294,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
             });
         }
-
-        /// <summary>
-        /// The caller's current session, if active/available.
-        /// </summary>
-        private static DeploymentSession? adtSession;
 
         /// <summary>
         /// The service object used to update running processes within this form.

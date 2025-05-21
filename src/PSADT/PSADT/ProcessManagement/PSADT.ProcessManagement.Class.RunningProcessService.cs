@@ -76,15 +76,11 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Raise the event if the list of processes to close has changed.
-                // On init, _lastProcessDescriptions is null so we always fire once.
-                if (null != ProcessesToCloseChanged)
+                var processDescs = _processesToClose.Select(runningProcess => runningProcess.Description).ToList().AsReadOnly();
+                if (!_lastProcessDescriptions.SequenceEqual(processDescs))
                 {
-                    var processDescs = _processesToClose.Select(runningProcess => runningProcess.Description).ToList().AsReadOnly();
-                    if (null == _lastProcessDescriptions || !_lastProcessDescriptions.SequenceEqual(processDescs))
-                    {
-                        _lastProcessDescriptions = processDescs;
-                        ProcessesToCloseChanged.Invoke(this, new ProcessesToCloseChangedEventArgs(_processesToClose));
-                    }
+                    _lastProcessDescriptions = processDescs;
+                    ProcessesToCloseChanged?.Invoke(this, new ProcessesToCloseChangedEventArgs(_processesToClose));
                 }
 
                 // Wait for the specified interval before polling again.
@@ -206,7 +202,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the list of process descriptions.
         /// </summary>
-        private IReadOnlyList<string>? _lastProcessDescriptions;
+        private IReadOnlyList<string> _lastProcessDescriptions = [];
 
         /// <summary>
         /// Disposal flag for the <see cref="RunningProcessService"/> class.

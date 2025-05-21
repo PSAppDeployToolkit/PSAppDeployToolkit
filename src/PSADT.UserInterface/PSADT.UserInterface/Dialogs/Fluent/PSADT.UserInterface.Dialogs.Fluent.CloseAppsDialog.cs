@@ -91,6 +91,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (null != options.RunningProcessService)
             {
                 _runningProcessService = options.RunningProcessService;
+                AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
+                AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)));
             }
             UpdateDeferralValues();
 
@@ -102,12 +104,21 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
+        /// Determines whether deferrals are currently available.
+        /// </summary>
+        /// <returns><see langword="true"/> if there are remaining deferrals or a deferral deadline is set; otherwise, <see langword="false"/>.</returns>
+        private bool DeferralsAvailable()
+        {
+            return _deferralsRemaining.HasValue || _deferralDeadline.HasValue;
+        }
+
+        /// <summary>
         /// Updates the deferral values displayed in the dialog.
         /// </summary>
         private void UpdateDeferralValues()
         {
             // First handle default case - if no deferral settings, just disable the button
-            if (!_deferralsRemaining.HasValue && !_deferralDeadline.HasValue)
+            if (!DeferralsAvailable())
             {
                 ButtonRight.IsEnabled = false;
                 return;
@@ -224,9 +235,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (null != _runningProcessService)
             {
                 _runningProcessService.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
-                AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
-                AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(p => new AppToClose(p)));
-                _runningProcessService.Start();
             }
         }
 
@@ -242,7 +250,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            DialogResult = "Continue";
+            if (AutomationProperties.GetName(ButtonLeft) == _buttonLeftText)
+            {
+                DialogResult = "Close";
+            }
+            else
+            {
+                DialogResult = "Continue";
+            }
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -274,7 +289,21 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 Dispatcher.Invoke(() =>
                 {
-                    DialogResult = "Continue";
+                    if (!DeferralsAvailable())
+                    {
+                        if (AutomationProperties.GetName(ButtonLeft) == _buttonLeftText)
+                        {
+                            DialogResult = "Close";
+                        }
+                        else
+                        {
+                            DialogResult = "Continue";
+                        }
+                    }
+                    else
+                    {
+                        DialogResult = "Defer";
+                    }
                     CloseDialog();
                 });
             }
@@ -369,6 +398,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (_disposed)
             {
                 return;
+            }
+            if (null != _runningProcessService)
+            {
+                _runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
             }
             _disposed = true;
 

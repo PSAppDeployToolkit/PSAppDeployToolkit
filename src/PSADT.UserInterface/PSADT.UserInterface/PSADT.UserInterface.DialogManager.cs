@@ -33,7 +33,21 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options specifying the applications to be closed and other dialog configurations.</param>
         /// <returns>A string representing the user's response or selection from the dialog.</returns>
-        public static string ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options) => ShowModalDialog<string>(DialogType.CloseApps, dialogStyle, options);
+        public static string ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options)
+        {
+            bool stopProcessService = false;
+            if (null != options.RunningProcessService && !options.RunningProcessService.IsRunning)
+            {
+                options.RunningProcessService.Start();
+                stopProcessService = true;
+            }
+            var result = ShowModalDialog<string>(DialogType.CloseApps, dialogStyle, options);
+            if (stopProcessService)
+            {
+                options.RunningProcessService!.Stop();
+            }
+            return result;
+        }
 
         /// <summary>
         /// Displays a custom dialog with the specified style and options, and returns the result as a string.
