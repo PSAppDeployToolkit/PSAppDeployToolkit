@@ -79,6 +79,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     else
                     {
                         this.flowLayoutPanelCloseApps.Visible = false;
+                        this.flowLayoutPanelCloseApps.Enabled = false;
                         this.buttonCloseProcesses.Enabled = false;
                     }
                 }
@@ -283,6 +284,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.listBoxCloseProcesses.Items.AddRange(runningApps);
                     this.labelCountdownMessage.Text = countdownClose;
                     this.flowLayoutPanelCloseApps.Visible = true;
+                    this.flowLayoutPanelCloseApps.Enabled = true;
                     this.buttonCloseProcesses.Enabled = true;
                 }
                 else
@@ -290,6 +292,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.toolTipButtonContinue.RemoveAll();
                     this.labelCountdownMessage.Text = countdownDefer;
                     this.flowLayoutPanelCloseApps.Visible = false;
+                    this.flowLayoutPanelCloseApps.Enabled = false;
                     this.buttonCloseProcesses.Enabled = false;
                 }
             });

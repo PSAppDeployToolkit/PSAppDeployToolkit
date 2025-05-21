@@ -99,9 +99,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanelButton.Controls.Add(this.buttonLeft, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
@@ -129,9 +129,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // buttonMiddle
             // 
-            this.buttonMiddle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonMiddle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.buttonMiddle.Location = new System.Drawing.Point(141, 0);
-            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(2, 0, 0, 0);
             this.buttonMiddle.MaximumSize = new System.Drawing.Size(134, 25);
             this.buttonMiddle.MinimumSize = new System.Drawing.Size(134, 25);
             this.buttonMiddle.Name = "buttonMiddle";
@@ -145,7 +145,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.buttonRight.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonRight.Location = new System.Drawing.Point(283, 0);
-            this.buttonRight.Margin = new System.Windows.Forms.Padding(8, 0, 0, 0);
+            this.buttonRight.Margin = new System.Windows.Forms.Padding(7, 0, 0, 0);
             this.buttonRight.MaximumSize = new System.Drawing.Size(133, 25);
             this.buttonRight.MinimumSize = new System.Drawing.Size(133, 25);
             this.buttonRight.Name = "buttonRight";

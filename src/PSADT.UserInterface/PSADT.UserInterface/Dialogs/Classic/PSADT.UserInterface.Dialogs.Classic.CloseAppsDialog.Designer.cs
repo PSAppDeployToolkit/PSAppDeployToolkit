@@ -291,9 +291,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanelButton.Controls.Add(this.buttonCloseProcesses, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonDefer, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonContinue, 2, 0);
@@ -321,9 +321,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // buttonDefer
             // 
-            this.buttonDefer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonDefer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.buttonDefer.Location = new System.Drawing.Point(141, 0);
-            this.buttonDefer.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonDefer.Margin = new System.Windows.Forms.Padding(2, 0, 0, 0);
             this.buttonDefer.MaximumSize = new System.Drawing.Size(134, 25);
             this.buttonDefer.MinimumSize = new System.Drawing.Size(134, 25);
             this.buttonDefer.Name = "buttonDefer";
@@ -337,7 +337,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.buttonContinue.Dock = System.Windows.Forms.DockStyle.Right;
             this.buttonContinue.Location = new System.Drawing.Point(283, 0);
-            this.buttonContinue.Margin = new System.Windows.Forms.Padding(8, 0, 0, 0);
+            this.buttonContinue.Margin = new System.Windows.Forms.Padding(7, 0, 0, 0);
             this.buttonContinue.MaximumSize = new System.Drawing.Size(133, 25);
             this.buttonContinue.MinimumSize = new System.Drawing.Size(133, 25);
             this.buttonContinue.Name = "buttonContinue";
