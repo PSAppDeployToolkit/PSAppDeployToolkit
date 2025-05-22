@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
@@ -439,25 +440,43 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="dialogIconPath">Path or URI to the icon image file. Defaults to embedded resource if null.</param>
         private void SetDialogIcon(string dialogIconPath)
         {
-            // Try to get from cache first
-            if (!_dialogIconCache.TryGetValue(dialogIconPath, out var bitmapImage))
+            // Try to get from cache first.
+            if (!_dialogIconCache.TryGetValue(dialogIconPath, out var bitmapSource))
             {
-                // Use BeginInit/EndInit pattern for better performance.
-                bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
-                bitmapImage.EndInit();
-
-                // Make it shareable across threads
-                if (bitmapImage.CanFreeze)
+                // Nothing cached. If we have an icon, get the highest resolution frame.
+                if (Path.GetExtension(dialogIconPath).Equals(".ico", StringComparison.OrdinalIgnoreCase))
                 {
-                    bitmapImage.Freeze();
+                    // Use IconBitmapDecoder to get the icon frame.
+                    var iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
+
+                    // Make it shareable across threads
+                    if (iconFrame.CanFreeze)
+                    {
+                        iconFrame.Freeze();
+                    }
+                    _dialogIconCache.Add(dialogIconPath, iconFrame);
+                    bitmapSource = iconFrame;
                 }
-                _dialogIconCache.Add(dialogIconPath, bitmapImage);
+                else
+                {
+                    // Use BeginInit/EndInit pattern for better performance.
+                    var bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
+                    bitmapImage.EndInit();
+
+                    // Make it shareable across threads
+                    if (bitmapImage.CanFreeze)
+                    {
+                        bitmapImage.Freeze();
+                    }
+                    _dialogIconCache.Add(dialogIconPath, bitmapImage);
+                    bitmapSource = bitmapImage;
+                }
             }
-            AppIconImage.Source = bitmapImage;
-            Icon = bitmapImage;
+            AppIconImage.Source = bitmapSource;
+            Icon = bitmapSource;
         }
 
         /// <summary>
@@ -713,7 +732,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Dialog icon cache for improved performance
         /// </summary>
-        private static readonly Dictionary<string, BitmapImage> _dialogIconCache = [];
+        private static readonly Dictionary<string, BitmapSource> _dialogIconCache = [];
 
         /// <summary>
         /// Event handler for when a window property has changed.
