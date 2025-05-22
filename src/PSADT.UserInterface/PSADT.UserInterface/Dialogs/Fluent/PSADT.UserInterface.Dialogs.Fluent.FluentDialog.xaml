@@ -488,20 +488,20 @@
 
 
                 <StackPanel
-                    x:Name="DeferStackPanel"
+                    x:Name="DeferRemainingStackPanel"
                     Margin="0,0,0,0"
                     VerticalAlignment="Top"
                     Orientation="Vertical"
                     >
 
                     <Separator
-                        x:Name="DeferSeparator"
+                        x:Name="DeferRemainingSeparator"
                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         />
 
 
                     <DockPanel
-                        x:Name="DeferDockPanel"
+                        x:Name="DeferRemainingDockPanel"
                         Margin="24,16,24,16"
                         >
                         <ui:SymbolIcon
@@ -510,7 +510,52 @@
                             Symbol="ApprovalsApp24"
                             />
                         <ui:TextBlock
-                            x:Name="DeferralDeadlineHeadingTextBlock"
+                            x:Name="DeferRemainingHeadingTextBlock"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"
+                            Appearance="Primary"
+                            FontTypography="Body"
+                            Text="Deferrals Remaining"
+                            TextWrapping="WrapWithOverflow"
+                            />
+                        <ui:TextBlock
+                            x:Name="DeferRemainingValueTextBlock"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Appearance="Primary"
+                            FontTypography="BodyStrong"
+                            FontSize="15"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="3"
+                            TextWrapping="WrapWithOverflow"
+                            />
+                    </DockPanel>
+                </StackPanel>
+
+                <StackPanel
+                    x:Name="DeferDeadlineStackPanel"
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Top"
+                    Orientation="Vertical"
+                    >
+
+                    <Separator
+                        x:Name="DeferDeadlineSeparator"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        />
+
+
+                    <DockPanel
+                        x:Name="DeferDeadlineDockPanel"
+                        Margin="24,16,24,16"
+                        >
+                        <ui:SymbolIcon
+                            VerticalAlignment="Top"
+                            FontSize="24"
+                            Symbol="CalendarClock24"
+                            />
+                        <ui:TextBlock
+                            x:Name="DeferDeadlineHeadingTextBlock"
                             Margin="16,0,0,0"
                             VerticalAlignment="Center"
                             Appearance="Primary"
@@ -519,7 +564,7 @@
                             TextWrapping="WrapWithOverflow"
                             />
                         <ui:TextBlock
-                            x:Name="DeferralDeadlineValueTextBlock"
+                            x:Name="DeferDeadlineValueTextBlock"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Appearance="Primary"

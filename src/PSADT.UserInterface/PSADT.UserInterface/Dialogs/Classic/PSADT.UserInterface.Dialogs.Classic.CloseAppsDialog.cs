@@ -97,9 +97,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     {
                         this.labelDeferDeadline.Text = $"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}";
                     }
-                    else if (null != options.DeferralDeadline)
+                    if (null != options.DeferralDeadline)
                     {
-                        this.labelDeferDeadline.Text = $"{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline}";
+                        this.labelDeferDeadline.Text += $"\n\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline}";
                     }
                 }
                 else

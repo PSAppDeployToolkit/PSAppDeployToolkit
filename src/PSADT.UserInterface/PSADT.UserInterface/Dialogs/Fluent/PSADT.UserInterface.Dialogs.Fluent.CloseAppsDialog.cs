@@ -74,8 +74,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
-            DeferStackPanel.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
-            DeferralDeadlineHeadingTextBlock.Text = !_deferralDeadline.HasValue ? options.Strings.Fluent.DeferralsRemaining : options.Strings.Fluent.DeferralDeadline;
+            DeferRemainingStackPanel.Visibility = _deferralsRemaining.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            DeferRemainingHeadingTextBlock.Text = options.Strings.Fluent.DeferralsRemaining;
+            DeferDeadlineStackPanel.Visibility = _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            DeferDeadlineHeadingTextBlock.Text = options.Strings.Fluent.DeferralDeadline;
             CountdownHeadingTextBlock.Text = options.Strings.Fluent.AutomaticStartCountdown;
             ButtonPanel.Visibility = Visibility.Visible;
 
@@ -132,36 +134,36 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ButtonRight.IsEnabled = _deferralsRemaining > 0;
 
                 // Update text value
-                DeferralDeadlineValueTextBlock.Text = _deferralsRemaining.ToString();
+                DeferRemainingValueTextBlock.Text = _deferralsRemaining.ToString();
 
                 // Update accessibility properties
-                AutomationProperties.SetName(DeferralDeadlineValueTextBlock, _deferralsRemaining.ToString());
+                AutomationProperties.SetName(DeferRemainingValueTextBlock, _deferralsRemaining.ToString());
 
                 // Update text color based on remaining deferrals
                 if (_deferralsRemaining == 0)
                 {
-                    DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                 }
                 else if (_deferralsRemaining <= 1)
                 {
-                    DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
                 }
                 else
                 {
-                    DeferralDeadlineValueTextBlock.Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
                 }
             }
-            else if (_deferralDeadline.HasValue)
+            if (_deferralDeadline.HasValue)
             {
                 // Set button state based on deadline
                 TimeSpan timeRemaining = _deferralDeadline!.Value - DateTime.Now;
                 ButtonRight.IsEnabled = timeRemaining > TimeSpan.Zero;
 
                 // Update text content
-                string displayText; Brush textBrush;
+                string displayText = _deferralDeadline.Value.ToString("r") + _deferralDeadline.Value.ToString("zzz");
+                Brush textBrush;
                 if (ButtonRight.IsEnabled)
                 {
-                    displayText = _deferralDeadline.Value.ToString("r");
                     if (timeRemaining < TimeSpan.FromDays(1))
                     {
                         // Less than 1 day remaining - use caution color
@@ -174,12 +176,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 }
                 else
                 {
-                    displayText = "Expired";
                     textBrush = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                 }
-                DeferralDeadlineValueTextBlock.Text = displayText;
-                DeferralDeadlineValueTextBlock.Foreground = textBrush;
-                AutomationProperties.SetName(DeferralDeadlineValueTextBlock, displayText);
+                DeferDeadlineValueTextBlock.Text = displayText;
+                DeferDeadlineValueTextBlock.Foreground = textBrush;
+                AutomationProperties.SetName(DeferDeadlineValueTextBlock, displayText);
             }
         }
 
