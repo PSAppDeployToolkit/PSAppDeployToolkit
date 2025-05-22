@@ -82,7 +82,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[PSADT.Module.LogSeverity]]$Severity,
+        [PSADT.Module.LogSeverity]$Severity,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -93,8 +93,8 @@ function Write-ADTLogEntry
         [System.String]$ScriptSection,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('CMTrace', 'Legacy')]
-        [System.String]$LogType,
+        [ValidateNotNullOrEmpty()]
+        [PSADT.Module.LogStyle]$LogType,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -154,7 +154,7 @@ function Write-ADTLogEntry
             (Get-ADTSession).WriteLogEntry(
                 $messages,
                 $DebugMessage,
-                $Severity,
+                $(if ($PSBoundParameters.ContainsKey('Severity')) { $Severity }),
                 $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),
                 $(if ($PSBoundParameters.ContainsKey('ScriptSection')) { $ScriptSection }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),
@@ -173,7 +173,7 @@ function Write-ADTLogEntry
                 $messages,
                 ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)],
                 $false,
-                $Severity,
+                $(if ($PSBoundParameters.ContainsKey('Severity')) { $Severity }),
                 $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),
                 $(if ($PSBoundParameters.ContainsKey('ScriptSection')) { $ScriptSection }),
                 $(if ($PSBoundParameters.ContainsKey('LogFileDirectory')) { $LogFileDirectory }),

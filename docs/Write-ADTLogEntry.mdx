@@ -13,7 +13,7 @@ Write messages to a log file in CMTrace.exe compatible format or Legacy text fil
 
 ```powershell
 Write-ADTLogEntry [-Message] <String[]> [[-Severity] <LogSeverity>] [[-Source] <String>]
- [[-ScriptSection] <String>] [[-LogType] <String>] [[-LogFileDirectory] <String>] [[-LogFileName] <String>]
+ [[-ScriptSection] <String>] [[-LogType] <LogStyle>] [[-LogFileDirectory] <String>] [[-LogFileName] <String>]
  [-PassThru] [-DebugMessage] [<CommonParameters>]
 ```
 
@@ -68,6 +68,7 @@ Options: 0 = Success (highlighted in green), 1 = Information (default), 2 = Warn
 Type: LogSeverity
 Parameter Sets: (All)
 Aliases:
+Accepted values: Success, Info, Warning, Error
 
 Required: False
 Position: 2
@@ -113,9 +114,10 @@ Accept wildcard characters: False
 Choose whether to write a CMTrace.exe compatible log file or a Legacy text log file.
 
 ```yaml
-Type: String
+Type: LogStyle
 Parameter Sets: (All)
 Aliases:
+Accepted values: Legacy, CMTrace
 
 Required: False
 Position: 5

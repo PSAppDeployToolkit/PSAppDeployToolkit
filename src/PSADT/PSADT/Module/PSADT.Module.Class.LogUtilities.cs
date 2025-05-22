@@ -28,7 +28,7 @@ namespace PSADT.Module
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
-        public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
+        public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logType = null)
         {
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
@@ -67,15 +67,22 @@ namespace PSADT.Module
             {
                 source = callerSource;
             }
-            if (canLogToDisk && string.IsNullOrWhiteSpace(logType))
+            if (canLogToDisk && !logType.HasValue)
             {
                 try
                 {
-                    logType = (string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
+                    if (Enum.TryParse<LogStyle>((string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!, out var configStyle))
+                    {
+                        logType = configStyle;
+                    }
+                    else
+                    {
+                        logType = LogStyle.CMTrace;
+                    }
                 }
                 catch
                 {
-                    logType = "CMTrace";
+                    logType = LogStyle.CMTrace;
                 }
             }
             if ((null != logFileDirectory) && !Directory.Exists(logFileDirectory))
@@ -97,7 +104,7 @@ namespace PSADT.Module
             List<string> dskOutput = new List<string>(message.Count);
             List<string> conOutput = new List<string>(message.Count);
             var conFormat = $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}");
-            if (logType != "Legacy")
+            if (logType != LogStyle.Legacy)
             {
                 var dskFormat = $"<![LOG[{(null != scriptSection && message[0] != LogDivider ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}");
                 foreach (string msg in message)
