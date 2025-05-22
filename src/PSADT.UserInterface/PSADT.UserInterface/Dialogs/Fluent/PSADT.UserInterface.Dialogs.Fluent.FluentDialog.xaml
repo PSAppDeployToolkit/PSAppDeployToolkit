@@ -9,7 +9,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Width="580"
     MinWidth="580"
-    MinHeight="198"
+    MinHeight="240"
     MaxWidth="580"
     MaxHeight="850"
     ui:Design.Background="Transparent"
@@ -181,7 +181,7 @@
             Grid.Row="0"
             Grid.Column="1"
             Width="Auto"
-            Margin="24,40,24,8"
+            Margin="24,24,24,8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
             AutomationProperties.Name="Header Panel"
@@ -299,7 +299,7 @@
                     <!-- d:DataContext="{d:DesignInstance Type=ui:GridViewColumn}" -->
                     <ui:ListView
                         x:Name="CloseAppsListView"
-                        MaxHeight="198"
+                        MaxHeight="182"
                         Margin="24,8,24,8"
                         Padding="0"
                         d:ItemsSource="{d:SampleData ItemCount=3}"
@@ -405,10 +405,11 @@
                         Margin="16,0,16,24"
                         Padding="1,2,1,2"
                         Background="{DynamicResource CardStrokeColorDefaultBrush}"
-                        CornerRadius="3"
+                        CornerRadius="2"
                         >
                         <ProgressBar
                             x:Name="ProgressBar"
+                            Height="3"
                             VerticalAlignment="Center"
                             IsIndeterminate="True"
                             />
@@ -456,7 +457,7 @@
                         >
 
                         <ui:SymbolIcon
-                            VerticalAlignment="Center"
+                            VerticalAlignment="Top"
                             FontSize="24"
                             Symbol="Timer24"
                             />
@@ -478,6 +479,7 @@
                             Appearance="Primary"
                             AutomationProperties.Name="Countdown Timer Value"
                             FontTypography="BodyStrong"
+                            FontSize="15"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="00:00:00"
                             />
@@ -503,7 +505,7 @@
                         Margin="24,16,24,16"
                         >
                         <ui:SymbolIcon
-                            VerticalAlignment="Center"
+                            VerticalAlignment="Top"
                             FontSize="24"
                             Symbol="ApprovalsApp24"
                             />
@@ -522,6 +524,7 @@
                             VerticalAlignment="Center"
                             Appearance="Primary"
                             FontTypography="BodyStrong"
+                            FontSize="15"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="Sun, 20th Apr 2025, 13:00 EST"
                             TextWrapping="WrapWithOverflow"

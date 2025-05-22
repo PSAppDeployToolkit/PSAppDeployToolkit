@@ -98,7 +98,7 @@ namespace PSADT.UserInterface.TestHarness
             var closeAppsDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", FluentAccentColor },
+                //{ "FluentAccentColor", FluentAccentColor },
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -117,7 +117,7 @@ namespace PSADT.UserInterface.TestHarness
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", FluentAccentColor },
+                //{ "FluentAccentColor", FluentAccentColor },
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -132,7 +132,7 @@ namespace PSADT.UserInterface.TestHarness
             var customDialogOptions = new CustomDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", FluentAccentColor },
+                //{ "FluentAccentColor", FluentAccentColor },
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -151,7 +151,7 @@ namespace PSADT.UserInterface.TestHarness
             var restartDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", FluentAccentColor },
+                //{ "FluentAccentColor", FluentAccentColor },
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
