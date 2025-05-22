@@ -581,14 +581,12 @@ namespace PSADT.Module
                 #region LogUserInfo
 
 
-                // Log details for all currently logged on users.
-                var loggedOnUsers = (string)ModuleDatabase.InvokeScript(ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), adtEnv["LoggedOnUserSessions"]!).First().BaseObject;
-                WriteLogEntry($"Display session information for all logged on users:{(!string.IsNullOrWhiteSpace(loggedOnUsers) ? $"\n{loggedOnUsers}" : $" There are currently no logged on users.")}", false);
-
-                // Provide detailed info about current process state.
+                // Perform checks that need to factor in user context.
                 if ((adtEnv["usersLoggedOn"] is var usersLoggedOn) && (null != usersLoggedOn))
                 {
+                    // Log details for all currently logged on users.
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn)}].");
+                    WriteLogEntry($"Session information for all logged on users:\n{(string)ModuleDatabase.InvokeScript(ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), adtEnv["LoggedOnUserSessions"]!).First().BaseObject}", false);
 
                     // Check if the current process is running in the context of one of the logged on users
                     if (adtEnv["CurrentLoggedOnUserSession"] is SessionInfo CurrentLoggedOnUserSession)
