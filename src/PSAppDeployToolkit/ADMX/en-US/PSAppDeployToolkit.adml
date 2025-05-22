@@ -59,6 +59,8 @@
 This only applies if "LogWriteToHost" is true, and the script is being ran in a ConsoleHost (not the ISE, or another host).</string>
 			<string id="OobeDetection_Display">OobeDetection</string>
 			<string id="OobeDetection_Explain">Automatically changes DeployMode to Silent during the OOBE.</string>
+			<string id="ProcessDetection_Display">ProcessDetection</string>
+			<string id="ProcessDetection_Explain">Automatically changes DeployMode when one or more processes are specified to Open-ADTSession for closure.</string>
 			<string id="RegPath_Display">RegPath</string>
 			<string id="RegPath_Explain">Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.</string>
 			<string id="RegPathNoAdminRights_Display">RegPathNoAdminRights</string>

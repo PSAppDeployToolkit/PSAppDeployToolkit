@@ -77,6 +77,9 @@
         # Automatically changes DeployMode to Silent during the OOBE.
         OobeDetection = $true
 
+        # Automatically changes DeployMode when one or more processes are specified to Open-ADTSession for closure.
+        ProcessDetection = $true
+
         # Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.
         RegPath = 'HKLM:\SOFTWARE'
 

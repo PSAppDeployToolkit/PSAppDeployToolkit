@@ -236,6 +236,16 @@
 				<disabled />
 			</disabledValue>
 		</policy>
+		<policy name="ProcessDetection" class="Machine" displayName="$(string.ProcessDetection_Display)" explainText="$(string.ProcessDetection_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="ProcessDetection">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<disabled />
+			</disabledValue>
+		</policy>
 		<policy name="RegPath" class="Machine" displayName="$(string.RegPath_Display)" explainText="$(string.RegPath_Explain)" presentation="$(presentation.RegPath)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
 			<parentCategory ref="Toolkit" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />

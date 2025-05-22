@@ -55,6 +55,9 @@ function Open-ADTSession
     .PARAMETER AppRebootExitCodes
         Specifies the application reboot codes.
 
+    .PARAMETER AppProcessesToClose
+        Specifies one or more processes that require closing to ensure a successful deployment.
+
     .PARAMETER AppScriptVersion
         Specifies the application script version.
 
@@ -239,6 +242,10 @@ function Open-ADTSession
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$AppRebootExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.ProcessManagement.ProcessDefinition[]]$AppProcessesToClose,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({

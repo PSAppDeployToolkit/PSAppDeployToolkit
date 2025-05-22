@@ -101,6 +101,7 @@ $adtSession = @{
     AppRevision = '01'
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
+    AppProcessesToClose = @('regedit')
     AppScriptVersion = '1.0.0'
     AppScriptDate = '2000-12-31'
     AppScriptAuthor = '<author name>'
@@ -128,7 +129,7 @@ function Install-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    Show-ADTInstallationWelcome -CloseProcesses taskmgr -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+    Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -187,7 +188,7 @@ function Uninstall-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses iexplore -CloseProcessesCountdown 60
+    Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -235,7 +236,7 @@ function Repair-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses iexplore -CloseProcessesCountdown 60
+    Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

@@ -20,8 +20,9 @@ Open-ADTSession [-SessionState] <SessionState> [[-DeploymentType] <DeploymentTyp
  [[-DeployAppScriptFriendlyName] <String>] [[-DeployAppScriptVersion] <Version>]
  [[-DeployAppScriptDate] <DateTime>]
  [[-DeployAppScriptParameters] <System.Collections.Generic.Dictionary`2[System.String,System.Object]>]
- [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>] [[-ScriptDirectory] <String[]>]
- [[-DirFiles] <String>] [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
+ [[-AppSuccessExitCodes] <Int32[]>] [[-AppRebootExitCodes] <Int32[]>]
+ [[-AppProcessesToClose] <ProcessDefinition[]>] [[-ScriptDirectory] <String[]>] [[-DirFiles] <String>]
+ [[-DirSupportFiles] <String>] [[-DefaultMsiFile] <String>] [[-DefaultMstFile] <String>]
  [[-DefaultMspFiles] <String[]>] [-DisableDefaultMsiProcessList] [[-LogName] <String>] [[-SessionClass] <Type>]
  [-ForceWimDetection] [-ForceMsiDetection] [-PassThru]
  [[-UnboundArguments] <System.Collections.Generic.List`1[System.Object]>] [<CommonParameters>]
@@ -415,6 +416,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -AppProcessesToClose
+
+Specifies one or more processes that require closing to ensure a successful deployment.
+
+```yaml
+Type: ProcessDefinition[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 21
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ScriptDirectory
 
 Specifies the base path for Files and SupportFiles.
@@ -425,7 +442,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 21
+Position: 22
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -441,7 +458,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 22
+Position: 23
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -457,7 +474,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 23
+Position: 24
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -473,7 +490,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 24
+Position: 25
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -489,7 +506,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 25
+Position: 26
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -505,7 +522,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 26
+Position: 27
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -537,7 +554,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 27
+Position: 28
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -554,7 +571,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 28
+Position: 29
 Default value: PSADT.Module.DeploymentSession
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -618,7 +635,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 29
+Position: 30
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

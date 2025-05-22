@@ -148,6 +148,10 @@ namespace PSADT.Module
                     {
                         _appRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
+                    if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (null != paramValue))
+                    {
+                        _appProcessesToClose = new ReadOnlyCollection<ProcessDefinition>((ProcessDefinition[])paramValue);
+                    }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (null != paramValue))
                     {
                         _scriptDirectory = new ReadOnlyCollection<string>((string[])paramValue);
@@ -661,14 +665,20 @@ namespace PSADT.Module
 
 
                 // Check if the device has completed the OOBE or not.
+                bool deployModeChanged = false;
                 if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !DeviceUtilities.IsOOBEComplete())
                 {
                     if ((null != parameters) && parameters.ContainsKey("DeployMode"))
                     {
                         WriteLogEntry($"Detected OOBE in progress but deployment mode was manually set to [{_deployMode}].");
                     }
+                    else if (deployModeChanged)
+                    {
+                        WriteLogEntry($"Detected OOBE in progress but deployment has already been changed to [{_deployMode}]");
+                    }
                     else if ((bool)configToolkit["OobeDetection"]!)
                     {
+                        deployModeChanged = true;
                         _deployMode = DeployMode.Silent;
                         WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{_deployMode}].");
                     }
@@ -698,8 +708,13 @@ namespace PSADT.Module
                                         {
                                             WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was manually set to [{_deployMode}].");
                                         }
+                                        else if (deployModeChanged)
+                                        {
+                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{_deployMode}]");
+                                        }
                                         else if ((bool)configToolkit["OobeDetection"]!)
                                         {
+                                            deployModeChanged = true;
                                             _deployMode = DeployMode.Silent;
                                             WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode}].");
                                         }
@@ -742,24 +757,30 @@ namespace PSADT.Module
                     WriteLogEntry("Device has completed the OOBE and toolkit is not running with an active ESP in progress.");
                 }
 
-                // Return early if we're not in session 0.
+                // Perform session 0 evaluation.
                 if ((bool)adtEnv["SessionZero"]!)
                 {
-                    // If the script was launched with deployment mode set to NonInteractive, then continue.
+                    // If the script was launched with deployment mode manually set, then continue.
                     if ((null != parameters) && parameters.ContainsKey("DeployMode"))
                     {
                         WriteLogEntry($"Session 0 detected but deployment mode was manually set to [{_deployMode}].");
+                    }
+                    else if (deployModeChanged)
+                    {
+                        WriteLogEntry($"Session 0 detected but deployment has already been changed to [{_deployMode}]");
                     }
                     else if ((bool)configToolkit["SessionDetection"]!)
                     {
                         // If the process is not able to display a UI, enable NonInteractive mode.
                         if (!(bool)adtEnv["IsProcessUserInteractive"]!)
                         {
+                            deployModeChanged = true;
                             _deployMode = DeployMode.Silent;
                             WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{_deployMode}].");
                         }
                         else if (null == adtEnv["usersLoggedOn"])
                         {
+                            deployModeChanged = true;
                             _deployMode = DeployMode.Silent;
                             WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{_deployMode}].");
                         }
@@ -775,7 +796,54 @@ namespace PSADT.Module
                 }
                 else
                 {
-                    WriteLogEntry("Session 0 not detected.");
+                    WriteLogEntry("Session 0 not detected, toolkit running as non-SYSTEM user account.");
+                }
+
+                // Evaluate processes to close if they're specified.
+                if (_appProcessesToClose.Count > 0)
+                {
+                    // If the script was launched with deployment mode manually set, then continue.
+                    if ((null != parameters) && parameters.ContainsKey("DeployMode"))
+                    {
+                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was manually set to [{_deployMode}].");
+                    }
+                    else if (deployModeChanged)
+                    {
+                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment has already been changed to [{_deployMode}]");
+                    }
+                    else if ((bool)configToolkit["ProcessDetection"]!)
+                    {
+                        if (ProcessManager.GetRunningProcesses(_appProcessesToClose.ToArray()) is var runningProcs && (runningProcs.Count == 0))
+                        {
+                            deployModeChanged = true;
+                            _deployMode = DeployMode.Silent;
+                            WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but none were running, changing deployment mode to [{_deployMode}].");
+                        }
+                        else
+                        {
+                            WriteLogEntry($"The processes ['{string.Join("', '", runningProcs.Select(static p => p.Process.ProcessName))}'] were specified as requiring closure and were found to be running.");
+                        }
+                    }
+                    else
+                    {
+                        WriteLogEntry($"The processes ['{string.Join("', '", _appProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but toolkit is configured to not adjust deployment mode.");
+                    }
+                }
+                else
+                {
+                    if ((null != parameters) && parameters.ContainsKey("DeployMode"))
+                    {
+                        WriteLogEntry($"No processes were specified as requiring closure but deployment mode was manually set to [{_deployMode}].");
+                    }
+                    else if ((bool)configToolkit["ProcessDetection"]!)
+                    {
+                        WriteLogEntry("No processes were specified as requiring closure, changing deployment mode to [{_deployMode}].");
+                    }
+                    else
+                    {
+                        WriteLogEntry($"No processes were specified as requiring closure but toolkit is configured to not adjust deployment mode.");
+                    }
+                    
                 }
 
                 // Set Deploy Mode switches.
@@ -1412,6 +1480,7 @@ namespace PSADT.Module
         private readonly string? _appRevision;
         private readonly ReadOnlyCollection<int> _appSuccessExitCodes = new ReadOnlyCollection<int>([0]);
         private readonly ReadOnlyCollection<int> _appRebootExitCodes = new ReadOnlyCollection<int>([1641, 3010]);
+        private readonly ReadOnlyCollection<ProcessDefinition> _appProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([]);
         private readonly Version? _appScriptVersion;
         private readonly DateTime? _appScriptDate;
         private readonly string? _appScriptAuthor;
@@ -1508,6 +1577,11 @@ namespace PSADT.Module
         /// Gets the deployment session's exit code(s) to indicate a reboot is required.
         /// </summary>
         public IReadOnlyList<int> AppRebootExitCodes => GetPropertyValue<IReadOnlyList<int>>();
+
+        /// <summary>
+        /// Gets the list of application processes that should be closed.
+        /// </summary>
+        public IReadOnlyList<ProcessDefinition> AppProcessesToClose => GetPropertyValue<IReadOnlyList<ProcessDefinition>>();
 
         /// <summary>
         /// Gets the deployment session's application package version.
