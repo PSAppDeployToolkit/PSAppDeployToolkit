@@ -131,10 +131,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ButtonRight.IsEnabled = _deferralsRemaining > 0;
 
                 // Update text value
-                DeferralDeadlineValueTextBlock.Text = _deferralsRemaining?.ToString();
+                DeferralDeadlineValueTextBlock.Text = _deferralsRemaining.ToString();
 
                 // Update accessibility properties
-                AutomationProperties.SetName(DeferralDeadlineValueTextBlock, _deferralsRemaining?.ToString());
+                AutomationProperties.SetName(DeferralDeadlineValueTextBlock, _deferralsRemaining.ToString());
 
                 // Update text color based on remaining deferrals
                 if (_deferralsRemaining == 0)
