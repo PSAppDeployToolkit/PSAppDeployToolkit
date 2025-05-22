@@ -134,13 +134,13 @@ function Show-ADTInstallationRestartPrompt
         $adtConfig = Get-ADTConfig
 
         # Set up DeploymentType.
-        $PSBoundParameters.DeploymentType = if ($adtSession)
+        [System.String]$deploymentType = if ($adtSession)
         {
-            $adtSession.DeploymentType.ToString()
+            $adtSession.DeploymentType
         }
         else
         {
-            'Install'
+            [PSADT.Module.DeploymentType]::Install
         }
 
         # Set up remainder if not specified.
@@ -150,7 +150,7 @@ function Show-ADTInstallationRestartPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', $adtStrings.RestartPrompt.Subtitle.($PSBoundParameters.DeploymentType))
+            $PSBoundParameters.Add('Subtitle', $adtStrings.RestartPrompt.Subtitle.$deploymentType)
         }
         if (!$PSBoundParameters.ContainsKey('CountdownSeconds'))
         {
