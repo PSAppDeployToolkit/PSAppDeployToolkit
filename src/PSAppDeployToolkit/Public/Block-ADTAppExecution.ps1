@@ -75,6 +75,9 @@ function Block-ADTAppExecution
         }
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $taskName = "$($adtEnv.appDeployToolkitName)_$($adtSession.InstallName)_BlockedApps" -replace $adtEnv.InvalidScheduledTaskNameCharsRegExPattern
+
+        # Announce function's deprecation to all callers.
+        Write-ADTLogEntry -Message "The block execution technology is now deprecated and will be removed in PSAppDeployToolkit 4.2.0. Please see [https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1416] for more information." -Severity 2
     }
 
     process
