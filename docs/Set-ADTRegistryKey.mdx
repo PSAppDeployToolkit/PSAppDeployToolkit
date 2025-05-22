@@ -13,7 +13,7 @@ Creates or sets a registry key name, value, and value data.
 
 ```powershell
 Set-ADTRegistryKey [-LiteralPath] <String> [[-Name] <String>] [[-Value] <Object>] [[-Type] <RegistryValueKind>]
- [-Wow6432Node] [[-SID] <String>] [<CommonParameters>]
+ [-Wow6432Node] [[-RegistryOptions] <RegistryOptions>] [[-SID] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -148,6 +148,24 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -RegistryOptions
+
+Extra options to use while creating the key.
+This is useful for creating volatile keys that do not survive a reboot.
+
+```yaml
+Type: RegistryOptions
+Parameter Sets: (All)
+Aliases:
+Accepted values: None, Volatile
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -SID
 
 The security identifier (SID) for a user.
@@ -161,7 +179,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: 6
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

@@ -30,6 +30,9 @@ function Set-ADTRegistryKey
     .PARAMETER Wow6432Node
         Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
 
+    .PARAMETER RegistryOptions
+        Extra options to use while creating the key. This is useful for creating volatile keys that do not survive a reboot.
+
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
@@ -106,6 +109,10 @@ function Set-ADTRegistryKey
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [Microsoft.Win32.RegistryOptions]$RegistryOptions,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
         [System.String]$SID
     )
 
@@ -137,7 +144,7 @@ function Set-ADTRegistryKey
                     Write-ADTLogEntry -Message "Creating registry key [$LiteralPath]."
                     $provider, $subkey = [System.Text.RegularExpressions.Regex]::Matches($LiteralPath, '^(.+::[a-zA-Z_]+)\\(.+)$').Groups[1..2].Value
                     $regKey = Get-Item -LiteralPath $provider
-                    $null = $regKey.CreateSubKey($subkey)
+                    $null = $regKey.CreateSubKey($subkey, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree, $RegistryOptions)
                     $regKey.Close()
                 }
 
