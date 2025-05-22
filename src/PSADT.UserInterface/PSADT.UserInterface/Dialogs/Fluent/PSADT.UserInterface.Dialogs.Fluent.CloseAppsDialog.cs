@@ -72,6 +72,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             _buttonLeftNoProcessesText = options.Strings.Fluent.ButtonLeftTextNoProcesses;
             _deferralsRemaining = options.DeferralsRemaining;
             _deferralDeadline = options.DeferralDeadline;
+            _forcedCountdown = options.ForcedCountdown;
+            _hideCloseButton = options.HideCloseButton;
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
@@ -84,11 +86,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Configure buttons
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.Fluent.ButtonRightText);
-            ButtonRight.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
             AutomationProperties.SetName(ButtonRight, options.Strings.Fluent.ButtonRightText);
-            SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
+            ButtonRight.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
             ButtonLeft.Visibility = Visibility.Visible;
-            AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
 
             // Set up/process optional values.
             if (null != options.RunningProcessService)
@@ -97,7 +97,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)));
             }
-            _forcedCountdown = options.ForcedCountdown;
             UpdateDeferralValues();
 
             // Focus the continue button by default
@@ -212,14 +211,25 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                 CloseAppsStackPanel.Visibility = Visibility.Collapsed;
                 CloseAppsSeparator.Visibility = Visibility.Collapsed;
+                ButtonLeft.IsEnabled = true;
             }
             else
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
-                SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftText);
-                AutomationProperties.SetName(ButtonLeft, _buttonLeftText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 CloseAppsSeparator.Visibility = Visibility.Visible;
+                if (!_hideCloseButton)
+                {
+                    SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftText);
+                    AutomationProperties.SetName(ButtonLeft, _buttonLeftText);
+                    ButtonLeft.IsEnabled = true;
+                }
+                else
+                {
+                    SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
+                    AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
+                    ButtonLeft.IsEnabled = false;
+                }
             }
         }
 
@@ -390,6 +400,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Indicates whether the countdown is forced.
         /// </summary>
         private readonly bool _forcedCountdown;
+
+        /// <summary>
+        /// Indicates whether the close button should be hidden.
+        /// </summary>
+        /// <remarks>This field determines if the close button is visible or not.  It is intended for
+        /// internal use and should not be modified directly.</remarks>
+        private readonly bool _hideCloseButton;
 
         /// <summary>
         /// Whether this window has been disposed.

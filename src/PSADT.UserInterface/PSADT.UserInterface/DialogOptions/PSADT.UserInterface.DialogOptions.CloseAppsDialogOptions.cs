@@ -56,6 +56,22 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 CountdownDuration = countdownDuration;
             }
+            if (options.ContainsKey("ForcedCountdown"))
+            {
+                if (options["ForcedCountdown"] is not bool forcedCountdown)
+                {
+                    throw new ArgumentOutOfRangeException("ForcedCountdown value is not valid.", (Exception?)null);
+                }
+                ForcedCountdown = forcedCountdown;
+            }
+            if (options.ContainsKey("HideCloseButton"))
+            {
+                if (options["HideCloseButton"] is not bool hideCloseButton)
+                {
+                    throw new ArgumentOutOfRangeException("HideCloseButton value is not valid.", (Exception?)null);
+                }
+                HideCloseButton = hideCloseButton;
+            }
             if (options.ContainsKey("CustomMessageText"))
             {
                 if (options["CustomMessageText"] is not string customMessageText || string.IsNullOrWhiteSpace(customMessageText))
@@ -98,6 +114,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// Specifies whether the countdown is "forced" or not (affects countdown decisions).
         /// </summary>
         public readonly bool ForcedCountdown;
+
+        /// <summary>
+        /// Indicates whether the close button should be hidden.
+        /// </summary>
+        public readonly bool HideCloseButton;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.

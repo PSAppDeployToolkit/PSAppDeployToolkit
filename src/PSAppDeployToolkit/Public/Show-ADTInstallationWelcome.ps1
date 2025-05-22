@@ -21,6 +21,9 @@ function Show-ADTInstallationWelcome
     .PARAMETER CloseProcesses
         Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`
 
+    .PARAMETER HideCloseButton
+        Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.
+
     .PARAMETER AllowDefer
         Enables an optional defer button to allow the user to defer the deployment.
 
@@ -188,6 +191,32 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'SilentCloseProcessesCheckDiskSpace', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
         [ValidateNotNullOrEmpty()]
         [PSADT.ProcessManagement.ProcessDefinition[]]$CloseProcesses,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentCloseProcesses', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentCloseProcessesCheckDiskSpace', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
+        [System.Management.Automation.SwitchParameter]$HideCloseButton,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveAllowDeferCheckDiskSpace', HelpMessage = 'Specify whether to enable the optional defer button on the dialog box.')]
@@ -874,6 +903,7 @@ function Show-ADTInstallationWelcome
                         MinimizeWindows = !$MinimizeWindows
                         DialogExpiryDuration = [System.TimeSpan]::FromMilliseconds($adtConfig.UI.DefaultTimeout)
                         Strings = $adtStrings.CloseAppsPrompt
+                        HideCloseButton = !!$HideCloseButton
                     }
                     if ($AllowDefer)
                     {

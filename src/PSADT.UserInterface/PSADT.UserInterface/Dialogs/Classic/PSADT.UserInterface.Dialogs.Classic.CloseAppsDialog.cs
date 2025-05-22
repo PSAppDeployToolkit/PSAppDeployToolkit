@@ -49,6 +49,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.labelDeferralExpiryMessage.Text = options.Strings.Classic.ExpiryMessage;
                 this.labelDeferWarningMessage.Text = options.Strings.Classic.ExpiryWarning;
                 this.toolTipButtonContinue.RemoveAll();
+                hideCloseButton = options.HideCloseButton;
                 forcedCountdown = options.ForcedCountdown;
                 countdownDuration = options.CountdownDuration;
                 countdownClose = options.Strings.Classic.CountdownClose;
@@ -76,6 +77,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     {
                         this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
                         this.listBoxCloseProcesses.Items.AddRange(runningApps);
+                        if (hideCloseButton)
+                        {
+                            this.buttonCloseProcesses.Enabled = false;
+                            this.buttonContinue.Enabled = false;
+                        }
                     }
                     else
                     {
@@ -288,6 +294,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.flowLayoutPanelCloseApps.Visible = true;
                     this.buttonCloseProcesses.Enabled = true;
                     this.buttonCloseProcesses.Visible = true;
+                    if (hideCloseButton)
+                    {
+                        this.buttonCloseProcesses.Enabled = false;
+                        this.buttonContinue.Enabled = false;
+                    }
                 }
                 else
                 {
@@ -296,6 +307,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.flowLayoutPanelCloseApps.Visible = false;
                     this.buttonCloseProcesses.Enabled = false;
                     this.buttonCloseProcesses.Visible = false;
+                    this.buttonContinue.Enabled = true;
                 }
             });
         }
@@ -339,5 +351,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Whether the countdown is considered "forced" or not.
         /// </summary>
         private readonly bool forcedCountdown;
+
+        /// <summary>
+        /// Indicates whether the close button should be hidden.
+        /// </summary>
+        private readonly bool hideCloseButton;
     }
 }
