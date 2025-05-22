@@ -99,14 +99,14 @@ function Show-ADTInstallationProgress
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
-        $paramDictionary.Add('WindowTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'WindowTitle', [System.String], $(
+        $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'Title', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'The title of the window to be displayed. The default is the derived value from "$($adtSession.InstallTitle)".' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
-        $paramDictionary.Add('WindowSubtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'WindowSubtitle', [System.String], $(
+        $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'Subtitle', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = 'The subtitle of the window to be displayed with a fluent progress window. The default is the derived value from "$($adtSession.DeploymentType)".' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
@@ -136,13 +136,13 @@ function Show-ADTInstallationProgress
         $errRecord = $null
 
         # Set up defaults if not specified.
-        if (!$PSBoundParameters.ContainsKey('WindowTitle'))
+        if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('WindowTitle', $adtSession.InstallTitle)
+            $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
-        if (!$PSBoundParameters.ContainsKey('WindowSubtitle'))
+        if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('WindowSubtitle', $adtStrings.ProgressPrompt.Subtitle.($adtSession.DeploymentType.ToString()))
+            $PSBoundParameters.Add('Subtitle', $adtStrings.ProgressPrompt.Subtitle.($adtSession.DeploymentType.ToString()))
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessage'))
         {
@@ -192,8 +192,8 @@ function Show-ADTInstallationProgress
                 {
                     # Create the new progress dialog.
                     $dialogOptions = @{
-                        AppTitle = $PSBoundParameters.WindowTitle
-                        Subtitle = $PSBoundParameters.WindowSubtitle
+                        AppTitle = $PSBoundParameters.Title
+                        Subtitle = $PSBoundParameters.Subtitle
                         AppIconImage = $adtConfig.Assets.Logo
                         AppBannerImage = $adtConfig.Assets.Banner
                         DialogAllowMove = $true
