@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Interop;
@@ -160,7 +161,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ButtonRight.IsEnabled = timeRemaining > TimeSpan.Zero;
 
                 // Update text content
-                string displayText = _deferralDeadline.Value.ToString("r") + _deferralDeadline.Value.ToString("zzz");
+                string displayText = _deferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + _deferralDeadline.Value.ToString("zzz");
                 Brush textBrush;
                 if (ButtonRight.IsEnabled)
                 {
