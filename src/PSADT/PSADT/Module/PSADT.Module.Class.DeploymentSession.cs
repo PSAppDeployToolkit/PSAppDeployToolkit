@@ -785,17 +785,6 @@ namespace PSADT.Module
 
 
                 #endregion
-                #region TestDefaultMsi
-
-
-                // Advise the caller if a zero-config MSI was found.
-                if (UseDefaultMsi)
-                {
-                    WriteLogEntry($"Discovered Zero-Config MSI installation file [{_defaultMsiFile}].");
-                }
-
-
-                #endregion
                 #region TestAdminRequired
 
 
