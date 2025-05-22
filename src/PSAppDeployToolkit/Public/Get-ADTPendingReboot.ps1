@@ -100,14 +100,14 @@ function Get-ADTPendingReboot
                 $IsFileRenameRebootPending = !!($PendingFileRenameOperations = Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager' | Select-Object -ExpandProperty PendingFileRenameOperations -ErrorAction Ignore)
 
                 # Determine SCCM 2012 Client reboot pending status.
-                $IsSCCMClientRebootPending = if ((Get-CimInstance -Namespace root -ClassName __NAMESPACE -Verbose:$false).Name.Contains('CCM'))
+                $IsSCCMClientRebootPending = if ((Get-CimInstance -Namespace root -ClassName __NAMESPACE -Verbose:$false).Name.Contains('ccm'))
                 {
                     try
                     {
-                        if (($SCCMClientRebootStatus = Invoke-CimMethod -Namespace ROOT\CCM\ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending -Verbose:$false).ReturnValue -ne 0)
+                        if (($SCCMClientRebootStatus = Invoke-CimMethod -Namespace root/ccm/ClientSDK -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending -Verbose:$false).ReturnValue -ne 0)
                         {
                             $naerParams = @{
-                                Exception = [System.InvalidOperationException]::new("The 'DetermineIfRebootPending' method of 'ROOT\CCM\ClientSDK\CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)].")
+                                Exception = [System.InvalidOperationException]::new("The 'DetermineIfRebootPending' method of 'root/ccm/ClientSDK/CCM_ClientUtilities' class returned error code [$($SCCMClientRebootStatus.ReturnValue)].")
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                 ErrorId = 'DetermineIfRebootPendingInvalidReturn'
                                 TargetObject = $SCCMClientRebootStatus
