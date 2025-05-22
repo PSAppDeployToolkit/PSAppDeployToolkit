@@ -135,6 +135,16 @@ function Show-ADTInstallationProgress
         $adtStrings = Get-ADTStringTable
         $errRecord = $null
 
+        # Set up DeploymentType.
+        [System.String]$deploymentType = if ($adtSession)
+        {
+            $adtSession.DeploymentType
+        }
+        else
+        {
+            [PSADT.Module.DeploymentType]::Install
+        }
+
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
@@ -142,15 +152,15 @@ function Show-ADTInstallationProgress
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', $adtStrings.ProgressPrompt.Subtitle.($adtSession.DeploymentType.ToString()))
+            $PSBoundParameters.Add('Subtitle', $adtStrings.ProgressPrompt.Subtitle.$deploymentType)
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessage'))
         {
-            $PSBoundParameters.Add('StatusMessage', $adtStrings.ProgressPrompt.Message.($adtSession.DeploymentType.ToString()))
+            $PSBoundParameters.Add('StatusMessage', $adtStrings.ProgressPrompt.Message.$deploymentType)
         }
         if (!$PSBoundParameters.ContainsKey('StatusMessageDetail'))
         {
-            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.ProgressPrompt.MessageDetail.($adtSession.DeploymentType.ToString()))
+            $PSBoundParameters.Add('StatusMessageDetail', $adtStrings.ProgressPrompt.MessageDetail.$deploymentType)
         }
     }
 
@@ -173,7 +183,7 @@ function Show-ADTInstallationProgress
             {
                 try
                 {
-                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.Start.($adtSession.DeploymentType.ToString())
+                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.Start.$deploymentType
                 }
                 catch
                 {
