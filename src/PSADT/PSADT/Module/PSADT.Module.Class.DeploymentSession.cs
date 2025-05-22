@@ -622,20 +622,20 @@ namespace PSADT.Module
                                     var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
                                     if (null != fsRegData)
                                     {
-                                        if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo syncDone)
+                                        if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo isSyncDone && isSyncDone.Value is int syncDoneValue)
                                         {
-                                            if (syncDone.Value.Equals(0))
+                                            if (syncDoneValue.Equals(0))
                                             {
                                                 WriteLogEntry("The ESP User Account Setup phase is still in progress, changing deployment mode to silent.");
                                                 _deployMode = DeployMode.Silent;
                                             }
-                                            else if (syncDone.Value.Equals(1))
+                                            else if (syncDoneValue.Equals(1))
                                             {
                                                 WriteLogEntry("The ESP User Account Setup phase is already complete.");
                                             }
                                             else
                                             {
-                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDone.Value}].", LogSeverity.Warning);
+                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDoneValue}].", LogSeverity.Warning);
                                             }
                                         }
                                         else
