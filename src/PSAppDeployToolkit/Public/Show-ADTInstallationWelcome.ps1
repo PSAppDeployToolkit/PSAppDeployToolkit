@@ -926,7 +926,7 @@ function Show-ADTInstallationWelcome
                     }
                     if ($CloseProcessesCountdown -gt 0)
                     {
-                        $dialogOptions.Add('ButtonMiddleText', [System.TimeSpan]::FromSeconds($CloseProcessesCountdown))
+                        $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CloseProcessesCountdown))
                     }
                     if ($ForceCountdown -gt 0)
                     {
