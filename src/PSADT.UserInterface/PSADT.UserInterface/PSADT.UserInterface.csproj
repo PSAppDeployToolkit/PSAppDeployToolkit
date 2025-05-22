@@ -51,6 +51,7 @@
 	  <Optimize>false</Optimize>
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
@@ -60,6 +61,7 @@
 	  <Optimize>true</Optimize>
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
@@ -87,6 +89,7 @@
 	  <WarningLevel>9999</WarningLevel>
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.17763|AnyCPU'">
@@ -94,6 +97,7 @@
 	  <WarningLevel>9999</WarningLevel>
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	  <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
 	</PropertyGroup>
 
   <ItemGroup>

@@ -42,6 +42,7 @@
 	  <Optimize>false</Optimize>
 	  <PreferNativeArm64>True</PreferNativeArm64>
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
@@ -51,18 +52,21 @@
 	  <Optimize>true</Optimize>
 	  <PreferNativeArm64>True</PreferNativeArm64>
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.17763|AnyCPU'">
     <DebugType>none</DebugType>
     <WarningLevel>9999</WarningLevel>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.17763|AnyCPU'">
     <WarningLevel>9999</WarningLevel>
     <DebugType>full</DebugType>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <ItemGroup>
