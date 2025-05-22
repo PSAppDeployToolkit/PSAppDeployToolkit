@@ -992,16 +992,7 @@ namespace PSADT.Module
             {
                 hostLogStream = GetHostLogStreamMode();
             }
-
-            IReadOnlyList<LogEntry> logEntries;
-            if (!DisableLogging)
-            {
-                logEntries = LogUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? LogPath, logFileName ?? LogName, logType);
-            }
-            else
-            {
-                logEntries = LogUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, null, null, logType);
-            }
+            var logEntries = LogUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logType);
             LogBuffer.AddRange(logEntries);
             return logEntries;
         }
