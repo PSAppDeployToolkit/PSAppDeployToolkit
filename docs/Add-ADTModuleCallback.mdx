@@ -36,14 +36,14 @@ Adds the specified callback function to be invoked after a DeploymentSession has
 Where you wish for the callback to be executed at.
 
 Valid hookpoints are:
-* OnInit (The callback is executed before the module is initialized.)
-* OnStart (The callback is executed before the first deployment session is opened.)
-* PreOpen (The callback is executed before a deployment session is opened.)
-* PostOpen (The callback is executed after a deployment session is opened.)
-* PreClose (The callback is executed before the deployment session is closed.)
-* PostClose (The callback is executed after the deployment session is closed.)
-* OnFinish (The callback is executed before the last deployment session is closed.)
-* OnExit (The callback is executed after the last deployment session is closed.)
+* OnInit (The callback is executed before the module is initialized)
+* OnStart (The callback is executed before the first deployment session is opened)
+* PreOpen (The callback is executed before a deployment session is opened)
+* PostOpen (The callback is executed after a deployment session is opened)
+* PreClose (The callback is executed before the deployment session is closed)
+* PostClose (The callback is executed after the deployment session is closed)
+* OnFinish (The callback is executed before the last deployment session is closed)
+* OnExit (The callback is executed after the last deployment session is closed)
 
 Each hook point supports multiple callbacks, each invoked in the order they're added.
 
