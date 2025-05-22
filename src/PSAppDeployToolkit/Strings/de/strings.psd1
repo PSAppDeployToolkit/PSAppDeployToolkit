@@ -96,26 +96,26 @@
                 Uninstall = 'Die folgende Anwendung wird deinstalliert:'
             }
             CloseAppsMessage = @{
-                Install = "Die folgenden Programme müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
-                Repair = "Die folgenden Programme müssen geschlossen werden, bevor die Reparatur fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
-                Uninstall = "Die folgenden Programme müssen geschlossen werden, bevor die Deinstallation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Programme und fahren Sie dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Programme schließen`“ klicken."
+                Install = "Die folgenden Anwendungen müssen geschlossen werden, bevor die Installation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Anwendungen und fahren dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Anwendungen schließen`“ klicken."
+                Repair = "Die folgenden Anwendungen müssen geschlossen werden, bevor die Reparatur fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Anwendungen und fahren dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Anwendungen schließen`“ klicken."
+                Uninstall = "Die folgenden Anwendungen müssen geschlossen werden, bevor die Deinstallation fortgesetzt werden kann.`n`nBitte speichern Sie Ihre Arbeit, schließen Sie die Anwendungen und fahren dann fort. Alternativ können Sie Ihre Arbeit speichern und auf `„Anwendungen schließen`“ klicken."
             }
             ExpiryMessage = @{
-                Install = 'Die Installation kann bis zum Ablauf der Aufschiebungsfrist aufschoben werden:'
-                Repair = 'Die Reparatur kann bis zum Ablauf der Aufschiebungsfrist aufschoben werden:'
-                Uninstall = 'Die Deinstallation kann bis zum Ablauf der Aufschiebungsfrist aufschoben werden:'
+                Install = 'Die Installation kann bis zum Ablauf der Aufschiebefrist verschoben werden:'
+                Repair = 'Die Reparatur kann bis zum Ablauf der Aufschiebefrist verschoben werden:'
+                Uninstall = 'Die Deinstallation kann bis zum Ablauf der Aufschiebefrist verschoben werden:'
             }
             DeferralsRemaining = 'Verbleibende Aufschiebungen:'
             DeferralDeadline = 'Frist:'
-            ExpiryWarning = 'Nach Ablauf der Aufschiebung haben Sie keine Möglichkeit mehr, die Aufschiebung zu nutzen.'
+            ExpiryWarning = 'Nach Ablauf der Aufschiebung haben Sie keine Möglichkeit mehr zu verschieben.'
             CountdownDefer = @{
                 Install = 'Die Installation wird automatisch fortgesetzt in:'
                 Repair = 'Die Reparatur wird automatisch fortgesetzt in:'
                 Uninstall = 'Die Deinstallation wird automatisch fortgesetzt in:'
             }
-            CountdownClose = 'HINWEIS: Die Programme werden automatisch geschlossen in:'
-            ButtonClose = 'Programme &schließen'
-            ButtonDefer = '&Aufschieben'
+            CountdownClose = 'HINWEIS: Die Anwendungen werden automatisch geschlossen in:'
+            ButtonClose = 'Anwendungen &schließen'
+            ButtonDefer = '&Verschieben'
             ButtonContinue = '&Weiter'
             ButtonContinueTooltip = 'Wählen Sie erst „Weiter“, nachdem Sie die oben aufgeführten Anwendung(en) geschlossen haben.'
         }
@@ -123,23 +123,23 @@
             DialogMessage = 'Bitte speichern Sie Ihre Arbeit, bevor Sie fortfahren, da die folgenden Anwendungen automatisch geschlossen werden.'
             DialogMessageNoProcesses = @{
                 Install = 'Wählen Sie Installieren aus, um mit der Installation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie die Installation auch verschieben.'
-                Repair = 'Wählen Sie Reparieren aus, um mit der Reparatur fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Reparatur aufschieben.'
-                Uninstall = 'Wählen Sie Deinstallieren aus, um mit der Deinstallation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Deinstallation aufschieben.'
+                Repair = 'Wählen Sie Reparieren aus, um mit der Reparatur fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Reparatur verschieben.'
+                Uninstall = 'Wählen Sie Deinstallieren aus, um mit der Deinstallation fortzufahren. Wenn Sie noch Aufschübe haben, können Sie auch die Deinstallation verschieben.'
             }
             AutomaticStartCountdown = 'Automatischer Start-Countdown'
             DeferralsRemaining = 'Verbleibende Aufschiebungen'
-            DeferralDeadline = 'Frist für die Stundung'
+            DeferralDeadline = 'Aufschiebefrist'
             ButtonLeftText = @{
-                Install = 'Anwendungen schließen und Installieren'
-                Repair = 'Anwendungen schließen und Reparieren'
-                Uninstall = 'Anwendungen schließen und Deinstallieren'
+                Install = 'Schließen und Installieren'
+                Repair = 'Schließen und Reparieren'
+                Uninstall = 'Schließen und Deinstallieren'
             }
             ButtonLeftNoProcessesText = @{
                 Install = 'Installieren'
                 Repair = 'Reparatur'
                 Uninstall = 'Deinstallieren'
             }
-            ButtonRightText = 'Aufschieben'
+            ButtonRightText = 'Verschieben'
             Subtitle = @{
                 Install = '{Toolkit\CompanyName} - Installation der Anwendung'
                 Repair = '{Toolkit\CompanyName} - Reparatur der Anwendung'
