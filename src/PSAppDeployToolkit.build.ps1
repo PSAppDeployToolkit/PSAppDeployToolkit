@@ -175,10 +175,10 @@ $buildItems = @(
         OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
     },
     @{
-        SourcePath = 'src\PSADT.UserInterface'
+        SourcePath = 'src\PSADT.UserInterface', 'src\PSADT'
         SolutionPath = 'src\PSADT.UserInterface\PSADT.UserInterface.sln'
         OutputPath = 'src\PSAppDeployToolkit\lib'
-        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.dll'
+        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.dll', 'src\PSAppDeployToolkit\lib\PSADT.dll'
     }
 )
 
@@ -288,42 +288,48 @@ Add-BuildTask DotNetBuild {
         # Only build a debug version if files have been modified.
         if ($env:GITHUB_ACTIONS -ne 'true')
         {
-            if (!((git status --porcelain) -match "^.{3}$([regex]::Escape($buildItem.SourcePath.Replace('\','/')))/"))
+            foreach ($sourcePath in $buildItem.SourcePath)
             {
-                # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
-                $buildItem.OutputFile | ForEach-Object {
-                    # Get commit date via git, parse the result, then add one second and convert to proper ISO 8601 format..
-                    $lastCommitDate = git log -1 --format="%ci" -- ([System.IO.Path]::Combine($Script:RepoRootPath, $_))
-                    $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
-                    $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
+                if (!((git status --porcelain) -match "^.{3}$([regex]::Escape($sourcePath.Replace('\','/')))/"))
+                {
+                    # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
+                    $buildItem.OutputFile | ForEach-Object {
+                        # Get commit date via git, parse the result, then add one second and convert to proper ISO 8601 format..
+                        $lastCommitDate = git log -1 --format="%ci" -- ([System.IO.Path]::Combine($Script:RepoRootPath, $_))
+                        $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
+                        $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
 
-                    # Get the list of source files modified since the last commit date of the file we're comparing against
-                    if (git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- ([System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SourcePath)) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique)
-                    {
-                        Write-Build Blue "          Files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build required."
-                        $null = $buildConfigs.Add('Debug')
-                    }
-                    else
-                    {
-                        Write-Build Gray "          No files have been modified in $($buildItem.SourcePath) since the last commit date of $_ ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build not required."
+                        # Get the list of source files modified since the last commit date of the file we're comparing against
+                        if (git log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- ([System.IO.Path]::Combine($Script:RepoRootPath, $sourcePath)) | Where-Object { ![string]::IsNullOrWhiteSpace($buildItem) } | Sort-Object -Unique)
+                        {
+                            Write-Build Blue "          Files have been modified in $($sourcePath) since the last commit date of $_ ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build required."
+                            $buildConfigs.Add('Debug')
+                        }
+                        else
+                        {
+                            Write-Build Gray "          No files have been modified in $($sourcePath) since the last commit date of $_ ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build not required."
+                        }
                     }
                 }
-            }
-            else
-            {
-                Write-Build Blue "          Uncommitted file changes found under $($buildItem.SourcePath), debug build required."
-                $null = $buildConfigs.Add('Debug')
+                else
+                {
+                    Write-Build Blue "          Uncommitted file changes found under $($sourcePath), debug build required."
+                    $buildConfigs.Add('Debug')
+                }
             }
         }
 
         # Manually clean out old build and obj folders for good measure.
-        Write-Build Gray "            Removing previous bin and obj folders from $($buildItem.SourcePath)..."
-        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SourcePath)
-        'bin', 'obj' | ForEach-Object { Get-ChildItem -LiteralPath $sourcePath -Directory -Filter $_ -Recurse } | Remove-Item -Recurse -Force
+        foreach ($sourcePath in $buildItem.SourcePath)
+        {
+            Write-Build Gray "            Removing previous bin and obj folders from $($sourcePath)..."
+            $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $sourcePath)
+            'bin', 'obj' | ForEach-Object { Get-ChildItem -LiteralPath $sourcePath -Directory -Filter $_ -Recurse } | Remove-Item -Recurse -Force
+        }
 
         # Build a debug and release config of each project.
         Write-Build Gray "            Building $(($solutionPath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath)))..."
-        foreach ($buildType in $buildConfigs)
+        foreach ($buildType in ($buildConfigs | Select-Object -Unique))
         {
             & $msbuildPath $solutionPath -target:Rebuild -restore -p:configuration=$buildType -p:platform="Any CPU" -nodeReuse:false -m -verbosity:minimal
             if ($LASTEXITCODE) { throw "Failed to build solution `"$($buildItem.SolutionPath -replace '^.+\\')`". Exit code: $LASTEXITCODE" }
