@@ -39,22 +39,22 @@ function Private:Import-ADTStringTable
                 if ($section.Value -is [System.String])
                 {
                     $_.($section.Key) = [System.Text.RegularExpressions.Regex]::Replace($section.Value, '\{[^\d]+\}',
-                    {
-                        return $args[0].Value.Replace('{', $null).Replace('}', $null).Split('\') | & {
-                            begin
-                            {
-                                $result = $config
+                        {
+                            return $args[0].Value.Replace('{', $null).Replace('}', $null).Split('\') | & {
+                                begin
+                                {
+                                    $result = $config
+                                }
+                                process
+                                {
+                                    $result = $result.$_
+                                }
+                                end
+                                {
+                                    return $result
+                                }
                             }
-                            process
-                            {
-                                $result = $result.$_
-                            }
-                            end
-                            {
-                                return $result
-                            }
-                        }
-                    })
+                        })
                 }
                 elseif ($section.Value -is [System.Collections.Hashtable])
                 {
