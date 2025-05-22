@@ -598,70 +598,6 @@ namespace PSADT.Module
                         WriteLogEntry($"Current process is running under a system account [{adtEnv["ProcessNTAccount"]}].");
                     }
 
-                    // Guard Intune detection code behind a variable.
-                    if ((bool)configToolkit["OobeDetection"]!)
-                    {
-                        // Check if the device has completed the OOBE or not.
-                        if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !DeviceUtilities.IsOOBEComplete())
-                        {
-                            WriteLogEntry("Detected OOBE in progress, changing deployment mode to silent.");
-                            _deployMode = DeployMode.Silent;
-                        }
-                        else if (Process.GetProcessesByName("WWAHost").Length > 0)
-                        {
-                            // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
-                            WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
-                            var apRegKey = @"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot";
-                            if (!string.IsNullOrWhiteSpace((string)moduleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
-                            {
-                                WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
-                                if (((SessionInfo)adtEnv["RunAsActiveUser"])?.SID is SecurityIdentifier userSid)
-                                {
-                                    var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
-                                    if (null != fsRegData)
-                                    {
-                                        if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo isSyncDone && isSyncDone.Value is int syncDoneValue)
-                                        {
-                                            if (syncDoneValue.Equals(0))
-                                            {
-                                                WriteLogEntry("The ESP User Account Setup phase is still in progress, changing deployment mode to silent.");
-                                                _deployMode = DeployMode.Silent;
-                                            }
-                                            else if (syncDoneValue.Equals(1))
-                                            {
-                                                WriteLogEntry("The ESP User Account Setup phase is already complete.");
-                                            }
-                                            else
-                                            {
-                                                WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDoneValue}].", LogSeverity.Warning);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", LogSeverity.Warning);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
-                                    }
-                                }
-                                else
-                                {
-                                    WriteLogEntry("The device currently has no users logged on.");
-                                }
-                            }
-                            else
-                            {
-                                WriteLogEntry("The device is not Autopilot-enrolled.");
-                            }
-                        }
-                        else
-                        {
-                            WriteLogEntry("Device has completed the OOBE and toolkit is not running with an active ESP in progress.");
-                        }
-                    }
-
                     // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
                     if (adtEnv["CurrentConsoleUserSession"] is SessionInfo CurrentConsoleUserSession)
                     {
@@ -710,8 +646,90 @@ namespace PSADT.Module
 
 
                 #endregion
-                #region PerformSystemAccountTests
+                #region SetDeploymentProperties
 
+
+                // Check if the device has completed the OOBE or not.
+                if ((Environment.OSVersion.Version >= new Version(10, 0, 16299, 0)) && !DeviceUtilities.IsOOBEComplete())
+                {
+                    if ((null != parameters) && parameters.ContainsKey("DeployMode"))
+                    {
+                        WriteLogEntry($"Detected OOBE in progress but deployment mode was manually set to [{_deployMode}].");
+                    }
+                    else if ((bool)configToolkit["OobeDetection"]!)
+                    {
+                        _deployMode = DeployMode.Silent;
+                        WriteLogEntry($"Detected OOBE in progress, changing deployment mode to [{_deployMode}].");
+                    }
+                    else
+                    {
+                        WriteLogEntry("Detected OOBE in progress but toolkit is configured to not adjust deployment mode.");
+                    }
+                }
+                else if (Process.GetProcessesByName("WWAHost").Length > 0)
+                {
+                    // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
+                    WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
+                    var apRegKey = @"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot";
+                    if (!string.IsNullOrWhiteSpace((string)moduleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
+                    {
+                        WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
+                        if (((SessionInfo)adtEnv["RunAsActiveUser"])?.SID is SecurityIdentifier userSid)
+                        {
+                            var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
+                            if (null != fsRegData)
+                            {
+                                if (fsRegData.Properties["IsSyncDone"] is PSPropertyInfo isSyncDone && isSyncDone.Value is int syncDoneValue)
+                                {
+                                    if (syncDoneValue.Equals(0))
+                                    {
+                                        if ((null != parameters) && parameters.ContainsKey("DeployMode"))
+                                        {
+                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was manually set to [{_deployMode}].");
+                                        }
+                                        else if ((bool)configToolkit["OobeDetection"]!)
+                                        {
+                                            _deployMode = DeployMode.Silent;
+                                            WriteLogEntry($"The ESP User Account Setup phase is still in progress, changing deployment mode to [{_deployMode}].");
+                                        }
+                                        else
+                                        {
+                                            WriteLogEntry("The ESP User Account Setup phase is still in progress but toolkit is configured to not adjust deployment mode.");
+                                        }
+                                    }
+                                    else if (syncDoneValue.Equals(1))
+                                    {
+                                        WriteLogEntry("The ESP User Account Setup phase is already complete.");
+                                    }
+                                    else
+                                    {
+                                        WriteLogEntry($"The FirstSync property for SID [{userSid}] has an indeterminate value of [{syncDoneValue}].", LogSeverity.Warning);
+                                    }
+                                }
+                                else
+                                {
+                                    WriteLogEntry($"Could not find a FirstSync property for SID [{userSid}].", LogSeverity.Warning);
+                                }
+                            }
+                            else
+                            {
+                                WriteLogEntry($"Could not find any FirstSync information for SID [{userSid}].");
+                            }
+                        }
+                        else
+                        {
+                            WriteLogEntry("The device currently has no users logged on.");
+                        }
+                    }
+                    else
+                    {
+                        WriteLogEntry("The device is not Autopilot-enrolled.");
+                    }
+                }
+                else
+                {
+                    WriteLogEntry("Device has completed the OOBE and toolkit is not running with an active ESP in progress.");
+                }
 
                 // Return early if we're not in session 0.
                 if ((bool)adtEnv["SessionZero"]!)
@@ -749,11 +767,6 @@ namespace PSADT.Module
                     WriteLogEntry("Session 0 not detected.");
                 }
 
-
-                #endregion
-                #region SetDeploymentProperties
-
-
                 // Set Deploy Mode switches.
                 WriteLogEntry($"Installation is running in [{_deployMode}] mode.");
                 switch (_deployMode)
@@ -766,7 +779,6 @@ namespace PSADT.Module
                         Settings |= DeploymentSettings.NonInteractive;
                         break;
                 }
-
 
                 // Check deployment type (install/uninstall).
                 WriteLogEntry($"Deployment type is [{_deploymentType}].");
