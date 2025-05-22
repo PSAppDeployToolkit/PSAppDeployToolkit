@@ -15,11 +15,14 @@ namespace PSADT.UserInterface.DialogOptions
         public InputDialogOptions(Hashtable options) : base(options)
         {
             // Just set our one and only field.
-            if (options["InitialInputText"] is not string initialInputText || string.IsNullOrWhiteSpace(initialInputText))
+            if (options.ContainsKey("InitialInputText"))
             {
-                throw new ArgumentNullException("InitialInputText value is null or invalid.", (Exception?)null);
+                if (options["InitialInputText"] is not string initialInputText || string.IsNullOrWhiteSpace(initialInputText))
+                {
+                    throw new ArgumentOutOfRangeException("InitialInputText value is not valid.", (Exception?)null);
+                }
+                InitialInputText = initialInputText;
             }
-            InitialInputText = initialInputText;
         }
 
         /// <summary>

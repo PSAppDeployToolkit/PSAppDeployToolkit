@@ -13,6 +13,12 @@ function Show-ADTInstallationPrompt
     .DESCRIPTION
         Displays a custom installation prompt with the toolkit branding and optional buttons. Any combination of Left, Middle, or Right buttons can be displayed. The return value of the button clicked by the user is the button text specified. The prompt can also display a system icon and be configured to persist, minimize other windows, or timeout after a specified period.
 
+    .PARAMETER RequestInput
+        Show a text box for the user to provide an answer.
+
+    .PARAMETER DefaultValue
+        The default value to show in the text box.
+
     .PARAMETER Message
         The message text to be displayed on the prompt.
 
@@ -77,9 +83,16 @@ function Show-ADTInstallationPrompt
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationPrompt
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'ShowCustomDialog')]
     param
     (
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowInputDialog')]
+        [System.Management.Automation.SwitchParameter]$RequestInput,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'ShowInputDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$DefaultValue,
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$Message,
@@ -104,7 +117,7 @@ function Show-ADTInstallationPrompt
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.Dialogs.DialogSystemIcon]$Icon,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ShowCustomDialog')]
         [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
@@ -233,6 +246,10 @@ function Show-ADTInstallationPrompt
                     MessageText = $Message
                     MessageAlignment = $MessageAlignment
                 }
+                if ($PSBoundParameters.ContainsKey('DefaultValue'))
+                {
+                    $dialogOptions.InitialInputText = $DefaultValue
+                }
                 if ($ButtonRightText)
                 {
                     $dialogOptions.Add('ButtonRightText', $ButtonRightText)
@@ -265,7 +282,7 @@ function Show-ADTInstallationPrompt
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously with the parameters: [$($paramsString.Replace("''", "'"))]."
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -LiteralPath '$Script:PSScriptRoot\lib\PSADT.UserInterface.dll'; return [PSADT.UserInterface.DialogManager]::ShowCustomDialog('$($adtConfig.UI.DialogStyle)', $($paramsString.Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
+                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -LiteralPath '$Script:PSScriptRoot\lib\PSADT.UserInterface.dll'; return [PSADT.UserInterface.DialogManager]::$($PSCmdlet.ParameterSetName)('$($adtConfig.UI.DialogStyle)', $($paramsString.Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
@@ -283,7 +300,7 @@ function Show-ADTInstallationPrompt
 
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($paramsString.Replace("''", "'"))]."
-                $result = [PSADT.UserInterface.DialogManager]::ShowCustomDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+                $result = [PSADT.UserInterface.DialogManager]::($PSCmdlet.ParameterSetName)($adtConfig.UI.DialogStyle, $dialogOptions)
 
                 # Restore minimized windows.
                 if ($MinimizeWindows)

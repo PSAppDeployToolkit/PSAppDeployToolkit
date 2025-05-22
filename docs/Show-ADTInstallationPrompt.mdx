@@ -11,11 +11,22 @@ Displays a custom installation prompt with the toolkit branding and optional but
 
 ## SYNTAX
 
+### ShowCustomDialog (Default)
+
 ```powershell
-Show-ADTInstallationPrompt [-Message] <String> [[-MessageAlignment] <DialogMessageAlignment>]
- [[-ButtonRightText] <String>] [[-ButtonLeftText] <String>] [[-ButtonMiddleText] <String>]
- [[-Icon] <DialogSystemIcon>] [-NoWait] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost]
- -Title <String> -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
+Show-ADTInstallationPrompt -Message <String> [-MessageAlignment <DialogMessageAlignment>]
+ [-ButtonRightText <String>] [-ButtonLeftText <String>] [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>]
+ [-NoWait] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] -Title <String>
+ -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
+```
+
+### ShowInputDialog
+
+```powershell
+Show-ADTInstallationPrompt [-RequestInput] [-DefaultValue <String>] -Message <String>
+ [-MessageAlignment <DialogMessageAlignment>] [-ButtonRightText <String>] [-ButtonLeftText <String>]
+ [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout]
+ [-NotTopMost] -Title <String> -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -47,6 +58,38 @@ Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end
 
 ## PARAMETERS
 
+### -RequestInput
+
+Show a text box for the user to provide an answer.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: ShowInputDialog
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DefaultValue
+
+The default value to show in the text box.
+
+```yaml
+Type: String
+Parameter Sets: ShowInputDialog
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Message
 
 The message text to be displayed on the prompt.
@@ -57,7 +100,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -74,7 +117,7 @@ Aliases:
 Accepted values: Left, Center, Right
 
 Required: False
-Position: 2
+Position: Named
 Default value: Center
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -90,7 +133,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -106,7 +149,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -122,7 +165,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -139,7 +182,7 @@ Aliases:
 Accepted values: Application, Asterisk, Error, Exclamation, Hand, Information, Question, Shield, Warning, WinLogo
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -151,7 +194,7 @@ Presents the dialog in a separate, independent thread so that the main process i
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: ShowCustomDialog
 Aliases:
 
 Required: False
