@@ -678,6 +678,12 @@ function Show-ADTInstallationWelcome
                 }
             }
 
+            # Minimize all other windows.
+            if ($MinimizeWindows)
+            {
+                $null = $adtEnv.ShellApp.UndoMinimizeAll()
+            }
+
             # Show the dialog and get the result.
             $result = [PSADT.UserInterface.DialogManager]::ShowCloseAppsDialog($DialogStyle, $Options)
 

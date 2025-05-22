@@ -180,6 +180,7 @@ function Show-ADTInstallationPrompt
 
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $shellApp = (Get-ADTEnvironmentTable).ShellApp
 
         # Set up DeploymentType.
         $DeploymentType = if ($adtSession)
@@ -274,9 +275,23 @@ function Show-ADTInstallationPrompt
                     Close-ADTInstallationProgress
                 }
 
+                # Minimize all other windows
+                if ($MinimizeWindows)
+                {
+                    $null = $shellApp.MinimizeAll()
+                }
+
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($paramsString.Replace("''", "'"))]."
                 $result = [PSADT.UserInterface.DialogManager]::ShowCustomDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+
+                # Restore minimized windows.
+                if ($MinimizeWindows)
+                {
+                    $null = $shellApp.UndoMinimizeAll()
+                }
+
+                # Process results.
                 if ($result -eq 'Timeout')
                 {
                     Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.'
