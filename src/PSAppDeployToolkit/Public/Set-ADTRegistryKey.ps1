@@ -146,6 +146,8 @@ function Set-ADTRegistryKey
                     $regKey = Get-Item -LiteralPath $provider
                     $null = $regKey.CreateSubKey($subkey, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree, $RegistryOptions)
                     $regKey.Close()
+                    $regKey.Dispose()
+                    $regKey = $null
                 }
 
                 # If a name was provided, set the appropriate ItemProperty up.
