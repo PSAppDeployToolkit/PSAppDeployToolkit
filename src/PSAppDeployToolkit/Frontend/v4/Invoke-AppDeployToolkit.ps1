@@ -89,6 +89,8 @@ param
 ## MARK: Variables
 ##================================================
 
+# Zero-Config MSI support is provided when "AppName" is null or empty.
+# By setting the "AppName" property, Zero-Config MSI will be disabled.
 $adtSession = @{
     # App variables.
     AppVendor = ''
