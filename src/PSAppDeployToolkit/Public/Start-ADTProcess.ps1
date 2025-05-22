@@ -348,8 +348,6 @@ function Start-ADTProcess
                 'MsiExecWaitTime', [System.TimeSpan], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = "Specify the length of time in seconds to wait for the msiexec engine to become available." }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-                    ($defaultValue = [System.Management.Automation.PSDefaultValueAttribute]::new())
-                    $defaultValue.Help = '(Get-ADTConfig).MSI.MutexWaitTime'
                 )
             ))
 
