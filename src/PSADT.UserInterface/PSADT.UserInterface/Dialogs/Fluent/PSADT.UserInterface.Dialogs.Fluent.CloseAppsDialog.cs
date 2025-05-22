@@ -94,6 +94,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)));
             }
+            _forcedCountdown = options.ForcedCountdown;
             UpdateDeferralValues();
 
             // Focus the continue button by default
@@ -288,7 +289,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (!DeferralsAvailable())
+                    if (_forcedCountdown && (null == _runningProcessService || AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText))
+                    {
+                        DialogResult = "Continue";
+                    }
+                    else if (_forcedCountdown && DeferralsAvailable())
+                    {
+                        DialogResult = "Defer";
+                    }
+                    else
                     {
                         if (AutomationProperties.GetName(ButtonLeft) == _buttonLeftText)
                         {
@@ -298,10 +307,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                         {
                             DialogResult = "Continue";
                         }
-                    }
-                    else
-                    {
-                        DialogResult = "Defer";
                     }
                     CloseDialog();
                 });
@@ -378,6 +383,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// The number of deferrals remaining, if applicable.
         /// </summary>
         private readonly int? _deferralsRemaining;
+
+        /// <summary>
+        /// Indicates whether the countdown is forced.
+        /// </summary>
+        private readonly bool _forcedCountdown;
 
         /// <summary>
         /// Whether this window has been disposed.
