@@ -22,14 +22,12 @@
 		<FileVersion>4.1.0</FileVersion>
 		<InformationalVersion>4.1.0</InformationalVersion>
 		<ApplicationVersion>4.1.0</ApplicationVersion>
-		<Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
 		<ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<Title>PSAppDeployToolkit User Interface Libray</Title>
 		<PackageProjectUrl>https://psappdeploytoolkit.com</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
-		<!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
 		<SelfContained>false</SelfContained>
 		<PublishSingleFile>false</PublishSingleFile>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
