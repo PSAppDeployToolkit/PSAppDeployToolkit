@@ -15,18 +15,20 @@ function Add-ADTModuleCallback
 
     .PARAMETER Hookpoint
         Where you wish for the callback to be executed at.
+
         Valid hookpoints are:
-        OnInit      (The callback is executed before the module is initialized.)
-        OnStart     (The callback is executed before the first deployment session is opened.)
-        PreOpen     (The callback is executed before a deployment session is opened.)
-        PostOpen    (The callback is executed after a deployment session is opened.)
-        PreClose    (The callback is executed before the deployment session is closed.)
-        PostClose   (The callback is executed after the deployment session is closed.)
-        OnFinish    (The callback is executed before the last deployment session is closed.)
-        OnExit      (The callback is executed after the last deployment session is closed.)
-        
-        You can have multiple Callbacks of one type. IOW: you can have 2 'OnExit' Callbacks
-        To see a list all the registered callbacks in order, use: Get-ADTCommandTable
+        * OnInit (The callback is executed before the module is initialized.)
+        * OnStart (The callback is executed before the first deployment session is opened.)
+        * PreOpen (The callback is executed before a deployment session is opened.)
+        * PostOpen (The callback is executed after a deployment session is opened.)
+        * PreClose (The callback is executed before the deployment session is closed.)
+        * PostClose (The callback is executed after the deployment session is closed.)
+        * OnFinish (The callback is executed before the last deployment session is closed.)
+        * OnExit (The callback is executed after the last deployment session is closed.)
+
+        Each hook point supports multiple callbacks, each invoked in the order they're added.
+
+        To see a list all the registered callbacks in order, use `Get-ADTCommandTable`.
 
     .PARAMETER Callback
         The callback function to add to the nominated hooking point.
@@ -48,7 +50,8 @@ function Add-ADTModuleCallback
 
     .NOTES
         An active ADT session is NOT required to use this function.
-        Also see Remove-ADTModuleCallback
+
+        Also see `Remove-ADTModuleCallback` about how callbacks can be removed.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

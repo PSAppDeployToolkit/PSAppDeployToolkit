@@ -118,16 +118,21 @@ function Start-ADTProcess
         Launch InstallShield "setup.exe" with embedded MSI and force log files to the logging folder.
 
     .EXAMPLE
+        ```powershell
         $result = Start-ADTProcess -FilePath "setup.exe" -ArgumentList "-i -f `"$($adtSession.dirFiles)\$($adtSession.LicenseFile)`"" -ErrorAction SilentlyContinue -PassThru
-        If ($result.ExitCode -ne 0){
-            Write-ADTLogEntry -Message "installation was a success" -Severity 0
-        } else {
-            Write-ADTLogEntry -Message "installation failed with exitcode [$($result.ExitCode)]" -Severity 3
-            Write-ADTLogEntry -Message "Standard out [$($result.StdOut)]" -Severity 3
-            Write-ADTLogEntry -Message "Standard Error [$($result.StdErr)]" -Severity 3
+        if ($result.ExitCode -ne 0)
+        {
+            Write-ADTLogEntry -Message "Installation was successful." -Severity 0
         }
-        
-        Launch "setup.exe" with -passthru use what comes out from passthru.
+        else
+        {
+            Write-ADTLogEntry -Message "Installation failed with exit code [$($result.ExitCode)]." -Severity 3
+            Write-ADTLogEntry -Message "Standard Out [$($result.StdOut)]." -Severity 3
+            Write-ADTLogEntry -Message "Standard Error [$($result.StdErr)]." -Severity 3
+        }
+        ```
+
+        Launch "setup.exe" with -PassThru so we can write out the result to the log file.
 
     .INPUTS
         None

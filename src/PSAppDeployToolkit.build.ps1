@@ -650,8 +650,8 @@ Add-BuildTask CreateDocusaurusHelp -After CreateMarkdownHelp {
     Write-Build Gray '           ...Docusaurus generation complete.'
     Write-Build Gray '           Unescape forced line break elements...'
     Get-ChildItem -Path "$($Script:DocusaurusExportPath)Commands\*.mdx" | ForEach-Object {
-        # Trim the file, fix multi-line EXAMPLES, and unescape tilde characters.
-        if (($content = [System.IO.File]::ReadAllText($_.FullName)) -ne ($newContent = $content.Trim().Replace('&lt;br /&gt;', '<br />')))
+        # Trim the file, fix hard-coded line breaks, and fix manually defined code fences.
+        if (($content = [System.IO.File]::ReadAllText($_.FullName)) -ne ($newContent = $content.Trim().Replace('&lt;br /&gt;', '<br />') -replace '```\s+```powershell\s+```powershell\s+', "``````powershell`n"))
         {
             [System.IO.File]::WriteAllLines($_.FullName, $newContent.Split("`n").TrimEnd())
         }
