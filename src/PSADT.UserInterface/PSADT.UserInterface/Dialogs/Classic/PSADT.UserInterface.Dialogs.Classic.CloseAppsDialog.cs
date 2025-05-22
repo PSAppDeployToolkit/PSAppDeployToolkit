@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using PSADT.ProcessManagement;
@@ -99,7 +100,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     }
                     if (null != options.DeferralDeadline)
                     {
-                        this.labelDeferDeadline.Text += $"\n\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline}";
+                        this.labelDeferDeadline.Text += $"\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}";
                     }
                 }
                 else
