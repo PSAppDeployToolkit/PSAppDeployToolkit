@@ -33,9 +33,9 @@
             Uninstall = 'Šīs lietojumprogrammas palaišana ir uz laiku bloķēta, lai varētu pabeigt atinstalēšanas operāciju.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Lietotņu Instalēšana'
-            Repair = 'PSAppDeployToolkit - Lietotņu Labošana'
-            Uninstall = 'PSAppDeployToolkit - Lietotņu Atinstalēšana'
+            Install = '{Toolkit\CompanyName} - Lietotņu Instalēšana'
+            Repair = '{Toolkit\CompanyName} - Lietotņu Labošana'
+            Uninstall = '{Toolkit\CompanyName} - Lietotņu Atinstalēšana'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Lietotņu Instalēšana'
-            Repair = 'PSAppDeployToolkit - Lietotņu Labošana'
-            Uninstall = 'PSAppDeployToolkit - Lietotņu Atinstalēšana'
+            Install = '{Toolkit\CompanyName} - Lietotņu Instalēšana'
+            Repair = '{Toolkit\CompanyName} - Lietotņu Labošana'
+            Uninstall = '{Toolkit\CompanyName} - Lietotņu Atinstalēšana'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Šis logs aizvērsies automātiski, kad būs pabeigta atinstalēšana.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Lietotņu Instalēšana'
-            Repair = 'PSAppDeployToolkit - Lietotņu Labošana'
-            Uninstall = 'PSAppDeployToolkit - Lietotņu Atinstalēšana'
+            Install = '{Toolkit\CompanyName} - Lietotņu Instalēšana'
+            Repair = '{Toolkit\CompanyName} - Lietotņu Labošana'
+            Uninstall = '{Toolkit\CompanyName} - Lietotņu Atinstalēšana'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Atlikušais laiks:'
         Title = 'Nepieciešams restartēt datoru'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Lietotņu Instalēšana'
-            Repair = 'PSAppDeployToolkit - Lietotņu Labošana'
-            Uninstall = 'PSAppDeployToolkit - Lietotņu Atinstalēšana'
+            Install = '{Toolkit\CompanyName} - Lietotņu Instalēšana'
+            Repair = '{Toolkit\CompanyName} - Lietotņu Labošana'
+            Uninstall = '{Toolkit\CompanyName} - Lietotņu Atinstalēšana'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Atlikt'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Lietotņu Instalēšana'
-                Repair = 'PSAppDeployToolkit - Lietotņu Labošana'
-                Uninstall = 'PSAppDeployToolkit - Lietotņu Atinstalēšana'
+                Install = '{Toolkit\CompanyName} - Lietotņu Instalēšana'
+                Repair = '{Toolkit\CompanyName} - Lietotņu Labošana'
+                Uninstall = '{Toolkit\CompanyName} - Lietotņu Atinstalēšana'
             }
         }
         CustomMessage = ''

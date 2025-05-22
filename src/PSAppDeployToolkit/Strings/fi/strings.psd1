@@ -33,9 +33,9 @@
             Uninstall = 'Sovelluksen käynnistäminen on tilapäisesti estetty, jotta asennuksen poisto voidaan suorittaa loppuun.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Sovelluksen Asennus'
-            Repair = 'PSAppDeployToolkit - Sovelluksen Korjaus'
-            Uninstall = 'PSAppDeployToolkit - Sovelluksen Poisto'
+            Install = '{Toolkit\CompanyName} - Sovelluksen Asennus'
+            Repair = '{Toolkit\CompanyName} - Sovelluksen Korjaus'
+            Uninstall = '{Toolkit\CompanyName} - Sovelluksen Poisto'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Sovelluksen Asennus'
-            Repair = 'PSAppDeployToolkit - Sovelluksen Korjaus'
-            Uninstall = 'PSAppDeployToolkit - Sovelluksen Poisto'
+            Install = '{Toolkit\CompanyName} - Sovelluksen Asennus'
+            Repair = '{Toolkit\CompanyName} - Sovelluksen Korjaus'
+            Uninstall = '{Toolkit\CompanyName} - Sovelluksen Poisto'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Tämä ikkuna sulkeutuu automaattisesti, kun asennuksen poisto on valmis.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Sovelluksen Asennus'
-            Repair = 'PSAppDeployToolkit - Sovelluksen Korjaus'
-            Uninstall = 'PSAppDeployToolkit - Sovelluksen Poisto'
+            Install = '{Toolkit\CompanyName} - Sovelluksen Asennus'
+            Repair = '{Toolkit\CompanyName} - Sovelluksen Korjaus'
+            Uninstall = '{Toolkit\CompanyName} - Sovelluksen Poisto'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Jäljellä oleva aika:'
         Title = 'Uudelleenkäynnistys Vaaditaan'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Sovelluksen Asennus'
-            Repair = 'PSAppDeployToolkit - Sovelluksen Korjaus'
-            Uninstall = 'PSAppDeployToolkit - Sovelluksen Poisto'
+            Install = '{Toolkit\CompanyName} - Sovelluksen Asennus'
+            Repair = '{Toolkit\CompanyName} - Sovelluksen Korjaus'
+            Uninstall = '{Toolkit\CompanyName} - Sovelluksen Poisto'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Lykkää'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Sovelluksen Asennus'
-                Repair = 'PSAppDeployToolkit - Sovelluksen Korjaus'
-                Uninstall = 'PSAppDeployToolkit - Sovelluksen Poisto'
+                Install = '{Toolkit\CompanyName} - Sovelluksen Asennus'
+                Repair = '{Toolkit\CompanyName} - Sovelluksen Korjaus'
+                Uninstall = '{Toolkit\CompanyName} - Sovelluksen Poisto'
             }
         }
         CustomMessage = ''

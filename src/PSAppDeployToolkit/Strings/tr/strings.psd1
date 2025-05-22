@@ -33,9 +33,9 @@
             Uninstall = 'Bir kaldırma işleminin tamamlanabilmesi için bu uygulamanın başlatılması geçici olarak engellendi.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Uygulama Yükleme'
-            Repair = 'PSAppDeployToolkit - Uygulama Onarımı'
-            Uninstall = 'PSAppDeployToolkit - Uygulama Kaldırma'
+            Install = '{Toolkit\CompanyName} - Uygulama Yükleme'
+            Repair = '{Toolkit\CompanyName} - Uygulama Onarımı'
+            Uninstall = '{Toolkit\CompanyName} - Uygulama Kaldırma'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Uygulama Yükleme'
-            Repair = 'PSAppDeployToolkit - Uygulama Onarımı'
-            Uninstall = 'PSAppDeployToolkit - Uygulama Kaldırma'
+            Install = '{Toolkit\CompanyName} - Uygulama Yükleme'
+            Repair = '{Toolkit\CompanyName} - Uygulama Onarımı'
+            Uninstall = '{Toolkit\CompanyName} - Uygulama Kaldırma'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Kaldırma işlemi tamamlandığında bu pencere otomatik olarak kapanacaktır.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Uygulama Yükleme'
-            Repair = 'PSAppDeployToolkit - Uygulama Onarımı'
-            Uninstall = 'PSAppDeployToolkit - Uygulama Kaldırma'
+            Install = '{Toolkit\CompanyName} - Uygulama Yükleme'
+            Repair = '{Toolkit\CompanyName} - Uygulama Onarımı'
+            Uninstall = '{Toolkit\CompanyName} - Uygulama Kaldırma'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Kalan süre:'
         Title = 'Yeniden Başlatma Gerekli'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Uygulama Yükleme'
-            Repair = 'PSAppDeployToolkit - Uygulama Onarımı'
-            Uninstall = 'PSAppDeployToolkit - Uygulama Kaldırma'
+            Install = '{Toolkit\CompanyName} - Uygulama Yükleme'
+            Repair = '{Toolkit\CompanyName} - Uygulama Onarımı'
+            Uninstall = '{Toolkit\CompanyName} - Uygulama Kaldırma'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Ertele'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Uygulama Yükleme'
-                Repair = 'PSAppDeployToolkit - Uygulama Onarımı'
-                Uninstall = 'PSAppDeployToolkit - Uygulama Kaldırma'
+                Install = '{Toolkit\CompanyName} - Uygulama Yükleme'
+                Repair = '{Toolkit\CompanyName} - Uygulama Onarımı'
+                Uninstall = '{Toolkit\CompanyName} - Uygulama Kaldırma'
             }
         }
         CustomMessage = ''

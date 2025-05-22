@@ -33,9 +33,9 @@
             Uninstall = '啟動此應用程式已暫時受阻，以便完成卸載作業。'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - 應用程式安裝'
-            Repair = 'PSAppDeployToolkit - 應用程式維修'
-            Uninstall = 'PSAppDeployToolkit - 應用程式卸載'
+            Install = '{Toolkit\CompanyName} - 應用程式安裝'
+            Repair = '{Toolkit\CompanyName} - 應用程式維修'
+            Uninstall = '{Toolkit\CompanyName} - 應用程式卸載'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - 應用程式安裝'
-            Repair = 'PSAppDeployToolkit - 應用程式維修'
-            Uninstall = 'PSAppDeployToolkit - 應用程式卸載'
+            Install = '{Toolkit\CompanyName} - 應用程式安裝'
+            Repair = '{Toolkit\CompanyName} - 應用程式維修'
+            Uninstall = '{Toolkit\CompanyName} - 應用程式卸載'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = '卸載完成後，此視窗將自動關閉。'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - 應用程式安裝'
-            Repair = 'PSAppDeployToolkit - 應用程式維修'
-            Uninstall = 'PSAppDeployToolkit - 應用程式卸載'
+            Install = '{Toolkit\CompanyName} - 應用程式安裝'
+            Repair = '{Toolkit\CompanyName} - 應用程式維修'
+            Uninstall = '{Toolkit\CompanyName} - 應用程式卸載'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = '剩餘時間：'
         Title = '需要重新啟動'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - 應用程式安裝'
-            Repair = 'PSAppDeployToolkit - 應用程式維修'
-            Uninstall = 'PSAppDeployToolkit - 應用程式卸載'
+            Install = '{Toolkit\CompanyName} - 應用程式安裝'
+            Repair = '{Toolkit\CompanyName} - 應用程式維修'
+            Uninstall = '{Toolkit\CompanyName} - 應用程式卸載'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = '延遲'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - 應用程式安裝'
-                Repair = 'PSAppDeployToolkit - 應用程式維修'
-                Uninstall = 'PSAppDeployToolkit - 應用程式卸載'
+                Install = '{Toolkit\CompanyName} - 應用程式安裝'
+                Repair = '{Toolkit\CompanyName} - 應用程式維修'
+                Uninstall = '{Toolkit\CompanyName} - 應用程式卸載'
             }
         }
         CustomMessage = ''

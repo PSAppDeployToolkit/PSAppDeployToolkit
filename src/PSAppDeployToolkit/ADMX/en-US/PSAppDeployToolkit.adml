@@ -29,6 +29,8 @@
 			<string id="Toolkit_Category">Toolkit</string>
 			<string id="CachePath_Display">CachePath</string>
 			<string id="CachePath_Explain">Specify the path for the cache folder.</string>
+			<string id="CompanyName_Display">CompanyName</string>
+			<string id="CompanyName_Explain">The name to show by default for dialog subtitles, balloon notifications, etc.</string>
 			<string id="CompressLogs_Display">CompressLogs</string>
 			<string id="CompressLogs_Explain">Specify if the log files should be bundled together in a compressed zip file.</string>
 			<string id="FileCopyMode_Display">FileCopyMode</string>
@@ -70,8 +72,6 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<string id="UI_Category">UI</string>
 			<string id="BalloonNotifications_Display">BalloonNotifications</string>
 			<string id="BalloonNotifications_Explain">Used to turn automatic balloon notifications on or off.</string>
-			<string id="BalloonTitle_Display">BalloonTitle</string>
-			<string id="BalloonTitle_Explain">The name to show by default for all balloon notifications.</string>
 			<string id="FluentAccentColor_Display">FluentAccentColor</string>
 			<string id="FluentAccentColor_Explain">Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.</string>
 			<string id="DialogStyle_Display">DialogStyle</string>
@@ -171,6 +171,11 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 					<label>CachePath</label>
 				</textBox>
 			</presentation>
+			<presentation id="CompanyName">
+				<textBox refId="CompanyName">
+					<label>CompanyName</label>
+				</textBox>
+			</presentation>
 			<presentation id="FileCopyMode">
 				<dropdownList refId="FileCopyMode" noSort="true" defaultItem="0">FileCopyMode</dropdownList>
 			</presentation>
@@ -211,11 +216,6 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<presentation id="TempPathNoAdminRights">
 				<textBox refId="TempPathNoAdminRights">
 					<label>TempPathNoAdminRights</label>
-				</textBox>
-			</presentation>
-			<presentation id="BalloonTitle">
-				<textBox refId="BalloonTitle">
-					<label>BalloonTitle</label>
 				</textBox>
 			</presentation>
 			<presentation id="DefaultExitCode">

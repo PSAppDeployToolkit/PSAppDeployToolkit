@@ -33,9 +33,9 @@
             Uninstall = 'Start af dette program er midlertidigt blokeret, så en afinstallationsoperation kan gennemføres.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Installation af App'
-            Repair = 'PSAppDeployToolkit - Reparation af App'
-            Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+            Install = '{Toolkit\CompanyName} - Installation af App'
+            Repair = '{Toolkit\CompanyName} - Reparation af App'
+            Uninstall = '{Toolkit\CompanyName} - Afinstallation af App'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Installation af App'
-            Repair = 'PSAppDeployToolkit - Reparation af App'
-            Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+            Install = '{Toolkit\CompanyName} - Installation af App'
+            Repair = '{Toolkit\CompanyName} - Reparation af App'
+            Uninstall = '{Toolkit\CompanyName} - Afinstallation af App'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Dette vindue lukkes automatisk, når afinstallationen er færdig.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Installation af App'
-            Repair = 'PSAppDeployToolkit - Reparation af App'
-            Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+            Install = '{Toolkit\CompanyName} - Installation af App'
+            Repair = '{Toolkit\CompanyName} - Reparation af App'
+            Uninstall = '{Toolkit\CompanyName} - Afinstallation af App'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Resterende tid:'
         Title = 'Genstart påkrævet'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Installation af App'
-            Repair = 'PSAppDeployToolkit - Reparation af App'
-            Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+            Install = '{Toolkit\CompanyName} - Installation af App'
+            Repair = '{Toolkit\CompanyName} - Reparation af App'
+            Uninstall = '{Toolkit\CompanyName} - Afinstallation af App'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Udskyd'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Installation af App'
-                Repair = 'PSAppDeployToolkit - Reparation af App'
-                Uninstall = 'PSAppDeployToolkit - Afinstallation af App'
+                Install = '{Toolkit\CompanyName} - Installation af App'
+                Repair = '{Toolkit\CompanyName} - Reparation af App'
+                Uninstall = '{Toolkit\CompanyName} - Afinstallation af App'
             }
         }
         CustomMessage = ''

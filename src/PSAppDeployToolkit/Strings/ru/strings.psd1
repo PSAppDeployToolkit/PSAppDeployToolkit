@@ -33,9 +33,9 @@
             Uninstall = 'Запуск этого приложения был временно заблокирован, чтобы операция деинсталляции могла завершиться.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Установка приложений'
-            Repair = 'PSAppDeployToolkit - Восстановление приложения'
-            Uninstall = 'PSAppDeployToolkit - Деинсталляция приложений'
+            Install = '{Toolkit\CompanyName} - Установка приложений'
+            Repair = '{Toolkit\CompanyName} - Восстановление приложения'
+            Uninstall = '{Toolkit\CompanyName} - Деинсталляция приложений'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Установка приложений'
-            Repair = 'PSAppDeployToolkit - Восстановление приложений'
-            Uninstall = 'PSAppDeployToolkit - Деинсталляция приложений'
+            Install = '{Toolkit\CompanyName} - Установка приложений'
+            Repair = '{Toolkit\CompanyName} - Восстановление приложений'
+            Uninstall = '{Toolkit\CompanyName} - Деинсталляция приложений'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Это окно закроется автоматически после завершения деинсталляции.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - установка приложений'
-            Repair = 'PSAppDeployToolkit - Ремонт приложений'
-            Uninstall = 'PSAppDeployToolkit - Деинсталляция приложений'
+            Install = '{Toolkit\CompanyName} - установка приложений'
+            Repair = '{Toolkit\CompanyName} - Ремонт приложений'
+            Uninstall = '{Toolkit\CompanyName} - Деинсталляция приложений'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Осталось времени:'
         Title = 'Требуется перезагрузка'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Установка приложений'
-            Repair = 'PSAppDeployToolkit - Восстановление приложений'
-            Uninstall = 'PSAppDeployToolkit - Деинсталляция приложений'
+            Install = '{Toolkit\CompanyName} - Установка приложений'
+            Repair = '{Toolkit\CompanyName} - Восстановление приложений'
+            Uninstall = '{Toolkit\CompanyName} - Деинсталляция приложений'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Отложить'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Установка приложений'
-                Repair = 'PSAppDeployToolkit - Восстановление приложений'
-                Uninstall = 'PSAppDeployToolkit - Деинсталляция приложений'
+                Install = '{Toolkit\CompanyName} - Установка приложений'
+                Repair = '{Toolkit\CompanyName} - Восстановление приложений'
+                Uninstall = '{Toolkit\CompanyName} - Деинсталляция приложений'
             }
         }
         CustomMessage = ''

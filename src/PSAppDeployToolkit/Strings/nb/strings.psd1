@@ -33,9 +33,9 @@
             Uninstall = 'Start av dette programmet har blitt midlertidig blokkert slik at en avinstallasjonsoperasjon kan fullføres.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Appinstallasjon'
-            Repair = 'PSAppDeployToolkit - Appreparasjon'
-            Uninstall = 'PSAppDeployToolkit - Avinstallasjon av app'
+            Install = '{Toolkit\CompanyName} - Appinstallasjon'
+            Repair = '{Toolkit\CompanyName} - Appreparasjon'
+            Uninstall = '{Toolkit\CompanyName} - Avinstallasjon av app'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Appinstallasjon'
-            Repair = 'PSAppDeployToolkit - Appreparasjon'
-            Uninstall = 'PSAppDeployToolkit - Avinstallasjon av app'
+            Install = '{Toolkit\CompanyName} - Appinstallasjon'
+            Repair = '{Toolkit\CompanyName} - Appreparasjon'
+            Uninstall = '{Toolkit\CompanyName} - Avinstallasjon av app'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Dette vinduet lukkes automatisk når avinstallasjonen er fullført.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Appinstallasjon'
-            Repair = 'PSAppDeployToolkit - Appreparasjon'
-            Uninstall = 'PSAppDeployToolkit - Avinstallasjon av app'
+            Install = '{Toolkit\CompanyName} - Appinstallasjon'
+            Repair = '{Toolkit\CompanyName} - Appreparasjon'
+            Uninstall = '{Toolkit\CompanyName} - Avinstallasjon av app'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Gjenværende tid:'
         Title = 'Omstart påkrevd'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Appinstallasjon'
-            Repair = 'PSAppDeployToolkit - Appreparasjon'
-            Uninstall = 'PSAppDeployToolkit - Avinstallasjon av app'
+            Install = '{Toolkit\CompanyName} - Appinstallasjon'
+            Repair = '{Toolkit\CompanyName} - Appreparasjon'
+            Uninstall = '{Toolkit\CompanyName} - Avinstallasjon av app'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Utsett'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Appinstallasjon'
-                Repair = 'PSAppDeployToolkit - Appreparasjon'
-                Uninstall = 'PSAppDeployToolkit - Avinstallasjon av app'
+                Install = '{Toolkit\CompanyName} - Appinstallasjon'
+                Repair = '{Toolkit\CompanyName} - Appreparasjon'
+                Uninstall = '{Toolkit\CompanyName} - Avinstallasjon av app'
             }
         }
         CustomMessage = ''

@@ -34,6 +34,9 @@
         # Specify the path for the cache folder.
         CachePath = '$envProgramData\SoftwareCache'
 
+        # The name to show by default for dialog subtitles, balloon notifications, etc.
+        CompanyName = 'PSAppDeployToolkit'
+
         # Specify if the log files should be bundled together in a compressed zip file.
         CompressLogs = $false
 
@@ -96,9 +99,6 @@
     UI = @{
         # Used to turn automatic balloon notifications on or off.
         BalloonNotifications = $true
-
-        # The name to show by default for all balloon notifications.
-        BalloonTitle = 'PSAppDeployToolkit'
 
         # Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.
         DialogStyle = 'Fluent'

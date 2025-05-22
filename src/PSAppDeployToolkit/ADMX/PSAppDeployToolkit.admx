@@ -95,6 +95,13 @@
 				<text id="CachePath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="CachePath" required="true" expandable="true" />
 			</elements>
 		</policy>
+		<policy name="CompanyName" class="Machine" displayName="$(string.CompanyName_Display)" explainText="$(string.CompanyName_Explain)" presentation="$(presentation.CompanyName)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="CompanyName" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="CompanyName" required="true" />
+			</elements>
+		</policy>
 		<policy name="CompressLogs" class="Machine" displayName="$(string.CompressLogs_Display)" explainText="$(string.CompressLogs_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="CompressLogs">
 			<parentCategory ref="Toolkit" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
@@ -276,13 +283,6 @@
 			<disabledValue>
 				<disabled />
 			</disabledValue>
-		</policy>
-		<policy name="BalloonTitle" class="Machine" displayName="$(string.BalloonTitle_Display)" explainText="$(string.BalloonTitle_Explain)" presentation="$(presentation.BalloonTitle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
-			<parentCategory ref="UI" />
-			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
-			<elements>
-				<text id="BalloonTitle" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="BalloonTitle" required="true" />
-			</elements>
 		</policy>
 		<policy name="FluentAccentColor" class="Machine" displayName="$(string.FluentAccentColor_Display)" explainText="$(string.FluentAccentColor_Explain)" presentation="$(presentation.FluentAccentColor)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
 			<parentCategory ref="UI" />

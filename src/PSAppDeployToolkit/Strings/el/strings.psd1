@@ -33,9 +33,9 @@
             Uninstall = 'Η εκκίνηση αυτής της εφαρμογής έχει μπλοκαριστεί προσωρινά ώστε να μπορεί να ολοκληρωθεί μια λειτουργία απεγκατάστασης.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-            Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'
-            Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+            Install = '{Toolkit\CompanyName} - Εγκατάσταση εφαρμογών'
+            Repair = '{Toolkit\CompanyName} - Επισκευή εφαρμογής'
+            Uninstall = '{Toolkit\CompanyName} - Απεγκατάσταση εφαρμογών'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-            Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογών'
-            Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+            Install = '{Toolkit\CompanyName} - Εγκατάσταση εφαρμογών'
+            Repair = '{Toolkit\CompanyName} - Επισκευή εφαρμογών'
+            Uninstall = '{Toolkit\CompanyName} - Απεγκατάσταση εφαρμογών'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Αυτό το παράθυρο θα κλείσει αυτόματα όταν ολοκληρωθεί η απεγκατάσταση.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-            Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'
-            Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+            Install = '{Toolkit\CompanyName} - Εγκατάσταση εφαρμογών'
+            Repair = '{Toolkit\CompanyName} - Επισκευή εφαρμογής'
+            Uninstall = '{Toolkit\CompanyName} - Απεγκατάσταση εφαρμογών'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Υπολειπόμενος χρόνος:'
         Title = 'Απαιτείται επανεκκίνηση'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-            Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'
-            Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+            Install = '{Toolkit\CompanyName} - Εγκατάσταση εφαρμογών'
+            Repair = '{Toolkit\CompanyName} - Επισκευή εφαρμογής'
+            Uninstall = '{Toolkit\CompanyName} - Απεγκατάσταση εφαρμογών'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Αναβολή'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Εγκατάσταση εφαρμογών'
-                Repair = 'PSAppDeployToolkit - Επισκευή εφαρμογής'
-                Uninstall = 'PSAppDeployToolkit - Απεγκατάσταση εφαρμογών'
+                Install = '{Toolkit\CompanyName} - Εγκατάσταση εφαρμογών'
+                Repair = '{Toolkit\CompanyName} - Επισκευή εφαρμογής'
+                Uninstall = '{Toolkit\CompanyName} - Απεγκατάσταση εφαρμογών'
             }
         }
         CustomMessage = ''

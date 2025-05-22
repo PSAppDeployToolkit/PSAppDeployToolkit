@@ -144,7 +144,7 @@ function Show-ADTBalloonTip
 
                 # Display the balloon tip via the dialog manager, it'll handle lifetime and disposal for us.
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                [PSADT.UserInterface.DialogManager]::ShowBalloonTip($adtConfig.UI.BalloonTitle, $adtConfig.Assets.Logo, $PSBoundParameters.BalloonTipTitle, $BalloonTipText, $BalloonTipIcon)
+                [PSADT.UserInterface.DialogManager]::ShowBalloonTip($adtConfig.Toolkit.CompanyName, $adtConfig.Assets.Logo, $PSBoundParameters.BalloonTipTitle, $BalloonTipText, $BalloonTipIcon)
             }
             catch
             {

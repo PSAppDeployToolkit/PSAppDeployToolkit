@@ -46,9 +46,9 @@
 
         # The subtitle underneath the Install Title, e.g. Company Name. Only for Fluent dialogs.
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installation'
-            Repair = 'PSAppDeployToolkit - App Repair'
-            Uninstall = 'PSAppDeployToolkit - App Uninstallation'
+            Install = '{Toolkit\CompanyName} - App Installation'
+            Repair = '{Toolkit\CompanyName} - App Repair'
+            Uninstall = '{Toolkit\CompanyName} - App Uninstallation'
         }
     }
 
@@ -64,9 +64,9 @@
     InstallationPrompt = @{
         # The subtitle underneath the Install Title, e.g. Company Name. Only for Fluent dialogs.
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installation'
-            Repair = 'PSAppDeployToolkit - App Repair'
-            Uninstall = 'PSAppDeployToolkit - App Uninstallation'
+            Install = '{Toolkit\CompanyName} - App Installation'
+            Repair = '{Toolkit\CompanyName} - App Repair'
+            Uninstall = '{Toolkit\CompanyName} - App Uninstallation'
         }
     }
 
@@ -87,9 +87,9 @@
 
         # The subtitle underneath the Install Title, e.g. Company Name. Only for Fluent dialogs.
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installation'
-            Repair = 'PSAppDeployToolkit - App Repair'
-            Uninstall = 'PSAppDeployToolkit - App Uninstallation'
+            Install = '{Toolkit\CompanyName} - App Installation'
+            Repair = '{Toolkit\CompanyName} - App Repair'
+            Uninstall = '{Toolkit\CompanyName} - App Uninstallation'
         }
     }
 
@@ -124,9 +124,9 @@
 
         # The subtitle underneath the Install Title, e.g. Company Name. Only for Fluent dialogs.
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installation'
-            Repair = 'PSAppDeployToolkit - App Repair'
-            Uninstall = 'PSAppDeployToolkit - App Uninstallation'
+            Install = '{Toolkit\CompanyName} - App Installation'
+            Repair = '{Toolkit\CompanyName} - App Repair'
+            Uninstall = '{Toolkit\CompanyName} - App Uninstallation'
         }
     }
 
@@ -224,9 +224,9 @@
 
             # The subtitle underneath the Install Title, e.g. Company Name.
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - App Installation'
-                Repair = 'PSAppDeployToolkit - App Repair'
-                Uninstall = 'PSAppDeployToolkit - App Uninstallation'
+                Install = '{Toolkit\CompanyName} - App Installation'
+                Repair = '{Toolkit\CompanyName} - App Repair'
+                Uninstall = '{Toolkit\CompanyName} - App Uninstallation'
             }
         }
 

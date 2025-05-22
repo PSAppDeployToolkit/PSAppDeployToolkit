@@ -33,9 +33,9 @@
             Uninstall = 'A inicialização deste aplicativo foi temporariamente bloqueada para que uma operação de desinstalação possa ser concluída.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Instalação do Aplicativo'
-            Repair = 'PSAppDeployToolkit - Reparo do Aplicativo'
-            Uninstall = 'PSAppDeployToolkit - Desinstalação do Aplicativo'
+            Install = '{Toolkit\CompanyName} - Instalação do Aplicativo'
+            Repair = '{Toolkit\CompanyName} - Reparo do Aplicativo'
+            Uninstall = '{Toolkit\CompanyName} - Desinstalação do Aplicativo'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Instalação do Aplicativo'
-            Repair = 'PSAppDeployToolkit - Reparo do Aplicativo'
-            Uninstall = 'PSAppDeployToolkit - Desinstalação do Aplicativo'
+            Install = '{Toolkit\CompanyName} - Instalação do Aplicativo'
+            Repair = '{Toolkit\CompanyName} - Reparo do Aplicativo'
+            Uninstall = '{Toolkit\CompanyName} - Desinstalação do Aplicativo'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Esta janela se fechará automaticamente quando a desinstalação for concluída.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Instalação do Aplicativo'
-            Repair = 'PSAppDeployToolkit - Reparo do Aplicativo'
-            Uninstall = 'PSAppDeployToolkit - Desinstalação do Aplicativo'
+            Install = '{Toolkit\CompanyName} - Instalação do Aplicativo'
+            Repair = '{Toolkit\CompanyName} - Reparo do Aplicativo'
+            Uninstall = '{Toolkit\CompanyName} - Desinstalação do Aplicativo'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Tempo restante:'
         Title = 'Reiniciar Necessário'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Instalação do Aplicativo'
-            Repair = 'PSAppDeployToolkit - Reparo do Aplicativo'
-            Uninstall = 'PSAppDeployToolkit - Desinstalação do Aplicativo'
+            Install = '{Toolkit\CompanyName} - Instalação do Aplicativo'
+            Repair = '{Toolkit\CompanyName} - Reparo do Aplicativo'
+            Uninstall = '{Toolkit\CompanyName} - Desinstalação do Aplicativo'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Deferir'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Instalação do Aplicativo'
-                Repair = 'PSAppDeployToolkit - Reparo do Aplicativo'
-                Uninstall = 'PSAppDeployToolkit - Desinstalação do Aplicativo'
+                Install = '{Toolkit\CompanyName} - Instalação do Aplicativo'
+                Repair = '{Toolkit\CompanyName} - Reparo do Aplicativo'
+                Uninstall = '{Toolkit\CompanyName} - Desinstalação do Aplicativo'
             }
         }
         CustomMessage = ''

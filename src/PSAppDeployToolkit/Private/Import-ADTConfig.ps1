@@ -75,13 +75,13 @@ function Private:Import-ADTConfig
         # Go recursive if we've received a hashtable, otherwise just update the values.
         foreach ($section in $($_.GetEnumerator()))
         {
-            if ($section.Value -is [System.Collections.Hashtable])
-            {
-                $section.Value | & $MyInvocation.MyCommand
-            }
-            elseif ($section.Value -is [System.String])
+            if ($section.Value -is [System.String])
             {
                 $_.($section.Key) = $ExecutionContext.InvokeCommand.ExpandString($section.Value)
+            }
+            elseif ($section.Value -is [System.Collections.Hashtable])
+            {
+                $section.Value | & $MyInvocation.MyCommand
             }
         }
     }

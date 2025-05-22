@@ -33,9 +33,9 @@
             Uninstall = 'הפעלת אפליקציה זו נחסמה באופן זמני כדי שניתן יהיה להשלים פעולת הסרת ההתקנה.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - התקנת אפליקציה'
-            Repair = 'PSAppDeployToolkit - תיקון אפליקציות'
-            Uninstall = 'PSAppDeployToolkit - הסרת אפליקציה'
+            Install = '{Toolkit\CompanyName} - התקנת אפליקציה'
+            Repair = '{Toolkit\CompanyName} - תיקון אפליקציות'
+            Uninstall = '{Toolkit\CompanyName} - הסרת אפליקציה'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - התקנת אפליקציה'
-            Repair = 'PSAppDeployToolkit - תיקון אפליקציות'
-            Uninstall = 'PSAppDeployToolkit - הסרת אפליקציה'
+            Install = '{Toolkit\CompanyName} - התקנת אפליקציה'
+            Repair = '{Toolkit\CompanyName} - תיקון אפליקציות'
+            Uninstall = '{Toolkit\CompanyName} - הסרת אפליקציה'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'חלון זה ייסגר אוטומטית עם השלמת הסרת ההתקנה.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - התקנת אפליקציה'
-            Repair = 'PSAppDeployToolkit - תיקון אפליקציות'
-            Uninstall = 'PSAppDeployToolkit - הסרת אפליקציה'
+            Install = '{Toolkit\CompanyName} - התקנת אפליקציה'
+            Repair = '{Toolkit\CompanyName} - תיקון אפליקציות'
+            Uninstall = '{Toolkit\CompanyName} - הסרת אפליקציה'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'זמן שנותר:'
         Title = 'נדרשת הפעלה מחדש'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - התקנת אפליקציה'
-            Repair = 'PSAppDeployToolkit - תיקון אפליקציות'
-            Uninstall = 'PSAppDeployToolkit - הסרת אפליקציה'
+            Install = '{Toolkit\CompanyName} - התקנת אפליקציה'
+            Repair = '{Toolkit\CompanyName} - תיקון אפליקציות'
+            Uninstall = '{Toolkit\CompanyName} - הסרת אפליקציה'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'לִדחוֹת'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - התקנת אפליקציה'
-                Repair = 'PSAppDeployToolkit - תיקון אפליקציות'
-                Uninstall = 'PSAppDeployToolkit - הסרת אפליקציה'
+                Install = '{Toolkit\CompanyName} - התקנת אפליקציה'
+                Repair = '{Toolkit\CompanyName} - תיקון אפליקציות'
+                Uninstall = '{Toolkit\CompanyName} - הסרת אפליקציה'
             }
         }
         CustomMessage = ''

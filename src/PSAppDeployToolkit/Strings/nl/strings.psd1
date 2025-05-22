@@ -33,9 +33,9 @@
             Uninstall = "Het starten van deze applicatie is tijdelijk geblokkeerd zodat een de-installatie kan worden uitgevoerd."
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installatie'
-            Repair = 'PSAppDeployToolkit - App Reparatie'
-            Uninstall = 'PSAppDeployToolkit - App De-installatie'
+            Install = '{Toolkit\CompanyName} - App Installatie'
+            Repair = '{Toolkit\CompanyName} - App Reparatie'
+            Uninstall = '{Toolkit\CompanyName} - App De-installatie'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installatie'
-            Repair = 'PSAppDeployToolkit - App Reparatie'
-            Uninstall = 'PSAppDeployToolkit - App De-installatie'
+            Install = '{Toolkit\CompanyName} - App Installatie'
+            Repair = '{Toolkit\CompanyName} - App Reparatie'
+            Uninstall = '{Toolkit\CompanyName} - App De-installatie'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Dit venster wordt automatisch gesloten als de de-installatie voltooid is.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installatie'
-            Repair = 'PSAppDeployToolkit - App Reparatie'
-            Uninstall = 'PSAppDeployToolkit - App De-installatie'
+            Install = '{Toolkit\CompanyName} - App Installatie'
+            Repair = '{Toolkit\CompanyName} - App Reparatie'
+            Uninstall = '{Toolkit\CompanyName} - App De-installatie'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'Resterende tijd:'
         Title = 'Opnieuw opstarten vereist'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - App Installatie'
-            Repair = 'PSAppDeployToolkit - App Reparatie'
-            Uninstall = 'PSAppDeployToolkit - App De-installatie'
+            Install = '{Toolkit\CompanyName} - App Installatie'
+            Repair = '{Toolkit\CompanyName} - App Reparatie'
+            Uninstall = '{Toolkit\CompanyName} - App De-installatie'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Uitstellen'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - App Installatie'
-                Repair = 'PSAppDeployToolkit - App Reparatie'
-                Uninstall = 'PSAppDeployToolkit - App De-installatie'
+                Install = '{Toolkit\CompanyName} - App Installatie'
+                Repair = '{Toolkit\CompanyName} - App Reparatie'
+                Uninstall = '{Toolkit\CompanyName} - App De-installatie'
             }
         }
         CustomMessage = ''

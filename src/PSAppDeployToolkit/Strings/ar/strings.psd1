@@ -33,9 +33,9 @@
             Uninstall = 'تم حظر تشغيل هذا التطبيق مؤقتاً حتى تكتمل عملية إلغاء التثبيت.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - تثبيت التطبيق'
-            Repair = 'PSAppDeployToolkit - إصلاح التطبيق'
-            Uninstall = 'PSAppDeployToolkit - إلغاء تثبيت التطبيق'
+            Install = '{Toolkit\CompanyName} - تثبيت التطبيق'
+            Repair = '{Toolkit\CompanyName} - إصلاح التطبيق'
+            Uninstall = '{Toolkit\CompanyName} - إلغاء تثبيت التطبيق'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - تثبيت التطبيق'
-            Repair = 'PSAppDeployToolkit - إصلاح التطبيق'
-            Uninstall = 'PSAppDeployToolkit - إلغاء تثبيت التطبيق'
+            Install = '{Toolkit\CompanyName} - تثبيت التطبيق'
+            Repair = '{Toolkit\CompanyName} - إصلاح التطبيق'
+            Uninstall = '{Toolkit\CompanyName} - إلغاء تثبيت التطبيق'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'سيتم إغلاق هذه النافذة تلقائياً عند اكتمال إلغاء التثبيت.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - تثبيت التطبيق'
-            Repair = 'PSAppDeployToolkit - إصلاح التطبيق'
-            Uninstall = 'PSAppDeployToolkit - إلغاء تثبيت التطبيق'
+            Install = '{Toolkit\CompanyName} - تثبيت التطبيق'
+            Repair = '{Toolkit\CompanyName} - إصلاح التطبيق'
+            Uninstall = '{Toolkit\CompanyName} - إلغاء تثبيت التطبيق'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'الوقت المتبقي:'
         Title = 'إعادة التشغيل مطلوبة'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - تثبيت التطبيق'
-            Repair = 'PSAppDeployToolkit - إصلاح التطبيق'
-            Uninstall = 'PSAppDeployToolkit - إلغاء تثبيت التطبيق'
+            Install = '{Toolkit\CompanyName} - تثبيت التطبيق'
+            Repair = '{Toolkit\CompanyName} - إصلاح التطبيق'
+            Uninstall = '{Toolkit\CompanyName} - إلغاء تثبيت التطبيق'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'تأجيل'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - تثبيت التطبيق'
-                Repair = 'PSAppDeployToolkit - إصلاح التطبيق'
-                Uninstall = 'PSAppDeployToolkit - إلغاء تثبيت التطبيق'
+                Install = '{Toolkit\CompanyName} - تثبيت التطبيق'
+                Repair = '{Toolkit\CompanyName} - إصلاح التطبيق'
+                Uninstall = '{Toolkit\CompanyName} - إلغاء تثبيت التطبيق'
             }
         }
         CustomMessage = ''

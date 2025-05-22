@@ -133,7 +133,7 @@ function Initialize-ADTModule
                 $Script:ADT.Environment = New-ADTEnvironmentTable @PSBoundParameters
                 $Script:ADT.Config = Import-ADTConfig -BaseDirectory $Script:ADT.Directories.Config
                 $Script:ADT.Language = Get-ADTStringLanguage
-                $Script:ADT.Strings = Import-ADTModuleDataFile -BaseDirectory $Script:ADT.Directories.Strings -FileName strings.psd1 -UICulture $Script:ADT.Language -IgnorePolicy
+                $Script:ADT.Strings = Import-ADTStringTable -BaseDirectory $Script:ADT.Directories.Strings -UICulture $Script:ADT.Language
                 $Script:ADT.Sessions.Clear()
                 $Script:ADT.TerminalServerMode = $false
                 $Script:ADT.LastExitCode = 0

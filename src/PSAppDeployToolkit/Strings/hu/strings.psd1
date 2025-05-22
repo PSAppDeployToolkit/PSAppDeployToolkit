@@ -33,9 +33,9 @@
             Uninstall = 'Az alkalmazás indítása ideiglenesen blokkolva van, hogy egy eltávolítási művelet befejeződhessen.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
-            Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
-            Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+            Install = '{Toolkit\CompanyName} - Alkalmazás Telepítése'
+            Repair = '{Toolkit\CompanyName} - Alkalmazás Javítása'
+            Uninstall = '{Toolkit\CompanyName} - Alkalmazás Eltávolítása'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
-            Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
-            Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+            Install = '{Toolkit\CompanyName} - Alkalmazás Telepítése'
+            Repair = '{Toolkit\CompanyName} - Alkalmazás Javítása'
+            Uninstall = '{Toolkit\CompanyName} - Alkalmazás Eltávolítása'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'Ez az ablak automatikusan bezáródik, amikor az eltávolítás befejeződött.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
-            Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
-            Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+            Install = '{Toolkit\CompanyName} - Alkalmazás Telepítése'
+            Repair = '{Toolkit\CompanyName} - Alkalmazás Javítása'
+            Uninstall = '{Toolkit\CompanyName} - Alkalmazás Eltávolítása'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = 'A hátralévő idő:'
         Title = 'Újraindítás szükséges'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
-            Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
-            Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+            Install = '{Toolkit\CompanyName} - Alkalmazás Telepítése'
+            Repair = '{Toolkit\CompanyName} - Alkalmazás Javítása'
+            Uninstall = '{Toolkit\CompanyName} - Alkalmazás Eltávolítása'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = 'Halasztás'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - Alkalmazás Telepítése'
-                Repair = 'PSAppDeployToolkit - Alkalmazás Javítása'
-                Uninstall = 'PSAppDeployToolkit - Alkalmazás Eltávolítása'
+                Install = '{Toolkit\CompanyName} - Alkalmazás Telepítése'
+                Repair = '{Toolkit\CompanyName} - Alkalmazás Javítása'
+                Uninstall = '{Toolkit\CompanyName} - Alkalmazás Eltávolítása'
             }
         }
         CustomMessage = ''

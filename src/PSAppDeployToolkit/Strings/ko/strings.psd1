@@ -33,9 +33,9 @@
             Uninstall = '제거 작업을 완료하기 위해 이 애플리케이션 실행이 일시적으로 차단되었습니다.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - 앱 설치'
-            Repair = 'PSAppDeployToolkit - 앱 복구'
-            Uninstall = 'PSAppDeployToolkit - 앱 제거'
+            Install = '{Toolkit\CompanyName} - 앱 설치'
+            Repair = '{Toolkit\CompanyName} - 앱 복구'
+            Uninstall = '{Toolkit\CompanyName} - 앱 제거'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - 앱 설치'
-            Repair = 'PSAppDeployToolkit - 앱 복구'
-            Uninstall = 'PSAppDeployToolkit - 앱 제거'
+            Install = '{Toolkit\CompanyName} - 앱 설치'
+            Repair = '{Toolkit\CompanyName} - 앱 복구'
+            Uninstall = '{Toolkit\CompanyName} - 앱 제거'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = '제거가 완료되면 이 창이 자동으로 닫힙니다.'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - 앱 설치'
-            Repair = 'PSAppDeployToolkit - 앱 복구'
-            Uninstall = 'PSAppDeployToolkit - 앱 제거'
+            Install = '{Toolkit\CompanyName} - 앱 설치'
+            Repair = '{Toolkit\CompanyName} - 앱 복구'
+            Uninstall = '{Toolkit\CompanyName} - 앱 제거'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = '남은 시간:'
         Title = '재시작 필요'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - 앱 설치'
-            Repair = 'PSAppDeployToolkit - 앱 복구'
-            Uninstall = 'PSAppDeployToolkit - 앱 제거'
+            Install = '{Toolkit\CompanyName} - 앱 설치'
+            Repair = '{Toolkit\CompanyName} - 앱 복구'
+            Uninstall = '{Toolkit\CompanyName} - 앱 제거'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = '연기'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - 앱 설치'
-                Repair = 'PSAppDeployToolkit - 앱 복구'
-                Uninstall = 'PSAppDeployToolkit - 앱 제거'
+                Install = '{Toolkit\CompanyName} - 앱 설치'
+                Repair = '{Toolkit\CompanyName} - 앱 복구'
+                Uninstall = '{Toolkit\CompanyName} - 앱 제거'
             }
         }
         CustomMessage = ''

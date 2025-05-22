@@ -33,9 +33,9 @@
             Uninstall = 'アンインストール操作を完了させるため、このアプリケーションの起動が一時的にブロックされました。'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - アプリケーションのインストール'
-            Repair = 'PSAppDeployToolkit - アプリケーションの修復'
-            Uninstall = 'PSAppDeployToolkit - アプリケーションのアンインストール'
+            Install = '{Toolkit\CompanyName} - アプリケーションのインストール'
+            Repair = '{Toolkit\CompanyName} - アプリケーションの修復'
+            Uninstall = '{Toolkit\CompanyName} - アプリケーションのアンインストール'
         }
     }
     DiskSpaceText = @{
@@ -47,9 +47,9 @@
     }
     InstallationPrompt = @{
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - アプリケーションのインストール'
-            Repair = 'PSAppDeployToolkit - アプリケーションの修復'
-            Uninstall = 'PSAppDeployToolkit - アプリケーションのアンインストール'
+            Install = '{Toolkit\CompanyName} - アプリケーションのインストール'
+            Repair = '{Toolkit\CompanyName} - アプリケーションの修復'
+            Uninstall = '{Toolkit\CompanyName} - アプリケーションのアンインストール'
         }
     }
     ProgressPrompt = @{
@@ -64,9 +64,9 @@
             Uninstall = 'アンインストールが完了すると、このウィンドウは自動的に閉じられます。'
         }
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - アプリケーションのインストール'
-            Repair = 'PSAppDeployToolkit - アプリケーションの修復'
-            Uninstall = 'PSAppDeployToolkit - アプリケーションのアンインストール'
+            Install = '{Toolkit\CompanyName} - アプリケーションのインストール'
+            Repair = '{Toolkit\CompanyName} - アプリケーションの修復'
+            Uninstall = '{Toolkit\CompanyName} - アプリケーションのアンインストール'
         }
     }
     RestartPrompt = @{
@@ -83,9 +83,9 @@
         TimeRemaining = '残り時間:'
         Title = '再起動が必要です'
         Subtitle = @{
-            Install = 'PSAppDeployToolkit - アプリケーションのインストール'
-            Repair = 'PSAppDeployToolkit - アプリケーションの修復'
-            Uninstall = 'PSAppDeployToolkit - アプリケーションのアンインストール'
+            Install = '{Toolkit\CompanyName} - アプリケーションのインストール'
+            Repair = '{Toolkit\CompanyName} - アプリケーションの修復'
+            Uninstall = '{Toolkit\CompanyName} - アプリケーションのアンインストール'
         }
     }
     CloseAppsPrompt = @{
@@ -141,9 +141,9 @@
             }
             ButtonRightText = '延期'
             Subtitle = @{
-                Install = 'PSAppDeployToolkit - アプリのインストール'
-                Repair = 'PSAppDeployToolkit - アプリケーションの修復'
-                Uninstall = 'PSAppDeployToolkit - アプリケーションのアンインストール'
+                Install = '{Toolkit\CompanyName} - アプリのインストール'
+                Repair = '{Toolkit\CompanyName} - アプリケーションの修復'
+                Uninstall = '{Toolkit\CompanyName} - アプリケーションのアンインストール'
             }
         }
         CustomMessage = ''
