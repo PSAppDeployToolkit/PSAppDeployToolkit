@@ -559,6 +559,17 @@ namespace PSADT.Module
 
 
                 #endregion
+                #region TestAdminRequired
+
+
+                // Check current permissions and exit if not running with Administrator rights.
+                if ((bool)configToolkit["RequireAdmin"]! && !(bool)adtEnv["IsAdmin"]!)
+                {
+                    throw new UnauthorizedAccessException($"[{adtEnv["appDeployToolkitName"]}] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.");
+                }
+
+
+                #endregion
                 #region LogSystemInfo
 
 
@@ -782,17 +793,6 @@ namespace PSADT.Module
 
                 // Check deployment type (install/uninstall).
                 WriteLogEntry($"Deployment type is [{_deploymentType}].");
-
-
-                #endregion
-                #region TestAdminRequired
-
-
-                // Check current permissions and exit if not running with Administrator rights.
-                if ((bool)configToolkit["RequireAdmin"]! && !(bool)adtEnv["IsAdmin"]!)
-                {
-                    throw new UnauthorizedAccessException($"[{adtEnv["appDeployToolkitName"]}] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.");
-                }
 
 
                 #endregion
