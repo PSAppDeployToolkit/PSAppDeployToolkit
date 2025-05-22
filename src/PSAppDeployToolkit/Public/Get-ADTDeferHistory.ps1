@@ -46,7 +46,7 @@ function Get-ADTDeferHistory
 
     try
     {
-        (Get-ADTSession).GetDeferHistory()
+        return (Get-ADTSession).GetDeferHistory()
     }
     catch
     {

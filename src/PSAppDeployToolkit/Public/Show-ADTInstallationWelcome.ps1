@@ -786,8 +786,8 @@ function Show-ADTInstallationWelcome
                         {
                             [System.Int32]$DeferTimes = if ($deferHistoryTimes -ge 0)
                             {
-                                Write-ADTLogEntry -Message "Defer history shows [$($deferHistory.DeferTimesRemaining)] deferrals remaining."
-                                $deferHistory.DeferTimesRemaining - 1
+                                Write-ADTLogEntry -Message "Defer history shows [$($deferHistoryTimes)] deferrals remaining."
+                                $deferHistoryTimes - 1
                             }
                             else
                             {

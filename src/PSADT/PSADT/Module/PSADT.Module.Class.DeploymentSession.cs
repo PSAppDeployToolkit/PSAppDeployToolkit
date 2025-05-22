@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Win32;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
 using PSADT.Utilities;
@@ -1146,14 +1147,26 @@ namespace PSADT.Module
         /// Gets the deferral history.
         /// </summary>
         /// <returns>The deferral history.</returns>
-        public PSObject? GetDeferHistory()
+        public DeferHistory? GetDeferHistory()
         {
             if (string.IsNullOrWhiteSpace(RegKeyDeferHistory) || !TestDeferHistoryPath())
             {
                 return null;
             }
             WriteLogEntry("Getting deferral history...");
-            return ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, null).FirstOrDefault();
+            var history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, null).First();
+            if (null == history)
+            {
+                return null;
+            }
+            var deferRunIntervalLastTime = history.Properties["DeferRunIntervalLastTime"]?.Value;
+            var deferTimesRemaining = history.Properties["DeferTimesRemaining"]?.Value;
+            var deferDeadline = history.Properties["DeferDeadline"]?.Value;
+            if (null == deferRunIntervalLastTime && null == deferTimesRemaining && null == deferDeadline)
+            {
+                return null;
+            }
+            return new DeferHistory((int?)deferTimesRemaining, null != deferDeadline ? DateTime.Parse((string)deferDeadline) : null, null != deferRunIntervalLastTime ? DateTime.Parse((string)deferRunIntervalLastTime) : null);
         }
 
         /// <summary>
@@ -1175,7 +1188,7 @@ namespace PSADT.Module
                 {
                     CreateDeferHistoryPath();
                 }
-                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferTimesRemaining", "String", deferTimesRemaining, true, true);
+                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferTimesRemaining", RegistryValueKind.DWord.ToString(), deferTimesRemaining, true, true);
             }
             if (!string.IsNullOrWhiteSpace(deferDeadline))
             {
@@ -1184,7 +1197,7 @@ namespace PSADT.Module
                 {
                     CreateDeferHistoryPath();
                 }
-                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", "String", deferDeadline, true, true);
+                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferDeadline", RegistryValueKind.String.ToString(), deferDeadline, true, true);
             }
             if (null != deferRunInterval)
             {
@@ -1193,7 +1206,7 @@ namespace PSADT.Module
                 {
                     CreateDeferHistoryPath();
                 }
-                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunInterval", "String", deferRunInterval.ToString(), true, true);
+                moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], "DeferRunInterval", RegistryValueKind.String.ToString(), deferRunInterval.ToString(), true, true);
             }
             if (!string.IsNullOrWhiteSpace(deferRunIntervalLastTime))
             {
