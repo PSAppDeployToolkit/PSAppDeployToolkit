@@ -13,7 +13,8 @@ Creates or sets a registry key name, value, and value data.
 
 ```powershell
 Set-ADTRegistryKey [-LiteralPath] <String> [[-Name] <String>] [[-Value] <Object>] [[-Type] <RegistryValueKind>]
- [-Wow6432Node] [[-RegistryOptions] <RegistryOptions>] [[-SID] <String>] [<CommonParameters>]
+ [[-MultiStringValueMode] <MultiStringValueMode>] [-Wow6432Node] [[-RegistryOptions] <RegistryOptions>]
+ [[-SID] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -132,6 +133,24 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -MultiStringValueMode
+
+The mode to operate when working with MultiString objects.
+The default is replace, but add and remove modes are supported also.
+
+```yaml
+Type: MultiStringValueMode
+Parameter Sets: (All)
+Aliases:
+Accepted values: Replace, Add, Remove
+
+Required: False
+Position: 5
+Default value: Replace
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Wow6432Node
 
 Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
@@ -160,7 +179,7 @@ Aliases:
 Accepted values: None, Volatile
 
 Required: False
-Position: 5
+Position: 6
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -179,7 +198,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: 7
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

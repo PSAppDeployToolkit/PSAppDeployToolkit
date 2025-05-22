@@ -27,6 +27,9 @@ function Set-ADTRegistryKey
 
         DWord should be specified as a decimal.
 
+    .PARAMETER MultiStringValueMode
+        The mode to operate when working with MultiString objects. The default is replace, but add and remove modes are supported also.
+
     .PARAMETER Wow6432Node
         Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
 
@@ -105,6 +108,10 @@ function Set-ADTRegistryKey
         [Microsoft.Win32.RegistryValueKind]$Type,
 
         [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.RegistryManagement.MultiStringValueMode]$MultiStringValueMode = [PSADT.RegistryManagement.MultiStringValueMode]::Replace,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false)]
@@ -157,16 +164,32 @@ function Set-ADTRegistryKey
                     $ipParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -HelpMessage 'New/Set-ItemProperty parameter'
 
                     # Set registry value if it doesn't exist, otherwise update the property.
-                    $null = if (!(Get-ItemProperty -LiteralPath $LiteralPath -Name $Name -ErrorAction Ignore))
-                    {
-                        Write-ADTLogEntry -Message "Setting registry key value: [$LiteralPath] [$Name = $Value]."
-                        New-ItemProperty @ipParams
-                    }
-                    else
+                    $null = if (($gipResults = Get-ItemProperty -LiteralPath $LiteralPath -Name $Name -ErrorAction Ignore))
                     {
                         Write-ADTLogEntry -Message "Updating registry key value: [$LiteralPath] [$Name = $Value]."
                         if (!$ipParams.ContainsKey('Value')) { $ipParams.Add('Value', $null) }
+                        if (($null -ne $ipParams.Value) -and ($Type -eq [Microsoft.Win32.RegistryValueKind]::MultiString) -and ($MultiStringValueMode -ne [PSADT.RegistryManagement.MultiStringValueMode]::Replace))
+                        {
+                            $currentMultiStringRegValues = $gipResults.$Name
+                            $callersMultiStringRegValues = $ipParams.Value
+                            $ipParams.Value = switch ($MultiStringValueMode)
+                            {
+                                ([PSADT.RegistryManagement.MultiStringValueMode]::Add)
+                                {
+                                    $($currentMultiStringRegValues; $callersMultiStringRegValues | & { process { if ($currentMultiStringRegValues -notcontains $_) { return $_ } } })
+                                }
+                                ([PSADT.RegistryManagement.MultiStringValueMode]::Remove)
+                                {
+                                    $($currentMultiStringRegValues | & { process { if ($callersMultiStringRegValues -notcontains $_) { return $_ } } })
+                                }
+                            }
+                        }
                         Set-ItemProperty @ipParams -Force
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message "Setting registry key value: [$LiteralPath] [$Name = $Value]."
+                        New-ItemProperty @ipParams
                     }
                 }
             }
