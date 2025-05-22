@@ -12,9 +12,9 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 ## SYNTAX
 
 ```powershell
-Show-ADTInstallationProgress [[-WindowLocation] <String>] [[-MessageAlignment] <DialogMessageAlignment>]
- [-NotTopMost] [-NoRelocation] -Title <String> -Subtitle <String> -StatusMessage <String>
- -StatusMessageDetail <String> [<CommonParameters>]
+Show-ADTInstallationProgress [[-StatusMessage] <String>] [[-StatusMessageDetail] <String>]
+ [[-MessageAlignment] <DialogMessageAlignment>] [[-WindowLocation] <String>] [-NotTopMost] [-NoRelocation]
+ -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -60,9 +60,10 @@ Displays a progress dialog with the status message 'Installation in Progress...'
 
 ## PARAMETERS
 
-### -WindowLocation
+### -StatusMessage
 
-The location of the progress window.
+The status message to be displayed.
+The default status message is taken from the config.psd1 file.
 
 ```yaml
 Type: String
@@ -71,7 +72,24 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: Center
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StatusMessageDetail
+
+The status message detail to be displayed with a fluent progress window.
+The default status message is taken from the config.psd1 file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -87,7 +105,23 @@ Aliases:
 Accepted values: Left, Center, Right
 
 Required: False
-Position: 2
+Position: 3
+Default value: Center
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WindowLocation
+
+The location of the progress window.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
 Default value: Center
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -121,40 +155,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -StatusMessage
-
-The status message to be displayed.
-The default status message is taken from the config.psd1 file.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -StatusMessageDetail
-
-The status message detail to be displayed with a fluent progress window.
-The default status message is taken from the config.psd1 file.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

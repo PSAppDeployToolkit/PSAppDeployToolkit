@@ -15,11 +15,17 @@ function Show-ADTInstallationProgress
 
         The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the config.psd1 file).
 
-    .PARAMETER WindowLocation
-        The location of the progress window.
+    .PARAMETER StatusMessage
+        The status message to be displayed. The default status message is taken from the config.psd1 file.
+
+    .PARAMETER StatusMessageDetail
+        The status message detail to be displayed with a fluent progress window. The default status message is taken from the config.psd1 file.
 
     .PARAMETER MessageAlignment
         The text alignment to use for the status message.
+
+    .PARAMETER WindowLocation
+        The location of the progress window.
 
     .PARAMETER NotTopMost
         Specifies whether the progress window shouldn't be topmost.
@@ -73,14 +79,22 @@ function Show-ADTInstallationProgress
     param
     (
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-        [PSDefaultValue(Help = 'Center')]
-        [System.String]$WindowLocation,
+        [ValidateNotNullOrEmpty()]
+        [System.String]$StatusMessage,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$StatusMessageDetail,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'Center')]
         [PSADT.UserInterface.Dialogs.DialogMessageAlignment]$MessageAlignment,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
+        [PSDefaultValue(Help = 'Center')]
+        [System.String]$WindowLocation,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
@@ -108,18 +122,6 @@ function Show-ADTInstallationProgress
         $paramDictionary.Add('Subtitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'Subtitle', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = 'The subtitle of the window to be displayed with a fluent progress window. The default is the derived value from "$($adtSession.DeploymentType)".' }
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-                )
-            ))
-        $paramDictionary.Add('StatusMessage', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'StatusMessage', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'The status message to be displayed. The default status message is taken from the config.psd1 file.' }
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-                )
-            ))
-        $paramDictionary.Add('StatusMessageDetail', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'StatusMessageDetail', [System.String], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession -and ($adtConfig.UI.DialogStyle -eq 'Fluent'); HelpMessage = 'The status message detail to be displayed with a fluent progress window. The default status message is taken from the config.psd1 file.' }
                     [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
                 )
             ))
