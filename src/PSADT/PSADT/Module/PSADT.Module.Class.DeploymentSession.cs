@@ -990,7 +990,6 @@ namespace PSADT.Module
         {
             if (null == hostLogStream)
             {
-                var configToolkit = (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!;
                 hostLogStream = GetHostLogStreamMode();
             }
 
