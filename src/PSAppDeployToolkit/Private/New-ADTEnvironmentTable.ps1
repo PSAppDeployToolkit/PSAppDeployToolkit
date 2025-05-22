@@ -176,7 +176,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envOS', (Get-CimInstance -ClassName Win32_OperatingSystem -Verbose:$false))
     $variables.Add('envOSName', $variables.envOS.Caption.Trim())
     $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
-    $variables.Add('envOSVersion', (Get-ADTOperatingSystemInfo).Version)
+    $variables.Add('envOSVersion', [PSADT.OperatingSystem.OSVersionInfo]::Current.Version)
     $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
     $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
     $variables.Add('envOSVersionBuild', $(if ($variables.envOSVersion.Build -ge 0) { $variables.envOSVersion.Build }))
@@ -187,7 +187,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
-    $variables.Add('IsMultiSessionOS', (Test-ADTIsMultiSessionOS))
+    $variables.Add('IsMultiSessionOS', [PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS)
     $variables.Add('envOSProductTypeName', $(switch ($variables.envOSProductType)
             {
                 3 { 'Server'; break }
