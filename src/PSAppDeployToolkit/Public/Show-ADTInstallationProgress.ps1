@@ -33,8 +33,8 @@ function Show-ADTInstallationProgress
     .PARAMETER NotTopMost
         Specifies whether the progress window shouldn't be topmost.
 
-    .PARAMETER NoRelocation
-        Specifies whether to not reposition the window upon updating the message.
+    .PARAMETER AllowMove
+        Specifies that the user can move the dialog on the screen.
 
     .INPUTS
         None
@@ -106,7 +106,7 @@ function Show-ADTInstallationProgress
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoRelocation
+        [System.Management.Automation.SwitchParameter]$AllowMove
     )
 
     dynamicparam
@@ -235,6 +235,10 @@ function Show-ADTInstallationProgress
                     if ($PSBoundParameters.ContainsKey('WindowLocation'))
                     {
                         $dialogOptions.Add('DialogPosition', $WindowLocation)
+                    }
+                    if ($PSBoundParameters.ContainsKey('AllowMove'))
+                    {
+                        $dialogOptions.Add('DialogAllowMove', $AllowMove)
                     }
                     if ($null -ne $adtConfig.UI.FluentAccentColor)
                     {

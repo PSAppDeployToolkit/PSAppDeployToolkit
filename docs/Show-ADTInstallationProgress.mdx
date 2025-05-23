@@ -14,7 +14,7 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 ```powershell
 Show-ADTInstallationProgress [[-StatusMessage] <String>] [[-StatusMessageDetail] <String>]
  [[-StatusBarPercentage] <Double>] [[-MessageAlignment] <DialogMessageAlignment>]
- [[-WindowLocation] <DialogPosition>] [-NotTopMost] [-NoRelocation] -Title <String> -Subtitle <String>
+ [[-WindowLocation] <DialogPosition>] [-NotTopMost] [-AllowMove] -Title <String> -Subtitle <String>
  [<CommonParameters>]
 ```
 
@@ -162,9 +162,9 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoRelocation
+### -AllowMove
 
-Specifies whether to not reposition the window upon updating the message.
+Specifies that the user can move the dialog on the screen.
 
 ```yaml
 Type: SwitchParameter

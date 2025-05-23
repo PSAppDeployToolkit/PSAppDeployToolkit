@@ -45,7 +45,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
                 this.pictureBanner.Image = ClassicAssets.GetBanner(options.AppBannerImage);
                 this.pictureBanner.Size = new Size(450, (int)Math.Ceiling(450.0 * ((double)this.pictureBanner.Image.Height / (double)this.pictureBanner.Image.Width)));
-                #warning "TODO: DialogAllowMove?"
                 this.TopMost = options.DialogTopMost;
                 this.flowLayoutPanelBase.ResumeLayout();
                 this.FormClosing += Form_FormClosing;
@@ -62,7 +61,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set the optional dialog position.
                 if (null != options.DialogPosition)
                 {
-                    _dialogPosition = options.DialogPosition.Value;
+                    dialogPosition = options.DialogPosition.Value;
+                }
+
+                // Set whether the dialog can be moved.
+                if (null != options.DialogAllowMove)
+                {
+                    dialogAllowMove = options.DialogAllowMove.Value;
                 }
             }
         }
@@ -195,6 +200,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.BringToFront();
         }
 
+        protected override void WndProc(ref Message m)
+        {
+            // Ignore any attempt to move the window.
+            if (m.Msg == PInvoke.WM_SYSCOMMAND && (m.WParam.ToInt32() & 0xFFF0) == PInvoke.SC_MOVE && !dialogAllowMove)
+            {
+                return;
+            }
+            base.WndProc(ref m);
+        }
+
         /// <summary>
         /// Positions the form on the screen based on the specified dialog position.
         /// </summary>
@@ -206,7 +221,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             Rectangle workingArea = screen.WorkingArea;
 
             double left, top;
-            switch (_dialogPosition)
+            switch (dialogPosition)
             {
                 case DialogPosition.TopLeft:
                     left = workingArea.Left;
@@ -264,7 +279,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             top = Math.Floor(top);
 
             // Adjust for workArea offset.
-            string dialogPosName = _dialogPosition.ToString();
+            string dialogPosName = dialogPosition.ToString();
             left += dialogPosName.EndsWith("Right") ? 1 : dialogPosName.EndsWith("Left") ? -1 : 0;
             top += dialogPosName.EndsWith("Bottom") ? 1 : dialogPosName.EndsWith("Top") ? -1 : 0;
 
@@ -310,7 +325,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Represents the position of the dialog within its container.
         /// </summary>
         /// <remarks>The default value is <see cref="DialogPosition.Center"/>, which centers the dialog.</remarks>
-        private DialogPosition _dialogPosition = DialogPosition.Center;
+        private DialogPosition dialogPosition = DialogPosition.Center;
+
+        /// <summary>
+        /// Indicates whether the dialog is allowed to be moved.
+        /// </summary>
+        private readonly bool dialogAllowMove = true;
 
         /// <summary>
         /// Flag to indicate if the dialog can be closed.

@@ -55,6 +55,9 @@ function Show-ADTInstallationPrompt
     .PARAMETER NotTopMost
         Specifies whether the prompt shouldn't be topmost, above all other windows.
 
+    .PARAMETER AllowMove
+        Specifies that the user can move the dialog on the screen.
+
     .INPUTS
         None
 
@@ -137,7 +140,10 @@ function Show-ADTInstallationPrompt
         [System.Management.Automation.SwitchParameter]$NoExitOnTimeout,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NotTopMost
+        [System.Management.Automation.SwitchParameter]$NotTopMost,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$AllowMove
     )
 
     dynamicparam
@@ -279,6 +285,10 @@ function Show-ADTInstallationPrompt
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
                 {
                     $dialogOptions.Add('DialogPosition', $WindowLocation)
+                }
+                if ($PSBoundParameters.ContainsKey('AllowMove'))
+                {
+                    $dialogOptions.Add('DialogAllowMove', $AllowMove)
                 }
                 if ($PersistPrompt)
                 {

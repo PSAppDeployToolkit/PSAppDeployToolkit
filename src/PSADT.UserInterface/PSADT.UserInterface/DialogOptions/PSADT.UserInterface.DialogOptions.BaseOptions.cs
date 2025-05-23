@@ -34,10 +34,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("AppBannerImage value is null or invalid.", (Exception?)null);
             }
-            if (options["DialogAllowMove"] is not bool dialogAllowMove)
-            {
-                throw new ArgumentNullException("DialogAllowMove value is null or invalid.", (Exception?)null);
-            }
             if (options["DialogTopMost"] is not bool dialogTopMost)
             {
                 throw new ArgumentNullException("DialogTopMost value is null or invalid.", (Exception?)null);
@@ -58,6 +54,14 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // Test and set optional values.
+            if (options.ContainsKey("DialogAllowMove"))
+            {
+                if (options["DialogAllowMove"] is not bool dialogAllowMove)
+                {
+                    throw new ArgumentOutOfRangeException("DialogAllowMove value is not valid.", (Exception?)null);
+                }
+                DialogAllowMove = dialogAllowMove;
+            }
             if (options.ContainsKey("DialogExpiryDuration"))
             {
                 if (options["DialogExpiryDuration"] is not TimeSpan dialogExpiryDuration)
@@ -96,7 +100,6 @@ namespace PSADT.UserInterface.DialogOptions
             Subtitle = subTitle;
             AppIconImage = appIconImage;
             AppBannerImage = appBannerImage;
-            DialogAllowMove = dialogAllowMove;
             DialogTopMost = dialogTopMost;
             MinimizeWindows = minimizeWindows;
         }
@@ -129,7 +132,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
-        public readonly bool DialogAllowMove;
+        public readonly bool? DialogAllowMove;
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.

@@ -17,7 +17,7 @@ Displays a custom installation prompt with the toolkit branding and optional but
 Show-ADTInstallationPrompt -Message <String> [-MessageAlignment <DialogMessageAlignment>]
  [-ButtonRightText <String>] [-ButtonLeftText <String>] [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>]
  [-WindowLocation <DialogPosition>] [-NoWait] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout]
- [-NotTopMost] -Title <String> -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
+ [-NotTopMost] [-AllowMove] -Title <String> -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
 ```
 
 ### ShowInputDialog
@@ -26,8 +26,8 @@ Show-ADTInstallationPrompt -Message <String> [-MessageAlignment <DialogMessageAl
 Show-ADTInstallationPrompt [-RequestInput] [-DefaultValue <String>] -Message <String>
  [-MessageAlignment <DialogMessageAlignment>] [-ButtonRightText <String>] [-ButtonLeftText <String>]
  [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>] [-WindowLocation <DialogPosition>] [-PersistPrompt]
- [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] -Title <String> -Subtitle <String> [-Timeout <TimeSpan>]
- [<CommonParameters>]
+ [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] [-AllowMove] -Title <String> -Subtitle <String>
+ [-Timeout <TimeSpan>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -274,6 +274,22 @@ Accept wildcard characters: False
 ### -NotTopMost
 
 Specifies whether the prompt shouldn't be topmost, above all other windows.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AllowMove
+
+Specifies that the user can move the dialog on the screen.
 
 ```yaml
 Type: SwitchParameter

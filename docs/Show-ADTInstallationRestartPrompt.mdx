@@ -15,7 +15,7 @@ Displays a restart prompt with a countdown to a forced restart.
 
 ```powershell
 Show-ADTInstallationRestartPrompt [-CountdownSeconds <UInt32>] [-CountdownNoHideSeconds <UInt32>]
- [-WindowLocation <DialogPosition>] [-CustomText] [-NotTopMost] -Title <String> -Subtitle <String>
+ [-WindowLocation <DialogPosition>] [-CustomText] [-NotTopMost] [-AllowMove] -Title <String> -Subtitle <String>
  [<CommonParameters>]
 ```
 
@@ -23,14 +23,15 @@ Show-ADTInstallationRestartPrompt [-CountdownSeconds <UInt32>] [-CountdownNoHide
 
 ```powershell
 Show-ADTInstallationRestartPrompt [-NoCountdown] [-WindowLocation <DialogPosition>] [-CustomText] [-NotTopMost]
- -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-AllowMove] -Title <String> -Subtitle <String> [<CommonParameters>]
 ```
 
 ### SilentRestart
 
 ```powershell
 Show-ADTInstallationRestartPrompt [-SilentRestart] [-SilentCountdownSeconds <UInt32>]
- [-WindowLocation <DialogPosition>] [-NotTopMost] -Title <String> -Subtitle <String> [<CommonParameters>]
+ [-WindowLocation <DialogPosition>] [-NotTopMost] [-AllowMove] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -184,6 +185,22 @@ Accept wildcard characters: False
 ### -NotTopMost
 
 Specifies whether the prompt shouldn't be topmost, above all other windows.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AllowMove
+
+Specifies that the user can move the dialog on the screen.
 
 ```yaml
 Type: SwitchParameter

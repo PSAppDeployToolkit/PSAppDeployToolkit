@@ -104,8 +104,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 _dialogPosition = options.DialogPosition.Value;
             }
+            if (null != options.DialogAllowMove)
+            {
+                _dialogAllowMove = options.DialogAllowMove.Value;
+            }
             WindowStartupLocation = WindowStartupLocation.Manual;
-            _dialogAllowMove = options.DialogAllowMove;
             Topmost = options.DialogTopMost;
 
             // Set supplemental options also
@@ -773,7 +776,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Whether the dialog is allowed to be moved.
         /// </summary>
-        private readonly bool _dialogAllowMove;
+        private readonly bool _dialogAllowMove = false;
 
         /// <summary>
         /// The countdown duration for the dialog.

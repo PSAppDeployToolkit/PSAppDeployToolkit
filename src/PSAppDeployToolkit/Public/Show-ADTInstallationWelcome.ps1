@@ -89,6 +89,9 @@ function Show-ADTInstallationWelcome
     .PARAMETER NotTopMost
         Specifies whether the windows is the topmost window.
 
+    .PARAMETER AllowMove
+        Specifies that the user can move the dialog on the screen.
+
     .PARAMETER CustomText
         Specify whether to display a custom message specified in the `strings.psd1` file. Custom message must be populated for each language section in the `strings.psd1` file.
 
@@ -558,6 +561,36 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'Interactive', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferForceCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferForceCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specifies whether the window shouldn't be on top of other windows.")]
+        [System.Management.Automation.SwitchParameter]$AllowMove,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive', HelpMessage = 'Specify whether to display a custom message specified in the [strings.psd1] file. Custom message must be populated for each language section in the [strings.psd1] file.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCheckDiskSpace', HelpMessage = 'Specify whether to display a custom message specified in the [strings.psd1] file. Custom message must be populated for each language section in the [strings.psd1] file.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify whether to display a custom message specified in the [strings.psd1] file. Custom message must be populated for each language section in the [strings.psd1] file.')]
@@ -947,6 +980,10 @@ function Show-ADTInstallationWelcome
                     if ($PSBoundParameters.ContainsKey('WindowLocation'))
                     {
                         $dialogOptions.Add('DialogPosition', $WindowLocation)
+                    }
+                    if ($PSBoundParameters.ContainsKey('AllowMove'))
+                    {
+                        $dialogOptions.Add('DialogAllowMove', $AllowMove)
                     }
                     if ($CustomText)
                     {
