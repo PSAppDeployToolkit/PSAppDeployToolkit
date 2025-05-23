@@ -207,7 +207,7 @@ namespace PSADT.Module
                 if (string.IsNullOrWhiteSpace(_appName) || ((bool)parameters?.TryGetValue("ForceWimDetection", out paramValue)! && (SwitchParameter)paramValue!))
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
-                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).First(static f => f.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is string wimFile))
+                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is string wimFile))
                     {
                         // Mount the WIM file and reset DirFiles to the mount point.
                         WriteInitialDivider(ref writtenDivider); Settings |= DeploymentSettings.ZeroConfigInitiated;
