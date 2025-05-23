@@ -514,9 +514,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             double windowWidth = ActualWidth;
             double windowHeight = ActualHeight;
 
-            // Margin to prevent overlap with screen edges.
-            const double margin = 0;
-
             // Calculate positions based on window position setting.
             double left, top;
             switch (_dialogPosition)
@@ -530,15 +527,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 case DialogPosition.TopCenter:
                     // Center horizontally, align to top
                     left = workingArea.Left + ((workingArea.Width - windowWidth) / 2);
-                    top = workingArea.Top + margin;
+                    top = workingArea.Top;
                     break;
 
                 default:
                     // Align to bottom right (original behavior)
                     left = workingArea.Left + (workingArea.Width - windowWidth);
                     top = workingArea.Top + (workingArea.Height - windowHeight);
-                    left -= margin;
-                    top -= margin;
                     break;
             }
 
