@@ -93,16 +93,8 @@ function Remove-ADTIniValue
         {
             try
             {
-                if (!$PSBoundParameters.ContainsKey('Key'))
-                {
-                    Write-ADTLogEntry -Message "Removing INI section: [$Section]."
-                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, [NullString]::Value, [NullString]::Value, $FilePath)
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "Removing INI value: [Section = $Section] [Key = $Key]."
-                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, [NullString]::Value, $FilePath)
-                }
+                Write-ADTLogEntry -Message "Removing INI value: [Section = $Section] [Key = $Key]."
+                [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, [NullString]::Value, $FilePath)
             }
             catch
             {
