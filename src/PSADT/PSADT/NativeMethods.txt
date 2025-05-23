@@ -25,7 +25,6 @@ DwmGetColorizationColor
 E_ACCESSDENIED
 E_INVALIDARG
 EnableMenuItem
-EnumDisplayMonitors
 EnumWindows
 FILE_FLAGS_AND_ATTRIBUTES
 FindWindow
@@ -35,7 +34,6 @@ GetCurrentThreadId
 GetExitCodeProcess
 GetExitCodeThread
 GetForegroundWindow
-GetMonitorInfo
 GetNativeSystemInfo
 GetPrivateProfileString
 GetProcAddress
@@ -43,7 +41,6 @@ GetProcessId
 GetProductInfo
 GetQueuedCompletionStatus
 GetSystemMenu
-GetSystemMetrics
 GetTickCount64
 GetTokenInformation
 GetWindowText
@@ -80,8 +77,6 @@ LocalFree
 LookupPrivilegeNameW
 LookupPrivilegeValueW
 MMDeviceEnumerator
-MonitorFromPoint
-MonitorFromWindow
 MONITORINFOEXW
 MONITORINFOF_PRIMARY
 NtQueryInformationProcess
@@ -154,7 +149,6 @@ STATUS_INFO_LENGTH_MISMATCH
 STATUS_SUCCESS
 STATUS_TIMEOUT
 STILL_ACTIVE
-SystemParametersInfo
 TerminateJobObject
 THREAD_ACCESS_RIGHTS
 TOKEN_LINKED_TOKEN
