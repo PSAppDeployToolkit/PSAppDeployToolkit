@@ -101,8 +101,9 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <param name="progressMessage">Optional new main progress message.</param>
         /// <param name="progressDetailMessage">Optional new detail message.</param>
-        /// <param name="progressPercent">Optional progress percentage (0-100). If provided, the progress bar becomes determinate.</param>
-        public static void UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercent = null)
+        /// <param name="progressPercentage">Optional progress percentage (0-100). If provided, the progress bar becomes determinate.</param>
+        /// <param name="messageAlignment">Optional message alignment. If provided, the message alignment is updated.</param>
+        public static void UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             if (!progressInitialized.IsSet)
             {
@@ -110,7 +111,7 @@ namespace PSADT.UserInterface
             }
             InvokeDialogAction(() =>
             {
-                progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercent);
+                progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment);
             });
         }
 

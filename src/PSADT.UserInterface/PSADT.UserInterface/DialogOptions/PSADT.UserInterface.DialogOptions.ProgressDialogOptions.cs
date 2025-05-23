@@ -26,6 +26,14 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // Test and set optional values.
+            if (options.ContainsKey("ProgressPercentage"))
+            {
+                if (options["ProgressPercentage"] is not double progressPercentage)
+                {
+                    throw new ArgumentOutOfRangeException("ProgressPercentage value is not valid.", (Exception?)null);
+                }
+                ProgressPercentage = progressPercentage;
+            }
             if (options.ContainsKey("MessageAlignment"))
             {
                 if (options["MessageAlignment"] is not DialogMessageAlignment messageAlignment)
@@ -49,6 +57,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// The detailed message to be displayed in the progress dialog, providing more context or information about the current action.
         /// </summary>
         public readonly string ProgressDetailMessageText;
+
+        /// <summary>
+        /// The percentage value to be displayed on the status bar, if available.
+        /// </summary>
+        public readonly double? ProgressPercentage;
 
         /// <summary>
         /// The alignment of the message text in the dialog.

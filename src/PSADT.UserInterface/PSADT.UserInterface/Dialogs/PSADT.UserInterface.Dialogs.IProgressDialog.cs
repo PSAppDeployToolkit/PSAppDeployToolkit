@@ -19,7 +19,8 @@ namespace PSADT.UserInterface.Dialogs
         /// </summary>
         /// <param name="progressMessage">An optional message describing the current progress. Can be <see langword="null"/> if no message is provided.</param>
         /// <param name="progressMessageDetail">An optional detailed message providing additional context about the progress. Can be <see langword="null"/> if no detailed message is provided.</param>
-        /// <param name="percentComplete">An optional value representing the percentage of completion, ranging from 0.0 to 100.0. Can be <see langword="null"/> if the percentage is not specified.</param>
-        void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null);
+        /// <param name="progressPercentage">An optional value representing the percentage of completion, ranging from 0.0 to 100.0. Can be <see langword="null"/> if the percentage is not specified.</param>
+        /// <param name="messageAlignment">An optional value specifying the alignment of the message. Can be <see langword="null"/> if no specific alignment is required.</param>
+        void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null);
     }
 }

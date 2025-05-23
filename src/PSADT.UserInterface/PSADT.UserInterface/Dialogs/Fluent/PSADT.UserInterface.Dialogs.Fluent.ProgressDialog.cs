@@ -20,17 +20,20 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="options">Mandatory options needed to construct the window.</param>
         internal ProgressDialog(ProgressDialogOptions options) : base(options)
         {
-            // Set accessibility properties
-            AutomationProperties.SetName(ProgressBar, "Operation Progress");
-
-            // Set up UI
-            FormatMessageWithHyperlinks(MessageTextBlock, options.ProgressMessageText);
-            ProgressMessageDetailTextBlock.Text = options.ProgressDetailMessageText;
+            UpdateProgressImpl(options.ProgressMessageText, options.ProgressDetailMessageText, options.ProgressPercentage, options.MessageAlignment);
             ProgressStackPanel.Visibility = Visibility.Visible;
+        }
 
-            // Initialize progress bar
-            ProgressBar.IsIndeterminate = true;
-            ProgressBar.Value = 0;
+        /// <summary>
+        /// Updates the progress display in the Progress dialog. Animates the progress bar value if `percentComplete` is provided.
+        /// </summary>
+        /// <param name="progressMessage">Optional new main progress message.</param>
+        /// <param name="progressMessageDetail">Optional new detail message.</param>
+        /// <param name="progressPercentage">Optional progress percentage (0-100). If provided, the progress bar becomes determinate and animates.</param>
+        /// <param name="messageAlignment">Unused message alignment, just here to satisfy the public interface contract.</param>
+        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
+        {
+            Dispatcher.Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
         }
 
         /// <summary>
@@ -39,42 +42,40 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="progressMessage">Optional new main progress message.</param>
         /// <param name="progressMessageDetail">Optional new detail message.</param>
         /// <param name="percentComplete">Optional progress percentage (0-100). If provided, the progress bar becomes determinate and animates.</param>
-        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null)
+        /// <param name="messageAlignment">Unused message alignment, just here to satisfy the public interface contract.</param>
+        private void UpdateProgressImpl(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null, DialogMessageAlignment? messageAlignment = null)
         {
-            Dispatcher.Invoke(() =>
+            if (!string.IsNullOrWhiteSpace(progressMessage))
             {
-                if (!string.IsNullOrWhiteSpace(progressMessage))
+                FormatMessageWithHyperlinks(MessageTextBlock, progressMessage);
+                AutomationProperties.SetName(MessageTextBlock, progressMessage);
+            }
+
+            if (!string.IsNullOrWhiteSpace(progressMessageDetail))
+            {
+                ProgressMessageDetailTextBlock.Text = progressMessageDetail;
+                AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessage);
+            }
+
+            if (!(ProgressBar.IsIndeterminate = percentComplete == null))
+            {
+                // Create a smooth animation for the progress value
+                var animation = new DoubleAnimation
                 {
-                    FormatMessageWithHyperlinks(MessageTextBlock, progressMessage);
-                    AutomationProperties.SetName(MessageTextBlock, progressMessage);
-                }
+                    To = percentComplete!.Value,
+                    Duration = TimeSpan.FromMilliseconds(300),
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
 
-                if (!string.IsNullOrWhiteSpace(progressMessageDetail))
-                {
-                    ProgressMessageDetailTextBlock.Text = progressMessageDetail;
-                    AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessage);
-                }
+                // Begin the animation
+                ProgressBar.BeginAnimation(RangeBase.ValueProperty, animation);
 
-                if (!(ProgressBar.IsIndeterminate = percentComplete == null))
-                {
-                    // Create a smooth animation for the progress value
-                    var animation = new DoubleAnimation
-                    {
-                        To = percentComplete!.Value,
-                        Duration = TimeSpan.FromMilliseconds(300),
-                        EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
-                    };
+                // Update the property as well to maintain state
+                ProgressBar.Value = percentComplete.Value;
 
-                    // Begin the animation
-                    ProgressBar.BeginAnimation(RangeBase.ValueProperty, animation);
-
-                    // Update the property as well to maintain state
-                    ProgressBar.Value = percentComplete.Value;
-
-                    // Update accessibility properties
-                    AutomationProperties.SetName(ProgressBar, $"Progress: {percentComplete:F0}%");
-                }
-            });
+                // Update accessibility properties
+                AutomationProperties.SetName(ProgressBar, $"Progress: {percentComplete:F0}%");
+            }
         }
     }
 }

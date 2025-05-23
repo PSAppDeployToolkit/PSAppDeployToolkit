@@ -21,6 +21,9 @@ function Show-ADTInstallationProgress
     .PARAMETER StatusMessageDetail
         The status message detail to be displayed with a fluent progress window. The default status message is taken from the config.psd1 file.
 
+    .PARAMETER StatusBarPercentage
+        The percentage to display on the status bar. If null or not supplied, the status bar will continuously scroll.
+
     .PARAMETER MessageAlignment
         The text alignment to use for the status message.
 
@@ -85,6 +88,10 @@ function Show-ADTInstallationProgress
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.String]$StatusMessageDetail,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Double]$StatusBarPercentage,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -221,6 +228,10 @@ function Show-ADTInstallationProgress
                             Write-ADTLogEntry -Message "The parameter [-MessageAlignment] is not supported with Fluent dialogs and has no effect." -Severity 2
                         }
                         $dialogOptions.MessageAlignment = $MessageAlignment
+                    }
+                    if ($PSBoundParameters.ContainsKey('StatusBarPercentage'))
+                    {
+                        $dialogOptions.Add('ProgressPercentage', $StatusBarPercentage)
                     }
                     if ($null -ne $adtConfig.UI.FluentAccentColor)
                     {

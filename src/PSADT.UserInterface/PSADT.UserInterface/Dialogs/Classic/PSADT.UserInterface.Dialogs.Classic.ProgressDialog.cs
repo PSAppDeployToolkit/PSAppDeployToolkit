@@ -42,13 +42,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
             {
-                if ((null != options.MessageAlignment) && Enum.TryParse<ContentAlignment>($"Top{options.MessageAlignment}", out var alignment))
-                {
-                    this.labelMessage.TextAlign = alignment;
-                    this.labelDetail.TextAlign = alignment;
-                }
-                this.labelMessage.Text = options.ProgressMessageText;
-                this.labelDetail.Text = options.ProgressDetailMessageText;
+                UpdateProgressImpl(options.ProgressMessageText, options.ProgressDetailMessageText, options.ProgressPercentage, options.MessageAlignment);
             }
 
             // Resume the dialog now that we've applied any options.
@@ -64,8 +58,21 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         /// <param name="progressMessage"></param>
         /// <param name="progressMessageDetail"></param>
-        /// <param name="percentComplete"></param>
-        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null)
+        /// <param name="progressPercentage"></param>
+        /// <param name="messageAlignment"></param>
+        public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
+        {
+            this.Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
+        }
+
+        /// <summary>
+        /// Updates the progress dialog with the specified messages and percentage complete.
+        /// </summary>
+        /// <param name="progressMessage"></param>
+        /// <param name="progressMessageDetail"></param>
+        /// <param name="progressPercentage"></param>
+        /// <param name="messageAlignment"></param>
+        private void UpdateProgressImpl(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             // Update the progress message.
             if (!string.IsNullOrWhiteSpace(progressMessage))
@@ -79,11 +86,23 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.labelDetail.Text = progressMessageDetail;
             }
 
+            // Update the message alignment.
+            if ((null != messageAlignment) && Enum.TryParse<ContentAlignment>($"Top{messageAlignment}", out var alignment))
+            {
+                this.labelMessage.TextAlign = alignment;
+                this.labelDetail.TextAlign = alignment;
+            }
+            else
+            {
+                this.labelMessage.TextAlign = ContentAlignment.TopCenter;
+                this.labelDetail.TextAlign = ContentAlignment.TopCenter;
+            }
+
             // Update the progress percentage.
-            if (null != percentComplete)
+            if (null != progressPercentage)
             {
                 this.progressBar.Style = ProgressBarStyle.Blocks;
-                this.progressBar.Value = (int)percentComplete.Value;
+                this.progressBar.Value = (int)progressPercentage.Value;
             }
             else
             {
