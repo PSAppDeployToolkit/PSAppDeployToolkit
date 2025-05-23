@@ -17,6 +17,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Types;
 using Windows.Win32;
@@ -103,7 +104,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             WindowStartupLocation = WindowStartupLocation.Manual;
             _dialogAllowMove = options.DialogAllowMove;
             Topmost = options.DialogTopMost;
-            #warning "TODO: DialogPersistInterval?"
 
             // Set supplemental options also
             _customMessageText = customMessageText;
@@ -130,6 +130,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Set app icon
             SetDialogIcon(options.AppIconImage);
+
+            // PersistPrompt timer code.
+            if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
+            {
+                _persistTimer = new DispatcherTimer() { Interval = options.DialogPersistInterval.Value };
+                _persistTimer.Tick += PersistTimer_Tick;
+            }
 
             // Initialize countdown if specified
             if (null != _countdownDuration)
@@ -293,6 +300,17 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 source.AddHook(new HwndSourceHook(WndProc));
             }
+        }
+
+        /// <summary>
+        /// Handles the timer tick event for persisting the dialog.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PersistTimer_Tick(object? sender, EventArgs e)
+        {
+            // Reset the window and restore its location.
+            RestoreWindow();
         }
 
         /// <summary>
@@ -746,6 +764,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected readonly Stopwatch _countdownStopwatch;
 
         /// <summary>
+        /// A timer used to periodically trigger persistence operations.
+        /// </summary>
+        /// <remarks>This timer is initialized but not exposed publicly. It is used internally to manage periodic tasks, such as saving data or maintaining state.</remarks>
+        private readonly DispatcherTimer _persistTimer = new();
+
+        /// <summary>
         /// Represents the initial top position of an element or object.
         /// </summary>
         private double _startingTop;
@@ -783,16 +807,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            _disposed = true;
-
-            if (!disposing)
+            if (disposing)
             {
-                return;
+                _countdownTimer?.Dispose();
             }
-
-            // Detach event handlers
-            Loaded -= FluentDialog_Loaded;
-            SizeChanged -= FluentDialog_SizeChanged;
+            _disposed = true;
         }
     }
 }
