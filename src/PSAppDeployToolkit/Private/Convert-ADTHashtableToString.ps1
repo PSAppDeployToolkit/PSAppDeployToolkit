@@ -15,13 +15,23 @@ function Private:Convert-ADTHashtableToString
     process
     {
         # Process the current hashtable in the pipe.
-        $_.GetEnumerator() | & {
-            process
+        foreach ($kvp in $_.GetEnumerator())
+        {
+            if ([System.String]::IsNullOrWhiteSpace((Out-String -InputObject $kvp.Value)))
             {
-                if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $_.Value)))
-                {
-                    $data.Add("$($_.Key) = [$($_.Value.GetType().FullName)]'$($_.Value.ToString().Replace("'", "''"))'")
-                }
+                continue
+            }
+            elseif ($kvp.Value -is [System.Collections.Hashtable])
+            {
+                $data.Add("$($kvp.Key) = [$($kvp.Value.GetType().FullName)]$($kvp.Value | & $MyInvocation.MyCommand)")
+            }
+            elseif ($kvp.Value -is [System.Management.Automation.SwitchParameter])
+            {
+                $data.Add("$($kvp.Key) = [System.Boolean]'$($kvp.Value.ToString().Replace("'", "''"))'")
+            }
+            else
+            {
+                $data.Add("$($kvp.Key) = [$($kvp.Value.GetType().FullName)]'$($kvp.Value.ToString().Replace("'", "''"))'")
             }
         }
     }
