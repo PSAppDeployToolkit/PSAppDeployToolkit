@@ -602,5 +602,32 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Retrieves a handle to the top-level window that matches the specified class name and window name.
+        /// </summary>
+        /// <remarks>This method wraps the native <c>FindWindow</c> function and throws an exception if the window is not found. Use this method to locate a top-level window by its class name, window name, or both.</remarks>
+        /// <param name="lpClassName">The class name of the window to find. This can be a null-terminated string or <see langword="null"/> to ignore the class name.</param>
+        /// <param name="lpWindowName">The window name (title) of the window to find. This can be a null-terminated string or <see langword="null"/> to ignore the window name.</param>
+        /// <returns>A handle to the window that matches the specified criteria.</returns>
+        internal static HWND FindWindow(string lpClassName, string? lpWindowName)
+        {
+            var res = PInvoke.FindWindow(lpClassName, lpWindowName);
+            if (res.IsNull)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// A window command to minimise all windows.
+        /// </summary>
+        internal const nuint MIN_ALL = 419;
+
+        /// <summary>
+        /// A window command to restore all minimised windows.
+        /// </summary>
+        internal const nuint MIN_ALL_UNDO = 416;
     }
 }

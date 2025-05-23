@@ -164,7 +164,6 @@ namespace PSADT.UserInterface
                     result = (TResult)dialog.DialogResult;
                 }
             });
-            #warning "TODO: MinimizeWindows?"
             return result!;
         }
 

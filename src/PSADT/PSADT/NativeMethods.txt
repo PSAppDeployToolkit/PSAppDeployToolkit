@@ -28,6 +28,7 @@ EnableMenuItem
 EnumDisplayMonitors
 EnumWindows
 FILE_FLAGS_AND_ATTRIBUTES
+FindWindow
 GENERIC_MAPPING
 GetCurrentProcess
 GetCurrentThreadId
@@ -184,6 +185,7 @@ WaitForMultipleObjects
 WaitForSingleObject
 WIN32_ERROR
 Windows.Win32.UI.Controls.IImageList
+WM_COMMAND
 WM_NCLBUTTONDOWN
 WM_SETTINGCHANGE
 WM_SYSCOMMAND
