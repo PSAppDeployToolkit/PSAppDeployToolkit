@@ -86,6 +86,51 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Wrapper around GetPrivateProfileSectionNames to manage error handling.
+        /// </summary>
+        /// <param name="lpReturnedString"></param>
+        /// <param name="lpFileName"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        /// <exception cref="OverflowException"></exception>
+        internal static uint GetPrivateProfileSectionNames(Span<char> lpReturnedString, string lpFileName)
+        {
+            var res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName);
+            if (res == 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            else if (res == lpReturnedString.Length - 1)
+            {
+                throw new OverflowException("Buffer was too small. Value was truncated.");
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Wrapper around GetPrivateProfileSection to manage error handling.
+        /// </summary>
+        /// <param name="lpAppName"></param>
+        /// <param name="lpReturnedString"></param>
+        /// <param name="lpFileName"></param>
+        /// <returns></returns>
+        /// <exception cref="Win32Exception"></exception>
+        /// <exception cref="OverflowException"></exception>
+        internal static uint GetPrivateProfileSection(string lpAppName, Span<char> lpReturnedString, string lpFileName)
+        {
+            var res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName);
+            if (res == 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            else if (res == lpReturnedString.Length - 1)
+            {
+                throw new OverflowException("Buffer was too small. Value was truncated.");
+            }
+            return res;
+        }
+
+        /// <summary>
         /// Wrapper around GetPrivateProfileString to manage error handling.
         /// </summary>
         /// <param name="lpAppName"></param>
@@ -111,6 +156,23 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Wrapper around WritePrivateProfileSection to manage error handling.
+        /// </summary>
+        /// <param name="lpAppName"></param>
+        /// <param name="lpString"></param>
+        /// <param name="lpFileName"></param>
+        /// <exception cref="Win32Exception"></exception>
+        internal static BOOL WritePrivateProfileSection(string lpAppName, string? lpString, string lpFileName)
+        {
+            var res = PInvoke.WritePrivateProfileSection(lpAppName, lpString, lpFileName);
+            if (!res)
+            {
+            throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
         /// Wrapper around WritePrivateProfileString to manage error handling.
         /// </summary>
         /// <param name="lpAppName"></param>
@@ -127,11 +189,11 @@ namespace PSADT.LibraryInterfaces
             fixed (char* lpAppNameLocal = lpAppName)
             {
                 var res = PInvoke.WritePrivateProfileString(lpAppNameLocal, !string.IsNullOrWhiteSpace(lpKeyName) ? lpKeyNameLocal : null, (lpString != null) ? lpStringLocal : null, lpFileNameLocal);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+            if (!res)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
             }
         }
 
