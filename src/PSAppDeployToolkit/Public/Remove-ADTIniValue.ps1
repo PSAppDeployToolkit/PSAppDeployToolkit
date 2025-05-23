@@ -63,22 +63,22 @@ function Remove-ADTIniValue
 
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if ([string]::IsNullOrWhiteSpace($_))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
-            }
-            return $true
-        })]
+                if ([string]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
+                }
+                return $true
+            })]
         [System.String]$Section,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
-            if ([string]::IsNullOrWhiteSpace($_))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified key cannot be null, empty, or whitespace.'))
-            }
-            return $true
-        })]
+                if ([string]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified key cannot be null, empty, or whitespace.'))
+                }
+                return $true
+            })]
         [System.String]$Key
     )
 
