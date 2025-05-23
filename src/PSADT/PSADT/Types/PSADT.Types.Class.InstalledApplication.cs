@@ -159,5 +159,14 @@ namespace PSADT.Types
         {
             return (null != ProductCode);
         }
+
+        /// <summary>
+        /// Returns a string representation of the installed application.
+        /// </summary>
+        /// <returns>A string that contains key details about the installed application.</returns>
+        public override string ToString()
+        {
+            return $"Installed Application: {DisplayName} (Version: {DisplayVersion}, Publisher: {Publisher})";
+        }
     }
 }
