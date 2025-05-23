@@ -15,9 +15,9 @@ namespace PSADT.UserInterface.Types
         /// Resets the underlying ObservableCollection with the provided items.
         /// </summary>
         /// <param name="items"></param>
-        internal void ResetItems(IEnumerable<T> items)
+        internal void ResetItems(IEnumerable<T> items, bool force = false)
         {
-            if (items.Count() == 0 && Count == 0)
+            if (!force && items.Count() == 0 && Count == 0)
             {
                 return;
             }

@@ -95,7 +95,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 _runningProcessService = options.RunningProcessService;
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
-                AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)));
+                AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), true);
             }
             UpdateDeferralValues();
 
@@ -204,16 +204,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Update the UI based on the changes in the collection.
             AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
             UpdateRowDefinition();
-            if (AppsToCloseCollection.Count == 0)
-            {
-                FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
-                SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
-                AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
-                CloseAppsStackPanel.Visibility = Visibility.Collapsed;
-                CloseAppsSeparator.Visibility = Visibility.Collapsed;
-                ButtonLeft.IsEnabled = true;
-            }
-            else
+            if (AppsToCloseCollection.Count > 0)
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
@@ -230,6 +221,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                     ButtonLeft.IsEnabled = false;
                 }
+            }
+            else
+            {
+                FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
+                SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
+                AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
+                CloseAppsStackPanel.Visibility = Visibility.Collapsed;
+                CloseAppsSeparator.Visibility = Visibility.Collapsed;
+                ButtonLeft.IsEnabled = true;
             }
         }
 
