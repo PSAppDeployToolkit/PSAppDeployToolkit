@@ -16,8 +16,35 @@ namespace PSADT.UserInterface
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        private static void Main()
+        private static int Main(string[] args)
         {
+            // Print a message if no arguments are passed.
+            if (args?.Length == 0)
+            {
+                var helpTitle = "PSAppDeployToolkit User Interface Display Server";
+                var helpMessage = string.Join(Environment.NewLine, new[]
+                {
+                    helpTitle,
+                    "",
+                    "Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.",
+                    "",
+                    "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
+                    "",
+                    "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
+                });
+                DialogManager.ShowMessageBox(helpTitle, helpMessage, Microsoft.VisualBasic.MsgBoxStyle.Critical);
+                return (int)ExitCode.NoArguments;
+            }
+            return (int)ExitCode.Success;
+        }
+
+        /// <summary>
+        /// Represents the exit codes that can be returned by the application to indicate the result of its execution.
+        /// </summary>
+        private enum ExitCode : int
+        {
+            Success = 0,
+            NoArguments = 1,
         }
     }
 }
