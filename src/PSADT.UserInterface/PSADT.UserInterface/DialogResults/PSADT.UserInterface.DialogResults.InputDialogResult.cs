@@ -10,7 +10,7 @@
         /// </summary>
         /// <param name="result"></param>
         /// <param name="text"></param>
-        public InputDialogResult(string result, string? text)
+        internal InputDialogResult(string result, string? text = null)
         {
             Result = result;
             Text = !string.IsNullOrWhiteSpace(text) ? text : null;
