@@ -246,7 +246,12 @@ function Show-ADTInstallationProgress
                 else
                 {
                     Write-ADTLogEntry -Message "Updating the progress dialog with message: [$($PSBoundParameters.StatusMessage)]."
-                    [PSADT.UserInterface.DialogManager]::UpdateProgressDialog($PSBoundParameters.StatusMessage, $PSBoundParameters.StatusMessageDetail)
+                    [PSADT.UserInterface.DialogManager]::UpdateProgressDialog(
+                        $PSBoundParameters.StatusMessage,
+                        $PSBoundParameters.StatusMessageDetail,
+                        $(if ($PSBoundParameters.ContainsKey('StatusBarPercentage')) { $StatusBarPercentage }),
+                        $(if ($PSBoundParameters.ContainsKey('MessageAlignment')) { $MessageAlignment })
+                    )
                 }
             }
             catch
