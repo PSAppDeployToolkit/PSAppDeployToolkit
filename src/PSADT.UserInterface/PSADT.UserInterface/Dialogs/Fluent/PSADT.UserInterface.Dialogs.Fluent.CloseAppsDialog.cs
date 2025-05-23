@@ -427,17 +427,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            if (null != _runningProcessService)
+            if (disposing)
             {
-                _runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
-            }
-            _disposed = true;
-
-            if (!disposing)
-            {
-                return;
+                if (null != _runningProcessService)
+                {
+                    _runningProcessService.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
+                }
             }
             base.Dispose(disposing);
+            _disposed = true;
         }
     }
 }
