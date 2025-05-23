@@ -19,32 +19,32 @@ namespace PSADT.UserInterface.Dialogs
         Fluent,
     }
 
-    internal enum DialogType
+    public enum DialogType
     {
         /// <summary>
         /// Represents the CloseAppsDialog type.
         /// </summary>
-        CloseApps,
+        CloseAppsDialog,
 
         /// <summary>
         /// Represents the CustomDialog type.
         /// </summary>
-        Custom,
+        CustomDialog,
 
         /// <summary>
         /// Represents the InputDialog type.
         /// </summary>
-        Input,
+        InputDialog,
 
         /// <summary>
         /// Represents the ProgressDialog type.
         /// </summary>
-        Progress,
+        ProgressDialog,
 
         /// <summary>
         /// Represents the RestartDialog type.
         /// </summary>
-        Restart,
+        RestartDialog,
     }
 
     /// <summary>

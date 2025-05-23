@@ -41,7 +41,7 @@ namespace PSADT.UserInterface
                 options.RunningProcessService.Start();
                 stopProcessService = true;
             }
-            var result = ShowModalDialog<string>(DialogType.CloseApps, dialogStyle, options);
+            var result = ShowModalDialog<string>(DialogType.CloseAppsDialog, dialogStyle, options);
             if (stopProcessService)
             {
                 options.RunningProcessService!.Stop();
@@ -56,7 +56,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and buttons.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
-        public static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options) => ShowModalDialog<string>(DialogType.Custom, dialogStyle, options);
+        public static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options) => ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
 
         /// <summary>
         /// Displays an input dialog box with the specified style and options, and returns the result.
@@ -65,7 +65,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options for configuring the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog result (e.g., OK or Cancel).</returns>
-        public static InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options) => ShowModalDialog<InputDialogResult>(DialogType.Input, dialogStyle, options);
+        public static InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options) => ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
 
         /// <summary>
         /// Displays a modal dialog prompting the user to restart the application.
@@ -73,7 +73,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">Options that configure the restart dialog, such as title, message, and button labels.</param>
         /// <returns>A string representing the user's response to the dialog. The value depends on the implementation of the dialog and the options provided.</returns>
-        public static string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options) => ShowModalDialog<string>(DialogType.Restart, dialogStyle, options);
+        public static string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options) => ShowModalDialog<string>(DialogType.RestartDialog, dialogStyle, options);
 
         /// <summary>
         /// Displays a progress dialog with the specified style and options.
@@ -90,7 +90,7 @@ namespace PSADT.UserInterface
             }
             InvokeDialogAction(() =>
             {
-                progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.Progress](options);
+                progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options);
                 progressDialog.Show();
             });
             progressInitialized.Set();
@@ -262,21 +262,21 @@ namespace PSADT.UserInterface
             {
                 DialogStyle.Classic, new ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, IDialogBase>>
                 {
-                    { DialogType.CloseApps, options => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options) },
-                    { DialogType.Custom, options => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
-                    { DialogType.Input, options => new Dialogs.Classic.InputDialog((InputDialogOptions)options) },
-                    { DialogType.Progress, options => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options) },
-                    { DialogType.Restart, options => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options) },
+                    { DialogType.CloseAppsDialog, options => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options) },
+                    { DialogType.CustomDialog, options => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
+                    { DialogType.InputDialog, options => new Dialogs.Classic.InputDialog((InputDialogOptions)options) },
+                    { DialogType.ProgressDialog, options => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options) },
+                    { DialogType.RestartDialog, options => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options) },
                 })
             },
             {
                 DialogStyle.Fluent, new ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, IDialogBase>>
                 {
-                    { DialogType.CloseApps, options => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options) },
-                    { DialogType.Custom, options => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
-                    { DialogType.Input, options => new Dialogs.Fluent.InputDialog((InputDialogOptions)options) },
-                    { DialogType.Progress, options => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options) },
-                    { DialogType.Restart, options => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options) },
+                    { DialogType.CloseAppsDialog, options => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options) },
+                    { DialogType.CustomDialog, options => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
+                    { DialogType.InputDialog, options => new Dialogs.Fluent.InputDialog((InputDialogOptions)options) },
+                    { DialogType.ProgressDialog, options => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options) },
+                    { DialogType.RestartDialog, options => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options) },
                 })
             }
         });
