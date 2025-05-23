@@ -8,7 +8,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface", "PSAD
 		{9C49D0E5-7139-12D7-AAF4-05D3217DF2C8} = {9C49D0E5-7139-12D7-AAF4-05D3217DF2C8}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface.TestHarness", "PSADT.Exe\PSADT.UserInterface.TestHarness.csproj", "{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSADT.UserInterface.TestHarness", "PSADT.UserInterface.TestHarness\PSADT.UserInterface.TestHarness.csproj", "{A26DB0A4-3DEF-486A-8D45-516A279B6FE3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wpf.Ui", "..\..\lib\wpfui\src\Wpf.Ui\Wpf.Ui.csproj", "{8AF5D89E-60DB-47C8-A376-11317BD8FE1C}"
 EndProject
