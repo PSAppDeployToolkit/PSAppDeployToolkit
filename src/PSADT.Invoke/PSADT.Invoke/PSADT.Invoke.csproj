@@ -1,21 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BBB137BE-D8A2-4781-B393-B92D7F47FD77}</ProjectGuid>
+    <TargetFramework>net462</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>PSADT</RootNamespace>
+    <RootNamespace>PSADT.Invoke</RootNamespace>
     <AssemblyName>Invoke-AppDeployToolkit</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
-    <PublishUrl>publish\</PublishUrl>
+    <Product>PSAppDeployToolkit Deployment Script Launcher</Product>
+    <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
+    <AssemblyTitle>PSAppDeployToolkit Deployment Script Launcher</AssemblyTitle>
+    <AssemblyDescription>Launches a PSAppDeployToolkit Invoke-AppDeployToolkit.ps1 script without a PowerShell console window being visible.</AssemblyDescription>
+    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
+    <InformationalVersion>4.1.0</InformationalVersion>
+    <WarningLevel>9999</WarningLevel>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -27,34 +23,21 @@
     <MapFileExtensions>true</MapFileExtensions>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <BootstrapperEnabled>false</BootstrapperEnabled>
     <RuntimeIdentifiers>win</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\net462\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>5</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <WarningLevel>9999</WarningLevel>
     <PreferNativeArm64>true</PreferNativeArm64>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <DebugType>full</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\net462\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
     <PreferNativeArm64>true</PreferNativeArm64>
+    <DebugType>full</DebugType>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>PSADT.Invoke.Program</StartupObject>
@@ -66,7 +49,6 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
     <Reference Include="System.Management.Automation">
       <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
       <Private>False</Private>
@@ -74,25 +56,6 @@
     <Reference Include="Microsoft.VisualBasic" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LibraryInterfaces\PSADT.Invoke.LibraryInterfaces.Class.Kernel32.cs" />
-    <Compile Include="LibraryInterfaces\PSADT.Invoke.LibraryInterfaces.Class.NtDll.cs" />
-    <Compile Include="LibraryInterfaces\PSADT.Invoke.LibraryInterfaces.Class.User32.cs" />
-    <Compile Include="LibraryInterfaces\PSADT.Invoke.LibraryInterfaces.Enums.cs" />
-    <Compile Include="Utilities\PSADT.Invoke.Utilities.Class.ProcessUtilities.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Invoke.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Properties\appIcon.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.6.2">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.6.2 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

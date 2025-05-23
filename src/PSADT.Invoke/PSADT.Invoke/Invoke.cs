@@ -457,7 +457,7 @@ namespace PSADT.Invoke
         /// <summary>
         /// The version of the executing assembly.
         /// </summary>
-        private static readonly string assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
+        private static readonly string assemblyVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion.Split('+')[0];
 
         /// <summary>
         /// The path to the PSAppDeployToolkit module.
