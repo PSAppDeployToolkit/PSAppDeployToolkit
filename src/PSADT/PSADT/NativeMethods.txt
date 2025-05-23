@@ -37,6 +37,8 @@ GetExitCodeProcess
 GetExitCodeThread
 GetForegroundWindow
 GetNativeSystemInfo
+GetPrivateProfileSectionNames
+GetPrivateProfileSection
 GetPrivateProfileString
 GetProcAddress
 GetProcessId
@@ -192,6 +194,7 @@ WM_COMMAND
 WM_NCLBUTTONDOWN
 WM_SETTINGCHANGE
 WM_SYSCOMMAND
+WritePrivateProfileSection
 WritePrivateProfileString
 WTS_CURRENT_SERVER_HANDLE
 WTS_PROTOCOL_TYPE_CONSOLE

@@ -1,6 +1,10 @@
-﻿using System;
-using PSADT.Extensions;
+﻿using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
+using System;
+using System.Collections;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Text;
 
 namespace PSADT.Utilities
 {
@@ -33,6 +37,116 @@ namespace PSADT.Utilities
         public static void WriteSectionKeyValue(string section, string? key, string? value, string filepath)
         {
             Kernel32.WritePrivateProfileString(section, key, value, filepath);
+        }
+
+        /// <summary>
+        /// Gets all key/value pairs in a section of an INI file.
+        /// </summary>
+        /// <param name="section">The section name</param>
+        /// <param name="filepath">Path to the INI file</param>
+        /// <returns>OrderedDictionary of key/value pairs in the section</returns>
+        public static OrderedDictionary? GetSection(string section, string filepath)
+        {
+            var sections = GetSectionNames(filepath);
+            if (!sections.Contains(section, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException($"Section [{section}] was not found in the INI file.");
+            }
+
+            var buffer = new char[65536];
+
+            uint res;
+            try
+            {
+                res = Kernel32.GetPrivateProfileSection(section, buffer, filepath);
+            }
+            catch
+            {
+                return null;
+            }
+            if (res == 0)
+            {
+                return null;
+            }
+
+            var entries = new string(buffer, 0, (int)res).Split('\0');
+            var dictionary = new OrderedDictionary();
+
+            foreach (var entry in entries)
+            {
+                if (string.IsNullOrEmpty(entry)) continue;
+
+                var separatorIndex = entry.IndexOf('=');
+                if (separatorIndex <= 0) continue;
+
+                var key = entry.Substring(0, separatorIndex);
+                var value = entry.Substring(separatorIndex + 1);
+
+                if (dictionary.Contains(key))
+                {
+                    dictionary[key] = value;
+                }
+                else
+                {
+                    dictionary.Add(key, value);
+                }
+            }
+
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Gets all section names from an INI file.
+        /// </summary>
+        /// <param name="filepath">Path to the INI file</param>
+        /// <returns>Array of section names</returns>
+        public static string[] GetSectionNames(string filepath)
+        {
+            var buffer = new char[65536];
+            var res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
+            var names = new string(buffer, 0, (int)res).Split('\0').Where(name => !string.IsNullOrEmpty(name)).ToArray();
+
+            return names;
+        }
+
+        /// <summary>
+        /// Writes multiple key/value pairs to a section in an INI file.
+        /// </summary>
+        /// <param name="section">The section name</param>
+        /// <param name="keyValuePairs">Collection of key/value pairs to write</param>
+        /// <param name="filepath">Path to the INI file</param>
+        public static void WriteSection(string section, IDictionary? keyValuePairs, string filepath)
+        {
+            if (keyValuePairs == null)
+            {
+                Kernel32.WritePrivateProfileSection(section, null, filepath);
+                return;
+            }
+
+            var entries = new StringBuilder();
+            if (keyValuePairs.Count == 0)
+            {
+                entries.Append('\0');
+            }
+            else
+            {
+                foreach (DictionaryEntry kvp in keyValuePairs)
+                {
+                    string key = kvp.Key?.ToString()?.Trim() ?? string.Empty;
+                    if (string.IsNullOrEmpty(key))
+                    {
+                        continue;
+                    }
+
+                    entries.Append(key);
+                    entries.Append('=');
+                    entries.Append(kvp.Value);
+                    entries.Append('\0');
+                }
+            }
+            entries.Append('\0');
+
+            Kernel32.WritePrivateProfileSection(section, entries.ToString(), filepath);
         }
     }
 }
