@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace PSADT.UserInterface
 {
@@ -21,7 +23,7 @@ namespace PSADT.UserInterface
             // Print a message if no arguments are passed.
             if (args?.Length == 0)
             {
-                var helpTitle = "PSAppDeployToolkit User Interface Display Server";
+                var helpTitle = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileDescription!;
                 var helpMessage = string.Join(Environment.NewLine, new[]
                 {
                     helpTitle,

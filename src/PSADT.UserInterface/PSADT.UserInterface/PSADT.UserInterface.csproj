@@ -17,7 +17,9 @@
 	  <RootNamespace>PSADT.UserInterface</RootNamespace>
 	  <Authors>PSAppDeployToolkit Team</Authors>
 	  <Company>PSAppDeployToolkit Team</Company>
-		<Description>PSAppDeployToolkit User Interface Library</Description>
+	  <AssemblyTitle>PSAppDeployToolkit User Interface Display Server</AssemblyTitle>
+	  <AssemblyDescription>PSAppDeployToolkit User Interface Display Server</AssemblyDescription>
+		<Description>PSAppDeployToolkit User Interface Display Server</Description>
 		<Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
 		<AssemblyVersion>4.1.0.0</AssemblyVersion>
 		<FileVersion>4.1.0</FileVersion>
