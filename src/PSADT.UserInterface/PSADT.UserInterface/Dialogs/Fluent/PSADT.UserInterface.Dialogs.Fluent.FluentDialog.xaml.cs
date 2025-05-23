@@ -270,6 +270,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Position the window
             PositionWindow();
+
+            // Record the starting point for the window.
+            _startingLeft = Left;
+            _startingTop = Top;
         }
 
         /// <summary>
@@ -538,6 +542,17 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
+        /// Restores the window to its normal state and repositions it to its original location.
+        /// </summary>
+        protected void RestoreWindow()
+        {
+            // Reset the window and restore its location.
+            WindowState = WindowState.Normal;
+            Left = _startingLeft;
+            Top = _startingTop;
+        }
+
+        /// <summary>
         /// Updates the layout of the action buttons based on their visibility.
         /// </summary>
         private void UpdateButtonLayout()
@@ -729,6 +744,16 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// The end date/time for the countdown duration, as determined during form load.
         /// </summary>
         protected readonly Stopwatch _countdownStopwatch;
+
+        /// <summary>
+        /// Represents the initial top position of an element or object.
+        /// </summary>
+        private double _startingTop;
+
+        /// <summary>
+        /// Represents the initial left position of the window.
+        /// </summary>
+        private double _startingLeft;
 
         /// <summary>
         /// Dialog icon cache for improved performance

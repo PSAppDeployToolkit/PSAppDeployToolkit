@@ -85,7 +85,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else if (null != _countdownWarningDuration && _countdownStopwatch.Elapsed >= _countdownWarningDuration)
             {
-                Dispatcher.Invoke(() => ButtonRight.IsEnabled = false);
+                Dispatcher.Invoke(() =>
+                {
+                    ButtonRight.IsEnabled = false;
+                    RestoreWindow();
+                });
             }
         }
     }

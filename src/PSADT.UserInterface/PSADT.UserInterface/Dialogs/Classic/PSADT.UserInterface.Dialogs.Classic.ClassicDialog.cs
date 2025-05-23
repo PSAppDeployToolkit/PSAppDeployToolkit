@@ -179,6 +179,18 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected bool CanClose() => canClose;
 
         /// <summary>
+        /// Restores the window to its normal state and repositions it to its starting location.
+        /// </summary>
+        /// <remarks>This method resets the window's state to <see cref="FormWindowState.Normal"/>, moves it to the  predefined starting location, and brings it to the front of the z-order.</remarks>
+        protected void RestoreWindow()
+        {
+            // Reset the window and restore its location.
+            this.WindowState = FormWindowState.Normal;
+            this.Location = startingPoint;
+            this.BringToFront();
+        }
+
+        /// <summary>
         /// Handles the timer tick event for persisting the dialog.
         /// </summary>
         /// <param name="sender"></param>
@@ -186,9 +198,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private void PersistTimer_Tick(object? sender, EventArgs e)
         {
             // Reset the window and restore its location.
-            this.WindowState = FormWindowState.Normal;
-            this.Location = startingPoint;
-            this.BringToFront();
+            RestoreWindow();
         }
 
         /// <summary>

@@ -169,7 +169,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
             }
             else if ((null != minimizeDuration) && (countdownStopwatch.Elapsed >= minimizeDuration))
             {
-                this.Invoke(() => buttonMinimize.Enabled = false);
+                this.Invoke(() =>
+                {
+                    buttonMinimize.Enabled = false;
+                    RestoreWindow();
+                });
             }
         }
 
