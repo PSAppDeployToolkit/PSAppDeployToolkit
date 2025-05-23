@@ -510,36 +510,32 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Get the working area in DIPs.
             Rect workingArea = SystemParameters.WorkArea;
 
-            // Ensure layout is updated to get ActualWidth and ActualHeight.
-            double windowWidth = ActualWidth;
-            double windowHeight = ActualHeight;
-
             // Calculate positions based on window position setting.
             double left, top;
             switch (_dialogPosition)
             {
                 case DialogPosition.Center:
                     // Center horizontally and vertically
-                    left = workingArea.Left + ((workingArea.Width - windowWidth) / 2);
-                    top = workingArea.Top + ((workingArea.Height - windowHeight) / 2);
+                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                    top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2);
                     break;
 
                 case DialogPosition.TopCenter:
                     // Center horizontally, align to top
-                    left = workingArea.Left + ((workingArea.Width - windowWidth) / 2);
+                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
                     top = workingArea.Top;
                     break;
 
                 default:
                     // Align to bottom right (original behavior)
-                    left = workingArea.Left + (workingArea.Width - windowWidth);
-                    top = workingArea.Top + (workingArea.Height - windowHeight);
+                    left = workingArea.Left + (workingArea.Width - ActualWidth);
+                    top = workingArea.Top + (workingArea.Height - ActualHeight);
                     break;
             }
 
             // Ensure the window is within the screen bounds.
-            left = Math.Max(workingArea.Left, Math.Min(left, workingArea.Right - windowWidth));
-            top = Math.Max(workingArea.Top, Math.Min(top, workingArea.Bottom - windowHeight));
+            left = Math.Max(workingArea.Left, Math.Min(left, workingArea.Right - ActualWidth));
+            top = Math.Max(workingArea.Top, Math.Min(top, workingArea.Bottom - ActualHeight));
 
             // Align positions to whole pixels.
             left = Math.Floor(left);
