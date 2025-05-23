@@ -37,6 +37,9 @@ function Show-ADTInstallationPrompt
     .PARAMETER Icon
         Show a system icon in the prompt.
 
+    .PARAMETER WindowLocation
+        The location of the dialog on the screen.
+
     .PARAMETER NoWait
         Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
 
@@ -116,6 +119,10 @@ function Show-ADTInstallationPrompt
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.Dialogs.DialogSystemIcon]$Icon,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowCustomDialog')]
         [System.Management.Automation.SwitchParameter]$NoWait,
@@ -241,10 +248,6 @@ function Show-ADTInstallationPrompt
                     DialogExpiryDuration = $PSBoundParameters.Timeout
                     MessageText = $Message
                 }
-                if ($PSBoundParameters.ContainsKey('DefaultValue'))
-                {
-                    $dialogOptions.InitialInputText = $DefaultValue
-                }
                 if ($PSBoundParameters.ContainsKey('MessageAlignment'))
                 {
                     if ($adtConfig.UI.DialogStyle -eq 'Fluent')
@@ -252,6 +255,10 @@ function Show-ADTInstallationPrompt
                         Write-ADTLogEntry -Message "The parameter [-MessageAlignment] is not supported with Fluent dialogs and has no effect." -Severity 2
                     }
                     $dialogOptions.MessageAlignment = $MessageAlignment
+                }
+                if ($PSBoundParameters.ContainsKey('DefaultValue'))
+                {
+                    $dialogOptions.InitialInputText = $DefaultValue
                 }
                 if ($ButtonRightText)
                 {
@@ -268,6 +275,10 @@ function Show-ADTInstallationPrompt
                 if ($Icon)
                 {
                     $dialogOptions.Add('Icon', $Icon)
+                }
+                if ($PSBoundParameters.ContainsKey('WindowLocation'))
+                {
+                    $dialogOptions.Add('DialogPosition', $WindowLocation)
                 }
                 if ($PersistPrompt)
                 {

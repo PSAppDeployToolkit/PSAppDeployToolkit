@@ -68,6 +68,9 @@ function Show-ADTInstallationWelcome
         - To specify 30 minutes, use: `([System.TimeSpan]::FromMinutes(30))`.
         - To specify 24 hours, use: `([System.TimeSpan]::FromHours(24))`.
 
+    .PARAMETER WindowLocation
+        The location of the dialog on the screen.
+
     .PARAMETER BlockExecution
         Option to prevent the user from launching processes/applications, specified in -CloseProcesses, during the deployment.
 
@@ -358,6 +361,31 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in [-CloseProcesses] is still running after a deferral.')]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$DeferRunInterval,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdown', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDefer', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdown', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCountdownCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdown', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdown', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcesses', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdown', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCountdownCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdown', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = 'The location of the dialog on the screen.')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = 'The location of the dialog on the screen.')]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify whether to block execution of the processes during deployment.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesCheckDiskSpace', HelpMessage = 'Specify whether to block execution of the processes during deployment.')]
@@ -915,6 +943,10 @@ function Show-ADTInstallationWelcome
                         {
                             $dialogOptions.Add('DeferralDeadline', [System.DateTime]$deferDeadlineUniversal)
                         }
+                    }
+                    if ($PSBoundParameters.ContainsKey('WindowLocation'))
+                    {
+                        $dialogOptions.Add('DialogPosition', $WindowLocation)
                     }
                     if ($CustomText)
                     {

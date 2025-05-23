@@ -13,8 +13,9 @@ Displays a progress dialog in a separate thread with an updateable custom messag
 
 ```powershell
 Show-ADTInstallationProgress [[-StatusMessage] <String>] [[-StatusMessageDetail] <String>]
- [[-StatusBarPercentage] <Double>] [[-MessageAlignment] <DialogMessageAlignment>] [[-WindowLocation] <String>]
- [-NotTopMost] [-NoRelocation] -Title <String> -Subtitle <String> [<CommonParameters>]
+ [[-StatusBarPercentage] <Double>] [[-MessageAlignment] <DialogMessageAlignment>]
+ [[-WindowLocation] <DialogPosition>] [-NotTopMost] [-NoRelocation] -Title <String> -Subtitle <String>
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -130,16 +131,17 @@ Accept wildcard characters: False
 
 ### -WindowLocation
 
-The location of the progress window.
+The location of the dialog on the screen.
 
 ```yaml
-Type: String
+Type: DialogPosition
 Parameter Sets: (All)
 Aliases:
+Accepted values: TopLeft, Top, TopRight, TopCenter, BottomLeft, Bottom, BottomRight, BottomCenter, Center
 
 Required: False
 Position: 5
-Default value: Center
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

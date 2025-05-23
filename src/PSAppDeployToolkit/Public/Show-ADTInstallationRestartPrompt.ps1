@@ -28,6 +28,9 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER NoCountdown
         Specifies whether the user should receive a prompt to immediately restart their workstation.
 
+    .PARAMETER WindowLocation
+        The location of the dialog on the screen.
+
     .PARAMETER CustomText
         Specify whether to display a custom message specified in the `strings.psd1` file. Custom message must be populated for each language section in the `strings.psd1` file.
 
@@ -91,6 +94,10 @@ function Show-ADTInstallationRestartPrompt
         [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [ValidateNotNullOrEmpty()]
         [System.UInt32]$SilentCountdownSeconds = 5,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
@@ -199,16 +206,19 @@ function Show-ADTInstallationRestartPrompt
                     DialogAllowMove = $true
                     DialogTopMost = !$NotTopMost
                     Strings = $adtStrings.RestartPrompt
-
-                }
-                if ($CustomText)
-                {
-                    $dialogOptions.CustomMessageText = $adtStrings.RestartPrompt.CustomMessage
                 }
                 if (!$NoCountdown)
                 {
                     $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CountdownSeconds))
                     $dialogOptions.Add('CountdownNoMinimizeDuration', [System.TimeSpan]::FromSeconds($CountdownNoHideSeconds))
+                }
+                if ($PSBoundParameters.ContainsKey('WindowLocation'))
+                {
+                    $dialogOptions.Add('DialogPosition', $WindowLocation)
+                }
+                if ($CustomText)
+                {
+                    $dialogOptions.CustomMessageText = $adtStrings.RestartPrompt.CustomMessage
                 }
                 if ($null -ne $adtConfig.UI.FluentAccentColor)
                 {

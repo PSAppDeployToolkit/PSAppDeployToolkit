@@ -100,7 +100,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             AutomationProperties.SetName(this, options.AppTitle);
 
             // Set remaining properties from the options
-            _dialogPosition = options.DialogPosition;
+            if (null != options.DialogPosition)
+            {
+                _dialogPosition = options.DialogPosition.Value;
+            }
             WindowStartupLocation = WindowStartupLocation.Manual;
             _dialogAllowMove = options.DialogAllowMove;
             Topmost = options.DialogTopMost;
@@ -514,18 +517,55 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             double left, top;
             switch (_dialogPosition)
             {
+                case DialogPosition.TopLeft:
+                    // Align to top left corner
+                    left = workingArea.Left;
+                    top = workingArea.Top;
+                    break;
+
+                case DialogPosition.Top:
+                    // Center horizontally, align to top
+                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                    top = workingArea.Top;
+                    break;
+
+                case DialogPosition.TopRight:
+                    // Align to top right corner
+                    left = workingArea.Left + (workingArea.Width - ActualWidth);
+                    top = workingArea.Top;
+                    break;
+
+                case DialogPosition.TopCenter:
+                    // Center horizontally, align to top but not to the top of the screen
+                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                    top = workingArea.Top + ((workingArea.Height - ActualHeight) * (1.0 / 6.0));
+                    break;
+
                 case DialogPosition.Center:
                     // Center horizontally and vertically
                     left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
                     top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2);
                     break;
 
-                case DialogPosition.TopCenter:
-                    // Center horizontally, align to top
-                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
-                    top = workingArea.Top;
+                case DialogPosition.BottomLeft:
+                    // Align to bottom left corner
+                    left = workingArea.Left;
+                    top = workingArea.Top + (workingArea.Height - ActualHeight);
                     break;
 
+                case DialogPosition.Bottom:
+                    // Center horizontally, align to bottom
+                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                    top = workingArea.Top + (workingArea.Height - ActualHeight);
+                    break;
+
+                case DialogPosition.BottomCenter:
+                    // Center horizontally, align to bottom but not to the bottom of the screen
+                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                    top = workingArea.Top + ((workingArea.Height - ActualHeight) * (5.0 / 6.0));
+                    break;
+
+                case DialogPosition.BottomRight:
                 default:
                     // Align to bottom right (original behavior)
                     left = workingArea.Left + (workingArea.Width - ActualWidth);
@@ -542,8 +582,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             top = Math.Floor(top);
 
             // Adjust for workArea offset.
-            left += 1;
-            top += 1;
+            string dialogPosName = _dialogPosition.ToString();
+            left += dialogPosName.EndsWith("Right") ? 1 : dialogPosName.EndsWith("Left") ? -1 : 0;
+            top += dialogPosName.EndsWith("Bottom") ? 1 : dialogPosName.EndsWith("Top") ? -1 : 0;
 
             // Set positions in DIPs.
             Left = left;
@@ -727,7 +768,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The specified position of the dialog.
         /// </summary>
-        private readonly DialogPosition _dialogPosition;
+        private readonly DialogPosition _dialogPosition = DialogPosition.BottomRight;
 
         /// <summary>
         /// Whether the dialog is allowed to be moved.

@@ -16,8 +16,8 @@ Displays a custom installation prompt with the toolkit branding and optional but
 ```powershell
 Show-ADTInstallationPrompt -Message <String> [-MessageAlignment <DialogMessageAlignment>]
  [-ButtonRightText <String>] [-ButtonLeftText <String>] [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>]
- [-NoWait] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] -Title <String>
- -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
+ [-WindowLocation <DialogPosition>] [-NoWait] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout]
+ [-NotTopMost] -Title <String> -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
 ```
 
 ### ShowInputDialog
@@ -25,8 +25,9 @@ Show-ADTInstallationPrompt -Message <String> [-MessageAlignment <DialogMessageAl
 ```powershell
 Show-ADTInstallationPrompt [-RequestInput] [-DefaultValue <String>] -Message <String>
  [-MessageAlignment <DialogMessageAlignment>] [-ButtonRightText <String>] [-ButtonLeftText <String>]
- [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>] [-PersistPrompt] [-MinimizeWindows] [-NoExitOnTimeout]
- [-NotTopMost] -Title <String> -Subtitle <String> [-Timeout <TimeSpan>] [<CommonParameters>]
+ [-ButtonMiddleText <String>] [-Icon <DialogSystemIcon>] [-WindowLocation <DialogPosition>] [-PersistPrompt]
+ [-MinimizeWindows] [-NoExitOnTimeout] [-NotTopMost] -Title <String> -Subtitle <String> [-Timeout <TimeSpan>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -180,6 +181,23 @@ Type: DialogSystemIcon
 Parameter Sets: (All)
 Aliases:
 Accepted values: Application, Asterisk, Error, Exclamation, Hand, Information, Question, Shield, Warning, WinLogo
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WindowLocation
+
+The location of the dialog on the screen.
+
+```yaml
+Type: DialogPosition
+Parameter Sets: (All)
+Aliases:
+Accepted values: TopLeft, Top, TopRight, TopCenter, BottomLeft, Bottom, BottomRight, BottomCenter, Center
 
 Required: False
 Position: Named

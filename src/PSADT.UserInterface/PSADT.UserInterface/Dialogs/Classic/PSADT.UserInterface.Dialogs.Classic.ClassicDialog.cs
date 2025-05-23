@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -48,7 +45,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
                 this.pictureBanner.Image = ClassicAssets.GetBanner(options.AppBannerImage);
                 this.pictureBanner.Size = new Size(450, (int)Math.Ceiling(450.0 * ((double)this.pictureBanner.Image.Height / (double)this.pictureBanner.Image.Width)));
-                #warning "TODO: DialogPosition?"
                 #warning "TODO: DialogAllowMove?"
                 this.TopMost = options.DialogTopMost;
                 this.flowLayoutPanelBase.ResumeLayout();
@@ -61,6 +57,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     this.persistTimer = new Timer() { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
                     this.persistTimer.Tick += PersistTimer_Tick;
+                }
+
+                // Set the optional dialog position.
+                if (null != options.DialogPosition)
+                {
+                    _dialogPosition = options.DialogPosition.Value;
                 }
             }
         }
@@ -148,6 +150,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.ControlBox = false;
             }
 
+            // Set the form's starting location.
+            PositionForm();
+
             // Start the persist timer if it's available.
             startingPoint = this.Location;
             persistTimer?.Start();
@@ -191,6 +196,83 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
+        /// Positions the form on the screen based on the specified dialog position.
+        /// </summary>
+        /// <remarks>The form is positioned within the working area of the screen that contains the form. The position is determined by the <see cref="_dialogPosition"/> field, which specifies  predefined locations such as top-left, center, or bottom-right. If the calculated position  exceeds the working area bounds, it is clamped to ensure the form remains fully visible.</remarks>
+        private void PositionForm()
+        {
+            // Get the working area (pixels not DIPs)
+            var screen = Screen.FromControl(this);
+            Rectangle workingArea = screen.WorkingArea;
+
+            double left, top;
+            switch (_dialogPosition)
+            {
+                case DialogPosition.TopLeft:
+                    left = workingArea.Left;
+                    top  = workingArea.Top;
+                    break;
+
+                case DialogPosition.Top:
+                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    top  = workingArea.Top;
+                    break;
+
+                case DialogPosition.TopRight:
+                    left = workingArea.Right - Width;
+                    top  = workingArea.Top;
+                    break;
+
+                case DialogPosition.TopCenter:
+                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    top  = workingArea.Top + ((workingArea.Height - Height) * (1.0 / 6.0));
+                    break;
+
+                case DialogPosition.BottomLeft:
+                    left = workingArea.Left;
+                    top  = workingArea.Bottom - Height;
+                    break;
+
+                case DialogPosition.Bottom:
+                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    top  = workingArea.Bottom - Height;
+                    break;
+
+                case DialogPosition.BottomCenter:
+                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    top  = workingArea.Top  + ((workingArea.Height - Height) * (5.0 / 6.0));
+                    break;
+
+                case DialogPosition.BottomRight:
+                    left = workingArea.Right - Width;
+                    top  = workingArea.Bottom - Height;
+                    break;
+
+                case DialogPosition.Center:
+                default:
+                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    top  = workingArea.Top  + ((workingArea.Height - Height) / 2);
+                    break;
+            }
+
+            // Clamp to working-area bounds
+            left = Math.Max(workingArea.Left, Math.Min(left, workingArea.Right  - Width));
+            top  = Math.Max(workingArea.Top, Math.Min(top, workingArea.Bottom - Height));
+
+            // Align positions to whole pixels.
+            left = Math.Floor(left);
+            top = Math.Floor(top);
+
+            // Adjust for workArea offset.
+            string dialogPosName = _dialogPosition.ToString();
+            left += dialogPosName.EndsWith("Right") ? 1 : dialogPosName.EndsWith("Left") ? -1 : 0;
+            top += dialogPosName.EndsWith("Bottom") ? 1 : dialogPosName.EndsWith("Top") ? -1 : 0;
+
+            // Set the form’s location
+            Location = new Point((int)left, (int)top);
+        }
+
+        /// <summary>
         /// Handles the timer tick event for persisting the dialog.
         /// </summary>
         /// <param name="sender"></param>
@@ -223,6 +305,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Private backing field for the persist timer.
         /// </summary>
         private Timer? persistTimer = null;
+
+        /// <summary>
+        /// Represents the position of the dialog within its container.
+        /// </summary>
+        /// <remarks>The default value is <see cref="DialogPosition.Center"/>, which centers the dialog.</remarks>
+        private DialogPosition _dialogPosition = DialogPosition.Center;
 
         /// <summary>
         /// Flag to indicate if the dialog can be closed.

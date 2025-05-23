@@ -28,7 +28,7 @@ function Show-ADTInstallationProgress
         The text alignment to use for the status message.
 
     .PARAMETER WindowLocation
-        The location of the progress window.
+        The location of the dialog on the screen.
 
     .PARAMETER NotTopMost
         Specifies whether the progress window shouldn't be topmost.
@@ -99,9 +99,8 @@ function Show-ADTInstallationProgress
         [PSADT.UserInterface.Dialogs.DialogMessageAlignment]$MessageAlignment,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-        [PSDefaultValue(Help = 'Center')]
-        [System.String]$WindowLocation,
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.DialogPosition]$WindowLocation,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
@@ -232,6 +231,10 @@ function Show-ADTInstallationProgress
                     if ($PSBoundParameters.ContainsKey('StatusBarPercentage'))
                     {
                         $dialogOptions.Add('ProgressPercentage', $StatusBarPercentage)
+                    }
+                    if ($PSBoundParameters.ContainsKey('WindowLocation'))
+                    {
+                        $dialogOptions.Add('DialogPosition', $WindowLocation)
                     }
                     if ($null -ne $adtConfig.UI.FluentAccentColor)
                     {

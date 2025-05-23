@@ -53,19 +53,49 @@ namespace PSADT.UserInterface.Dialogs
     public enum DialogPosition
     {
         /// <summary>
-        /// Position in the bottom right corner of the screen (default)
+        /// Represents the top-left corner of the screen.
+        /// </summary>
+        TopLeft,
+
+        /// <summary>
+        /// Represents the top-middle area of the screen.
+        /// </summary>
+        Top,
+
+        /// <summary>
+        /// Represents the top-right corner of the screen.
+        /// </summary>
+        TopRight,
+
+        /// <summary>
+        /// Represents the top-middle area of the screen, half way between the top and center.
+        /// </summary>
+        TopCenter,
+
+        /// <summary>
+        /// Represents the bottom-left corner of the screen.
+        /// </summary>
+        BottomLeft,
+
+        /// <summary>
+        /// Represents the bottom-middle area of the screen.
+        /// </summary>
+        Bottom,
+
+        /// <summary>
+        /// Represents the bottom-right corner of the screen.
         /// </summary>
         BottomRight,
 
         /// <summary>
-        /// Position in the center of the screen
+        /// Represents the bottom-middle area of the screen, half way between the bottom and center.
         /// </summary>
-        Center,
+        BottomCenter,
 
         /// <summary>
-        /// Position at the top center of the screen
+        /// Represents the center of the screen.
         /// </summary>
-        TopCenter,
+        Center,
     }
 
     /// <summary>

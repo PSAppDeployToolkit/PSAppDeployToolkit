@@ -124,7 +124,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
-        public readonly DialogPosition DialogPosition;
+        public readonly DialogPosition? DialogPosition;
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
