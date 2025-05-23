@@ -72,7 +72,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.Size = new System.Drawing.Size(416, 17);
             this.labelMessage.TabIndex = 0;
             this.labelMessage.Text = "Installation in progress. Please wait...";
-            this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelMessage.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // labelDetail
             // 
@@ -86,7 +86,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelDetail.Size = new System.Drawing.Size(416, 15);
             this.labelDetail.TabIndex = 1;
             this.labelDetail.Text = "This window will close automatically when the installation is complete.";
-            this.labelDetail.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelDetail.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // progressBar
             // 

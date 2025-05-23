@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Forms;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
@@ -41,6 +42,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
             {
+                if ((null != options.MessageAlignment) && Enum.TryParse<ContentAlignment>($"Top{options.MessageAlignment}", out var alignment))
+                {
+                    this.labelMessage.TextAlign = alignment;
+                    this.labelDetail.TextAlign = alignment;
+                }
                 this.labelMessage.Text = options.ProgressMessageText;
                 this.labelDetail.Text = options.ProgressDetailMessageText;
             }

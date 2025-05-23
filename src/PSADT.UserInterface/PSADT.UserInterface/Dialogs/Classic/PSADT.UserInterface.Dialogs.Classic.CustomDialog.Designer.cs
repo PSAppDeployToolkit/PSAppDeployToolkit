@@ -80,6 +80,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelMessage.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor in" +
     "cididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud" +
     " exercitation ullamco laboris...";
+            this.labelMessage.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // pictureIcon
             // 

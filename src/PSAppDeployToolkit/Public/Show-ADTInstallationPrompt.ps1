@@ -240,11 +240,18 @@ function Show-ADTInstallationPrompt
                     MinimizeWindows = !!$MinimizeWindows
                     DialogExpiryDuration = $PSBoundParameters.Timeout
                     MessageText = $Message
-                    MessageAlignment = $MessageAlignment
                 }
                 if ($PSBoundParameters.ContainsKey('DefaultValue'))
                 {
                     $dialogOptions.InitialInputText = $DefaultValue
+                }
+                if ($PSBoundParameters.ContainsKey('MessageAlignment'))
+                {
+                    if ($adtConfig.UI.DialogStyle -eq 'Fluent')
+                    {
+                        Write-ADTLogEntry -Message "The parameter [-MessageAlignment] is not supported with Fluent dialogs and has no effect." -Severity 2
+                    }
+                    $dialogOptions.MessageAlignment = $MessageAlignment
                 }
                 if ($ButtonRightText)
                 {

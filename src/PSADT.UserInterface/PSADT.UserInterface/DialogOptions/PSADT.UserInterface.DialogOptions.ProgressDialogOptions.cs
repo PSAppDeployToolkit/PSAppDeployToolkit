@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -24,6 +25,16 @@ namespace PSADT.UserInterface.DialogOptions
                 throw new ArgumentNullException("ProgressDetailMessageText value is null or invalid.", (Exception?)null);
             }
 
+            // Test and set optional values.
+            if (options.ContainsKey("MessageAlignment"))
+            {
+                if (options["MessageAlignment"] is not DialogMessageAlignment messageAlignment)
+                {
+                    throw new ArgumentOutOfRangeException("MessageAlignment value is not valid.", (Exception?)null);
+                }
+                MessageAlignment = messageAlignment;
+            }
+
             // The hashtable was correctly defined, assign the remaining values.
             ProgressMessageText = progressMessageText;
             ProgressDetailMessageText = progressDetailMessageText;
@@ -38,5 +49,10 @@ namespace PSADT.UserInterface.DialogOptions
         /// The detailed message to be displayed in the progress dialog, providing more context or information about the current action.
         /// </summary>
         public readonly string ProgressDetailMessageText;
+
+        /// <summary>
+        /// The alignment of the message text in the dialog.
+        /// </summary>
+        public readonly DialogMessageAlignment? MessageAlignment;
     }
 }

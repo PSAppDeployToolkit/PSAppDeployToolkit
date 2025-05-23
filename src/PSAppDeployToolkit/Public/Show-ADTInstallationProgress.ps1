@@ -214,6 +214,14 @@ function Show-ADTInstallationProgress
                         ProgressMessageText = $PSBoundParameters.StatusMessage
                         ProgressDetailMessageText = $PSBoundParameters.StatusMessageDetail
                     }
+                    if ($PSBoundParameters.ContainsKey('MessageAlignment'))
+                    {
+                        if ($adtConfig.UI.DialogStyle -eq 'Fluent')
+                        {
+                            Write-ADTLogEntry -Message "The parameter [-MessageAlignment] is not supported with Fluent dialogs and has no effect." -Severity 2
+                        }
+                        $dialogOptions.MessageAlignment = $MessageAlignment
+                    }
                     if ($null -ne $adtConfig.UI.FluentAccentColor)
                     {
                         $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
