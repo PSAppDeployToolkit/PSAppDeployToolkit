@@ -99,6 +99,7 @@ RECT
 RegOpenKeyEx
 RegQueryInfoKey
 ReleaseCapture
+RemoveMenu
 ResumeThread
 RtlGetVersion
 RtlNtStatusToDosError

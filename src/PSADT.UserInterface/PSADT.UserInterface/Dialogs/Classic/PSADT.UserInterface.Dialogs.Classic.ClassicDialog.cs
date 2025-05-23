@@ -149,17 +149,24 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected virtual void Form_Load(object? sender, EventArgs e)
         {
-            // Disable the close button on the form. Failing that, disable the ControlBox.
-            try
+            // Adjust the menu depending on our config options.
+            using (var menuHandle = User32.GetSystemMenu((HWND)this.Handle, false))
             {
-                using (var menuHandle = User32.GetSystemMenu((HWND)this.Handle, false))
+                // Disable the close button on the form. Failing that, disable the ControlBox.
+                try
                 {
                     User32.EnableMenuItem(menuHandle, PInvoke.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
                 }
-            }
-            catch
-            {
-                this.ControlBox = false;
+                catch
+                {
+                    this.ControlBox = false;
+                }
+
+                // Disable the move command on the system menu if we can't move the dialog.
+                if (!dialogAllowMove)
+                {
+                    User32.RemoveMenu(menuHandle, PInvoke.SC_MOVE, MENU_ITEM_FLAGS.MF_BYCOMMAND);
+                }
             }
 
             // Set the form's starting location.
