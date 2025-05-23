@@ -147,8 +147,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Minimise the window and restart the persistence timer.
             // Note that we deliberately do not call the base handler!
             this.WindowState = FormWindowState.Minimized;
-            this.PersistTimer?.Stop();
-            this.PersistTimer?.Start();
+            this.persistTimer?.Stop();
+            this.persistTimer?.Start();
         }
 
         /// <summary>

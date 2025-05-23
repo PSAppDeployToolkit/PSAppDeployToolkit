@@ -51,6 +51,13 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.Load += Form_Load;
                 this.ResumeLayout();
 
+                // Set the expiry timer if specified.
+                if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
+                {
+                    this.expiryTimer = new Timer() { Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds };
+                    this.expiryTimer.Tick += (s, e) => CloseDialog();
+                }
+
                 // PersistPrompt timer code.
                 if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
                 {
@@ -180,6 +187,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // We're actually closing. Perform certain disposals here
             // since we can't mess with the designer's Dispose override.
             persistTimer?.Dispose();
+            expiryTimer?.Dispose();
         }
 
         /// <summary>
@@ -304,28 +312,20 @@ namespace PSADT.UserInterface.Dialogs.Classic
         public new object DialogResult { get; private set; } = "Timeout";
 
         /// <summary>
-        /// Timer for persisting the dialog.
+        /// A timer used to restore the dialog's position on the screen at a configured interval.
         /// </summary>
-        protected Timer? PersistTimer
-        {
-            get => persistTimer;
-            private set
-            {
-                persistTimer?.Dispose();
-                persistTimer = value;
-            }
-        }
+        protected readonly Timer? persistTimer;
 
         /// <summary>
-        /// Private backing field for the persist timer.
+        /// A timer used to close the dialog at a configured interval after no user response.
         /// </summary>
-        private Timer? persistTimer = null;
+        private readonly Timer? expiryTimer;
 
         /// <summary>
         /// Represents the position of the dialog within its container.
         /// </summary>
         /// <remarks>The default value is <see cref="DialogPosition.Center"/>, which centers the dialog.</remarks>
-        private DialogPosition dialogPosition = DialogPosition.Center;
+        private readonly DialogPosition dialogPosition = DialogPosition.Center;
 
         /// <summary>
         /// Indicates whether the dialog is allowed to be moved.

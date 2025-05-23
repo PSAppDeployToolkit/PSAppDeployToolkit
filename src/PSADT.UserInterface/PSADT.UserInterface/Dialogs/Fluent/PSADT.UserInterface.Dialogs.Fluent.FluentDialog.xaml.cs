@@ -136,6 +136,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Set app icon
             SetDialogIcon(options.AppIconImage);
 
+            // Set the expiry timer if specified.
+            if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
+            {
+                _expiryTimer = new DispatcherTimer() { Interval = options.DialogExpiryDuration.Value };
+                _expiryTimer.Tick += (sender, e) => CloseDialog();
+            }
+
             // PersistPrompt timer code.
             if (null != options.DialogPersistInterval && options.DialogPersistInterval.Value != TimeSpan.Zero)
             {
@@ -798,9 +805,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected readonly Stopwatch _countdownStopwatch;
 
         /// <summary>
-        /// A timer used to periodically trigger persistence operations.
+        /// A timer used to close the dialog at a configured interval after no user response.
         /// </summary>
-        /// <remarks>This timer is initialized but not exposed publicly. It is used internally to manage periodic tasks, such as saving data or maintaining state.</remarks>
+        private readonly DispatcherTimer _expiryTimer = new();
+
+        /// <summary>
+        /// A timer used to restore the dialog's position on the screen at a configured interval.
+        /// </summary>
         private readonly DispatcherTimer _persistTimer = new();
 
         /// <summary>
