@@ -61,6 +61,9 @@
         # Same as LogPath but used when RequireAdmin is False.
         LogPathNoAdminRights = '$envProgramData\Logs\Software'
 
+        # Specifies that logging should be to a hierarchical structure of AppVendor\AppName\AppVersion. Takes precident over "LogToSubfolder" if both are set.
+        LogToHierarchy = $false
+
         # Specifies that a subfolder based on InstallName should be used for all log capturing.
         LogToSubfolder = $false
 

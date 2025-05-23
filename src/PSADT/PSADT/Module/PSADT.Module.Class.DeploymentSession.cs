@@ -425,7 +425,11 @@ namespace PSADT.Module
                 }
 
                 // Append subfolder path if configured to do so.
-                if ((bool)configToolkit["LogToSubfolder"]!)
+                if ((bool)configToolkit["LogToHierarchy"]!)
+                {
+                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, $@"{_appVendor}\{_appName}\{_appVersion}".Replace(@"\\", string.Empty))).FullName;
+                }
+                else if ((bool)configToolkit["LogToSubfolder"]!)
                 {
                     LogPath = Directory.CreateDirectory(Path.Combine(LogPath, _installName)).FullName;
                 }

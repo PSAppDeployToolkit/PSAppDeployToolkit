@@ -47,6 +47,8 @@
 			<string id="LogPath_Explain">Log path used for Toolkit logging.</string>
 			<string id="LogPathNoAdminRights_Display">LogPathNoAdminRights</string>
 			<string id="LogPathNoAdminRights_Explain">Same as LogPath but used when RequireAdmin is False.</string>
+			<string id="LogToHierarchy_Display">LogToHierarchy</string>
+			<string id="LogToHierarchy_Explain">Specifies that logging should be to a hierarchical structure of AppVendor\AppName\AppVersion. Takes precident over "LogToSubfolder" if both are set.</string>
 			<string id="LogToSubfolder_Display">LogToSubfolder</string>
 			<string id="LogToSubfolder_Explain">Specifies that a subfolder based on InstallName should be used for all log capturing.</string>
 			<string id="LogStyle_Display">LogStyle</string>

@@ -178,6 +178,16 @@
 				<text id="LogPathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogPathNoAdminRights" required="true" expandable="true" />
 			</elements>
 		</policy>
+		<policy name="LogToHierarchy" class="Machine" displayName="$(string.LogToHierarchy_Display)" explainText="$(string.LogToHierarchy_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogToHierarchy">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<enabledValue>
+				<string>True</string>
+			</enabledValue>
+			<disabledValue>
+				<disabled />
+			</disabledValue>
+		</policy>
 		<policy name="LogToSubfolder" class="Machine" displayName="$(string.LogToSubfolder_Display)" explainText="$(string.LogToSubfolder_Explain)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="LogToSubfolder">
 			<parentCategory ref="Toolkit" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
