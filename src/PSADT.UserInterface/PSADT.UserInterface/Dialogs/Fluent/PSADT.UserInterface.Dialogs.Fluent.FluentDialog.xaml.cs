@@ -508,7 +508,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private void PositionWindow()
         {
             // Get the working area in DIPs.
-            Rect workingArea = WPFScreen.FromHandle(new WindowInteropHelper(this).Handle).GetWorkingAreaInDips(this);
+            Rect workingArea = SystemParameters.WorkArea;
 
             // Ensure layout is updated to get ActualWidth and ActualHeight.
             double windowWidth = ActualWidth;
