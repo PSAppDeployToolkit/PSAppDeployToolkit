@@ -166,11 +166,7 @@ function Set-ADTItemPermission
                     $Propagation = [System.Security.AccessControl.PropagationFlags]::None
                 }
 
-                # Get object ACLs, disable inheritance but preserve inherited permissions.
-                ($Acl = Get-Acl -LiteralPath $Path).SetAccessRuleProtection($true, $true)
-                $null = Set-Acl -LiteralPath $Path -AclObject $Acl
-
-                # Get updated ACLs - without inheritance.
+                # Get object ACLs for the given path.
                 $Acl = Get-Acl -LiteralPath $Path
 
                 # Apply permissions on each user.
