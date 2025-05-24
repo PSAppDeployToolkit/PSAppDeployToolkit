@@ -45,7 +45,6 @@ function Get-ADTRunningProcesses
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
-    [OutputType([System.Collections.Generic.IReadOnlyList`1[[PSADT.ProcessManagement.RunningProcess]]])]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -55,10 +54,11 @@ function Get-ADTRunningProcesses
 
     # Process provided process objects and return any output.
     Write-ADTLogEntry -Message "Checking for running processes: ['$([System.String]::Join("', '", $ProcessObjects.Name))']"
-    if (($runningProcesses = [PSADT.ProcessManagement.ProcessManager]::GetRunningProcesses($ProcessObjects)))
+    if (!($runningProcesses = [PSADT.ProcessManagement.ProcessManager]::GetRunningProcesses($ProcessObjects)))
     {
-        Write-ADTLogEntry -Message "The following processes are running: ['$([System.String]::Join("', '", ($runningProcesses.Process.ProcessName | Select-Object -Unique)))']."
-        return $runningProcesses
+        Write-ADTLogEntry -Message 'Specified processes are not running.'
+        return
     }
-    Write-ADTLogEntry -Message 'Specified processes are not running.'
+    Write-ADTLogEntry -Message "The following processes are running: ['$([System.String]::Join("', '", ($runningProcesses.Process.ProcessName | Select-Object -Unique)))']."
+    $PSCmdlet.WriteObject($runningProcesses, $false)
 }
