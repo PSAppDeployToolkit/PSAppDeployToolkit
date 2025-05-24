@@ -505,10 +505,7 @@ namespace PSADT.Module
                 {
                     using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(LogPath, LogName), true, LogUtilities.LogEncoding))
                     {
-                        foreach (LogEntry logEntry in LogBuffer)
-                        {
-                            logFileWriter.WriteLine(logEntry.DiskOutput);
-                        }
+                        logFileWriter.WriteLine(string.Join(Environment.NewLine, LogBuffer));
                     }
                 }
 

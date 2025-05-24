@@ -38,8 +38,8 @@ namespace PSADT.Execution
         public static async Task<ProcessResult?> LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up the job object and I/O completion port for the process.
-            using (var job = Kernel32.CreateJobObject(null, default))
             using (var iocp = Kernel32.CreateIoCompletionPort(SafeBaseHandle.InvalidHandle, SafeBaseHandle.NullHandle, UIntPtr.Zero, 1))
+            using (var job = Kernel32.CreateJobObject(null, default))
             {
                 bool iocpAddRef = false;
                 try
@@ -399,12 +399,12 @@ namespace PSADT.Execution
                     try
                     {
                         Kernel32.ReadFile(handle, buffer, out bytesRead, IntPtr.Zero);
-                        if (bytesRead == 0)
-                        {
-                            break;
-                        }
                     }
                     catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_BROKEN_PIPE)
+                    {
+                        break;
+                    }
+                    if (bytesRead == 0)
                     {
                         break;
                     }
