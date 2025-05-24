@@ -1,39 +1,39 @@
 ---
-id: Add-ADTModuleCallback
-title: Add-ADTModuleCallback
+id: Clear-ADTModuleCallback
+title: Clear-ADTModuleCallback
 hide_title: false
 hide_table_of_contents: false
 ---
 
 ## SYNOPSIS
 
-Adds a callback function to the nominated hooking point.
+Clears the nominated hooking point of all callbacks.
 
 ## SYNTAX
 
 ```powershell
-Add-ADTModuleCallback [-Hookpoint] <CallbackType> [-Callback] <CommandInfo[]> [<CommonParameters>]
+Clear-ADTModuleCallback [-Hookpoint] <CallbackType> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-This function adds a specified callback function to the nominated hooking point.
+This function clears the nominated hooking point of all callbacks.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Add-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command -Name 'MyCallbackFunction')
+Clear-ADTModuleCallback -Hookpoint PostOpen
 ```
 
-Adds the specified callback function to be invoked after a DeploymentSession has opened.
+Clears all callbacks to be invoked after a DeploymentSession has opened.
 
 ## PARAMETERS
 
 ### -Hookpoint
 
-Where you wish for the callback to be executed at.
+The callback hook point that you wish to clear.
 
 Valid hookpoints are:
 * OnInit (The callback is executed before the module is initialized)
@@ -45,8 +45,6 @@ Valid hookpoints are:
 * OnFinish (The callback is executed before the last deployment session is closed)
 * OnExit (The callback is executed after the last deployment session is closed)
 
-Each hook point supports multiple callbacks, each invoked in the order they're added.
-
 To see a list all the registered callbacks in order, use `Get-ADTModuleCallback`.
 
 ```yaml
@@ -57,22 +55,6 @@ Accepted values: OnInit, OnStart, PreOpen, PostOpen, PreClose, PostClose, OnFini
 
 Required: True
 Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Callback
-
-The callback function to add to the nominated hooking point.
-
-```yaml
-Type: CommandInfo[]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -104,4 +86,4 @@ License: https://opensource.org/license/lgpl-3-0
 
 ## RELATED LINKS
 
-[https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTModuleCallback](https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTModuleCallback)
+[https://psappdeploytoolkit.com/docs/reference/functions/Clear-ADTModuleCallback](https://psappdeploytoolkit.com/docs/reference/functions/Clear-ADTModuleCallback)

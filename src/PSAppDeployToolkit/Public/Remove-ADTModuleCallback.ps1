@@ -46,6 +46,7 @@ function Remove-ADTModuleCallback
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTModuleCallback
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Hookpoint', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
@@ -58,10 +59,19 @@ function Remove-ADTModuleCallback
         [System.Management.Automation.CommandInfo[]]$Callback
     )
 
-    # Send it off to the backend function.
+    # Remove all specified callbacks.
     try
     {
-        Invoke-ADTModuleCallbackOperation -Action Remove @PSBoundParameters
+        $null = $Callback | & {
+            begin
+            {
+                $callbacks = $Script:ADT.Callbacks.$Hookpoint
+            }
+            process
+            {
+                $callbacks.Remove($_)
+            }
+        }
     }
     catch
     {

@@ -1,20 +1,20 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Add-ADTModuleCallback
+# MARK: Clear-ADTModuleCallback
 #
 #-----------------------------------------------------------------------------
 
-function Add-ADTModuleCallback
+function Clear-ADTModuleCallback
 {
     <#
     .SYNOPSIS
-        Adds a callback function to the nominated hooking point.
+        Clears the nominated hooking point of all callbacks.
 
     .DESCRIPTION
-        This function adds a specified callback function to the nominated hooking point.
+        This function clears the nominated hooking point of all callbacks.
 
     .PARAMETER Hookpoint
-        Where you wish for the callback to be executed at.
+        The callback hook point that you wish to clear.
 
         Valid hookpoints are:
         * OnInit (The callback is executed before the module is initialized)
@@ -26,12 +26,7 @@ function Add-ADTModuleCallback
         * OnFinish (The callback is executed before the last deployment session is closed)
         * OnExit (The callback is executed after the last deployment session is closed)
 
-        Each hook point supports multiple callbacks, each invoked in the order they're added.
-
         To see a list all the registered callbacks in order, use `Get-ADTModuleCallback`.
-
-    .PARAMETER Callback
-        The callback function to add to the nominated hooking point.
 
     .INPUTS
         None
@@ -44,9 +39,9 @@ function Add-ADTModuleCallback
         This function does not generate any output.
 
     .EXAMPLE
-        Add-ADTModuleCallback -Hookpoint PostOpen -Callback (Get-Command -Name 'MyCallbackFunction')
+        Clear-ADTModuleCallback -Hookpoint PostOpen
 
-        Adds the specified callback function to be invoked after a DeploymentSession has opened.
+        Clears all callbacks to be invoked after a DeploymentSession has opened.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -59,38 +54,21 @@ function Add-ADTModuleCallback
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Add-ADTModuleCallback
+        https://psappdeploytoolkit.com/docs/reference/functions/Clear-ADTModuleCallback
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Hookpoint', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Module.CallbackType]$Hookpoint,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.CommandInfo[]]$Callback
+        [PSADT.Module.CallbackType]$Hookpoint
     )
 
-    # Add the specified callbacks if they're not already in the list.
+    # Directly clear the backend list.
     try
     {
-        $Callback | & {
-            begin
-            {
-                $callbacks = $Script:ADT.Callbacks.$Hookpoint
-            }
-            process
-            {
-                if (!$callbacks.Contains($_))
-                {
-                    $callbacks.Add($_)
-                }
-            }
-        }
+        $Script:ADT.Callbacks.$Hookpoint.Clear()
     }
     catch
     {

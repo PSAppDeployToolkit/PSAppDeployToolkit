@@ -39,7 +39,7 @@ function Private:Exit-ADTInvocation
     # Invoke on-exit callbacks.
     try
     {
-        foreach ($callback in $($Script:ADT.Callbacks.OnExit))
+        foreach ($callback in $($Script:ADT.Callbacks.([PSADT.Module.CallbackType]::OnExit)))
         {
             & $callback
         }

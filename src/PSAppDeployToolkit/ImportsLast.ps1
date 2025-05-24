@@ -22,16 +22,16 @@ try
 
     # Define object for holding all PSADT variables.
     New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
-            Callbacks = [pscustomobject]@{
-                OnInit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                OnStart = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                PreOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                PostOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                PreClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                PostClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                OnFinish = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-                OnExit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
-            }
+            Callbacks = ([ordered]@{
+                    [PSADT.Module.CallbackType]::OnInit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSADT.Module.CallbackType]::OnStart = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSADT.Module.CallbackType]::PreOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSADT.Module.CallbackType]::PostOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSADT.Module.CallbackType]::PreClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSADT.Module.CallbackType]::PostClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSADT.Module.CallbackType]::OnFinish = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSADT.Module.CallbackType]::OnExit = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                }).AsReadOnly()
             Directories = [pscustomobject]@{
                 Defaults = ([ordered]@{
                         Script = $PSScriptRoot
