@@ -248,7 +248,6 @@ function Show-ADTInstallationPrompt
                     Subtitle = $PSBoundParameters.Subtitle
                     AppIconImage = $adtConfig.Assets.Logo
                     AppBannerImage = $adtConfig.Assets.Banner
-                    DialogAllowMove = $true
                     DialogTopMost = !$NotTopMost
                     MinimizeWindows = !!$MinimizeWindows
                     DialogExpiryDuration = $PSBoundParameters.Timeout
