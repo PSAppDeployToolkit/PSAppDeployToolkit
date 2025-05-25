@@ -394,7 +394,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// The number of deferrals remaining, if applicable.
         /// </summary>
-        private readonly int? _deferralsRemaining;
+        private readonly uint? _deferralsRemaining;
 
         /// <summary>
         /// Indicates whether the countdown is forced.

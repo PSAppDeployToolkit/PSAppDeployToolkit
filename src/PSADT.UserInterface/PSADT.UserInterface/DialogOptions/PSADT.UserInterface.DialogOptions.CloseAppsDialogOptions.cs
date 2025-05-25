@@ -34,7 +34,7 @@ namespace PSADT.UserInterface.DialogOptions
             }
             if (options.ContainsKey("DeferralsRemaining"))
             {
-                if (options["DeferralsRemaining"] is not int deferralsRemaining)
+                if (options["DeferralsRemaining"] is not uint deferralsRemaining)
                 {
                     throw new ArgumentOutOfRangeException("DeferralsRemaining value is not valid.", (Exception?)null);
                 }
@@ -98,7 +98,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The number of deferrals remaining for the user.
         /// </summary>
-        public readonly int? DeferralsRemaining;
+        public readonly uint? DeferralsRemaining;
 
         /// <summary>
         /// The deadline for deferrals.
