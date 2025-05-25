@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Management.Automation;
 
 namespace PSADT.ProcessManagement
 {
@@ -111,11 +112,19 @@ namespace PSADT.ProcessManagement
             }
             if (properties.ContainsKey("Filter"))
             {
-                if (properties["Filter"] is not Func<RunningProcess, bool> filter)
+                var filter = properties["Filter"];
+                if (filter is ScriptBlock)
+                {
+                    Filter = (Func<RunningProcess, bool>)((PSObject)ScriptBlock.Create("return [System.Func`2[PSADT.ProcessManagement.RunningProcess,System.Boolean]]$args[0]").InvokeReturnAsIs(filter)).BaseObject;
+                }
+                else if (filter is Func<RunningProcess, bool>)
+                {
+                    Filter = (Func<RunningProcess, bool>)filter;
+                }
+                else
                 {
                     throw new ArgumentOutOfRangeException("filter value is not valid.", (Exception?)null);
                 }
-                Filter = filter;
             }
 
             // The hashtable was correctly defined, assign the remaining values.
