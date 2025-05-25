@@ -745,10 +745,15 @@ function Show-ADTInstallationWelcome
                 [PSADT.UserInterface.DialogOptions.CloseAppsDialogOptions]$Options
             )
 
+            # Set up default `Write-ADTLogEntry` parameters. We want log entries to identify correctly.
+            $waleParams = @{
+                Source = (Get-PSCallStack)[1].Command
+            }
+
             # Announce whether there's apps to close.
             if (($procsRunning = $Options.RunningProcessService -and ($procsToClose = $Options.RunningProcessService.ProcessesToClose).Count -gt 0))
             {
-                Write-ADTLogEntry -Message "Prompting the user to close application(s) ['$([System.String]::Join("', '", $procsToClose.Description))']..."
+                Write-ADTLogEntry @waleParams -Message "Prompting the user to close application(s) ['$([System.String]::Join("', '", $procsToClose.Description))']..."
             }
 
             # Announce the current countdown information.
@@ -756,11 +761,11 @@ function Show-ADTInstallationWelcome
             {
                 if ($procsRunning)
                 {
-                    Write-ADTLogEntry -Message "Close applications countdown has [$($Options.CountdownDuration - $Options.CountdownStopwatch.Elapsed)] seconds remaining."
+                    Write-ADTLogEntry @waleParams -Message "Close applications countdown has [$($Options.CountdownDuration - $Options.CountdownStopwatch.Elapsed)] seconds remaining."
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Countdown has [$($Options.CountdownDuration - $Options.CountdownStopwatch.Elapsed)] seconds remaining."
+                    Write-ADTLogEntry @waleParams -Message "Countdown has [$($Options.CountdownDuration - $Options.CountdownStopwatch.Elapsed)] seconds remaining."
                 }
             }
 
@@ -780,15 +785,15 @@ function Show-ADTInstallationWelcome
                 {
                     Close
                     {
-                        Write-ADTLogEntry -Message "Close application(s) countdown timer has elapsed. Force closing application(s)."
+                        Write-ADTLogEntry @waleParams -Message "Close application(s) countdown timer has elapsed. Force closing application(s)."
                     }
                     Defer
                     {
-                        Write-ADTLogEntry -Message "Countdown timer has elapsed and deferrals remaining. Force deferral."
+                        Write-ADTLogEntry @waleParams -Message "Countdown timer has elapsed and deferrals remaining. Force deferral."
                     }
                     Continue
                     {
-                        Write-ADTLogEntry -Message "Countdown timer has elapsed and no processes running. Force continue."
+                        Write-ADTLogEntry @waleParams -Message "Countdown timer has elapsed and no processes running. Force continue."
                     }
                 }
             }
