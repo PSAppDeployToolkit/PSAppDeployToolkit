@@ -48,6 +48,14 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 DeferralDeadline = deferralDeadline;
             }
+            if (options.ContainsKey("UnlimitedDeferrals"))
+            {
+                if (options["UnlimitedDeferrals"] is not bool unlimitedDeferrals)
+                {
+                    throw new ArgumentOutOfRangeException("UnlimitedDeferrals value is not valid.", (Exception?)null);
+                }
+                UnlimitedDeferrals = unlimitedDeferrals;
+            }
             if (options.ContainsKey("CountdownDuration"))
             {
                 if (options["CountdownDuration"] is not TimeSpan countdownDuration)
@@ -104,6 +112,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// The deadline for deferrals.
         /// </summary>
         public readonly DateTime? DeferralDeadline;
+
+        /// <summary>
+        /// Indicates whether the system allows an unlimited number of deferrals.
+        /// </summary>
+        public readonly bool UnlimitedDeferrals;
 
         /// <summary>
         /// The duration of the countdown before the dialog automatically closes.

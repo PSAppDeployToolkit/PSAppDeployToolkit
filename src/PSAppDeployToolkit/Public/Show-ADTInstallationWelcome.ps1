@@ -869,10 +869,6 @@ function Show-ADTInstallationWelcome
                         $deferHistoryDeadline = $deferHistory | Select-Object -ExpandProperty DeferDeadline -ErrorAction Ignore
                         $deferHistoryRunIntervalLastTime = $deferHistory | Select-Object -ExpandProperty DeferRunIntervalLastTime -ErrorAction Ignore
 
-                        # Reset switches.
-                        $checkDeferDays = $DeferDays -ne 0
-                        $checkDeferDeadline = !!$DeferDeadline
-
                         # Process deferrals.
                         if ($DeferTimes -ne 0)
                         {
@@ -895,7 +891,7 @@ function Show-ADTInstallationWelcome
                         }
 
                         # Check deferral days before deadline.
-                        if ($checkDeferDays -and $AllowDefer)
+                        if ($AllowDefer -and ($DeferDays -ne 0))
                         {
                             $deferDeadlineUniversal = if ($deferHistoryDeadline)
                             {
@@ -916,7 +912,7 @@ function Show-ADTInstallationWelcome
                         }
 
                         # Check deferral deadlines.
-                        if ($checkDeferDeadline -and $AllowDefer)
+                        if ($AllowDefer -and !!$DeferDeadline)
                         {
                             # Validate date.
                             try
@@ -973,6 +969,10 @@ function Show-ADTInstallationWelcome
                         if ($deferDeadlineUniversal)
                         {
                             $dialogOptions.Add('DeferralDeadline', [System.DateTime]$deferDeadlineUniversal)
+                        }
+                        elseif ($dialogOptions.ContainsKey('DeferralsRemaining') -and !$PSBoundParameters.ContainsKey('DeferTimes'))
+                        {
+                            $dialogOptions.Add('UnlimitedDeferrals', $true)
                         }
                     }
                     if (!$dialogOptions.ContainsKey('DeferralsRemaining') -and !$dialogOptions.ContainsKey('DeferralDeadline'))

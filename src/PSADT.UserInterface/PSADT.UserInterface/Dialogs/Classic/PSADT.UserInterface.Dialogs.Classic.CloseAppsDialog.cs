@@ -108,10 +108,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     {
                         this.labelDeferDeadline.Text += $"\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}";
                     }
+                    else if (null != options.DeferralsRemaining && options.UnlimitedDeferrals)
+                    {
+                        this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelDeferral);
+                    }
+                    this.labelDeferDeadline.Text = this.labelDeferDeadline.Text.Trim();
                 }
                 else
                 {
                     this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelDeferral);
+                    this.tableLayoutPanelButton.Controls.Remove(this.buttonDefer);
                 }
 
                 // Set the countdown timer.
@@ -256,7 +262,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     {
                         buttonContinue.PerformClick();
                     }
-                    else if (forcedCountdown && this.flowLayoutPanelDialog.Controls.Contains(this.flowLayoutPanelDeferral))
+                    else if (forcedCountdown && this.flowLayoutPanelDialog.Controls.Contains(this.flowLayoutPanelDeferral) && this.tableLayoutPanelButton.Controls.Contains(this.buttonDefer))
                     {
                         buttonDefer.PerformClick();
                     }

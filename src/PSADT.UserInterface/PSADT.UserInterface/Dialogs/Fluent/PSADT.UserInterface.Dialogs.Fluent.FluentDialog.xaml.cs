@@ -45,7 +45,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Initializes a new instance of FluentDialog
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null, string? countdownDialogResult = null)
+        private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
             // Process the given accent color from the options
             if (null != options.FluentAccentColor)

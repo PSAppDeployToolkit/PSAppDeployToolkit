@@ -60,7 +60,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Instantiates a new CloseApps dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, null, options.CountdownStopwatch, "Continue")
+        internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, null, options.CountdownStopwatch)
         {
             // Set up the context for data binding
             DataContext = this;
@@ -77,7 +77,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
-            DeferRemainingStackPanel.Visibility = _deferralsRemaining.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            DeferRemainingStackPanel.Visibility = _deferralsRemaining.HasValue && !options.UnlimitedDeferrals ? Visibility.Visible : Visibility.Collapsed;
             DeferRemainingHeadingTextBlock.Text = options.Strings.Fluent.DeferralsRemaining;
             DeferDeadlineStackPanel.Visibility = _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
             DeferDeadlineHeadingTextBlock.Text = options.Strings.Fluent.DeferralDeadline;
