@@ -794,6 +794,33 @@ function Show-ADTInstallationWelcome
             }
             return $result
         }
+
+        # Internal worker function for updating the deferral history.
+        function Update-ADTDeferHistory
+        {
+            # Open a new hashtable for splatting onto `Set-ADTDeferHistory`.
+            $sadhParams = @{}
+
+            # Add all valid parameters.
+            if (($DeferTimes -ge 0) -and !$dialogOptions.UnlimitedDeferrals)
+            {
+                $sadhParams.Add('DeferTimesRemaining', $DeferTimes)
+            }
+            if ($deferDeadlineUniversal)
+            {
+                $sadhParams.Add('DeferDeadline', $deferDeadlineUniversal)
+            }
+            if ($DeferRunInterval)
+            {
+                $sadhParams.Add('DeferRunInterval', $DeferRunInterval)
+            }
+
+            # Only call `Set-ADTDeferHistory` if there's values to update.
+            if ($sadhParams.Count)
+            {
+                Set-ADTDeferHistory @sadhParams
+            }
+        }
     }
 
     process
@@ -1187,18 +1214,17 @@ function Show-ADTInstallationWelcome
                             # Stop the script (if not actioned before the timeout value).
                             Write-ADTLogEntry -Message 'Deployment not actioned before the timeout value.'
                             $BlockExecution = $false
-                            if ($adtSession -and (($DeferTimes -ge 0) -or $deferDeadlineUniversal))
-                            {
-                                Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
-                            }
 
                             # Restore minimized windows.
                             if ($MinimizeWindows)
                             {
                                 $null = $adtEnv.ShellApp.UndoMinimizeAll()
                             }
+
+                            # If there's an active session, update deferral values and close it out.
                             if ($adtSession)
                             {
+                                Update-ADTDeferHistory
                                 Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                             }
                         }
@@ -1208,23 +1234,16 @@ function Show-ADTInstallationWelcome
                             Write-ADTLogEntry -Message 'Deployment deferred by the user.'
                             $BlockExecution = $false
 
-                            # Update defer history, including DeferRunInterval if specified.
-                            if ($DeferRunInterval)
-                            {
-                                Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal -DeferRunInterval $DeferRunInterval
-                            }
-                            else
-                            {
-                                Set-ADTDeferHistory -DeferTimesRemaining $DeferTimes -DeferDeadline $deferDeadlineUniversal
-                            }
-
                             # Restore minimized windows.
                             if ($MinimizeWindows)
                             {
                                 $null = $adtEnv.ShellApp.UndoMinimizeAll()
                             }
+
+                            # If there's an active session, update deferral values and close it out.
                             if ($adtSession)
                             {
+                                Update-ADTDeferHistory
                                 Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                             }
                         }
