@@ -1,20 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
+    <NoWarn>$(NoWarn)</NoWarn>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>PSADT</AssemblyName>
-    <NoWarn>$(NoWarn)</NoWarn>
-    <AssemblyVersion>4.1.0.0</AssemblyVersion>
-    <FileVersion>4.1.0</FileVersion>
-    <InformationalVersion>4.1.0</InformationalVersion>
-    <ApplicationVersion>4.1.0</ApplicationVersion>
-    <Authors>PSAppDeployToolkit Team</Authors>
-    <Company>PSAppDeployToolkit Team</Company>
-    <Description>PSAppDeployToolkit Support Library</Description>
-    <Title>PSAppDeployToolkit Support Library</Title>
+    <Product>PSAppDeployToolkit Common Support Library</Product>
     <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
-    <PackageProjectUrl>https://psappdeploytoolkit.com/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
+    <AssemblyTitle>PSAppDeployToolkit Common Support Library</AssemblyTitle>
+    <AssemblyDescription>This assembly serves to provide common code and utilities to all areas of PSAppDeployToolkit.</AssemblyDescription>
+    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
+    <InformationalVersion>4.1.0</InformationalVersion>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <TargetFrameworks>net462;net8.0-windows10.0.17763</TargetFrameworks>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>

@@ -11,18 +11,18 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <StartupObject>PSADT.UserInterface.TestHarness.Program</StartupObject>
-    <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
     <RootNamespace>PSADT.UserInterface.TestHarness</RootNamespace>
-    <Authors>PSAppDeployToolkit Team</Authors>
-    <Company>PSAppDeployToolkit Team</Company>
-    <Description>PSAppDeployToolkit User Interface Test Harness</Description>
+    <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
+    <Product>PSAppDeployToolkit User Interface Test Harness</Product>
     <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
+    <AssemblyTitle>PSAppDeployToolkit User Interface Test Harness</AssemblyTitle>
+    <AssemblyDescription>This product serves as a test bed for PSADT.UserInterface, our client display server for PSAppDeployToolkit.</AssemblyDescription>
+    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
+    <InformationalVersion>4.1.0</InformationalVersion>
     <ApplicationIcon>..\PSADT.UserInterface\Properties\appIcon.ico</ApplicationIcon>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <SignAssembly>False</SignAssembly>
-    <Title>PSAppDeployToolkit User Interface Test Harness</Title>
-    <PackageProjectUrl>https://psappdeploytoolkit.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
     <SelfContained>false</SelfContained>
     <PublishSingleFile>false</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>

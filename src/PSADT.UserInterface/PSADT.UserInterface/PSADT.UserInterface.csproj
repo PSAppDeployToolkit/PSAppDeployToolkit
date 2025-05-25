@@ -13,24 +13,18 @@
     <Nullable>enable</Nullable>
     <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
     <UserSecretsId>1f9c9b02-c540-4d44-95e4-075d460f0854</UserSecretsId>
-    <AssemblyName>PSADT.UserInterface</AssemblyName>
     <RootNamespace>PSADT.UserInterface</RootNamespace>
-    <Authors>PSAppDeployToolkit Team</Authors>
-    <Company>PSAppDeployToolkit Team</Company>
-    <AssemblyTitle>PSAppDeployToolkit User Interface Display Server</AssemblyTitle>
-    <AssemblyDescription>PSAppDeployToolkit User Interface Display Server</AssemblyDescription>
-    <Description>PSAppDeployToolkit User Interface Display Server</Description>
+    <AssemblyName>PSADT.UserInterface</AssemblyName>
+    <Product>PSAppDeployToolkit User Interface Display Server</Product>
     <Copyright>Copyright © 2025 PSAppDeployToolkit Team. All rights reserved.</Copyright>
+    <AssemblyTitle>PSAppDeployToolkit User Interface Display Server</AssemblyTitle>
+    <AssemblyDescription>This product provides user interface capabilities to PSAppDeployToolkit.</AssemblyDescription>
+    <AssemblyCompany>PSAppDeployToolkit Team</AssemblyCompany>
     <AssemblyVersion>4.1.0.0</AssemblyVersion>
-    <FileVersion>4.1.0</FileVersion>
     <InformationalVersion>4.1.0</InformationalVersion>
-    <ApplicationVersion>4.1.0</ApplicationVersion>
     <ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <SignAssembly>False</SignAssembly>
-    <Title>PSAppDeployToolkit User Interface Libray</Title>
-    <PackageProjectUrl>https://psappdeploytoolkit.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/PSAppDeployToolkit/PSAppDeployToolkit</RepositoryUrl>
     <SelfContained>false</SelfContained>
     <PublishSingleFile>false</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
