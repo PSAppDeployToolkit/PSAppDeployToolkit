@@ -841,7 +841,7 @@ namespace PSADT.Module
                     }
                     else if ((bool)configToolkit["ProcessDetection"]!)
                     {
-                        WriteLogEntry("No processes were specified as requiring closure, changing deployment mode to [{_deployMode}].");
+                        WriteLogEntry($"No processes were specified as requiring closure, changing deployment mode to [{_deployMode}].");
                     }
                     else
                     {
