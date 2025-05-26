@@ -75,8 +75,23 @@ function Set-ADTDeferHistory
         [System.DateTime]$DeferRunIntervalLastTime
     )
 
+    # Throw if at least one parameter isn't called.
+    if (!($PSBoundParameters.Keys.GetEnumerator() | & { process { if (!$Script:PowerShellCommonParameters.Contains($_)) { return $_ } } }))
+    {
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new("The function [$($MyInvocation.MyCommand.Name)] requires at least one parameter be specified.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+            ErrorId = 'SetDeferHistoryNoParamSpecified'
+            TargetObject = $PSBoundParameters
+            RecommendedAction = "Please check your usage of [$($MyInvocation.MyCommand.Name)] and try again."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+
+    # Set the defer history as specified by the caller.
     try
     {
+        # Make sure we send proper nulls through at all times.
         (Get-ADTSession).SetDeferHistory(
             $(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }),
             $(if ($PSBoundParameters.ContainsKey('DeferDeadline')) { $DeferDeadline }),

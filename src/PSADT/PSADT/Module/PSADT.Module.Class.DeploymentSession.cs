@@ -1224,7 +1224,7 @@ namespace PSADT.Module
             {
                 return null;
             }
-            return new DeferHistory(null != deferTimesRemaining ? ValueTypeConverter<uint>.Convert((int)deferTimesRemaining) : null, null != deferDeadline ? DateTime.Parse((string)deferDeadline) : null, null != deferRunIntervalLastTime ? DateTime.Parse((string)deferRunIntervalLastTime) : null);
+            return new DeferHistory(null != deferTimesRemaining ? (uint)(int)deferTimesRemaining : null, null != deferDeadline ? DateTime.Parse((string)deferDeadline) : null, null != deferRunIntervalLastTime ? DateTime.Parse((string)deferRunIntervalLastTime) : null);
         }
 
         /// <summary>

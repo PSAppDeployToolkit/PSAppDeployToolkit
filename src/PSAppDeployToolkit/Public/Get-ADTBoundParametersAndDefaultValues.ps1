@@ -88,15 +88,6 @@ function Get-ADTBoundParametersAndDefaultValues
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        # Hold array of common parameters for filtration.
-        $commonParams = if (!$CommonParameters)
-        {
-            $(
-                [System.Management.Automation.PSCmdlet]::CommonParameters
-                [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
-            )
-        }
-
         # Internal function for testing parameter attributes.
         function Test-NamedAttributeArgumentAst
         {
@@ -176,11 +167,23 @@ function Get-ADTBoundParametersAndDefaultValues
                 $obj = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
 
                 # Inject our already bound parameters into above object.
-                $Invocation.BoundParameters.GetEnumerator() | & {
-                    process
-                    {
-                        # Filter out common parameters.
-                        if ($commonParams -notcontains $_.Key)
+                if (!$CommonParameters)
+                {
+                    $Invocation.BoundParameters.GetEnumerator() | & {
+                        process
+                        {
+                            # Filter out common parameters.
+                            if ($Script:PowerShellCommonParameters -notcontains $_.Key)
+                            {
+                                $obj.Add($_.Key, $_.Value)
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    $Invocation.BoundParameters.GetEnumerator() | & {
+                        process
                         {
                             $obj.Add($_.Key, $_.Value)
                         }

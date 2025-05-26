@@ -90,6 +90,9 @@ try
                 }).AsReadOnly()
         }).AsReadOnly()
 
+    # Array of all PowerShell common parameter names.
+    New-Variable -Name PowerShellCommonParameters -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$([System.Management.Automation.PSCmdlet]::CommonParameters; [System.Management.Automation.PSCmdlet]::OptionalCommonParameters))
+
     # Lookup table for preference variables and their associated CommonParameter name.
     New-Variable -Name PreferenceVariableTable -Option Constant -Value ([ordered]@{
             'InformationAction' = 'InformationPreference'
