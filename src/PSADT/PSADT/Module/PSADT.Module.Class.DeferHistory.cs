@@ -2,5 +2,5 @@
 
 namespace PSADT.Module
 {
-    public sealed record DeferHistory(int? DeferTimesRemaining, DateTime? DeferDeadline, DateTime? DeferRunIntervalLastTime);
+    public sealed record DeferHistory(uint? DeferTimesRemaining, DateTime? DeferDeadline, DateTime? DeferRunIntervalLastTime);
 }

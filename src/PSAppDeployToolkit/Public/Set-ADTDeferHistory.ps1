@@ -26,6 +26,9 @@ function Set-ADTDeferHistory
 
         This parameter is specifically utilized within the `Show-ADTInstallationWelcome` function, and if specified, the current date and time will be used for the DeferRunIntervalLastTime.
 
+    .PARAMETER DeferRunIntervalLastTime
+        Specifies the last time the DeferRunInterval value was tested. This is set from within `Show-ADTInstallationWelcome` as required.
+
     .INPUTS
         None
 
@@ -57,27 +60,29 @@ function Set-ADTDeferHistory
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32]$DeferTimesRemaining,
-
-        [Parameter(Mandatory = $false)]
-        [AllowEmptyString()]
-        [System.String]$DeferDeadline,
+        [System.UInt32]$DeferTimesRemaining,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.TimeSpan]$DeferRunInterval
+        [System.DateTime]$DeferDeadline,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.TimeSpan]$DeferRunInterval,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.DateTime]$DeferRunIntervalLastTime
     )
 
     try
     {
-        if ($PSBoundParameters.ContainsKey('DeferRunInterval'))
-        {
-            (Get-ADTSession).SetDeferHistory($(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }), $DeferDeadline, $DeferRunInterval, (Get-ADTUniversalDate))
-        }
-        else
-        {
-            (Get-ADTSession).SetDeferHistory($(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }), $DeferDeadline, $null, $null)
-        }
+        (Get-ADTSession).SetDeferHistory(
+            $(if ($PSBoundParameters.ContainsKey('DeferTimesRemaining')) { $DeferTimesRemaining }),
+            $(if ($PSBoundParameters.ContainsKey('DeferDeadline')) { $DeferDeadline }),
+            $(if ($PSBoundParameters.ContainsKey('DeferRunInterval')) { $DeferRunInterval }),
+            $(if ($PSBoundParameters.ContainsKey('DeferRunIntervalLastTime')) { $DeferRunIntervalLastTime })
+        )
     }
     catch
     {

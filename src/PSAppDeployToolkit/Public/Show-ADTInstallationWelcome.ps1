@@ -342,7 +342,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdown', HelpMessage = "Specify the deadline (in either your local UI culture's date format, or ISO8601 format) for which deferral will expire as an option.")]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveCloseProcessesAllowDeferCloseProcessesForceCloseProcessesCountdownCheckDiskSpace', HelpMessage = "Specify the deadline (in either your local UI culture's date format, or ISO8601 format) for which deferral will expire as an option.")]
         [ValidateNotNullOrEmpty()]
-        [System.String]$DeferDeadline,
+        [System.DateTime]$DeferDeadline,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDefer', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in [-CloseProcesses] is still running after a deferral.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InteractiveAllowDeferCheckDiskSpace', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in [-CloseProcesses] is still running after a deferral.')]
@@ -726,7 +726,8 @@ function Show-ADTInstallationWelcome
         }
 
         # Instantiate new object to hold all data needed within this call.
-        $deferDeadlineUniversal = $null
+        $currentDateTimeLocal = [System.DateTime]::Now
+        $deferDeadlineDateTime = $null
         $promptResult = $null
 
         # Internal worker function to bring up the dialog.
@@ -811,13 +812,14 @@ function Show-ADTInstallationWelcome
             {
                 $sadhParams.Add('DeferTimesRemaining', $DeferTimes)
             }
-            if ($deferDeadlineUniversal)
+            if ($deferDeadlineDateTime)
             {
-                $sadhParams.Add('DeferDeadline', $deferDeadlineUniversal)
+                $sadhParams.Add('DeferDeadline', $deferDeadlineDateTime)
             }
             if ($DeferRunInterval)
             {
                 $sadhParams.Add('DeferRunInterval', $DeferRunInterval)
+                $sadhParams.Add('DeferRunIntervalLastTime', $currentDateTimeLocal)
             }
 
             # Only call `Set-ADTDeferHistory` if there's values to update.
@@ -902,7 +904,7 @@ function Show-ADTInstallationWelcome
                         $deferHistoryRunIntervalLastTime = $deferHistory | Select-Object -ExpandProperty DeferRunIntervalLastTime -ErrorAction Ignore
 
                         # Process deferrals.
-                        if ($DeferTimes -ne 0)
+                        if ($AllowDefer -and $PSBoundParameters.ContainsKey('DeferTimes'))
                         {
                             [System.Int32]$DeferTimes = if ($deferHistoryTimes -ge 0)
                             {
@@ -923,20 +925,20 @@ function Show-ADTInstallationWelcome
                         }
 
                         # Check deferral days before deadline.
-                        if ($AllowDefer -and ($DeferDays -ne 0))
+                        if ($AllowDefer -and $PSBoundParameters.ContainsKey('DeferDays'))
                         {
-                            $deferDeadlineUniversal = if ($deferHistoryDeadline)
+                            $deferDeadlineDateTime = if ($deferHistoryDeadline)
                             {
-                                Write-ADTLogEntry -Message "Defer history shows a deadline date of [$deferHistoryDeadline]."
-                                Get-ADTUniversalDate -DateTime $deferHistoryDeadline
+                                Write-ADTLogEntry -Message "Defer history shows a deadline date of [$($deferHistoryDeadline.ToString('O'))]."
+                                $deferHistoryDeadline
                             }
                             else
                             {
-                                Get-ADTUniversalDate -DateTime ([System.DateTime]::Now.AddDays($DeferDays).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
+                                $currentDateTimeLocal.AddDays($DeferDays)
                             }
-                            Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] before deferral expires."
+                            Write-ADTLogEntry -Message "The user has until [$($deferDeadlineDateTime.ToString('O'))] before deferral expires."
 
-                            if ((Get-ADTUniversalDate -InformationAction SilentlyContinue) -gt $deferDeadlineUniversal)
+                            if ($currentDateTimeLocal -ge $deferDeadlineDateTime)
                             {
                                 Write-ADTLogEntry -Message 'Deferral has expired.'
                                 $AllowDefer = $false
@@ -944,29 +946,21 @@ function Show-ADTInstallationWelcome
                         }
 
                         # Check deferral deadlines.
-                        if ($AllowDefer -and !!$DeferDeadline)
+                        if ($AllowDefer -and $PSBoundParameters.ContainsKey('DeferDeadline'))
                         {
-                            # Validate date.
-                            try
-                            {
-                                $deferDeadlineUniversal = Get-ADTUniversalDate -DateTime $DeferDeadline
-                                Write-ADTLogEntry -Message "The user has until [$deferDeadlineUniversal] remaining."
+                            $deferDeadlineDateTime = $DeferDeadline
+                            Write-ADTLogEntry -Message "The user has until [$($deferDeadlineDateTime.ToString('O'))] before deferral expires."
 
-                                if ((Get-ADTUniversalDate -InformationAction SilentlyContinue) -gt $deferDeadlineUniversal)
-                                {
-                                    Write-ADTLogEntry -Message 'Deferral has expired.'
-                                    $AllowDefer = $false
-                                }
-                            }
-                            catch
+                            if ($currentDateTimeLocal -gt $deferDeadlineDateTime)
                             {
-                                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Date is not in the correct format for the current culture. Type the date in the current locale format, such as 20/08/2014 (Europe) or 08/20/2014 (United States). If the script is intended for multiple cultures, specify the date in the universal sortable date/time format, e.g. '2013-08-22 11:51:52Z'."
+                                Write-ADTLogEntry -Message 'Deferral has expired.'
+                                $AllowDefer = $false
                             }
                         }
                     }
 
                     # Check if all deferrals have expired.
-                    if (($DeferTimes -lt 0) -and !$deferDeadlineUniversal)
+                    if (($DeferTimes -lt 0) -and !$deferDeadlineDateTime)
                     {
                         $AllowDefer = $false
                     }
@@ -998,9 +992,9 @@ function Show-ADTInstallationWelcome
                         {
                             $dialogOptions.Add('DeferralsRemaining', [System.UInt32]($DeferTimes + 1))
                         }
-                        if ($deferDeadlineUniversal)
+                        if ($deferDeadlineDateTime)
                         {
-                            $dialogOptions.Add('DeferralDeadline', [System.DateTime]$deferDeadlineUniversal)
+                            $dialogOptions.Add('DeferralDeadline', [System.DateTime]$deferDeadlineDateTime)
                         }
                         elseif ($dialogOptions.ContainsKey('DeferralsRemaining') -and !$PSBoundParameters.ContainsKey('DeferTimes'))
                         {
@@ -1069,16 +1063,15 @@ function Show-ADTInstallationWelcome
                             elseif (($promptResult -ne 'Close') -or ($runningAppDescriptions -and ($promptResult -ne 'Continue')))
                             {
                                 # Exit gracefully if DeferRunInterval is set, a last deferral time exists, and the interval has not yet elapsed.
-                                if ($DeferRunInterval)
+                                if ($adtSession -and $DeferRunInterval)
                                 {
-                                    Write-ADTLogEntry -Message "DeferRunInterval of [$DeferRunInterval] is specified. Checking DeferRunIntervalLastTime."
-                                    if (![System.String]::IsNullOrWhiteSpace($deferHistoryRunIntervalLastTime))
+                                    Write-ADTLogEntry -Message "A DeferRunInterval of [$DeferRunInterval] is specified. Checking DeferRunIntervalLastTime."
+                                    if ($deferHistoryRunIntervalLastTime)
                                     {
-                                        $deferRunIntervalLastTime = Get-ADTUniversalDate -DateTime $deferHistoryRunIntervalLastTime
-                                        $deferRunIntervalNextTime = Get-ADTUniversalDate -DateTime ([System.DateTime]::Parse($deferRunIntervalLastTime).ToUniversalTime().Add($DeferRunInterval).ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern))
-                                        if ([System.DateTime]::Parse($deferRunIntervalNextTime) -gt [System.DateTime]::Parse((Get-ADTUniversalDate)))
+                                        $deferRunIntervalNextTime = $deferHistoryRunIntervalLastTime.Add($DeferRunInterval) - $currentDateTimeLocal
+                                        if ($deferRunIntervalNextTime -gt [System.TimeSpan]::Zero)
                                         {
-                                            Write-ADTLogEntry -Message "DeferRunInterval has not elapsed. Exiting gracefully."
+                                            Write-ADTLogEntry -Message "Next run interval not due until [$(($currentDateTimeLocal + $deferRunIntervalNextTime).ToString('O'))], exiting gracefully."
                                             Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                                         }
                                     }

@@ -12,8 +12,8 @@ Set the history of deferrals in the registry for the current application.
 ## SYNTAX
 
 ```powershell
-Set-ADTDeferHistory [[-DeferTimesRemaining] <Int32>] [[-DeferDeadline] <String>]
- [[-DeferRunInterval] <TimeSpan>] [<CommonParameters>]
+Set-ADTDeferHistory [[-DeferTimesRemaining] <UInt32>] [[-DeferDeadline] <DateTime>]
+ [[-DeferRunInterval] <TimeSpan>] [[-DeferRunIntervalLastTime] <DateTime>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,7 +35,7 @@ Set-DeferHistory
 Specify the number of deferrals remaining.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
@@ -51,7 +51,7 @@ Accept wildcard characters: False
 Specify the deadline for the deferral.
 
 ```yaml
-Type: String
+Type: DateTime
 Parameter Sets: (All)
 Aliases:
 
@@ -77,6 +77,23 @@ Aliases:
 
 Required: False
 Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeferRunIntervalLastTime
+
+Specifies the last time the DeferRunInterval value was tested.
+This is set from within `Show-ADTInstallationWelcome` as required.
+
+```yaml
+Type: DateTime
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
