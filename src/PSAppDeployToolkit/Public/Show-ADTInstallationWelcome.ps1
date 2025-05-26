@@ -1049,18 +1049,15 @@ function Show-ADTInstallationWelcome
                     # Spin until apps are closed, countdown elapses, or deferrals are exhausted.
                     while (($runningApps = if ($dialogOptions.RunningProcessService) { $dialogOptions.RunningProcessService.RunningProcesses }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
-                        # Get all unique running process descriptions.
-                        $runningAppDescriptions = $runningApps | Select-Object -ExpandProperty Description | Sort-Object -Unique
-
                         # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                         if ($AllowDefer)
                         {
                             # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
-                            if ($AllowDeferCloseProcesses -and !$runningAppDescriptions)
+                            if ($AllowDeferCloseProcesses -and !$runningApps)
                             {
                                 break
                             }
-                            elseif (($promptResult -ne 'Close') -or ($runningAppDescriptions -and ($promptResult -ne 'Continue')))
+                            elseif (($promptResult -ne 'Close') -or ($runningApps -and ($promptResult -ne 'Continue')))
                             {
                                 # Exit gracefully if DeferRunInterval is set, a last deferral time exists, and the interval has not yet elapsed.
                                 if ($adtSession -and $DeferRunInterval)
@@ -1079,7 +1076,7 @@ function Show-ADTInstallationWelcome
                                 $promptResult = Show-ADTWelcomePrompt -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
                             }
                         }
-                        elseif ($runningAppDescriptions -or !!$forceCountdown)
+                        elseif ($runningApps -or !!$forceCountdown)
                         {
                             # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
                             $promptResult = Show-ADTWelcomePrompt -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
