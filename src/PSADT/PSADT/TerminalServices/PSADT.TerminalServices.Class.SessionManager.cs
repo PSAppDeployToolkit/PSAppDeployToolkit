@@ -122,7 +122,7 @@ namespace PSADT.TerminalServices
                 state == LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive,
                 pWinStationName != "Services" && pWinStationName != "RDP-Tcp",
                 GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType) != 0,
-                AccountUtilities.IsSidMemberOfGroup(WellKnownSidType.BuiltinAdministratorsSid, sid),
+                AccountUtilities.IsSidMemberOfWellKnownGroup(sid, WellKnownSidType.BuiltinAdministratorsSid),
                 logonTime,
                 idleTime,
                 disconnectTime,

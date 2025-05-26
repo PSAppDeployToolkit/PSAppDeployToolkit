@@ -25,12 +25,12 @@ namespace PSADT.Utilities
         /// <summary>
         /// Tests whether a given SID is a member of a given well known group.
         /// </summary>
-        /// <param name="wellKnownSid"></param>
         /// <param name="targetSid"></param>
+        /// <param name="wellKnownGroupSid"></param>
         /// <returns></returns>
-        internal static bool IsSidMemberOfGroup(WellKnownSidType wellKnownSid, SecurityIdentifier targetSid)
+        internal static bool IsSidMemberOfWellKnownGroup(SecurityIdentifier targetSid, WellKnownSidType wellKnownGroupSid)
         {
-            using (var groupEntry = new DirectoryEntry($"WinNT://./{new SecurityIdentifier(wellKnownSid, null).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
+            using (var groupEntry = new DirectoryEntry($"WinNT://./{new SecurityIdentifier(wellKnownGroupSid, null).Translate(typeof(NTAccount)).ToString().Split('\\')[1]},group"))
             {
                 var visited = new HashSet<string>();
                 return CheckMemberRecursive(groupEntry, targetSid, visited);
