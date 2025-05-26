@@ -178,7 +178,7 @@ $buildItems = @(
         SourcePath = 'src\PSADT.UserInterface', 'src\PSADT'
         SolutionPath = 'src\PSADT.UserInterface\PSADT.UserInterface.sln'
         OutputPath = 'src\PSAppDeployToolkit\lib'
-        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.dll', 'src\PSAppDeployToolkit\lib\PSADT.dll'
+        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.exe', 'src\PSAppDeployToolkit\lib\PSADT.dll'
     }
 )
 

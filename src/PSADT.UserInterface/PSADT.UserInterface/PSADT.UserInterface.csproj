@@ -2,6 +2,7 @@
 
   <PropertyGroup>
 	  <TargetFrameworks>net462;net8.0-windows10.0.17763</TargetFrameworks>
+	  <OutputType>WinExe</OutputType>
 	  <PlatformTarget>AnyCPU</PlatformTarget>
 	  <UseWPF>true</UseWPF>
 	  <UseWindowsForms>true</UseWindowsForms>
@@ -39,6 +40,7 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<RepositoryType>git</RepositoryType>
 		<NoWin32Manifest>true</NoWin32Manifest>
+		<StartupObject>PSADT.UserInterface.Program</StartupObject>
 
   </PropertyGroup>
 
