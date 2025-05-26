@@ -77,7 +77,7 @@ namespace PSADT.UserInterface.TestHarness
 
             string customMessageText = "This is a custom message that can be added using the -CustomText parameter on Show-ADTInstallationWelcome (also now available on Show-ADTInstallationRestartPrompt).";
 
-            int deferralsRemaining = 3;
+            uint deferralsRemaining = 3;
             DateTime deferralDeadline = DateTime.Parse("2025-04-20T13:00:00");
             // DateTime? deferralDeadline = null;
             string progressMessageText = "Performing pre-flight checks...";
