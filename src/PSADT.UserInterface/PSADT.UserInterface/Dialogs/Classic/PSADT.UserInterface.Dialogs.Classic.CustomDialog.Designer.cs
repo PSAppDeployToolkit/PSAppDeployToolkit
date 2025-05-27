@@ -49,7 +49,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // tableLayoutPanelIconMessage
             // 
-            this.tableLayoutPanelIconMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.tableLayoutPanelIconMessage.AutoSize = true;
             this.tableLayoutPanelIconMessage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelIconMessage.ColumnCount = 2;
@@ -96,7 +95,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // tableLayoutPanelButton
             // 
-            this.tableLayoutPanelButton.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;
@@ -116,7 +114,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // buttonLeft
             // 
-            this.buttonLeft.Dock = System.Windows.Forms.DockStyle.Left;
+            this.buttonLeft.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.buttonLeft.Location = new System.Drawing.Point(0, 0);
             this.buttonLeft.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
             this.buttonLeft.MaximumSize = new System.Drawing.Size(133, 25);
@@ -158,7 +156,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelDialog
             // 
-            this.flowLayoutPanelDialog.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelIconMessage);

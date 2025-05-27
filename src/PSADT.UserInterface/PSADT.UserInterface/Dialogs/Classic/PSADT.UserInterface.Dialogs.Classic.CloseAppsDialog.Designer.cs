@@ -62,7 +62,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelDialog
             // 
-            this.flowLayoutPanelDialog.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.labelWelcomeMessage);
@@ -85,7 +84,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelWelcomeMessage
             // 
-            this.labelWelcomeMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelWelcomeMessage.AutoSize = true;
             this.labelWelcomeMessage.Location = new System.Drawing.Point(17, 14);
             this.labelWelcomeMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
@@ -99,7 +97,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelAppName
             // 
-            this.labelAppName.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelAppName.AutoSize = true;
             this.labelAppName.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelAppName.Location = new System.Drawing.Point(17, 41);
@@ -114,7 +111,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelCustomMessage
             // 
-            this.labelCustomMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCustomMessage.AutoSize = true;
             this.labelCustomMessage.Location = new System.Drawing.Point(17, 74);
             this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
@@ -129,7 +125,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelCloseApps
             // 
-            this.flowLayoutPanelCloseApps.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelCloseApps.AutoSize = true;
             this.flowLayoutPanelCloseApps.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelCloseApps.Controls.Add(this.labelCloseProcessesMessage);
@@ -146,7 +141,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelCloseProcessesMessage
             // 
-            this.labelCloseProcessesMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCloseProcessesMessage.AutoSize = true;
             this.labelCloseProcessesMessage.Location = new System.Drawing.Point(0, 0);
             this.labelCloseProcessesMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 9);
@@ -162,7 +156,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // listBoxCloseProcesses
             // 
-            this.listBoxCloseProcesses.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.listBoxCloseProcesses.FormattingEnabled = true;
             this.listBoxCloseProcesses.ItemHeight = 15;
             this.listBoxCloseProcesses.Items.AddRange(new object[] {
@@ -171,15 +164,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             "Microsoft Excel"});
             this.listBoxCloseProcesses.Location = new System.Drawing.Point(0, 69);
             this.listBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
-            this.listBoxCloseProcesses.MaximumSize = new System.Drawing.Size(416, 109);
-            this.listBoxCloseProcesses.MinimumSize = new System.Drawing.Size(416, 109);
             this.listBoxCloseProcesses.Name = "listBoxCloseProcesses";
             this.listBoxCloseProcesses.Size = new System.Drawing.Size(416, 109);
             this.listBoxCloseProcesses.TabIndex = 1;
             // 
             // flowLayoutPanelDeferral
             // 
-            this.flowLayoutPanelDeferral.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelDeferral.AutoSize = true;
             this.flowLayoutPanelDeferral.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDeferral.Controls.Add(this.labelDeferralExpiryMessage);
@@ -197,7 +187,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelDeferralExpiryMessage
             // 
-            this.labelDeferralExpiryMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelDeferralExpiryMessage.AutoSize = true;
             this.labelDeferralExpiryMessage.Location = new System.Drawing.Point(0, 0);
             this.labelDeferralExpiryMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 9);
@@ -211,7 +200,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelDeferDeadline
             // 
-            this.labelDeferDeadline.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelDeferDeadline.AutoSize = true;
             this.labelDeferDeadline.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDeferDeadline.Location = new System.Drawing.Point(0, 24);
@@ -226,7 +214,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelDeferWarningMessage
             // 
-            this.labelDeferWarningMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelDeferWarningMessage.AutoSize = true;
             this.labelDeferWarningMessage.Location = new System.Drawing.Point(0, 48);
             this.labelDeferWarningMessage.Margin = new System.Windows.Forms.Padding(0);
@@ -240,7 +227,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelCountdown
             // 
-            this.flowLayoutPanelCountdown.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelCountdown.AutoSize = true;
             this.flowLayoutPanelCountdown.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdownMessage);
@@ -257,7 +243,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelCountdownMessage
             // 
-            this.labelCountdownMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCountdownMessage.AutoSize = true;
             this.labelCountdownMessage.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdownMessage.Location = new System.Drawing.Point(0, 0);
@@ -272,7 +257,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelCountdown
             // 
-            this.labelCountdown.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCountdown.AutoSize = true;
             this.labelCountdown.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdown.Location = new System.Drawing.Point(0, 20);
@@ -287,7 +271,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // tableLayoutPanelButton
             // 
-            this.tableLayoutPanelButton.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;

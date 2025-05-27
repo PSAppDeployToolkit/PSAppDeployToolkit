@@ -50,7 +50,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelDialog
             // 
-            this.flowLayoutPanelDialog.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.labelMessage);
@@ -70,7 +69,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelMessage
             // 
-            this.labelMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelMessage.AutoSize = true;
             this.labelMessage.Location = new System.Drawing.Point(17, 14);
             this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
@@ -84,7 +82,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelCustomMessage
             // 
-            this.labelCustomMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCustomMessage.AutoSize = true;
             this.labelCustomMessage.Location = new System.Drawing.Point(17, 41);
             this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
@@ -99,7 +96,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelCountdown
             // 
-            this.flowLayoutPanelCountdown.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelCountdown.AutoSize = true;
             this.flowLayoutPanelCountdown.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelCountdown.Controls.Add(this.labelRestartMessage);
@@ -117,7 +113,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelRestartMessage
             // 
-            this.labelRestartMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelRestartMessage.AutoSize = true;
             this.labelRestartMessage.Location = new System.Drawing.Point(0, 0);
             this.labelRestartMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
@@ -132,7 +127,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelTimeRemaining
             // 
-            this.labelTimeRemaining.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelTimeRemaining.AutoSize = true;
             this.labelTimeRemaining.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelTimeRemaining.Location = new System.Drawing.Point(0, 42);
@@ -147,7 +141,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelCountdown
             // 
-            this.labelCountdown.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelCountdown.AutoSize = true;
             this.labelCountdown.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdown.Location = new System.Drawing.Point(0, 63);
@@ -162,7 +155,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // tableLayoutPanelButton
             // 
-            this.tableLayoutPanelButton.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 2;

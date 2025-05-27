@@ -45,12 +45,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase.AutoSize = true;
             this.flowLayoutPanelBase.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelBase.Controls.Add(this.pictureBanner);
-            this.flowLayoutPanelBase.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanelBase.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
-            this.flowLayoutPanelBase.MaximumSize = new System.Drawing.Size(450, 0);
-            this.flowLayoutPanelBase.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
             this.flowLayoutPanelBase.Size = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelBase.TabIndex = 0;
@@ -58,7 +55,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // pictureBanner
             // 
-            this.pictureBanner.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pictureBanner.Location = new System.Drawing.Point(0, 0);
             this.pictureBanner.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBanner.Name = "pictureBanner";

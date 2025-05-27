@@ -42,7 +42,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelDialog
             // 
-            this.flowLayoutPanelDialog.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.labelMessage);
@@ -61,7 +60,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelMessage
             // 
-            this.labelMessage.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelMessage.AutoSize = true;
             this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelMessage.Location = new System.Drawing.Point(17, 14);
@@ -76,7 +74,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelDetail
             // 
-            this.labelDetail.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.labelDetail.AutoSize = true;
             this.labelDetail.Location = new System.Drawing.Point(17, 43);
             this.labelDetail.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
@@ -90,7 +87,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // progressBar
             // 
-            this.progressBar.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.progressBar.Location = new System.Drawing.Point(18, 82);
             this.progressBar.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.progressBar.MarqueeAnimationSpeed = 50;
