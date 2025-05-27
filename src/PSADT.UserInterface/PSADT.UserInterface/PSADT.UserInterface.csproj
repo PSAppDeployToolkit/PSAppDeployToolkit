@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net462;net8.0-windows10.0.17763</TargetFrameworks>
+    <TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
     <OutputType>WinExe</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <UseWPF>true</UseWPF>
@@ -67,9 +67,9 @@
   </ItemGroup>
 
   <ItemGroup>
-  <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763'" />
-  <PackageReference Include="System.Collections.Immutable" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763'" />
-  <PackageReference Include="System.Reflection.Metadata" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763'" />
+  <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+  <PackageReference Include="System.Collections.Immutable" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+  <PackageReference Include="System.Reflection.Metadata" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -81,7 +81,7 @@
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.17763|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
     <DebugType>full</DebugType>
     <WarningLevel>9999</WarningLevel>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
@@ -89,7 +89,7 @@
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.17763|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
     <DebugType>none</DebugType>
     <WarningLevel>9999</WarningLevel>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
