@@ -29,7 +29,10 @@ namespace PSADT.ProcessManagement
             Dictionary<Process, string[]> processCommandLines = [];
 
             // Ensure we have a PowerShell runspace available for command execution here.
-            Runspace.DefaultRunspace = ModuleDatabase.GetRunspace();
+            if (processDefinitions.Any(p => p.Filter is not null) && Runspace.DefaultRunspace is null)
+            {
+                Runspace.DefaultRunspace = ModuleDatabase.GetRunspace();
+            }
 
             // Inline lambda to get the command line from the given process.
             string[] GetCommandLine(Process process)
