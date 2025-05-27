@@ -98,31 +98,31 @@ namespace PSADT.UserInterface
                 switch (dialogType)
                 {
                     case DialogType.InputDialog:
-                        {
-                            var options = GetDialogOptions<InputDialogOptions>(dialogOptionsArg!);
-                            var result = DialogManager.ShowModalDialog<InputDialogResult>(dialogType, dialogStyle, options);
-                            Console.WriteLine(SerializeDialogResult(result));
-                            break;
-                        }
+                    {
+                        var options = GetDialogOptions<InputDialogOptions>(dialogOptionsArg!);
+                        var result = DialogManager.ShowModalDialog<InputDialogResult>(dialogType, dialogStyle, options);
+                        Console.WriteLine(SerializeDialogResult(result));
+                        break;
+                    }
                     case DialogType.CustomDialog:
-                        {
-                            var options = GetDialogOptions<CustomDialogOptions>(dialogOptionsArg!);
-                            var result = DialogManager.ShowModalDialog<string>(dialogType, dialogStyle, options);
-                            Console.WriteLine(SerializeDialogResult(result));
-                            break;
-                        }
+                    {
+                        var options = GetDialogOptions<CustomDialogOptions>(dialogOptionsArg!);
+                        var result = DialogManager.ShowModalDialog<string>(dialogType, dialogStyle, options);
+                        Console.WriteLine(SerializeDialogResult(result));
+                        break;
+                    }
                     case DialogType.RestartDialog:
-                        {
-                            var options = GetDialogOptions<RestartDialogOptions>(dialogOptionsArg!);
-                            var result = DialogManager.ShowModalDialog<string>(dialogType, dialogStyle, options);
-                            Console.WriteLine(SerializeDialogResult(result));
-                            break;
-                        }
+                    {
+                        var options = GetDialogOptions<RestartDialogOptions>(dialogOptionsArg!);
+                        var result = DialogManager.ShowModalDialog<string>(dialogType, dialogStyle, options);
+                        Console.WriteLine(SerializeDialogResult(result));
+                        break;
+                    }
                     default:
-                        {
-                            Console.Error.WriteLine($"The specified DialogType of [{dialogType}] is not supported.");
-                            return (int)ExitCode.UnsupportedDialog;
-                        }
+                    {
+                        Console.Error.WriteLine($"The specified DialogType of [{dialogType}] is not supported.");
+                        return (int)ExitCode.UnsupportedDialog;
+                    }
                 }
             }
             else
