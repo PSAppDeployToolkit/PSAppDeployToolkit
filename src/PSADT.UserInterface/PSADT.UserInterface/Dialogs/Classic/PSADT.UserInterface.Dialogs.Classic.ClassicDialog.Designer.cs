@@ -46,6 +46,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelBase.Controls.Add(this.pictureBanner);
             this.flowLayoutPanelBase.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelBase.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
@@ -72,6 +73,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonDefault.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.buttonDefault.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.buttonDefault.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.buttonDefault.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDefault.ForeColor = System.Drawing.Color.Transparent;
             this.buttonDefault.Location = new System.Drawing.Point(0, 0);
             this.buttonDefault.Margin = new System.Windows.Forms.Padding(0);

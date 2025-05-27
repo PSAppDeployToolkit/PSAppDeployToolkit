@@ -48,6 +48,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.Controls.Add(this.labelDetail);
             this.flowLayoutPanelDialog.Controls.Add(this.progressBar);
             this.flowLayoutPanelDialog.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelDialog.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.flowLayoutPanelDialog.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelDialog.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
@@ -75,6 +76,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // labelDetail
             // 
             this.labelDetail.AutoSize = true;
+            this.labelDetail.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDetail.Location = new System.Drawing.Point(17, 43);
             this.labelDetail.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
             this.labelDetail.MaximumSize = new System.Drawing.Size(416, 0);
@@ -87,7 +89,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(18, 82);
+            this.progressBar.Location = new System.Drawing.Point(17, 82);
             this.progressBar.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.progressBar.MarqueeAnimationSpeed = 50;
             this.progressBar.MaximumSize = new System.Drawing.Size(414, 25);
