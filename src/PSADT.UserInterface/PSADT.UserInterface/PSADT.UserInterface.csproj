@@ -67,9 +67,9 @@
   </ItemGroup>
 
   <ItemGroup>
-  <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
-  <PackageReference Include="System.Collections.Immutable" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
-  <PackageReference Include="System.Reflection.Metadata" Version="9.0.4" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.5" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+    <PackageReference Include="System.Collections.Immutable" Version="9.0.5" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+    <PackageReference Include="System.Reflection.Metadata" Version="9.0.5" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
   </ItemGroup>
 
   <PropertyGroup>
