@@ -129,7 +129,7 @@ function Install-ADTDeployment
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
     ## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -AllowDefer -CheckDiskSpace -PersistPrompt -DeferDays 7
+    Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress

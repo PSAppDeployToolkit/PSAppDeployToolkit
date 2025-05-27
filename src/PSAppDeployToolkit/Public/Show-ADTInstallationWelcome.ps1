@@ -991,7 +991,6 @@ function Show-ADTInstallationWelcome
                         if ($DeferTimes -ge 0)
                         {
                             $dialogOptions.Add('DeferralsRemaining', [System.UInt32]($DeferTimes + 1))
-                            [Console]::WriteLine($dialogOptions.DeferralsRemaining)
                         }
                         if ($deferDeadlineDateTime)
                         {
