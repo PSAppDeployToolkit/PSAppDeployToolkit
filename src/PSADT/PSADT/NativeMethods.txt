@@ -137,9 +137,6 @@ SetHandleInformation
 SetInformationJobObject
 SetLastError
 SetPriorityClass
-SetProcessDPIAware
-SetProcessDpiAwareness
-SetProcessDpiAwarenessContext
 SHChangeNotify
 SHGetImageList
 SHGFI_FLAGS

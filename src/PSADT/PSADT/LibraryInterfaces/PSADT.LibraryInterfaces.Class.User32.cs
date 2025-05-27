@@ -84,36 +84,6 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
-        /// Sets the current process as DPI-aware (Windows Vista-onwards).
-        /// </summary>
-        /// <returns></returns>
-        internal static BOOL SetProcessDPIAware()
-        {
-            var res = PInvoke.SetProcessDPIAware();
-            if (!res)
-            {
-                throw new InvalidOperationException("Failed to set DPI awareness to Process DPI Aware.");
-            }
-            return res;
-        }
-
-        /// <summary>
-        /// Sets the current process as DPI-aware (Windows 10-onwards).
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        internal static BOOL SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT context)
-        {
-            var res = PInvoke.SetProcessDpiAwarenessContext(context);
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            return res;
-        }
-
-        /// <summary>
         /// Retrieves a string value from the provided library handle.
         /// </summary>
         /// <param name="hInstance"></param>
