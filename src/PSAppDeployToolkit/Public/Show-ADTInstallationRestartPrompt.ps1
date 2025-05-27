@@ -259,7 +259,7 @@ function Show-ADTInstallationRestartPrompt
 
                 # Call the underlying function to open the restart prompt.
                 Write-ADTLogEntry -Message "Displaying restart prompt with $(if ($NoCountdown) { 'no' } else { "a [$CountdownSeconds] second" }) countdown."
-                $null = [PSADT.UserInterface.DialogManager]::ShowRestartDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+                $null = Show-ADTModalDialog -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
             }
             catch
             {

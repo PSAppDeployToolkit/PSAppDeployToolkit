@@ -7,6 +7,8 @@
 function Private:Show-ADTModalDialog
 {
     [CmdletBinding()]
+    [OutputType([PSADT.UserInterface.DialogResults.InputDialogResult])]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -68,5 +70,72 @@ function Private:Show-ADTModalDialog
     }
 
     # Farm this out to a new process.
-    $null = Start-ADTProcessAsUser -Username $Username -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "-DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -WindowStyle Hidden -NoWait:$NoWait -InformationAction SilentlyContinue
+    $result = Start-ADTProcessAsUser -Username $Username -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "-DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -CreateNoWindow -NoWait:$NoWait -InformationAction SilentlyContinue -PassThru -ErrorAction SilentlyContinue
+    if ($NoWait)
+    {
+        return
+    }
+
+    # Confirm we were successful in our operation.
+    if ($result -isnot [PSADT.Execution.ProcessResult])
+    {
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new("The call to the display server failed.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+            ErrorId = 'DisplayServerInvocationFailure'
+            TargetObject = $result
+            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+    if ($result.StdErr.Count -ne 0)
+    {
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new($($result.StdErr))
+            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+            ErrorId = 'DisplayServerResultError'
+            TargetObject = $result
+            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+    if ($result.ExitCode -ne 0)
+    {
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new("The call to the display server failed with exit code [$($result.ExitCode)].")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+            ErrorId = 'DisplayServerRuntimeFailure'
+            TargetObject = $result
+            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+    if ($result.StdOut.Count -eq 0)
+    {
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new("The call to the display server returned no result.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+            ErrorId = 'DisplayServerResultNull'
+            TargetObject = $result
+            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+
+    # Return the result to the caller.
+    switch ($Type)
+    {
+        ([PSADT.UserInterface.Dialogs.DialogType]::InputDialog)
+        {
+            return [PSADT.UserInterface.DialogResults.InputDialogResult][PSADT.UserInterface.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut), [PSADT.UserInterface.DialogResults.InputDialogResult])
+        }
+        ([PSADT.UserInterface.Dialogs.DialogType]::CustomDialog)
+        {
+            return [System.String][PSADT.UserInterface.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut), [System.String])
+        }
+        ([PSADT.UserInterface.Dialogs.DialogType]::RestartDialog)
+        {
+            return [System.String][PSADT.UserInterface.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut), [System.String])
+        }
+    }
 }

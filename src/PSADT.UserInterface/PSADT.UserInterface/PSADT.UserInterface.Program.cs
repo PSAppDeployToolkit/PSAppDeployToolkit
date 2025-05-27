@@ -42,6 +42,7 @@ namespace PSADT.UserInterface
                     "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
                 });
                 DialogManager.ShowMessageBox($"{helpTitle} {helpVersion}", helpMessage, Microsoft.VisualBasic.MsgBoxStyle.Critical);
+                Console.Error.WriteLine("The display server was invoked without any arguments.");
                 return (int)ExitCode.NoArguments;
             }
 
@@ -68,24 +69,28 @@ namespace PSADT.UserInterface
                 // Confirm the DialogStyle is valid.
                 if (!Enum.TryParse(dialogTypeArg, true, out DialogType dialogType))
                 {
+                    Console.Error.WriteLine($"The specified DialogType of [{dialogTypeArg}] is invalid.");
                     return (int)ExitCode.InvalidDialog;
                 }
 
                 // Confirm we've got a DialogStyle.
                 if (!arguments.TryGetValue("DialogStyle", out string? dialogStyleArg) || string.IsNullOrWhiteSpace(dialogStyleArg))
                 {
+                    Console.Error.WriteLine($"A required DialogStyle was not specified on the command line.");
                     return (int)ExitCode.NoDialogStyle;
                 }
 
                 // Confirm the DialogStyle is valid.
                 if (!Enum.TryParse(dialogStyleArg, true, out DialogStyle dialogStyle))
                 {
+                    Console.Error.WriteLine($"The specified DialogStyle of [{dialogStyleArg}] is invalid.");
                     return (int)ExitCode.InvalidDialogStyle;
                 }
 
                 // Confirm we have dialog options.
                 if (!arguments.TryGetValue("DialogOptions", out string? dialogOptionsArg) || string.IsNullOrWhiteSpace(dialogOptionsArg))
                 {
+                    Console.Error.WriteLine($"The required DialogOptions were not specified on the command line.");
                     return (int)ExitCode.NoDialogOptions;
                 }
 
@@ -93,21 +98,37 @@ namespace PSADT.UserInterface
                 switch (dialogType)
                 {
                     case DialogType.InputDialog:
-                        DialogManager.ShowModalDialog<InputDialogResult>(dialogType, dialogStyle, GetDialogOptions<InputDialogOptions>(dialogOptionsArg!));
-                        break;
+                        {
+                            var options = GetDialogOptions<InputDialogOptions>(dialogOptionsArg!);
+                            var result = DialogManager.ShowModalDialog<InputDialogResult>(dialogType, dialogStyle, options);
+                            Console.WriteLine(SerializeDialogResult(result));
+                            break;
+                        }
                     case DialogType.CustomDialog:
-                        DialogManager.ShowModalDialog<string>(dialogType, dialogStyle, GetDialogOptions<CustomDialogOptions>(dialogOptionsArg!));
-                        break;
+                        {
+                            var options = GetDialogOptions<CustomDialogOptions>(dialogOptionsArg!);
+                            var result = DialogManager.ShowModalDialog<string>(dialogType, dialogStyle, options);
+                            Console.WriteLine(SerializeDialogResult(result));
+                            break;
+                        }
                     case DialogType.RestartDialog:
-                        DialogManager.ShowModalDialog<string>(dialogType, dialogStyle, GetDialogOptions<RestartDialogOptions>(dialogOptionsArg!));
-                        break;
+                        {
+                            var options = GetDialogOptions<RestartDialogOptions>(dialogOptionsArg!);
+                            var result = DialogManager.ShowModalDialog<string>(dialogType, dialogStyle, options);
+                            Console.WriteLine(SerializeDialogResult(result));
+                            break;
+                        }
                     default:
-                        return (int)ExitCode.UnsupportedDialog;
+                        {
+                            Console.Error.WriteLine($"The specified DialogType of [{dialogType}] is not supported.");
+                            return (int)ExitCode.UnsupportedDialog;
+                        }
                 }
             }
             else
             {
                 // If we're here, we didn't know what to do with the arguments.
+                Console.Error.WriteLine($"The specified arguments were unable to be resolved into a type of operation.");
                 return (int)ExitCode.InvalidMode;
             }
 
@@ -128,9 +149,31 @@ namespace PSADT.UserInterface
             {
                 return SerializationUtilities.DeserializeFromString<T>(dialogOptionsArg);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.Error.WriteLine($"An error occurred while deserializing the dialog options: {ex.Message}");
                 Environment.Exit((int)ExitCode.InvalidDialogOptions);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Serializes the specified dialog result object to a string.
+        /// </summary>
+        /// <remarks>This method serializes the provided dialog result object using a utility method.  If an error occurs during serialization, the application will log the error, terminate with an exit code, and rethrow the exception.</remarks>
+        /// <typeparam name="T">The type of the dialog result object to serialize.</typeparam>
+        /// <param name="dialogResult">The dialog result object to be serialized. Cannot be null.</param>
+        /// <returns>A string representation of the serialized dialog result.</returns>
+        private static string SerializeDialogResult<T>(T dialogResult)
+        {
+            try
+            {
+                return SerializationUtilities.SerializeToString(dialogResult);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred while serializing the dialog result: {ex.Message}");
+                Environment.Exit((int)ExitCode.InvalidDialogResult);
                 throw;
             }
         }
@@ -150,6 +193,7 @@ namespace PSADT.UserInterface
             InvalidDialogStyle = 7,
             NoDialogOptions = 8,
             InvalidDialogOptions = 9,
+            InvalidDialogResult = 10,
         }
     }
 }

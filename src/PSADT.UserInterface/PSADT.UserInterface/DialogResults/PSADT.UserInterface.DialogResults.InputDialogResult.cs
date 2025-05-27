@@ -1,8 +1,11 @@
-﻿namespace PSADT.UserInterface.DialogResults
+﻿using System.Runtime.Serialization;
+
+namespace PSADT.UserInterface.DialogResults
 {
     /// <summary>
     /// Represents the result of an input dialog.
     /// </summary>
+    [DataContract]
     public sealed record InputDialogResult
     {
         /// <summary>
@@ -19,11 +22,13 @@
         /// <summary>
         /// Gets the result of the dialog.
         /// </summary>
+        [DataMember]
         public readonly string Result;
 
         /// <summary>
         /// Gets the text entered by the user.
         /// </summary>
+        [DataMember]
         public readonly string? Text;
     }
 }
