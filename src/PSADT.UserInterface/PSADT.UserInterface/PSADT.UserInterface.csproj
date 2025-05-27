@@ -12,6 +12,7 @@
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     <Nullable>enable</Nullable>
     <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
     <UserSecretsId>1f9c9b02-c540-4d44-95e4-075d460f0854</UserSecretsId>
     <RootNamespace>PSADT.UserInterface</RootNamespace>
     <AssemblyName>PSADT.UserInterface</AssemblyName>
