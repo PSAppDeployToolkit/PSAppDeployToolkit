@@ -23,7 +23,9 @@ namespace PSADT.UserInterface
             // Print a message if no arguments are passed.
             if (args?.Length == 0)
             {
-                var helpTitle = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileDescription!;
+                var fileInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+                var helpTitle = fileInfo.FileDescription!;
+                var helpVersion = fileInfo.ProductVersion!.Split('+')[0];
                 var helpMessage = string.Join(Environment.NewLine, new[]
                 {
                     helpTitle,
@@ -34,7 +36,7 @@ namespace PSADT.UserInterface
                     "",
                     "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
                 });
-                DialogManager.ShowMessageBox(helpTitle, helpMessage, Microsoft.VisualBasic.MsgBoxStyle.Critical);
+                DialogManager.ShowMessageBox($"{helpTitle} {helpVersion}", helpMessage, Microsoft.VisualBasic.MsgBoxStyle.Critical);
                 return (int)ExitCode.NoArguments;
             }
             return (int)ExitCode.Success;
