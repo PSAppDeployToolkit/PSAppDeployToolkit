@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.Serialization;
 using PSADT.Module;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -7,6 +8,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for the RestartDialog.
     /// </summary>
+    [DataContract]
     public sealed record RestartDialogOptions : BaseOptions
     {
         /// <summary>
@@ -54,26 +56,31 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
+        [DataMember]
         public readonly RestartDialogStrings Strings;
 
         /// <summary>
         /// The duration for which the countdown will be displayed.
         /// </summary>
+        [DataMember]
         public readonly TimeSpan? CountdownDuration;
 
         /// <summary>
         /// The duration for which the countdown will be displayed without minimizing the dialog.
         /// </summary>
+        [DataMember]
         public readonly TimeSpan? CountdownNoMinimizeDuration;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
         /// </summary>
+        [DataMember]
         public readonly string? CustomMessageText;
 
         /// <summary>
         /// The strings used for the RestartDialog.
         /// </summary>
+        [DataContract]
         public sealed record RestartDialogStrings
         {
             /// <summary>
@@ -127,36 +134,43 @@ namespace PSADT.UserInterface.DialogOptions
             /// <summary>
             /// Text displayed in the title of the restart prompt which helps the script identify whether there is already a restart prompt being displayed and not to duplicate it.
             /// </summary>
+            [DataMember]
             public readonly string Title;
 
             /// <summary>
             /// Text displayed when the device requires a restart.
             /// </summary>
+            [DataMember]
             public readonly string Message;
 
             /// <summary>
             /// Text displayed as a prefix to the time remaining, indicating that users should save their work, etc.
             /// </summary>
+            [DataMember]
             public readonly string MessageTime;
 
             /// <summary>
             /// Text displayed when indicating when the device will be restarted.
             /// </summary>
+            [DataMember]
             public readonly string MessageRestart;
 
             /// <summary>
             /// Text displayed to indicate the amount of time remaining until a restart will occur.
             /// </summary>
+            [DataMember]
             public readonly string TimeRemaining;
 
             /// <summary>
             /// Button text for when wanting to restart the device now.
             /// </summary>
+            [DataMember]
             public readonly string ButtonRestartNow;
 
             /// <summary>
             /// Button text for allowing the user to restart later.
             /// </summary>
+            [DataMember]
             public readonly string ButtonRestartLater;
         }
     }

@@ -245,9 +245,7 @@ function Show-ADTInstallationRestartPrompt
                     {
                         Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$CountdownSeconds] second countdown..."
                     }
-
-                    # Start another powershell instance silently with function parameters from this function.
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -LiteralPath '$Script:PSScriptRoot\lib\PSADT.UserInterface.dll'; return [PSADT.UserInterface.DialogManager]::ShowRestartDialog('$($adtConfig.UI.DialogStyle)', $(($dialogOptions | Convert-ADTHashtableToString).Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
+                    Show-ADTModalDialog -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 

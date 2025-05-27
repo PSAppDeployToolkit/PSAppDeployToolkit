@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogOptions
 {
     /// <summary>
     /// Options for the InputDialog.
     /// </summary>
+    [DataContract]
     public sealed record InputDialogOptions : CustomDialogOptions
     {
         /// <summary>
@@ -28,6 +30,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The initial text to be displayed in the input field.
         /// </summary>
+        [DataMember]
         public readonly string? InitialInputText;
     }
 }

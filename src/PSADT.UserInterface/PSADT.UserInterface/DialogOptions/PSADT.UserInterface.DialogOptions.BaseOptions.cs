@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Runtime.Serialization;
 using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -8,6 +9,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for all dialogs.
     /// </summary>
+    [DataContract]
     public abstract record BaseOptions
     {
         /// <summary>
@@ -107,56 +109,67 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
+        [DataMember]
         public readonly string AppTitle;
 
         /// <summary>
         /// The subtitle of the dialog, providing additional context or information.
         /// </summary>
+        [DataMember]
         public readonly string Subtitle;
 
         /// <summary>
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
+        [DataMember]
         public readonly string AppIconImage;
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.
         /// </summary>
+        [DataMember]
         public readonly string AppBannerImage;
 
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
+        [DataMember]
         public readonly DialogPosition? DialogPosition;
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
+        [DataMember]
         public readonly bool? DialogAllowMove;
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
+        [DataMember]
         public readonly bool DialogTopMost;
 
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
+        [DataMember]
         public readonly int? FluentAccentColor;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
+        [DataMember]
         public readonly TimeSpan? DialogExpiryDuration;
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.
         /// </summary>
+        [DataMember]
         public readonly TimeSpan? DialogPersistInterval;
 
         /// <summary>
         /// Indicates whether the dialog should minimize all other windows when it is displayed.
         /// </summary>
+        [DataMember]
         public readonly bool MinimizeWindows;
     }
 }

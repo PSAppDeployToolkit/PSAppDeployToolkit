@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.Serialization;
 using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -7,6 +8,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for the CustomDialog.
     /// </summary>
+    [DataContract]
     public record CustomDialogOptions : BaseOptions
     {
         /// <summary>
@@ -76,31 +78,37 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The custom message to be displayed in the dialog.
         /// </summary>
+        [DataMember]
         public readonly string MessageText;
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
+        [DataMember]
         public readonly DialogMessageAlignment? MessageAlignment;
 
         /// <summary>
         /// The text for the left button in the dialog.
         /// </summary>
+        [DataMember]
         public readonly string? ButtonLeftText;
 
         /// <summary>
         /// The text for the middle button in the dialog.
         /// </summary>
+        [DataMember]
         public readonly string? ButtonMiddleText;
 
         /// <summary>
         /// The text for the right button in the dialog.
         /// </summary>
+        [DataMember]
         public readonly string? ButtonRightText;
 
         /// <summary>
         /// The icon to be displayed in the dialog.
         /// </summary>
+        [DataMember]
         public readonly DialogSystemIcon? Icon;
     }
 }

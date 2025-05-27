@@ -298,14 +298,11 @@ function Show-ADTInstallationPrompt
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
 
-                # Resolve the bound parameters to a string.
-                $paramsString = $dialogOptions | Convert-ADTHashtableToString
-
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
-                    Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously with the parameters: [$($paramsString.Replace("''", "'"))]."
-                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Add-Type -LiteralPath '$Script:PSScriptRoot\lib\PSADT.UserInterface.dll'; return [PSADT.UserInterface.DialogManager]::$($PSCmdlet.ParameterSetName)('$($adtConfig.UI.DialogStyle)', $($paramsString.Replace('"', '\"')))" -WindowStyle Hidden -ErrorAction Ignore
+                    Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously with message: [$Message]."
+                    Show-ADTModalDialog -Type $PSCmdlet.ParameterSetName.Replace('Show', $null) -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 
@@ -322,7 +319,7 @@ function Show-ADTInstallationPrompt
                 }
 
                 # Call the underlying function to open the message prompt.
-                Write-ADTLogEntry -Message "Displaying custom installation prompt with the parameters: [$($paramsString.Replace("''", "'"))]."
+                Write-ADTLogEntry -Message "Displaying custom installation prompt with message: [$Message]."
                 $result = [PSADT.UserInterface.DialogManager]::($PSCmdlet.ParameterSetName)($adtConfig.UI.DialogStyle, $dialogOptions)
 
                 # Restore minimized windows.

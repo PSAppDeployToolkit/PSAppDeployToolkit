@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.Serialization;
 using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -7,6 +8,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// <summary>
     /// Options for the ProgressDialog.
     /// </summary>
+    [DataContract]
     public sealed record ProgressDialogOptions : BaseOptions
     {
         /// <summary>
@@ -51,21 +53,25 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The message to be displayed in the progress dialog, indicating the current status or action being performed.
         /// </summary>
+        [DataMember]
         public readonly string ProgressMessageText;
 
         /// <summary>
         /// The detailed message to be displayed in the progress dialog, providing more context or information about the current action.
         /// </summary>
+        [DataMember]
         public readonly string ProgressDetailMessageText;
 
         /// <summary>
         /// The percentage value to be displayed on the status bar, if available.
         /// </summary>
+        [DataMember]
         public readonly double? ProgressPercentage;
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
+        [DataMember]
         public readonly DialogMessageAlignment? MessageAlignment;
     }
 }
