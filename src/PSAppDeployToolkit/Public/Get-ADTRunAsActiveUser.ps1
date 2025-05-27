@@ -50,21 +50,24 @@ function Get-ADTRunAsActiveUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.TerminalServices.SessionInfo[]]$UserSessionInfo = (Get-ADTLoggedOnUser)
+        [PSADT.TerminalServices.SessionInfo[]]$UserSessionInfo = (Get-ADTLoggedOnUser -InformationAction SilentlyContinue)
     )
 
     # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account.
     # The active console user will be chosen first. Failing that, for multi-session operating systems, the first logged on user will be used instead.
     try
     {
+        Write-ADTLogEntry -Message 'Finding the active user session on this device.'
         $sessionInfoMember = if ([PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
         foreach ($userSessionInfo in $UserSessionInfo)
         {
             if ($userSessionInfo.NTAccount -and $userSessionInfo.$sessionInfoMember)
             {
+                Write-ADTLogEntry -Message "The active user session on this device is [$($userSessionInfo.NTAccount)]."
                 return $userSessionInfo
             }
         }
+        Write-ADTLogEntry -Message 'There was no active user session found on this device.'
     }
     catch
     {

@@ -9,6 +9,10 @@ function Private:Show-ADTModalDialog
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Security.Principal.NTAccount]$Username = (Get-ADTRunAsActiveUser -InformationAction SilentlyContinue | Select-Object -ExpandProperty NTAccount),
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.Dialogs.DialogType]$Type,
@@ -54,5 +58,5 @@ function Private:Show-ADTModalDialog
     }
 
     # Farm this out to a new process.
-    $null = Start-ADTProcessAsUser -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "-DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -WindowStyle Hidden -NoWait:$NoWait -InformationAction SilentlyContinue
+    $null = Start-ADTProcessAsUser -Username $Username -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "-DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -WindowStyle Hidden -NoWait:$NoWait -InformationAction SilentlyContinue
 }

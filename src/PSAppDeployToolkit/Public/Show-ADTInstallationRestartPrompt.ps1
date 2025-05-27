@@ -186,12 +186,12 @@ function Show-ADTInstallationRestartPrompt
                 {
                     if ($SilentRestart)
                     {
-                        Write-ADTLogEntry -Message "Triggering restart silently, because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
+                        Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
                         Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Skipping restart, because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
+                        Write-ADTLogEntry -Message "Skipping restart,because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
                     }
                     return
                 }
@@ -200,6 +200,14 @@ function Show-ADTInstallationRestartPrompt
                 if (Get-Process | & { process { if ($_.MainWindowTitle -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
                 {
                     Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity 2
+                    return
+                }
+
+                # Just restart the computer if no one's logged on to answer the dialog.
+                if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+                {
+                    Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
+                    Start-Process -FilePath (Get-ADTPowerShellProcessPath) -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 
@@ -245,7 +253,7 @@ function Show-ADTInstallationRestartPrompt
                     {
                         Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$CountdownSeconds] second countdown..."
                     }
-                    Show-ADTModalDialog -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
+                    Show-ADTModalDialog -Username $runAsActiveUser.NTAccount -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 

@@ -260,8 +260,6 @@ function Start-ADTProcessAsUser
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
         # Test whether there's a proper username to proceed with.
         if (!$Username)
         {
@@ -275,6 +273,7 @@ function Start-ADTProcessAsUser
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         $PSBoundParameters.Username = $Username
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process

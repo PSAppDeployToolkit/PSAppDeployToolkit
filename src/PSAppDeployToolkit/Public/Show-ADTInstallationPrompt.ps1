@@ -242,6 +242,13 @@ function Show-ADTInstallationPrompt
                     return
                 }
 
+                # Bypass if no one's logged on to answer the dialog.
+                if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+                {
+                    Write-ADTLogEntry -Message "Bypassing custom installation prompt as there is no active user logged onto the system."
+                    return
+                }
+
                 # Build out hashtable of parameters needed to construct the dialog.
                 $dialogOptions = @{
                     AppTitle = $PSBoundParameters.Title
@@ -301,8 +308,8 @@ function Show-ADTInstallationPrompt
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
-                    Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously with message: [$Message]."
-                    Show-ADTModalDialog -Type $PSCmdlet.ParameterSetName.Replace('Show', $null) -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
+                    Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Message]."
+                    Show-ADTModalDialog -Username $runAsActiveUser.NTAccount -Type $PSCmdlet.ParameterSetName.Replace('Show', $null) -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 
