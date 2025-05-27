@@ -991,12 +991,13 @@ function Show-ADTInstallationWelcome
                         if ($DeferTimes -ge 0)
                         {
                             $dialogOptions.Add('DeferralsRemaining', [System.UInt32]($DeferTimes + 1))
+                            [Console]::WriteLine($dialogOptions.DeferralsRemaining)
                         }
                         if ($deferDeadlineDateTime)
                         {
                             $dialogOptions.Add('DeferralDeadline', [System.DateTime]$deferDeadlineDateTime)
                         }
-                        elseif ($dialogOptions.ContainsKey('DeferralsRemaining') -and !$PSBoundParameters.ContainsKey('DeferTimes'))
+                        if ($dialogOptions.ContainsKey('DeferralsRemaining') -and !$PSBoundParameters.ContainsKey('DeferTimes'))
                         {
                             $dialogOptions.Add('UnlimitedDeferrals', $true)
                         }

@@ -100,19 +100,19 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 // Set up our deferrals display.
                 if (!((null == options.DeferralsRemaining) && (null == options.DeferralDeadline)))
                 {
-                    if (null != options.DeferralsRemaining)
+                    this.labelDeferDeadline.Text = null;
+                    if (null != options.DeferralsRemaining && !options.UnlimitedDeferrals)
                     {
-                        this.labelDeferDeadline.Text = $"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}";
+                        this.labelDeferDeadline.Text = $"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}".Trim();
                     }
                     if (null != options.DeferralDeadline)
                     {
-                        this.labelDeferDeadline.Text += $"\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}";
+                        this.labelDeferDeadline.Text = $"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}".Trim();
                     }
-                    else if (null != options.DeferralsRemaining && options.UnlimitedDeferrals)
+                    if (string.IsNullOrWhiteSpace(this.labelDeferDeadline.Text))
                     {
                         this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelDeferral);
                     }
-                    this.labelDeferDeadline.Text = this.labelDeferDeadline.Text.Trim();
                 }
                 else
                 {
