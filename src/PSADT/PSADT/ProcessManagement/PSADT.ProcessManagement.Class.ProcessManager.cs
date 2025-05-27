@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.IO;
+using System.Management.Automation.Runspaces;
+using PSADT.Module;
 using PSADT.LibraryInterfaces;
 using PSADT.Utilities;
 
@@ -25,6 +27,9 @@ namespace PSADT.ProcessManagement
             // Set up some caches for performance.
             var ntPathLookupTable = FileSystemUtilities.GetNtPathLookupTable();
             Dictionary<Process, string[]> processCommandLines = [];
+
+            // Ensure we have a PowerShell runspace available for command execution here.
+            Runspace.DefaultRunspace = ModuleDatabase.GetRunspace();
 
             // Inline lambda to get the command line from the given process.
             string[] GetCommandLine(Process process)

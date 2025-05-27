@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 
 namespace PSADT.Module
 {
@@ -13,6 +14,7 @@ namespace PSADT.Module
     public static class ModuleDatabase
     {
         private const string errorMessage = "Please ensure that [Initialize-ADTModule] is called before using any PSAppDeployToolkit functions or methods.";
+        private static Runspace _defaultRunspace = Runspace.DefaultRunspace ?? throw new InvalidOperationException("The default runspace is not available. This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
         private static PSObject? _database = null;
         private static SessionState? _sessionState = null;
 
@@ -94,6 +96,16 @@ namespace PSADT.Module
         internal static SessionState GetSessionState()
         {
             return _sessionState ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
+        }
+
+        /// <summary>
+        /// Retrieves the default PowerShell runspace associated with the current context.
+        /// </summary>
+        /// <returns>The default <see cref="Runspace"/> instance.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the default runspace is not initialized. This typically occurs if the assembly is not loaded via the PSAppDeployToolkit PowerShell module.</exception>
+        internal static Runspace GetRunspace()
+        {
+            return _defaultRunspace ?? throw new InvalidOperationException("This assembly only supports loading via the PSAppDeployToolkit PowerShell module.");
         }
 
         /// <summary>
