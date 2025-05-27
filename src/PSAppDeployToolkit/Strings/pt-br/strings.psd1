@@ -17,7 +17,7 @@
         }
         FastRetry = @{
             Install = 'Instalação não concluída.'
-            Repair = 'Reparo não concluída.'
+            Repair = 'Reparo não concluído.'
             Uninstall = 'Desinstalação não concluída.'
         }
         Error = @{
@@ -29,7 +29,7 @@
     BlockExecutionText = @{
         Message = @{
             Install = 'A inicialização deste aplicativo foi temporariamente bloqueada para que uma operação de instalação possa ser concluída.'
-            Repair = 'A inicialização deste aplicativo foi temporariamente bloqueada para que uma operação de reparo possa ser concluída.'
+            Repair = 'A inicialização deste aplicativo foi temporariamente bloqueada para que uma operação de reparo possa ser concluído.'
             Uninstall = 'A inicialização deste aplicativo foi temporariamente bloqueada para que uma operação de desinstalação possa ser concluída.'
         }
         Subtitle = @{
