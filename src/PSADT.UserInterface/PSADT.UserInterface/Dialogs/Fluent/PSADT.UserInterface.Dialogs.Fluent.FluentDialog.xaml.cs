@@ -103,6 +103,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 _dialogAllowMove = options.DialogAllowMove.Value;
             }
+            if (_dialogAllowMove)
+            {
+                MouseLeftButtonDown += (sender, e) => DragMove();
+            }
             WindowStartupLocation = WindowStartupLocation.Manual;
             Topmost = options.DialogTopMost;
 
