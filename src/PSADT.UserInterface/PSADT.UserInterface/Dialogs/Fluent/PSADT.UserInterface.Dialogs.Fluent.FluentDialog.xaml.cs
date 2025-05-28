@@ -55,12 +55,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             InitializeComponent();
 
             // If the accent color is set, we don't need to watch for system theme changes
-            SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true);
-            ApplicationTheme appTheme = ApplicationThemeManager.GetAppTheme();
-
-            // Process the given accent color from the options
-            var fluentColor = null != options.FluentAccentColor ? IntToColor(options.FluentAccentColor.Value) : appTheme == ApplicationTheme.Dark ? FluentAccentColorDark : FluentAccentColorLight;
-            ApplicationAccentColorManager.Apply(fluentColor, appTheme, false);
+            if (null != options.FluentAccentColor)
+            {
+                SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, false);
+                ApplicationAccentColorManager.Apply(IntToColor(options.FluentAccentColor.Value), ApplicationThemeManager.GetAppTheme(), false);
+            }
+            else
+            {
+                SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true);
+            }
 
             // See https://github.com/lepoco/wpfui/issues/1188 for more info.
             var brushes = new Dictionary<string, SolidColorBrush>
@@ -847,18 +850,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Dialog icon cache for improved performance
         /// </summary>
         private static readonly Dictionary<string, BitmapSource> _dialogIconCache = [];
-
-        /// <summary>
-        /// Represents the light accent color used in Fluent design.
-        /// </summary>
-        /// <remarks>The color is defined as an ARGB value and corresponds to the hexadecimal value <c>0xFF0078D4</c>.</remarks>
-        private static readonly Color FluentAccentColorLight = IntToColor(0xFF0078D4);
-
-        /// <summary>
-        /// Represents the dark accent color in the Fluent design system.
-        /// </summary>
-        /// <remarks>The color is defined as an ARGB value and corresponds to the hexadecimal value <c>0xFF5CB8FF</c>.</remarks>
-        private static readonly Color FluentAccentColorDark = IntToColor(0xFF5CB8FF);
 
         /// <summary>
         /// Event handler for when a window property has changed.
