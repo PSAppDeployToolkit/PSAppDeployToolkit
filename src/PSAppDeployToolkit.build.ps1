@@ -562,7 +562,7 @@ Add-BuildTask DevCC {
 Add-BuildTask CreateHelpStart {
     Write-Build White '      Performing all help related actions.'
     Write-Build Gray '           Importing platyPS...'
-    Import-Module platyPS
+    Import-Module platyPS -RequiredVersion 0.14.2
     Write-Build Gray '           ...platyPS imported successfully.'
 }
 
