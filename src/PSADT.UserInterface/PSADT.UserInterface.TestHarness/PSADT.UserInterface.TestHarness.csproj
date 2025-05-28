@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
@@ -7,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -23,51 +22,38 @@
     <InformationalVersion>4.1.0</InformationalVersion>
     <ApplicationIcon>..\PSADT.UserInterface\Properties\appIcon.ico</ApplicationIcon>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <SignAssembly>False</SignAssembly>
-    <SelfContained>false</SelfContained>
-    <PublishSingleFile>false</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <PublishTrimmed>false</PublishTrimmed>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-    <RepositoryType>git</RepositoryType>
     <UseWindowsForms>True</UseWindowsForms>
-
+    <WarningLevel>9999</WarningLevel>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <WarningLevel>9999</WarningLevel>
     <Optimize>false</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <WarningLevel>9999</WarningLevel>
     <Optimize>true</Optimize>
     <PreferNativeArm64>True</PreferNativeArm64>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
+    <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <WarningLevel>9999</WarningLevel>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
-    <WarningLevel>9999</WarningLevel>
-    <DebugType>full</DebugType>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

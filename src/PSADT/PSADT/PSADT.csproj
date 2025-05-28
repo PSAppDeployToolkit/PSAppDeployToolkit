@@ -12,76 +12,46 @@
     <AssemblyVersion>4.1.0.0</AssemblyVersion>
     <InformationalVersion>4.1.0</InformationalVersion>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <WarningLevel>9999</WarningLevel>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
-    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <SignAssembly>False</SignAssembly>
-    <PublishTrimmed>false</PublishTrimmed>
     <Platforms>AnyCPU</Platforms>
-    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <WarningLevel>3</WarningLevel>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
-    <WarningLevel>3</WarningLevel>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-    <DefineConstants>$(DefineConstants);CoreCLR</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net462'">
-    <DefineConstants>$(DefineConstants);NETFramework</DefineConstants>
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <WarningLevel>9999</WarningLevel>
     <Optimize>false</Optimize>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <WarningLevel>9999</WarningLevel>
     <Optimize>false</Optimize>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <WarningLevel>9999</WarningLevel>
     <Optimize>true</Optimize>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <WarningLevel>9999</WarningLevel>
     <Optimize>true</Optimize>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
@@ -104,5 +74,4 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
     <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
   </ItemGroup>
-
 </Project>

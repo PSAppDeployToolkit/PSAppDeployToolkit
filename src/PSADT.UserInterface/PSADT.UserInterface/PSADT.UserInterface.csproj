@@ -4,14 +4,14 @@
     <TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <NoWarn>$(NoWarn)</NoWarn>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
     <Nullable>enable</Nullable>
-    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
     <UserSecretsId>1f9c9b02-c540-4d44-95e4-075d460f0854</UserSecretsId>
     <RootNamespace>PSADT.UserInterface</RootNamespace>
@@ -25,75 +25,43 @@
     <InformationalVersion>4.1.0</InformationalVersion>
     <ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <SignAssembly>False</SignAssembly>
-    <SelfContained>false</SelfContained>
-    <PublishSingleFile>false</PublishSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <PublishTrimmed>false</PublishTrimmed>
     <Platforms>AnyCPU</Platforms>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <RepositoryType>git</RepositoryType>
-    <NoWin32Manifest>true</NoWin32Manifest>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <WarningLevel>9999</WarningLevel>
     <StartupObject>PSADT.UserInterface.Program</StartupObject>
-
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <WarningLevel>9999</WarningLevel>
-    <Optimize>false</Optimize>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
-    <WarningLevel>9999</WarningLevel>
-    <Optimize>true</Optimize>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.5" />
-    <PackageReference Include="System.Collections.Immutable" Version="9.0.5" />
-    <PackageReference Include="System.Reflection.Metadata" Version="9.0.5" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <NoWarn>$(NoWarn)</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <WarningLevel>9999</WarningLevel>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <Optimize>false</Optimize>
+    <PreferNativeArm64>True</PreferNativeArm64>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
+    <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
-    <WarningLevel>9999</WarningLevel>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CS1030</WarningsNotAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -123,4 +91,14 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.5" />
+    <PackageReference Include="System.Collections.Immutable" Version="9.0.5" />
+    <PackageReference Include="System.Reflection.Metadata" Version="9.0.5" />
+  </ItemGroup>
 </Project>
