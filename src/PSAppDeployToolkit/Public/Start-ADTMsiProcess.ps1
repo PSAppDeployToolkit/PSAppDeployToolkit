@@ -467,7 +467,14 @@ function Start-ADTMsiProcess
                         $msiDefaultParams = $msiInstallDefaultParams
                         break
                     }
-                    Repair
+                    { $_ -eq 'Repair' -and $adtConfig.MSI.RepairMode -eq 'Reinstall' }
+                    {
+                        $option = '/i'
+                        $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
+                        $msiDefaultParams = "$msiInstallDefaultParams REINSTALL=ALL REINSTALLMODE=$(if ($RepairFromSource) {'v'})omus"
+                        break
+                    }
+                    { $_ -eq 'Repair' -and $adtConfig.MSI.RepairMode -eq 'Repair' }
                     {
                         $option = "/f$(if ($RepairFromSource) {'vomus'})"
                         $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
