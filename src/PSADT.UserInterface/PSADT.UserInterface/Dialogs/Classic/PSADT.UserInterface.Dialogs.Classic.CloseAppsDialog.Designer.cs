@@ -175,7 +175,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.listBoxCloseProcesses.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.listBoxCloseProcesses.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.listBoxCloseProcesses.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listBoxCloseProcesses.FormattingEnabled = true;
             this.listBoxCloseProcesses.ItemHeight = 15;
