@@ -19,7 +19,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.Utilities;
 using Windows.Win32;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;

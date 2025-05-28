@@ -66,15 +66,14 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.5" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
-    <PackageReference Include="System.Collections.Immutable" Version="9.0.5" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
-    <PackageReference Include="System.Reflection.Metadata" Version="9.0.5" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.5" />
+    <PackageReference Include="System.Collections.Immutable" Version="9.0.5" />
+    <PackageReference Include="System.Reflection.Metadata" Version="9.0.5" />
   </ItemGroup>
 
   <PropertyGroup>
-    <!-- To support net462, manifest-driven HiDPI settings must be kept -->
-    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+    <NoWarn>$(NoWarn)</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
