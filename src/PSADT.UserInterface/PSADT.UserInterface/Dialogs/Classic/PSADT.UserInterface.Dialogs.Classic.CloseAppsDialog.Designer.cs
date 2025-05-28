@@ -81,7 +81,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(15, 11, 15, 13);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 490);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 477);
             this.flowLayoutPanelDialog.TabIndex = 3;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
@@ -149,7 +149,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCloseApps.MaximumSize = new System.Drawing.Size(420, 0);
             this.flowLayoutPanelCloseApps.MinimumSize = new System.Drawing.Size(420, 0);
             this.flowLayoutPanelCloseApps.Name = "flowLayoutPanelCloseApps";
-            this.flowLayoutPanelCloseApps.Size = new System.Drawing.Size(420, 176);
+            this.flowLayoutPanelCloseApps.Size = new System.Drawing.Size(420, 163);
             this.flowLayoutPanelCloseApps.TabIndex = 2;
             this.flowLayoutPanelCloseApps.WrapContents = false;
             // 
@@ -185,7 +185,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.listBoxCloseProcesses.Location = new System.Drawing.Point(0, 69);
             this.listBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.listBoxCloseProcesses.Name = "listBoxCloseProcesses";
-            this.listBoxCloseProcesses.Size = new System.Drawing.Size(420, 107);
+            this.listBoxCloseProcesses.Size = new System.Drawing.Size(420, 94);
             this.listBoxCloseProcesses.TabIndex = 1;
             // 
             // flowLayoutPanelDeferral
@@ -199,7 +199,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDeferral.Controls.Add(this.labelDeferWarningMessage);
             this.flowLayoutPanelDeferral.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelDeferral.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.flowLayoutPanelDeferral.Location = new System.Drawing.Point(15, 301);
+            this.flowLayoutPanelDeferral.Location = new System.Drawing.Point(15, 288);
             this.flowLayoutPanelDeferral.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelDeferral.MaximumSize = new System.Drawing.Size(420, 0);
             this.flowLayoutPanelDeferral.MinimumSize = new System.Drawing.Size(420, 0);
@@ -266,7 +266,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdown);
             this.flowLayoutPanelCountdown.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelCountdown.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(15, 376);
+            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(15, 363);
             this.flowLayoutPanelCountdown.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(420, 0);
             this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(420, 0);
@@ -321,7 +321,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Controls.Add(this.buttonDefer, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonContinue, 2, 0);
             this.tableLayoutPanelButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(15, 452);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(15, 439);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
@@ -386,7 +386,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 490);
+            this.ClientSize = new System.Drawing.Size(450, 477);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "CloseAppsDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
