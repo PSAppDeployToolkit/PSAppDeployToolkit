@@ -45,50 +45,68 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Initializes a new instance of FluentDialog
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
+        /// <param name="customMessageText"></param>
+        /// <param name="countdownDuration"></param>
+        /// <param name="countdownWarningDuration"></param>
+        /// <param name="countdownStopwatch"></param>
         private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
+            // Initialize the window
+            InitializeComponent();
+
+            // If the accent color is set, we don't need to watch for system theme changes
+            SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true);
+
+            ApplicationTheme appTheme = ApplicationThemeManager.GetAppTheme();
+
             // Process the given accent color from the options
             if (null != options.FluentAccentColor)
             {
-                // Don't update the window accent as we're setting it manually
-                SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
-
-                // Apply the accent color to the application theme
-                ApplicationAccentColorManager.Apply(StringToColor(options.FluentAccentColor.Value), ApplicationThemeManager.GetAppTheme(), true);
-
-                // Update the accent color in the theme dictionary
-                // See https://github.com/lepoco/wpfui/issues/1188 for more info.
-                var brushes = new Dictionary<string, SolidColorBrush>
-                {
-                    ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
-                    ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
-                    ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
-                    ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"])
-                };
-                ResourceDictionary themeDictionary = Application.Current.Resources.MergedDictionaries.First(static d => d.Source.AbsolutePath.StartsWith("/Wpf.Ui;component/Resources/Theme/"));
-                var converter = new ResourceReferenceExpressionConverter();
-                foreach (DictionaryEntry entry in themeDictionary)
-                {
-                    if (entry.Value is SolidColorBrush brush)
-                    {
-                        var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
-                        if (dynamicColor is not Color &&
-                            converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
-                            brushes.ContainsKey((string)dynamicResource.ResourceKey))
-                        {
-                            themeDictionary[entry.Key] = brushes[(string)dynamicResource.ResourceKey];
-                        }
-                    }
-                }
+                // If an accent color is provided, apply it
+                ApplicationAccentColorManager.Apply(StringToColor((int)options.FluentAccentColor), appTheme, false);
             }
             else
             {
-                // Update the window accent based on the current theme
-                SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, true);
+                var FluentAccentColorLight = PSADT.Utilities.ValueTypeConverter.ToInt(0xFF0078D4); // Light Accent Color
+                var FluentAccentColorDark = PSADT.Utilities.ValueTypeConverter.ToInt(0xFF5CB8FF); // Dark Accent Color
+
+                if (appTheme == ApplicationTheme.Dark)
+                {
+                    // Apply the dark theme accent variation
+                    ApplicationAccentColorManager.Apply(StringToColor(FluentAccentColorDark), appTheme, false);
+                }
+                else
+                {
+                    // Apply the light theme accent variation
+                    ApplicationAccentColorManager.Apply(StringToColor(FluentAccentColorLight), appTheme, false);
+                }
+
             }
 
-            // Initialize the window
-            InitializeComponent();
+            // See https://github.com/lepoco/wpfui/issues/1188 for more info.
+            var brushes = new Dictionary<string, SolidColorBrush>
+            {
+                ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
+                ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
+                ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
+                ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"])
+            };
+            ResourceDictionary themeDictionary = Application.Current.Resources.MergedDictionaries.First(static d => d.Source.AbsolutePath.StartsWith("/Wpf.Ui;component/Resources/Theme/"));
+            var converter = new ResourceReferenceExpressionConverter();
+            foreach (DictionaryEntry entry in themeDictionary)
+            {
+                if (entry.Value is SolidColorBrush brush)
+                {
+                    var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
+                    if (dynamicColor is not Color &&
+                        converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
+                        brushes.ContainsKey((string)dynamicResource.ResourceKey))
+                    {
+                        themeDictionary[entry.Key] = brushes[(string)dynamicResource.ResourceKey];
+                    }
+                }
+            }
+
 
             // Set basic properties
             Title = options.AppTitle;
@@ -196,6 +214,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Prevent window movement by handling WM_SYSCOMMAND
         /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="msg"></param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <param name="handled"></param>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg == PInvoke.WM_SYSCOMMAND)
@@ -254,6 +277,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Prevents the user from closing the app via the taskbar
         /// </summary>
+        /// <param name="e"></param>
         protected override void OnClosing(CancelEventArgs e)
         {
             // Prevent the window from closing unless explicitly allowed in code
@@ -264,6 +288,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Clean up resources when the window is closed
         /// </summary>
+        /// <param name="e"></param>
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
@@ -460,7 +485,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Converts a hex color string to a Color object.
         /// </summary>
-        /// <param name="colorStr"></param>
+        /// <param name="color"></param>
         /// <returns></returns>
         private static Color StringToColor(int color)
         {
@@ -685,7 +710,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Initializes the countdown timer and display for dialogs that support it (CloseApps, Restart).
         /// </summary>
-        /// <param name="duration">The total duration of the countdown.</param>
         private void InitializeCountdown()
         {
             // Return early if there's no countdown to set.
@@ -846,6 +870,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <summary>
         /// Dispose managed and unmanaged resources
         /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)

@@ -7,19 +7,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:psconv="clr-namespace:PSADT.UserInterface.Types"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Width="580"
-    MinWidth="580"
     MinHeight="0"
     MaxWidth="580"
     MaxHeight="850"
-    ui:Design.Background="Transparent"
+    ui:Design.Background="{DynamicResource LayerOnMicaBaseAltFillColorDefaultBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     x:ClassModifier="internal"
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
     AutomationProperties.Name="PSAppDeployToolkit Dialog"
-    Background="Transparent"
-    BorderBrush="{DynamicResource AccentTextFillColorTertiaryBrush}"
-    BorderThickness="1"
+    Background="{DynamicResource LayerOnMicaBaseAltFillColorDefaultBrush}"
     ExtendsContentIntoTitleBar="True"
     FontFamily="Segoe UI Display"
     FontSize="14"
@@ -33,7 +29,7 @@
     TextOptions.TextRenderingMode="ClearType"
     Topmost="True"
     UseLayoutRounding="True"
-    WindowBackdropType="Acrylic"
+    WindowBackdropType="Mica"
     WindowCornerPreference="RoundSmall"
     mc:Ignorable="d"
     >
@@ -165,13 +161,6 @@
             ShowClose="False"
             ShowMaximize="False"
             ShowMinimize="false"
-            />
-
-        <Rectangle
-            Grid.Row="0"
-            Grid.RowSpan="3"
-            Grid.Column="1"
-            Fill="{DynamicResource LayerOnMicaBaseAltFillColorDefaultBrush}"
             />
 
 
@@ -409,7 +398,7 @@
                         >
                         <ProgressBar
                             x:Name="ProgressBar"
-                            Height="3"
+                            Height="4"
                             VerticalAlignment="Center"
                             IsIndeterminate="True"
                             />
@@ -478,8 +467,8 @@
                             VerticalAlignment="Center"
                             Appearance="Primary"
                             AutomationProperties.Name="Countdown Timer Value"
-                            FontTypography="BodyStrong"
                             FontSize="15"
+                            FontTypography="BodyStrong"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="00:00:00"
                             />
@@ -523,8 +512,8 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            FontTypography="BodyStrong"
                             FontSize="15"
+                            FontTypography="BodyStrong"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="3"
                             TextWrapping="WrapWithOverflow"
@@ -568,8 +557,8 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Appearance="Primary"
-                            FontTypography="BodyStrong"
                             FontSize="15"
+                            FontTypography="BodyStrong"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="Sun, 20th Apr 2025, 13:00 EST"
                             TextWrapping="WrapWithOverflow"
@@ -589,7 +578,7 @@
             >
             <Grid
                 x:Name="ActionButtons"
-                Margin="24,8,24,24"
+                Margin="24,4,24,24"
                 HorizontalAlignment="Stretch"
                 >
                 <Grid.ColumnDefinitions>
