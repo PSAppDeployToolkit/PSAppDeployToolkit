@@ -215,7 +215,6 @@ function Show-ADTInstallationProgress
                         AppIconImage = $adtConfig.Assets.Logo
                         AppBannerImage = $adtConfig.Assets.Banner
                         DialogTopMost = !$NotTopMost
-                        MinimizeWindows = $false
                         ProgressMessageText = $PSBoundParameters.StatusMessage
                         ProgressDetailMessageText = $PSBoundParameters.StatusMessageDetail
                     }

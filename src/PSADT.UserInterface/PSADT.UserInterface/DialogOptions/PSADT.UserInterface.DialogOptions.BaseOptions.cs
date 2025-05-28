@@ -40,10 +40,6 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("DialogTopMost value is null or invalid.", (Exception?)null);
             }
-            if (options["MinimizeWindows"] is not bool minimizeWindows)
-            {
-                throw new ArgumentNullException("MinimizeWindows value is null or invalid.", (Exception?)null);
-            }
 
             // Test that the specified image paths are valid.
             if (!File.Exists(appIconImage))
@@ -103,7 +99,6 @@ namespace PSADT.UserInterface.DialogOptions
             AppIconImage = appIconImage;
             AppBannerImage = appBannerImage;
             DialogTopMost = dialogTopMost;
-            MinimizeWindows = minimizeWindows;
         }
 
         /// <summary>
@@ -165,11 +160,5 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly TimeSpan? DialogPersistInterval;
-
-        /// <summary>
-        /// Indicates whether the dialog should minimize all other windows when it is displayed.
-        /// </summary>
-        [DataMember]
-        public readonly bool MinimizeWindows;
     }
 }
