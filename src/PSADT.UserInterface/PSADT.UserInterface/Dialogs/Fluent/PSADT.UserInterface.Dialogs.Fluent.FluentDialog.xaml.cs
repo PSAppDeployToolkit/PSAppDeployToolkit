@@ -19,6 +19,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.Utilities;
 using Windows.Win32;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
@@ -56,32 +57,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // If the accent color is set, we don't need to watch for system theme changes
             SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true);
-
             ApplicationTheme appTheme = ApplicationThemeManager.GetAppTheme();
 
             // Process the given accent color from the options
-            if (null != options.FluentAccentColor)
-            {
-                // If an accent color is provided, apply it
-                ApplicationAccentColorManager.Apply(StringToColor((int)options.FluentAccentColor), appTheme, false);
-            }
-            else
-            {
-                var FluentAccentColorLight = PSADT.Utilities.ValueTypeConverter.ToInt(0xFF0078D4); // Light Accent Color
-                var FluentAccentColorDark = PSADT.Utilities.ValueTypeConverter.ToInt(0xFF5CB8FF); // Dark Accent Color
-
-                if (appTheme == ApplicationTheme.Dark)
-                {
-                    // Apply the dark theme accent variation
-                    ApplicationAccentColorManager.Apply(StringToColor(FluentAccentColorDark), appTheme, false);
-                }
-                else
-                {
-                    // Apply the light theme accent variation
-                    ApplicationAccentColorManager.Apply(StringToColor(FluentAccentColorLight), appTheme, false);
-                }
-
-            }
+            var fluentColor = null != options.FluentAccentColor ? IntToColor(options.FluentAccentColor.Value) : appTheme == ApplicationTheme.Dark ? FluentAccentColorDark : FluentAccentColorLight;
+            ApplicationAccentColorManager.Apply(fluentColor, appTheme, false);
 
             // See https://github.com/lepoco/wpfui/issues/1188 for more info.
             var brushes = new Dictionary<string, SolidColorBrush>
@@ -106,7 +86,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     }
                 }
             }
-
 
             // Set basic properties
             Title = options.AppTitle;
@@ -483,11 +462,24 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
-        /// Converts a hex color string to a Color object.
+        /// Converts a 32-bit integer representation of a color into a <see cref="Color"/> object.
         /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
-        private static Color StringToColor(int color)
+        /// <remarks>The integer is interpreted as an ARGB value, where the most significant byte represents the alpha channel, followed by the red, green, and blue channels in order.</remarks>
+        /// <param name="color">A 32-bit integer where each byte represents a component of the color in ARGB order.</param>
+        /// <returns>A <see cref="Color"/> object corresponding to the specified integer value.</returns>
+        private static Color IntToColor(int color)
+        {
+            var colorBytes = BitConverter.GetBytes(color);
+            return Color.FromArgb(colorBytes[3], colorBytes[2], colorBytes[1], colorBytes[0]);
+        }
+
+        /// <summary>
+        /// Converts a 32-bit unsigned integer to a <see cref="Color"/> structure.
+        /// </summary>
+        /// <remarks>The integer is interpreted as an ARGB value, where the most significant byte represents the alpha channel, followed by the red, green, and blue channels in order.</remarks>
+        /// <param name="color">A 32-bit unsigned integer representing the ARGB color value.</param>
+        /// <returns>A <see cref="Color"/> structure corresponding to the specified ARGB value.</returns>
+        private static Color IntToColor(uint color)
         {
             var colorBytes = BitConverter.GetBytes(color);
             return Color.FromArgb(colorBytes[3], colorBytes[2], colorBytes[1], colorBytes[0]);
@@ -852,6 +844,18 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Dialog icon cache for improved performance
         /// </summary>
         private static readonly Dictionary<string, BitmapSource> _dialogIconCache = [];
+
+        /// <summary>
+        /// Represents the light accent color used in Fluent design.
+        /// </summary>
+        /// <remarks>The color is defined as an ARGB value and corresponds to the hexadecimal value <c>0xFF0078D4</c>.</remarks>
+        private static readonly Color FluentAccentColorLight = IntToColor(0xFF0078D4);
+
+        /// <summary>
+        /// Represents the dark accent color in the Fluent design system.
+        /// </summary>
+        /// <remarks>The color is defined as an ARGB value and corresponds to the hexadecimal value <c>0xFF5CB8FF</c>.</remarks>
+        private static readonly Color FluentAccentColorDark = IntToColor(0xFF5CB8FF);
 
         /// <summary>
         /// Event handler for when a window property has changed.
