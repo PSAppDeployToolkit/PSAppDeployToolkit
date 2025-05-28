@@ -294,7 +294,7 @@ function Show-ADTInstallationPrompt
                 }
                 if ($PSBoundParameters.ContainsKey('AllowMove'))
                 {
-                    $dialogOptions.Add('DialogAllowMove', $AllowMove)
+                    $dialogOptions.Add('DialogAllowMove', !!$AllowMove)
                 }
                 if ($PersistPrompt)
                 {

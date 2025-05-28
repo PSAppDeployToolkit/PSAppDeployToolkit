@@ -237,7 +237,7 @@ function Show-ADTInstallationProgress
                     }
                     if ($PSBoundParameters.ContainsKey('AllowMove'))
                     {
-                        $dialogOptions.Add('DialogAllowMove', $AllowMove)
+                        $dialogOptions.Add('DialogAllowMove', !!$AllowMove)
                     }
                     if ($null -ne $adtConfig.UI.FluentAccentColor)
                     {
