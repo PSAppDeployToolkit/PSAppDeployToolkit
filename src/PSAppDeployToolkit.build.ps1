@@ -170,13 +170,13 @@ function Confirm-ADTAdmxTemplateMatchesConfig
 $buildItems = @(
     @{
         SourcePath = 'src\PSADT.Invoke'
-        SolutionPath = 'src\PSADT.Invoke\PSADT.Invoke.sln'
+        SolutionPath = 'src\PSADT.Invoke\PSADT.Invoke.slnx'
         OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
         OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
     },
     @{
         SourcePath = 'src\PSADT.UserInterface', 'src\PSADT'
-        SolutionPath = 'src\PSADT.UserInterface\PSADT.UserInterface.sln'
+        SolutionPath = 'src\PSADT.UserInterface\PSADT.UserInterface.slnx'
         OutputPath = 'src\PSAppDeployToolkit\lib'
         OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.exe', 'src\PSAppDeployToolkit\lib\PSADT.dll'
     }
@@ -337,7 +337,7 @@ Add-BuildTask DotNetBuild {
             # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
             if ($buildType.Equals('Debug'))
             {
-                $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Debug\net462\*')
+                $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.slnx', ''), 'bin\Debug\net462\*')
                 $buildItem.OutputPath | ForEach-Object {
                     $destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)
                     Write-Build Gray "          Copying from $sourcePath to $destPath..."
@@ -695,7 +695,7 @@ Add-BuildTask AssetCopy -Before Build {
     Copy-Item -Path "$Script:ModuleSourcePath\*" -Destination $Script:BuildModuleRoot -Exclude "$($Script:ModuleName).ps*1" -Recurse
     foreach ($buildItem in $Script:buildItems)
     {
-        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.sln', ''), 'bin\Release\net462\*')
+        $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.slnx', ''), 'bin\Release\net462\*')
         $buildItem.OutputPath.Replace("src\PSAppDeployToolkit\", $null) | ForEach-Object {
             $destPath = [System.IO.Path]::Combine($Script:BuildModuleRoot, $_)
             Write-Build Gray "        Copying from $sourcePath to $destPath..."
