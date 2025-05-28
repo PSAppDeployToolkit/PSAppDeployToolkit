@@ -42,6 +42,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelDialog
             // 
+            this.flowLayoutPanelDialog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.labelMessage);
@@ -54,48 +56,54 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
-            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 124);
+            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(15, 11, 15, 13);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 120);
             this.flowLayoutPanelDialog.TabIndex = 2;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
             // labelMessage
             // 
+            this.labelMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelMessage.AutoSize = true;
             this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelMessage.Location = new System.Drawing.Point(17, 14);
+            this.labelMessage.Location = new System.Drawing.Point(15, 12);
             this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
-            this.labelMessage.MaximumSize = new System.Drawing.Size(416, 0);
-            this.labelMessage.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelMessage.MaximumSize = new System.Drawing.Size(420, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(420, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(416, 17);
+            this.labelMessage.Size = new System.Drawing.Size(420, 17);
             this.labelMessage.TabIndex = 0;
             this.labelMessage.Text = "Installation in progress. Please wait...";
             this.labelMessage.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // labelDetail
             // 
+            this.labelDetail.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelDetail.AutoSize = true;
             this.labelDetail.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelDetail.Location = new System.Drawing.Point(17, 43);
+            this.labelDetail.Location = new System.Drawing.Point(15, 41);
             this.labelDetail.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
-            this.labelDetail.MaximumSize = new System.Drawing.Size(416, 0);
-            this.labelDetail.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelDetail.MaximumSize = new System.Drawing.Size(420, 0);
+            this.labelDetail.MinimumSize = new System.Drawing.Size(420, 0);
             this.labelDetail.Name = "labelDetail";
-            this.labelDetail.Size = new System.Drawing.Size(416, 15);
+            this.labelDetail.Size = new System.Drawing.Size(420, 15);
             this.labelDetail.TabIndex = 1;
             this.labelDetail.Text = "This window will close automatically when the installation is complete.";
             this.labelDetail.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(17, 82);
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar.Location = new System.Drawing.Point(15, 80);
             this.progressBar.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.progressBar.MarqueeAnimationSpeed = 50;
-            this.progressBar.MaximumSize = new System.Drawing.Size(414, 25);
-            this.progressBar.MinimumSize = new System.Drawing.Size(414, 25);
+            this.progressBar.MaximumSize = new System.Drawing.Size(420, 25);
+            this.progressBar.MinimumSize = new System.Drawing.Size(420, 25);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(414, 25);
+            this.progressBar.Size = new System.Drawing.Size(420, 25);
             this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.progressBar.TabIndex = 2;
             // 
@@ -103,7 +111,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 124);
+            this.ClientSize = new System.Drawing.Size(450, 120);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "ProgressDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);

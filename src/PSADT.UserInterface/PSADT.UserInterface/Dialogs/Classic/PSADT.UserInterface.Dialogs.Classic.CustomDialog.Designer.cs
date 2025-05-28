@@ -49,34 +49,38 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // tableLayoutPanelIconMessage
             // 
+            this.tableLayoutPanelIconMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanelIconMessage.AutoSize = true;
             this.tableLayoutPanelIconMessage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelIconMessage.ColumnCount = 2;
-            this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 66F));
+            this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 62F));
             this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanelIconMessage.Controls.Add(this.labelMessage, 1, 0);
             this.tableLayoutPanelIconMessage.Controls.Add(this.pictureIcon, 0, 0);
             this.tableLayoutPanelIconMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tableLayoutPanelIconMessage.Location = new System.Drawing.Point(17, 14);
+            this.tableLayoutPanelIconMessage.Location = new System.Drawing.Point(15, 11);
             this.tableLayoutPanelIconMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
-            this.tableLayoutPanelIconMessage.MaximumSize = new System.Drawing.Size(416, 0);
-            this.tableLayoutPanelIconMessage.MinimumSize = new System.Drawing.Size(416, 0);
+            this.tableLayoutPanelIconMessage.MaximumSize = new System.Drawing.Size(420, 0);
+            this.tableLayoutPanelIconMessage.MinimumSize = new System.Drawing.Size(420, 0);
             this.tableLayoutPanelIconMessage.Name = "tableLayoutPanelIconMessage";
             this.tableLayoutPanelIconMessage.RowCount = 1;
             this.tableLayoutPanelIconMessage.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelIconMessage.Size = new System.Drawing.Size(416, 61);
+            this.tableLayoutPanelIconMessage.Size = new System.Drawing.Size(420, 61);
             this.tableLayoutPanelIconMessage.TabIndex = 3;
             // 
             // labelMessage
             // 
+            this.labelMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelMessage.AutoSize = true;
             this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelMessage.Location = new System.Drawing.Point(66, 1);
+            this.labelMessage.Location = new System.Drawing.Point(62, 1);
             this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
-            this.labelMessage.MaximumSize = new System.Drawing.Size(350, 0);
-            this.labelMessage.MinimumSize = new System.Drawing.Size(350, 0);
+            this.labelMessage.MaximumSize = new System.Drawing.Size(354, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(354, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(350, 60);
+            this.labelMessage.Size = new System.Drawing.Size(354, 60);
             this.labelMessage.TabIndex = 1;
             this.labelMessage.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor in" +
     "cididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud" +
@@ -91,12 +95,15 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.pictureIcon.MinimumSize = new System.Drawing.Size(48, 48);
             this.pictureIcon.Name = "pictureIcon";
             this.pictureIcon.Size = new System.Drawing.Size(48, 48);
+            this.pictureIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureIcon.TabIndex = 0;
             this.pictureIcon.TabStop = false;
             this.pictureIcon.WaitOnLoad = true;
             // 
             // tableLayoutPanelButton
             // 
+            this.tableLayoutPanelButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;
@@ -107,12 +114,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
             this.tableLayoutPanelButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 99);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(15, 96);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
             this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanelButton.Size = new System.Drawing.Size(416, 25);
+            this.tableLayoutPanelButton.Size = new System.Drawing.Size(420, 25);
             this.tableLayoutPanelButton.TabIndex = 4;
             // 
             // buttonLeft
@@ -134,7 +141,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.buttonMiddle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.buttonMiddle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonMiddle.Location = new System.Drawing.Point(141, 0);
+            this.buttonMiddle.Location = new System.Drawing.Point(144, 0);
             this.buttonMiddle.Margin = new System.Windows.Forms.Padding(2, 0, 0, 0);
             this.buttonMiddle.MaximumSize = new System.Drawing.Size(134, 25);
             this.buttonMiddle.MinimumSize = new System.Drawing.Size(134, 25);
@@ -149,7 +156,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.buttonRight.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonRight.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonRight.Location = new System.Drawing.Point(283, 0);
+            this.buttonRight.Location = new System.Drawing.Point(287, 0);
             this.buttonRight.Margin = new System.Windows.Forms.Padding(7, 0, 0, 0);
             this.buttonRight.MaximumSize = new System.Drawing.Size(133, 25);
             this.buttonRight.MinimumSize = new System.Drawing.Size(133, 25);
@@ -162,6 +169,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelDialog
             // 
+            this.flowLayoutPanelDialog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelIconMessage);
@@ -173,8 +182,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
-            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 141);
+            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(15, 11, 15, 13);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 134);
             this.flowLayoutPanelDialog.TabIndex = 5;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
@@ -182,7 +191,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 141);
+            this.ClientSize = new System.Drawing.Size(450, 134);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "CustomDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);

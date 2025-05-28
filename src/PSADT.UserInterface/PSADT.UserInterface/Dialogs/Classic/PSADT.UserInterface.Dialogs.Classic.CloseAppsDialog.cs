@@ -72,7 +72,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 if (null != options.RunningProcessService)
                 {
                     // Get the current running apps and amend the form accordingly.
-                    var runningApps = (runningProcessService = options.RunningProcessService).ProcessesToClose.Select(static p => p.Description).ToArray();
+                    var runningApps = (runningProcessService = options.RunningProcessService).ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
                     if (runningApps.Length > 0)
                     {
                         this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
@@ -293,7 +293,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.listBoxCloseProcesses.Items.Clear();
                 if (e.ProcessesToClose.Count > 0)
                 {
-                    var runningApps = e.ProcessesToClose.Select(static p => p.Description).ToArray();
+                    var runningApps = e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
                     this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
                     this.listBoxCloseProcesses.Items.AddRange(runningApps);
                     this.labelCountdownMessage.Text = countdownClose;

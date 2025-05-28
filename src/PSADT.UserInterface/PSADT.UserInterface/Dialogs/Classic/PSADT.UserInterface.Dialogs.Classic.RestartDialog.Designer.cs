@@ -50,6 +50,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelDialog
             // 
+            this.flowLayoutPanelDialog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanelDialog.AutoSize = true;
             this.flowLayoutPanelDialog.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelDialog.Controls.Add(this.labelMessage);
@@ -63,35 +65,39 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
-            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(17, 14, 17, 17);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 238);
+            this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(15, 11, 15, 13);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 237);
             this.flowLayoutPanelDialog.TabIndex = 2;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
             // labelMessage
             // 
+            this.labelMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelMessage.AutoSize = true;
             this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelMessage.Location = new System.Drawing.Point(17, 14);
+            this.labelMessage.Location = new System.Drawing.Point(15, 12);
             this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
-            this.labelMessage.MaximumSize = new System.Drawing.Size(416, 0);
-            this.labelMessage.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelMessage.MaximumSize = new System.Drawing.Size(420, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(420, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(416, 15);
+            this.labelMessage.Size = new System.Drawing.Size(420, 15);
             this.labelMessage.TabIndex = 0;
             this.labelMessage.Text = "In order for the installation to complete, you must restart your computer.";
             this.labelMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelCustomMessage
             // 
+            this.labelCustomMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCustomMessage.AutoSize = true;
             this.labelCustomMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCustomMessage.Location = new System.Drawing.Point(17, 41);
+            this.labelCustomMessage.Location = new System.Drawing.Point(15, 39);
             this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
-            this.labelCustomMessage.MaximumSize = new System.Drawing.Size(416, 0);
-            this.labelCustomMessage.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelCustomMessage.MaximumSize = new System.Drawing.Size(420, 0);
+            this.labelCustomMessage.MinimumSize = new System.Drawing.Size(420, 0);
             this.labelCustomMessage.Name = "labelCustomMessage";
-            this.labelCustomMessage.Size = new System.Drawing.Size(416, 30);
+            this.labelCustomMessage.Size = new System.Drawing.Size(420, 30);
             this.labelCustomMessage.TabIndex = 5;
             this.labelCustomMessage.Text = "This is an optional custom text message. It can be used to display specific infor" +
     "mation to the user before they reboot their device.";
@@ -99,6 +105,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // flowLayoutPanelCountdown
             // 
+            this.flowLayoutPanelCountdown.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanelCountdown.AutoSize = true;
             this.flowLayoutPanelCountdown.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelCountdown.Controls.Add(this.labelRestartMessage);
@@ -106,25 +114,27 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdown);
             this.flowLayoutPanelCountdown.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelCountdown.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(17, 83);
+            this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(15, 81);
             this.flowLayoutPanelCountdown.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
-            this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(416, 0);
-            this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(416, 0);
+            this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(420, 0);
+            this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(420, 0);
             this.flowLayoutPanelCountdown.Name = "flowLayoutPanelCountdown";
-            this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(416, 89);
+            this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(420, 94);
             this.flowLayoutPanelCountdown.TabIndex = 4;
             this.flowLayoutPanelCountdown.WrapContents = false;
             // 
             // labelRestartMessage
             // 
+            this.labelRestartMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelRestartMessage.AutoSize = true;
             this.labelRestartMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelRestartMessage.Location = new System.Drawing.Point(0, 0);
             this.labelRestartMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
-            this.labelRestartMessage.MaximumSize = new System.Drawing.Size(416, 0);
-            this.labelRestartMessage.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelRestartMessage.MaximumSize = new System.Drawing.Size(420, 0);
+            this.labelRestartMessage.MinimumSize = new System.Drawing.Size(420, 0);
             this.labelRestartMessage.Name = "labelRestartMessage";
-            this.labelRestartMessage.Size = new System.Drawing.Size(416, 30);
+            this.labelRestartMessage.Size = new System.Drawing.Size(420, 30);
             this.labelRestartMessage.TabIndex = 3;
             this.labelRestartMessage.Text = "Please save your work and restart within the alloted time. Your computer will be " +
     "automatically restarted at the end of the countdown.";
@@ -132,34 +142,40 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // labelTimeRemaining
             // 
+            this.labelTimeRemaining.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelTimeRemaining.AutoSize = true;
-            this.labelTimeRemaining.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelTimeRemaining.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelTimeRemaining.Location = new System.Drawing.Point(0, 42);
             this.labelTimeRemaining.Margin = new System.Windows.Forms.Padding(0);
-            this.labelTimeRemaining.MaximumSize = new System.Drawing.Size(416, 0);
-            this.labelTimeRemaining.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelTimeRemaining.MaximumSize = new System.Drawing.Size(420, 0);
+            this.labelTimeRemaining.MinimumSize = new System.Drawing.Size(420, 0);
             this.labelTimeRemaining.Name = "labelTimeRemaining";
-            this.labelTimeRemaining.Size = new System.Drawing.Size(416, 17);
+            this.labelTimeRemaining.Size = new System.Drawing.Size(420, 20);
             this.labelTimeRemaining.TabIndex = 1;
             this.labelTimeRemaining.Text = "Time remaining:";
             this.labelTimeRemaining.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelCountdown
             // 
+            this.labelCountdown.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCountdown.AutoSize = true;
-            this.labelCountdown.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCountdown.Location = new System.Drawing.Point(0, 59);
+            this.labelCountdown.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCountdown.Location = new System.Drawing.Point(0, 62);
             this.labelCountdown.Margin = new System.Windows.Forms.Padding(0);
-            this.labelCountdown.MaximumSize = new System.Drawing.Size(416, 0);
-            this.labelCountdown.MinimumSize = new System.Drawing.Size(416, 0);
+            this.labelCountdown.MaximumSize = new System.Drawing.Size(420, 0);
+            this.labelCountdown.MinimumSize = new System.Drawing.Size(420, 0);
             this.labelCountdown.Name = "labelCountdown";
-            this.labelCountdown.Size = new System.Drawing.Size(416, 30);
+            this.labelCountdown.Size = new System.Drawing.Size(420, 32);
             this.labelCountdown.TabIndex = 2;
             this.labelCountdown.Text = "1:23:45";
             this.labelCountdown.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tableLayoutPanelButton
             // 
+            this.tableLayoutPanelButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 2;
@@ -168,19 +184,19 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Controls.Add(this.buttonMinimize, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRestartNow, 0, 0);
             this.tableLayoutPanelButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tableLayoutPanelButton.Location = new System.Drawing.Point(17, 196);
+            this.tableLayoutPanelButton.Location = new System.Drawing.Point(15, 199);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 18, 0, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
             this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanelButton.Size = new System.Drawing.Size(416, 25);
+            this.tableLayoutPanelButton.Size = new System.Drawing.Size(420, 25);
             this.tableLayoutPanelButton.TabIndex = 3;
             // 
             // buttonMinimize
             // 
             this.buttonMinimize.Dock = System.Windows.Forms.DockStyle.Right;
             this.buttonMinimize.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonMinimize.Location = new System.Drawing.Point(221, 0);
+            this.buttonMinimize.Location = new System.Drawing.Point(225, 0);
             this.buttonMinimize.Margin = new System.Windows.Forms.Padding(13, 0, 0, 0);
             this.buttonMinimize.MaximumSize = new System.Drawing.Size(195, 25);
             this.buttonMinimize.MinimumSize = new System.Drawing.Size(195, 25);
@@ -210,7 +226,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 238);
+            this.ClientSize = new System.Drawing.Size(450, 237);
             this.Controls.Add(this.flowLayoutPanelDialog);
             this.Name = "RestartDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
