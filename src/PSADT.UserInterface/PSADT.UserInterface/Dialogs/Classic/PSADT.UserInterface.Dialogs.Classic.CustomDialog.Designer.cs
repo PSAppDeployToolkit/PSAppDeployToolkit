@@ -107,9 +107,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanelButton.Controls.Add(this.buttonLeft, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonMiddle, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRight, 2, 0);
@@ -127,7 +127,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonLeft.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.buttonLeft.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonLeft.Location = new System.Drawing.Point(0, 0);
-            this.buttonLeft.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
+            this.buttonLeft.Margin = new System.Windows.Forms.Padding(0);
             this.buttonLeft.MaximumSize = new System.Drawing.Size(137, 25);
             this.buttonLeft.MinimumSize = new System.Drawing.Size(137, 25);
             this.buttonLeft.Name = "buttonLeft";
@@ -142,7 +142,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonMiddle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.buttonMiddle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonMiddle.Location = new System.Drawing.Point(145, 0);
-            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(2, 0, 0, 0);
+            this.buttonMiddle.Margin = new System.Windows.Forms.Padding(0);
             this.buttonMiddle.MaximumSize = new System.Drawing.Size(138, 25);
             this.buttonMiddle.MinimumSize = new System.Drawing.Size(138, 25);
             this.buttonMiddle.Name = "buttonMiddle";
@@ -157,7 +157,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonRight.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonRight.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonRight.Location = new System.Drawing.Point(291, 0);
-            this.buttonRight.Margin = new System.Windows.Forms.Padding(7, 0, 0, 0);
+            this.buttonRight.Margin = new System.Windows.Forms.Padding(0);
             this.buttonRight.MaximumSize = new System.Drawing.Size(137, 25);
             this.buttonRight.MinimumSize = new System.Drawing.Size(137, 25);
             this.buttonRight.Name = "buttonRight";

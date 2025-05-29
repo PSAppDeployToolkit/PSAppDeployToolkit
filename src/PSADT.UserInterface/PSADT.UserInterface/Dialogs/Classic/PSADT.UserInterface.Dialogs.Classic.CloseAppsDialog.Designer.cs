@@ -51,8 +51,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
             this.buttonCloseProcesses = new System.Windows.Forms.Button();
             this.buttonDefer = new System.Windows.Forms.Button();
-            this.buttonContinue = new System.Windows.Forms.Button();
             this.toolTipButtonContinue = new System.Windows.Forms.ToolTip(this.components);
+            this.buttonContinue = new System.Windows.Forms.Button();
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCloseApps.SuspendLayout();
             this.flowLayoutPanelDeferral.SuspendLayout();
@@ -314,9 +314,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelButton.ColumnCount = 3;
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanelButton.Controls.Add(this.buttonCloseProcesses, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonDefer, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonContinue, 2, 0);
@@ -334,7 +334,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonCloseProcesses.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonCloseProcesses.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonCloseProcesses.Location = new System.Drawing.Point(0, 0);
-            this.buttonCloseProcesses.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
+            this.buttonCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.buttonCloseProcesses.MaximumSize = new System.Drawing.Size(137, 25);
             this.buttonCloseProcesses.MinimumSize = new System.Drawing.Size(137, 25);
             this.buttonCloseProcesses.Name = "buttonCloseProcesses";
@@ -349,7 +349,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonDefer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
             this.buttonDefer.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDefer.Location = new System.Drawing.Point(145, 0);
-            this.buttonDefer.Margin = new System.Windows.Forms.Padding(2, 0, 0, 0);
+            this.buttonDefer.Margin = new System.Windows.Forms.Padding(0);
             this.buttonDefer.MaximumSize = new System.Drawing.Size(138, 25);
             this.buttonDefer.MinimumSize = new System.Drawing.Size(138, 25);
             this.buttonDefer.Name = "buttonDefer";
@@ -359,12 +359,19 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonDefer.UseVisualStyleBackColor = true;
             this.buttonDefer.Click += new System.EventHandler(this.ButtonMiddle_Click);
             // 
+            // toolTipButtonContinue
+            // 
+            this.toolTipButtonContinue.AutoPopDelay = 5000;
+            this.toolTipButtonContinue.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+            this.toolTipButtonContinue.InitialDelay = 100;
+            this.toolTipButtonContinue.ReshowDelay = 100;
+            // 
             // buttonContinue
             // 
             this.buttonContinue.Dock = System.Windows.Forms.DockStyle.Right;
             this.buttonContinue.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonContinue.Location = new System.Drawing.Point(291, 0);
-            this.buttonContinue.Margin = new System.Windows.Forms.Padding(7, 0, 0, 0);
+            this.buttonContinue.Margin = new System.Windows.Forms.Padding(0);
             this.buttonContinue.MaximumSize = new System.Drawing.Size(137, 25);
             this.buttonContinue.MinimumSize = new System.Drawing.Size(137, 25);
             this.buttonContinue.Name = "buttonContinue";
@@ -374,13 +381,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.toolTipButtonContinue.SetToolTip(this.buttonContinue, "Only select \"Continue\" after closing the above listed application(s).");
             this.buttonContinue.UseVisualStyleBackColor = true;
             this.buttonContinue.Click += new System.EventHandler(this.ButtonRight_Click);
-            // 
-            // toolTipButtonContinue
-            // 
-            this.toolTipButtonContinue.AutoPopDelay = 5000;
-            this.toolTipButtonContinue.BackColor = System.Drawing.Color.LightGoldenrodYellow;
-            this.toolTipButtonContinue.InitialDelay = 100;
-            this.toolTipButtonContinue.ReshowDelay = 100;
             // 
             // CloseAppsDialog
             // 
@@ -421,9 +421,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private Label labelCountdown;
         private TableLayoutPanel tableLayoutPanelButton;
         private Button buttonCloseProcesses;
-        private Button buttonContinue;
         private Button buttonDefer;
         private Label labelCustomMessage;
         private ToolTip toolTipButtonContinue;
+        private Button buttonContinue;
     }
 }
