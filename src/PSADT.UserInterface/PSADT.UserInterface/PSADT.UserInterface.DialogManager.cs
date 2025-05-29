@@ -97,6 +97,16 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Determines whether the progress dialog is currently open.
+        /// </summary>
+        /// <remarks>This method checks the internal state to determine if the progress dialog has been initialized and is currently displayed.</remarks>
+        /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
+        public static bool ProgressDialogOpen()
+        {
+            return progressInitialized.IsSet;
+        }
+
+        /// <summary>
         /// Updates the messages and optional progress percentage in the currently displayed Progress dialog.
         /// </summary>
         /// <param name="progressMessage">Optional new main progress message.</param>
@@ -113,16 +123,6 @@ namespace PSADT.UserInterface
             {
                 progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment);
             });
-        }
-
-        /// <summary>
-        /// Determines whether the progress dialog is currently open.
-        /// </summary>
-        /// <remarks>This method checks the internal state to determine if the progress dialog has been initialized and is currently displayed.</remarks>
-        /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
-        public static bool ProgressDialogOpen()
-        {
-            return progressInitialized.IsSet;
         }
 
         /// <summary>
