@@ -155,16 +155,14 @@ namespace PSADT.UserInterface
         /// <returns></returns>
         internal static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options)
         {
-            TResult? result = default;
-            InvokeDialogAction(() =>
+            return (TResult)InvokeDialogAction(() =>
             {
                 using (var dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options))
                 {
                     dialog.ShowDialog();
-                    result = (TResult)dialog.DialogResult;
+                    return dialog.DialogResult;
                 }
             });
-            return result!;
         }
 
         /// <summary>
@@ -229,15 +227,13 @@ namespace PSADT.UserInterface
         /// <returns>A <see cref="MsgBoxResult"/> value that indicates which button the user clicked in the message box.</returns>
         public static MsgBoxResult ShowMessageBox(string Title, string Prompt, MsgBoxStyle Buttons)
         {
-            MsgBoxResult result = default;
-            InvokeDialogAction(() => result = Interaction.MsgBox(Prompt, Buttons, Title));
-            return result;
+            return (MsgBoxResult)InvokeDialogAction(() => Interaction.MsgBox(Prompt, Buttons, Title));
         }
 
         /// <summary>
         /// Initializes the WPF application and invokes the specified action on the UI thread.
         /// </summary>
-        private static void InvokeDialogAction(Action callback)
+        private static object InvokeDialogAction(Delegate callback)
         {
             // Initialize the WPF application if necessary, otherwise just invoke the callback.
             if (!appInitialized.IsSet)
@@ -253,7 +249,7 @@ namespace PSADT.UserInterface
                 appThread.Start();
                 appInitialized.Wait();
             }
-            app!.Dispatcher.Invoke(callback);
+            return app!.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, callback);
         }
 
         /// <summary>
