@@ -101,7 +101,7 @@ $adtSession = @{
     AppRevision = '01'
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
-    AppProcessesToClose = @('regedit', @{ Name = 'chrome'; Description = 'Google Chrome' })
+    AppProcessesToClose = @('regedit', @{ Name = 'msconfig'; Description = 'System Configuration (msconfig)' })
     AppScriptVersion = '1.0.0'
     AppScriptDate = '2000-12-31'
     AppScriptAuthor = '<author name>'
@@ -112,8 +112,8 @@ $adtSession = @{
 
     # Script variables.
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
-    DeployAppScriptVersion = '4.1.0'
     DeployAppScriptParameters = $PSBoundParameters
+    DeployAppScriptVersion = '4.1.0'
 }
 
 function Install-ADTDeployment
