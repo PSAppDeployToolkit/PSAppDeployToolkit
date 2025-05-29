@@ -619,8 +619,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Adjust for workArea offset.
             string dialogPosName = _dialogPosition.ToString();
-            left += dialogPosName.EndsWith("Right") ? 1 : dialogPosName.EndsWith("Left") ? -1 : 0;
-            top += dialogPosName.EndsWith("Bottom") ? 1 : dialogPosName.EndsWith("Top") ? -1 : 0;
+            left += dialogPosName.EndsWith("Right") ? 0.5 : dialogPosName.EndsWith("Left") ? -0.5 : 0;
+            top += dialogPosName.StartsWith("Bottom") ? 1 : dialogPosName.StartsWith("Top") ? -1 : 0;
 
             // Set positions in DIPs.
             Left = left;
