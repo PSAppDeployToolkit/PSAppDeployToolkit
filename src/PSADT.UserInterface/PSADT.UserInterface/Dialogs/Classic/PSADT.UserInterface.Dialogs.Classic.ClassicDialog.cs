@@ -310,8 +310,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
             // Adjust for workArea offset.
             string dialogPosName = dialogPosition.ToString();
-            left += dialogPosName.EndsWith("Right") ? 1 : dialogPosName.EndsWith("Left") ? -1 : 0;
-            top += dialogPosName.EndsWith("Bottom") ? 1 : dialogPosName.EndsWith("Top") ? -1 : 0;
+            left += dialogPosName.EndsWith("Right") ? 13 : dialogPosName.EndsWith("Left") ? -13 : 0;
+            top += dialogPosName.StartsWith("Bottom") ? 13 : dialogPosName.StartsWith("Top") ? -13 : 0;
 
             // Set the form’s location
             Location = new Point((int)left, (int)top);
