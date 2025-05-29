@@ -623,9 +623,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             left += dialogPosName.EndsWith("Right") ? 1 : dialogPosName.EndsWith("Left") ? -1 : 0;
             top += dialogPosName.EndsWith("Bottom") ? 1 : dialogPosName.EndsWith("Top") ? -1 : 0;
 
-            // Set positions in DIPs
-            Left = left - 2;
-            Top = top + 1;
+            // Set positions in DIPs.
+            Left = left;
+            Top = top;
         }
 
         /// <summary>
