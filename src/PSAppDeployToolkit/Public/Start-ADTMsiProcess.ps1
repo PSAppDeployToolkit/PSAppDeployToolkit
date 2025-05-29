@@ -81,6 +81,9 @@ function Start-ADTMsiProcess
     .PARAMETER PriorityClass
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
+    .PARAMETER RepairMode
+        Specifies the mode of repair. Choosing `Repair` will repair via `msiexec.exe /p` (which can trigger unsupressable reboots). Choosing `Reinstall` will reinstall by adding `REINSTALL=ALL REINSTALLMODE=omus` to the standard InstallParams.
+
     .PARAMETER RepairFromSource
         Specifies whether we should repair from source. Also rewrites local cache.
 
@@ -231,6 +234,10 @@ function Start-ADTMsiProcess
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessPriorityClass]$PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Repair', 'Reinstall')]
+        [System.String]$RepairMode = 'Reinstall',
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RepairFromSource,
@@ -467,14 +474,14 @@ function Start-ADTMsiProcess
                         $msiDefaultParams = $msiInstallDefaultParams
                         break
                     }
-                    { $_ -eq 'Repair' -and $adtConfig.MSI.RepairMode -eq 'Reinstall' }
+                    { $_ -eq 'Repair' -and $RepairMode -eq 'Reinstall' }
                     {
                         $option = '/i'
                         $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }
                         $msiDefaultParams = "$msiInstallDefaultParams REINSTALL=ALL REINSTALLMODE=$(if ($RepairFromSource) {'v'})omus"
                         break
                     }
-                    { $_ -eq 'Repair' -and $adtConfig.MSI.RepairMode -eq 'Repair' }
+                    { $_ -eq 'Repair' -and $RepairMode -eq 'Repair' }
                     {
                         $option = "/f$(if ($RepairFromSource) {'vomus'})"
                         $msiLogFile = if ($logPath) { "$($logPath)_$($_)" }

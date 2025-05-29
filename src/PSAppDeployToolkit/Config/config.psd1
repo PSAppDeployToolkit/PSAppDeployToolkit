@@ -23,9 +23,6 @@
         # The length of time in seconds to wait for the MSI installer service to become available. Default is 600 seconds (10 minutes).
         MutexWaitTime = 600
 
-        # Choose 'Repair' to repair via msiexec /f (which can trigger unsupressable reboots), or 'Reinstall' to reinstall by adding REINSTALL=ALL REINSTALLMODE=omus to the standard InstallParams.
-        RepairMode = 'Reinstall'
-
         # Installation parameters used for silent MSI actions.
         SilentParams = 'REBOOT=ReallySuppress /QN'
 
