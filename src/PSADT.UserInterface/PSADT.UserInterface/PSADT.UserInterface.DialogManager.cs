@@ -229,7 +229,9 @@ namespace PSADT.UserInterface
         /// <returns>A <see cref="MsgBoxResult"/> value that indicates which button the user clicked in the message box.</returns>
         public static MsgBoxResult ShowMessageBox(string Title, string Prompt, MsgBoxStyle Buttons)
         {
-            return Interaction.MsgBox(Prompt, Buttons, Title);
+            MsgBoxResult result = default;
+            InvokeDialogAction(() => result = Interaction.MsgBox(Prompt, Buttons, Title));
+            return result;
         }
 
         /// <summary>
