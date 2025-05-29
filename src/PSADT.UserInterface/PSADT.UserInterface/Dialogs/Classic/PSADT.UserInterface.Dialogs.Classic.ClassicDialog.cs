@@ -215,6 +215,20 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.BringToFront();
         }
 
+        /// <summary>
+        /// Resets the persist timer to its initial state.
+        /// </summary>
+        /// <remarks>This method stops the current persist timer, if it is running, and restarts it. It ensures that the timer is reset and begins counting from its initial duration.</remarks>
+        protected void ResetPersistTimer()
+        {
+            // Reset the persist timer to its initial state.
+            if (null != persistTimer)
+            {
+                persistTimer.Stop();
+                persistTimer.Start();
+            }
+        }
+
         protected override void WndProc(ref Message m)
         {
             // Ignore any attempt to move the window.
@@ -319,9 +333,19 @@ namespace PSADT.UserInterface.Dialogs.Classic
         public new object DialogResult { get; private set; } = "Timeout";
 
         /// <summary>
+        /// Starting point for the dialog.
+        /// </summary>
+        private Point startingPoint;
+
+        /// <summary>
+        /// Flag to indicate if the dialog can be closed.
+        /// </summary>
+        private bool canClose = false;
+
+        /// <summary>
         /// A timer used to restore the dialog's position on the screen at a configured interval.
         /// </summary>
-        protected readonly Timer? persistTimer;
+        private readonly Timer? persistTimer;
 
         /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.
@@ -338,15 +362,5 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Indicates whether the dialog is allowed to be moved.
         /// </summary>
         private readonly bool dialogAllowMove = true;
-
-        /// <summary>
-        /// Flag to indicate if the dialog can be closed.
-        /// </summary>
-        private bool canClose = false;
-
-        /// <summary>
-        /// Starting point for the dialog.
-        /// </summary>
-        private Point startingPoint;
     }
 }
