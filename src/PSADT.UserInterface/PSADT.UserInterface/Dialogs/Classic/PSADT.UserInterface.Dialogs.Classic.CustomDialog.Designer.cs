@@ -220,7 +220,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             // CustomDialog
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 112);
             this.Controls.Add(this.flowLayoutPanelBase);
