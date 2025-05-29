@@ -72,7 +72,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
                 ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
                 ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"]),
-                ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
                 ["WpfUiSystemAccentColor"] = new SolidColorBrush(ApplicationAccentColorManager.SystemAccent),
                 ["WpfUiSystemAccentColorPrimary"] = new SolidColorBrush(ApplicationAccentColorManager.PrimaryAccent),
                 ["WpfUiSystemAccentColorSecondary"] = new SolidColorBrush(ApplicationAccentColorManager.SecondaryAccent),
