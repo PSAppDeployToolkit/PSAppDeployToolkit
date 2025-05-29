@@ -46,6 +46,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.pictureBanner.Image = ClassicAssets.GetBanner(options.AppBannerImage);
                 this.pictureBanner.Size = new Size(450, (int)Math.Ceiling(450.0 * ((double)this.pictureBanner.Image.Height / (double)this.pictureBanner.Image.Width)));
                 this.TopMost = options.DialogTopMost;
+                this.ActiveControl = this.buttonDefault;
                 this.flowLayoutPanelBase.ResumeLayout();
                 this.FormClosing += Form_FormClosing;
                 this.Load += Form_Load;
