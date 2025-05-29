@@ -9,16 +9,14 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     MinHeight="0"
     MaxWidth="580"
-    MaxHeight="850"
-    ui:Design.Background="{DynamicResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+    MaxHeight="1100"
+    ui:Design.Background="Transparent"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     x:ClassModifier="internal"
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
     AutomationProperties.Name="PSAppDeployToolkit Dialog"
-    Background="{DynamicResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+    Background="Transparent"
     ExtendsContentIntoTitleBar="True"
-    FontFamily="Segoe UI Display"
-    FontSize="14"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     RenderOptions.BitmapScalingMode="HighQuality"
     ResizeMode="NoResize"
@@ -34,10 +32,8 @@
     mc:Ignorable="d"
     >
 
-    <!--<SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFCCCCCC" />-->
     <ui:FluentWindow.Resources>
         <psconv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
-
 
         <!-- Animation styles for ListView items -->
         <Style x:Key="ListViewItemAnimationStyle" BasedOn="{StaticResource {x:Type ui:ListViewItem}}" TargetType="ui:ListViewItem">
@@ -109,7 +105,7 @@
 
             <Rectangle
                 x:Name="AccentSidebar"
-                Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                Fill="{DynamicResource AccentTextFillColorPrimaryBrush}"
                 Opacity="1"
                 />
 
@@ -232,7 +228,7 @@
             VerticalAlignment="Top"
             AutomationProperties.Name="Content Card"
             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultSolidBrush}"
             BorderThickness="1"
             CornerRadius="4"
             SnapsToDevicePixels="True"
@@ -354,7 +350,7 @@
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Name"
                                         FontSize="12"
-                                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                        Foreground="{DynamicResource AccentTextFillColorTertiaryBrush}"
                                         Text="{Binding Name, Mode=OneWay}"
                                         TextAlignment="Left"
                                         TextTrimming="CharacterEllipsis"
@@ -415,7 +411,7 @@
                     >
                     <Separator
                         x:Name="InputBoxSeparator"
-                        Background="{DynamicResource DividerStrokeColorDefaultBrush}"
+                        Background="{DynamicResource CardStrokeColorDefaultBrushSolidBrush}"
                         />
                     <ui:TextBox
                         x:Name="InputBoxText"
@@ -578,7 +574,7 @@
             >
             <Grid
                 x:Name="ActionButtons"
-                Margin="24,4,24,24"
+                Margin="24,8,24,24"
                 HorizontalAlignment="Stretch"
                 >
                 <Grid.ColumnDefinitions>

@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         static FluentDialog()
         {
             // Add these dictionaries here so they're available before the constructor is called.
-            Application.Current.Resources.MergedDictionaries.Add(new ThemesDictionary { Theme = ApplicationTheme.Dark });
+            Application.Current.Resources.MergedDictionaries.Add(new ThemesDictionary());
             Application.Current.Resources.MergedDictionaries.Add(new ControlsDictionary());
         }
 
@@ -71,7 +71,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
                 ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
                 ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
-                ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"])
+                ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"]),
+                ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
+                ["WpfUiSystemAccentColor"] = new SolidColorBrush(ApplicationAccentColorManager.SystemAccent),
+                ["WpfUiSystemAccentColorPrimary"] = new SolidColorBrush(ApplicationAccentColorManager.PrimaryAccent),
+                ["WpfUiSystemAccentColorSecondary"] = new SolidColorBrush(ApplicationAccentColorManager.SecondaryAccent),
+                ["WpfUiSystemAccentColorTertiary"] = new SolidColorBrush(ApplicationAccentColorManager.TertiaryAccent)
             };
             ResourceDictionary themeDictionary = Application.Current.Resources.MergedDictionaries.First(static d => d.Source.AbsolutePath.StartsWith("/Wpf.Ui;component/Resources/Theme/"));
             var converter = new ResourceReferenceExpressionConverter();
@@ -618,9 +623,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             left += dialogPosName.EndsWith("Right") ? 1 : dialogPosName.EndsWith("Left") ? -1 : 0;
             top += dialogPosName.EndsWith("Bottom") ? 1 : dialogPosName.EndsWith("Top") ? -1 : 0;
 
-            // Set positions in DIPs.
-            Left = left;
-            Top = top;
+            // Set positions in DIPs
+            Left = left - 2;
+            Top = top + 1;
         }
 
         /// <summary>

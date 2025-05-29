@@ -4,7 +4,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     >
     <ResourceDictionary.MergedDictionaries>
-        <ui:ThemesDictionary Theme="Dark" />
+        <ui:ThemesDictionary/>
         <ui:ControlsDictionary />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
