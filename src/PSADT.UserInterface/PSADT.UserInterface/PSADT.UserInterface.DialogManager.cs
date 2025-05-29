@@ -19,15 +19,6 @@ namespace PSADT.UserInterface
     public static class DialogManager
     {
         /// <summary>
-        /// Static constructor to properly initialise WinForms dialogs.
-        /// </summary>
-        static DialogManager()
-        {
-            System.Windows.Forms.Application.EnableVisualStyles();
-            System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
-        }
-
-        /// <summary>
         /// Displays a dialog prompting the user to close specific applications.
         /// </summary>
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
