@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Xml;
 
 namespace PSADT.UserInterface.Utilities
 {
@@ -21,11 +19,10 @@ namespace PSADT.UserInterface.Utilities
         /// <returns>A Base64-encoded string representation of the serialized XML data.</returns>
         public static string SerializeToString<T>(T obj)
         {
-            using (var sr = new StringWriter())
-            using (var xw = XmlWriter.Create(sr, new XmlWriterSettings { Indent = false, Encoding = Encoding.UTF8 }))
+            using (var ms = new MemoryStream())
             {
-                new DataContractSerializer(typeof(T)).WriteObject(xw, obj); xw.Flush();
-                return Convert.ToBase64String(Encoding.UTF8.GetBytes(sr.ToString()));
+                new DataContractSerializer(typeof(T)).WriteObject(ms, obj);
+                return Convert.ToBase64String(ms.ToArray());
             }
         }
 
@@ -38,11 +35,10 @@ namespace PSADT.UserInterface.Utilities
         /// <returns>A Base64-encoded string containing the XML representation of the serialized object.</returns>
         public static string SerializeToString(object obj, Type type)
         {
-            using (var sr = new StringWriter())
-            using (var xw = XmlWriter.Create(sr, new XmlWriterSettings { Indent = false, Encoding = Encoding.UTF8 }))
+            using (var ms = new MemoryStream())
             {
-                new DataContractSerializer(type).WriteObject(xw, obj); xw.Flush();
-                return Convert.ToBase64String(Encoding.UTF8.GetBytes(sr.ToString()));
+                new DataContractSerializer(type).WriteObject(ms, obj);
+                return Convert.ToBase64String(ms.ToArray());
             }
         }
 
@@ -54,10 +50,9 @@ namespace PSADT.UserInterface.Utilities
         /// <returns>An instance of type <typeparamref name="T"/> deserialized from the provided XML string, or <see langword="null"/> if the deserialization fails or the XML represents a null value.</returns>
         public static T DeserializeFromString<T>(string str)
         {
-            using (var sr = new StringReader(Encoding.UTF8.GetString(Convert.FromBase64String(str))))
-            using (var xr = XmlReader.Create(sr))
+            using (var ms = new MemoryStream(Convert.FromBase64String(str)))
             {
-                return (T)new DataContractSerializer(typeof(T)).ReadObject(xr)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
+                return (T)new DataContractSerializer(typeof(T)).ReadObject(ms)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
             }
         }
 
@@ -71,10 +66,9 @@ namespace PSADT.UserInterface.Utilities
         /// <exception cref="InvalidOperationException">Thrown if the deserialization process results in a <see langword="null"/> object.</exception>
         public static object DeserializeFromString(string str, Type type)
         {
-            using (var sr = new StringReader(Encoding.UTF8.GetString(Convert.FromBase64String(str))))
-            using (var xr = XmlReader.Create(sr))
+            using (var ms = new MemoryStream(Convert.FromBase64String(str)))
             {
-                return new DataContractSerializer(type).ReadObject(xr)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
+                return new DataContractSerializer(type).ReadObject(ms)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
             }
         }
     }
