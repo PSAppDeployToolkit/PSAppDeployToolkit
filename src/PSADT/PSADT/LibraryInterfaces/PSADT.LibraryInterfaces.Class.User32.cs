@@ -1,13 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;
-using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.Foundation;
-using Windows.Win32.UI.Accessibility;
-using Windows.Win32.UI.HiDpi;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.LibraryInterfaces
@@ -409,6 +408,23 @@ namespace PSADT.LibraryInterfaces
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
+        }
+
+        /// <summary>
+        /// Retrieves a handle to the monitor that contains the specified point.
+        /// </summary>
+        /// <param name="pt">The <see cref="Point"/> structure specifying the coordinates of the point to check.</param>
+        /// <param name="dwFlags">A <see cref="MONITOR_FROM_FLAGS"/> value that determines the behavior if the point is not contained within any monitor.</param>
+        /// <returns>A handle to the monitor that contains the specified point.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if no monitor is found for the specified point.</exception>
+        internal static HMONITOR MonitorFromPoint(Point pt, MONITOR_FROM_FLAGS dwFlags)
+        {
+            var monitor = PInvoke.MonitorFromPoint(pt, dwFlags);
+            if (monitor.IsNull)
+            {
+                throw new InvalidOperationException("Failed to retrieve monitor from point.");
+            }
+            return monitor;
         }
 
         /// <summary>

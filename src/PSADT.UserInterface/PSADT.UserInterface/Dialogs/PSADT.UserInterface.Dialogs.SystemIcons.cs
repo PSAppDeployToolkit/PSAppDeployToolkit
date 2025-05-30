@@ -64,13 +64,17 @@ namespace PSADT.UserInterface.Dialogs
                 SHSTOCKICONID.SIID_WARNING,
             };
 
+            // Get the DPI for the current system.
+            SHCore.GetDpiForDefaultMonitor(Windows.Win32.UI.HiDpi.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY);
+            int x = (int)(48.0 * (dpiX / 96.0)); int y = (int)(48.0 * (dpiY / 96.0));
+
             // Build an icon out for each stock icon.
             Dictionary<SHSTOCKICONID, Bitmap> icons = [];
             foreach(var iconId in lookupList)
             {
                 using (var icon = GetSystemStockIcon(iconId, SHIL_SIZE.SHIL_JUMBO))
                 {
-                    icons.Add(iconId, DrawingUtilities.ResizeImage(icon, 48, 48));
+                    icons.Add(iconId, DrawingUtilities.ResizeImage(icon, x, y));
                 }
             }
 

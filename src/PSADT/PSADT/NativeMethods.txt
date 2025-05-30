@@ -31,6 +31,7 @@ FindWindow
 GENERIC_MAPPING
 GetCurrentProcess
 GetCurrentThreadId
+GetDpiForMonitor
 GetDpiForWindow
 GetExitCodeProcess
 GetExitCodeThread
@@ -77,6 +78,7 @@ LoadString
 LocalFree
 LookupPrivilegeNameW
 LookupPrivilegeValueW
+MonitorFromPoint
 MMDeviceEnumerator
 MONITORINFOEXW
 MONITORINFOF_PRIMARY
