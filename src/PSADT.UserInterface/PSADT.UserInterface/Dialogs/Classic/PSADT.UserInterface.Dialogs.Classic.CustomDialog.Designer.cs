@@ -58,7 +58,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelIconMessage.AutoSize = true;
             this.tableLayoutPanelIconMessage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanelIconMessage.ColumnCount = 2;
-            this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 59F));
+            this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 62F));
             this.tableLayoutPanelIconMessage.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanelIconMessage.Controls.Add(this.labelMessage, 1, 0);
             this.tableLayoutPanelIconMessage.Controls.Add(this.pictureIcon, 0, 0);
@@ -79,12 +79,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelMessage.AutoSize = true;
             this.labelMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelMessage.Location = new System.Drawing.Point(59, 1);
+            this.labelMessage.Location = new System.Drawing.Point(62, 1);
             this.labelMessage.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
-            this.labelMessage.MaximumSize = new System.Drawing.Size(366, 0);
-            this.labelMessage.MinimumSize = new System.Drawing.Size(366, 0);
+            this.labelMessage.MaximumSize = new System.Drawing.Size(359, 0);
+            this.labelMessage.MinimumSize = new System.Drawing.Size(359, 0);
             this.labelMessage.Name = "labelMessage";
-            this.labelMessage.Size = new System.Drawing.Size(366, 45);
+            this.labelMessage.Size = new System.Drawing.Size(359, 45);
             this.labelMessage.TabIndex = 1;
             this.labelMessage.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor in" +
     "cididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud" +
