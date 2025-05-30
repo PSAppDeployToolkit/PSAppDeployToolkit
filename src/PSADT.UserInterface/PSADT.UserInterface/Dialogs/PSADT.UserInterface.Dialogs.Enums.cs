@@ -32,6 +32,11 @@ namespace PSADT.UserInterface.Dialogs
         CustomDialog,
 
         /// <summary>
+        /// Represents a Windows 9x-style message box.
+        /// </summary>
+        DialogBox,
+
+        /// <summary>
         /// Represents the InputDialog type.
         /// </summary>
         InputDialog,

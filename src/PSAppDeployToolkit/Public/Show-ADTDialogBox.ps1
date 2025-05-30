@@ -27,6 +27,12 @@ function Show-ADTDialogBox
     .PARAMETER Icon
         Icon to display on the dialog box. Options: None, Stop, Question, Exclamation, Information.
 
+    .PARAMETER NoWait
+        Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
+
+    .PARAMETER ExitOnTimeout
+        Specifies whether to not exit the script if the UI times out.
+
     .PARAMETER NotTopMost
         Specifies whether the message box shouldn't be a system modal message box that appears in a topmost window.
 
@@ -39,7 +45,7 @@ function Show-ADTDialogBox
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.String
+        PSADT.UserInterface.Dialogs.MessageBoxResult
 
         Returns the text of the button that was clicked.
 
@@ -59,6 +65,7 @@ function Show-ADTDialogBox
     #>
 
     [CmdletBinding()]
+    [OutputType([PSADT.UserInterface.Dialogs.MessageBoxResult])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
@@ -76,6 +83,12 @@ function Show-ADTDialogBox
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.Dialogs.MessageBoxIcon]$Icon = [PSADT.UserInterface.Dialogs.MessageBoxIcon]::None,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoWait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExitOnTimeout,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
@@ -101,8 +114,8 @@ function Show-ADTDialogBox
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Timeout', [System.UInt32], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long, in seconds, to show the message prompt before aborting.' }
+                'Timeout', [System.TimeSpan], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long to show the message prompt before aborting.' }
                     [System.Management.Automation.ValidateScriptAttribute]::new({
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
                             {
@@ -133,7 +146,7 @@ function Show-ADTDialogBox
         }
         $Timeout = if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
-            $adtConfig.UI.DefaultTimeout
+            [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
         }
         else
         {
@@ -149,6 +162,11 @@ function Show-ADTDialogBox
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.deployMode)]. Text: $Text"
             return
         }
+        elseif (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+        {
+            Write-ADTLogEntry -Message "Bypassing custom installation prompt as there is no active user logged onto the system."
+            return
+        }
         elseif ($Force)
         {
             Write-ADTLogEntry -Message "Forcibly displaying dialog box with message: $Text..."
@@ -162,8 +180,45 @@ function Show-ADTDialogBox
         {
             try
             {
-                $result = [PSADT.UserInterface.DialogManager]::ShowMessageBox($Title, $Text, $Buttons, $Icon, $DefaultButton, !$NotTopMost, $Timeout)
-                Write-ADTLogEntry -Message "Dialog box response: $result"
+                # Instantiate dialog options as required.
+                $dialogOptions = @{
+                    AppTitle = $Title
+                    MessageText = $Text
+                    DialogButtons = $Buttons
+                    DialogDefaultButton = $DefaultButton
+                    DialogIcon = $Icon
+                    DialogTopMost = !$NotTopMost
+                    DialogExpiryDuration = $Timeout
+                }
+
+                # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
+                if ($NoWait)
+                {
+                    Write-ADTLogEntry -Message "Displaying dialog box asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Text]."
+                    Show-ADTModalDialog -Username $runAsActiveUser.NTAccount -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
+                    return
+                }
+
+                # Call the underlying function to open the message prompt.
+                Write-ADTLogEntry -Message "Displaying dialog box with message: [$Text]."
+                $result = Show-ADTModalDialog -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
+
+                # Process results.
+                if ($result -eq [PSADT.UserInterface.Dialogs.MessageBoxResult]::Timeout)
+                {
+                    Write-ADTLogEntry -Message 'Dialog box not responded to within the configured amount of time.'
+                    if ($ExitOnTimeout)
+                    {
+                        if (Test-ADTSessionActive)
+                        {
+                            Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
+                        }
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message 'Dialog box timed out but -ExitOnTimeout not specified. Continue...'
+                    }
+                }
                 return $result
             }
             catch

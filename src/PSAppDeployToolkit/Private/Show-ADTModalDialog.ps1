@@ -7,6 +7,7 @@
 function Private:Show-ADTModalDialog
 {
     [CmdletBinding()]
+    [OutputType([PSADT.UserInterface.Dialogs.MessageBoxResult])]
     [OutputType([PSADT.UserInterface.DialogResults.InputDialogResult])]
     [OutputType([System.String])]
     param
@@ -44,6 +45,10 @@ function Private:Show-ADTModalDialog
     # Serialise the incoming options.
     $optionsString = switch ($Type)
     {
+        ([PSADT.UserInterface.Dialogs.DialogType]::DialogBox)
+        {
+            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.DialogBoxOptions]$Options, [PSADT.UserInterface.DialogOptions.DialogBoxOptions])
+        }
         ([PSADT.UserInterface.Dialogs.DialogType]::InputDialog)
         {
             [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.InputDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.InputDialogOptions])
@@ -125,6 +130,10 @@ function Private:Show-ADTModalDialog
     # Return the result to the caller.
     switch ($Type)
     {
+        ([PSADT.UserInterface.Dialogs.DialogType]::DialogBox)
+        {
+            return [PSADT.UserInterface.Dialogs.MessageBoxResult][PSADT.UserInterface.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut), [PSADT.UserInterface.Dialogs.MessageBoxResult])
+        }
         ([PSADT.UserInterface.Dialogs.DialogType]::InputDialog)
         {
             return [PSADT.UserInterface.DialogResults.InputDialogResult][PSADT.UserInterface.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut), [PSADT.UserInterface.DialogResults.InputDialogResult])

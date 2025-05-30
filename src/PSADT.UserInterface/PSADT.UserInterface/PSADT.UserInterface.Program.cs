@@ -29,8 +29,8 @@ namespace PSADT.UserInterface
             if (args?.Length == 0)
             {
                 var fileInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-                var helpTitle = fileInfo.FileDescription!;
                 var helpVersion = fileInfo.ProductVersion!.Split('+')[0];
+                var helpTitle = $"{fileInfo.FileDescription!} {helpVersion}";
                 var helpMessage = string.Join(Environment.NewLine, new[]
                 {
                     helpTitle,
@@ -41,7 +41,7 @@ namespace PSADT.UserInterface
                     "",
                     "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
                 });
-                DialogManager.ShowMessageBox($"{helpTitle} {helpVersion}", helpMessage, MessageBoxButtons.Ok, MessageBoxIcon.Stop, MessageBoxDefaultButton.First, true, default);
+                DialogManager.ShowMessageBox(helpTitle, helpMessage, MessageBoxButtons.Ok, MessageBoxDefaultButton.First, MessageBoxIcon.Stop, true, default);
                 Console.Error.WriteLine("The display server was invoked without any arguments.");
                 return (int)ExitCode.NoArguments;
             }
@@ -97,6 +97,13 @@ namespace PSADT.UserInterface
                 // Switch on the DialogType to create the appropriate dialog.
                 switch (dialogType)
                 {
+                    case DialogType.DialogBox:
+                    {
+                        var options = GetDialogOptions<DialogBoxOptions>(dialogOptionsArg!);
+                        var result = DialogManager.ShowMessageBox(options);
+                        Console.WriteLine(SerializeDialogResult(result));
+                        break;
+                    }
                     case DialogType.InputDialog:
                     {
                         var options = GetDialogOptions<InputDialogOptions>(dialogOptionsArg!);
