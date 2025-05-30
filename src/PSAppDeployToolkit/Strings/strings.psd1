@@ -141,9 +141,9 @@
 
             # Text displayed when prompting to close running programs.
             CloseAppsMessage = @{
-                Install = "The following programs must be closed before the installation can begin.`n`nPlease save your work, close the programs, and then continue. Alternatively, save your work and click `"Close Programs`"."
-                Repair = "The following programs must be closed before the repair can begin.`n`nPlease save your work, close the programs, and then continue. Alternatively, save your work and click `"Close Programs`"."
-                Uninstall = "The following programs must be closed before the uninstallation can begin.`n`nPlease save your work, close the programs, and then continue. Alternatively, save your work and click `"Close Programs`"."
+                Install = "The following programs must be closed before the installation can proceed.`n`nPlease save your work, close the programs, and then continue. Alternatively, save your work and click `"Close Programs`"."
+                Repair = "The following programs must be closed before the repair can proceed.`n`nPlease save your work, close the programs, and then continue. Alternatively, save your work and click `"Close Programs`"."
+                Uninstall = "The following programs must be closed before the uninstallation can proceed.`n`nPlease save your work, close the programs, and then continue. Alternatively, save your work and click `"Close Programs`"."
             }
 
             # Text displayed when a deferral option is available.
