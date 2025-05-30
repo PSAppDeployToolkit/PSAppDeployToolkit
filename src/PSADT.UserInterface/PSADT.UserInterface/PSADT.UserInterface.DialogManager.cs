@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic;
 using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.Utilities;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface
 {
@@ -203,10 +203,11 @@ namespace PSADT.UserInterface
         /// <param name="Icon">The icon to display in the message box, such as Information, Warning, or Error.</param>
         /// <param name="DefaultButton">The button that is selected by default when the message box is displayed.</param>
         /// <param name="TopMost">A value indicating whether the message box should appear as a topmost window. <see langword="true"/> to make the message box topmost; otherwise, <see langword="false"/>.</param>
+        /// <param name="Timeout">Optional timeout for the message box. If specified, the message box will automatically close after the given duration.</param>
         /// <returns>A <see cref="MsgBoxResult"/> value indicating the button clicked by the user.</returns>
-        public static MsgBoxResult ShowMessageBox(string Title, string Prompt, MessageBoxButtons Buttons, MessageBoxIcon Icon, MessageBoxDefaultButton DefaultButton, bool TopMost)
+        public static MessageBoxResult ShowMessageBox(string Title, string Prompt, MessageBoxButtons Buttons, MessageBoxIcon Icon, MessageBoxDefaultButton DefaultButton, bool TopMost, TimeSpan Timeout)
         {
-            return ShowMessageBox(Title, Prompt, (MsgBoxStyle)Buttons | (MsgBoxStyle)Icon | (MsgBoxStyle)DefaultButton | (TopMost ? MsgBoxStyle.SystemModal : 0));
+            return (MessageBoxResult)ShowMessageBox(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST | MESSAGEBOX_STYLE.MB_SETFOREGROUND : 0), Timeout);
         }
 
         /// <summary>
@@ -214,11 +215,12 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <param name="Title">The title text to display in the message box's title bar.</param>
         /// <param name="Prompt">The text to display in the message box.</param>
-        /// <param name="Buttons">A <see cref="MsgBoxStyle"/> value that specifies the buttons and icons to display in the message box.</param>
-        /// <returns>A <see cref="MsgBoxResult"/> value that indicates which button the user clicked in the message box.</returns>
-        public static MsgBoxResult ShowMessageBox(string Title, string Prompt, MsgBoxStyle Buttons)
+        /// <param name="Buttons">A <see cref="MESSAGEBOX_STYLE"/> value that specifies the buttons and icons to display in the message box.</param>
+        /// <param name="Timeout">An optional <see cref="TimeSpan"/> value that specifies the duration after which the message box will automatically close. If not specified, the message box will remain open until the user interacts with it.</param>
+        /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value that indicates which button the user clicked in the message box.</returns>
+        internal static MESSAGEBOX_RESULT ShowMessageBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, TimeSpan Timeout = default)
         {
-            return (MsgBoxResult)InvokeDialogAction(() => Interaction.MsgBox(Prompt, Buttons, Title));
+            return (MESSAGEBOX_RESULT)InvokeDialogAction(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
         }
 
         /// <summary>

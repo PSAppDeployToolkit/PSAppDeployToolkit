@@ -449,6 +449,53 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Displays a message box with a specified timeout, allowing customization of text, caption, style, language, and duration.
+        /// </summary>
+        /// <remarks>This method is a P/Invoke wrapper for the native <c>MessageBoxTimeoutW</c> function in the Windows API. It is intended for internal use and requires appropriate permissions to call unmanaged code.</remarks>
+        /// <param name="hWnd">A handle to the owner window of the message box. Use <see cref="IntPtr.Zero"/> for a message box with no owner.</param>
+        /// <param name="lpText">The text to be displayed in the message box.</param>
+        /// <param name="lpCaption">The caption to be displayed in the title bar of the message box.</param>
+        /// <param name="uType">The style of the message box, specified as a combination of <see cref="MESSAGEBOX_STYLE"/> flags.</param>
+        /// <param name="wLanguageId">The language identifier for the message box text.</param>
+        /// <param name="dwMilliseconds">The timeout duration, in milliseconds, after which the message box will automatically close.</param>
+        /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the button pressed by the user or the timeout result if the message box was closed automatically.</returns>
+        [DllImport("user32.dll", EntryPoint = "MessageBoxTimeoutW", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern MESSAGEBOX_RESULT MessageBoxTimeoutNative(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
+
+        /// <summary>
+        /// Displays a message box with a specified timeout, allowing the caller to specify text, caption, style, language, and timeout duration.
+        /// </summary>
+        /// <remarks>This method wraps a native Windows API call to display a message box with a timeout. If the timeout elapses before the user responds, the message box will close automatically.</remarks>
+        /// <param name="hWnd">A handle to the owner window of the message box. Pass <see cref="IntPtr.Zero"/> if the message box has no owner.</param>
+        /// <param name="lpText">The text to be displayed in the message box.</param>
+        /// <param name="lpCaption">The caption to be displayed in the title bar of the message box.</param>
+        /// <param name="uType">A combination of flags that specify the contents and behavior of the message box. See <see cref="MESSAGEBOX_STYLE"/> for valid options.</param>
+        /// <param name="wLanguageId">The language identifier for the text in the message box. Use 0 for the system default language.</param>
+        /// <param name="dwTimeout">The timeout duration after which the message box will automatically close if no user action is taken.</param>
+        /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the user's response to the message box.</returns>
+        internal static MESSAGEBOX_RESULT MessageBoxTimeout(IntPtr hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, TimeSpan dwTimeout)
+        {
+            if (string.IsNullOrWhiteSpace(lpText))
+            {
+                throw new ArgumentNullException(nameof(lpText), "Message text cannot be null or empty.");
+            }
+            if (string.IsNullOrWhiteSpace(lpCaption))
+            {
+                throw new ArgumentNullException(nameof(lpCaption), "Message caption cannot be null or empty.");
+            }
+            if (dwTimeout < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dwTimeout), "Timeout duration cannot be negative.");
+            }
+            var res = MessageBoxTimeoutNative(hWnd, lpText, lpCaption, uType, wLanguageId, (uint)dwTimeout.TotalMilliseconds);
+            if (res == 0)
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
         /// A window command to minimise all windows.
         /// </summary>
         internal const nuint MIN_ALL = 419;

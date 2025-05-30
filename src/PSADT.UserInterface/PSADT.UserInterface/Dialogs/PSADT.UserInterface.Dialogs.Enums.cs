@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.VisualBasic;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface.Dialogs
 {
@@ -180,37 +180,42 @@ namespace PSADT.UserInterface.Dialogs
     /// </summary>
     /// <remarks>This enumeration is used to define the button options available in a message box, such as "OK", "Cancel", "Yes", "No", etc. It supports a combination of values due to the <see cref="FlagsAttribute"/> applied to the enumeration.</remarks>
     [Flags]
-    public enum MessageBoxButtons
+    public enum MessageBoxButtons : uint
     {
         /// <summary>
         /// OK button only (default). This member is equivalent to the Visual Basic constant vbOKOnly.
         /// </summary>
-        Ok = MsgBoxStyle.OkOnly,
+        Ok = MESSAGEBOX_STYLE.MB_OK,
 
         /// <summary>
         /// OK and Cancel buttons. This member is equivalent to the Visual Basic constant vbOKCancel.
         /// </summary>
-        OkCancel = MsgBoxStyle.OkCancel,
+        OkCancel = MESSAGEBOX_STYLE.MB_OKCANCEL,
 
         /// <summary>
         /// Abort, Retry, and Ignore buttons. This member is equivalent to the Visual Basic constant vbAbortRetryIgnore.
         /// </summary>
-        AbortRetryIgnore = MsgBoxStyle.AbortRetryIgnore,
+        AbortRetryIgnore = MESSAGEBOX_STYLE.MB_ABORTRETRYIGNORE,
 
         /// <summary>
         /// Yes, No, and Cancel buttons. This member is equivalent to the Visual Basic constant vbYesNoCancel.
         /// </summary>
-        YesNoCancel = MsgBoxStyle.YesNoCancel,
+        YesNoCancel = MESSAGEBOX_STYLE.MB_YESNOCANCEL,
 
         /// <summary>
         /// Yes and No buttons. This member is equivalent to the Visual Basic constant vbYesNo.
         /// </summary>
-        YesNo = MsgBoxStyle.YesNo,
+        YesNo = MESSAGEBOX_STYLE.MB_YESNO,
 
         /// <summary>
         /// Retry and Cancel buttons. This member is equivalent to the Visual Basic constant vbRetryCancel.
         /// </summary>
-        RetryCancel = MsgBoxStyle.RetryCancel,
+        RetryCancel = MESSAGEBOX_STYLE.MB_RETRYCANCEL,
+
+        /// <summary>
+        /// Represents a message box style that displays Cancel, Try Again, and Continue buttons.
+        /// </summary>
+        CancelTryContinue = MESSAGEBOX_STYLE.MB_CANCELTRYCONTINUE,
     }
 
     /// <summary>
@@ -218,7 +223,7 @@ namespace PSADT.UserInterface.Dialogs
     /// </summary>
     /// <remarks>This enumeration is used to indicate the type of message being displayed in a message box, such as an error, warning, or informational message. The icon helps users quickly understand the context or severity of the message. Multiple values can be combined using a bitwise OR  operation due to the <see cref="FlagsAttribute"/> applied to this enumeration.</remarks>
     [Flags]
-    public enum MessageBoxIcon
+    public enum MessageBoxIcon : uint
     {
         /// <summary>
         /// Represents the absence of any specific value or state.
@@ -228,22 +233,22 @@ namespace PSADT.UserInterface.Dialogs
         /// <summary>
         /// Critical message. This member is equivalent to the Visual Basic constant vbCritical.
         /// </summary>
-        Stop = MsgBoxStyle.Critical,
+        Stop = MESSAGEBOX_STYLE.MB_ICONSTOP,
 
         /// <summary>
         /// Warning query. This member is equivalent to the Visual Basic constant vbQuestion.
         /// </summary>
-        Question = MsgBoxStyle.Question,
+        Question = MESSAGEBOX_STYLE.MB_ICONQUESTION,
 
         /// <summary>
         /// Warning message. This member is equivalent to the Visual Basic constant vbExclamation.
         /// </summary>
-        Exclamation = MsgBoxStyle.Exclamation,
+        Exclamation = MESSAGEBOX_STYLE.MB_ICONEXCLAMATION,
 
         /// <summary>
         /// Information message. This member is equivalent to the Visual Basic constant vbInformation.
         /// </summary>
-        Information = MsgBoxStyle.Information,
+        Information = MESSAGEBOX_STYLE.MB_ICONINFORMATION,
     }
 
     /// <summary>
@@ -251,21 +256,94 @@ namespace PSADT.UserInterface.Dialogs
     /// </summary>
     /// <remarks>This enumeration is used to indicate which button in a message box is preselected by default when the dialog is displayed. The default button is typically activated when the user presses the Enter key without explicitly selecting a button.</remarks>
     [Flags]
-    public enum MessageBoxDefaultButton
+    public enum MessageBoxDefaultButton : uint
     {
         /// <summary>
         /// Default button is the first button in the dialog box.
         /// </summary>
-        First = MsgBoxStyle.DefaultButton1,
+        First = MESSAGEBOX_STYLE.MB_DEFBUTTON1,
 
         /// <summary>
         /// Default button is the second button in the dialog box.
         /// </summary>
-        Second = MsgBoxStyle.DefaultButton2,
+        Second = MESSAGEBOX_STYLE.MB_DEFBUTTON2,
 
         /// <summary>
         /// Default button is the third button in the dialog box.
         /// </summary>
-        Third = MsgBoxStyle.DefaultButton3,
+        Third = MESSAGEBOX_STYLE.MB_DEFBUTTON3,
+    }
+
+    /// <summary>
+    /// Specifies the possible results of a message box operation.
+    /// </summary>
+    /// <remarks>This enumeration represents the various outcomes of a message box interaction, such as the button selected by the user or other conditions like a timeout. Each value corresponds to a specific Windows API constant from <see cref="MESSAGEBOX_RESULT" />. These results are typically used to determine the user's response to a prompt or dialog.</remarks>
+    public enum MessageBoxResult
+    {
+        /// <summary>
+        /// Represents the result of a message box operation where the user selects the "OK" option.
+        /// </summary>
+        /// <remarks>This value corresponds to the Windows API constant <see cref="MESSAGEBOX_RESULT.IDOK"/>. It is typically used to indicate that the user acknowledged the message or completed an action in response to a prompt.</remarks>"
+        OK = MESSAGEBOX_RESULT.IDOK,
+
+        /// <summary>
+        /// Represents the result of a message box operation where the user selects the "Cancel" option.
+        /// </summary>
+        /// <remarks>This value corresponds to the Windows API constant <see cref="MESSAGEBOX_RESULT.IDCANCEL"/>. It is typically used to indicate that the user canceled the operation or dismissed the message box without making a selection.</remarks>
+        Cancel = MESSAGEBOX_RESULT.IDCANCEL,
+
+        /// <summary>
+        /// Represents the result of a message box operation where the user selected the "Abort" option.
+        /// </summary>
+        /// <remarks>This value corresponds to the Windows API constant <see cref="MESSAGEBOX_RESULT.IDABORT"/>. It is typically used to indicate that the user chose to abort an operation in response to a message box prompt.</remarks>
+        Abort = MESSAGEBOX_RESULT.IDABORT,
+
+        /// <summary>
+        /// Represents the result of a message box operation where the user selects the "Retry" option.
+        /// </summary>
+        /// <remarks>This value corresponds to the Windows API constant <see cref="MESSAGEBOX_RESULT.IDRETRY"/>. It is typically used to indicate that the user has chosen to retry an operation after encountering an error or prompt.</remarks>
+        Retry = MESSAGEBOX_RESULT.IDRETRY,
+
+        /// <summary>
+        /// Represents the result of a message box operation where the user selects "Ignore."
+        /// </summary>
+        /// <remarks>This value corresponds to the Windows API constant <see cref="MESSAGEBOX_RESULT.IDIGNORE"/>. It is typically used to handle scenarios where the user chooses to ignore a warning or error.</remarks>
+        Ignore = MESSAGEBOX_RESULT.IDIGNORE,
+
+        /// <summary>
+        /// Represents a result indicating that the user selected "Yes" in a message box.
+        /// </summary>
+        /// <remarks>This value corresponds to the Windows API constant <see cref="MESSAGEBOX_RESULT.IDYES"/>. It is typically used to indicate that the user has confirmed an action or answered "Yes" to a prompt.</remarks>
+        Yes = MESSAGEBOX_RESULT.IDYES,
+
+        /// <summary>
+        /// Represents the result of a message box operation where the user selected "No".
+        /// </summary>
+        /// <remarks>This value corresponds to the Windows API constant <see cref="MESSAGEBOX_RESULT.IDNO"/>. It is typically used to indicate that the user declined an action or answered "No" to a prompt.</remarks>
+        No = MESSAGEBOX_RESULT.IDNO,
+
+        /// <summary>
+        /// Represents the result of a message box when the Close button is selected.
+        /// </summary>
+        /// <remarks>This value corresponds to the Close button being clicked or the message box being dismissed without selecting any other option. It is typically used to handle scenarios where the user close the message box without making a specific choice.</remarks>
+        Close = MESSAGEBOX_RESULT.IDCLOSE,
+
+        /// <summary>
+        /// Represents the result indicating that the user selected the "Try Again" option in a message box.
+        /// </summary>
+        /// <remarks>This value corresponds to the Windows API constant <see cref="MESSAGEBOX_RESULT.IDTRYAGAIN"/>. It is typically used to handle scenarios where the user opts to retry an operation after a failure.</remarks>
+        TryAgain = MESSAGEBOX_RESULT.IDTRYAGAIN,
+
+        /// <summary>
+        /// Represents the result of a message box operation where the user selects "Continue."
+        /// </summary>
+        /// <remarks>This value corresponds to the "Continue" button in a message box, typically used to indicate that the user has chosen to proceed with the operation.</remarks>
+        Continue = MESSAGEBOX_RESULT.IDCONTINUE,
+
+        /// <summary>
+        /// Represents the result of a message box operation when the operation times out.
+        /// </summary>
+        /// <remarks>This value is returned when a message box is displayed with a timeout and the timeout period elapses before the user interacts with the message box.</remarks>
+        Timeout = MESSAGEBOX_RESULT.IDTIMEOUT,
     }
 }

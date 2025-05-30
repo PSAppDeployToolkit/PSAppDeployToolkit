@@ -41,7 +41,7 @@ namespace PSADT.UserInterface
                     "",
                     "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
                 });
-                DialogManager.ShowMessageBox($"{helpTitle} {helpVersion}", helpMessage, Microsoft.VisualBasic.MsgBoxStyle.Critical);
+                DialogManager.ShowMessageBox($"{helpTitle} {helpVersion}", helpMessage, MessageBoxButtons.Ok, MessageBoxIcon.Stop, MessageBoxDefaultButton.First, true, default);
                 Console.Error.WriteLine("The display server was invoked without any arguments.");
                 return (int)ExitCode.NoArguments;
             }
