@@ -69,7 +69,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
 
                 // Set up the process service.
-                this.listBoxCloseProcesses.Items.Clear();
+                this.richTextBoxCloseProcesses.Lines = null;
                 if (null != options.RunningProcessService)
                 {
                     // Get the current running apps and amend the form accordingly.
@@ -77,7 +77,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     if (runningApps.Length > 0)
                     {
                         this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
-                        this.listBoxCloseProcesses.Items.AddRange(runningApps);
+                        this.richTextBoxCloseProcesses.Lines = runningApps;
                         if (hideCloseButton)
                         {
                             this.buttonCloseProcesses.Enabled = false;
@@ -126,7 +126,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 {
                     countdownTimer = new System.Threading.Timer(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     countdownStopwatch = options.CountdownStopwatch;
-                    if (this.listBoxCloseProcesses.Items.Count > 0)
+                    if (this.richTextBoxCloseProcesses.Lines?.Length > 0)
                     {
                         if (forcedCountdown)
                         {
@@ -261,7 +261,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             {
                 this.Invoke(() =>
                 {
-                    if (forcedCountdown && (null == runningProcessService || listBoxCloseProcesses.Items.Count == 0))
+                    if (forcedCountdown && (null == runningProcessService || richTextBoxCloseProcesses.Lines.Length == 0))
                     {
                         buttonContinue.PerformClick();
                     }
@@ -293,12 +293,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
         {
             this.Invoke(() =>
             {
-                this.listBoxCloseProcesses.Items.Clear();
+                this.richTextBoxCloseProcesses.Lines = null;
                 if (e.ProcessesToClose.Count > 0)
                 {
                     var runningApps = e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
                     this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
-                    this.listBoxCloseProcesses.Items.AddRange(runningApps);
+                    this.richTextBoxCloseProcesses.Lines = runningApps;
                     this.labelCountdownMessage.Text = countdownClose;
                     this.flowLayoutPanelCloseApps.Visible = true;
                     this.buttonCloseProcesses.Enabled = true;

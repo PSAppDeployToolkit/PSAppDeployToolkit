@@ -40,7 +40,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelCustomMessage = new System.Windows.Forms.Label();
             this.flowLayoutPanelCloseApps = new System.Windows.Forms.FlowLayoutPanel();
             this.labelCloseProcessesMessage = new System.Windows.Forms.Label();
-            this.listBoxCloseProcesses = new System.Windows.Forms.ListBox();
+            this.panelCloseProcesses = new System.Windows.Forms.Panel();
+            this.richTextBoxCloseProcesses = new System.Windows.Forms.RichTextBox();
             this.flowLayoutPanelDeferral = new System.Windows.Forms.FlowLayoutPanel();
             this.labelDeferralExpiryMessage = new System.Windows.Forms.Label();
             this.labelDeferDeadline = new System.Windows.Forms.Label();
@@ -57,6 +58,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCloseApps.SuspendLayout();
+            this.panelCloseProcesses.SuspendLayout();
             this.flowLayoutPanelDeferral.SuspendLayout();
             this.flowLayoutPanelCountdown.SuspendLayout();
             this.tableLayoutPanelButton.SuspendLayout();
@@ -145,7 +147,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCloseApps.AutoSize = true;
             this.flowLayoutPanelCloseApps.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanelCloseApps.Controls.Add(this.labelCloseProcessesMessage);
-            this.flowLayoutPanelCloseApps.Controls.Add(this.listBoxCloseProcesses);
+            this.flowLayoutPanelCloseApps.Controls.Add(this.panelCloseProcesses);
             this.flowLayoutPanelCloseApps.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelCloseApps.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.flowLayoutPanelCloseApps.Location = new System.Drawing.Point(14, 113);
@@ -175,22 +177,30 @@ namespace PSADT.UserInterface.Dialogs.Classic
     "r work and click \"Close Programs\".";
             this.labelCloseProcessesMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // listBoxCloseProcesses
+            // panelCloseProcesses
             // 
-            this.listBoxCloseProcesses.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
-            this.listBoxCloseProcesses.Enabled = false;
-            this.listBoxCloseProcesses.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listBoxCloseProcesses.FormattingEnabled = true;
-            this.listBoxCloseProcesses.ItemHeight = 15;
-            this.listBoxCloseProcesses.Items.AddRange(new object[] {
-            "Adobe Acrobat",
-            "Microsoft Word",
-            "Microsoft Excel"});
-            this.listBoxCloseProcesses.Location = new System.Drawing.Point(0, 69);
-            this.listBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
-            this.listBoxCloseProcesses.Name = "listBoxCloseProcesses";
-            this.listBoxCloseProcesses.Size = new System.Drawing.Size(422, 109);
-            this.listBoxCloseProcesses.TabIndex = 1;
+            this.panelCloseProcesses.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelCloseProcesses.Controls.Add(this.richTextBoxCloseProcesses);
+            this.panelCloseProcesses.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.panelCloseProcesses.Location = new System.Drawing.Point(0, 69);
+            this.panelCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
+            this.panelCloseProcesses.Name = "panelCloseProcesses";
+            this.panelCloseProcesses.Size = new System.Drawing.Size(422, 109);
+            this.panelCloseProcesses.TabIndex = 1;
+            // 
+            // richTextBoxCloseProcesses
+            // 
+            this.richTextBoxCloseProcesses.BackColor = System.Drawing.Color.White;
+            this.richTextBoxCloseProcesses.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBoxCloseProcesses.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBoxCloseProcesses.Location = new System.Drawing.Point(0, 0);
+            this.richTextBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
+            this.richTextBoxCloseProcesses.Name = "richTextBoxCloseProcesses";
+            this.richTextBoxCloseProcesses.ReadOnly = true;
+            this.richTextBoxCloseProcesses.Size = new System.Drawing.Size(420, 107);
+            this.richTextBoxCloseProcesses.TabIndex = 0;
+            this.richTextBoxCloseProcesses.Text = "Adobe Acrobat\nMicrosoft Word\nMicrosoft Excel";
+            this.richTextBoxCloseProcesses.WordWrap = false;
             // 
             // flowLayoutPanelDeferral
             // 
@@ -425,6 +435,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.PerformLayout();
             this.flowLayoutPanelCloseApps.ResumeLayout(false);
             this.flowLayoutPanelCloseApps.PerformLayout();
+            this.panelCloseProcesses.ResumeLayout(false);
             this.flowLayoutPanelDeferral.ResumeLayout(false);
             this.flowLayoutPanelDeferral.PerformLayout();
             this.flowLayoutPanelCountdown.ResumeLayout(false);
@@ -445,7 +456,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private Label labelAppName;
         private FlowLayoutPanel flowLayoutPanelCloseApps;
         private Label labelCloseProcessesMessage;
-        private ListBox listBoxCloseProcesses;
         private FlowLayoutPanel flowLayoutPanelDeferral;
         private Label labelDeferralExpiryMessage;
         private Label labelDeferDeadline;
@@ -461,5 +471,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private Button buttonContinue;
         private PictureBox pictureBanner;
         private FlowLayoutPanel flowLayoutPanelBase;
+        private Panel panelCloseProcesses;
+        private RichTextBox richTextBoxCloseProcesses;
     }
 }
