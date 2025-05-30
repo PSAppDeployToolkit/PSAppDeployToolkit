@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Instalacja w toku. Proszę czekać...'
-            Repair = 'Trwa naprawa. Proszę czekać...'
-            Uninstall = 'Trwa dezinstalacja. Proszę czekać...'
+            Install = 'Instalacja w toku. Proszę czekać…'
+            Repair = 'Trwa naprawa. Proszę czekać…'
+            Uninstall = 'Trwa dezinstalacja. Proszę czekać…'
         }
         MessageDetail = @{
             Install = 'To okno zamknie się automatycznie po zakończeniu instalacji.'

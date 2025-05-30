@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Kurulum devam ediyor. Lütfen bekleyin...'
-            Repair = 'Onarım devam ediyor. Lütfen bekleyin...'
-            Uninstall = 'Kaldırma işlemi devam ediyor. Lütfen bekleyin...'
+            Install = 'Kurulum devam ediyor. Lütfen bekleyin…'
+            Repair = 'Onarım devam ediyor. Lütfen bekleyin…'
+            Uninstall = 'Kaldırma işlemi devam ediyor. Lütfen bekleyin…'
         }
         MessageDetail = @{
             Install = 'Yükleme tamamlandığında bu pencere otomatik olarak kapanacaktır.'

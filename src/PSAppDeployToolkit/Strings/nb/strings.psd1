@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Installasjon pågår. Vennligst vent ...'
-            Repair = 'Reparasjon pågår. Vennligst vent...'
-            Uninstall = 'Avinstalleringen pågår. Vennligst vent...'
+            Install = 'Installasjon pågår. Vennligst vent …'
+            Repair = 'Reparasjon pågår. Vennligst vent…'
+            Uninstall = 'Avinstalleringen pågår. Vennligst vent…'
         }
         MessageDetail = @{
             Install = 'Dette vinduet lukkes automatisk når installasjonen er fullført.'

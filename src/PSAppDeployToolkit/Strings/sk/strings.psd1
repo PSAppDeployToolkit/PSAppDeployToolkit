@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Inštalácia prebieha. Počkajte prosím...'
-            Repair = 'Prebieha oprava. Počkajte prosím...'
-            Uninstall = 'Prebieha odinštalovanie. Prosím, počkajte...'
+            Install = 'Inštalácia prebieha. Počkajte prosím…'
+            Repair = 'Prebieha oprava. Počkajte prosím…'
+            Uninstall = 'Prebieha odinštalovanie. Prosím, počkajte…'
         }
         MessageDetail = @{
             Install = 'Toto okno sa po dokončení inštalácie automaticky zatvorí.'

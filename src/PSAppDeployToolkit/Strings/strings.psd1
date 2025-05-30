@@ -73,9 +73,9 @@
     ProgressPrompt = @{
         # Default message displayed in the progress bar.
         Message = @{
-            Install = 'Installation in progress. Please wait...'
-            Repair = 'Repair in progress. Please wait...'
-            Uninstall = 'Uninstallation in progress. Please wait...'
+            Install = 'Installation in progress. Please wait…'
+            Repair = 'Repair in progress. Please wait…'
+            Uninstall = 'Uninstallation in progress. Please wait…'
         }
 
         # Default message detail displayed in the progress bar.

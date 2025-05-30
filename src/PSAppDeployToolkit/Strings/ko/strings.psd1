@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = '설치 중입니다. 잠시만 기다려주세요...'
-            Repair = '수리 중입니다. 잠시만 기다려주세요...'
-            Uninstall = '제거 중입니다. 잠시만 기다려주세요...'
+            Install = '설치 중입니다. 잠시만 기다려주세요…'
+            Repair = '수리 중입니다. 잠시만 기다려주세요…'
+            Uninstall = '제거 중입니다. 잠시만 기다려주세요…'
         }
         MessageDetail = @{
             Install = '설치가 완료되면 이 창이 자동으로 닫힙니다.'

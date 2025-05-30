@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Notiek instalēšana. Lūdzu, uzgaidiet...'
-            Repair = 'Notiek labošana. Lūdzu, uzgaidiet...'
-            Uninstall = 'Notiek atinstalēšana. Lūdzu, uzgaidiet...'
+            Install = 'Notiek instalēšana. Lūdzu, uzgaidiet…'
+            Repair = 'Notiek labošana. Lūdzu, uzgaidiet…'
+            Uninstall = 'Notiek atinstalēšana. Lūdzu, uzgaidiet…'
         }
         MessageDetail = @{
             Install = 'Šis logs aizvērsies automātiski, kad instalēšana būs pabeigta.'

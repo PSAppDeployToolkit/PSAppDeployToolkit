@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Telepítés folyamatban. Kérjük várjon...'
-            Repair = 'Javítás folyamatban. Kérjük várjon...'
-            Uninstall = 'Eltávolítás folyamatban. Kérjük várjon...'
+            Install = 'Telepítés folyamatban. Kérjük várjon…'
+            Repair = 'Javítás folyamatban. Kérjük várjon…'
+            Uninstall = 'Eltávolítás folyamatban. Kérjük várjon…'
         }
         MessageDetail = @{
             Install = 'Ez az ablak automatikusan bezáródik, ha a telepítés befejeződött.'

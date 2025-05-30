@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = 'Installatie wordt uitgevoerd. Even geduld a.u.b...'
-            Repair = 'Reparatie wordt uitgevoerd. Even geduld a.u.b...'
-            Uninstall = 'De-installatie wordt uitgevoerd. Even geduld a.u.b...'
+            Install = 'Installatie wordt uitgevoerd. Even geduld a.u.b…'
+            Repair = 'Reparatie wordt uitgevoerd. Even geduld a.u.b…'
+            Uninstall = 'De-installatie wordt uitgevoerd. Even geduld a.u.b…'
         }
         MessageDetail = @{
             Install = 'Dit venster wordt automatisch gesloten als de installatie voltooid is.'

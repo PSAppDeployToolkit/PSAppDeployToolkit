@@ -54,9 +54,9 @@
     }
     ProgressPrompt = @{
         Message = @{
-            Install = '正在安装。请稍候......'
-            Repair = '修复中。请稍候...'
-            Uninstall = '卸载中。请稍候...'
+            Install = '正在安装。请稍候……'
+            Repair = '修复中。请稍候…'
+            Uninstall = '卸载中。请稍候…'
         }
         MessageDetail = @{
             Install = '安装完成后，此窗口将自动关闭。'

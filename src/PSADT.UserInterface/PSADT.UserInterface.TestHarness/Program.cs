@@ -80,8 +80,8 @@ namespace PSADT.UserInterface.TestHarness
             uint deferralsRemaining = 3;
             DateTime deferralDeadline = DateTime.Parse("2025-04-20T13:00:00");
             // DateTime? deferralDeadline = null;
-            string progressMessageText = "Performing pre-flight checks...";
-            string progressDetailMessageText = "Testing your system to ensure compatibility, please wait ...";
+            string progressMessageText = "Performing pre-flight checks…";
+            string progressDetailMessageText = "Testing your system to ensure compatibility, please wait…";
 
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(80);
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(70);
