@@ -33,39 +33,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// </summary>
         private void InitializeComponent()
         {
-            this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
-            this.pictureBanner = new System.Windows.Forms.PictureBox();
             this.buttonDefault = new System.Windows.Forms.Button();
-            this.flowLayoutPanelBase.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).BeginInit();
             this.SuspendLayout();
-            // 
-            // flowLayoutPanelBase
-            // 
-            this.flowLayoutPanelBase.AutoSize = true;
-            this.flowLayoutPanelBase.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.flowLayoutPanelBase.Controls.Add(this.pictureBanner);
-            this.flowLayoutPanelBase.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelBase.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
-            this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
-            this.flowLayoutPanelBase.Size = new System.Drawing.Size(0, 0);
-            this.flowLayoutPanelBase.TabIndex = 0;
-            this.flowLayoutPanelBase.WrapContents = false;
-            // 
-            // pictureBanner
-            // 
-            this.pictureBanner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBanner.Location = new System.Drawing.Point(0, 0);
-            this.pictureBanner.Margin = new System.Windows.Forms.Padding(0);
-            this.pictureBanner.Name = "pictureBanner";
-            this.pictureBanner.Size = new System.Drawing.Size(0, 0);
-            this.pictureBanner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBanner.TabIndex = 0;
-            this.pictureBanner.TabStop = false;
-            this.pictureBanner.WaitOnLoad = true;
             // 
             // buttonDefault
             // 
@@ -94,7 +63,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(450, 0);
             this.Controls.Add(this.buttonDefault);
-            this.Controls.Add(this.flowLayoutPanelBase);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -105,16 +73,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ClassicDialog";
             this.TopMost = true;
-            this.flowLayoutPanelBase.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
-        private PictureBox pictureBanner;
         private Button buttonDefault;
-        protected FlowLayoutPanel flowLayoutPanelBase;
     }
 }

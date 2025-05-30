@@ -34,7 +34,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.SuspendLayout();
             this.flowLayoutPanelBase.SuspendLayout();
             this.flowLayoutPanelDialog.SuspendLayout();
-            this.Controls.Remove(this.flowLayoutPanelDialog);
 
             // Reset the dialog's title. It must be that of the string table in the options.
             this.Text = options.Strings.Title;
@@ -42,6 +41,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
             {
+                // Set up the picturebox.
+                SetPictureBox(this.pictureBanner, options);
+
                 // Set the countdown timer.
                 if (null != options.CountdownDuration)
                 {
@@ -77,7 +79,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
             // Resume the dialog now that we've applied any options.
             this.flowLayoutPanelDialog.ResumeLayout();
-            this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
             this.flowLayoutPanelBase.ResumeLayout();
             this.ResumeLayout();
         }

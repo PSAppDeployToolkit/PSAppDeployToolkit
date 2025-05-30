@@ -37,7 +37,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.SuspendLayout();
             this.flowLayoutPanelBase.SuspendLayout();
             this.flowLayoutPanelDialog.SuspendLayout();
-            this.Controls.Remove(this.flowLayoutPanelDialog);
 
             // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
@@ -56,6 +55,8 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 countdownDefer = options.Strings.Classic.CountdownDefer;
                 buttonContinueToolTipText = options.Strings.Classic.ButtonContinueTooltip;
 
+                // Set up the picturebox.
+                SetPictureBox(this.pictureBanner, options);
 
                 // Set the custom message text if we have one.
                 if (null != options.CustomMessageText)
@@ -149,7 +150,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
             // Resume the dialog now that we've applied any options.
             this.flowLayoutPanelDialog.ResumeLayout();
-            this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
             this.flowLayoutPanelBase.ResumeLayout();
             this.ResumeLayout();
         }

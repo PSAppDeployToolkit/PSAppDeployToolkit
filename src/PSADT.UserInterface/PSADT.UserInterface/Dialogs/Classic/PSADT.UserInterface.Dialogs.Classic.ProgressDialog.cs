@@ -37,17 +37,19 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.SuspendLayout();
             this.flowLayoutPanelBase.SuspendLayout();
             this.flowLayoutPanelDialog.SuspendLayout();
-            this.Controls.Remove(this.flowLayoutPanelDialog);
 
             // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
             {
+                // Set up the picturebox.
+                SetPictureBox(this.pictureBanner, options);
+
+                // Set up the rest of the dialog controls.
                 UpdateProgressImpl(options.ProgressMessageText, options.ProgressDetailMessageText, options.ProgressPercentage, options.MessageAlignment);
             }
 
             // Resume the dialog now that we've applied any options.
             this.flowLayoutPanelDialog.ResumeLayout();
-            this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
             this.flowLayoutPanelBase.ResumeLayout();
             this.ResumeLayout();
             EnableDragMove(this);

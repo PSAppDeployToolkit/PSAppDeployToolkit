@@ -51,13 +51,17 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
             this.buttonCloseProcesses = new System.Windows.Forms.Button();
             this.buttonDefer = new System.Windows.Forms.Button();
-            this.toolTipButtonContinue = new System.Windows.Forms.ToolTip(this.components);
             this.buttonContinue = new System.Windows.Forms.Button();
+            this.pictureBanner = new System.Windows.Forms.PictureBox();
+            this.toolTipButtonContinue = new System.Windows.Forms.ToolTip(this.components);
+            this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCloseApps.SuspendLayout();
             this.flowLayoutPanelDeferral.SuspendLayout();
             this.flowLayoutPanelCountdown.SuspendLayout();
             this.tableLayoutPanelButton.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).BeginInit();
+            this.flowLayoutPanelBase.SuspendLayout();
             this.SuspendLayout();
             // 
             // flowLayoutPanelDialog
@@ -359,13 +363,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonDefer.UseVisualStyleBackColor = true;
             this.buttonDefer.Click += new System.EventHandler(this.ButtonMiddle_Click);
             // 
-            // toolTipButtonContinue
-            // 
-            this.toolTipButtonContinue.AutoPopDelay = 5000;
-            this.toolTipButtonContinue.BackColor = System.Drawing.Color.LightGoldenrodYellow;
-            this.toolTipButtonContinue.InitialDelay = 100;
-            this.toolTipButtonContinue.ReshowDelay = 100;
-            // 
             // buttonContinue
             // 
             this.buttonContinue.Dock = System.Windows.Forms.DockStyle.Right;
@@ -382,14 +379,48 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonContinue.UseVisualStyleBackColor = true;
             this.buttonContinue.Click += new System.EventHandler(this.ButtonRight_Click);
             // 
+            // pictureBanner
+            // 
+            this.pictureBanner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBanner.Location = new System.Drawing.Point(0, 0);
+            this.pictureBanner.Margin = new System.Windows.Forms.Padding(0);
+            this.pictureBanner.Name = "pictureBanner";
+            this.pictureBanner.Size = new System.Drawing.Size(450, 0);
+            this.pictureBanner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBanner.TabIndex = 0;
+            this.pictureBanner.TabStop = false;
+            this.pictureBanner.WaitOnLoad = true;
+            // 
+            // toolTipButtonContinue
+            // 
+            this.toolTipButtonContinue.AutoPopDelay = 5000;
+            this.toolTipButtonContinue.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+            this.toolTipButtonContinue.InitialDelay = 100;
+            this.toolTipButtonContinue.ReshowDelay = 100;
+            // 
+            // flowLayoutPanelBase
+            // 
+            this.flowLayoutPanelBase.AutoSize = true;
+            this.flowLayoutPanelBase.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanelBase.Controls.Add(this.pictureBanner);
+            this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
+            this.flowLayoutPanelBase.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanelBase.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
+            this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
+            this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
+            this.flowLayoutPanelBase.Size = new System.Drawing.Size(450, 466);
+            this.flowLayoutPanelBase.TabIndex = 4;
+            // 
             // CloseAppsDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(450, 466);
-            this.Controls.Add(this.flowLayoutPanelDialog);
+            this.Controls.Add(this.flowLayoutPanelBase);
             this.Name = "CloseAppsDialog";
-            this.Controls.SetChildIndex(this.flowLayoutPanelDialog, 0);
+            this.Controls.SetChildIndex(this.flowLayoutPanelBase, 0);
             this.flowLayoutPanelDialog.ResumeLayout(false);
             this.flowLayoutPanelDialog.PerformLayout();
             this.flowLayoutPanelCloseApps.ResumeLayout(false);
@@ -399,6 +430,9 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.ResumeLayout(false);
             this.flowLayoutPanelCountdown.PerformLayout();
             this.tableLayoutPanelButton.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBanner)).EndInit();
+            this.flowLayoutPanelBase.ResumeLayout(false);
+            this.flowLayoutPanelBase.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -425,5 +459,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         private Label labelCustomMessage;
         private ToolTip toolTipButtonContinue;
         private Button buttonContinue;
+        private PictureBox pictureBanner;
+        private FlowLayoutPanel flowLayoutPanelBase;
     }
 }
