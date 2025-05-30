@@ -123,7 +123,7 @@
         DefaultTimeout = 3300
 
         # Exit code used when a user opts to defer.
-        DeferExitCode = 60012
+        DeferExitCode = 1602
 
         <# Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.
             Language Code    Language
