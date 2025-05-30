@@ -105,10 +105,18 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     if (null != options.DeferralsRemaining && !options.UnlimitedDeferrals)
                     {
                         this.labelDeferDeadline.Text = $"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}".Trim();
+                        if (options.DeferralsRemaining <= 0)
+                        {
+                            this.tableLayoutPanelButton.Controls.Remove(this.buttonDefer);
+                        }
                     }
                     if (null != options.DeferralDeadline)
                     {
                         this.labelDeferDeadline.Text = $"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}".Trim();
+                        if (options.DeferralDeadline <= DateTime.Now)
+                        {
+                            this.tableLayoutPanelButton.Controls.Remove(this.buttonDefer);
+                        }
                     }
                     if (string.IsNullOrWhiteSpace(this.labelDeferDeadline.Text))
                     {
