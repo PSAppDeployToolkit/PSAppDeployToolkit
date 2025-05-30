@@ -44,7 +44,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.buttonDefault.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.buttonDefault.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.buttonDefault.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonDefault.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDefault.ForeColor = System.Drawing.Color.Transparent;
             this.buttonDefault.Location = new System.Drawing.Point(0, 0);
             this.buttonDefault.Margin = new System.Windows.Forms.Padding(0);

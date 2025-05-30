@@ -80,7 +80,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDialog.Controls.Add(this.flowLayoutPanelCountdown);
             this.flowLayoutPanelDialog.Controls.Add(this.tableLayoutPanelButton);
             this.flowLayoutPanelDialog.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelDialog.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.flowLayoutPanelDialog.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelDialog.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
@@ -96,7 +95,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelWelcomeMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelWelcomeMessage.AutoSize = true;
-            this.labelWelcomeMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelWelcomeMessage.Location = new System.Drawing.Point(14, 11);
             this.labelWelcomeMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
             this.labelWelcomeMessage.MaximumSize = new System.Drawing.Size(422, 0);
@@ -128,7 +126,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelCustomMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCustomMessage.AutoSize = true;
-            this.labelCustomMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCustomMessage.Location = new System.Drawing.Point(14, 71);
             this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.labelCustomMessage.MaximumSize = new System.Drawing.Size(422, 0);
@@ -149,7 +146,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCloseApps.Controls.Add(this.labelCloseProcessesMessage);
             this.flowLayoutPanelCloseApps.Controls.Add(this.panelCloseProcesses);
             this.flowLayoutPanelCloseApps.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelCloseApps.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.flowLayoutPanelCloseApps.Location = new System.Drawing.Point(14, 113);
             this.flowLayoutPanelCloseApps.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelCloseApps.MaximumSize = new System.Drawing.Size(422, 0);
@@ -164,7 +160,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelCloseProcessesMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelCloseProcessesMessage.AutoSize = true;
-            this.labelCloseProcessesMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCloseProcessesMessage.Location = new System.Drawing.Point(0, 0);
             this.labelCloseProcessesMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 9);
             this.labelCloseProcessesMessage.MaximumSize = new System.Drawing.Size(422, 0);
@@ -181,7 +176,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // 
             this.panelCloseProcesses.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelCloseProcesses.Controls.Add(this.richTextBoxCloseProcesses);
-            this.panelCloseProcesses.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.panelCloseProcesses.Location = new System.Drawing.Point(0, 69);
             this.panelCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.panelCloseProcesses.Name = "panelCloseProcesses";
@@ -212,7 +206,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelDeferral.Controls.Add(this.labelDeferDeadline);
             this.flowLayoutPanelDeferral.Controls.Add(this.labelDeferWarningMessage);
             this.flowLayoutPanelDeferral.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelDeferral.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.flowLayoutPanelDeferral.Location = new System.Drawing.Point(14, 303);
             this.flowLayoutPanelDeferral.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelDeferral.MaximumSize = new System.Drawing.Size(422, 0);
@@ -227,7 +220,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelDeferralExpiryMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelDeferralExpiryMessage.AutoSize = true;
-            this.labelDeferralExpiryMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDeferralExpiryMessage.Location = new System.Drawing.Point(0, 0);
             this.labelDeferralExpiryMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 9);
             this.labelDeferralExpiryMessage.MaximumSize = new System.Drawing.Size(422, 0);
@@ -259,7 +251,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.labelDeferWarningMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelDeferWarningMessage.AutoSize = true;
-            this.labelDeferWarningMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDeferWarningMessage.Location = new System.Drawing.Point(0, 48);
             this.labelDeferWarningMessage.Margin = new System.Windows.Forms.Padding(0);
             this.labelDeferWarningMessage.MaximumSize = new System.Drawing.Size(422, 0);
@@ -279,7 +270,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdownMessage);
             this.flowLayoutPanelCountdown.Controls.Add(this.labelCountdown);
             this.flowLayoutPanelCountdown.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelCountdown.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(14, 378);
             this.flowLayoutPanelCountdown.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
             this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(422, 0);
@@ -334,7 +324,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.tableLayoutPanelButton.Controls.Add(this.buttonCloseProcesses, 0, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonDefer, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonContinue, 2, 0);
-            this.tableLayoutPanelButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tableLayoutPanelButton.Location = new System.Drawing.Point(14, 448);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 12, 0, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
@@ -346,7 +335,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // buttonCloseProcesses
             // 
             this.buttonCloseProcesses.Dock = System.Windows.Forms.DockStyle.Left;
-            this.buttonCloseProcesses.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonCloseProcesses.Location = new System.Drawing.Point(0, 0);
             this.buttonCloseProcesses.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
             this.buttonCloseProcesses.MaximumSize = new System.Drawing.Size(133, 25);
@@ -361,7 +349,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // buttonDefer
             // 
             this.buttonDefer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
-            this.buttonDefer.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDefer.Location = new System.Drawing.Point(144, 0);
             this.buttonDefer.Margin = new System.Windows.Forms.Padding(0);
             this.buttonDefer.MaximumSize = new System.Drawing.Size(134, 25);
@@ -376,7 +363,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // buttonContinue
             // 
             this.buttonContinue.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonContinue.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonContinue.Location = new System.Drawing.Point(289, 0);
             this.buttonContinue.Margin = new System.Windows.Forms.Padding(0);
             this.buttonContinue.MaximumSize = new System.Drawing.Size(133, 25);
@@ -416,7 +402,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             this.flowLayoutPanelBase.Controls.Add(this.pictureBanner);
             this.flowLayoutPanelBase.Controls.Add(this.flowLayoutPanelDialog);
             this.flowLayoutPanelBase.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanelBase.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
