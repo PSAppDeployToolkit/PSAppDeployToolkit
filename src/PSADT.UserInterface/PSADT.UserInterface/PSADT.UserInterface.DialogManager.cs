@@ -9,6 +9,8 @@ using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 using PSADT.Utilities;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.UserInterface
@@ -221,6 +223,21 @@ namespace PSADT.UserInterface
         internal static MESSAGEBOX_RESULT ShowMessageBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, TimeSpan Timeout = default)
         {
             return (MESSAGEBOX_RESULT)InvokeDialogAction(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
+        }
+
+        /// <summary>
+        /// Displays a task dialog box with the specified title, subtitle, prompt, buttons, and icon.
+        /// </summary>
+        /// <remarks>This method internally invokes a task dialog using the Windows Common Controls library. The dialog is modal and blocks execution until the user interacts with it.</remarks>
+        /// <param name="Title">The title of the task dialog box. This appears in the title bar of the dialog.</param>
+        /// <param name="Subtitle">The subtitle of the task dialog box. This appears as a header in the dialog.</param>
+        /// <param name="Prompt">The main prompt or message displayed in the dialog box.</param>
+        /// <param name="Buttons">A combination of flags specifying the buttons to display in the dialog. This must be a valid <see cref="TASKDIALOG_COMMON_BUTTON_FLAGS"/> value.</param>
+        /// <param name="Icon">The icon to display in the dialog box. This must be a valid <see cref="TASKDIALOG_ICON"/> value.</param>
+        /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the button that the user clicked to close the dialog.</returns>
+        internal static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
+        {
+            return (MESSAGEBOX_RESULT)InvokeDialogAction(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
         }
 
         /// <summary>
