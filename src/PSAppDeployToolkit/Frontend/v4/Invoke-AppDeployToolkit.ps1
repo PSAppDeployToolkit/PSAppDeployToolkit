@@ -324,10 +324,11 @@ try
 }
 catch
 {
-    Write-ADTLogEntry -Message ($mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_) -Severity 3
+    $mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_
+    Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
 
     ## Error details hidden from the user by default. Show a simple dialog with full stack trace:
-    # Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop -NoWait | Out-Null
+    # Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop -NoWait
 
     ## Or, a themed dialog with basic error message:
     # Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) failed at line $($_.InvocationInfo.ScriptLineNumber), char $($_.InvocationInfo.OffsetInLine):`n$($_.InvocationInfo.Line.Trim())`n`nMessage:`n$($_.Exception.Message)" -MessageAlignment Left -ButtonRightText OK -Icon Error -NoWait
