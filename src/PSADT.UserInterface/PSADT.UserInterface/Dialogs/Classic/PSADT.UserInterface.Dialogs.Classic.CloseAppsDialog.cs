@@ -107,7 +107,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                         this.labelDeferDeadline.Text = $"{options.Strings.Classic.DeferralsRemaining} {options.DeferralsRemaining}".Trim();
                         if (options.DeferralsRemaining <= 0)
                         {
-                            this.tableLayoutPanelButton.Controls.Remove(this.buttonDefer);
+                            this.buttonDefer.Enabled = false;
                         }
                     }
                     if (null != options.DeferralDeadline)
@@ -115,7 +115,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                         this.labelDeferDeadline.Text = $"{this.labelDeferDeadline.Text}\n{options.Strings.Classic.DeferralDeadline} {options.DeferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + options.DeferralDeadline.Value.ToString("zzz")}".Trim();
                         if (options.DeferralDeadline <= DateTime.Now)
                         {
-                            this.tableLayoutPanelButton.Controls.Remove(this.buttonDefer);
+                            this.buttonDefer.Enabled = false;
                         }
                     }
                     if (string.IsNullOrWhiteSpace(this.labelDeferDeadline.Text))
@@ -126,7 +126,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 else
                 {
                     this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelDeferral);
-                    this.tableLayoutPanelButton.Controls.Remove(this.buttonDefer);
+                    this.buttonDefer.Enabled = false;
                 }
 
                 // Set the countdown timer.
@@ -273,7 +273,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     {
                         buttonContinue.PerformClick();
                     }
-                    else if (forcedCountdown && this.flowLayoutPanelDialog.Controls.Contains(this.flowLayoutPanelDeferral) && this.tableLayoutPanelButton.Controls.Contains(this.buttonDefer))
+                    else if (forcedCountdown && this.flowLayoutPanelDialog.Controls.Contains(this.flowLayoutPanelDeferral) && this.buttonDefer.Enabled)
                     {
                         buttonDefer.PerformClick();
                     }
