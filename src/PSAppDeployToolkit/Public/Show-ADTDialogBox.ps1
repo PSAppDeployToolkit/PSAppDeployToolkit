@@ -45,7 +45,7 @@ function Show-ADTDialogBox
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.UserInterface.Dialogs.DialogBoxResult
+        PSADT.UserInterface.DialogResults.DialogBoxResult
 
         Returns the text of the button that was clicked.
 
@@ -65,7 +65,7 @@ function Show-ADTDialogBox
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.UserInterface.Dialogs.DialogBoxResult])]
+    [OutputType([PSADT.UserInterface.DialogResults.DialogBoxResult])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
@@ -204,7 +204,7 @@ function Show-ADTDialogBox
                 $result = Show-ADTModalDialog -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
 
                 # Process results.
-                if ($result -eq [PSADT.UserInterface.Dialogs.DialogBoxResult]::Timeout)
+                if ($result -eq [PSADT.UserInterface.DialogResults.DialogBoxResult]::Timeout)
                 {
                     Write-ADTLogEntry -Message 'Dialog box not responded to within the configured amount of time.'
                     if ($ExitOnTimeout)
