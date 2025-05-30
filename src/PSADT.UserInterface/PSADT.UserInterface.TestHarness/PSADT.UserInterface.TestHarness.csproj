@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks>net462;net8.0-windows10.0.17763.0</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <UseWPF>true</UseWPF>
     <Deterministic>true</Deterministic>
@@ -37,7 +37,7 @@
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.17763.0|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -50,7 +50,7 @@
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.17763.0|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
@@ -67,7 +67,7 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763.0'">
     <PackageReference Include="System.Management.Automation" Version="7.4.*" PrivateAssets="all" />
   </ItemGroup>
 

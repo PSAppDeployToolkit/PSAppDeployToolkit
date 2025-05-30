@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks>net462;net8.0-windows10.0.17763.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <NoWarn>$(NoWarn)</NoWarn>
@@ -44,7 +44,7 @@
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.17763.0|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -57,7 +57,7 @@
     <PreferNativeArm64>True</PreferNativeArm64>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.17763.0|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
@@ -95,7 +95,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.17763.0'">
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.5" />
     <PackageReference Include="System.Collections.Immutable" Version="9.0.5" />
     <PackageReference Include="System.Reflection.Metadata" Version="9.0.5" />

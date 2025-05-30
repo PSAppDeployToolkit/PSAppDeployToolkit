@@ -412,6 +412,27 @@ namespace PSADT.LibraryInterfaces
         }
 
         /// <summary>
+        /// Retrieves the DPI (dots per inch) value for the specified window.
+        /// </summary>
+        /// <param name="hwnd">The handle of the window for which to retrieve the DPI value. Cannot be null.</param>
+        /// <returns>The DPI value for the specified window. This value represents the scaling factor applied to the window.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="hwnd"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the DPI value could not be retrieved for the specified window handle.</exception>
+        internal static uint GetDpiForWindow(HWND hwnd)
+        {
+            if (hwnd.IsNull)
+            {
+                throw new ArgumentNullException(nameof(hwnd), "Window handle cannot be null.");
+            }
+            var res = PInvoke.GetDpiForWindow(hwnd);
+            if (res == 0)
+            {
+                throw new InvalidOperationException("Failed to get DPI scale for window handle.");
+            }
+            return res;
+        }
+
+        /// <summary>
         /// A window command to minimise all windows.
         /// </summary>
         internal const nuint MIN_ALL = 419;
