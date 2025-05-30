@@ -12,8 +12,8 @@ Display a custom dialog box with optional title, buttons, icon, and timeout.
 ## SYNTAX
 
 ```powershell
-Show-ADTDialogBox [-Text] <String> [-Buttons <MessageBoxButtons>] [-DefaultButton <MessageBoxDefaultButton>]
- [-Icon <MessageBoxIcon>] [-NoWait] [-ExitOnTimeout] [-NotTopMost] [-Force] -Title <String>
+Show-ADTDialogBox [-Text] <String> [-Buttons <DialogBoxButtons>] [-DefaultButton <DialogBoxDefaultButton>]
+ [-Icon <DialogBoxIcon>] [-NoWait] [-ExitOnTimeout] [-NotTopMost] [-Force] -Title <String>
  [-Timeout <TimeSpan>] [<CommonParameters>]
 ```
 
@@ -55,7 +55,7 @@ Accept wildcard characters: False
 The button(s) to display on the dialog box.
 
 ```yaml
-Type: MessageBoxButtons
+Type: DialogBoxButtons
 Parameter Sets: (All)
 Aliases:
 Accepted values: Ok, OkCancel, AbortRetryIgnore, YesNoCancel, YesNo, RetryCancel, CancelTryContinue
@@ -73,7 +73,7 @@ The Default button that is selected.
 Options: First, Second, Third.
 
 ```yaml
-Type: MessageBoxDefaultButton
+Type: DialogBoxDefaultButton
 Parameter Sets: (All)
 Aliases:
 Accepted values: First, Second, Third
@@ -91,7 +91,7 @@ Icon to display on the dialog box.
 Options: None, Stop, Question, Exclamation, Information.
 
 ```yaml
-Type: MessageBoxIcon
+Type: DialogBoxIcon
 Parameter Sets: (All)
 Aliases:
 Accepted values: None, Stop, Question, Exclamation, Information
@@ -210,7 +210,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### You cannot pipe objects to this function.
 ## OUTPUTS
 
-### PSADT.UserInterface.Dialogs.MessageBoxResult
+### PSADT.UserInterface.Dialogs.DialogBoxResult
 
 ### Returns the text of the button that was clicked.
 ## NOTES

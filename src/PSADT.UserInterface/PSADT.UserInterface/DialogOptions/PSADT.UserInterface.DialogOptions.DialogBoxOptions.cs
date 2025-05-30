@@ -27,15 +27,15 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("MessageText value is null or invalid.", (Exception?)null);
             }
-            if (options["DialogButtons"] is not MessageBoxButtons dialogButtons)
+            if (options["DialogButtons"] is not DialogBoxButtons dialogButtons)
             {
                 throw new ArgumentNullException("DialogButtons value is null or invalid.", (Exception?)null);
             }
-            if (options["DialogDefaultButton"] is not MessageBoxDefaultButton dialogDefaultButton)
+            if (options["DialogDefaultButton"] is not DialogBoxDefaultButton dialogDefaultButton)
             {
                 throw new ArgumentNullException("DialogDefaultButton value is null or invalid.", (Exception?)null);
             }
-            if (options["DialogIcon"] is not MessageBoxIcon dialogIcon)
+            if (options["DialogIcon"] is not DialogBoxIcon dialogIcon)
             {
                 throw new ArgumentNullException("DialogIcon value is null or invalid.", (Exception?)null);
             }
@@ -74,19 +74,19 @@ namespace PSADT.UserInterface.DialogOptions
         /// Gets the set of buttons to display in the message box dialog.
         /// </summary>
         [DataMember]
-        public readonly MessageBoxButtons DialogButtons;
+        public readonly DialogBoxButtons DialogButtons;
 
         /// <summary>
         /// Gets the default button that is selected in the dialog box when it is displayed.
         /// </summary>
         [DataMember]
-        public readonly MessageBoxDefaultButton DialogDefaultButton;
+        public readonly DialogBoxDefaultButton DialogDefaultButton;
 
         /// <summary>
         /// Gets the icon displayed in the dialog box.
         /// </summary>
         [DataMember]
-        public readonly MessageBoxIcon DialogIcon;
+        public readonly DialogBoxIcon DialogIcon;
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.

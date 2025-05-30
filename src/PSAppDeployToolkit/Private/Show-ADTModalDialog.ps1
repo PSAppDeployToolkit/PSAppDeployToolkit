@@ -7,7 +7,7 @@
 function Private:Show-ADTModalDialog
 {
     [CmdletBinding()]
-    [OutputType([PSADT.UserInterface.Dialogs.MessageBoxResult])]
+    [OutputType([PSADT.UserInterface.Dialogs.DialogBoxResult])]
     [OutputType([PSADT.UserInterface.DialogResults.InputDialogResult])]
     [OutputType([System.String])]
     param
@@ -132,7 +132,7 @@ function Private:Show-ADTModalDialog
     {
         ([PSADT.UserInterface.Dialogs.DialogType]::DialogBox)
         {
-            return [PSADT.UserInterface.Dialogs.MessageBoxResult][PSADT.UserInterface.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut), [PSADT.UserInterface.Dialogs.MessageBoxResult])
+            return [PSADT.UserInterface.Dialogs.DialogBoxResult][PSADT.UserInterface.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut), [PSADT.UserInterface.Dialogs.DialogBoxResult])
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::InputDialog)
         {

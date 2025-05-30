@@ -45,7 +45,7 @@ function Show-ADTDialogBox
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.UserInterface.Dialogs.MessageBoxResult
+        PSADT.UserInterface.Dialogs.DialogBoxResult
 
         Returns the text of the button that was clicked.
 
@@ -65,7 +65,7 @@ function Show-ADTDialogBox
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.UserInterface.Dialogs.MessageBoxResult])]
+    [OutputType([PSADT.UserInterface.Dialogs.DialogBoxResult])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Enter a message for the dialog box.')]
@@ -74,15 +74,15 @@ function Show-ADTDialogBox
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.MessageBoxButtons]$Buttons = [PSADT.UserInterface.Dialogs.MessageBoxButtons]::Ok,
+        [PSADT.UserInterface.Dialogs.DialogBoxButtons]$Buttons = [PSADT.UserInterface.Dialogs.DialogBoxButtons]::Ok,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.MessageBoxDefaultButton]$DefaultButton = [PSADT.UserInterface.Dialogs.MessageBoxDefaultButton]::First,
+        [PSADT.UserInterface.Dialogs.DialogBoxDefaultButton]$DefaultButton = [PSADT.UserInterface.Dialogs.DialogBoxDefaultButton]::First,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.UserInterface.Dialogs.MessageBoxIcon]$Icon = [PSADT.UserInterface.Dialogs.MessageBoxIcon]::None,
+        [PSADT.UserInterface.Dialogs.DialogBoxIcon]$Icon = [PSADT.UserInterface.Dialogs.DialogBoxIcon]::None,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,
@@ -204,7 +204,7 @@ function Show-ADTDialogBox
                 $result = Show-ADTModalDialog -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
 
                 # Process results.
-                if ($result -eq [PSADT.UserInterface.Dialogs.MessageBoxResult]::Timeout)
+                if ($result -eq [PSADT.UserInterface.Dialogs.DialogBoxResult]::Timeout)
                 {
                     Write-ADTLogEntry -Message 'Dialog box not responded to within the configured amount of time.'
                     if ($ExitOnTimeout)

@@ -185,7 +185,7 @@ namespace PSADT.UserInterface.Dialogs
     /// </summary>
     /// <remarks>This enumeration is used to define the button options available in a message box, such as "OK", "Cancel", "Yes", "No", etc. It supports a combination of values due to the <see cref="FlagsAttribute"/> applied to the enumeration.</remarks>
     [Flags]
-    public enum MessageBoxButtons : uint
+    public enum DialogBoxButtons : uint
     {
         /// <summary>
         /// OK button only (default). This member is equivalent to the Visual Basic constant vbOKOnly.
@@ -228,7 +228,7 @@ namespace PSADT.UserInterface.Dialogs
     /// </summary>
     /// <remarks>This enumeration is used to indicate the type of message being displayed in a message box, such as an error, warning, or informational message. The icon helps users quickly understand the context or severity of the message. Multiple values can be combined using a bitwise OR  operation due to the <see cref="FlagsAttribute"/> applied to this enumeration.</remarks>
     [Flags]
-    public enum MessageBoxIcon : uint
+    public enum DialogBoxIcon : uint
     {
         /// <summary>
         /// Represents the absence of any specific value or state.
@@ -261,7 +261,7 @@ namespace PSADT.UserInterface.Dialogs
     /// </summary>
     /// <remarks>This enumeration is used to indicate which button in a message box is preselected by default when the dialog is displayed. The default button is typically activated when the user presses the Enter key without explicitly selecting a button.</remarks>
     [Flags]
-    public enum MessageBoxDefaultButton : uint
+    public enum DialogBoxDefaultButton : uint
     {
         /// <summary>
         /// Default button is the first button in the dialog box.
@@ -282,8 +282,8 @@ namespace PSADT.UserInterface.Dialogs
     /// <summary>
     /// Specifies the possible results of a message box operation.
     /// </summary>
-    /// <remarks>This enumeration represents the various outcomes of a message box interaction, such as the button selected by the user or other conditions like a timeout. Each value corresponds to a specific Windows API constant from <see cref="MESSAGEBOX_RESULT" />. These results are typically used to determine the user's response to a prompt or dialog.</remarks>
-    public enum MessageBoxResult
+    /// <remarks>This enumeration represents the various outcomes of a message box interaction, such as the button selected by the user or other conditions like a timeout. Each value corresponds to a specific Windows API constant from <see cref="DialogBox_RESULT" />. These results are typically used to determine the user's response to a prompt or dialog.</remarks>
+    public enum DialogBoxResult
     {
         /// <summary>
         /// Represents the result of a message box operation where the user selects the "OK" option.
