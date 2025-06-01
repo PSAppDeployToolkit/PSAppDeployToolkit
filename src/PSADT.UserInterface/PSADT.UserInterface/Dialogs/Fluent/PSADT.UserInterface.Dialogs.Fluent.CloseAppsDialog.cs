@@ -124,6 +124,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (!DeferralsAvailable())
             {
                 ButtonRight.IsEnabled = false;
+                ButtonRight.Foreground = (Brush)Application.Current.Resources["TextFillColorDisabledBrush"];
                 return;
             }
 
@@ -132,6 +133,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 // Only enable the button if there are deferrals remaining
                 ButtonRight.IsEnabled = _deferralsRemaining > 0;
+                ButtonRight.Foreground = ButtonRight.IsEnabled
+                    ? (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"]
+                    : (Brush)Application.Current.Resources["TextFillColorDisabledBrush"];
 
                 // Update text value
                 DeferRemainingValueTextBlock.Text = _deferralsRemaining.ToString();
@@ -142,7 +146,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Update text color based on remaining deferrals
                 if (_deferralsRemaining == 0)
                 {
-                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"]; ;
                 }
                 else if (_deferralsRemaining <= 1)
                 {
@@ -158,9 +162,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Set button state based on deadline
                 TimeSpan timeRemaining = _deferralDeadline!.Value - DateTime.Now;
                 ButtonRight.IsEnabled = timeRemaining > TimeSpan.Zero;
+                ButtonRight.Foreground = ButtonRight.IsEnabled
+                    ? (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"]
+                    : (Brush)Application.Current.Resources["TextFillColorDisabledBrush"];
+
 
                 // Update text content
-                string displayText = _deferralDeadline.Value.ToString(DateTimeFormatInfo.CurrentInfo.RFC1123Pattern) + _deferralDeadline.Value.ToString("zzz");
+                DateTimeOffset deferralDeadlineOffset = new DateTimeOffset((DateTime)_deferralDeadline!);
+                string displayText = deferralDeadlineOffset.ToLocalTime().ToString(DateTimeFormatInfo.CurrentInfo.FullDateTimePattern);
                 Brush textBrush;
                 if (ButtonRight.IsEnabled)
                 {
