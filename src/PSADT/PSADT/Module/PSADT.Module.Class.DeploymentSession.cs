@@ -878,11 +878,11 @@ namespace PSADT.Module
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
                 if (null != callerSessionState)
                 {
-                    foreach (PropertyInfo property in this.GetType().GetProperties())
+                    foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties())
                     {
                         callerSessionState.PSVariable.Set(new PSVariable(property.Name, property.GetValue(this)));
                     }
-                    foreach (FieldInfo field in this.GetType().GetFields())
+                    foreach (FieldInfo field in typeof(DeploymentSession).GetFields())
                     {
                         callerSessionState.PSVariable.Set(new PSVariable(field.Name, field.GetValue(this)));
                     }
@@ -916,7 +916,7 @@ namespace PSADT.Module
             // Throw if this object has already been disposed.
             if (Settings.HasFlag(DeploymentSettings.Disposed))
             {
-                throw new ObjectDisposedException(this.GetType().Name, "This object has already been disposed.");
+                throw new ObjectDisposedException(typeof(DeploymentSession).Name, "This object has already been disposed.");
             }
 
             // Establish initial variable values.
