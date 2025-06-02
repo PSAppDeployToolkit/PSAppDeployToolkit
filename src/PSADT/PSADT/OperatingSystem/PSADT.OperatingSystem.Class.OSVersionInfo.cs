@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.ComponentModel;
+using Microsoft.Win32;
 using PSADT.LibraryInterfaces;
 using PSADT.Types;
 using Windows.Win32;
@@ -36,35 +37,32 @@ namespace PSADT.OperatingSystem
                 OperatingSystem = (WindowsOS)windowsOS;
             }
 
-            using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion")!)
             {
-                if (null != key)
+                if (key.GetValue("UBR") is int ubrValue)
                 {
-                    if (key.GetValue("UBR") is int ubrValue)
-                    {
-                        ubr = ubrValue;
-                    }
-                    if (key.GetValue("ReleaseId") is string relId && !string.IsNullOrWhiteSpace(relId))
-                    {
-                        ReleaseId = relId;
-                    }
-                    if (key.GetValue("DisplayVersion") is string relIdVer && !string.IsNullOrWhiteSpace(relIdVer))
-                    {
-                        ReleaseIdName = relIdVer;
-                    }
-                    if (key.GetValue("EditionID") is string editionIdValue && !string.IsNullOrWhiteSpace(editionIdValue))
-                    {
-                        editionId = editionIdValue;
-                    }
-                    if (key.GetValue("ProductName") is string productNameValue && !string.IsNullOrWhiteSpace(productNameValue))
-                    {
-                        productName = productNameValue;
-                    }
+                    ubr = ubrValue;
+                }
+                if (key.GetValue("ReleaseId") is string relId && !string.IsNullOrWhiteSpace(relId))
+                {
+                    ReleaseId = relId;
+                }
+                if (key.GetValue("DisplayVersion") is string relIdVer && !string.IsNullOrWhiteSpace(relIdVer))
+                {
+                    ReleaseIdName = relIdVer;
+                }
+                if (key.GetValue("EditionID") is string editionIdValue && !string.IsNullOrWhiteSpace(editionIdValue))
+                {
+                    editionId = editionIdValue;
+                }
+                if (key.GetValue("ProductName") is string productNameValue && !string.IsNullOrWhiteSpace(productNameValue))
+                {
+                    productName = productNameValue;
                 }
             }
 
             PInvoke.GetProductInfo(osVersion.dwMajorVersion, osVersion.dwMinorVersion, osVersion.wServicePackMajor, osVersion.wServicePackMinor, out OS_PRODUCT_TYPE edition);
-            Name = string.Format(((DescriptionAttribute[])OperatingSystem.GetType().GetField(OperatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false)).First().Description, editionId);
+            Name = string.Format(((DescriptionAttribute[])typeof(WindowsOS).GetField(OperatingSystem.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false)).First().Description, editionId);
             Version = new Version((int)osVersion.dwMajorVersion, (int)osVersion.dwMinorVersion, (int)osVersion.dwBuildNumber, ubr);
             Edition = edition.ToString();
             Architecture = OSHelper.GetSystemArchitecture();
