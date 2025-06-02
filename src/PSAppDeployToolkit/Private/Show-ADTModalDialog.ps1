@@ -75,7 +75,7 @@ function Private:Show-ADTModalDialog
     }
 
     # Farm this out to a new process.
-    $result = Start-ADTProcessAsUser -Username $Username -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "-DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -CreateNoWindow -NoWait:$NoWait -InformationAction SilentlyContinue -PassThru -ErrorAction SilentlyContinue
+    $result = Start-ADTProcessAsUser -Username $Username -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -CreateNoWindow -NoWait:$NoWait -InformationAction SilentlyContinue -PassThru -ErrorAction SilentlyContinue
     if ($NoWait)
     {
         return

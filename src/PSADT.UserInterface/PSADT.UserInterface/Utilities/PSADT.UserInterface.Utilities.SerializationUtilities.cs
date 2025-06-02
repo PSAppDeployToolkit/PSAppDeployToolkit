@@ -13,7 +13,7 @@ namespace PSADT.UserInterface.Utilities
         /// <summary>
         /// Serializes the specified object to a Base64-encoded XML string.
         /// </summary>
-        /// <remarks>This method uses the <see cref="System.Runtime.Serialization.DataContractSerializer"/> to serialize the object into XML format and then encodes the resulting XML string into a Base64 string. The output can be used for safe transmission or storage of the serialized data.</remarks>
+        /// <remarks>This method uses the <see cref="DataContractSerializer"/> to serialize the object into XML format and then encodes the resulting XML string into a Base64 string. The output can be used for safe transmission or storage of the serialized data.</remarks>
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object to serialize. Cannot be <see langword="null"/>.</param>
         /// <returns>A Base64-encoded string representation of the serialized XML data.</returns>

@@ -146,7 +146,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        internal static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options)
+        private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options)
         {
             return (TResult)InvokeDialogAction(() =>
             {
