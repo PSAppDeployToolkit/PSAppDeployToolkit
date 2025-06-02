@@ -734,7 +734,7 @@ function Show-ADTInstallationWelcome
         function Show-ADTWelcomePrompt
         {
             [CmdletBinding()]
-            [OutputType([System.String])]
+            [OutputType([PSADT.UserInterface.DialogResults.CloseAppsDialogResult])]
             param
             (
                 [Parameter(Mandatory = $true)]
@@ -1088,7 +1088,7 @@ function Show-ADTInstallationWelcome
                         }
 
                         # Process the form results.
-                        if ($promptResult -eq 'Continue')
+                        if ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Continue))
                         {
                             # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
                             Write-ADTLogEntry -Message 'The user selected to continue...'
@@ -1111,7 +1111,7 @@ function Show-ADTInstallationWelcome
                                 break
                             }
                         }
-                        elseif ($promptResult -eq 'Close')
+                        elseif ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Close))
                         {
                             # Force the applications to close.
                             Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
@@ -1204,7 +1204,7 @@ function Show-ADTInstallationWelcome
                                 break
                             }
                         }
-                        elseif ($promptResult -eq 'Timeout')
+                        elseif ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Timeout))
                         {
                             # Stop the script (if not actioned before the timeout value).
                             Write-ADTLogEntry -Message 'Deployment not actioned before the timeout value.'
@@ -1223,7 +1223,7 @@ function Show-ADTInstallationWelcome
                                 Close-ADTSession -ExitCode $adtConfig.UI.DefaultExitCode
                             }
                         }
-                        elseif ($promptResult -eq 'Defer')
+                        elseif ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Defer))
                         {
                             #  Stop the script (user chose to defer)
                             Write-ADTLogEntry -Message 'Deployment deferred by the user.'
@@ -1241,6 +1241,18 @@ function Show-ADTInstallationWelcome
                                 Update-ADTDeferHistory
                                 Close-ADTSession -ExitCode $adtConfig.UI.DeferExitCode
                             }
+                        }
+                        else
+                        {
+                            # We should never get here. It means the dialog result we received was entirely unexpected.
+                            $naerParams = @{
+                                Exception = [System.InvalidOperationException]::new("An unexpected and invalid result was received by the CloseAppsDialog.")
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                ErrorId = 'CloseAppsDialogInvalidResult'
+                                TargetObject = $promptResult
+                                RecommendedAction = "Please report this error to the developers for further review."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
                         }
                     }
                 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -227,7 +228,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
-            SetResult("Close");
+            DialogResult = CloseAppsDialogResult.Close;
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -238,7 +239,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
-            SetResult("Defer");
+            DialogResult = CloseAppsDialogResult.Defer;
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -249,7 +250,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <param name="e"></param>
         protected override void ButtonRight_Click(object sender, EventArgs e)
         {
-            SetResult("Continue");
+            DialogResult = CloseAppsDialogResult.Continue;
             base.ButtonRight_Click(sender, e);
         }
 

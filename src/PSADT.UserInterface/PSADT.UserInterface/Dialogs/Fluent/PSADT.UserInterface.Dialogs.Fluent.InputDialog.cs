@@ -27,6 +27,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 InputBoxText.Focus();
                 InputBoxText.SelectAll();
             });
+
+            // Set the dialog result to a default value.
+            DialogResult = new InputDialogResult("Timeout", null);
         }
 
         /// <summary>
@@ -64,10 +67,5 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             DialogResult = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", ""), InputBoxText.Text);
             base.ButtonRight_Click(sender, e);
         }
-
-        /// <summary>
-        /// The cancellation token source for the dialog.
-        /// </summary>
-        private InputDialogResult _result = new InputDialogResult("Timeout", null);
     }
 }

@@ -111,7 +111,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonLeft_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            SetResult(this.buttonLeft.Text);
+            DialogResult = this.buttonLeft.Text;
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -123,7 +123,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonMiddle_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            SetResult(this.buttonMiddle.Text);
+            DialogResult = this.buttonMiddle.Text;
             base.ButtonMiddle_Click(sender, e);
         }
 
@@ -135,7 +135,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         protected override void ButtonRight_Click(object sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            SetResult(this.buttonRight.Text);
+            DialogResult = this.buttonRight.Text;
             base.ButtonRight_Click(sender, e);
         }
     }

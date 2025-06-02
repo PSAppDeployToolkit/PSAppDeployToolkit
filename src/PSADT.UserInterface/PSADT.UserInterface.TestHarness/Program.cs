@@ -7,6 +7,7 @@ using PSADT.Module;
 using PSADT.ProcessManagement;
 using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
 
 namespace PSADT.UserInterface.TestHarness
@@ -175,7 +176,7 @@ namespace PSADT.UserInterface.TestHarness
 
                 // #################################################################################
 
-                if (!closeAppsResult.Equals("Defer"))
+                if (closeAppsResult != CloseAppsDialogResult.Defer)
                 {
                     // Show Progress Dialog
                     DialogManager.ShowProgressDialog(dialogStyle, progressDialogOptions);

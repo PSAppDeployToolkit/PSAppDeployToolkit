@@ -13,6 +13,7 @@ using System.Windows.Threading;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Types;
 using PSADT.UserInterface.Utilities;
 
@@ -104,6 +105,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 ButtonLeft.Focus();
             });
+
+            // Set the dialog result to a default value.
+            DialogResult = CloseAppsDialogResult.Timeout;
         }
 
         /// <summary>
@@ -273,11 +277,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             if (AutomationProperties.GetName(ButtonLeft) == _buttonLeftText)
             {
-                DialogResult = "Close";
+                DialogResult = CloseAppsDialogResult.Close;
             }
             else
             {
-                DialogResult = "Continue";
+                DialogResult = CloseAppsDialogResult.Continue;
             }
             base.ButtonLeft_Click(sender, e);
         }
@@ -294,7 +298,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 return;
             }
-            DialogResult = "Defer";
+            DialogResult = CloseAppsDialogResult.Defer;
             base.ButtonRight_Click(sender, e);
         }
 
@@ -312,21 +316,21 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 {
                     if (_forcedCountdown && (null == _runningProcessService || AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText))
                     {
-                        DialogResult = "Continue";
+                        DialogResult = CloseAppsDialogResult.Continue;
                     }
                     else if (_forcedCountdown && DeferralsAvailable())
                     {
-                        DialogResult = "Defer";
+                        DialogResult = CloseAppsDialogResult.Defer;
                     }
                     else
                     {
                         if (AutomationProperties.GetName(ButtonLeft) == _buttonLeftText)
                         {
-                            DialogResult = "Close";
+                            DialogResult = CloseAppsDialogResult.Close;
                         }
                         else
                         {
-                            DialogResult = "Continue";
+                            DialogResult = CloseAppsDialogResult.Continue;
                         }
                     }
                     CloseDialog();

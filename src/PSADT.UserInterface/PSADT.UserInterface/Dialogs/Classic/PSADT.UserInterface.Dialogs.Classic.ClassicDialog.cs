@@ -107,15 +107,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
         }
 
         /// <summary>
-        /// Setter for Result to get around some C# malarkey.
-        /// </summary>
-        /// <param name="result"></param>
-        protected void SetResult(string result)
-        {
-            DialogResult = result;
-        }
-
-        /// <summary>
         /// Format the time span to a string.
         /// </summary>
         /// <param name="ts"></param>
@@ -340,7 +331,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// The result of the dialog.
         /// </summary>
-        public new object DialogResult { get; private set; } = "Timeout";
+        public new object DialogResult { get; private protected set; } = "Timeout";
 
         /// <summary>
         /// Starting point for the dialog.
