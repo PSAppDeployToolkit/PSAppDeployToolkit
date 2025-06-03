@@ -18,7 +18,7 @@ namespace PSADT.UserInterface
     /// <summary>
     /// Static class to manage WPF dialogs within a console application.
     /// </summary>
-    public static class DialogManager
+    internal static class DialogManager
     {
         /// <summary>
         /// Displays a dialog prompting the user to close specific applications.
@@ -26,7 +26,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options specifying the applications to be closed and other dialog configurations.</param>
         /// <returns>A string representing the user's response or selection from the dialog.</returns>
-        public static CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options)
+        internal static CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options)
         {
             bool stopProcessService = false;
             if (null != options.RunningProcessService && !options.RunningProcessService.IsRunning)
@@ -49,7 +49,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and buttons.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
-        public static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options) => ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
+        internal static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options) => ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
 
         /// <summary>
         /// Displays an input dialog box with the specified style and options, and returns the result.
@@ -58,7 +58,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options for configuring the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog result (e.g., OK or Cancel).</returns>
-        public static InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options) => ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
+        internal static InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options) => ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
 
         /// <summary>
         /// Displays a modal dialog prompting the user to restart the application.
@@ -66,7 +66,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">Options that configure the restart dialog, such as title, message, and button labels.</param>
         /// <returns>A string representing the user's response to the dialog. The value depends on the implementation of the dialog and the options provided.</returns>
-        public static string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options) => ShowModalDialog<string>(DialogType.RestartDialog, dialogStyle, options);
+        internal static string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options) => ShowModalDialog<string>(DialogType.RestartDialog, dialogStyle, options);
 
         /// <summary>
         /// Displays a progress dialog with the specified style and options.
@@ -75,7 +75,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog to display. This determines the visual appearance and behavior of the progress dialog.</param>
         /// <param name="options">The configuration options for the progress dialog, such as title, message, and progress settings.</param>
         /// <exception cref="InvalidOperationException">Thrown if a progress dialog is already open. Ensure the current progress dialog is closed before attempting to open a new one.</exception>
-        public static void ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
+        internal static void ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
             if (progressInitialized.IsSet)
             {
@@ -94,7 +94,7 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <remarks>This method checks the internal state to determine if the progress dialog has been initialized and is currently displayed.</remarks>
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
-        public static bool ProgressDialogOpen()
+        internal static bool ProgressDialogOpen()
         {
             return progressInitialized.IsSet;
         }
@@ -106,7 +106,7 @@ namespace PSADT.UserInterface
         /// <param name="progressDetailMessage">Optional new detail message.</param>
         /// <param name="progressPercentage">Optional progress percentage (0-100). If provided, the progress bar becomes determinate.</param>
         /// <param name="messageAlignment">Optional message alignment. If provided, the message alignment is updated.</param>
-        public static void UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
+        internal static void UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             if (!progressInitialized.IsSet)
             {
@@ -121,7 +121,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Closes the currently open dialog, if any. Safe to call even if no dialog is open.
         /// </summary>
-        public static void CloseProgressDialog()
+        internal static void CloseProgressDialog()
         {
             if (!progressInitialized.IsSet)
             {
@@ -168,7 +168,7 @@ namespace PSADT.UserInterface
         /// <param name="BalloonTipText">The text content of the balloon tip notification.</param>
         /// <param name="BalloonTipIcon">The icon to display in the balloon tip, such as <see cref="System.Windows.Forms.ToolTipIcon.Info"/> or <see cref="System.Windows.Forms.ToolTipIcon.Error"/>.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous operation. The task completes when the balloon tip is closed.</returns>
-        public static void ShowBalloonTip(string TrayTitle, string TrayIcon, string BalloonTipTitle, string BalloonTipText, System.Windows.Forms.ToolTipIcon BalloonTipIcon)
+        internal static void ShowBalloonTip(string TrayTitle, string TrayIcon, string BalloonTipTitle, string BalloonTipText, System.Windows.Forms.ToolTipIcon BalloonTipIcon)
         {
             // Set the AUMID for this process so the Windows 10 toast has the correct title.
             Shell32.SetCurrentProcessExplicitAppUserModelID(TrayTitle);
@@ -201,7 +201,7 @@ namespace PSADT.UserInterface
         /// <remarks>The behavior and appearance of the message box are determined by the properties of the <paramref name="options"/> parameter.</remarks>ews
         /// <param name="options">The options for configuring the message box, such as title, message text, buttons, icon, default button, topmost behavior, and expiry duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button that was clicked by the user.</returns>
-        public static DialogBoxResult ShowDialogBox(DialogBoxOptions options)
+        internal static DialogBoxResult ShowDialogBox(DialogBoxOptions options)
         {
             return ShowDialogBox(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon, options.DialogTopMost, options.DialogExpiryDuration);
         }
