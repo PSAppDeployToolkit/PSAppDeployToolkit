@@ -44,6 +44,7 @@ namespace PSADT.Execution
             bool useShellExecute = false,
             string? verb = null,
             bool createNoWindow = false,
+            bool waitForChildProcesses = false,
             Encoding? streamEncoding = null,
             ProcessWindowStyle? windowStyle = null,
             ProcessPriorityClass? priorityClass = null,
@@ -108,6 +109,7 @@ namespace PSADT.Execution
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseShellExecute = useShellExecute;
+            WaitForChildProcesses = waitForChildProcesses;
             NoTerminateOnTimeout = noTerminateOnTimeout;
             CommandLine = $"\"{FilePath}\"{((null != Arguments) ? $" {Arguments}" : null)}\0";
         }
@@ -172,6 +174,11 @@ namespace PSADT.Execution
         /// Gets a value indicating whether to create a new window for the process.
         /// </summary>
         public readonly bool CreateNoWindow;
+
+        /// <summary>
+        /// Gets a value indicating whether the process should wait for child processes to exit before completing.
+        /// </summary>
+        public readonly bool WaitForChildProcesses;
 
         /// <summary>
         /// Gets the encoding type to use when parsing stdout/stderr text.

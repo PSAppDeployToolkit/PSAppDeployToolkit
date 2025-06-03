@@ -47,6 +47,7 @@ namespace PSADT.Execution
                     // Set up the job object to use the I/O completion port.
                     iocp.DangerousAddRef(ref iocpAddRef);
                     Kernel32.SetInformationJobObject(job, JOBOBJECTINFOCLASS.JobObjectAssociateCompletionPortInformation, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT { CompletionPort = (HANDLE)iocp.DangerousGetHandle(), CompletionKey = null });
+                    var jobCompletionCode = launchInfo.WaitForChildProcesses ? PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO : PInvoke.JOB_OBJECT_MSG_EXIT_PROCESS;
 
                     // Declare all handles C-style so we can close them in the finally block for cleanup.
                     SafeProcessHandle? hProcess = null;
@@ -321,7 +322,7 @@ namespace PSADT.Execution
                                     if (index == 0)
                                     {
                                         Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out _, PInvoke.INFINITE);
-                                        if (lpCompletionCode == PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO)
+                                        if (lpCompletionCode == jobCompletionCode)
                                         {
                                             Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
                                             exitCode = ValueTypeConverter<int>.Convert(lpExitCode);

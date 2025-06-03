@@ -65,6 +65,9 @@ function Start-ADTProcess
     .PARAMETER MsiExecWaitTime
         Specify the length of time in seconds to wait for the msiexec engine to become available.
 
+    .PARAMETER WaitForChildProcesses
+        Specifies whether the started process should be considered finished only when any child processes it spawns have finished also.
+
     .PARAMETER Timeout
         How long to wait for the process before timing out.
 
@@ -293,6 +296,10 @@ function Start-ADTProcess
             })]
         [System.TimeSpan]$MsiExecWaitTime,
 
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.SwitchParameter]$WaitForChildProcesses,
+
         # Wait Option: Timeout (only in sets where wait is "Timeout")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
@@ -491,6 +498,7 @@ function Start-ADTProcess
                     $UseShellExecute,
                     $Verb,
                     $CreateNoWindow,
+                    $WaitForChildProcesses,
                     $StreamEncoding,
                     $WindowStyle,
                     $PriorityClass,
