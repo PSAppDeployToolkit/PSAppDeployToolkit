@@ -6,7 +6,7 @@
 
 function Private:Get-ADTStringLanguage
 {
-    if (![System.String]::IsNullOrWhiteSpace(($languageOverride = (Get-ADTConfig).UI.LanguageOverride)))
+    if (![System.String]::IsNullOrWhiteSpace(($languageOverride = ($adtConfig = Get-ADTConfig).UI.LanguageOverride)))
     {
         # The caller has specified a specific language.
         return $languageOverride
@@ -14,7 +14,7 @@ function Private:Get-ADTStringLanguage
     elseif ($Script:ADT.Environment.RunAsActiveUser)
     {
         # Get the actual user's $PSUICulture value. If we're running as SYSTEM, the user's locale could be different.
-        return $((Start-ADTProcess -Username $Script:ADT.Environment.RunAsActiveUser.NTAccount -FilePath powershell.exe -ArgumentList '-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command $PSUICulture' -MsiExecWaitTime ([System.TimeSpan]::FromSeconds($Script:ADT.Config.MSI.MutexWaitTime)) -CreateNoWindow -PassThru -InformationAction SilentlyContinue).StdOut)
+        return $((Start-ADTProcess -Username $Script:ADT.Environment.RunAsActiveUser.NTAccount -FilePath powershell.exe -ArgumentList '-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command $PSUICulture' -MsiExecWaitTime ([System.TimeSpan]::FromSeconds($adtConfig.MSI.MutexWaitTime)) -CreateNoWindow -PassThru -InformationAction SilentlyContinue).StdOut)
     }
     else
     {
