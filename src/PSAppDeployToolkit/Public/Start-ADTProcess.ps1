@@ -62,6 +62,9 @@ function Start-ADTProcess
     .PARAMETER WaitForMsiExec
         Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
 
+    .PARAMETER MsiExecWaitTime
+        Specify the length of time in seconds to wait for the msiexec engine to become available.
+
     .PARAMETER Timeout
         How long to wait for the process before timing out.
 
@@ -162,6 +165,7 @@ function Start-ADTProcess
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Default_CreateWindow_Wait')]
+    [OutputType([System.Threading.Tasks.Task[PSADT.Execution.ProcessResult]])]
     [OutputType([PSADT.Execution.ProcessResult])]
     param
     (
@@ -262,7 +266,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
-        [Switch]$CreateNoWindow,
+        [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
         # Wait Option: NoWait (only in sets where wait is "NoWait")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_NoWait')]
@@ -274,10 +278,20 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
-        [Switch]$NoWait,
+        [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateScript({
+                if ($_ -le [System.TimeSpan]::Zero)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MsiExecWaitTime -ProvidedValue $_ -ExceptionMessage "The provided `-MsiExecWaitTime` parameter value must be greater than zero."))
+                }
+                return !!$_
+            })]
+        [System.TimeSpan]$MsiExecWaitTime,
 
         # Wait Option: Timeout (only in sets where wait is "Timeout")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_Timeout')]
@@ -292,7 +306,7 @@ function Start-ADTProcess
         [ValidateScript({
                 if ($_.TotalMilliseconds -lt 1)
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage "Timeout expects a TimeSpan object of 1ms or above; the supplied value of $($_.Ticks) ticks equates to $($_.TotalMilliSeconds) milliseconds. Try: -Timeout (New-Timespan -Seconds $($_.Ticks))"))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage "The `-Timeout` parameter expects a `[System.TimeSpan]` object of 1ms or above; the supplied value of $($_.Ticks) ticks equates to $($_.TotalMilliSeconds) milliseconds. Try `-Timeout (New-Timespan -Seconds $($_.Ticks))` instead."))
                 }
                 return !!$_
             })]
@@ -349,29 +363,6 @@ function Start-ADTProcess
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
-    dynamicparam
-    {
-        # Set up the -MsiExecWaitTime parameter if the parameter set is appropriate.
-        if (!$PSBoundParameters.ContainsKey('WaitForMsiExec') -or !$PSBoundParameters.WaitForMsiExec)
-        {
-            return
-        }
-
-        # Define parameter dictionary for returning at the end.
-        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
-
-        # Add in parameters we need as mandatory when there's no active ADTSession.
-        $paramDictionary.Add('MsiExecWaitTime', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'MsiExecWaitTime', [System.TimeSpan], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = "Specify the length of time in seconds to wait for the msiexec engine to become available." }
-                    [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
-                )
-            ))
-
-        # Return the populated dictionary.
-        return $paramDictionary
-    }
-
     begin
     {
         # Initalize function and get required objects.
@@ -382,17 +373,13 @@ function Start-ADTProcess
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Set up defaults if not specified.
-        $MsiExecWaitTime = if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
+        if (!$PSBoundParameters.ContainsKey('MsiExecWaitTime'))
         {
             if (!$adtSession)
             {
                 $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
             }
-            [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
-        }
-        else
-        {
-            $PSBoundParameters.MsiExecWaitTime
+            $MsiExecWaitTime = [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
         }
 
         if (!$PSBoundParameters.ContainsKey('SuccessExitCodes'))
