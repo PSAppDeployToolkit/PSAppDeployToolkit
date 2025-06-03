@@ -168,7 +168,7 @@ function Start-ADTProcess
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Default_CreateWindow_Wait')]
-    [OutputType([System.Threading.Tasks.Task[PSADT.Execution.ProcessResult]])]
+    [OutputType([PSADT.Execution.ProcessHandle])]
     [OutputType([PSADT.Execution.ProcessResult])]
     param
     (
@@ -546,23 +546,42 @@ function Start-ADTProcess
                 # Start the process.
                 $process = [PSADT.Execution.ProcessManager]::LaunchAsync($startInfo)
 
+                # Handle if the returned value is null.
+                if (!$process)
+                {
+                    # A null result without using ShellExecute is entirely unexpected.
+                    if (!$UseShellExecute)
+                    {
+                        $naerParams = @{
+                            Exception = [System.InvalidOperationException]::new("The launching of the process returned a null result.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'ProcessExecutionNullReturn'
+                            TargetObject = $process
+                            RecommendedAction = "Please report this to the PSAppDeployToolkit development team for further review."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
+                    Write-ADTLogEntry "Successfully executed the requested ShellExecute command."
+                    return
+                }
+
                 # NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams.
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
                     if ($PassThru)
                     {
-                        if (!$process.IsCompleted)
+                        if (!$process.Task.IsCompleted)
                         {
                             Write-ADTLogEntry -Message 'PassThru parameter specified, returning task for external tracking.'
                             return $process
                         }
                         Write-ADTLogEntry -Message 'PassThru parameter specified, however the process has already exited.'
-                        return $process.Result
+                        return $process.Task.Result
                     }
                     return
                 }
-                $result = $process.GetAwaiter().GetResult()
+                $result = $process.Task.GetAwaiter().GetResult()
 
                 # Handle scenarios where we don't have a ProcessResult object (ShellExecute action, for instance).
                 if (!$result)

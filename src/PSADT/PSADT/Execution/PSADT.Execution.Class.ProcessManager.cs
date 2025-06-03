@@ -35,7 +35,7 @@ namespace PSADT.Execution
         /// <param name="launchInfo"></param>
         /// <returns></returns>
         /// <exception cref="TaskCanceledException"></exception>
-        public static async Task<ProcessResult?> LaunchAsync(ProcessLaunchInfo launchInfo)
+        public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up the job object and I/O completion port for the process.
             var iocp = Kernel32.CreateIoCompletionPort(SafeBaseHandle.InvalidHandle, SafeBaseHandle.NullHandle, UIntPtr.Zero, 1);
@@ -51,7 +51,6 @@ namespace PSADT.Execution
                 // Declare all handles C-style so we can close them in the finally block for cleanup.
                 SafeProcessHandle? hProcess = null;
                 uint? processId = null;
-                int? exitCode = null;
 
                 // Lists for output streams to be read into.
                 ConcurrentQueue<string> interleaved = [];
@@ -304,7 +303,8 @@ namespace PSADT.Execution
                 }
 
                 // These tasks read all outputs and wait for the process to complete.
-                await Task.WhenAll(stdOutTask, stdErrTask, Task.Run(() =>
+                var tcs = new TaskCompletionSource<ProcessResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+                Task.Run(async () =>
                 {
                     using (iocp)
                     using (job)
@@ -326,8 +326,9 @@ namespace PSADT.Execution
                                         Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out _, PInvoke.INFINITE);
                                         if (lpCompletionCode == jobCompletionCode)
                                         {
+                                            await Task.WhenAll(stdOutTask, stdErrTask);
                                             Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
-                                            exitCode = ValueTypeConverter<int>.Convert(lpExitCode);
+                                            tcs.SetResult(new ProcessResult(ValueTypeConverter<int>.Convert(lpExitCode), stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly()));
                                             break;
                                         }
                                     }
@@ -358,10 +359,10 @@ namespace PSADT.Execution
                             }
                         }
                     }
-                }));
+                });
 
                 // Return a ProcessResult object with the result of the process.
-                return new ProcessResult(processId.Value, exitCode, stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly());
+                return new ProcessHandle(processId, tcs.Task);
             }
             finally
             {
