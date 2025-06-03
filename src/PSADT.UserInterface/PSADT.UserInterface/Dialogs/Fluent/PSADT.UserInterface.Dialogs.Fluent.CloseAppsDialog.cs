@@ -146,7 +146,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Update text color based on remaining deferrals
                 if (_deferralsRemaining == 0)
                 {
-                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"]; ;
+                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                 }
                 else if (_deferralsRemaining <= 1)
                 {
