@@ -58,7 +58,7 @@ function Close-ADTInstallationProgress
             try
             {
                 # Return early if there's no progress dialog open at all.
-                if (![PSADT.UserInterface.DialogManager]::ProgressDialogOpen())
+                if (!$Script:ADT.DisplayServer -or !$Script:ADT.DisplayServer.ProgressDialogOpen())
                 {
                     return
                 }
@@ -72,7 +72,16 @@ function Close-ADTInstallationProgress
 
                 # Call the underlying function to close the progress window.
                 Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-                [PSADT.UserInterface.DialogManager]::CloseProgressDialog()
+                if (!$Script:ADT.DisplayServer.CloseProgressDialog())
+                {
+                    $naerParams = @{
+                        Exception = [System.ApplicationException]::new("Failed to close the progress dialog for an unknown reason.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'ProgressDialogCloseError'
+                        RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
                 Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $MyInvocation.MyCommand
 
                 # We only send balloon tips when a session is active.

@@ -174,8 +174,15 @@ function Show-ADTInstallationProgress
 
     process
     {
+        # Instantiate a new DisplayServer object if one's not already present.
+        if (!$Script:ADT.DisplayServer)
+        {
+            Set-ADTPermissionsForDisplayServer
+            Open-ADTDisplayServer -User $User
+        }
+
         # Determine if progress window is open before proceeding.
-        $progressOpen = [PSADT.UserInterface.DialogManager]::ProgressDialogOpen()
+        $progressOpen = $Script:ADT.DisplayServer.ProgressDialogOpen()
 
         # Return early in silent mode.
         if ($adtSession)
@@ -243,7 +250,16 @@ function Show-ADTInstallationProgress
                         $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                     }
                     Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$($PSBoundParameters.StatusMessage)]."
-                    [PSADT.UserInterface.DialogManager]::ShowProgressDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+                    if (!$Script:ADT.DisplayServer.ShowProgressDialog($adtConfig.UI.DialogStyle, $dialogOptions))
+                    {
+                        $naerParams = @{
+                            Exception = [System.ApplicationException]::new("Failed to open the progress dialog for an unknown reason.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'ProgressDialogOpenError'
+                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
 
                     # Add a callback to close it as we've opened for the first time.
                     Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
@@ -251,12 +267,16 @@ function Show-ADTInstallationProgress
                 else
                 {
                     Write-ADTLogEntry -Message "Updating the progress dialog with message: [$($PSBoundParameters.StatusMessage)]."
-                    [PSADT.UserInterface.DialogManager]::UpdateProgressDialog(
-                        $PSBoundParameters.StatusMessage,
-                        $PSBoundParameters.StatusMessageDetail,
-                        $(if ($PSBoundParameters.ContainsKey('StatusBarPercentage')) { $StatusBarPercentage }),
-                        $(if ($PSBoundParameters.ContainsKey('MessageAlignment')) { $MessageAlignment })
-                    )
+                    if (!$Script:ADT.DisplayServer.UpdateProgressDialog($PSBoundParameters.StatusMessage, $PSBoundParameters.StatusMessageDetail, $(if ($PSBoundParameters.ContainsKey('StatusBarPercentage')) { $StatusBarPercentage }), $(if ($PSBoundParameters.ContainsKey('MessageAlignment')) { $MessageAlignment })))
+                    {
+                        $naerParams = @{
+                            Exception = [System.ApplicationException]::new("Failed to update the progress dialog for an unknown reason.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'ProgressDialogUpdateError'
+                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+                        }
+                        throw (New-ADTErrorRecord @naerParams)
+                    }
                 }
             }
             catch

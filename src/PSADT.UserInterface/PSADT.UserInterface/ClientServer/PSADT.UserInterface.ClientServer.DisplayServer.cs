@@ -139,6 +139,65 @@ namespace PSADT.UserInterface.ClientServer
         public DialogBoxResult ShowDialogBox(DialogBoxOptions options) => ShowModalDialog<DialogBoxResult, DialogBoxOptions>(DialogType.DialogBox, 0, options);
 
         /// <summary>
+        /// Displays a progress dialog with the specified style and options.
+        /// </summary>
+        /// <remarks>Use this method to display a progress dialog to inform users about ongoing
+        /// operations. The dialog's appearance and behavior are determined by the provided <paramref
+        /// name="dialogStyle"/> and <paramref name="options"/>.</remarks>
+        /// <param name="dialogStyle">The style of the dialog to display. This determines the appearance and behavior of the progress dialog.</param>
+        /// <param name="options">The configuration options for the progress dialog, such as title, message, and progress behavior. Cannot be
+        /// null.</param>
+        /// <returns><see langword="true"/> if the progress dialog was successfully displayed; otherwise, <see
+        /// langword="false"/>.</returns>
+        public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
+        {
+            return Invoke($"ShowProgressDialog|{dialogStyle}|{SerializationUtilities.SerializeToString(options)}");
+        }
+
+        /// <summary>
+        /// Determines whether the progress dialog is currently open.
+        /// </summary>
+        /// <remarks>This method checks the state of the progress dialog and returns a boolean value
+        /// indicating  whether it is currently displayed to the user.</remarks>
+        /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
+        public bool ProgressDialogOpen()
+        {
+            return Invoke("ProgressDialogOpen");
+        }
+
+        /// <summary>
+        /// Updates the progress dialog with the specified message, detail message, progress percentage, and message
+        /// alignment.
+        /// </summary>
+        /// <remarks>This method allows updating various aspects of a progress dialog, including the main
+        /// message, detailed message, progress percentage, and message alignment. Any parameter can be omitted by
+        /// passing <see langword="null"/> to retain the current state of that aspect.</remarks>
+        /// <param name="progressMessage">The main progress message to display. If <see langword="null"/> or whitespace, no message will be displayed.</param>
+        /// <param name="progressDetailMessage">The detailed progress message to display. If <see langword="null"/> or whitespace, no detail message will be
+        /// displayed.</param>
+        /// <param name="progressPercentage">The progress percentage to display, as a value between 0 and 100. If <see langword="null"/>, no percentage
+        /// will be displayed.</param>
+        /// <param name="messageAlignment">The alignment of the progress messages within the dialog. If <see langword="null"/>, the default alignment
+        /// will be used.</param>
+        /// <returns><see langword="true"/> if the progress dialog was successfully updated; otherwise, <see langword="false"/>.</returns>
+        public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
+        {
+            return Invoke($"UpdateProgressDialog|{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}|{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}|{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}|{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
+        }
+
+        /// <summary>
+        /// Closes the progress dialog if it is currently open.
+        /// </summary>
+        /// <remarks>This method attempts to close the progress dialog and returns a value indicating
+        /// whether the operation was successful. Ensure that the progress dialog is open before calling this method to
+        /// avoid unnecessary calls.</remarks>
+        /// <returns><see langword="true"/> if the progress dialog was successfully closed; otherwise, <see langword="false"/>.</returns>
+        public bool CloseProgressDialog()
+        {
+            return Invoke("CloseProgressDialog");
+        }
+
+        /// <summary>
         /// Displays a modal dialog of the specified type and style, passing the provided options, and returns the
         /// result.
         /// </summary>

@@ -217,6 +217,47 @@ namespace PSADT.UserInterface
                                     }
                                     outputWriter.WriteLine(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "DialogOptions", parts[3] } }));
                                 }
+                                else if (parts[0] == "ShowProgressDialog")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 3)
+                                    {
+                                        throw new ProgramException("The ShowProgressDialog command requires exactly two arguments: DialogStyle, and DialogOptions.", ExitCode.InvalidArguments);
+                                    }
+
+                                    // Confirm the DialogStyle is valid.
+                                    if (!Enum.TryParse(parts[1], true, out DialogStyle dialogStyle))
+                                    {
+                                        throw new ProgramException($"The specified DialogStyle of [{parts[1]}] is invalid.", ExitCode.InvalidDialogStyle);
+                                    }
+
+                                    // Show the progress dialog and write back that we were successful.
+                                    DialogManager.ShowProgressDialog(dialogStyle, GetDialogOptions<ProgressDialogOptions>(parts[2]));
+                                    outputWriter.WriteLine(DialogManager.ProgressDialogOpen());
+                                }
+                                else if (parts[0] == "ProgressDialogOpen")
+                                {
+                                    // Directly write the state of the progress dialog to the output pipe.
+                                    outputWriter.WriteLine(DialogManager.ProgressDialogOpen());
+                                }
+                                else if (parts[0] == "UpdateProgressDialog")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 5)
+                                    {
+                                        throw new ProgramException("The UpdateProgressDialog command requires exactly four arguments: ProgressMessage, ProgressDetailMessage, ProgressPercentage, and MessageAlignment.", ExitCode.InvalidArguments);
+                                    }
+
+                                    // Update the progress dialog with the provided parameters.
+                                    DialogManager.UpdateProgressDialog(!string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null, !string.IsNullOrWhiteSpace(parts[2]) ? parts[2] : null, !string.IsNullOrWhiteSpace(parts[3]) ? double.Parse(parts[3]) : null, !string.IsNullOrWhiteSpace(parts[4]) ? (DialogMessageAlignment)Enum.Parse(typeof(DialogMessageAlignment), parts[4]) : null);
+                                    outputWriter.WriteLine(true);
+                                }
+                                else if (parts[0] == "CloseProgressDialog")
+                                {
+                                    // Close the progress dialog and write back that we were successful.
+                                    DialogManager.CloseProgressDialog();
+                                    outputWriter.WriteLine(!DialogManager.ProgressDialogOpen());
+                                }
                                 else if (parts[0] == "Open")
                                 {
                                     // Write that we're good to go.
