@@ -587,6 +587,7 @@ namespace PSADT.Module
                 WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{adtEnv["currentLanguage"]}] and UI language is [{adtEnv["currentUILanguage"]}].");
                 WriteLogEntry($"PowerShell Host is [{((PSHost)adtEnv["envHost"]!).Name}] with version [{adtEnv["envHostVersionSemantic"] ?? adtEnv["envHostVersion"]}].");
                 WriteLogEntry($"PowerShell Version is [{adtEnv["envPSVersionSemantic"] ?? adtEnv["envPSVersion"]} {adtEnv["psArchitecture"]}].");
+                WriteLogEntry($"PowerShell Process Path is [{adtEnv["envPSProcessPath"]}].");
                 if (adtEnv["envCLRVersion"] is Version envCLRVersion)
                 {
                     WriteLogEntry($"PowerShell CLR (.NET) version is [{envCLRVersion}].");
