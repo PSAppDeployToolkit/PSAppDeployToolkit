@@ -285,12 +285,12 @@ namespace PSADT.Invoke
                 }
             }
 
-            // If the PowerShell mode hasn't been explicitly specified, override it with a PowerShell parent process if available.
+            // If the PowerShell mode hasn't been explicitly specified, override it if PowerShell Core (7) is a parent process.
             if (pwshExecutablePath.Equals(pwshDefaultPath))
             {
                 foreach (var parentProcess in ProcessUtilities.GetParentProcesses())
                 {
-                    if (parentProcess.ProcessName.Equals("pwsh") || parentProcess.ProcessName.Equals("powershell"))
+                    if (parentProcess.ProcessName.Equals("pwsh"))
                     {
                         return parentProcess.MainModule.FileName;
                     }
