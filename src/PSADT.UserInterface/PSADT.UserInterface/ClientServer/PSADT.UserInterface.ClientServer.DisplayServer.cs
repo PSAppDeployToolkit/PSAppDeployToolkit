@@ -151,7 +151,7 @@ namespace PSADT.UserInterface.ClientServer
         /// langword="false"/>.</returns>
         public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
-            return Invoke($"ShowProgressDialog|{dialogStyle}|{SerializationUtilities.SerializeToString(options)}");
+            return Invoke($"ShowProgressDialog{Separator}{dialogStyle}{Separator}{SerializationUtilities.SerializeToString(options)}");
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace PSADT.UserInterface.ClientServer
         /// <returns><see langword="true"/> if the progress dialog was successfully updated; otherwise, <see langword="false"/>.</returns>
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
-            return Invoke($"UpdateProgressDialog|{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}|{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}|{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}|{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
+            return Invoke($"UpdateProgressDialog{Separator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{Separator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{Separator}{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}{Separator}{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace PSADT.UserInterface.ClientServer
         /// <returns><see langword="true"/> if the balloon tip was successfully displayed; otherwise, <see langword="false"/>.</returns>
         public bool ShowBalloonTip(string TrayTitle, string TrayIcon, string BalloonTipTitle, string BalloonTipText, System.Windows.Forms.ToolTipIcon BalloonTipIcon)
         {
-            return Invoke($"ShowBalloonTip|{TrayTitle}|{TrayIcon}|{BalloonTipTitle}|{BalloonTipText}|{BalloonTipIcon}");
+            return Invoke($"ShowBalloonTip{Separator}{TrayTitle}{Separator}{TrayIcon}{Separator}{BalloonTipTitle}{Separator}{BalloonTipText}{Separator}{BalloonTipIcon}");
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace PSADT.UserInterface.ClientServer
         /// <returns>The result of the dialog, deserialized to the specified type <typeparamref name="TResult"/>.</returns>
         private TResult ShowModalDialog<TResult, TOptions>(DialogType dialogType, DialogStyle dialogStyle, TOptions options)
         {
-            _outputStreamWriter.WriteLine($"ShowModalDialog|{dialogType}|{dialogStyle}|{SerializationUtilities.SerializeToString(options)}");
+            _outputStreamWriter.WriteLine($"ShowModalDialog{Separator}{dialogType}{Separator}{dialogStyle}{Separator}{SerializationUtilities.SerializeToString(options)}");
             return SerializationUtilities.DeserializeFromString<TResult>(ReadInput());
         }
 
@@ -321,7 +321,7 @@ namespace PSADT.UserInterface.ClientServer
             {
                 throw new InvalidDataException("The display client shut down outside of our control.");
             }
-            if (response.StartsWith("Error|", StringComparison.OrdinalIgnoreCase))
+            if (response.StartsWith($"Error{Separator}", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(response.Substring(6));
             }
@@ -400,5 +400,12 @@ namespace PSADT.UserInterface.ClientServer
         /// application domain  whose file name ends with "PSADT.UserInterface.exe". It is intended for internal use
         /// only.</remarks>
         private static readonly string _assemblyLocation = typeof(DisplayServer).Assembly.Location;
+
+        /// <summary>
+        /// Represents the character used to separate command parameters in pipe communication.
+        /// </summary>
+        /// <remarks>The separator is defined as the Unicode character with the value 0x1F. This character
+        /// is used internally to delimit parameters in inter-process communication.</remarks>
+        internal const char Separator = (char)0x1F;
     }
 }

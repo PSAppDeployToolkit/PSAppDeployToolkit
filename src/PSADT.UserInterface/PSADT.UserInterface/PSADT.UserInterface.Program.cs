@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
+using PSADT.UserInterface.ClientServer;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.Utilities;
@@ -208,7 +209,7 @@ namespace PSADT.UserInterface
                             {
                                 // Split the line on the pipe operator, it's our delimiter for args. We don't
                                 // use a switch here so it's easier to break the while loop if we're exiting.
-                                var parts = line.Split('|'); if (parts[0] == "ShowModalDialog")
+                                var parts = line.Split(DisplayServer.Separator); if (parts[0] == "ShowModalDialog")
                                 {
                                     // Confirm the length of our parts showing the dialog and writing back the result.
                                     if (parts.Length != 4)
@@ -297,7 +298,7 @@ namespace PSADT.UserInterface
                             {
                                 // Write the exception message and stack trace back to the caller over the pipe.
                                 // We can't serialise the entire exception so this is the best we can do otherwise.
-                                outputWriter.WriteLine($"Error|An unhandled exception occurred while processing line [{line}]: {ex.Message.TrimEnd('.')}. Stack trace received: {ex.StackTrace}");
+                                outputWriter.WriteLine($"Error{DisplayServer.Separator}An unhandled exception occurred while processing line [{line}]: {ex.Message.TrimEnd('.')}. Stack trace received: {ex.StackTrace}");
                             }
                         }
                     }
