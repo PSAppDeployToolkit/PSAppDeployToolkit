@@ -832,19 +832,7 @@ namespace PSADT.Module
                 }
                 else
                 {
-                    if ((null != parameters) && parameters.ContainsKey("DeployMode"))
-                    {
-                        WriteLogEntry($"No processes were specified as requiring closure but deployment mode was manually set to [{_deployMode}].");
-                    }
-                    else if ((bool)configToolkit["ProcessDetection"]!)
-                    {
-                        WriteLogEntry($"No processes were specified as requiring closure, changing deployment mode to [{_deployMode}].");
-                    }
-                    else
-                    {
-                        WriteLogEntry($"No processes were specified as requiring closure but toolkit is configured to not adjust deployment mode.");
-                    }
-                    
+                    WriteLogEntry($"No processes were specified as requiring closure.");
                 }
 
                 // Set Deploy Mode switches.
