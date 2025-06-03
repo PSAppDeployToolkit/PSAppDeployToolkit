@@ -24,7 +24,7 @@ function Get-ADTRunAsActiveUser
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.UserSessionInfo
+        PSADT.TerminalServices.SessionInfo
 
         Returns a custom object containing the user session information.
 
