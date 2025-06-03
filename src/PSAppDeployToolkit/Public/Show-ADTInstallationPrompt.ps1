@@ -309,7 +309,7 @@ function Show-ADTInstallationPrompt
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Message]."
-                    Show-ADTModalDialog -Username $runAsActiveUser.NTAccount -Type $PSCmdlet.ParameterSetName.Replace('Show', $null) -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
+                    Show-ADTNoWaitDialog -User $runAsActiveUser -Type $PSCmdlet.ParameterSetName.Replace('Show', $null) -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
                     return
                 }
 
@@ -327,7 +327,7 @@ function Show-ADTInstallationPrompt
 
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying custom installation prompt with message: [$Message]."
-                $result = Show-ADTModalDialog -Type $PSCmdlet.ParameterSetName.Replace('Show', $null) -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
+                $result = Show-ADTModalDialog -User $runAsActiveUser -Type $PSCmdlet.ParameterSetName.Replace('Show', $null) -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
 
                 # Restore minimized windows.
                 if ($MinimizeWindows)

@@ -78,6 +78,12 @@ try
     # Ensure module operates under the strictest of conditions.
     Set-StrictMode -Version 3
 
+    # Store the module info in a variable for further usage.
+    if (!(Get-Variable -Name ModuleInfo -ErrorAction Ignore))
+    {
+        New-Variable -Name ModuleInfo -Option Constant -Value $MyInvocation.MyCommand.ScriptBlock.Module -Force
+    }
+
     # Throw if any previous version of the unofficial PSADT module is found on the system.
     if (Get-Module -FullyQualifiedName @{ ModuleName = 'PSADT'; Guid = '41b2dd67-8447-4c66-b08a-f0bd0d5458b9'; ModuleVersion = '1.0' } -ListAvailable -Refresh)
     {

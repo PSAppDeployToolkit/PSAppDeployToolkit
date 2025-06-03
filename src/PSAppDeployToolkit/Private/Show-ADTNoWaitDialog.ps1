@@ -1,15 +1,12 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Show-ADTModalDialog
+# MARK: Show-ADTNoWaitDialog
 #
 #-----------------------------------------------------------------------------
 
-function Private:Show-ADTModalDialog
+function Private:Show-ADTNoWaitDialog
 {
     [CmdletBinding()]
-    [OutputType([PSADT.UserInterface.DialogResults.DialogBoxResult])]
-    [OutputType([PSADT.UserInterface.DialogResults.InputDialogResult])]
-    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -26,37 +23,30 @@ function Private:Show-ADTModalDialog
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Collections.Hashtable]$Options,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$NoWait
+        [System.Collections.Hashtable]$Options
     )
 
-    # Instantiate a new DisplayServer object if one's not already present.
-    if (!$NoWait -and !$Script:ADT.DisplayServer)
-    {
-        Set-ADTPermissionsForDisplayServer
-        Open-ADTDisplayServer -User $User
-    }
+    # Ensure the permissions are correct on all files before proceeding.
+    Set-ADTPermissionsForDisplayServer
 
-    # Switch on the dialog type.
-    switch ($Type)
+    # Serialise the incoming options.
+    $optionsString = switch ($Type)
     {
         ([PSADT.UserInterface.Dialogs.DialogType]::DialogBox)
         {
-            return $Script:ADT.DisplayServer.ShowDialogBox($Options)
+            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.DialogBoxOptions]$Options, [PSADT.UserInterface.DialogOptions.DialogBoxOptions])
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::InputDialog)
         {
-            return $Script:ADT.DisplayServer.ShowInputDialog($Style, $Options)
+            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.InputDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.InputDialogOptions])
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::CustomDialog)
         {
-            return $Script:ADT.DisplayServer.ShowCustomDialog($Style, $Options)
+            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.CustomDialogOptions])
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::RestartDialog)
         {
-            return $Script:ADT.DisplayServer.ShowRestartDialog($Style, $Options)
+            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.RestartDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.RestartDialogOptions])
         }
         default
         {
@@ -70,4 +60,7 @@ function Private:Show-ADTModalDialog
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
     }
+
+    # Farm this out to a new process.
+    Start-ADTProcessAsUser -Username $User.NTAccount -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -CreateNoWindow -NoWait -InformationAction SilentlyContinue -ErrorAction SilentlyContinue
 }

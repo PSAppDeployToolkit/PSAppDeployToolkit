@@ -4,6 +4,9 @@
 #
 #-----------------------------------------------------------------------------
 
+# Store the module info in a variable for further usage.
+New-Variable -Name ModuleInfo -Option Constant -Value $MyInvocation.MyCommand.ScriptBlock.Module -Force
+
 # Dot-source our initial imports.
 . ([System.IO.Path]::Combine($PSScriptRoot, 'ImportsFirst.ps1'))
 

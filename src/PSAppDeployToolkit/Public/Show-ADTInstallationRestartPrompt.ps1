@@ -253,13 +253,13 @@ function Show-ADTInstallationRestartPrompt
                     {
                         Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$CountdownSeconds] second countdown..."
                     }
-                    Show-ADTModalDialog -Username $runAsActiveUser.NTAccount -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
+                    Show-ADTNoWaitDialog -User $runAsActiveUser -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
                     return
                 }
 
                 # Call the underlying function to open the restart prompt.
                 Write-ADTLogEntry -Message "Displaying restart prompt with $(if ($NoCountdown) { 'no' } else { "a [$CountdownSeconds] second" }) countdown."
-                $null = Show-ADTModalDialog -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
+                $null = Show-ADTModalDialog -User $runAsActiveUser -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
             }
             catch
             {

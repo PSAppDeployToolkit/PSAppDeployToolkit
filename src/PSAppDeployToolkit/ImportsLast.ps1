@@ -46,8 +46,9 @@ try
                 ModuleImport = $null
                 ModuleInit = $null
             }
-            Sessions = $null
             SessionState = $ExecutionContext.SessionState
+            DisplayServer = $null
+            Sessions = $null
             TerminalServerMode = $false
             Environment = $null
             Language = $null
@@ -113,6 +114,14 @@ try
 catch
 {
     throw
+}
+
+# Ensure that the display server is closed on module remove.
+$ModuleInfo.OnRemove = {
+    if ($ADT.DisplayServer)
+    {
+        Close-ADTDisplayServer
+    }
 }
 
 # Determine how long the import took.

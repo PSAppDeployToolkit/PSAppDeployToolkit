@@ -195,13 +195,13 @@ function Show-ADTDialogBox
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message "Displaying dialog box asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Text]."
-                    Show-ADTModalDialog -Username $runAsActiveUser.NTAccount -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
+                    Show-ADTNoWaitDialog -User $runAsActiveUser -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
                     return
                 }
 
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying dialog box with message: [$Text]."
-                $result = Show-ADTModalDialog -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
+                $result = Show-ADTModalDialog -User $runAsActiveUser -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
 
                 # Process results.
                 if ($result -eq [PSADT.UserInterface.DialogResults.DialogBoxResult]::Timeout)

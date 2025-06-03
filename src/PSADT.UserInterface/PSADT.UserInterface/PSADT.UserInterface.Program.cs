@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using PSADT.UserInterface.DialogOptions;
@@ -37,6 +39,10 @@ namespace PSADT.UserInterface
                 else if (args.Any(static arg => arg.Equals("/SingleDialog")))
                 {
                     EnterSingleUseMode(ConvertArgsToDictionary(args));
+                }
+                else if (args.Any(static arg => arg.Equals("/ClientServer")))
+                {
+                    EnterClientServerMode(ConvertArgsToDictionary(args));
                 }
                 else
                 {
@@ -141,6 +147,110 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Enters client-server mode by establishing communication through input and output pipes.
+        /// </summary>
+        /// <remarks>This method initializes anonymous pipe clients for input and output communication 
+        /// using the provided pipe handles. If the required pipe handles are missing, invalid, or cannot be opened,
+        /// the method writes an error message to the standard error stream  and terminates the process with an
+        /// appropriate exit code.</remarks>
+        /// <param name="arguments">A read-only dictionary containing the pipe handles required for communication. The dictionary must include
+        /// the keys <c>"InputPipe"</c> and <c>"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
+        private static void EnterClientServerMode(ReadOnlyDictionary<string, string> arguments)
+        {
+            // Get the pipe handles from the arguments.
+            if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || null == outputPipeHandle || string.IsNullOrWhiteSpace(outputPipeHandle))
+            {
+                throw new ProgramException("The specified OutputPipe handle was null or invalid.", ExitCode.NoOutputPipe);
+            }
+            if (!arguments.TryGetValue("InputPipe", out string? inputPipeHandle) || null == inputPipeHandle || string.IsNullOrWhiteSpace(inputPipeHandle))
+            {
+                throw new ProgramException("The specified InputPipe handle was null or invalid.", ExitCode.NoInputPipe);
+            }
+
+            // Establish the pipe objects.
+            AnonymousPipeClientStream outputPipeClient;
+            AnonymousPipeClientStream inputPipeClient;
+            try
+            {
+                outputPipeClient = new AnonymousPipeClientStream(PipeDirection.Out, outputPipeHandle);
+            }
+            catch (Exception ex)
+            {
+                throw new ProgramException($"Failed to open a pipe client for the specified OutputHandle: {ex.Message}", ex, ExitCode.InvalidOutputPipe);
+            }
+            try
+            {
+                inputPipeClient = new AnonymousPipeClientStream(PipeDirection.In, inputPipeHandle);
+            }
+            catch (Exception ex)
+            {
+                throw new ProgramException($"Failed to open a pipe client for the specified InputHandle: {ex.Message}", ex, ExitCode.InvalidInputPipe);
+            }
+
+            // Start reading data from the pipes. We only return
+            // from here when the server's pipe closes on us.
+            try
+            {
+                // These pipe streams require proper disposal.
+                using (outputPipeClient)
+                using (inputPipeClient)
+                {
+                    // Establish stream readers for incoming/outgoing data.
+                    using (var outputWriter = new StreamWriter(outputPipeClient) { AutoFlush = true })
+                    using (var inputReader = new StreamReader(inputPipeClient))
+                    {
+                        // Continuously loop until the end. When we receive null, the
+                        // server has closed the pipe, so we should break and exit.
+                        string? line; while ((line = inputReader.ReadLine()) != null)
+                        {
+                            // We never let an exception kill the pipe.
+                            try
+                            {
+                                // Split the line on the pipe operator, it's our delimiter for args. We don't
+                                // use a switch here so it's easier to break the while loop if we're exiting.
+                                var parts = line.Split('|'); if (parts[0] == "ShowModalDialog")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 4)
+                                    {
+                                        throw new ProgramException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and DialogOptions.", ExitCode.InvalidArguments);
+                                    }
+                                    outputWriter.WriteLine(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "DialogOptions", parts[3] } }));
+                                }
+                                else if (parts[0] == "Open")
+                                {
+                                    // Write that we're good to go.
+                                    outputWriter.WriteLine(true);
+                                }
+                                else if (parts[0] == "Close")
+                                {
+                                    // Indicate that we're going to terminate.
+                                    outputWriter.WriteLine(true);
+                                    break;
+                                }
+                                else
+                                {
+                                    // No idea what to do with whatever came through.
+                                    throw new ProgramException($"The specified command [{parts[0]}] is not recognised.", ExitCode.InvalidArguments);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                // Write the exception message and stack trace back to the caller over the pipe.
+                                // We can't serialise the entire exception so this is the best we can do otherwise.
+                                outputWriter.WriteLine($"Error|An unhandled exception occurred while processing line [{line}]: {ex.Message.TrimEnd('.')}. Stack trace received: {ex.StackTrace}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ProgramException($"Failed to read or write from the pipe: {ex.Message}", ex, ExitCode.PipeReadWriteError);
+            }
+        }
+
+        /// <summary>
         /// Displays a modal dialog based on the specified arguments and returns the serialized result.
         /// </summary>
         /// <remarks>This method validates the provided arguments, determines the appropriate dialog type
@@ -159,7 +269,7 @@ namespace PSADT.UserInterface
         /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
-        private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments)
+        private static string ShowModalDialog(IReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we have a DialogType and that it's valid.
             if (!arguments.TryGetValue("DialogType", out string? dialogTypeArg) || string.IsNullOrWhiteSpace(dialogTypeArg))
@@ -259,6 +369,13 @@ namespace PSADT.UserInterface
             NoDialogOptions = 15,
             InvalidDialogOptions = 16,
             InvalidDialogResult = 17,
+
+            NoInputPipe = 20,
+            NoOutputPipe = 21,
+            InvalidInputPipe = 22,
+            InvalidOutputPipe = 23,
+            PipeReadWriteError = 24,
+            InvalidCommand = 25,
         }
 
         /// <summary>
