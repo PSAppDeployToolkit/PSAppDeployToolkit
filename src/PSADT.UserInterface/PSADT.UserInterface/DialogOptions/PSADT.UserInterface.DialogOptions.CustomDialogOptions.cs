@@ -64,14 +64,6 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 Icon = icon;
             }
-            if (options.ContainsKey("MinimizeWindows"))
-            {
-                if (options["MinimizeWindows"] is not bool minimiseWindows)
-                {
-                    throw new ArgumentOutOfRangeException("MinimizeWindows value is not valid.", (Exception?)null);
-                }
-                MinimizeWindows = minimiseWindows;
-            }
 
             // The hashtable was correctly defined, assign the remaining values.
             MessageText = messageText;
@@ -118,11 +110,5 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly DialogSystemIcon? Icon;
-
-        /// <summary>
-        /// Indicates whether the dialog should minimize all other windows when it is displayed.
-        /// </summary>
-        [DataMember]
-        public readonly bool MinimizeWindows;
     }
 }

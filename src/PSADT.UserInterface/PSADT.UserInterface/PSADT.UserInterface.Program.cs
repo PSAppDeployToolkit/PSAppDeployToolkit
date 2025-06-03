@@ -10,6 +10,7 @@ using PSADT.UserInterface.ClientServer;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.Utilities;
+using PSADT.Utilities;
 
 namespace PSADT.UserInterface
 {
@@ -275,6 +276,18 @@ namespace PSADT.UserInterface
 
                                     // Show the ballloon tip with the provided parameters.
                                     DialogManager.ShowBalloonTip(parts[1], parts[2], parts[3], parts[4], balloonTipIcon);
+                                    outputWriter.WriteLine(true);
+                                }
+                                else if (parts[0] == "MinimizeAllWindows")
+                                {
+                                    // Minimize all windows and write back that we were successful.
+                                    ShellUtilities.MinimizeAllWindows();
+                                    outputWriter.WriteLine(true);
+                                }
+                                else if (parts[0] == "RestoreAllWindows")
+                                {
+                                    // Restore all windows and write back that we were successful.
+                                    ShellUtilities.RestoreAllWindows();
                                     outputWriter.WriteLine(true);
                                 }
                                 else if (parts[0] == "Open")

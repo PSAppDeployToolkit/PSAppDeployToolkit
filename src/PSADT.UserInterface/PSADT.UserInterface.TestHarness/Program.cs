@@ -43,7 +43,6 @@ namespace PSADT.UserInterface.TestHarness
             // DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
-            bool minimizeWindows = false;
             DeploymentType deploymentType = DeploymentType.Install;
 
 
@@ -103,7 +102,6 @@ namespace PSADT.UserInterface.TestHarness
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
-                { "MinimizeWindows", minimizeWindows },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
@@ -122,7 +120,6 @@ namespace PSADT.UserInterface.TestHarness
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
-                { "MinimizeWindows", minimizeWindows },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
@@ -137,7 +134,6 @@ namespace PSADT.UserInterface.TestHarness
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
-                { "MinimizeWindows", minimizeWindows },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
@@ -156,7 +152,6 @@ namespace PSADT.UserInterface.TestHarness
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
-                { "MinimizeWindows", minimizeWindows },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },

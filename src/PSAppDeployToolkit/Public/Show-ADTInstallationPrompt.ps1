@@ -202,7 +202,6 @@ function Show-ADTInstallationPrompt
 
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $shellApp = (Get-ADTEnvironmentTable).ShellApp
 
         # Set up DeploymentType.
         $DeploymentType = if ($adtSession)
@@ -319,10 +318,17 @@ function Show-ADTInstallationPrompt
                     Close-ADTInstallationProgress
                 }
 
+                # Instantiate a new DisplayServer object if one's not already present.
+                if (!$Script:ADT.DisplayServer)
+                {
+                    Set-ADTPermissionsForDisplayServer
+                    Open-ADTDisplayServer -User $runAsActiveUser
+                }
+
                 # Minimize all other windows
                 if ($MinimizeWindows)
                 {
-                    $null = $shellApp.MinimizeAll()
+                    Invoke-ADTMinimizeWindowsOperation -MinimizeAllWindows
                 }
 
                 # Call the underlying function to open the message prompt.
@@ -332,7 +338,7 @@ function Show-ADTInstallationPrompt
                 # Restore minimized windows.
                 if ($MinimizeWindows)
                 {
-                    $null = $shellApp.UndoMinimizeAll()
+                    Invoke-ADTMinimizeWindowsOperation -RestoreAllWindows
                 }
 
                 # Process results.

@@ -770,10 +770,17 @@ function Show-ADTInstallationWelcome
                 }
             }
 
+            # Instantiate a new DisplayServer object if one's not already present.
+            if (!$Script:ADT.DisplayServer)
+            {
+                Set-ADTPermissionsForDisplayServer
+                Open-ADTDisplayServer -User $runAsActiveUser
+            }
+
             # Minimize all other windows.
             if ($MinimizeWindows)
             {
-                $null = $adtEnv.ShellApp.UndoMinimizeAll()
+                Invoke-ADTMinimizeWindowsOperation -MinimizeAllWindows
             }
 
             # Show the dialog and get the result.
@@ -1213,7 +1220,7 @@ function Show-ADTInstallationWelcome
                             # Restore minimized windows.
                             if ($MinimizeWindows)
                             {
-                                $null = $adtEnv.ShellApp.UndoMinimizeAll()
+                                Invoke-ADTMinimizeWindowsOperation -RestoreAllWindows
                             }
 
                             # If there's an active session, update deferral values and close it out.
@@ -1232,7 +1239,7 @@ function Show-ADTInstallationWelcome
                             # Restore minimized windows.
                             if ($MinimizeWindows)
                             {
-                                $null = $adtEnv.ShellApp.UndoMinimizeAll()
+                                Invoke-ADTMinimizeWindowsOperation -RestoreAllWindows
                             }
 
                             # If there's an active session, update deferral values and close it out.

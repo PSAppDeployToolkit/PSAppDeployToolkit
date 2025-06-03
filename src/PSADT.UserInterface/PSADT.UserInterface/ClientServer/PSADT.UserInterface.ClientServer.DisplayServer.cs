@@ -217,6 +217,29 @@ namespace PSADT.UserInterface.ClientServer
         }
 
         /// <summary>
+        /// Minimizes all open windows on the desktop.
+        /// </summary>
+        /// <remarks>This method attempts to minimize all currently open windows. The return value
+        /// indicates  whether the operation was successful. Note that the success of this operation may depend  on
+        /// system permissions or the current state of the desktop environment.</remarks>
+        /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
+        public bool MinimizeAllWindows()
+        {
+            return Invoke("MinimizeAllWindows");
+        }
+
+        /// <summary>
+        /// Restores all minimized or hidden windows to their original state.
+        /// </summary>
+        /// <remarks>This method attempts to restore all windows that were previously minimized or hidden.
+        /// The return value indicates whether the operation was successful for all windows.</remarks>
+        /// <returns><see langword="true"/> if all windows were successfully restored; otherwise, <see langword="false"/>.</returns>
+        public bool RestoreAllWindows()
+        {
+            return Invoke("RestoreAllWindows");
+        }
+
+        /// <summary>
         /// Displays a modal dialog of the specified type and style, passing the provided options, and returns the
         /// result.
         /// </summary>

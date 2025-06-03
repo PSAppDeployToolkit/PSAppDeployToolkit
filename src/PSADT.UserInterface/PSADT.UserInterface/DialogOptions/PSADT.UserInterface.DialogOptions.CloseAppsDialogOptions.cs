@@ -90,14 +90,6 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 CustomMessageText = customMessageText;
             }
-            if (options.ContainsKey("MinimizeWindows"))
-            {
-                if (options["MinimizeWindows"] is not bool minimiseWindows)
-                {
-                    throw new ArgumentOutOfRangeException("MinimizeWindows value is not valid.", (Exception?)null);
-                }
-                MinimizeWindows = minimiseWindows;
-            }
 
             // The hashtable was correctly defined, assign the remaining values.
             Strings = new CloseAppsDialogStrings(strings, deploymentType);
@@ -155,12 +147,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly string? CustomMessageText;
-
-        /// <summary>
-        /// Indicates whether the dialog should minimize all other windows when it is displayed.
-        /// </summary>
-        [DataMember]
-        public readonly bool MinimizeWindows;
 
         /// <summary>
         /// The countdown timer used to track the time remaining before the dialog closes automatically.
