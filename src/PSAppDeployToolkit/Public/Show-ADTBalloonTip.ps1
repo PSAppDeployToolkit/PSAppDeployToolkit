@@ -142,9 +142,25 @@ function Show-ADTBalloonTip
                     return
                 }
 
+                # Instantiate a new DisplayServer object if one's not already present.
+                if (!$Script:ADT.DisplayServer)
+                {
+                    Set-ADTPermissionsForDisplayServer
+                    Open-ADTDisplayServer -User $User
+                }
+
                 # Display the balloon tip via the dialog manager, it'll handle lifetime and disposal for us.
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                [PSADT.UserInterface.DialogManager]::ShowBalloonTip($adtConfig.Toolkit.CompanyName, $adtConfig.Assets.Logo, $PSBoundParameters.BalloonTipTitle, $BalloonTipText, $BalloonTipIcon)
+                if (!$Script:ADT.DisplayServer.ShowBalloonTip($adtConfig.Toolkit.CompanyName, $adtConfig.Assets.Logo, $PSBoundParameters.BalloonTipTitle, $BalloonTipText, $BalloonTipIcon))
+                {
+                    $naerParams = @{
+                        Exception = [System.ApplicationException]::new("Failed to show the balloon tip for an unknown reason.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'BalloonTipShowError'
+                        RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
             }
             catch
             {

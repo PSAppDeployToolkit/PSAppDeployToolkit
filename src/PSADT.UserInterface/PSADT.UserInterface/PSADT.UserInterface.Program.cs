@@ -258,6 +258,24 @@ namespace PSADT.UserInterface
                                     DialogManager.CloseProgressDialog();
                                     outputWriter.WriteLine(!DialogManager.ProgressDialogOpen());
                                 }
+                                else if (parts[0] == "ShowBalloonTip")
+                                {
+                                    // Confirm the length of our parts showing the balloon tip and writing back the result.
+                                    if (parts.Length != 6)
+                                    {
+                                        throw new ProgramException("The ShowBalloonTip command requires exactly five arguments: TrayTitle, TrayIcon, BalloonTipTitle, BalloonTipText, and BalloonTipIcon.", ExitCode.InvalidArguments);
+                                    }
+
+                                    // Confirm the BalloonTipIcon is valid.
+                                    if (!Enum.TryParse(parts[5], true, out System.Windows.Forms.ToolTipIcon balloonTipIcon))
+                                    {
+                                        throw new ProgramException($"The specified BalloonTipIcon of [{parts[5]}] is invalid.", ExitCode.InvalidArguments);
+                                    }
+
+                                    // Show the ballloon tip with the provided parameters.
+                                    DialogManager.ShowBalloonTip(parts[1], parts[2], parts[3], parts[4], balloonTipIcon);
+                                    outputWriter.WriteLine(true);
+                                }
                                 else if (parts[0] == "Open")
                                 {
                                     // Write that we're good to go.
