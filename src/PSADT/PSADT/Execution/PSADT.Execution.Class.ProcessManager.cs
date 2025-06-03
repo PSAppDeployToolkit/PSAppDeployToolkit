@@ -347,6 +347,10 @@ namespace PSADT.Execution
                                 }
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            tcs.SetException(ex);
+                        }
                         finally
                         {
                             if (ctsAddRef)
