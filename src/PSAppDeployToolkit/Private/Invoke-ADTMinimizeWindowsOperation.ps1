@@ -19,7 +19,7 @@ function Private:Invoke-ADTMinimizeWindowsOperation
     # Instantiate a new DisplayServer object if one's not already present.
     if (!$Script:ADT.DisplayServer)
     {
-        Open-ADTDisplayServer -User $User
+        Open-ADTDisplayServer
     }
 
     # Invoke the specified action.

@@ -174,10 +174,17 @@ function Show-ADTInstallationProgress
 
     process
     {
+        # Bypass if no one's logged on to answer the dialog.
+        if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            return
+        }
+
         # Instantiate a new DisplayServer object if one's not already present.
         if (!$Script:ADT.DisplayServer)
         {
-            Open-ADTDisplayServer -User $User
+            Open-ADTDisplayServer -User $runAsActiveUser
         }
 
         # Determine if progress window is open before proceeding.

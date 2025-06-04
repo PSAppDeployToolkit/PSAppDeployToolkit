@@ -125,7 +125,7 @@ function Show-ADTBalloonTip
         {
             try
             {
-                # Skip balloon if in silent mode, disabled in the config or presentation is detected.
+                # Skip balloon if in silent mode, disabled in the config, a presentation is detected, or there's no logged on user.
                 if (!$adtConfig.UI.BalloonNotifications)
                 {
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
@@ -141,11 +141,16 @@ function Show-ADTBalloonTip
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation/Microphone in Use Detected: $true]. BalloonTipText: $BalloonTipText"
                     return
                 }
+                if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                    return
+                }
 
                 # Instantiate a new DisplayServer object if one's not already present.
                 if (!$Script:ADT.DisplayServer)
                 {
-                    Open-ADTDisplayServer -User $User
+                    Open-ADTDisplayServer -User $runAsActiveUser
                 }
 
                 # Display the balloon tip via the dialog manager, it'll handle lifetime and disposal for us.
