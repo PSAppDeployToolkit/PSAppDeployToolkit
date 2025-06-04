@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Extensions;
 using PSADT.LibraryInterfaces;
 using PSADT.SafeHandles;
 using PSADT.Security;
@@ -398,7 +399,7 @@ namespace PSADT.Execution
         /// <param name="encoding"></param>
         private static void ReadPipe(SafeFileHandle handle, List<string> output, ConcurrentQueue<string> interleaved, Encoding encoding)
         {
-            var buffer = new byte[4096];
+            Span<byte> buffer = stackalloc byte[4096];
             uint bytesRead = 0;
             using (handle)
             {
@@ -416,7 +417,7 @@ namespace PSADT.Execution
                     {
                         break;
                     }
-                    var text = encoding.GetString(buffer, 0, (int)bytesRead).Replace("\0", string.Empty).TrimEnd();
+                    var text = encoding.GetString(buffer, (int)bytesRead).Replace("\0", string.Empty).TrimEnd();
                     interleaved.Enqueue(text);
                     output.Add(text);
                 }

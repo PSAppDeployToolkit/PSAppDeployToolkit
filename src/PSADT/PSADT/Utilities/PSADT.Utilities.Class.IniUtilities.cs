@@ -1,4 +1,6 @@
-﻿using PSADT.LibraryInterfaces;
+﻿using System;
+using PSADT.Extensions;
+using PSADT.LibraryInterfaces;
 
 namespace PSADT.Utilities
 {
@@ -16,9 +18,9 @@ namespace PSADT.Utilities
         /// <returns></returns>
         public static string GetSectionKeyValue(string section, string key, string filepath)
         {
-            var buffer = new char[4096];
+            Span<char> buffer = stackalloc char[4096];
             var res = Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath);
-            return new string(buffer, 0, (int)res);
+            return buffer.Slice(0, (int)res).ToString().TrimRemoveNull();
         }
 
         /// <summary>
