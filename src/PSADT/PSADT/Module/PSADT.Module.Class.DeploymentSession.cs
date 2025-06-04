@@ -779,22 +779,16 @@ namespace PSADT.Module
                     }
                     else if ((bool)configToolkit["SessionDetection"]!)
                     {
-                        // If the process is not able to display a UI, enable NonInteractive mode.
-                        if (!(bool)adtEnv["IsProcessUserInteractive"]!)
+                        // If the process is not able to display a UI, enable silent mode.
+                        if (null == adtEnv["usersLoggedOn"])
                         {
                             deployModeChanged = true;
                             _deployMode = DeployMode.Silent;
-                            WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{_deployMode}].");
-                        }
-                        else if (null == adtEnv["usersLoggedOn"])
-                        {
-                            deployModeChanged = true;
-                            _deployMode = DeployMode.Silent;
-                            WriteLogEntry($"Session 0 detected, process running in user interactive mode, no users logged on; deployment mode set to [{_deployMode}].");
+                            WriteLogEntry($"Session 0 detected, no users logged on; deployment mode set to [{_deployMode}].");
                         }
                         else
                         {
-                            WriteLogEntry("Session 0 detected, process running in user interactive mode, user(s) logged on.");
+                            WriteLogEntry("Session 0 detected, user(s) logged on to interact if required.");
                         }
                     }
                     else
