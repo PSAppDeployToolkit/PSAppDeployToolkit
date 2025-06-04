@@ -954,7 +954,7 @@ function Show-ADTInstallationWelcome
                         AppBannerImage = $adtConfig.Assets.Banner
                         DialogTopMost = !$NotTopMost
                         MinimizeWindows = !!$MinimizeWindows
-                        DialogExpiryDuration = [System.TimeSpan]::FromMilliseconds($adtConfig.UI.DefaultTimeout)
+                        DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
                         Strings = $adtStrings.CloseAppsPrompt
                     }
                     if ($AllowDefer)
