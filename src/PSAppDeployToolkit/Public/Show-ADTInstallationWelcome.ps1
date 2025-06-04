@@ -773,7 +773,6 @@ function Show-ADTInstallationWelcome
             # Instantiate a new DisplayServer object if one's not already present.
             if (!$Script:ADT.DisplayServer)
             {
-                Set-ADTPermissionsForDisplayServer
                 Open-ADTDisplayServer -User $runAsActiveUser
             }
 

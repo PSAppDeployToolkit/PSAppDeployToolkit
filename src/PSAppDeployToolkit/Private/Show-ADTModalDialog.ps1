@@ -35,7 +35,6 @@ function Private:Show-ADTModalDialog
     # Instantiate a new DisplayServer object if one's not already present.
     if (!$NoWait -and !$Script:ADT.DisplayServer)
     {
-        Set-ADTPermissionsForDisplayServer
         Open-ADTDisplayServer -User $User
     }
 

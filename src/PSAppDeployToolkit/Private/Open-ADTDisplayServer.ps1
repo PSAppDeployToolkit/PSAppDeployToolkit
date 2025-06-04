@@ -14,7 +14,7 @@ function Private:Open-ADTDisplayServer
         [PSADT.TerminalServices.SessionInfo]$User = (Get-ADTRunAsActiveUser -InformationAction SilentlyContinue)
     )
 
-    # Instantiate a new DisplayServer object if one's not already present.
+    # Throw if there's already a display server present. This is an unexpected scenario.
     if ($Script:ADT.DisplayServer)
     {
         $naerParams = @{
@@ -25,6 +25,11 @@ function Private:Open-ADTDisplayServer
         }
         throw (New-ADTErrorRecord @naerParams)
     }
+
+    # Set the required file permissions to ensure the user can open the display server.
+    Set-ADTPermissionsForDisplayServer
+
+    # Instantiate a new DisplayServer object as required, then add the necessary callback.
     ($Script:ADT.DisplayServer = [PSADT.UserInterface.ClientServer.DisplayServer]::new($User)).Open()
     Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTDisplayServer'
 }
