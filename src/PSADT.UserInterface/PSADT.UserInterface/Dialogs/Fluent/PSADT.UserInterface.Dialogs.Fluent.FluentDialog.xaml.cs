@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using Windows.Win32;
 using Wpf.Ui.Appearance;
@@ -362,6 +363,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="message"></param>
         protected void FormatMessageWithHyperlinks(Wpf.Ui.Controls.TextBlock textBlock, string? message)
         {
+            // Throw if our process was started with ServiceUI anywhere as a parent process.
+            if (ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException("Hyperlinks are only permitted when ServiceUI is not used to start the toolkit.");
+            }
+
             // Ensure the textblock is cleared and reset.
             textBlock.Inlines.Clear();
 

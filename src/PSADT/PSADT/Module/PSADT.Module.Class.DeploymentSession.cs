@@ -562,6 +562,12 @@ namespace PSADT.Module
                     WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] session mode is [Native].");
                 }
 
+                // Test and warn if this toolkit was started with ServiceUI anywhere as a parent process.
+                if (ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase)))
+                {
+                    WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] was started with ServiceUI as a parent process. This is no longer required as of [4.1.0] and will not be supported in a later release.", LogSeverity.Warning);
+                }
+
 
                 #endregion
                 #region TestAdminRequired

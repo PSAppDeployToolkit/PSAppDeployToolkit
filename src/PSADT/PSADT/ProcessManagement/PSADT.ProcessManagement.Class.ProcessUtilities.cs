@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Management.Automation.Runspaces;
-using PSADT.Module;
 using PSADT.LibraryInterfaces;
+using PSADT.Module;
 using PSADT.Utilities;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.ProcessManagement
 {
@@ -128,6 +130,51 @@ namespace PSADT.ProcessManagement
 
             // Return an ordered list of running processes to the caller.
             return runningProcesses.OrderBy(runningProcess => runningProcess.Description).ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Retrieves the parent process of the specified process.
+        /// </summary>
+        /// <remarks>This method uses system-level information to identify the parent process. The caller
+        /// must ensure that the provided process is valid and accessible.</remarks>
+        /// <param name="proc">The process for which to retrieve the parent process. Must not be null.</param>
+        /// <returns>A <see cref="System.Diagnostics.Process"/> object representing the parent process of the specified process.</returns>
+        public static Process GetParentProcess(Process proc)
+        {
+            NtDll.NtQueryInformationProcess(proc.Handle, out PROCESS_BASIC_INFORMATION pbi);
+            return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
+        }
+
+        /// <summary>
+        /// Retrieves a list of parent processes for the current process, starting from the immediate parent and
+        /// continuing up the hierarchy until no further parent processes are found.
+        /// </summary>
+        /// <remarks>This method iteratively determines the parent process of the current process and
+        /// continues up the hierarchy until no further parent processes can be identified or a circular reference is
+        /// detected.</remarks>
+        /// <returns>A list of <see cref="Process"/> objects representing the parent processes of the current process. The list
+        /// is ordered from the immediate parent to the top-level ancestor. If no parent processes are found, the list
+        /// will be empty.</returns>
+        public static ReadOnlyCollection<Process> GetParentProcesses()
+        {
+            var proc = Process.GetCurrentProcess();
+            List<Process> procs = [];
+            while (true)
+            {
+                try
+                {
+                    if (procs.Contains(proc = GetParentProcess(proc)))
+                    {
+                        break;
+                    }
+                    procs.Add(proc);
+                }
+                catch
+                {
+                    break;
+                }
+            }
+            return procs.AsReadOnly();
         }
     }
 }
