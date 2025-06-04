@@ -281,6 +281,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected override void OnClosed(EventArgs e)
         {
+            _persistTimer?.Stop();
+            _expiryTimer?.Stop();
             base.OnClosed(e);
             Dispose();
         }
@@ -308,6 +310,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Record the starting point for the window.
             _startingLeft = Left;
             _startingTop = Top;
+
+            // Start the timers if specified
+            _persistTimer?.Start();
+            _expiryTimer?.Start();
         }
 
         /// <summary>

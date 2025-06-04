@@ -176,6 +176,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Start the persist timer if it's available.
             startingPoint = this.Location;
             persistTimer?.Start();
+            expiryTimer?.Start();
         }
 
         /// <summary>
@@ -194,8 +195,16 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
             // We're actually closing. Perform certain disposals here
             // since we can't mess with the designer's Dispose override.
-            persistTimer?.Dispose();
-            expiryTimer?.Dispose();
+            if (null != persistTimer)
+            {
+                persistTimer.Stop();
+                persistTimer.Dispose();
+            }
+            if (null != expiryTimer)
+            {
+                expiryTimer.Stop();
+                expiryTimer.Dispose();
+            }
         }
 
         /// <summary>
