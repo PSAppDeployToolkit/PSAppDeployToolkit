@@ -74,6 +74,18 @@ namespace PSADT.Module
         }
 
         /// <summary>
+        /// Determines whether there is at least one active deployment session.
+        /// </summary>
+        /// <remarks>This method checks the current state of deployment sessions stored in the database.
+        /// If the database or session data is unavailable, the method will return <see langword="false"/>.</remarks>
+        /// <returns><see langword="true"/> if there is at least one active deployment session; otherwise, <see
+        /// langword="false"/>.</returns>
+        public static bool IsDeploymentSessionActive()
+        {
+            return ((List<DeploymentSession>?)_database?.Properties["Sessions"].Value)?.Count > 0;
+        }
+
+        /// <summary>
         /// Gets the active deployment session from the internal database.
         /// </summary>
         /// <returns></returns>

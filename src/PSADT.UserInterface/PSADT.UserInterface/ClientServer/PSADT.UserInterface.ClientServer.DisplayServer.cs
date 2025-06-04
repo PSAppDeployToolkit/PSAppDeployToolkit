@@ -4,7 +4,10 @@ using System.IO;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using PSADT.Execution;
+using PSADT.Module;
+using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -38,8 +41,10 @@ namespace PSADT.UserInterface.ClientServer
             _user = user ?? throw new ArgumentNullException(nameof(user), "User cannot be null.");
             _outputPipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable);
             _inputPipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
+            _logPipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
             _outputStreamWriter = new StreamWriter(_outputPipeServer) { AutoFlush = true };
             _inputStreamReader = new StreamReader(_inputPipeServer);
+            _logStreamReader = new StreamReader(_logPipeServer);
         }
 
         /// <summary>
@@ -55,7 +60,7 @@ namespace PSADT.UserInterface.ClientServer
             // Start the server to listen for incoming connections and process data.
             _clientProcess = ProcessManager.LaunchAsync(new ProcessLaunchInfo(
                 _assemblyLocation,
-                ["/ClientServer", "-InputPipe", _outputPipeServer.GetClientHandleAsString(), "-OutputPipe", _inputPipeServer.GetClientHandleAsString()],
+                ["/ClientServer", "-InputPipe", _outputPipeServer.GetClientHandleAsString(), "-OutputPipe", _inputPipeServer.GetClientHandleAsString(), "-LogPipe", _logPipeServer.GetClientHandleAsString()],
                 null,
                 _user.NTAccount,
                 false,
@@ -67,17 +72,21 @@ namespace PSADT.UserInterface.ClientServer
                 Encoding.UTF8,
                 ProcessWindowStyle.Hidden,
                 null,
-                _cancellationTokenSource.Token,
+                _clientProcessCts.Token,
                 false
             ));
-            _inputPipeServer.DisposeLocalCopyOfClientHandle();
             _outputPipeServer.DisposeLocalCopyOfClientHandle();
+            _inputPipeServer.DisposeLocalCopyOfClientHandle();
+            _logPipeServer.DisposeLocalCopyOfClientHandle();
 
             // Confirm the client starts and is ready to receive commands.
-            if (!(IsRunning = Invoke("Open")))
+            if (!Invoke("Open"))
             {
                 throw new InvalidOperationException("The opened client process is not properly responding to commands.");
             }
+
+            // Set up the log writer task to run in the background.
+            _logWriterTask = Task.Run(ReadLog, _logWriterTaskCts.Token);
         }
 
         /// <summary>
@@ -86,12 +95,14 @@ namespace PSADT.UserInterface.ClientServer
         /// <remarks>This method attempts to close the connection by invoking the appropriate command. 
         /// Ensure that the connection is open before calling this method to avoid unexpected behavior.</remarks>
         /// <returns><see langword="true"/> if the connection was successfully closed; otherwise, <see langword="false"/>.</returns>
-        private void Close()
+        private bool Close()
         {
-            if (IsRunning = !Invoke("Close"))
+            var res = Invoke("Close");
+            if (!res)
             {
                 throw new InvalidOperationException("The opened client process did not properly respond to the close command.");
             }
+            return res;
         }
 
         /// <summary>
@@ -151,6 +162,7 @@ namespace PSADT.UserInterface.ClientServer
         /// langword="false"/>.</returns>
         public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
+            _logSource = "Show-ADTInstallationProgress";
             return Invoke($"ShowProgressDialog{Separator}{dialogStyle}{Separator}{SerializationUtilities.SerializeToString(options)}");
         }
 
@@ -182,6 +194,7 @@ namespace PSADT.UserInterface.ClientServer
         /// <returns><see langword="true"/> if the progress dialog was successfully updated; otherwise, <see langword="false"/>.</returns>
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
+            _logSource = "Show-ADTInstallationProgress";
             return Invoke($"UpdateProgressDialog{Separator}{(!string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : ' ')}{Separator}{(!string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : ' ')}{Separator}{((null != progressPercentage) ? progressPercentage.ToString() : ' ')}{Separator}{((null != messageAlignment) ? messageAlignment.ToString() : ' ')}");
         }
 
@@ -194,6 +207,7 @@ namespace PSADT.UserInterface.ClientServer
         /// <returns><see langword="true"/> if the progress dialog was successfully closed; otherwise, <see langword="false"/>.</returns>
         public bool CloseProgressDialog()
         {
+            _logSource = "Close-ADTInstallationProgress";
             return Invoke("CloseProgressDialog");
         }
 
@@ -213,6 +227,7 @@ namespace PSADT.UserInterface.ClientServer
         /// <returns><see langword="true"/> if the balloon tip was successfully displayed; otherwise, <see langword="false"/>.</returns>
         public bool ShowBalloonTip(string TrayTitle, string TrayIcon, string BalloonTipTitle, string BalloonTipText, System.Windows.Forms.ToolTipIcon BalloonTipIcon)
         {
+            _logSource = "Show-ADTBalloonTip";
             return Invoke($"ShowBalloonTip{Separator}{TrayTitle}{Separator}{TrayIcon}{Separator}{BalloonTipTitle}{Separator}{BalloonTipText}{Separator}{BalloonTipIcon}");
         }
 
@@ -253,6 +268,16 @@ namespace PSADT.UserInterface.ClientServer
         /// <returns>The result of the dialog, deserialized to the specified type <typeparamref name="TResult"/>.</returns>
         private TResult ShowModalDialog<TResult, TOptions>(DialogType dialogType, DialogStyle dialogStyle, TOptions options)
         {
+            _logSource = dialogType switch
+            {
+                DialogType.CloseAppsDialog => "Show-ADTInstallationWelcome",
+                DialogType.CustomDialog => "Show-ADTInstallationPrompt",
+                DialogType.DialogBox => "Show-ADTDialogBox",
+                DialogType.InputDialog => "Show-ADTInstallationPrompt",
+                DialogType.ProgressDialog => "Show-ADTInstallationProgress",
+                DialogType.RestartDialog => "Show-ADTInstallationRestartPrompt",
+                _ => throw new ArgumentOutOfRangeException(nameof(dialogType), $"Unsupported dialog type: {dialogType}"),
+            };
             _outputStreamWriter.WriteLine($"ShowModalDialog{Separator}{dialogType}{Separator}{dialogStyle}{Separator}{SerializationUtilities.SerializeToString(options)}");
             return SerializationUtilities.DeserializeFromString<TResult>(ReadInput());
         }
@@ -287,23 +312,38 @@ namespace PSADT.UserInterface.ClientServer
             // Tear down this object.
             if (disposing)
             {
-                // The client is still running. Kill it and wait for it to die.
+                // Check whether the client process is still running.
                 if (null != _clientProcess && !_clientProcess.Task.IsCompleted)
                 {
-                    // Close it gracefully if we can.
+                    // Close it gracefully if we can, otherwise send cancellation.
                     try
                     {
-                        Close();
+                        if (!Close())
+                        {
+                            _clientProcessCts.Cancel();
+                        }
                     }
                     catch
                     {
-                        // We couldn't, so terminate the process.
-                        _cancellationTokenSource.Cancel();
+                        _clientProcessCts.Cancel();
                     }
-                    _clientProcess.Task.GetAwaiter().GetResult();
+                    _clientProcess.Task.Wait();
+                    _clientProcess.Task.Dispose();
                     _clientProcess = null;
-                    _cancellationTokenSource.Dispose();
-                    _cancellationTokenSource = null!;
+                    _clientProcessCts.Dispose();
+                    _clientProcessCts = null!;
+                }
+
+                // Check whether the logging task is still running.
+                if (null != _logWriterTask && !_logWriterTask.IsCompleted)
+                {
+                    // Send cancellation and wait for it to occur.
+                    _logWriterTaskCts.Cancel();
+                    _logWriterTask.Wait();
+                    _logWriterTask.Dispose();
+                    _logWriterTask = null;
+                    _logWriterTaskCts.Dispose();
+                    _logWriterTaskCts = null!;
                 }
 
                 // Kill all input.
@@ -317,6 +357,12 @@ namespace PSADT.UserInterface.ClientServer
                 _outputStreamWriter = null!;
                 _outputPipeServer.Dispose();
                 _outputPipeServer = null!;
+
+                // Kill all logging.
+                _logStreamReader.Dispose();
+                _logStreamReader = null!;
+                _logPipeServer.Dispose();
+                _logPipeServer = null!;
             }
             _disposed = true;
         }
@@ -352,9 +398,27 @@ namespace PSADT.UserInterface.ClientServer
         }
 
         /// <summary>
+        /// Reads and processes log entries from the underlying log stream.
+        /// </summary>
+        /// <remarks>This method reads each line from the log stream until the end of the stream is
+        /// reached. Non-empty and non-whitespace lines are processed as needed.</remarks>
+        private void ReadLog()
+        {
+            // Read the log stream until cancellation is requested or the end of the stream is reached.
+            string? line; while (!_logWriterTaskCts.IsCancellationRequested && (line = _logStreamReader.ReadLine()) != null)
+            {
+                // Only log the message if a deployment session is active.
+                if (ModuleDatabase.IsDeploymentSessionActive())
+                {
+                    ModuleDatabase.GetDeploymentSession().WriteLogEntry(line.Trim(), _logSource);
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
-        public bool IsRunning { get; private set; }
+        public bool IsRunning => null != _clientProcess && _clientProcess.Task.Status.Equals(TaskStatus.Running);
 
         /// <summary>
         /// Indicates whether the object has been disposed.
@@ -362,6 +426,14 @@ namespace PSADT.UserInterface.ClientServer
         /// <remarks>This field is used internally to track the disposal state of the object. It should
         /// not be accessed directly outside of the class.</remarks>
         private bool _disposed;
+
+        /// <summary>
+        /// Represents the server side of an anonymous pipe used for inter-process communication.
+        /// </summary>
+        /// <remarks>This field is used to manage the server stream for logging purposes. It provides a
+        /// communication channel between processes, allowing data to be sent from the server to a connected
+        /// client.</remarks>
+        private AnonymousPipeServerStream _logPipeServer;
 
         /// <summary>
         /// Represents a server-side anonymous pipe stream for reading data.
@@ -378,6 +450,13 @@ namespace PSADT.UserInterface.ClientServer
         /// inherited by child processes. It is typically used to send data from the current process to another
         /// process.</remarks>
         private AnonymousPipeServerStream _outputPipeServer;
+
+        /// <summary>
+        /// Represents the stream reader used to read log data.
+        /// </summary>
+        /// <remarks>This field is intended for internal use and provides access to the underlying stream
+        /// for reading log information. It is not exposed publicly.</remarks>
+        private StreamReader _logStreamReader;
 
         /// <summary>
         /// Represents the <see cref="StreamReader"/> used to read input data from a stream.
@@ -405,7 +484,21 @@ namespace PSADT.UserInterface.ClientServer
         /// <remarks>This field is initialized as a new instance of <see cref="CancellationTokenSource"/>
         /// and is intended for internal use to signal cancellation of tasks or operations. It is not exposed
         /// publicly.</remarks>
-        private CancellationTokenSource _cancellationTokenSource = new();
+        private CancellationTokenSource _clientProcessCts = new();
+
+        /// <summary>
+        /// Represents the task responsible for writing log entries asynchronously.
+        /// </summary>
+        /// <remarks>This field holds a reference to the current logging task, if one is active.  It may
+        /// be null if no logging operation is in progress.</remarks>
+        private Task? _logWriterTask;
+
+        /// <summary>
+        /// Provides a mechanism to cancel the ongoing log writer task.
+        /// </summary>
+        /// <remarks>This field is used internally to signal cancellation for the log writer task. It is
+        /// initialized as a new instance of <see cref="CancellationTokenSource"/>.</remarks>
+        private CancellationTokenSource _logWriterTaskCts = new();
 
         /// <summary>
         /// Represents the session information for the current user.
@@ -414,6 +507,13 @@ namespace PSADT.UserInterface.ClientServer
         /// user-specific data. It is intended for internal use and should not be exposed directly to external
         /// consumers.</remarks>
         private readonly SessionInfo _user;
+
+        /// <summary>
+        /// Represents the source identifier for logging related to the "Show-ADTModalDialog" functionality.
+        /// </summary>
+        /// <remarks>This constant is used to tag log entries originating from the "Show-ADTModalDialog"
+        /// feature. It is intended for internal use and helps in categorizing and filtering logs.</remarks>
+        private static string _logSource = null!;
 
         /// <summary>
         /// Represents the file path of the assembly named "PSADT.UserInterface.exe" currently loaded in the

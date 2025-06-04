@@ -168,10 +168,15 @@ namespace PSADT.UserInterface
             {
                 throw new ProgramException("The specified InputPipe handle was null or invalid.", ExitCode.NoInputPipe);
             }
+            if (!arguments.TryGetValue("LogPipe", out string? logPipeHandle) || null == logPipeHandle || string.IsNullOrWhiteSpace(logPipeHandle))
+            {
+                throw new ProgramException("The specified LogPipe handle was null or invalid.", ExitCode.NoLogPipe);
+            }
 
             // Establish the pipe objects.
             AnonymousPipeClientStream outputPipeClient;
             AnonymousPipeClientStream inputPipeClient;
+            AnonymousPipeClientStream logPipeClient;
             try
             {
                 outputPipeClient = new AnonymousPipeClientStream(PipeDirection.Out, outputPipeHandle);
@@ -188,6 +193,14 @@ namespace PSADT.UserInterface
             {
                 throw new ProgramException($"Failed to open a pipe client for the specified InputHandle: {ex.Message}", ex, ExitCode.InvalidInputPipe);
             }
+            try
+            {
+                logPipeClient = new AnonymousPipeClientStream(PipeDirection.Out, logPipeHandle);
+            }
+            catch (Exception ex)
+            {
+                throw new ProgramException($"Failed to open a pipe client for the specified LogHandle: {ex.Message}", ex, ExitCode.InvalidLogPipe);
+            }
 
             // Start reading data from the pipes. We only return
             // from here when the server's pipe closes on us.
@@ -196,9 +209,11 @@ namespace PSADT.UserInterface
                 // These pipe streams require proper disposal.
                 using (outputPipeClient)
                 using (inputPipeClient)
+                using (logPipeClient)
                 {
                     // Establish stream readers for incoming/outgoing data.
                     using (var outputWriter = new StreamWriter(outputPipeClient) { AutoFlush = true })
+                    using (var logWriter = new StreamWriter(logPipeClient) { AutoFlush = true })
                     using (var inputReader = new StreamReader(inputPipeClient))
                     {
                         // Continuously loop until the end. When we receive null, the
@@ -443,12 +458,14 @@ namespace PSADT.UserInterface
             InvalidDialogOptions = 16,
             InvalidDialogResult = 17,
 
-            NoInputPipe = 20,
-            NoOutputPipe = 21,
-            InvalidInputPipe = 22,
+            NoOutputPipe = 20,
+            NoInputPipe = 21,
+            NoLogPipe = 22,
             InvalidOutputPipe = 23,
-            PipeReadWriteError = 24,
-            InvalidCommand = 25,
+            InvalidInputPipe = 24,
+            InvalidLogPipe = 25,
+            PipeReadWriteError = 26,
+            InvalidCommand = 27,
         }
 
         /// <summary>
