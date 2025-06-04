@@ -294,7 +294,7 @@ try
         Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     }
     $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
-    $adtSession = Open-ADTSession -SessionState $PSCmdlet.SessionState @adtSession @iadtParams -PassThru
+    $adtSession = Open-ADTSession @adtSession @iadtParams -PassThru
 }
 catch
 {
@@ -307,6 +307,7 @@ catch
 ## MARK: Invocation
 ##================================================
 
+# Import any found extensions before proceeding with the deployment.
 try
 {
     Get-ChildItem -LiteralPath $PSScriptRoot -Directory | & {
@@ -324,6 +325,7 @@ try
 }
 catch
 {
+    # An unhandled error has been caught.
     $mainErrorMessage = Resolve-ADTErrorRecord -ErrorRecord $_
     Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
 
