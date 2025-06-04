@@ -1133,13 +1133,13 @@ function Show-ADTInstallationWelcome
                                         {
                                             # Try to bring the window to the front before closing. This doesn't always work.
                                             Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
-                                            $null = try
+                                            try
                                             {
                                                 [PSADT.Utilities.WindowUtilities]::BringWindowToFront($OpenWindow.WindowHandle)
                                             }
                                             catch
                                             {
-                                                $null
+                                                Write-ADTLogEntry -Message "Failed to bring window [$($OpenWindow.WindowTitle)] to front: $($_.Exception.Message)" -Severity 2
                                             }
 
                                             # Close out the main window and spin until completion.

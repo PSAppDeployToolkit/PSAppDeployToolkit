@@ -75,7 +75,7 @@ namespace PSADT.LibraryInterfaces
         public static IntPtr GetForegroundWindow()
         {
             var res = PInvoke.GetForegroundWindow();
-            if (res == IntPtr.Zero)
+            if (res == HWND.Null)
             {
                 throw new InvalidOperationException("Failed to get the foreground window.");
             }
@@ -217,7 +217,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND SetActiveWindow(HWND hWnd)
         {
             var res = PInvoke.SetActiveWindow(hWnd);
-            if (res == IntPtr.Zero)
+            if (res == HWND.Null)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -233,7 +233,7 @@ namespace PSADT.LibraryInterfaces
         internal static HWND SetFocus(HWND hWnd)
         {
             var res = PInvoke.SetFocus(hWnd);
-            if (res == IntPtr.Zero)
+            if (res == HWND.Null)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -266,7 +266,7 @@ namespace PSADT.LibraryInterfaces
                 fixed (nuint* lpdwResultPointer = &lpdwResult)
                 {
                     var res = PInvoke.SendMessageTimeout(hWnd, Msg, wParam, lParam.DangerousGetHandle(), fuFlags, uTimeout, lpdwResultPointer);
-                    if (res == IntPtr.Zero)
+                    if (res == default)
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error();
                     }
@@ -491,6 +491,22 @@ namespace PSADT.LibraryInterfaces
             if (res == 0)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Sets the specified window as the foreground window.
+        /// </summary>
+        /// <param name="hWnd">A handle to the window to be set as the foreground window.</param>
+        /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the operation fails to set the specified window as the foreground window.</exception>
+        internal static BOOL SetForegroundWindow(HWND hWnd)
+        {
+            var res = PInvoke.SetForegroundWindow(hWnd);
+            if (!res)
+            {
+                throw new InvalidOperationException($"Failed to set the window as foreground.");
             }
             return res;
         }
