@@ -1018,7 +1018,7 @@ function Show-ADTInstallationWelcome
                     $dialogOptions = [PSADT.UserInterface.DialogOptions.CloseAppsDialogOptions]::new($DeploymentType, $dialogOptions)
 
                     # Spin until apps are closed, countdown elapses, or deferrals are exhausted.
-                    while (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
+                    while (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses }) -or (($promptResult -ne 'Defer') -and ($promptResult -ne 'Close')))
                     {
                         # Check if we need to prompt the user to defer, to defer and close apps, or not to prompt them at all
                         if ($AllowDefer)
@@ -1065,7 +1065,7 @@ function Show-ADTInstallationWelcome
                             Write-ADTLogEntry -Message 'The user selected to continue...'
                             for ($i = 0; $i -lt 5; $i++)
                             {
-                                if (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore))
+                                if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
                                 {
                                     Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Sort-Object -Unique)))'] are still running, checking again in 1 second..."
                                     [System.Threading.Thread]::Sleep(1000)
@@ -1086,7 +1086,7 @@ function Show-ADTInstallationWelcome
                         {
                             # Force the applications to close. Update the process list right before closing, in case it changed.
                             Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
-                            if (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore))
+                            if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
                             {
                                 if ($PromptToSave)
                                 {
@@ -1113,7 +1113,7 @@ function Show-ADTInstallationWelcome
                                 # Test whether apps are still running. If they are still running, the Welcome Window will be displayed again after 5 seconds.
                                 for ($i = 0; $i -lt 5; $i++)
                                 {
-                                    if (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore))
+                                    if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
                                     {
                                         Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Sort-Object -Unique)))'] are still running, checking again in 1 second..."
                                         [System.Threading.Thread]::Sleep(1000)
@@ -1184,7 +1184,7 @@ function Show-ADTInstallationWelcome
                         }
                     }
                 }
-                elseif (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses))
+                elseif (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses }))
                 {
                     # Force the processes to close silently, without prompting the user.
                     Write-ADTLogEntry -Message "Force closing application(s) ['$([System.String]::Join("', '", $runningApps.Description))'] without prompting user."
