@@ -71,6 +71,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.AbortableDialog.cs">
       <SubType>Form</SubType>
     </Compile>
