@@ -815,7 +815,7 @@ namespace PSADT.Module
                     }
                     else if ((bool)configToolkit["ProcessDetection"]!)
                     {
-                        if (ProcessManager.GetRunningProcesses(_appProcessesToClose.ToArray()) is var runningProcs && (runningProcs.Count == 0))
+                        if (ProcessUtilities.GetRunningProcesses(_appProcessesToClose.ToArray()) is var runningProcs && (runningProcs.Count == 0))
                         {
                             deployModeChanged = true;
                             _deployMode = DeployMode.Silent;

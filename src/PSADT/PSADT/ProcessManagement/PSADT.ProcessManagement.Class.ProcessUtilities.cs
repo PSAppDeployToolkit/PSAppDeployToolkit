@@ -13,8 +13,8 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Provides functionality to manage and retrieve information about running processes.
     /// </summary>
-    /// <remarks>The <see cref="ProcessManager"/> class offers methods to identify and retrieve details about processes running on the system. It allows filtering and matching processes based on user-defined criteria, such as process names, command-line arguments, and custom filters. Processes that cannot be accessed due to insufficient privileges are automatically skipped.</remarks>
-    public static class ProcessManager
+    /// <remarks>The <see cref="ProcessUtilities"/> class offers methods to identify and retrieve details about processes running on the system. It allows filtering and matching processes based on user-defined criteria, such as process names, command-line arguments, and custom filters. Processes that cannot be accessed due to insufficient privileges are automatically skipped.</remarks>
+    public static class ProcessUtilities
     {
         /// <summary>
         /// Retrieves a list of running processes that match the specified process definitions.

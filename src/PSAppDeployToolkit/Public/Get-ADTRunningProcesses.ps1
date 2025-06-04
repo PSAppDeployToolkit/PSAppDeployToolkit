@@ -54,7 +54,7 @@ function Get-ADTRunningProcesses
 
     # Process provided process objects and return any output.
     Write-ADTLogEntry -Message "Checking for running processes: ['$([System.String]::Join("', '", $ProcessObjects.Name))']"
-    if (!($runningProcesses = [PSADT.ProcessManagement.ProcessManager]::GetRunningProcesses($ProcessObjects)))
+    if (!($runningProcesses = [PSADT.ProcessManagement.ProcessUtilities]::GetRunningProcesses($ProcessObjects)))
     {
         Write-ADTLogEntry -Message 'Specified processes are not running.'
         return

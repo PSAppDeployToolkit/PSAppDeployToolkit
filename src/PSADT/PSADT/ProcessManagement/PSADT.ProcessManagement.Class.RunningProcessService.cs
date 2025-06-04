@@ -102,7 +102,7 @@ namespace PSADT.ProcessManagement
         private void RefreshCachedProcessLists()
         {
             // Update the list of running processes.
-            _runningProcesses = ProcessManager.GetRunningProcesses(_processDefinitions);
+            _runningProcesses = ProcessUtilities.GetRunningProcesses(_processDefinitions);
             _processesToClose = _runningProcesses.GroupBy(p => p.Description).Select(p => new ProcessToClose(p.First())).ToList().AsReadOnly();
         }
 
