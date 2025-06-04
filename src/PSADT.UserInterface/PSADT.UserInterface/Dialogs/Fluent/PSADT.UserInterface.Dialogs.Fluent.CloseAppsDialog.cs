@@ -16,6 +16,7 @@ using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Types;
 using PSADT.UserInterface.Utilities;
+using PSADT.UserInterface.DialogState;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -61,7 +62,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Instantiates a new CloseApps dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options, options.CustomMessageText, options.CountdownDuration, null, options.CountdownStopwatch)
+        internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, options.CustomMessageText, options.CountdownDuration, null, state.CountdownStopwatch)
         {
             // Set up the context for data binding
             DataContext = this;
@@ -92,11 +93,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonLeft.Visibility = Visibility.Visible;
 
             // Set up/process optional values.
-            if (null != options.RunningProcessService)
+            if (null != state.RunningProcessService)
             {
-                _runningProcessService = options.RunningProcessService;
+                _runningProcessService = state.RunningProcessService;
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), true);
+            }
+            if (null != state.LogWriter)
+            {
+                _logWriter = state.LogWriter;
             }
             UpdateDeferralValues();
 
@@ -219,6 +224,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             UpdateRowDefinition();
             if (AppsToCloseCollection.Count > 0)
             {
+                _logWriter?.WriteLine($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...");
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 CloseAppsSeparator.Visibility = Visibility.Visible;
@@ -237,6 +243,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             }
             else
             {
+                _logWriter?.WriteLine("Previously detected running processes are no longer running.");
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
@@ -420,6 +427,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <remarks>This field determines if the close button is visible or not.  It is intended for
         /// internal use and should not be modified directly.</remarks>
         private readonly bool _hideCloseButton;
+
+        /// <summary>
+        /// Represents the underlying <see cref="StreamWriter"/> used for logging operations.
+        /// </summary>
+        /// <remarks>This field is used internally to write log messages to a stream. It may be null if
+        /// logging is disabled or the stream has not been initialized.</remarks>
+        private readonly StreamWriter? _logWriter;
 
         /// <summary>
         /// Whether this window has been disposed.

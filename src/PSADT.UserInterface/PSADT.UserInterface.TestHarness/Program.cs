@@ -9,6 +9,7 @@ using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
+using PSADT.UserInterface.DialogState;
 
 namespace PSADT.UserInterface.TestHarness
 {
@@ -95,6 +96,7 @@ namespace PSADT.UserInterface.TestHarness
             string ButtonRightText = "RightButton";
 
             // Set up options for the dialogs
+            var closeAppsDialogState = new CloseAppsDialogState(appsToClose, null);
             var closeAppsDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
@@ -106,7 +108,6 @@ namespace PSADT.UserInterface.TestHarness
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
                 { "AppBannerImage", appBannerImage },
-                { "RunningProcessService", new RunningProcessService(appsToClose) },
                 { "CountdownDuration", countdownDuration },
                 { "DeferralsRemaining", deferralsRemaining },
                 { "DeferralDeadline", deferralDeadline },
@@ -165,7 +166,7 @@ namespace PSADT.UserInterface.TestHarness
             try
             {
                 // Show CloseApps Dialog
-                var closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions)); // Pass the service as optional parameter
+                var closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
 
                 Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
 

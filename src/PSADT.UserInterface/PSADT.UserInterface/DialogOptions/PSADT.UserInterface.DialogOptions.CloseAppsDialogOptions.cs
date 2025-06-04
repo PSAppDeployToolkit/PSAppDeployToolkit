@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics;
 using System.Runtime.Serialization;
 using PSADT.Module;
-using PSADT.ProcessManagement;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -26,14 +24,6 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // Test and set optional values.
-            if (options.ContainsKey("RunningProcessService"))
-            {
-                if (options["RunningProcessService"] is not RunningProcessService runningProcessService)
-                {
-                    throw new ArgumentOutOfRangeException("RunningProcessService value is not valid.", (Exception?)null);
-                }
-                RunningProcessService = runningProcessService;
-            }
             if (options.ContainsKey("DeferralsRemaining"))
             {
                 if (options["DeferralsRemaining"] is not uint deferralsRemaining)
@@ -102,12 +92,6 @@ namespace PSADT.UserInterface.DialogOptions
         public readonly CloseAppsDialogStrings Strings;
 
         /// <summary>
-        /// The list of applications that should be closed.
-        /// </summary>
-        [DataMember]
-        public readonly RunningProcessService? RunningProcessService;
-
-        /// <summary>
         /// The number of deferrals remaining for the user.
         /// </summary>
         [DataMember]
@@ -147,12 +131,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly string? CustomMessageText;
-
-        /// <summary>
-        /// The countdown timer used to track the time remaining before the dialog closes automatically.
-        /// </summary>
-        [DataMember]
-        public readonly Stopwatch CountdownStopwatch = new();
 
         /// <summary>
         /// The strings used for the CloseAppsDialog.

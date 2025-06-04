@@ -17,6 +17,7 @@ function Private:Close-ADTDisplayServer
         }
         throw (New-ADTErrorRecord @naerParams)
     }
+    Write-ADTLogEntry -Message 'Closing user interface display server.'
     $Script:ADT.DisplayServer.Dispose(); $Script:ADT.DisplayServer = $null
     Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $MyInvocation.MyCommand
 }

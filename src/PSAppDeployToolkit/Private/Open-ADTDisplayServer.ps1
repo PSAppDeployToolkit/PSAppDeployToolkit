@@ -27,6 +27,7 @@ function Private:Open-ADTDisplayServer
     }
 
     # Set the required file permissions to ensure the user can open the display server.
+    Write-ADTLogEntry -Message 'Instantiating user interface display server.'
     Set-ADTPermissionsForDisplayServer
 
     # Instantiate a new DisplayServer object as required, then add the necessary callback.

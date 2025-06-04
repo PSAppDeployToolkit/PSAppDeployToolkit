@@ -2,11 +2,13 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
+using PSADT.UserInterface.DialogState;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
@@ -18,7 +20,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class.
         /// </summary>
-        internal CloseAppsDialog() : this(default!)
+        internal CloseAppsDialog() : this(default!, default!)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
@@ -30,7 +32,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class with the specified options.
         /// </summary>
         /// <param name="options"></param>
-        internal CloseAppsDialog(CloseAppsDialogOptions options) : base(options)
+        internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options)
         {
             // Initialise the form and reset the control order.
             // The designer tries to add its controls ahead of the base's.
@@ -71,10 +73,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
 
                 // Set up the process service.
                 this.richTextBoxCloseProcesses.Lines = null;
-                if (null != options.RunningProcessService)
+                if (null != state.RunningProcessService)
                 {
                     // Get the current running apps and amend the form accordingly.
-                    var runningApps = (runningProcessService = options.RunningProcessService).ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
+                    var runningApps = (runningProcessService = state.RunningProcessService).ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
                     if (runningApps.Length > 0)
                     {
                         this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
@@ -134,7 +136,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 if (null != countdownDuration)
                 {
                     countdownTimer = new System.Threading.Timer(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                    countdownStopwatch = options.CountdownStopwatch;
+                    countdownStopwatch = state.CountdownStopwatch;
                     if (this.richTextBoxCloseProcesses.Lines?.Length > 0)
                     {
                         if (forcedCountdown)
@@ -154,6 +156,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 else
                 {
                     this.flowLayoutPanelDialog.Controls.Remove(this.flowLayoutPanelCountdown);
+                }
+
+                // Set up the log writer if we have one.
+                if (null != state.LogWriter)
+                {
+                    logWriter = state.LogWriter;
                 }
             }
 
@@ -306,6 +314,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 if (e.ProcessesToClose.Count > 0)
                 {
                     var runningApps = e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}").ToArray();
+                    logWriter?.WriteLine($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...");
                     this.toolTipButtonContinue.SetToolTip(this.buttonContinue, buttonContinueToolTipText);
                     this.richTextBoxCloseProcesses.Lines = runningApps;
                     this.labelCountdownMessage.Text = countdownClose;
@@ -320,6 +329,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 }
                 else
                 {
+                    logWriter?.WriteLine("Previously detected running processes are no longer running.");
                     this.toolTipButtonContinue.RemoveAll();
                     this.labelCountdownMessage.Text = countdownDefer;
                     this.flowLayoutPanelCloseApps.Visible = false;
@@ -374,5 +384,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Indicates whether the close button should be hidden.
         /// </summary>
         private readonly bool hideCloseButton;
+
+        /// <summary>
+        /// Represents the underlying writer used for logging operations.
+        /// </summary>
+        /// <remarks>This field holds a reference to a <see cref="StreamWriter"/> instance, which is used
+        /// to write log entries. If <c>null</c>, logging operations may be disabled or unavailable.</remarks>
+        private readonly StreamWriter? logWriter;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
@@ -8,6 +9,7 @@ using PSADT.LibraryInterfaces;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
+using PSADT.UserInterface.DialogState;
 using PSADT.Utilities;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Controls;
@@ -26,18 +28,64 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options specifying the applications to be closed and other dialog configurations.</param>
         /// <returns>A string representing the user's response or selection from the dialog.</returns>
-        internal static CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options)
+        internal static CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options, CloseAppsDialogState state)
         {
+            // Start the RunningProcessService if it is not already running.
             bool stopProcessService = false;
-            if (null != options.RunningProcessService && !options.RunningProcessService.IsRunning)
+            if (null != state.RunningProcessService && !state.RunningProcessService.IsRunning)
             {
-                options.RunningProcessService.Start();
+                state.RunningProcessService.Start();
                 stopProcessService = true;
             }
-            var result = ShowModalDialog<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options);
+
+            // Perform logging if we have a log writer.
+            if (null != state.LogWriter)
+            {
+                // Announce whether there's apps to close.
+                var procsRunning = state.RunningProcessService?.ProcessesToClose;
+                if (procsRunning?.Count > 0)
+                {
+                    state.LogWriter.WriteLine($"Prompting the user to close application(s) ['{string.Join("', '", procsRunning.Select(static p => p.Description))}']...");
+                }
+
+                // Announce the current countdown information.
+                if (null != options.CountdownDuration)
+                {
+                    if (procsRunning?.Count > 0)
+                    {
+                        state.LogWriter.WriteLine($"Close applications countdown has [{options.CountdownDuration - state.CountdownStopwatch.Elapsed}] seconds remaining.");
+                    }
+                    else
+                    {
+                        state.LogWriter.WriteLine($"Countdown has [{options.CountdownDuration - state.CountdownStopwatch.Elapsed}] seconds remaining.");
+                    }
+                }
+            }
+
+            // Show the dialog and get the result.
+            var result = ShowModalDialog<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state);
+
+            // Perform some result logging before returning.
+            if ((null != state.LogWriter) && (null != options.CountdownDuration) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
+            {
+                switch (result)
+                {
+                    case CloseAppsDialogResult.Close:
+                        state.LogWriter.WriteLine("Close application(s) countdown timer has elapsed. Force closing application(s).");
+                        break;
+                    case CloseAppsDialogResult.Defer:
+                        state.LogWriter.WriteLine("Countdown timer has elapsed and deferrals remaining. Force deferral.");
+                        break;
+                    case CloseAppsDialogResult.Continue:
+                        state.LogWriter.WriteLine("Countdown timer has elapsed and no processes running. Force continue.");
+                        break;
+                }
+            }
+
+            // If we started the RunningProcessService, stop it now before returning the result.
             if (stopProcessService)
             {
-                options.RunningProcessService!.Stop();
+                state.RunningProcessService!.Stop();
             }
             return result;
         }
@@ -83,7 +131,7 @@ namespace PSADT.UserInterface
             }
             InvokeDialogAction(() =>
             {
-                progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options);
+                progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options, null);
                 progressDialog.Show();
             });
             progressInitialized.Set();
@@ -146,11 +194,11 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options)
+        private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options, BaseState? state = null)
         {
             return (TResult)InvokeDialogAction(() =>
             {
-                using (var dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options))
+                using (var dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state))
                 {
                     dialog.ShowDialog();
                     return dialog.DialogResult;
@@ -276,26 +324,26 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
         /// </summary>
-        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>>
+        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>>
         {
             {
-                DialogStyle.Classic, new ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, IDialogBase>>
+                DialogStyle.Classic, new ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>
                 {
-                    { DialogType.CloseAppsDialog, options => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options) },
-                    { DialogType.CustomDialog, options => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
-                    { DialogType.InputDialog, options => new Dialogs.Classic.InputDialog((InputDialogOptions)options) },
-                    { DialogType.ProgressDialog, options => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options) },
-                    { DialogType.RestartDialog, options => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options) },
+                    { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                    { DialogType.CustomDialog, (options, state) => new Dialogs.Classic.CustomDialog((CustomDialogOptions)options) },
+                    { DialogType.InputDialog, (options, state) => new Dialogs.Classic.InputDialog((InputDialogOptions)options) },
+                    { DialogType.ProgressDialog, (options, state) => new Dialogs.Classic.ProgressDialog((ProgressDialogOptions)options) },
+                    { DialogType.RestartDialog, (options, state) => new Dialogs.Classic.RestartDialog((RestartDialogOptions)options) },
                 })
             },
             {
-                DialogStyle.Fluent, new ReadOnlyDictionary<DialogType, Func<BaseOptions, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, IDialogBase>>
+                DialogStyle.Fluent, new ReadOnlyDictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>(new Dictionary<DialogType, Func<BaseOptions, BaseState?, IDialogBase>>
                 {
-                    { DialogType.CloseAppsDialog, options => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options) },
-                    { DialogType.CustomDialog, options => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
-                    { DialogType.InputDialog, options => new Dialogs.Fluent.InputDialog((InputDialogOptions)options) },
-                    { DialogType.ProgressDialog, options => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options) },
-                    { DialogType.RestartDialog, options => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options) },
+                    { DialogType.CloseAppsDialog, (options, state) => new Dialogs.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                    { DialogType.CustomDialog, (options, state) => new Dialogs.Fluent.CustomDialog((CustomDialogOptions)options) },
+                    { DialogType.InputDialog, (options, state) => new Dialogs.Fluent.InputDialog((InputDialogOptions)options) },
+                    { DialogType.ProgressDialog, (options, state) => new Dialogs.Fluent.ProgressDialog((ProgressDialogOptions)options) },
+                    { DialogType.RestartDialog, (options, state) => new Dialogs.Fluent.RestartDialog((RestartDialogOptions)options) },
                 })
             }
         });

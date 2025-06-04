@@ -106,6 +106,33 @@ namespace PSADT.UserInterface.ClientServer
         }
 
         /// <summary>
+        /// Initializes a dialog to close specified applications.
+        /// </summary>
+        /// <remarks>This method invokes the dialog initialization process, optionally including
+        /// serialized information about the processes to be closed. Ensure that the <paramref name="closeProcesses"/>
+        /// parameter is correctly populated if specific processes need to be targeted.</remarks>
+        /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be closed. If <paramref
+        /// name="closeProcesses"/> is <see langword="null"/>, no specific processes will be targeted.</param>
+        /// <returns><see langword="true"/> if the dialog was successfully initialized; otherwise, <see langword="false"/>.</returns>
+        public bool InitCloseAppsDialog(ProcessDefinition[]? closeProcesses)
+        {
+            _logSource = "Show-ADTInstallationWelcome";
+            return Invoke($"InitCloseAppsDialog{(null != closeProcesses ? $"{Separator}{SerializationUtilities.SerializeToString(closeProcesses)}" : null)}");
+        }
+
+        /// <summary>
+        /// Displays a modal dialog prompting the user to close applications.
+        /// </summary>
+        /// <remarks>Use this method to prompt the user to close specific applications before proceeding
+        /// with an operation. The dialog's behavior and appearance can be customized using the <paramref
+        /// name="dialogStyle"/> and <paramref name="options"/> parameters.</remarks>
+        /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
+        /// <param name="options">The options for configuring the dialog, such as the list of applications to close and additional settings.</param>
+        /// <returns>A <see cref="CloseAppsDialogResult"/> indicating the user's response to the dialog. The result may include
+        /// information about whether the user chose to close the applications or canceled the operation.</returns>
+        public CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options) => ShowModalDialog<CloseAppsDialogResult, CloseAppsDialogOptions>(DialogType.CloseAppsDialog, dialogStyle, options);
+
+        /// <summary>
         /// Displays a custom dialog with the specified style and options, and returns the user's input as a string.
         /// </summary>
         /// <remarks>Use this method to display a modal input dialog to the user. The dialog's behavior

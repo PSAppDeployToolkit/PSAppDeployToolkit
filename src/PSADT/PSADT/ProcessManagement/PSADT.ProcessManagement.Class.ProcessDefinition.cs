@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
+using System.Runtime.Serialization;
 
 namespace PSADT.ProcessManagement
 {
     /// <summary>
     /// Represents basic information about a process.
     /// </summary>
+    [DataContract]
     public sealed record ProcessDefinition
     {
         /// <summary>
@@ -70,16 +72,19 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the name of the process.
         /// </summary>
+        [DataMember]
         public readonly string Name;
 
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
+        [DataMember]
         public readonly string? Description;
 
         /// <summary>
         /// Gets the filter script for the process.
         /// </summary>
+        [DataMember]
         public readonly Func<RunningProcess, bool>? Filter;
     }
 }

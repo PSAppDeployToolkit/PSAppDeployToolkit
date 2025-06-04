@@ -6,9 +6,11 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
+using PSADT.ProcessManagement;
 using PSADT.UserInterface.ClientServer;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
+using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
 
@@ -216,23 +218,34 @@ namespace PSADT.UserInterface
                     using (var logWriter = new StreamWriter(logPipeClient) { AutoFlush = true })
                     using (var inputReader = new StreamReader(inputPipeClient))
                     {
+                        // Initialize variables needed throughout the loop.
+                        CloseAppsDialogState closeAppsDialogState = default!;
+                        string? line;
+
                         // Continuously loop until the end. When we receive null, the
                         // server has closed the pipe, so we should break and exit.
-                        string? line; while ((line = inputReader.ReadLine()) != null)
+                        while ((line = inputReader.ReadLine()) != null)
                         {
                             // We never let an exception kill the pipe.
                             try
                             {
                                 // Split the line on the pipe operator, it's our delimiter for args. We don't
                                 // use a switch here so it's easier to break the while loop if we're exiting.
-                                var parts = line.Split(DisplayServer.Separator); if (parts[0] == "ShowModalDialog")
+                                var parts = line.Split(DisplayServer.Separator);
+                                if (parts[0] == "InitCloseAppsDialog")
+                                {
+                                    // Deserialize the process definitions if we have them, then right back that we were successful.
+                                    closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ProcessDefinition[]>(parts[1]) : null, logWriter);
+                                    outputWriter.WriteLine(true);
+                                }
+                                else if (parts[0] == "ShowModalDialog")
                                 {
                                     // Confirm the length of our parts showing the dialog and writing back the result.
                                     if (parts.Length != 4)
                                     {
                                         throw new ProgramException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and DialogOptions.", ExitCode.InvalidArguments);
                                     }
-                                    outputWriter.WriteLine(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "DialogOptions", parts[3] } }));
+                                    outputWriter.WriteLine(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "DialogOptions", parts[3] } }, closeAppsDialogState));
                                 }
                                 else if (parts[0] == "ShowProgressDialog")
                                 {
@@ -249,7 +262,7 @@ namespace PSADT.UserInterface
                                     }
 
                                     // Show the progress dialog and write back that we were successful.
-                                    DialogManager.ShowProgressDialog(dialogStyle, GetDialogOptions<ProgressDialogOptions>(parts[2]));
+                                    DialogManager.ShowProgressDialog(dialogStyle, DeserializeString<ProgressDialogOptions>(parts[2]));
                                     outputWriter.WriteLine(DialogManager.ProgressDialogOpen());
                                 }
                                 else if (parts[0] == "ProgressDialogOpen")
@@ -357,7 +370,7 @@ namespace PSADT.UserInterface
         /// <c>DialogStyle</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// <c>DialogOptions</c> key is missing, empty, or invalid.</description></item> <item><description>The
         /// specified <c>DialogType</c> is not supported.</description></item> </list></exception>
-        private static string ShowModalDialog(IReadOnlyDictionary<string, string> arguments)
+        private static string ShowModalDialog(IReadOnlyDictionary<string, string> arguments, BaseState? closeAppsDialogState = null)
         {
             // Confirm we have a DialogType and that it's valid.
             if (!arguments.TryGetValue("DialogType", out string? dialogTypeArg) || string.IsNullOrWhiteSpace(dialogTypeArg))
@@ -392,10 +405,11 @@ namespace PSADT.UserInterface
             // Show the dialog and return the serialised result for the caller to handle.
             return dialogType switch
             {
-                DialogType.DialogBox => SerializeDialogResult(DialogManager.ShowDialogBox(GetDialogOptions<DialogBoxOptions>(dialogOptions))),
-                DialogType.InputDialog => SerializeDialogResult(DialogManager.ShowInputDialog(dialogStyle, GetDialogOptions<InputDialogOptions>(dialogOptions))),
-                DialogType.CustomDialog => SerializeDialogResult(DialogManager.ShowCustomDialog(dialogStyle, GetDialogOptions<CustomDialogOptions>(dialogOptions))),
-                DialogType.RestartDialog => SerializeDialogResult(DialogManager.ShowRestartDialog(dialogStyle, GetDialogOptions<RestartDialogOptions>(dialogOptions))),
+                DialogType.DialogBox => SerializeObject(DialogManager.ShowDialogBox(DeserializeString<DialogBoxOptions>(dialogOptions))),
+                DialogType.InputDialog => SerializeObject(DialogManager.ShowInputDialog(dialogStyle, DeserializeString<InputDialogOptions>(dialogOptions))),
+                DialogType.CustomDialog => SerializeObject(DialogManager.ShowCustomDialog(dialogStyle, DeserializeString<CustomDialogOptions>(dialogOptions))),
+                DialogType.RestartDialog => SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(dialogOptions))),
+                DialogType.CloseAppsDialog => SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(dialogOptions), (CloseAppsDialogState)closeAppsDialogState!)),
                 _ => throw new ProgramException($"The specified DialogType of [{dialogType}] is not supported.", ExitCode.UnsupportedDialog),
             };
         }
@@ -407,7 +421,7 @@ namespace PSADT.UserInterface
         /// <typeparam name="T">The type to which the dialog options string should be deserialized.</typeparam>
         /// <param name="dialogOptions">A JSON-formatted string containing the dialog options to deserialize.</param>
         /// <returns>The deserialized object of type <typeparamref name="T"/>.</returns>
-        private static T GetDialogOptions<T>(string dialogOptions)
+        private static T DeserializeString<T>(string dialogOptions)
         {
             try
             {
@@ -426,7 +440,7 @@ namespace PSADT.UserInterface
         /// <typeparam name="T">The type of the dialog result object to serialize.</typeparam>
         /// <param name="dialogResult">The dialog result object to be serialized. Cannot be null.</param>
         /// <returns>A string representation of the serialized dialog result.</returns>
-        private static string SerializeDialogResult<T>(T dialogResult)
+        private static string SerializeObject<T>(T dialogResult)
         {
             try
             {
