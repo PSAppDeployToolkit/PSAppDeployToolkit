@@ -6,7 +6,9 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using PSADT.ProcessManagement;
+using PSADT.Types;
 using PSADT.UserInterface.ClientServer;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
@@ -236,6 +238,87 @@ namespace PSADT.UserInterface
                                 {
                                     // Deserialize the process definitions if we have them, then right back that we were successful.
                                     closeAppsDialogState = new(parts.Length == 2 ? DeserializeString<ProcessDefinition[]>(parts[1]) : null, logWriter);
+                                    outputWriter.WriteLine(true);
+                                }
+                                else if (parts[0] == "PromptToCloseApps")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 2)
+                                    {
+                                        throw new ProgramException("The ShowModalDialog command requires exactly one argument: PromptToCloseTimeout", ExitCode.InvalidArguments);
+                                    }
+                                    var promptToCloseTimeout = TimeSpan.Parse(parts[1]);
+
+                                    // Process each running app.
+                                    if (null != closeAppsDialogState.RunningProcessService)
+                                    {
+                                        foreach (var runningApp in closeAppsDialogState.RunningProcessService.RunningProcesses)
+                                        {
+                                            // Get all open windows for the running app.
+                                            var openWindows = WindowUtilities.GetProcessWindowInfo(null, null, [runningApp.Process.ProcessName]);
+                                            if (openWindows.Count > 0)
+                                            {
+                                                // Start gracefully closing each open window.
+                                                foreach (var window in openWindows)
+                                                {
+                                                    try
+                                                    {
+                                                        // Try to bring the window to the front before closing. This doesn't always work.
+                                                        logWriter.WriteLine($"Stopping process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] and prompt to save if there is work to be saved (timeout in [{promptToCloseTimeout}] seconds)...");
+                                                        try
+                                                        {
+                                                            WindowUtilities.BringWindowToFront(window.WindowHandle);
+                                                        }
+                                                        catch (Exception ex)
+                                                        {
+                                                            logWriter.WriteLine($"2{DisplayServer.Separator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex.Message}");
+                                                        }
+
+                                                        // Close out the main window and spin until completion.
+                                                        if (runningApp.Process.CloseMainWindow())
+                                                        {
+                                                            // Start spinning.
+                                                            var promptToCloseStopwatch = new Stopwatch();
+                                                            IReadOnlyList<WindowInfo> openWindow;
+                                                            do
+                                                            {
+                                                                openWindow = WindowUtilities.GetProcessWindowInfo(null, [window.WindowHandle], null);
+                                                                if (openWindow.Count == 0)
+                                                                {
+                                                                    break;
+                                                                }
+                                                                Thread.Sleep(3000);
+                                                            }
+                                                            while (openWindow.Count > 0 && promptToCloseStopwatch.Elapsed < promptToCloseTimeout);
+
+                                                            // Test whether we succeeded.
+                                                            if (openWindow.Count > 0)
+                                                            {
+                                                                logWriter.WriteLine($"2{DisplayServer.Separator}Exceeded the [{promptToCloseTimeout.TotalSeconds}] seconds timeout value for the user to save work associated with process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}].");
+                                                            }
+                                                            else
+                                                            {
+                                                                logWriter.WriteLine($"Window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}] was successfully closed.");
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            logWriter.WriteLine($"3{DisplayServer.Separator}Failed to call the CloseMainWindow() method on process [{runningApp.Process.ProcessName}] with window title [{window.WindowTitle}] because the main window may be disabled due to a modal dialog being shown.");
+                                                        }
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        logWriter.WriteLine($"3{DisplayServer.Separator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex.Message}");
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                logWriter.WriteLine($"Stopping process {runningApp.Process.ProcessName}...");
+                                                runningApp.Process.Kill();
+                                            }
+                                        }
+                                    }
                                     outputWriter.WriteLine(true);
                                 }
                                 else if (parts[0] == "ShowModalDialog")

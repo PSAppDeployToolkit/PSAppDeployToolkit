@@ -121,6 +121,18 @@ namespace PSADT.UserInterface.ClientServer
         }
 
         /// <summary>
+        /// Prompts the user to close any running applications that may interfere with the installation process.
+        /// </summary>
+        /// <remarks>This method invokes a prompt to the user and returns their response. Ensure that the
+        /// environment allows user interaction before calling this method.</remarks>
+        /// <returns><see langword="true"/> if the user agrees to close the applications; otherwise, <see langword="false"/>.</returns>
+        public bool PromptToCloseApps(TimeSpan promptToCloseTimeout)
+        {
+            _logSource = "Show-ADTInstallationWelcome";
+            return Invoke($"PromptToCloseApps{Separator}{promptToCloseTimeout}");
+        }
+
+        /// <summary>
         /// Displays a modal dialog prompting the user to close applications.
         /// </summary>
         /// <remarks>Use this method to prompt the user to close specific applications before proceeding
@@ -437,7 +449,16 @@ namespace PSADT.UserInterface.ClientServer
                 // Only log the message if a deployment session is active.
                 if (ModuleDatabase.IsDeploymentSessionActive())
                 {
-                    ModuleDatabase.GetDeploymentSession().WriteLogEntry(line.Trim(), _logSource);
+                    // Test the line for a log severity.
+                    if (line.Contains(Separator.ToString()))
+                    {
+                        var parts = line.Split(Separator);
+                        ModuleDatabase.GetDeploymentSession().WriteLogEntry(parts[1].Trim(), (LogSeverity)int.Parse(parts[0]), _logSource);
+                    }
+                    else
+                    {
+                        ModuleDatabase.GetDeploymentSession().WriteLogEntry(line.Trim(), _logSource);
+                    }
                 }
             }
         }

@@ -1084,82 +1084,21 @@ function Show-ADTInstallationWelcome
                         }
                         elseif ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Close))
                         {
-                            # Force the applications to close.
+                            # Force the applications to close. Update the process list right before closing, in case it changed.
                             Write-ADTLogEntry -Message 'The user selected to force the application(s) to close...'
-                            if ($PromptToSave -and (Get-ADTEnvironmentTable).SessionZero -and !(Get-ADTEnvironmentTable).IsProcessUserInteractive)
-                            {
-                                Write-ADTLogEntry -Message 'Specified [-PromptToSave] option will not be available, because current process is running in session zero and is not interactive.' -Severity 2
-                            }
-
-                            # Update the process list right before closing, in case it changed.
-                            $PromptToSaveTimeout = [System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)
                             if (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore))
                             {
                                 if ($PromptToSave)
                                 {
-                                    foreach ($runningApp in $runningApps)
+                                    if (!$Script:ADT.DisplayServer.PromptToCloseApps([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)))
                                     {
-                                        # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
-                                        if (!((Get-ADTEnvironmentTable).SessionZero -and !(Get-ADTEnvironmentTable).IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = Get-ADTWindowTitle -ParentProcess $runningApp.Process.ProcessName -InformationAction SilentlyContinue | Select-Object -First 1) -and ($runningApp.Process.MainWindowHandle -ne [IntPtr]::Zero))
-                                        {
-                                            foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
-                                            {
-                                                try
-                                                {
-                                                    # Try to bring the window to the front before closing. This doesn't always work.
-                                                    Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
-                                                    try
-                                                    {
-                                                        [PSADT.Utilities.WindowUtilities]::BringWindowToFront($OpenWindow.WindowHandle)
-                                                    }
-                                                    catch
-                                                    {
-                                                        Write-ADTLogEntry -Message "Failed to bring window [$($OpenWindow.WindowTitle)] to front: $($_.Exception.Message)" -Severity 2
-                                                    }
-
-                                                    # Close out the main window and spin until completion.
-                                                    if ($runningApp.Process.CloseMainWindow())
-                                                    {
-                                                        $promptToSaveStart = [System.Diagnostics.Stopwatch]::StartNew()
-                                                        do
-                                                        {
-                                                            if (!($IsWindowOpen = Get-ADTWindowTitle -WindowHandle $OpenWindow.WindowHandle -InformationAction SilentlyContinue | Select-Object -First 1))
-                                                            {
-                                                                break
-                                                            }
-                                                            [System.Threading.Thread]::Sleep(3000)
-                                                        }
-                                                        while ($IsWindowOpen -and ($promptToSaveStart.Elapsed -lt $PromptToSaveTimeout))
-
-                                                        if ($IsWindowOpen)
-                                                        {
-                                                            Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
-                                                        }
-                                                        else
-                                                        {
-                                                            Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningApp.Process.ProcessName)] was successfully closed."
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
-                                                    }
-                                                }
-                                                catch
-                                                {
-                                                    Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningApp.Process.ProcessName)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                                                }
-                                                finally
-                                                {
-                                                    $runningApp.Process.Refresh()
-                                                }
-                                            }
+                                        $naerParams = @{
+                                            Exception = [System.ApplicationException]::new("Failed to prompt user to close apps for an unknown reason.")
+                                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                            ErrorId = 'PromptToCloseAppsError'
+                                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
                                         }
-                                        else
-                                        {
-                                            Write-ADTLogEntry -Message "Stopping process $($runningApp.Process.ProcessName)..."
-                                            Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
-                                        }
+                                        throw (New-ADTErrorRecord @naerParams)
                                     }
                                 }
                                 else
