@@ -1093,84 +1093,102 @@ function Show-ADTInstallationWelcome
 
                             # Update the process list right before closing, in case it changed.
                             $PromptToSaveTimeout = [System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)
-                            foreach ($runningApp in ($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore))
+                            if (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore))
                             {
-                                # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
-                                if ($PromptToSave -and !((Get-ADTEnvironmentTable).SessionZero -and !(Get-ADTEnvironmentTable).IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = Get-ADTWindowTitle -ParentProcess $runningApp.Process.ProcessName -InformationAction SilentlyContinue | Select-Object -First 1) -and ($runningApp.Process.MainWindowHandle -ne [IntPtr]::Zero))
+                                if ($PromptToSave)
                                 {
-                                    foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
+                                    foreach ($runningApp in $runningApps)
                                     {
-                                        try
+                                        # If the PromptToSave parameter was specified and the process has a window open, then prompt the user to save work if there is work to be saved when closing window.
+                                        if (!((Get-ADTEnvironmentTable).SessionZero -and !(Get-ADTEnvironmentTable).IsProcessUserInteractive) -and ($AllOpenWindowsForRunningProcess = Get-ADTWindowTitle -ParentProcess $runningApp.Process.ProcessName -InformationAction SilentlyContinue | Select-Object -First 1) -and ($runningApp.Process.MainWindowHandle -ne [IntPtr]::Zero))
                                         {
-                                            # Try to bring the window to the front before closing. This doesn't always work.
-                                            Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
-                                            try
+                                            foreach ($OpenWindow in $AllOpenWindowsForRunningProcess)
                                             {
-                                                [PSADT.Utilities.WindowUtilities]::BringWindowToFront($OpenWindow.WindowHandle)
-                                            }
-                                            catch
-                                            {
-                                                Write-ADTLogEntry -Message "Failed to bring window [$($OpenWindow.WindowTitle)] to front: $($_.Exception.Message)" -Severity 2
-                                            }
-
-                                            # Close out the main window and spin until completion.
-                                            if ($runningApp.Process.CloseMainWindow())
-                                            {
-                                                $promptToSaveStart = [System.Diagnostics.Stopwatch]::StartNew()
-                                                do
+                                                try
                                                 {
-                                                    if (!($IsWindowOpen = Get-ADTWindowTitle -WindowHandle $OpenWindow.WindowHandle -InformationAction SilentlyContinue | Select-Object -First 1))
+                                                    # Try to bring the window to the front before closing. This doesn't always work.
+                                                    Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] and prompt to save if there is work to be saved (timeout in [$($adtConfig.UI.PromptToSaveTimeout)] seconds)..."
+                                                    try
                                                     {
-                                                        break
+                                                        [PSADT.Utilities.WindowUtilities]::BringWindowToFront($OpenWindow.WindowHandle)
                                                     }
-                                                    [System.Threading.Thread]::Sleep(3000)
-                                                }
-                                                while ($IsWindowOpen -and ($promptToSaveStart.Elapsed -lt $PromptToSaveTimeout))
+                                                    catch
+                                                    {
+                                                        Write-ADTLogEntry -Message "Failed to bring window [$($OpenWindow.WindowTitle)] to front: $($_.Exception.Message)" -Severity 2
+                                                    }
 
-                                                if ($IsWindowOpen)
-                                                {
-                                                    Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
+                                                    # Close out the main window and spin until completion.
+                                                    if ($runningApp.Process.CloseMainWindow())
+                                                    {
+                                                        $promptToSaveStart = [System.Diagnostics.Stopwatch]::StartNew()
+                                                        do
+                                                        {
+                                                            if (!($IsWindowOpen = Get-ADTWindowTitle -WindowHandle $OpenWindow.WindowHandle -InformationAction SilentlyContinue | Select-Object -First 1))
+                                                            {
+                                                                break
+                                                            }
+                                                            [System.Threading.Thread]::Sleep(3000)
+                                                        }
+                                                        while ($IsWindowOpen -and ($promptToSaveStart.Elapsed -lt $PromptToSaveTimeout))
+
+                                                        if ($IsWindowOpen)
+                                                        {
+                                                            Write-ADTLogEntry -Message "Exceeded the [$($adtConfig.UI.PromptToSaveTimeout)] seconds timeout value for the user to save work associated with process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)]." -Severity 2
+                                                        }
+                                                        else
+                                                        {
+                                                            Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningApp.Process.ProcessName)] was successfully closed."
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
+                                                    }
                                                 }
-                                                else
+                                                catch
                                                 {
-                                                    Write-ADTLogEntry -Message "Window [$($OpenWindow.WindowTitle)] for process [$($runningApp.Process.ProcessName)] was successfully closed."
+                                                    Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningApp.Process.ProcessName)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
+                                                }
+                                                finally
+                                                {
+                                                    $runningApp.Process.Refresh()
                                                 }
                                             }
-                                            else
-                                            {
-                                                Write-ADTLogEntry -Message "Failed to call the CloseMainWindow() method on process [$($runningApp.Process.ProcessName)] with window title [$($OpenWindow.WindowTitle)] because the main window may be disabled due to a modal dialog being shown." -Severity 3
-                                            }
                                         }
-                                        catch
+                                        else
                                         {
-                                            Write-ADTLogEntry -Message "Failed to close window [$($OpenWindow.WindowTitle)] for process [$($runningApp.Process.ProcessName)].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity 3
-                                        }
-                                        finally
-                                        {
-                                            $runningApp.Process.Refresh()
+                                            Write-ADTLogEntry -Message "Stopping process $($runningApp.Process.ProcessName)..."
+                                            Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    Write-ADTLogEntry -Message "Stopping process $($runningApp.Process.ProcessName)..."
-                                    Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
+                                    foreach ($runningApp in $runningApps)
+                                    {
+                                        Write-ADTLogEntry -Message "Stopping process $($runningApp.Process.ProcessName)..."
+                                        Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
+                                    }
                                 }
-                            }
 
-                            # Test whether apps are still running. If they are still running, the Welcome Window will be displayed again after 5 seconds.
-                            for ($i = 0; $i -lt 5; $i++)
-                            {
-                                if (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore))
+                                # Test whether apps are still running. If they are still running, the Welcome Window will be displayed again after 5 seconds.
+                                for ($i = 0; $i -lt 5; $i++)
                                 {
-                                    Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Sort-Object -Unique)))'] are still running, checking again in 1 second..."
-                                    [System.Threading.Thread]::Sleep(1000)
-                                    continue
+                                    if (($runningApps = Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore))
+                                    {
+                                        Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Sort-Object -Unique)))'] are still running, checking again in 1 second..."
+                                        [System.Threading.Thread]::Sleep(1000)
+                                        continue
+                                    }
+                                    Write-ADTLogEntry -Message "All running application(s) have now closed."
+                                    break
                                 }
-                                Write-ADTLogEntry -Message "All running application(s) have now closed."
-                                break
+                                if (!$runningApps)
+                                {
+                                    break
+                                }
                             }
-                            if (!$runningApps)
+                            else
                             {
                                 break
                             }
