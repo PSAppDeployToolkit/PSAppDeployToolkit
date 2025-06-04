@@ -106,6 +106,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Indicates whether the system allows an unlimited number of deferrals.
         /// </summary>
+        [DataMember]
         public readonly bool UnlimitedDeferrals;
 
         /// <summary>
