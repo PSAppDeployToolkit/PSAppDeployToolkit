@@ -14,7 +14,7 @@ function Open-ADTSession
         This function initializes and opens a new ADT session with the specified parameters. It handles the setup of the session environment and processes any callbacks defined for the session. If the session fails to open, it handles the error and closes the session if necessary.
 
     .PARAMETER SessionState
-        Caller's SessionState.
+        Defaults to $PSCmdlet.SessionState to get the caller's SessionState, so only required if you need to override this.
 
     .PARAMETER DeploymentType
         Specifies the type of deployment: Install, Uninstall, or Repair.
@@ -154,9 +154,9 @@ function Open-ADTSession
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.SessionState]$SessionState,
+        [System.Management.Automation.SessionState]$SessionState = $PSCmdlet.SessionState,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [ValidateNotNullOrEmpty()]

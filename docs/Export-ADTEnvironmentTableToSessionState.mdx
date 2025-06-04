@@ -12,7 +12,7 @@ Exports the content of `Get-ADTEnvironmentTable` to the provided SessionState as
 ## SYNTAX
 
 ```powershell
-Export-ADTEnvironmentTableToSessionState [-SessionState] <SessionState> [<CommonParameters>]
+Export-ADTEnvironmentTableToSessionState [[-SessionState] <SessionState>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -41,16 +41,16 @@ Invokes the Export-ADTEnvironmentTableToSessionState function and exports the mo
 
 ### -SessionState
 
-Caller's SessionState.
+Defaults to $PSCmdlet.SessionState to get the caller's SessionState, so only required if you need to override this.
 
 ```yaml
 Type: SessionState
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 1
-Default value: None
+Default value: $PSCmdlet.SessionState
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
