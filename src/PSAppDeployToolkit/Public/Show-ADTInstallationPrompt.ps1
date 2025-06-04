@@ -344,7 +344,7 @@ function Show-ADTInstallationPrompt
 
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying custom installation prompt with message: [$Message]."
-                $result = $Script:ADT.DisplayServer.($PSCmdlet.ParameterSetName.Replace('Show', $null))($adtConfig.UI.DialogStyle, $dialogOptions)
+                $result = $Script:ADT.DisplayServer.($PSCmdlet.ParameterSetName)($adtConfig.UI.DialogStyle, $dialogOptions)
 
                 # Restore minimized windows.
                 if ($MinimizeWindows)
