@@ -80,28 +80,20 @@ function Get-ADTWindowTitle
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTWindowTitle
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WindowTitle', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'WindowHandle', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ParentProcess', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'GetAllWindowTitles', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
-    [OutputType([PSADT.Types.WindowInfo])]
     param
     (
-        [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinTitle')]
-        [AllowEmptyString()]
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
         [System.String[]]$WindowTitle,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'SearchWinHandle')]
-        [AllowEmptyString()]
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
         [System.IntPtr[]]$WindowHandle,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'SearchParentProcess')]
-        [AllowEmptyString()]
-        [System.String[]]$ParentProcess,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'GetAllWinTitles')]
-        [System.Management.Automation.SwitchParameter]$GetAllWindowTitles
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String[]]$ParentProcess
     )
 
     begin
@@ -113,94 +105,21 @@ function Get-ADTWindowTitle
     process
     {
         # Announce commencement.
-        switch ($PSCmdlet.ParameterSetName)
+        if ($WindowTitle -or $WindowHandle -or $ParentProcess)
         {
-            GetAllWinTitles
-            {
-                Write-ADTLogEntry -Message 'Finding all open window title(s).'
-                break
-            }
-            SearchWinTitle
-            {
-                Write-ADTLogEntry -Message "Finding open windows matching the specified title(s)."
-                break
-            }
-            SearchWinHandle
-            {
-                Write-ADTLogEntry -Message "Finding open windows matching the specified handle(s)."
-                break
-            }
-            SearchWinHandle
-            {
-                Write-ADTLogEntry -Message "Finding open windows matching the specified parent process(es)."
-                break
-            }
+            Write-ADTLogEntry -Message "Finding open windows matching the specified criteria."
+        }
+        else
+        {
+            Write-ADTLogEntry -Message 'Finding all open window title(s).'
         }
 
+        # Send this to our C# backend to get it done.
         try
         {
             try
             {
-                # Cache all running processes.
-                $processes = [System.Diagnostics.Process]::GetProcesses() | & {
-                    process
-                    {
-                        if ($WindowHandle -and ($_.MainWindowHandle -notin $WindowHandle))
-                        {
-                            return
-                        }
-                        if ($ParentProcess -and ($_.ProcessName -notin $ParentProcess))
-                        {
-                            return
-                        }
-                        return $_
-                    }
-                }
-
-                # Get all window handles for visible windows and loop through the visible ones.
-                [PSADT.Utilities.WindowUtilities]::EnumWindows() | & {
-                    process
-                    {
-                        # Return early if we're null.
-                        if ($null -eq $_)
-                        {
-                            return
-                        }
-
-                        # Return early if window isn't visible.
-                        if (![PSADT.LibraryInterfaces.User32]::IsWindowVisible($_))
-                        {
-                            return
-                        }
-
-                        # Return early if the window doesn't have any text.
-                        if (!($VisibleWindowTitle = [PSADT.Utilities.WindowUtilities]::GetWindowText($_)))
-                        {
-                            return
-                        }
-
-                        # Return early if the visible window title doesn't match our filter.
-                        if ($WindowTitle -and ($VisibleWindowTitle -notmatch "($([System.String]::Join('|', $WindowTitle)))"))
-                        {
-                            return
-                        }
-
-                        # Return early if the window doesn't have an associated process.
-                        if (!($process = $processes | Where-Object -Property Id -EQ -Value ([PSADT.Utilities.WindowUtilities]::GetWindowThreadProcessId($_)) | Select-Object -First 1))
-                        {
-                            return
-                        }
-
-                        # Build custom object with details about the window and the process.
-                        return [PSADT.Types.WindowInfo]::new(
-                            $VisibleWindowTitle,
-                            $_,
-                            $Process.ProcessName,
-                            $Process.MainWindowHandle,
-                            $Process.Id
-                        )
-                    }
-                }
+                $PSCmdlet.WriteObject([PSADT.Utilities.WindowUtilities]::GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess), $false)
             }
             catch
             {

@@ -11,28 +11,9 @@ Search for an open window title and return details about the window.
 
 ## SYNTAX
 
-### SearchWinTitle
-
 ```powershell
-Get-ADTWindowTitle -WindowTitle <String[]> [<CommonParameters>]
-```
-
-### SearchWinHandle
-
-```powershell
-Get-ADTWindowTitle -WindowHandle <IntPtr[]> [<CommonParameters>]
-```
-
-### SearchParentProcess
-
-```powershell
-Get-ADTWindowTitle -ParentProcess <String[]> [<CommonParameters>]
-```
-
-### GetAllWinTitles
-
-```powershell
-Get-ADTWindowTitle [-GetAllWindowTitles] [<CommonParameters>]
+Get-ADTWindowTitle [[-WindowTitle] <String[]>] [[-WindowHandle] <IntPtr[]>] [[-ParentProcess] <String[]>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -84,11 +65,11 @@ One or more titles of the application window to search for using regex matching.
 
 ```yaml
 Type: String[]
-Parameter Sets: SearchWinTitle
+Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: Named
+Required: False
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -100,11 +81,11 @@ One or more window handles of the application window to search for.
 
 ```yaml
 Type: IntPtr[]
-Parameter Sets: SearchWinHandle
+Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: Named
+Required: False
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -116,28 +97,12 @@ One or more process names of the application window to search for.
 
 ```yaml
 Type: String[]
-Parameter Sets: SearchParentProcess
+Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: Named
+Required: False
+Position: 3
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -GetAllWindowTitles
-
-Get titles for all open windows on the system.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: GetAllWinTitles
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
