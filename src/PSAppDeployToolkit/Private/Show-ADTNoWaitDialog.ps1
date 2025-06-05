@@ -62,5 +62,5 @@ function Private:Show-ADTNoWaitDialog
     }
 
     # Farm this out to a new process.
-    Start-ADTProcessAsUser -Username $User.NTAccount -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -CreateNoWindow -NoWait -InformationAction SilentlyContinue -ErrorAction SilentlyContinue
+    Start-ADTProcessAsUser -Username $User.NTAccount -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -CreateNoWindow -NoWait -InformationAction SilentlyContinue
 }
