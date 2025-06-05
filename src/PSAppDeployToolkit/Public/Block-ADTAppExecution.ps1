@@ -118,9 +118,30 @@ function Block-ADTAppExecution
                     return
                 }
 
+                # Configure the appropriate permissions for the display server.
+                Set-ADTPermissionsForDisplayServer
+
+                # Build out hashtable of parameters needed to construct the dialog.
+                $dialogOptions = @{
+                    AppTitle = $adtSession.InstallTitle
+                    Subtitle = $adtStrings.BlockExecutionText.Subtitle.($DeploymentType.ToString())
+                    AppIconImage = $adtConfig.Assets.Logo
+                    AppBannerImage = $adtConfig.Assets.Banner
+                    DialogTopMost = $true
+                    MinimizeWindows = $false
+                    DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
+                    MessageText = $adtStrings.BlockExecutionText.Message.($DeploymentType.ToString())
+                    Icon = [PSADT.UserInterface.Dialogs.DialogSystemIcon]::Warning
+                    ButtonRightText = 'OK'
+                }
+                if ($null -ne $adtConfig.UI.FluentAccentColor)
+                {
+                    $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
+                }
+
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
                 $blockExecRegPath = Convert-ADTRegistryPath -Key (Join-Path -Path $adtConfig.Toolkit.RegPath -ChildPath $adtEnv.appDeployToolkitName)
-                $blockExecCommand = "& (Import-Module -FullyQualifiedName @{ ModuleName = '$("$($Script:PSScriptRoot)\$($MyInvocation.MyCommand.Module.Name).psd1".Replace("'", "''"))'; Guid = '$($MyInvocation.MyCommand.Module.Guid)'; ModuleVersion = '$($MyInvocation.MyCommand.Module.Version)' } -PassThru) { & `$CommandTable.'Initialize-ADTModule' -ScriptDirectory '$([System.String]::Join("', '", $Script:ADT.Directories.Script.Replace("'", "''")))'; `$null = & `$CommandTable.'Show-ADTInstallationPrompt$($adtConfig.UI.DialogStyle)' -Title '$($adtSession.InstallTitle.Replace("'","''"))' -Subtitle '$($adtStrings.BlockExecutionText.Subtitle.($adtSession.DeploymentType.ToString()).Replace("'", "''"))' -Timeout $($adtConfig.UI.DefaultTimeout) -Message '$($adtStrings.BlockExecutionText.Message.($adtSession.DeploymentType.ToString()).Replace("'", "''"))' -Icon Warning -ButtonLeftText OK }"
+                $blockExecCommand = "& '$($Script:PSScriptRoot)\lib\PSADT.UserInterface.exe' /SingleDialog -DialogType $([PSADT.UserInterface.Dialogs.DialogType]::CustomDialog) -DialogStyle $($adtConfig.UI.DialogStyle) -DialogOptions $([PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions, [PSADT.UserInterface.DialogOptions.CustomDialogOptions]))"
                 $blockExecDbgPath = "conhost.exe --headless $([System.IO.Path]::GetFileName($adtEnv.envPSProcessPath)) $(if (!(Test-ADTModuleIsReleaseBuild)) { "-ExecutionPolicy Bypass " })-NonInteractive -NoProfile -Command & ([scriptblock]::Create([Microsoft.Win32.Registry]::GetValue('$($blockExecRegPath -replace '^Microsoft\.PowerShell\.Core\\Registry::')', 'BlockExecutionCommand', `$null))); #"
                 Set-ADTRegistryKey -Key $blockExecRegPath -Name BlockExecutionCommand -Value $blockExecCommand
 
