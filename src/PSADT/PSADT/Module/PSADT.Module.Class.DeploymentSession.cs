@@ -699,8 +699,7 @@ namespace PSADT.Module
                 {
                     // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
                     WriteLogEntry("The WWAHost process is running, confirming the device is Autopilot-enrolled.");
-                    var apRegKey = @"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot";
-                    if (!string.IsNullOrWhiteSpace((string)moduleSessionState.InvokeProvider.Property.Get([apRegKey], ["CloudAssignedTenantId"], true).First().Properties["CloudAssignedTenantId"].Value))
+                    if (!string.IsNullOrWhiteSpace((string?)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot", "CloudAssignedTenantId", null)))
                     {
                         WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
                         if (((SessionInfo)adtEnv["RunAsActiveUser"])?.SID is SecurityIdentifier userSid)
