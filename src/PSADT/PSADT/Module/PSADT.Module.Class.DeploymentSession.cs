@@ -822,7 +822,7 @@ namespace PSADT.Module
                         }
                         else
                         {
-                            WriteLogEntry($"The processes ['{string.Join("', '", runningProcs.Select(static p => p.Process.ProcessName))}'] were specified as requiring closure and were found to be running.");
+                            WriteLogEntry($"The processes ['{string.Join("', '", runningProcs.Select(static p => p.Process.ProcessName).Distinct())}'] were found to be running and will require closure.");
                         }
                     }
                     else
