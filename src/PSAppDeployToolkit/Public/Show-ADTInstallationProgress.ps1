@@ -284,7 +284,7 @@ function Show-ADTInstallationProgress
                 else
                 {
                     Write-ADTLogEntry -Message "Updating the progress dialog with message: [$($PSBoundParameters.StatusMessage)]."
-                    if (!$Script:ADT.DisplayServer.UpdateProgressDialog($PSBoundParameters.StatusMessage, $PSBoundParameters.StatusMessageDetail, $(if ($PSBoundParameters.ContainsKey('StatusBarPercentage')) { $StatusBarPercentage }), $(if ($PSBoundParameters.ContainsKey('MessageAlignment')) { $MessageAlignment })))
+                    if (!$Script:ADT.DisplayServer.UpdateProgressDialog($(if ($PSBoundParameters.ContainsKey('StatusMessage')) { $StatusMessage }), $(if ($PSBoundParameters.ContainsKey('StatusMessageDetail')) { $StatusMessageDetail }), $(if ($PSBoundParameters.ContainsKey('StatusBarPercentage')) { $StatusBarPercentage }), $(if ($PSBoundParameters.ContainsKey('MessageAlignment')) { $MessageAlignment })))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new("Failed to update the progress dialog for an unknown reason.")
