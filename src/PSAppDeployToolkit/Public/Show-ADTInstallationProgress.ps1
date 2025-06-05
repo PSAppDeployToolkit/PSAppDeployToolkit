@@ -181,15 +181,6 @@ function Show-ADTInstallationProgress
             return
         }
 
-        # Instantiate a new DisplayServer object if one's not already present.
-        if (!$Script:ADT.DisplayServer)
-        {
-            Open-ADTDisplayServer -User $runAsActiveUser
-        }
-
-        # Determine if progress window is open before proceeding.
-        $progressOpen = $Script:ADT.DisplayServer.ProgressDialogOpen()
-
         # Return early in silent mode.
         if ($adtSession)
         {
@@ -198,6 +189,15 @@ function Show-ADTInstallationProgress
                 Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Status message: $($PSBoundParameters.StatusMessage)"
                 return
             }
+
+            # Instantiate a new DisplayServer object if one's not already present.
+            if (!$Script:ADT.DisplayServer)
+            {
+                Open-ADTDisplayServer -User $runAsActiveUser
+            }
+
+            # Determine if progress window is open before proceeding.
+            $progressOpen = $Script:ADT.DisplayServer.ProgressDialogOpen()
 
             # Notify user that the software installation has started.
             if (!$progressOpen)
@@ -211,6 +211,17 @@ function Show-ADTInstallationProgress
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
             }
+        }
+        else
+        {
+            # Instantiate a new DisplayServer object if one's not already present.
+            if (!$Script:ADT.DisplayServer)
+            {
+                Open-ADTDisplayServer -User $runAsActiveUser
+            }
+
+            # Determine if progress window is open before proceeding.
+            $progressOpen = $Script:ADT.DisplayServer.ProgressDialogOpen()
         }
 
         # Call the underlying function to open the progress window.
