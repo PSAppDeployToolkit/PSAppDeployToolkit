@@ -89,12 +89,6 @@ function Private:Import-ADTConfig
     # Import the config from disk.
     $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
 
-    # Place restrictions on non-ConsoleHost targets.
-    if ($Host.Name.Equals('Windows PowerShell ISE Host'))
-    {
-        $config.UI.DialogStyle = 'Classic'
-    }
-
     # Confirm the specified dialog type is valid.
     if (($config.UI.DialogStyle -ne 'Classic') -and (Test-ADTNonNativeCaller))
     {
