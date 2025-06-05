@@ -23,7 +23,6 @@
     <AssemblyVersion>4.1.0.0</AssemblyVersion>
     <InformationalVersion>4.1.0</InformationalVersion>
     <ApplicationIcon>Properties\appIcon.ico</ApplicationIcon>
-    <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <Platforms>AnyCPU</Platforms>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -31,6 +30,7 @@
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <WarningLevel>9999</WarningLevel>
     <StartupObject>PSADT.UserInterface.Program</StartupObject>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
