@@ -59,7 +59,7 @@ function Send-ADTKeys
         Send the sequence of keys "Hello World" to the application with a Window Handle of '17368294'.
 
     .NOTES
-        An active ADT session is NOT required to use this function.
+        An active ADT session is required to use this function.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
@@ -104,6 +104,9 @@ function Send-ADTKeys
 
     begin
     {
+        # Initialize the module if it's not already. We need this for `Open-ADTDisplayServer` to function properly.
+        $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
         $gawtParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
@@ -145,7 +148,7 @@ function Send-ADTKeys
         # Instantiate a new DisplayServer object if one's not already present.
         if (!$Script:ADT.DisplayServer)
         {
-            Open-ADTDisplayServer -User $runAsActiveUser -ExcludeAssets
+            Open-ADTDisplayServer -User $runAsActiveUser
         }
 
         # Process each found window.
