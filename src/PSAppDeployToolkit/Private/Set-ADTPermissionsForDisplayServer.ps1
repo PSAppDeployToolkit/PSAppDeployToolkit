@@ -13,6 +13,28 @@ function Private:Set-ADTPermissionsForDisplayServer
         [System.Management.Automation.SwitchParameter]$ExcludeAssets
     )
 
+    # If there's no active user on the device, return early.
+    if (!($runAsActiveUser = Get-ADTRunAsActiveUser))
+    {
+        return
+    }
+
+    # If we're running under the active user's account, return early as the user already has access.
+    $currentUserIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    try
+    {
+        if ($runAsActiveUser.SID.Equals($currentUserIdentity.User))
+        {
+            return
+        }
+    }
+    finally
+    {
+        $currentUserIdentity.Dispose()
+        $currentUserIdentity = $null
+        Remove-Variable -Name currentUserIdentity -Force -Confirm:$false
+    }
+
     # Set required permissions on this module's library files first.
     $builtinUsersSid = [System.Security.Principal.SecurityIdentifier]::new([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid, $null)
     $saipParams = @{ User = "*$($builtinUsersSid.Value)"; Permission = 'ReadAndExecute'; PermissionType = 'Allow'; Method = 'AddAccessRule'; InformationAction = 'SilentlyContinue' }
