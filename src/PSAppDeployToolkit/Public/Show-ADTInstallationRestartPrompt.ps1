@@ -204,10 +204,10 @@ function Show-ADTInstallationRestartPrompt
                 }
 
                 # Just restart the computer if no one's logged on to answer the dialog.
-                if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+                if (!($runAsActiveUser = ($adtEnv = Get-ADTEnvironmentTable).RunAsActiveUser))
                 {
                     Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
-                    Start-Process -FilePath (Get-ADTEnvironmentTable).envPSProcessPath -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
+                    Start-Process -FilePath $adtEnv.envPSProcessPath -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
                     return
                 }
 

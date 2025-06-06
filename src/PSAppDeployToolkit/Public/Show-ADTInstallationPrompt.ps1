@@ -254,7 +254,7 @@ function Show-ADTInstallationPrompt
                 }
 
                 # Bypass if no one's logged on to answer the dialog.
-                if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+                if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
                 {
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
                     return

@@ -162,7 +162,7 @@ function Show-ADTDialogBox
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.deployMode)]. Text: $Text"
             return
         }
-        elseif (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+        elseif (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return
