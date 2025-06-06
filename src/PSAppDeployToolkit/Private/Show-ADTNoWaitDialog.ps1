@@ -26,9 +26,6 @@ function Private:Show-ADTNoWaitDialog
         [System.Collections.Hashtable]$Options
     )
 
-    # Ensure the permissions are correct on all files before proceeding.
-    Set-ADTPermissionsForDisplayServer
-
     # Serialise the incoming options.
     $optionsString = switch ($Type)
     {
@@ -64,6 +61,9 @@ function Private:Show-ADTNoWaitDialog
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
     }
+
+    # Ensure the permissions are correct on all files before proceeding.
+    Set-ADTPermissionsForDisplayServer -ExcludeAssets:($Type.Equals([PSADT.UserInterface.Dialogs.DialogType]::HelpConsole))
 
     # Farm this out to a new process.
     Start-ADTProcessAsUser -Username $User.NTAccount -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -CreateNoWindow -NoWait -InformationAction SilentlyContinue
