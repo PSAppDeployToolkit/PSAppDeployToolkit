@@ -14,7 +14,7 @@ function Private:Set-ADTPermissionsForDisplayServer
     )
 
     # If there's no active user on the device, return early.
-    if (!($runAsActiveUser = Get-ADTRunAsActiveUser))
+    if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
     {
         return
     }
