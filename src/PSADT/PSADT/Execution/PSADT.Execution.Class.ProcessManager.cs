@@ -166,12 +166,6 @@ namespace PSADT.Execution
                             // We can only run a process as a user if it's different from the caller.
                             if (!session.NTAccount!.Value.Equals(caller.Name, StringComparison.OrdinalIgnoreCase))
                             {
-                                // We can only run a process as another user if the caller is an admin.
-                                if (!new WindowsPrincipal(caller).IsInRole(WindowsBuiltInRole.Administrator))
-                                {
-                                    throw new UnauthorizedAccessException("The calling account is not an administrator. This is required to run a process as another user.");
-                                }
-
                                 // We can only run a process if we can act as part of the operating system.
                                 if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
                                 {
