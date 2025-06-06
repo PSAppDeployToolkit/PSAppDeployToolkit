@@ -81,7 +81,8 @@ function Add-ADTModuleCallback
         $callbacks = $Script:ADT.Callbacks.$Hookpoint
         for ($i = $Callback.Length - 1; $i -ge 0; $i--)
         {
-            if (!$callbacks.Contains(($item = $Callback[$i])))
+            $item = $Callback[$i]
+            if (!$callbacks.Contains($item))
             {
                 $callbacks.Insert(0, $item)
             }
