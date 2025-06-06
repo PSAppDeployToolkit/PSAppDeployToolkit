@@ -101,7 +101,7 @@ namespace PSADT.Utilities
 
             // Bring the window to the foreground.
             uint currentThreadId = PInvoke.GetCurrentThreadId();
-            uint windowThreadId = User32.GetWindowThreadProcessId((HWND)User32.GetForegroundWindow(), out _);
+            uint windowThreadId = User32.GetWindowThreadProcessId(hwnd, out _);
             User32.AttachThreadInput(currentThreadId, windowThreadId, true);
             try
             {
