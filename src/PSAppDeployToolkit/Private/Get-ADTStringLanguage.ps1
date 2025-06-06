@@ -21,7 +21,7 @@ function Private:Get-ADTStringLanguage
         }
         elseif (($userLanguage = Get-ADTRegistryKey -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International\User Profile' -Name Languages -SID $runAsActiveUser.SID | Select-Object -First 1))
         {
-            # We got the RunAsActiveUser's locale from the registy.
+            # We got the RunAsActiveUser's locale from the registry.
             return $userLanguage
         }
         else
