@@ -25,7 +25,7 @@ function Private:Test-ADTReleaseBuildFileValidity
     )
 
     # If we're running a release module, ensure the ps*1 files haven't been tampered with.
-    if ((Test-ADTModuleIsReleaseBuild) -and ($badFiles = Get-ChildItem @PSBoundParameters -Filter *.ps*1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.Status.Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
+    if ($Script:Module.Compiled -and $Script:Module.Signed -and ($badFiles = Get-ChildItem @PSBoundParameters -Filter *.ps*1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.Status.Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
     {
         return $badFiles
     }
