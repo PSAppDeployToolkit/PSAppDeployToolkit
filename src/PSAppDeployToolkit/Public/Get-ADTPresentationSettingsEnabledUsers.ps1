@@ -61,7 +61,7 @@ function Get-ADTPresentationSettingsEnabledUsers
             {
                 # Build out params for Invoke-ADTAllUsersRegistryAction.
                 $iaauraParams = @{
-                    ScriptBlock = { if (Get-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\MobilePC\AdaptableSettings\Activity -Name Activity -SID $_.SID) { return $_ } }
+                    ScriptBlock = { if (Get-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\MobilePC\AdaptableSettings\Activity -Name Activity -SID $_.SID -ErrorAction SilentlyContinue) { return $_ } }
                     UserProfiles = Get-ADTUserProfiles -ExcludeDefaultUser -InformationAction SilentlyContinue
                 }
 
