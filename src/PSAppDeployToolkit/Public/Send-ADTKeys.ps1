@@ -153,17 +153,7 @@ function Send-ADTKeys
                 try
                 {
                     # Bring the window to the foreground and make sure it's enabled.
-                    if (![PSADT.Utilities.WindowUtilities]::BringWindowToFront($window.WindowHandle))
-                    {
-                        $naerParams = @{
-                            Exception = [System.ApplicationException]::new('Failed to bring window to foreground.')
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'WindowHandleForegroundError'
-                            TargetObject = $window
-                            RecommendedAction = "Please check the status of this window and try again."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
-                    }
+                    [PSADT.Utilities.WindowUtilities]::BringWindowToFront($window.WindowHandle)
                     if (![PSADT.LibraryInterfaces.User32]::IsWindowEnabled($window.WindowHandle))
                     {
                         $naerParams = @{
