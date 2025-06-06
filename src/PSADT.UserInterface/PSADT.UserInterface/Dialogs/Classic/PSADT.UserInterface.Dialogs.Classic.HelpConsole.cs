@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace PSADT.UserInterface.Dialogs.Classic
 {
-    internal partial class HelpDialog : BaseDialog
+    internal partial class HelpConsole : BaseDialog
     {
-        internal HelpDialog()
+        internal HelpConsole()
         {
             InitializeComponent();
         }

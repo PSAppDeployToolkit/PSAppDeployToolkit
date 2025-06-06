@@ -1,6 +1,6 @@
 ﻿namespace PSADT.UserInterface.Dialogs.Classic
 {
-    partial class HelpDialog
+    partial class HelpConsole
     {
         /// <summary>
         /// Required designer variable.
@@ -124,7 +124,7 @@
             this.listBox.Sorted = true;
             this.listBox.TabIndex = 1;
             // 
-            // HelpDialog
+            // HelpConsole
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
@@ -132,7 +132,7 @@
             this.ClientSize = new System.Drawing.Size(1322, 579);
             this.Controls.Add(this.tableLayoutPanel);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Name = "HelpDialog";
+            this.Name = "HelpConsole";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PSAppDeployToolkit Help Console";
             this.tableLayoutPanel.ResumeLayout(false);
