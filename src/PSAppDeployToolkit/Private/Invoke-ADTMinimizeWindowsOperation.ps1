@@ -23,12 +23,12 @@ function Private:Invoke-ADTMinimizeWindowsOperation
     }
 
     # Invoke the specified action.
-    if (!$Script:ADT.DisplayServer.($PSBoundParameters.ParameterSetName)())
+    if (!$Script:ADT.DisplayServer.($PSCmdlet.ParameterSetName)())
     {
         $naerParams = @{
-            Exception = [System.ApplicationException]::new("Failed to $($PSBoundParameters.ParameterSetName.Split('All')[0].ToLower()) all windows for an unknown reason.")
+            Exception = [System.ApplicationException]::new("Failed to $($PSCmdlet.ParameterSetName.Split('All')[0].ToLower()) all windows for an unknown reason.")
             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-            ErrorId = "$($PSBoundParameters.ParameterSetName)Error"
+            ErrorId = "$($PSCmdlet.ParameterSetName)Error"
             RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
         }
         throw (New-ADTErrorRecord @naerParams)
