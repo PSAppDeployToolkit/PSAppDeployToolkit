@@ -7,6 +7,8 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Windows.Forms;
+using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.Types;
 using PSADT.UserInterface.ClientServer;
@@ -15,6 +17,7 @@ using PSADT.UserInterface.Dialogs;
 using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
+using Windows.Win32.Foundation;
 
 namespace PSADT.UserInterface
 {
@@ -399,6 +402,26 @@ namespace PSADT.UserInterface
                                 {
                                     // Restore all windows and write back that we were successful.
                                     ShellUtilities.RestoreAllWindows();
+                                    outputWriter.WriteLine(true);
+                                }
+                                else if (parts[0] == "SendKeys")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 3)
+                                    {
+                                        throw new ProgramException("The SendKeys command requires exactly two arguments: WindowHandle, and Keys.", ExitCode.InvalidArguments);
+                                    }
+
+                                    // Bring the window to the front and make sure it's enabled.
+                                    HWND hwnd = (HWND)(IntPtr)int.Parse(parts[1]);
+                                    WindowUtilities.BringWindowToFront(hwnd);
+                                    if (!User32.IsWindowEnabled(hwnd))
+                                    {
+                                        throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
+                                    }
+
+                                    // Send the keys and write back that we were successful.
+                                    SendKeys.SendWait(parts[2]);
                                     outputWriter.WriteLine(true);
                                 }
                                 else if (parts[0] == "Open")

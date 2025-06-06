@@ -77,43 +77,33 @@ function Send-ADTKeys
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'WindowTitle')]
-        [AllowEmptyString()]
-        [ValidateNotNull()]
+        [Parameter(Mandatory = $true, ParameterSetName = 'WindowTitle')]
+        [ValidateNotNullOrEmpty()]
         [System.String]$WindowTitle,
 
-        [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'GetAllWindowTitles')]
-        [System.Management.Automation.SwitchParameter]$GetAllWindowTitles,
-
-        [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'WindowHandle')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
         [System.IntPtr]$WindowHandle,
 
-        [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'WindowTitle')]
-        [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'GetAllWindowTitles')]
-        [Parameter(Mandatory = $true, Position = 3, ParameterSetName = 'WindowHandle')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'WindowTitle')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
         [System.String]$Keys,
 
-        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowTitle')]
-        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'GetAllWindowTitles')]
-        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowHandle')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'WindowTitle')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'WindowHandle')]
         [System.Obsolete("Please use 'WaitDuration' instead as this will be removed in PSAppDeployToolkit 4.2.0.")]
         [ValidateNotNullOrEmpty()]
         [System.Int32]$WaitSeconds,
 
-        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowTitle')]
-        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'GetAllWindowTitles')]
-        [Parameter(Mandatory = $false, Position = 4, ParameterSetName = 'WindowHandle')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'WindowTitle')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'WindowHandle')]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$WaitDuration
     )
 
     begin
     {
-        # Announce deprecation to callers.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.2.0. Please raise a case at [https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues] if you require this function." -Severity 2
-
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
         $gawtParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
@@ -131,6 +121,13 @@ function Send-ADTKeys
 
     process
     {
+        # Bypass if no one's logged on to answer the dialog.
+        if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            return
+        }
+
         # Get the specified windows.
         try
         {
@@ -145,6 +142,12 @@ function Send-ADTKeys
             $PSCmdlet.ThrowTerminatingError($_)
         }
 
+        # Instantiate a new DisplayServer object if one's not already present.
+        if (!$Script:ADT.DisplayServer)
+        {
+            Open-ADTDisplayServer -User $runAsActiveUser -ExcludeAssets
+        }
+
         # Process each found window.
         foreach ($window in $Windows)
         {
@@ -152,23 +155,18 @@ function Send-ADTKeys
             {
                 try
                 {
-                    # Bring the window to the foreground and make sure it's enabled.
-                    [PSADT.Utilities.WindowUtilities]::BringWindowToFront($window.WindowHandle)
-                    if (![PSADT.LibraryInterfaces.User32]::IsWindowEnabled($window.WindowHandle))
+                    # Send the Key sequence.
+                    Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]."
+                    if (!$Script:ADT.DisplayServer.SendKeys($window.WindowHandle, $Keys))
                     {
                         $naerParams = @{
-                            Exception = [System.ApplicationException]::new('Unable to send keys to window because it may be disabled due to a modal dialog being shown.')
+                            Exception = [System.ApplicationException]::new("Failed to send the requested keys for an unknown reason.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'WindowHandleDisabledError'
-                            TargetObject = $window
-                            RecommendedAction = "Please check the status of this window and try again."
+                            ErrorId = 'SendKeysUnknownError'
+                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
-
-                    # Send the Key sequence.
-                    Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]."
-                    [System.Windows.Forms.SendKeys]::SendWait($Keys)
                     if ($WaitDuration)
                     {
                         Write-ADTLogEntry -Message "Sleeping for [$($WaitDuration.TotalSeconds)] seconds."

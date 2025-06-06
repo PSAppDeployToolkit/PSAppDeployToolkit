@@ -294,6 +294,22 @@ namespace PSADT.UserInterface.ClientServer
         }
 
         /// <summary>
+        /// Sends a sequence of keystrokes to the specified window.
+        /// </summary>
+        /// <remarks>Ensure that the specified window handle is valid and the target window is capable of
+        /// receiving keystrokes. The format of the <paramref name="keys"/> parameter may depend on the underlying
+        /// implementation.</remarks>
+        /// <param name="windowHandle">A handle to the target window where the keystrokes will be sent.</param>
+        /// <param name="keys">The string representing the sequence of keystrokes to send. This can include special keys or key
+        /// combinations.</param>
+        /// <returns><see langword="true"/> if the keystrokes were successfully sent; otherwise, <see langword="false"/>.</returns>
+        public bool SendKeys(IntPtr windowHandle, string keys)
+        {
+            _logSource = "Send-ADTKeys";
+            return Invoke($"SendKeys{Separator}{windowHandle}{Separator}{keys}");
+        }
+
+        /// <summary>
         /// Displays a modal dialog of the specified type and style, passing the provided options, and returns the
         /// result.
         /// </summary>
