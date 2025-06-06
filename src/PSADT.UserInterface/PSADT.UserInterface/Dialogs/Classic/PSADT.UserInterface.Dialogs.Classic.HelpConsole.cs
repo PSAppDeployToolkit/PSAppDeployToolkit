@@ -85,6 +85,12 @@ namespace PSADT.UserInterface.Dialogs.Classic
                         this.runspace = null!;
                     }
                 };
+
+                // Lastly, set the initial selected index of the ComboBox to the first item, if available.
+                if (this.comboBox.Items.Count > 0)
+                {
+                    this.comboBox.SelectedIndex = 0;
+                }
             }
         }
 
