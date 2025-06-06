@@ -11,10 +11,24 @@ function Private:Get-ADTStringLanguage
         # The caller has specified a specific language.
         return $languageOverride
     }
-    elseif ($Script:ADT.Environment.RunAsActiveUser)
+    elseif (($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
     {
-        # Get the actual user's $PSUICulture value. If we're running as SYSTEM, the user's locale could be different.
-        return $((Start-ADTProcess -Username $Script:ADT.Environment.RunAsActiveUser.NTAccount -FilePath powershell.exe -ArgumentList '-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command $PSUICulture' -MsiExecWaitTime ([System.TimeSpan]::FromSeconds($adtConfig.MSI.MutexWaitTime)) -CreateNoWindow -PassThru -InformationAction SilentlyContinue).StdOut)
+        # A user is logged on. If we're running as SYSTEM, the user's locale could be different so try to get theirs if we can.
+        if ($runAsActiveUser.SID.Equals((Get-ADTEnvironmentTable).CurrentProcessSID) -and ($userLanguage = [Microsoft.Win32.Registry]::GetValue('HKEY_CURRENT_USER\Control Panel\International\User Profile', 'Languages', $null) | Select-Object -First 1))
+        {
+            # We got the current user's locale from the registry.
+            return $userLanguage
+        }
+        elseif (($userLanguage = Get-ADTRegistryKey -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International\User Profile' -Name Languages -SID $runAsActiveUser.SID | Select-Object -First 1))
+        {
+            # We got the RunAsActiveUser's locale from the registy.
+            return $userLanguage
+        }
+        else
+        {
+            # We failed all the above, so get the actual user's $PSUICulture value.
+            return $((Start-ADTProcess -Username $runAsActiveUser.NTAccount -FilePath powershell.exe -ArgumentList '-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command $PSUICulture' -MsiExecWaitTime ([System.TimeSpan]::FromSeconds($adtConfig.MSI.MutexWaitTime)) -CreateNoWindow -PassThru -InformationAction SilentlyContinue).StdOut)
+        }
     }
     else
     {
