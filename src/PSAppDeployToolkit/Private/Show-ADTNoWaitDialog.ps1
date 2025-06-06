@@ -36,6 +36,10 @@ function Private:Show-ADTNoWaitDialog
         {
             [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.DialogBoxOptions]$Options, [PSADT.UserInterface.DialogOptions.DialogBoxOptions])
         }
+        ([PSADT.UserInterface.Dialogs.DialogType]::HelpConsole)
+        {
+            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]$Options, [PSADT.UserInterface.DialogOptions.HelpConsoleOptions])
+        }
         ([PSADT.UserInterface.Dialogs.DialogType]::InputDialog)
         {
             [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.InputDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.InputDialogOptions])

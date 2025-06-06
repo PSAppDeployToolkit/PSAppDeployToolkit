@@ -112,7 +112,6 @@
             // 
             // listBox
             // 
-            this.listBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.listBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listBox.FormattingEnabled = true;
             this.listBox.IntegralHeight = false;

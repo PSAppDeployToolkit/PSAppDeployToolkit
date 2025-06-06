@@ -19,6 +19,13 @@ namespace PSADT.UserInterface.Dialogs
         Fluent,
     }
 
+    /// <summary>
+    /// Specifies the types of dialogs that can be displayed in the application.
+    /// </summary>
+    /// <remarks>The <see cref="DialogType"/> enumeration defines various dialog types that can be used to
+    /// interact with users. Each value represents a specific type of dialog, such as message boxes, input dialogs, or
+    /// progress dialogs. This enumeration is typically used to identify or configure the type of dialog to
+    /// display.</remarks>
     public enum DialogType
     {
         /// <summary>
@@ -35,6 +42,11 @@ namespace PSADT.UserInterface.Dialogs
         /// Represents a Windows 9x-style message box.
         /// </summary>
         DialogBox,
+
+        /// <summary>
+        /// Provides methods for displaying help information in the console.
+        /// </summary>
+        HelpConsole,
 
         /// <summary>
         /// Represents the InputDialog type.

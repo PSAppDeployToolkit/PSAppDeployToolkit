@@ -300,6 +300,20 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Displays the Help Console dialog with the specified options.
+        /// </summary>
+        /// <remarks>This method invokes the Help Console dialog using the provided <paramref
+        /// name="options"/> to customize its appearance and functionality.</remarks>
+        /// <param name="options">The configuration options for the Help Console dialog, including display settings and behavior.</param>
+        /// <returns>A <see cref="System.Windows.Forms.DialogResult"/> value indicating the result of the dialog interaction. For
+        /// example, <see cref="System.Windows.Forms.DialogResult.OK"/> if the user confirmed, or <see
+        /// cref="System.Windows.Forms.DialogResult.Cancel"/> if the user canceled.</returns>
+        internal static System.Windows.Forms.DialogResult ShowHelpConsole(HelpConsoleOptions options)
+        {
+            return (System.Windows.Forms.DialogResult)InvokeDialogAction(() => new Dialogs.Classic.HelpConsole(options).ShowDialog());
+        }
+
+        /// <summary>
         /// Initializes the WPF application and invokes the specified action on the UI thread.
         /// </summary>
         private static object InvokeDialogAction(Delegate callback)
