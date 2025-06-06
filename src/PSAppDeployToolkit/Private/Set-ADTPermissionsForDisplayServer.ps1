@@ -20,19 +20,18 @@ function Private:Set-ADTPermissionsForDisplayServer
     }
 
     # If we're running under the active user's account, return early as the user already has access.
-    $currentUserIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $currentWindowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     try
     {
-        if ($runAsActiveUser.SID.Equals($currentUserIdentity.User))
+        if ($runAsActiveUser.SID.Equals($currentWindowsIdentity.User))
         {
             return
         }
     }
     finally
     {
-        $currentUserIdentity.Dispose()
-        $currentUserIdentity = $null
-        Remove-Variable -Name currentUserIdentity -Force -Confirm:$false
+        $currentWindowsIdentity.Dispose()
+        $currentWindowsIdentity = $null
     }
 
     # Set required permissions on this module's library files first.
