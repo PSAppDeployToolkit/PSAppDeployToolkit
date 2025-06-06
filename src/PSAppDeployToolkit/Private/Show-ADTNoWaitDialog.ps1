@@ -66,5 +66,5 @@ function Private:Show-ADTNoWaitDialog
     Set-ADTPermissionsForDisplayServer -ExcludeAssets:($Type.Equals([PSADT.UserInterface.Dialogs.DialogType]::HelpConsole))
 
     # Farm this out to a new process.
-    Start-ADTProcessAsUser -Username $User.NTAccount -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -CreateNoWindow -NoWait -InformationAction SilentlyContinue
+    Start-ADTProcessAsUser -Username $User.NTAccount -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -MsiExecWaitTime 1 -CreateNoWindow -NoWait -InformationAction SilentlyContinue
 }
