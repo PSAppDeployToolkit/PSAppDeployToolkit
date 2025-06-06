@@ -56,7 +56,7 @@
             this.tableLayoutPanel.RowCount = 2;
             this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel.Size = new System.Drawing.Size(1322, 579);
+            this.tableLayoutPanel.Size = new System.Drawing.Size(1254, 623);
             this.tableLayoutPanel.TabIndex = 0;
             // 
             // comboBox
@@ -81,7 +81,7 @@
             this.richTextBoxPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 4);
             this.richTextBoxPanel.Name = "richTextBoxPanel";
             this.tableLayoutPanel.SetRowSpan(this.richTextBoxPanel, 2);
-            this.richTextBoxPanel.Size = new System.Drawing.Size(1006, 572);
+            this.richTextBoxPanel.Size = new System.Drawing.Size(938, 616);
             this.richTextBoxPanel.TabIndex = 2;
             // 
             // richTextBox
@@ -93,7 +93,7 @@
             this.richTextBox.Margin = new System.Windows.Forms.Padding(0);
             this.richTextBox.Name = "richTextBox";
             this.richTextBox.ReadOnly = true;
-            this.richTextBox.Size = new System.Drawing.Size(1004, 570);
+            this.richTextBox.Size = new System.Drawing.Size(936, 614);
             this.richTextBox.TabIndex = 2;
             this.richTextBox.Text = "";
             this.richTextBox.WordWrap = false;
@@ -107,7 +107,7 @@
             this.panelListBox.Location = new System.Drawing.Point(4, 30);
             this.panelListBox.Margin = new System.Windows.Forms.Padding(4, 0, 0, 4);
             this.panelListBox.Name = "panelListBox";
-            this.panelListBox.Size = new System.Drawing.Size(304, 545);
+            this.panelListBox.Size = new System.Drawing.Size(304, 589);
             this.panelListBox.TabIndex = 3;
             // 
             // listBox
@@ -119,7 +119,7 @@
             this.listBox.Location = new System.Drawing.Point(0, 0);
             this.listBox.Margin = new System.Windows.Forms.Padding(0);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(304, 545);
+            this.listBox.Size = new System.Drawing.Size(304, 589);
             this.listBox.Sorted = true;
             this.listBox.TabIndex = 1;
             // 
@@ -128,7 +128,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1322, 579);
+            this.ClientSize = new System.Drawing.Size(1254, 623);
             this.Controls.Add(this.tableLayoutPanel);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "HelpConsole";
