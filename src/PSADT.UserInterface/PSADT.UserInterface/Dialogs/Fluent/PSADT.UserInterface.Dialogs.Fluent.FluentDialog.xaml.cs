@@ -636,8 +636,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             top -= dialogPosName.StartsWith("Bottom") ? 24 : dialogPosName.StartsWith("Top") ? -24 : 0;
 
             // Set positions in DIPs.
-            Left = left;
-            Top = top;
+            Left = _startingLeft = left;
+            Top = _startingTop = top;
         }
 
         /// <summary>
