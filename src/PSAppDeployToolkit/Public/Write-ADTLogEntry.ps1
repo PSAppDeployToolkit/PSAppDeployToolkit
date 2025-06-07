@@ -77,7 +77,7 @@ function Write-ADTLogEntry
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [AllowEmptyCollection()]
+        [ValidateNotNullOrEmpty()]
         [System.String[]]$Message,
 
         [Parameter(Mandatory = $false)]
@@ -149,9 +149,9 @@ function Write-ADTLogEntry
         }
 
         # If we don't have an active session, write the message to the verbose stream (4).
-        $logEntries = if (Test-ADTSessionActive)
+        if (Test-ADTSessionActive)
         {
-            (Get-ADTSession).WriteLogEntry(
+            $logEntries = (Get-ADTSession).WriteLogEntry(
                 $messages,
                 $DebugMessage,
                 $(if ($PSBoundParameters.ContainsKey('Severity')) { $Severity }),
@@ -169,7 +169,7 @@ function Write-ADTLogEntry
             {
                 Initialize-ADTModule
             }
-            [PSADT.Module.LogUtilities]::WriteLogEntry(
+            $logEntries = [PSADT.Module.LogUtilities]::WriteLogEntry(
                 $messages,
                 ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)],
                 $false,
@@ -183,9 +183,9 @@ function Write-ADTLogEntry
         }
 
         # Return the provided message if PassThru is true.
-        if ($PassThru -and $logEntries)
+        if ($PassThru -and (Get-Variable -Name logEntries -ErrorAction Ignore))
         {
-            return $logEntries
+            $PSCmdlet.WriteObject($logEntries, $false)
         }
     }
 }
