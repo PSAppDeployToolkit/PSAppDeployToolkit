@@ -21,15 +21,4 @@
         PROCESSOR_ARCHITECTURE_ARM32_ON_WIN64 = 13,
         PROCESSOR_ARCHITECTURE_UNKNOWN = 0xFFFF
     }
-
-    /// <summary>
-    /// Process information classes for querying and setting process information.
-    /// </summary>
-    internal enum PROCESSINFOCLASS : int
-    {
-        /// <summary>
-        /// Retrieves the process basic information.
-        /// </summary>
-        ProcessBasicInformation = 0,
-    }
 }

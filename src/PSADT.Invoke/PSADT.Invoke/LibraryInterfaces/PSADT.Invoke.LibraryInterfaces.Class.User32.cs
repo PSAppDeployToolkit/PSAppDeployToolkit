@@ -12,18 +12,16 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// Sets the process as DPI aware.
         /// </summary>
         /// <returns></returns>
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = false, EntryPoint = "SetProcessDPIAware")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetProcessDPIAwareNative();
-
-        /// <summary>
-        /// Sets the process as DPI aware.
-        /// </summary>
-        /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
         internal static bool SetProcessDPIAware()
         {
-            var res = SetProcessDPIAwareNative();
+            // Import the SetProcessDPIAware function from user32.dll.
+            [DllImport("user32.dll", ExactSpelling = true, SetLastError = false)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            static extern bool SetProcessDPIAware();
+
+            // Call the SetProcessDPIAware function to set the process as DPI aware.
+            var res = SetProcessDPIAware();
             if (!res)
             {
                 throw new Win32Exception("The call to SetProcessDPIAware() failed.");

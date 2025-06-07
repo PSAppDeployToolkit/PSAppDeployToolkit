@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using PSADT.Invoke.LibraryInterfaces;
 
@@ -11,22 +11,19 @@ namespace PSADT.Invoke.Utilities
     internal static class ProcessUtilities
     {
         /// <summary>
-        /// Gets the parent process of a specified process.
-        /// </summary>
-        /// <param name="handle">The process handle.</param>
-        /// <returns>An instance of the Process class.</returns>
-        internal static Process GetParentProcess(Process proc)
-        {
-            NtDll.NtQueryInformationProcess(proc.Handle, PROCESSINFOCLASS.ProcessBasicInformation, out var pbi);
-            return Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
-        }
-
-        /// <summary>
         /// Gets a list of all parent processes of this one.
         /// </summary>
         /// <returns>An list of instances of the Process class.</returns>
-        internal static List<Process> GetParentProcesses()
+        internal static ReadOnlyCollection<Process> GetParentProcesses()
         {
+            // Internal method to get the parent process of a given process.
+            static Process GetParentProcess(Process proc)
+            {
+                NtDll.NtQueryInformationProcess(proc.Handle, out NtDll.PROCESS_BASIC_INFORMATION pbi);
+                return Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
+            }
+
+            // Build a list of parent processes and return it to the caller.
             var proc = Process.GetCurrentProcess();
             List<Process> procs = [];
             while (true)
@@ -44,7 +41,7 @@ namespace PSADT.Invoke.Utilities
                     break;
                 }
             }
-            return procs;
+            return procs.AsReadOnly();
         }
     }
 }

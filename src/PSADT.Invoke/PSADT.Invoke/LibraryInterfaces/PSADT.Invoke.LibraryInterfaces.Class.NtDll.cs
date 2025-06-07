@@ -26,27 +26,23 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// <summary>
         /// Retrieves information about a process.
         /// </summary>
-        /// <param name="ProcessHandle"></param>
-        /// <param name="ProcessInformationClass"></param>
-        /// <param name="ProcessInformation"></param>
-        /// <param name="ProcessInformationLength"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        [DllImport("ntdll.dll", EntryPoint = "NtQueryInformationProcess")]
-        private static extern int NtQueryInformationProcessNative(IntPtr processHandle, PROCESSINFOCLASS processInformationClass, ref PROCESS_BASIC_INFORMATION processInformation, int processInformationLength, out int returnLength);
-
-        /// <summary>
-        /// Retrieves information about a process.
-        /// </summary>
         /// <param name="processHandle"></param>
-        /// <param name="processInformationClass"></param>
         /// <param name="processInformation"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static int NtQueryInformationProcess(IntPtr processHandle, PROCESSINFOCLASS processInformationClass, out PROCESS_BASIC_INFORMATION processInformation)
+        internal static int NtQueryInformationProcess(IntPtr processHandle, out PROCESS_BASIC_INFORMATION processInformation)
         {
-            PROCESS_BASIC_INFORMATION processInformationLocal = new PROCESS_BASIC_INFORMATION();
-            var status = NtQueryInformationProcessNative(processHandle, processInformationClass, ref processInformationLocal, Marshal.SizeOf(processInformationLocal), out _);
+            // Import the NtQueryInformationProcess function from ntdll.dll.
+            [DllImport("ntdll.dll", ExactSpelling = true)]
+            static extern int NtQueryInformationProcess(IntPtr processHandle, PROCESSINFOCLASS processInformationClass, ref PROCESS_BASIC_INFORMATION processInformation, int processInformationLength, out int returnLength);
+
+            // Import the RtlNtStatusToDosError function from ntdll.dll to convert NT status codes to Win32 error codes.
+            [DllImport("ntdll.dll", ExactSpelling = true)]
+            static extern uint RtlNtStatusToDosError(int Status);
+
+            // Perform the query to get the process information.
+            PROCESS_BASIC_INFORMATION processInformationLocal = new();
+            var status = NtQueryInformationProcess(processHandle, PROCESSINFOCLASS.ProcessBasicInformation, ref processInformationLocal, Marshal.SizeOf(processInformationLocal), out _);
             if (status != 0)
             {
                 throw new Win32Exception((int)RtlNtStatusToDosError(status));
@@ -56,11 +52,14 @@ namespace PSADT.Invoke.LibraryInterfaces
         }
 
         /// <summary>
-        /// Retrieves the processor architecture of the system.
+        /// Process information classes for querying and setting process information.
         /// </summary>
-        /// <param name="Status"></param>
-        /// <returns></returns>
-        [DllImport("ntdll.dll")]
-        internal static extern uint RtlNtStatusToDosError(int Status);
+        private enum PROCESSINFOCLASS : int
+        {
+            /// <summary>
+            /// Retrieves the process basic information.
+            /// </summary>
+            ProcessBasicInformation = 0,
+        }
     }
 }

@@ -15,7 +15,17 @@ namespace PSADT.Invoke.LibraryInterfaces
         [StructLayout(LayoutKind.Sequential)]
         internal struct SYSTEM_INFO
         {
-            internal ProcessorArchitectureUnion uProcessorInfo;
+            [StructLayout(LayoutKind.Explicit)]
+            internal struct SYSTEM_INFO_PROCESSORINFO_UNION
+            {
+                [FieldOffset(0)]
+                internal ProcessorArchitecture wProcessorArchitecture;
+
+                [FieldOffset(2)]
+                internal ushort wReserved;
+            }
+
+            internal SYSTEM_INFO_PROCESSORINFO_UNION uProcessorInfo;
             internal uint dwPageSize;
             internal IntPtr lpMinimumApplicationAddress;
             internal IntPtr lpMaximumApplicationAddress;
@@ -28,42 +38,19 @@ namespace PSADT.Invoke.LibraryInterfaces
         }
 
         /// <summary>
-        /// Contains information about the processor architecture.
-        /// </summary>
-        [StructLayout(LayoutKind.Explicit)]
-        internal struct ProcessorArchitectureUnion
-        {
-            [FieldOffset(0)]
-            internal ProcessorArchitecture wProcessorArchitecture;
-
-            [FieldOffset(2)]
-            internal ushort wReserved;
-        }
-
-        /// <summary>
-        /// Retrieves information about the current system to an application running under WOW64.
-        /// </summary>
-        /// <param name="lpSystemInfo"></param>
-        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
-        internal static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
-
-        /// <summary>
         /// Retrieves information about the current system to an application running under WOW64.
         /// </summary>
         /// <returns></returns>
         internal static SYSTEM_INFO GetNativeSystemInfo()
         {
+            // Import the GetNativeSystemInfo function from kernel32.dll.
+            [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
+            static extern void GetNativeSystemInfo(out SYSTEM_INFO lpSystemInfo);
+
+            // Call the GetNativeSystemInfo function to retrieve system information.
             GetNativeSystemInfo(out var systemInfo);
             return systemInfo;
         }
-
-        /// <summary>
-        /// Allocates a console to the process.
-        /// </summary>
-        /// <returns></returns>
-        [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true, EntryPoint = "AllocConsole")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool AllocConsoleNative();
 
         /// <summary>
         /// Gets a handle to the allocated console window.
@@ -72,7 +59,13 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static bool AllocConsole()
         {
-            var res = AllocConsoleNative();
+            // Import the AllocConsole function from kernel32.dll.
+            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            static extern bool AllocConsole();
+
+            // Call the AllocConsole function to allocate a console for the process.
+            var res = AllocConsole();
             if (!res)
             {
                 throw new Win32Exception();
@@ -84,17 +77,15 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// Gets a handle to the allocated console window.
         /// </summary>
         /// <returns></returns>
-        [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = false, EntryPoint = "GetConsoleWindow")]
-        private static extern IntPtr GetConsoleWindowNative();
-
-        /// <summary>
-        /// Gets a handle to the allocated console window.
-        /// </summary>
-        /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
         internal static IntPtr GetConsoleWindow()
         {
-            var res = GetConsoleWindowNative();
+            // Import the GetConsoleWindow function from kernel32.dll.
+            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = false)]
+            static extern IntPtr GetConsoleWindow();
+
+            // Call the GetConsoleWindow function to retrieve the handle to the console window.
+            var res = GetConsoleWindow();
             if (res == IntPtr.Zero)
             {
                 throw new Win32Exception("Failed to get a handle for the console window.");
@@ -106,18 +97,16 @@ namespace PSADT.Invoke.LibraryInterfaces
         /// Frees the console allocated to the process.
         /// </summary>
         /// <returns></returns>
-        [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true, EntryPoint = "FreeConsole")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool FreeConsoleNative();
-
-        /// <summary>
-        /// Frees the console allocated to the process.
-        /// </summary>
-        /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
         internal static bool FreeConsole()
         {
-            var res = FreeConsoleNative();
+            // Import the FreeConsole function from kernel32.dll.
+            [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            static extern bool FreeConsole();
+
+            // Call the FreeConsole function to free the console allocated to the process.
+            var res = FreeConsole();
             if (!res)
             {
                 throw new Win32Exception();
