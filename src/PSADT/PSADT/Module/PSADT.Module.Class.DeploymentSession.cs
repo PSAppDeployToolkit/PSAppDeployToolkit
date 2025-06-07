@@ -1048,11 +1048,7 @@ namespace PSADT.Module
         /// <param name="hostLogStream">What stream to write the message to.</param>
         public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logType = null, HostLogStream? hostLogStream = null)
         {
-            if (null == hostLogStream)
-            {
-                hostLogStream = GetHostLogStreamMode();
-            }
-            var logEntries = LogUtilities.WriteLogEntry(message, hostLogStream.Value, debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logType);
+            var logEntries = LogUtilities.WriteLogEntry(message, hostLogStream ?? GetHostLogStreamMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logType);
             LogBuffer.AddRange(logEntries);
             return logEntries;
         }

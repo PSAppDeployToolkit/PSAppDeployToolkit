@@ -37,7 +37,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Inline lambda to get the command line from the given process.
-            string[] GetCommandLine(Process process)
+            static string[] GetCommandLine(Process process, Dictionary<Process, string[]> processCommandLines, ReadOnlyDictionary<string, string> ntPathLookupTable)
             {
                 // Get the command line from the cache if we have it.
                 if (processCommandLines.TryGetValue(process, out var commandLine))
@@ -77,7 +77,7 @@ namespace PSADT.ProcessManagement
                     string[] commandLine;
                     try
                     {
-                        commandLine = GetCommandLine(process);
+                        commandLine = GetCommandLine(process, processCommandLines, ntPathLookupTable);
                     }
                     catch (ArgumentException)
                     {
@@ -155,7 +155,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A list of <see cref="Process"/> objects representing the parent processes of the current process. The list
         /// is ordered from the immediate parent to the top-level ancestor. If no parent processes are found, the list
         /// will be empty.</returns>
-        public static ReadOnlyCollection<Process> GetParentProcesses()
+        public static IReadOnlyList<Process> GetParentProcesses()
         {
             var proc = Process.GetCurrentProcess();
             List<Process> procs = [];

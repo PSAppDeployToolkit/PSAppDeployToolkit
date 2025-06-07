@@ -18,7 +18,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="processId"></param>
         /// <returns></returns>
-        internal static unsafe string GetProcessCommandLine(int processId)
+        internal static string GetProcessCommandLine(int processId)
         {
             // Open the process's handle with the relevant access rights.
             using (var hProc = Kernel32.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId))

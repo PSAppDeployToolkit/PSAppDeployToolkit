@@ -48,7 +48,7 @@ namespace PSADT.TerminalServices
         /// <returns></returns>
         internal static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {
-            T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
+            static T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
             {
                 WtsApi32.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out var pBuffer);
                 if (!pBuffer.IsInvalid)
