@@ -197,7 +197,7 @@ function Uninstall-ADTDeployment
     ##================================================
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
-    ## If there are processes to clsoe, show Welcome Message with a 60 second countdown before automatically closing.
+    ## If there are processes to close, show Welcome Message with a 60 second countdown before automatically closing.
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
         Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
@@ -248,7 +248,7 @@ function Repair-ADTDeployment
     ##================================================
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
-    ## If there are processes to clsoe, show Welcome Message with a 60 second countdown before automatically closing.
+    ## If there are processes to close, show Welcome Message with a 60 second countdown before automatically closing.
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
         Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
