@@ -217,36 +217,18 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="lpExecInfo"></param>
         /// <returns></returns>
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "ShellExecuteExW")]
-        private static extern bool ShellExecuteExNative(ref SHELLEXECUTEINFO lpExecInfo);
-
-        /// <summary>
-        /// Invokes an executable or action via the shell.
-        /// </summary>
-        /// <param name="lpExecInfo"></param>
-        /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
         internal static bool ShellExecuteEx(ref SHELLEXECUTEINFO lpExecInfo)
         {
-            var res = ShellExecuteExNative(ref lpExecInfo);
+            [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+            static extern bool ShellExecuteExW(ref SHELLEXECUTEINFO lpExecInfo);
+            var res = ShellExecuteExW(ref lpExecInfo);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
         }
-
-        /// <summary>
-        /// Flags for SHGetFileInfo function.
-        /// </summary>
-        /// <param name="pszPath"></param>
-        /// <param name="dwFileAttributes"></param>
-        /// <param name="psfi"></param>
-        /// <param name="cbFileInfo"></param>
-        /// <param name="uFlags"></param>
-        /// <returns></returns>
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr SHGetFileInfo(string pszPath, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
 
         /// <summary>
         /// Retrieves information about a file, including its icon and display name.
@@ -258,8 +240,9 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="InvalidOperationException"></exception>
         internal static SHFILEINFO SHGetFileInfo(string pszPath, SHGFI_FLAGS uFlags, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes = 0)
         {
-            SHFILEINFO shinfo = new();
-            IntPtr hImg = SHGetFileInfo(pszPath, dwFileAttributes, ref shinfo, (uint)Marshal.SizeOf(shinfo), uFlags);
+            [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+            static extern IntPtr SHGetFileInfo(string pszPath, FILE_FLAGS_AND_ATTRIBUTES dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
+            SHFILEINFO shinfo = new(); IntPtr hImg = SHGetFileInfo(pszPath, dwFileAttributes, ref shinfo, (uint)Marshal.SizeOf(shinfo), uFlags);
             if (hImg == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Failed to retrieve file information.");
@@ -274,20 +257,12 @@ namespace PSADT.LibraryInterfaces
         /// <param name="uFlags"></param>
         /// <param name="psii"></param>
         /// <returns></returns>
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, EntryPoint = "SHGetStockIconInfo")]
-        private static extern HRESULT SHGetStockIconInfoNative(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
-
-        /// <summary>
-        /// Retrieves information about a stock icon.
-        /// </summary>
-        /// <param name="siid"></param>
-        /// <param name="uFlags"></param>
-        /// <param name="psii"></param>
-        /// <returns></returns>
         internal static HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, out SHSTOCKICONINFO psii)
         {
+            [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+            static extern HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
             psii = new SHSTOCKICONINFO { cbSize = (uint)Marshal.SizeOf(typeof(SHSTOCKICONINFO)) };
-            return SHGetStockIconInfoNative(siid, uFlags, ref psii).ThrowOnFailure();
+            return SHGetStockIconInfo(siid, uFlags, ref psii).ThrowOnFailure();
         }
 
         /// <summary>

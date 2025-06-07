@@ -256,18 +256,6 @@ namespace PSADT.LibraryInterfaces
 
         /// <summary>
         /// Queries system information from the kernel.
-        /// This doesn't use CsWin32 because the SystemInformationClass enum in the library is incomplete.
-        /// </summary>
-        /// <param name="SystemInformationClass"></param>
-        /// <param name="SystemInformation"></param>
-        /// <param name="SystemInformationLength"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtQuerySystemInformation")]
-        internal static extern NTSTATUS NtQuerySystemInformationNative(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, int SystemInformationLength, out int ReturnLength);
-
-        /// <summary>
-        /// Queries system information from the kernel.
         /// </summary>
         /// <param name="SystemInformationClass"></param>
         /// <param name="SystemInformation"></param>
@@ -280,11 +268,13 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(SystemInformation));
             }
 
+            [DllImport("ntdll.dll", ExactSpelling = true)]
+            static extern NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, IntPtr SystemInformation, int SystemInformationLength, out int ReturnLength);
             bool SystemInformationAddRef = false;
             try
             {
                 SystemInformation.DangerousAddRef(ref SystemInformationAddRef);
-                var res = NtQuerySystemInformationNative(SystemInformationClass, SystemInformation.DangerousGetHandle(), SystemInformation.Length, out ReturnLength);
+                var res = NtQuerySystemInformation(SystemInformationClass, SystemInformation.DangerousGetHandle(), SystemInformation.Length, out ReturnLength);
                 if (res != NTSTATUS.STATUS_SUCCESS && res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
@@ -299,19 +289,6 @@ namespace PSADT.LibraryInterfaces
                 }
             }
         }
-
-        /// <summary>
-        /// Queries an object for information.
-        /// This doesn't use CsWin32 because the OBJECT_INFORMATION_CLASS enum in the library is incomplete.
-        /// </summary>
-        /// <param name="ObjectHandle"></param>
-        /// <param name="ObjectInformationClass"></param>
-        /// <param name="ObjectInformation"></param>
-        /// <param name="ObjectInformationLength"></param>
-        /// <param name="ReturnLength"></param>
-        /// <returns></returns>
-        [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtQueryObject")]
-        private static extern NTSTATUS NtQueryObjectNative(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength);
 
         /// <summary>
         /// Queries an object for information.
@@ -332,13 +309,15 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(Handle));
             }
 
+            [DllImport("ntdll.dll", ExactSpelling = true)]
+            static extern NTSTATUS NtQueryObject(IntPtr ObjectHandle, OBJECT_INFORMATION_CLASS ObjectInformationClass, IntPtr ObjectInformation, int ObjectInformationLength, out int ReturnLength);
             bool ObjectInformationAddRef = false;
             bool HandleAddRef = false;
             try
             {
                 ObjectInformation.DangerousAddRef(ref ObjectInformationAddRef);
                 Handle.DangerousAddRef(ref HandleAddRef);
-                var res = NtQueryObjectNative(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation.DangerousGetHandle(), ObjectInformation.Length, out ReturnLength);
+                var res = NtQueryObject(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation.DangerousGetHandle(), ObjectInformation.Length, out ReturnLength);
                 if (res != NTSTATUS.STATUS_SUCCESS && ((null != Handle && !Handle.IsInvalid && !ObjectInformation.IsInvalid && 0 != ObjectInformation.Length) || ((null == Handle || Handle.IsInvalid) && ObjectInformation.Length != ObjectInfoClassSizes[ObjectInformationClass])))
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
@@ -357,25 +336,6 @@ namespace PSADT.LibraryInterfaces
                 }
             }
         }
-
-        /// <summary>
-        /// Creates a thread in the specified process.
-        /// This doesn't use CsWin32 because they don't publicise its availability.
-        /// </summary>
-        /// <param name="threadHandle"></param>
-        /// <param name="desiredAccess"></param>
-        /// <param name="objectAttributes"></param>
-        /// <param name="processHandle"></param>
-        /// <param name="startAddress"></param>
-        /// <param name="parameter"></param>
-        /// <param name="createFlags"></param>
-        /// <param name="zeroBits"></param>
-        /// <param name="stackSize"></param>
-        /// <param name="maximumStackSize"></param>
-        /// <param name="attributeList"></param>
-        /// <returns></returns>
-        [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtCreateThreadEx")]
-        private static extern NTSTATUS NtCreateThreadExNative(out IntPtr threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList);
 
         /// <summary>
         /// Creates a thread in the specified process.
@@ -403,13 +363,15 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(processHandle));
             }
 
+            [DllImport("ntdll.dll", ExactSpelling = true)]
+            static extern NTSTATUS NtCreateThreadEx(out IntPtr threadHandle, THREAD_ACCESS_RIGHTS desiredAccess, IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter, uint createFlags, uint zeroBits, uint stackSize, uint maximumStackSize, IntPtr attributeList);
             bool startAddressAddRef = false;
             bool processHandleAddRef = false;
             try
             {
                 startAddress.DangerousAddRef(ref startAddressAddRef);
                 processHandle.DangerousAddRef(ref processHandleAddRef);
-                var res = NtCreateThreadExNative(out var hThread, desiredAccess, objectAttributes, processHandle.DangerousGetHandle(), startAddress.DangerousGetHandle(), parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
+                var res = NtCreateThreadEx(out var hThread, desiredAccess, objectAttributes, processHandle.DangerousGetHandle(), startAddress.DangerousGetHandle(), parameter, createFlags, zeroBits, stackSize, maximumStackSize, attributeList);
                 if (res != NTSTATUS.STATUS_SUCCESS)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
@@ -432,16 +394,6 @@ namespace PSADT.LibraryInterfaces
 
         /// <summary>
         /// Terminates a thread.
-        /// This doesn't use CsWin32 because they don't publicise its availability.
-        /// </summary>
-        /// <param name="threadHandle"></param>
-        /// <param name="exitStatus"></param>
-        /// <returns></returns>
-        [DllImport("ntdll.dll", ExactSpelling = true, EntryPoint = "NtTerminateThread")]
-        private static extern NTSTATUS NtTerminateThreadNative(IntPtr threadHandle, NTSTATUS exitStatus);
-
-        /// <summary>
-        /// Terminates a thread.
         /// </summary>
         /// <param name="threadHandle"></param>
         /// <param name="exitStatus"></param>
@@ -453,11 +405,13 @@ namespace PSADT.LibraryInterfaces
                 throw new ArgumentNullException(nameof(threadHandle));
             }
 
+            [DllImport("ntdll.dll", ExactSpelling = true)]
+            static extern NTSTATUS NtTerminateThread(IntPtr threadHandle, NTSTATUS exitStatus);
             bool threadHandleAddRef = false;
             try
             {
                 threadHandle.DangerousAddRef(ref threadHandleAddRef);
-                var res = NtTerminateThreadNative(threadHandle.DangerousGetHandle(), exitStatus);
+                var res = NtTerminateThread(threadHandle.DangerousGetHandle(), exitStatus);
                 if (res != NTSTATUS.STATUS_SUCCESS && res != exitStatus)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error((WIN32_ERROR)Windows.Win32.PInvoke.RtlNtStatusToDosError(res));
