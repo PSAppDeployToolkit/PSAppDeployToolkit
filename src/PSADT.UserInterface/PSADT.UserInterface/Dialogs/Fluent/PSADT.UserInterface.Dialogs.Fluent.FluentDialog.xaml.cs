@@ -58,12 +58,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // If the accent color is set, we don't need to watch for system theme changes
             if (null != options.FluentAccentColor)
             {
-                SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, false);
+                SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
                 ApplicationAccentColorManager.Apply(IntToColor(options.FluentAccentColor.Value), ApplicationThemeManager.GetAppTheme(), false);
             }
             else
             {
-                SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true);
+                SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, true);
             }
 
             // See https://github.com/lepoco/wpfui/issues/1188 for more info.
@@ -632,8 +632,8 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
             // Adjust for workArea offset.
             string dialogPosName = _dialogPosition.ToString();
-            left -= dialogPosName.EndsWith("Right") ? 24 : dialogPosName.EndsWith("Left") ? -24 : 0;
-            top -= dialogPosName.StartsWith("Bottom") ? 24 : dialogPosName.StartsWith("Top") ? -24 : 0;
+            left -= dialogPosName.EndsWith("Right") ? 18 : dialogPosName.EndsWith("Left") ? -18 : 0;
+            top -= dialogPosName.StartsWith("Bottom") ? 18 : dialogPosName.StartsWith("Top") ? -18 : 0;
 
             // Set positions in DIPs.
             Left = _startingLeft = left;
@@ -760,14 +760,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (countdownRemainingTime.TotalSeconds <= 60)
             {
                 CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                CountdownValueTextBlock.FontWeight = FontWeights.ExtraBold;
+
             }
             else if ((null != _countdownWarningDuration) && (_countdownStopwatch.Elapsed >= _countdownWarningDuration))
             {
                 CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-            }
-            else
-            {
-                CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+                CountdownValueTextBlock.FontWeight = FontWeights.ExtraBold;
             }
         }
 

@@ -1,4 +1,4 @@
-﻿<ui:FluentWindow
+<ui:FluentWindow
     x:Class="PSADT.UserInterface.Dialogs.Fluent.FluentDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,12 +10,12 @@
     MinHeight="0"
     MaxWidth="580"
     MaxHeight="850"
-    ui:Design.Background="{DynamicResource LayerOnMicaBaseAltFillColorSecondaryBrush}"
+    ui:Design.Background="Transparent"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     x:ClassModifier="internal"
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
     AutomationProperties.Name="PSAppDeployToolkit Dialog"
-    Background="{DynamicResource LayerOnMicaBaseAltFillColorSecondaryBrush}"
+    Background="Transparent"
     ExtendsContentIntoTitleBar="True"
     FontFamily="Segoe UI Variable"
     FontSize="14"
@@ -30,8 +30,8 @@
     TextOptions.TextRenderingMode="ClearType"
     Topmost="True"
     UseLayoutRounding="True"
-    WindowBackdropType="Mica"
-    WindowCornerPreference="RoundSmall"
+    WindowBackdropType="Acrylic"
+    WindowCornerPreference="Round"
     mc:Ignorable="d"
     >
 
@@ -113,8 +113,8 @@
                 />
 
             <ui:ImageIcon
-                Width="20"
-                Margin="0,6,0,0"
+                Width="16"
+                Margin="2,8,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 AutomationProperties.Name="PSAppDeployToolkit Logo"
@@ -162,6 +162,19 @@
             ShowMinimize="false"
             />
 
+        <!-- Main Panel Background Acrylic -->
+        <Grid
+            x:Name="GridRow1Vertical"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="1"
+            >
+            <Rectangle
+                x:Name="MainPanelBackground"
+                Fill="{DynamicResource SolidBackgroundFillColorBaseAltBrush}"
+                Opacity=".8"
+                />
+        </Grid>
 
         <!-- Header Panel - Common to all dialog types -->
         <StackPanel
@@ -248,12 +261,12 @@
                     AutomationProperties.Name="Message Container"
                     Orientation="Vertical"
                     >
+
                     <ui:TextBlock
                         x:Name="MessageTextBlock"
                         Margin="16,16,16,16"
                         Appearance="Primary"
                         AutomationProperties.Name="Message Text"
-                        FontWeight="Bold"
                         Text="Test Message. This will be replaced when the application executes."
                         TextAlignment="Left"
                         TextWrapping="Wrap"
@@ -263,7 +276,7 @@
                         x:Name="CustomMessageTextBlock"
                         Margin="16,0,16,16"
                         Appearance="Primary"
-                        AutomationProperties.Name="Message Text"
+                        AutomationProperties.Name="Additional Message Text"
                         Text="This is a custom message that can be added by the customer as an additional block of text. This can be added to any dialog."
                         TextAlignment="Left"
                         TextWrapping="Wrap"
@@ -466,7 +479,7 @@
                             Appearance="Primary"
                             AutomationProperties.Name="Countdown Timer Value"
                             FontSize="15"
-                            FontWeight="Bold"
+                            FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="00:00:00"
                             />
@@ -511,7 +524,7 @@
                             VerticalAlignment="Center"
                             Appearance="Primary"
                             FontSize="15"
-                            FontWeight="Bold"
+                            FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="3"
                             TextWrapping="WrapWithOverflow"
@@ -555,7 +568,7 @@
                             VerticalAlignment="Center"
                             Appearance="Primary"
                             FontSize="15"
-                            FontWeight="Bold"
+                            FontWeight="SemiBold"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="August 15, 2025 5.30PM"
                             TextWrapping="WrapWithOverflow"

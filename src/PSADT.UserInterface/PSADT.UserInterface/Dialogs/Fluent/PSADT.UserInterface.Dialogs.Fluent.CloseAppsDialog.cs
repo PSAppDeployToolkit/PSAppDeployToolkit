@@ -133,7 +133,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (!DeferralsAvailable())
             {
                 ButtonRight.IsEnabled = false;
-                ButtonRight.Foreground = (Brush)Application.Current.Resources["TextFillColorDisabledBrush"];
+               
                 return;
             }
 
@@ -177,8 +177,9 @@ namespace PSADT.UserInterface.Dialogs.Fluent
 
 
                 // Update text content
+                DateTimeFormatInfo dateTimeFormatInfo = new DateTimeFormatInfo();
                 DateTimeOffset deferralDeadlineOffset = new DateTimeOffset((DateTime)_deferralDeadline!);
-                string displayText = deferralDeadlineOffset.ToLocalTime().ToString(DateTimeFormatInfo.CurrentInfo.FullDateTimePattern);
+                string displayText = deferralDeadlineOffset.ToLocalTime().ToString("f");
                 Brush textBrush;
                 if (ButtonRight.IsEnabled)
                 {
@@ -186,6 +187,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     {
                         // Less than 1 day remaining - use caution color
                         textBrush = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+                        DeferDeadlineValueTextBlock.FontWeight = FontWeights.ExtraBold;
                     }
                     else
                     {
@@ -195,6 +197,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 else
                 {
                     textBrush = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                    DeferDeadlineValueTextBlock.FontWeight = FontWeights.ExtraBold;
                 }
                 DeferDeadlineValueTextBlock.Text = displayText;
                 DeferDeadlineValueTextBlock.Foreground = textBrush;
