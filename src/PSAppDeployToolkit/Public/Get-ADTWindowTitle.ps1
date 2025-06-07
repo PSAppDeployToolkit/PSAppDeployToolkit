@@ -119,7 +119,10 @@ function Get-ADTWindowTitle
         {
             try
             {
-                $PSCmdlet.WriteObject([PSADT.Utilities.WindowUtilities]::GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess), $false)
+                if (($windowInfo = [PSADT.Utilities.WindowUtilities]::GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess)))
+                {
+                    $PSCmdlet.WriteObject($windowInfo, $false)
+                }
             }
             catch
             {

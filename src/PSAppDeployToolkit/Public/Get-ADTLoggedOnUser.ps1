@@ -102,7 +102,10 @@ function Get-ADTLoggedOnUser
         {
             try
             {
-                $PSCmdlet.WriteObject([PSADT.TerminalServices.SessionManager]::GetSessionInfo(), $false)
+                if (($sessionInfo = [PSADT.TerminalServices.SessionManager]::GetSessionInfo()))
+                {
+                    $PSCmdlet.WriteObject($sessionInfo, $false)
+                }
             }
             catch
             {
