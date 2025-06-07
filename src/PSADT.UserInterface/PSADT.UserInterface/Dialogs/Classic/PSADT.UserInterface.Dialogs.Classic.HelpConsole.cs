@@ -38,6 +38,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
             // Apply options to the form if we have any (i.e. not in the designer).
             if (null != options)
             {
+                // Null out PSModulePath to prevent any module conflicts.
+                // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
+                Environment.SetEnvironmentVariable("PSModulePath", null);
+
                 // Set up a PowerShell initial session state.
                 var iss = InitialSessionState.CreateDefault2();
                 iss.ExecutionPolicy = options.ExecutionPolicy;
