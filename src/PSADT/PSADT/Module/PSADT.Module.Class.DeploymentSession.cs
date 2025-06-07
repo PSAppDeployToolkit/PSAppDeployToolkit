@@ -505,7 +505,11 @@ namespace PSADT.Module
                 {
                     using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(LogPath, LogName), true, LogUtilities.LogEncoding))
                     {
-                        logFileWriter.WriteLine(string.Join(Environment.NewLine, LogBuffer));
+                        if (!Enum.TryParse<LogStyle>((string)configToolkit["LogStyle"]!, out var configStyle))
+                        {
+                            throw new InvalidOperationException("Unable to retrieve the LogStyle from the config for an unknown reason.");
+                        }
+                        logFileWriter.WriteLine(string.Join(Environment.NewLine, configStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine)));
                     }
                 }
 

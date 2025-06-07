@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using PSADT.Extensions;
-using PSADT.Utilities;
 
 namespace PSADT.Module
 {
@@ -58,7 +57,7 @@ namespace PSADT.Module
                 callerSource = invoker.GetCommand();
             }
 
-            // Set up default values if not specified.
+            // Set up default values if not specified and build out the log entries.
             if (null == severity)
             {
                 severity = LogSeverity.Info;
@@ -93,62 +92,21 @@ namespace PSADT.Module
             {
                 scriptSection = null;
             }
-
-            // Loop through each message and generate necessary log messages.
-            // For CMTrace, we replace all empty lines with a space so OneTrace doesn't trim them.
-            // When splitting the message, we want to trim all lines but not replace genuine
-            // spaces. As such, replace all spaces and empty lines with a punctuation space.
-            // C# identifies this character as whitespace but OneTrace does not so it works.
-            // The empty line feed at the end is required by OneTrace to format correctly.
-            List<LogEntry> logEntries = new List<LogEntry>(message.Count);
-            List<string> dskOutput = new List<string>(message.Count);
-            List<string> conOutput = new List<string>(message.Count);
-            var conFormat = $"[{dateNow.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {{0}}".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}");
-            if (logType != LogStyle.Legacy)
-            {
-                var dskFormat = $"<![LOG[{(null != scriptSection && message[0] != LogDivider ? $"[{scriptSection}] :: " : null)}{{0}}]LOG]!><time=\"{dateNow.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{dateNow.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">".Replace("{", "{{").Replace("}", "}}").Replace("{{0}}", "{0}");
-                foreach (string msg in message)
-                {
-                    var safeMsg = msg.Replace("\0", string.Empty).TrimEnd();
-                    if (!string.IsNullOrWhiteSpace(safeMsg))
-                    {
-                        var dskLine = string.Format(dskFormat, safeMsg.Contains((char)10) ? (string.Join(Environment.NewLine, safeMsg.Trim().Split((char)10).Select(static m => Regex.Replace(m.Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : safeMsg);
-                        var conLine = string.Format(conFormat, safeMsg);
-                        logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource, conLine, dskLine));
-                        dskOutput.Add(dskLine);
-                        conOutput.Add(conLine);
-                    }
-                }
-            }
-            else
-            {
-                var dskFormat = conFormat;
-                foreach (var msg in message)
-                {
-                    var safeMsg = msg.Replace("\0", string.Empty).TrimEnd();
-                    if (!string.IsNullOrWhiteSpace(safeMsg))
-                    {
-                        var dskLine = string.Format(dskFormat, safeMsg);
-                        var conLine = string.Format(conFormat, safeMsg);
-                        logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource, conLine, dskLine));
-                        dskOutput.Add(dskLine);
-                        conOutput.Add(conLine);
-                    }
-                }
-            }
+            var logEntries = message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource)).ToList().AsReadOnly();
 
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
             {
                 using (StreamWriter logFileWriter = new StreamWriter(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding))
                 {
-                    logFileWriter.WriteLine(string.Join(Environment.NewLine, dskOutput));
+                    logFileWriter.WriteLine(string.Join(Environment.NewLine, logType!.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine)));
                 }
             }
 
             // Write out all messages to host if configured/permitted to do so.
             if (!hostLogStream.Equals(HostLogStream.None))
             {
+                var conOutput = logEntries.Select(static e => e.LegacyLogLine);
                 var sevCols = LogSeverityColors[(int)severity];
                 if (hostLogStream.Equals(HostLogStream.Console) || noRunspace)
                 {
@@ -174,7 +132,7 @@ namespace PSADT.Module
                     ModuleDatabase.InvokeScript(WriteLogEntryDelegate, conOutput, sevCols, source!, hostLogStream.Equals(HostLogStream.Verbose));
                 }
             }
-            return logEntries.AsReadOnly();
+            return logEntries;
         }
 
         /// <summary>
@@ -197,11 +155,6 @@ namespace PSADT.Module
         /// Gets the log divider string.
         /// </summary>
         internal static readonly string LogDivider = new string('-', 79);
-
-        /// <summary>
-        /// Gets the current process ID.
-        /// </summary>
-        private static readonly int PID = Process.GetCurrentProcess().Id;
 
         /// <summary>
         /// Gets the session's default log file encoding.

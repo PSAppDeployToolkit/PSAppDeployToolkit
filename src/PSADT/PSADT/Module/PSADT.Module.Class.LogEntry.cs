@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Text.RegularExpressions;
+using PSADT.Utilities;
 
 namespace PSADT.Module
 {
@@ -18,18 +22,23 @@ namespace PSADT.Module
         /// <param name="debugMessage">Indicates whether the log entry is a debug message.</param>
         /// <param name="callerFileName">The log entry's caller file name.</param>
         /// <param name="callerSource">The log entry's caller source.</param>
-        public LogEntry(DateTime timeStamp, string message, LogSeverity severity, string source, string? scriptSection, bool debugMessage, string callerFileName, string callerSource, string consoleOutput, string diskOutput)
+        public LogEntry(DateTime timeStamp, string message, LogSeverity severity, string source, string? scriptSection, bool debugMessage, string callerFileName, string callerSource)
         {
+            // For CMTrace, we replace all empty lines with a space so OneTrace doesn't trim them.
+            // When splitting the message, we want to trim all lines but not replace genuine
+            // spaces. As such, replace all spaces and empty lines with a punctuation space.
+            // C# identifies this character as whitespace but OneTrace does not so it works.
+            // The empty line feed at the end is required by OneTrace to format correctly.
             Timestamp = timeStamp;
-            Message = message;
+            Message = message.Replace("\0", string.Empty).TrimEnd();
             Severity = severity;
             Source = source;
             ScriptSection = scriptSection;
             DebugMessage = debugMessage;
             CallerFileName = callerFileName;
             CallerSource = callerSource;
-            ConsoleOutput = consoleOutput;
-            DiskOutput = diskOutput;
+            LegacyLogLine = $"[{timeStamp.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
+            CMTraceLogLine = $"<![LOG[{(null != scriptSection && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Trim().Split('\n').Select(static m => Regex.Replace(m.Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">";
         }
 
         /// <summary>
@@ -73,19 +82,24 @@ namespace PSADT.Module
         public readonly string CallerSource;
 
         /// <summary>
-        /// Gets the log entry as written to the console.
+        /// Gets the log entry in legacy format.
         /// </summary>
-        public readonly string ConsoleOutput;
+        public readonly string LegacyLogLine;
 
         /// <summary>
-        /// Gets the log entry as written to the disk.
+        /// Gets the log entry as CMTrace format.
         /// </summary>
-        public readonly string DiskOutput;
+        public readonly string CMTraceLogLine;
 
         /// <summary>
         /// Returns a string that represents the current <see cref="LogEntry"/> object.
         /// </summary>
         /// <returns>A formatted string containing the exit code, standard output, and standard error.</returns>
-        public override string ToString() => ConsoleOutput;
+        public override string ToString() => LegacyLogLine;
+
+        /// <summary>
+        /// Gets the current process ID.
+        /// </summary>
+        private static readonly int PID = Process.GetCurrentProcess().Id;
     }
 }
