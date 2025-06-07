@@ -23,7 +23,7 @@ The type of deployment to perform.
 .PARAMETER DeployMode
 Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), or NonInteractive (dialogs without prompts) mode.
 
-NonInteractive mode is automatically set if it is detected that the process is not user interactive.
+Silent mode is automatically set if it is detected that the process is not user interactive, no users are logged on, the device is in Autopilot mode, or there's specified processes to close that are currently running.
 
 .PARAMETER AllowRebootPassThru
 Allows the 3010 return code (requires restart) to be passed back to the parent process (e.g. SCCM) if detected from an installation. If 3010 is passed back to SCCM, a reboot prompt will be triggered.
