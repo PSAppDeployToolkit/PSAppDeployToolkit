@@ -176,27 +176,27 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$DisableLogging,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AppVendor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AppName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AppVersion,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AppArch,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AppLang,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$AppRevision,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
@@ -212,11 +212,11 @@ function Open-ADTSession
         [System.String]$AppScriptAuthor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$InstallName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyString()]
+        [ValidateNotNullOrEmpty()]
         [System.String]$InstallTitle,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
@@ -232,7 +232,7 @@ function Open-ADTSession
         [System.DateTime]$DeployAppScriptDate,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [AllowEmptyCollection()]
+        [ValidateNotNullOrEmpty()]
         [System.Collections.Generic.Dictionary[System.String, System.Object]]$DeployAppScriptParameters,
 
         [Parameter(Mandatory = $false)]

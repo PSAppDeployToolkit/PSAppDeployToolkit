@@ -1,0 +1,74 @@
+---
+id: Remove-ADTHashtableNullOrEmptyValues
+title: Remove-ADTHashtableNullOrEmptyValues
+hide_title: false
+hide_table_of_contents: false
+---
+
+## SYNOPSIS
+
+Removes any key/value pairs from the supplied hashtable where the value is null.
+
+## SYNTAX
+
+```powershell
+Remove-ADTHashtableNullOrEmptyValues [-Hashtable] <Hashtable> [<CommonParameters>]
+```
+
+## DESCRIPTION
+
+This function removes any key/value pairs from the supplied hashtable where the value is null.
+
+## EXAMPLES
+
+### EXAMPLE 1
+
+```powershell
+Remove-ADTHashtableNullOrEmptyValues -Hashtable
+```
+
+Returns a new hashtable with only key/values where the value isn't null.
+
+## PARAMETERS
+
+### -Hashtable
+
+The hashtable to remove null values from.
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+### None
+
+### You cannot pipe objects to this function.
+## OUTPUTS
+
+### System.Collections.Hashtable
+
+### Returns a new hashtable with only key/values where the value isn't null.
+## NOTES
+An active ADT session is NOT required to use this function.
+
+Tags: psadt<br />
+Website: https://psappdeploytoolkit.com<br />
+Copyright: (C) 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
+License: https://opensource.org/license/lgpl-3-0
+
+## RELATED LINKS
+
+[https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTHashtableNullOrEmptyValues](https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTHashtableNullOrEmptyValues)

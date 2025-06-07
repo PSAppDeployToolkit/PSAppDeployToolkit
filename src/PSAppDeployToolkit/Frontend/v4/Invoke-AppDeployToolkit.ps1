@@ -300,6 +300,7 @@ Set-StrictMode -Version 1
 # Import the module and instantiate a new session.
 try
 {
+    # Import the module locally if available, otherwise try to find it from PSModulePath.
     if ([System.IO.File]::Exists("$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"))
     {
         Get-ChildItem -LiteralPath $PSScriptRoot\..\..\..\PSAppDeployToolkit -Recurse -File | Unblock-File -ErrorAction Ignore
@@ -309,7 +310,10 @@ try
     {
         Import-Module -FullyQualifiedName @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.1.0' } -Force
     }
+
+    # Open a new deployment session, replacing $adtSession with a DeploymentSession.
     $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
+    $adtSession = Remove-ADTHashtableNullOrEmptyValues -Hashtable $adtSession
     $adtSession = Open-ADTSession @adtSession @iadtParams -PassThru
 }
 catch
@@ -323,9 +327,10 @@ catch
 ## MARK: Invocation
 ##================================================
 
-# Import any found extensions before proceeding with the deployment.
+# Commence the actual deployment operation.
 try
 {
+    # Import any found extensions before proceeding with the deployment.
     Get-ChildItem -LiteralPath $PSScriptRoot -Directory | & {
         process
         {
@@ -336,6 +341,8 @@ try
             }
         }
     }
+
+    # Invoke the deployment and close out the session.
     & "$($adtSession.DeploymentType)-ADTDeployment"
     Close-ADTSession
 }

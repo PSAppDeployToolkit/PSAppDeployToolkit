@@ -86,6 +86,7 @@ module.exports = [
     'commands/Remove-ADTFile',
     'commands/Remove-ADTFileFromUserProfiles',
     'commands/Remove-ADTFolder',
+    'commands/Remove-ADTHashtableNullOrEmptyValues',
     'commands/Remove-ADTIniValue',
     'commands/Remove-ADTInvalidFileNameChars',
     'commands/Remove-ADTModuleCallback',

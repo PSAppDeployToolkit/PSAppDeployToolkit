@@ -144,6 +144,7 @@
         'Remove-ADTFile'
         'Remove-ADTFileFromUserProfiles'
         'Remove-ADTFolder'
+        'Remove-ADTHashtableNullOrEmptyValues'
         'Remove-ADTIniValue'
         'Remove-ADTInvalidFileNameChars'
         'Remove-ADTModuleCallback'
