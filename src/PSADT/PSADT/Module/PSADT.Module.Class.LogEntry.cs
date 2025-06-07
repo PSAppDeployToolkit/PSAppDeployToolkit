@@ -38,7 +38,7 @@ namespace PSADT.Module
             CallerFileName = callerFileName;
             CallerSource = callerSource;
             LegacyLogLine = $"[{timeStamp.ToString("O")}]{(null != scriptSection ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
-            CMTraceLogLine = $"<![LOG[{(null != scriptSection && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Trim().Split('\n').Select(static m => Regex.Replace(m.Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">";
+            CMTraceLogLine = $"<![LOG[{(null != scriptSection && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Trim().Split('\n').Select(static m => CMTraceBlankLine.Replace(m.Trim(), $"{(char)0x2008}"))) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff")}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString())}\" date=\"{timeStamp.ToString("M-dd-yyyy")}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{PID}\" file=\"{callerFileName}\">";
         }
 
         /// <summary>
@@ -101,5 +101,12 @@ namespace PSADT.Module
         /// Gets the current process ID.
         /// </summary>
         private static readonly int PID = Process.GetCurrentProcess().Id;
+
+        /// <summary>
+        /// Represents a compiled regular expression that matches blank lines or lines containing only spaces.
+        /// </summary>
+        /// <remarks>This regular expression is useful for identifying and processing lines that are
+        /// either empty or consist solely of whitespace.</remarks>
+        private static readonly Regex CMTraceBlankLine = new("^( +|$)", RegexOptions.Compiled);
     }
 }

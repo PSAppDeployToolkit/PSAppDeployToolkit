@@ -44,6 +44,17 @@ namespace PSADT.Module
         }
 
         /// <summary>
+        /// Determines whether the database has been initialized.
+        /// </summary>
+        /// <remarks>This method checks the "Initialized" property of the database to determine its state.
+        /// Ensure the database object is properly configured before calling this method.</remarks>
+        /// <returns><see langword="true"/> if the database is initialized; otherwise, <see langword="false"/>.</returns>
+        public static bool IsInitialized()
+        {
+            return (bool)_database?.Properties["Initialized"].Value!;
+        }
+
+        /// <summary>
         /// Gets the environment table from the internal database.
         /// </summary>
         /// <returns></returns>

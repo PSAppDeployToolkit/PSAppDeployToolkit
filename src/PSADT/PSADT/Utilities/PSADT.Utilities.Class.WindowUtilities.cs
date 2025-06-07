@@ -154,6 +154,7 @@ namespace PSADT.Utilities
                             Process.GetProcesses();
 
             // Create a list to hold the window information.
+            Regex? windowTitleRegex = null != windowTitleFilter ? new(string.Join("|", windowTitleFilter), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
             List<WindowInfo> windowInfos = new List<WindowInfo>();
             foreach (var window in EnumWindows())
             {
@@ -171,7 +172,7 @@ namespace PSADT.Utilities
                 }
 
                 // Continue if the visible window title doesn't match our filter.
-                if (null != windowTitleFilter && !Regex.IsMatch(windowText, string.Join("|", windowTitleFilter), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                if ((null != windowTitleRegex) && !windowTitleRegex.IsMatch(windowText))
                 {
                     continue;
                 }

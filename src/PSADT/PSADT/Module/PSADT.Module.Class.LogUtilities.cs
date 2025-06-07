@@ -34,16 +34,15 @@ namespace PSADT.Module
 
             // Perform early return checks before wasting time.
             bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
-            if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogDebugMessage"]!))
+            Hashtable? configToolkit = ModuleDatabase.IsInitialized() ? (Hashtable)ModuleDatabase.GetConfig()["Toolkit"]! : null;
+            if ((!canLogToDisk && hostLogStream.Equals(HostLogStream.None)) || (debugMessage && !(bool)configToolkit?["LogDebugMessage"]!))
             {
                 return new List<LogEntry>().AsReadOnly();
             }
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (null == Runspace.DefaultRunspace) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
-            var stackFrames = new StackTrace(true).GetFrames().Skip(1);
-            string callerFileName = string.Empty;
-            string callerSource = string.Empty;
+            var stackFrames = new StackTrace(true).GetFrames().Skip(1); string callerFileName = string.Empty; string callerSource = string.Empty;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
             {
                 var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT")); var method = invoker.GetMethod()!;
@@ -52,12 +51,33 @@ namespace PSADT.Module
             }
             else
             {
-                var invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!Regex.IsMatch(command, @"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$") || (Regex.IsMatch(command, @"^(<ScriptBlock>(<\w+>)?)$") && Regex.IsMatch(f.GetScriptLocation(), "^<.+>$"))));
+                var invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!CallerCommandRegex.IsMatch(command) || (CallerScriptBlockRegex.IsMatch(command) && CallerScriptLocationRegex.IsMatch(f.GetScriptLocation()))));
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
                 callerSource = invoker.GetCommand();
             }
 
+            // Ensure we got a file name and a source.
+            if (string.IsNullOrWhiteSpace(callerFileName))
+            {
+                throw new InvalidOperationException("Failed to determine a file name for the caller.");
+            }
+            if (string.IsNullOrWhiteSpace(callerSource))
+            {
+                throw new InvalidOperationException("Failed to determine a command source for the caller.");
+            }
+
             // Set up default values if not specified and build out the log entries.
+            if (canLogToDisk && !logType.HasValue)
+            {
+                if (Enum.TryParse<LogStyle>((string)configToolkit?["LogStyle"]!, out var configStyle))
+                {
+                    logType = configStyle;
+                }
+                else
+                {
+                    logType = LogStyle.CMTrace;
+                }
+            }
             if (null == severity)
             {
                 severity = LogSeverity.Info;
@@ -65,24 +85,6 @@ namespace PSADT.Module
             if (string.IsNullOrWhiteSpace(source))
             {
                 source = callerSource;
-            }
-            if (canLogToDisk && !logType.HasValue)
-            {
-                try
-                {
-                    if (Enum.TryParse<LogStyle>((string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!, out var configStyle))
-                    {
-                        logType = configStyle;
-                    }
-                    else
-                    {
-                        logType = LogStyle.CMTrace;
-                    }
-                }
-                catch
-                {
-                    logType = LogStyle.CMTrace;
-                }
             }
             if ((null != logFileDirectory) && !Directory.Exists(logFileDirectory))
             {
@@ -147,11 +149,6 @@ namespace PSADT.Module
         }.AsReadOnly();
 
         /// <summary>
-        /// Gets the Write-LogEntry delegate script block.
-        /// </summary>
-        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Verbose:($args[3])");
-
-        /// <summary>
         /// Gets the log divider string.
         /// </summary>
         internal static readonly string LogDivider = new string('-', 79);
@@ -160,5 +157,33 @@ namespace PSADT.Module
         /// Gets the session's default log file encoding.
         /// </summary>
         internal static readonly UTF8Encoding LogEncoding = new UTF8Encoding(true);
+
+        /// <summary>
+        /// Gets the Write-LogEntry delegate script block.
+        /// </summary>
+        private static readonly ScriptBlock WriteLogEntryDelegate = ScriptBlock.Create("$colours = $args[1]; $args[0] | & $Script:CommandTable.'Write-ADTLogEntryToOutputStream' @colours -Source $args[2] -Verbose:($args[3])");
+
+        /// <summary>
+        /// Represents a compiled regular expression used to match specific caller commands.
+        /// </summary>
+        /// <remarks>The regular expression matches commands in the following formats: - "Write-Log" or
+        /// "Write-ADTLogEntry" - "<ScriptBlock>" optionally followed by "<tag>" This regex is optimized for performance
+        /// using the <see cref="RegexOptions.Compiled"/> option.</remarks>
+        private static readonly Regex CallerCommandRegex = new(@"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Represents a compiled regular expression used to match script block patterns.
+        /// </summary>
+        /// <remarks>The regular expression matches strings that begin with "<ScriptBlock>" and optionally
+        /// include an additional tag. This is useful for identifying specific script block structures in
+        /// text.</remarks>
+        private static readonly Regex CallerScriptBlockRegex = new(@"^(<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Represents a compiled regular expression used to match caller script locations.
+        /// </summary>
+        /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
+        /// "<example>").  This is typically used to identify script locations in a specific format.</remarks>
+        private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
     }
 }
