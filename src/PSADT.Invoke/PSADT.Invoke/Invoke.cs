@@ -47,7 +47,7 @@ namespace PSADT.Invoke
                     UseShellExecute = !inDebugMode,
                     CreateNoWindow = true,
                 };
-                if ((Environment.OSVersion.Version.Major >= 6) && RequireElevation())
+                if (RequireElevation())
                 {
                     processStartInfo.Verb = "runas";
                 }
