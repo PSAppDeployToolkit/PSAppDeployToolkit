@@ -128,8 +128,18 @@ function Install-ADTDeployment
     ##================================================
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
-    ## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
-    Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -AllowDefer -DeferTimes 3 -CheckDiskSpace -PersistPrompt
+    ## Show Welcome Message, close processes if specified, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
+    $saiwParams = @{
+        AllowDefer = $true
+        DeferTimes = 3
+        CheckDiskSpace = $true
+        PersistPrompt = $true
+    }
+    if ($adtSession.AppProcessesToClose.Count -gt 0)
+    {
+        $saiwParams.Add('CloseProcesses', $adtSession.AppProcessesToClose)
+    }
+    Show-ADTInstallationWelcome @saiwParams
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -187,8 +197,11 @@ function Uninstall-ADTDeployment
     ##================================================
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
-    ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
+    ## If there are processes to clsoe, show Welcome Message with a 60 second countdown before automatically closing.
+    if ($adtSession.AppProcessesToClose.Count -gt 0)
+    {
+        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
+    }
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
@@ -235,8 +248,11 @@ function Repair-ADTDeployment
     ##================================================
     $adtSession.InstallPhase = "Pre-$($adtSession.DeploymentType)"
 
-    ## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing.
-    Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
+    ## If there are processes to clsoe, show Welcome Message with a 60 second countdown before automatically closing.
+    if ($adtSession.AppProcessesToClose.Count -gt 0)
+    {
+        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
+    }
 
     ## Show Progress Message (with the default message).
     Show-ADTInstallationProgress
