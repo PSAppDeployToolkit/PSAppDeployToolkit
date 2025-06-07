@@ -162,6 +162,10 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType }),
                 $null
             )
+            if ($PassThru -and $logEntries)
+            {
+                $PSCmdlet.WriteObject($logEntries, $false)
+            }
         }
         elseif (!$DebugMessage)
         {
@@ -180,12 +184,10 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('LogFileName')) { $LogFileName }),
                 $(if ($PSBoundParameters.ContainsKey('LogType')) { $LogType })
             )
-        }
-
-        # Return the provided message if PassThru is true.
-        if ($PassThru -and (Get-Variable -Name logEntries -ErrorAction Ignore))
-        {
-            $PSCmdlet.WriteObject($logEntries, $false)
+            if ($PassThru -and $logEntries)
+            {
+                $PSCmdlet.WriteObject($logEntries, $false)
+            }
         }
     }
 }
