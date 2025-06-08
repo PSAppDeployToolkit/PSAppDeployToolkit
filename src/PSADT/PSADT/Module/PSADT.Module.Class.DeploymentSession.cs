@@ -884,11 +884,17 @@ namespace PSADT.Module
 
                 #endregion
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                WriteLogEntry(ex.Message, LogSeverity.Error);
+                SetExitCode(60008); Close();
+                ExceptionDispatchInfo.Capture(ex).Throw();
+                throw;
+            }
             catch (Exception ex)
             {
                 WriteLogEntry($"Failure occurred while instantiating new deployment session: \"{ex.Message}\".", LogSeverity.Error);
-                SetExitCode(60008);
-                Close();
+                SetExitCode(60008); Close();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
