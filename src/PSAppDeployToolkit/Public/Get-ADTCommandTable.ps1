@@ -31,7 +31,7 @@ function Get-ADTCommandTable
         Returns PSAppDeployToolkit's safe command lookup table.
 
     .NOTES
-        An active ADT session is required to use this function.
+        An active ADT session is NOT required to use this function.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

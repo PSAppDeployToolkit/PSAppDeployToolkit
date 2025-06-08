@@ -59,7 +59,7 @@ function Send-ADTKeys
         Send the sequence of keys "Hello World" to the application with a Window Handle of '17368294'.
 
     .NOTES
-        An active ADT session is required to use this function.
+        An active ADT session is NOT required to use this function.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
