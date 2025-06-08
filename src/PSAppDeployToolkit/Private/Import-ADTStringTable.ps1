@@ -25,7 +25,7 @@ function Private:Import-ADTStringTable
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$UICulture
+        [System.Globalization.CultureInfo]$UICulture
     )
 
     # Internal filter to expand variables.

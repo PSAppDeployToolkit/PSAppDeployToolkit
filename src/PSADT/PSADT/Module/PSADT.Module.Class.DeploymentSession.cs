@@ -647,14 +647,14 @@ namespace PSADT.Module
                 }
 
                 // Log which language's UI messages are loaded from the config file
-                WriteLogEntry($"The current execution context has a primary UI language of [{adtEnv["currentLanguage"]}].");
+                WriteLogEntry($"The current execution context has a primary UI language of [{adtEnv["uiculture"]}].");
 
                 // Advise whether the UI language was overridden.
                 if (((Hashtable)adtConfig["UI"]!)["LanguageOverride"] is string languageOverride)
                 {
                     WriteLogEntry($"The config file was configured to override the detected primary UI language with the following UI language: [{languageOverride}].");
                 }
-                WriteLogEntry($"The following UI messages were imported from the config file: [{adtData.Properties["Language"].Value}].");
+                WriteLogEntry($"The following locale was used to import UI messages from the strings.psd1 files: [{adtData.Properties["Language"].Value}].");
 
 
                 #endregion

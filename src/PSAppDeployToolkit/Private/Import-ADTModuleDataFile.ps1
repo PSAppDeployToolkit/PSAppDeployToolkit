@@ -30,7 +30,7 @@ function Private:Import-ADTModuleDataFile
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.String]$UICulture,
+        [System.Globalization.CultureInfo]$UICulture,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IgnorePolicy
