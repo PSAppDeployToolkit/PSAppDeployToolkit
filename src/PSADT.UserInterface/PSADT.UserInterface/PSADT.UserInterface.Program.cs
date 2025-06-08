@@ -61,13 +61,13 @@ namespace PSADT.UserInterface
             catch (ProgramException ex)
             {
                 // We've caught our own error. Write it out and exit with its code.
-                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine(ex.ToString());
                 Environment.Exit(ex.HResult);
             }
             catch (Exception ex)
             {
                 // This block is here as a fail-safe and should never be reached.
-                Console.Error.WriteLine($"An unknown error has occurred: {ex.Message}");
+                Console.Error.WriteLine($"An unknown error has occurred: {ex}");
                 Environment.Exit((int)ExitCode.Unknown);
             }
 
@@ -190,7 +190,7 @@ namespace PSADT.UserInterface
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"Failed to open a pipe client for the specified OutputHandle: {ex.Message}", ex, ExitCode.InvalidOutputPipe);
+                throw new ProgramException($"Failed to open a pipe client for the specified OutputHandle.", ex, ExitCode.InvalidOutputPipe);
             }
             try
             {
@@ -198,7 +198,7 @@ namespace PSADT.UserInterface
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"Failed to open a pipe client for the specified InputHandle: {ex.Message}", ex, ExitCode.InvalidInputPipe);
+                throw new ProgramException($"Failed to open a pipe client for the specified InputHandle.", ex, ExitCode.InvalidInputPipe);
             }
             try
             {
@@ -206,7 +206,7 @@ namespace PSADT.UserInterface
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"Failed to open a pipe client for the specified LogHandle: {ex.Message}", ex, ExitCode.InvalidLogPipe);
+                throw new ProgramException($"Failed to open a pipe client for the specified LogHandle.", ex, ExitCode.InvalidLogPipe);
             }
 
             // Start reading data from the pipes. We only return
@@ -274,7 +274,7 @@ namespace PSADT.UserInterface
                                                         }
                                                         catch (Exception ex)
                                                         {
-                                                            logWriter.WriteLine($"2{DisplayServer.Separator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex.Message}");
+                                                            logWriter.WriteLine($"2{DisplayServer.Separator}Failed to bring window [{window.WindowTitle}] to the foreground: {ex}");
                                                         }
 
                                                         // Close out the main window and spin until completion.
@@ -311,7 +311,7 @@ namespace PSADT.UserInterface
                                                     }
                                                     catch (Exception ex)
                                                     {
-                                                        logWriter.WriteLine($"3{DisplayServer.Separator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex.Message}");
+                                                        logWriter.WriteLine($"3{DisplayServer.Separator}Failed to close window [{window.WindowTitle}] for process [{runningApp.Process.ProcessName}]: {ex}");
                                                     }
                                                 }
                                             }
@@ -445,7 +445,7 @@ namespace PSADT.UserInterface
                             {
                                 // Write the exception message and stack trace back to the caller over the pipe.
                                 // We can't serialise the entire exception so this is the best we can do otherwise.
-                                outputWriter.WriteLine($"Error{DisplayServer.Separator}An unhandled exception occurred while processing line [{line}]: {ex.Message.TrimEnd('.')}. Stack trace received: {ex.StackTrace}");
+                                outputWriter.WriteLine($"Error{DisplayServer.Separator}An unhandled exception occurred while processing line [{line}]: {ex}");
                             }
                         }
                     }
@@ -453,7 +453,7 @@ namespace PSADT.UserInterface
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"Failed to read or write from the pipe: {ex.Message}", ex, ExitCode.PipeReadWriteError);
+                throw new ProgramException($"Failed to read or write from the pipe.", ex, ExitCode.PipeReadWriteError);
             }
         }
 
@@ -536,7 +536,7 @@ namespace PSADT.UserInterface
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"An error occurred while deserializing the dialog options: {ex.Message}", ex, ExitCode.InvalidDialogOptions);
+                throw new ProgramException($"An error occurred while deserializing the dialog options.", ex, ExitCode.InvalidDialogOptions);
             }
         }
 
@@ -555,7 +555,7 @@ namespace PSADT.UserInterface
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"An error occurred while serializing the dialog result: {ex.Message}", ex, ExitCode.InvalidDialogResult);
+                throw new ProgramException($"An error occurred while serializing the dialog result.", ex, ExitCode.InvalidDialogResult);
             }
         }
 
