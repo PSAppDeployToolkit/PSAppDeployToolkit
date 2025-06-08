@@ -33,6 +33,19 @@ function Private:Exit-ADTInvocation
         }
     }
 
+    # Attempt to close down any remaining client/server process as an additional safety item.
+    $clientOpen = if ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.IsRunning)
+    {
+        try
+        {
+            Close-ADTClientServerProcess
+        }
+        catch
+        {
+            $_
+        }
+    }
+
     # Flag the module as uninitialized upon last session closure.
     $Script:ADT.Initialized = $false
 
@@ -52,7 +65,7 @@ function Private:Exit-ADTInvocation
 
     # If a callback failed and we're in a proper console, forcibly exit the process.
     # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
-    if ($Force -or ($Host.Name.Equals('ConsoleHost') -and $progressOpen))
+    if ($Force -or ($Host.Name.Equals('ConsoleHost') -and ($progressOpen -or $clientOpen)))
     {
         [System.Environment]::Exit($ExitCode)
     }
