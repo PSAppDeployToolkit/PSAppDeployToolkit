@@ -58,7 +58,7 @@ function Close-ADTInstallationProgress
             try
             {
                 # Return early if there's no progress dialog open at all.
-                if (!$Script:ADT.DisplayServer -or !$Script:ADT.DisplayServer.ProgressDialogOpen())
+                if (!$Script:ADT.ClientServerProcess -or !$Script:ADT.ClientServerProcess.ProgressDialogOpen())
                 {
                     return
                 }
@@ -72,7 +72,7 @@ function Close-ADTInstallationProgress
 
                 # Call the underlying function to close the progress window.
                 Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-                if (!$Script:ADT.DisplayServer.CloseProgressDialog())
+                if (!$Script:ADT.ClientServerProcess.CloseProgressDialog())
                 {
                     $naerParams = @{
                         Exception = [System.ApplicationException]::new("Failed to close the progress dialog for an unknown reason.")

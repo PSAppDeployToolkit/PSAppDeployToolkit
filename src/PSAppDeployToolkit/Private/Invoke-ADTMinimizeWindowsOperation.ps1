@@ -18,14 +18,14 @@ function Private:Invoke-ADTMinimizeWindowsOperation
         [System.Management.Automation.SwitchParameter]$RestoreAllWindows
     )
 
-    # Instantiate a new DisplayServer object if one's not already present.
-    if (!$Script:ADT.DisplayServer)
+    # Instantiate a new ClientServerProcess object if one's not already present.
+    if (!$Script:ADT.ClientServerProcess)
     {
-        Open-ADTDisplayServer
+        Open-ADTClientServerProcess
     }
 
     # Invoke the specified action.
-    if (!$Script:ADT.DisplayServer.($PSCmdlet.ParameterSetName)())
+    if (!$Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)())
     {
         $naerParams = @{
             Exception = [System.ApplicationException]::new("Failed to $($PSCmdlet.ParameterSetName.Split('All')[0].ToLower()) all windows for an unknown reason.")

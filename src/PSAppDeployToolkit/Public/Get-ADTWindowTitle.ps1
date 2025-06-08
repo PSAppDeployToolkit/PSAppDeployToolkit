@@ -95,7 +95,7 @@ function Get-ADTWindowTitle
 
     begin
     {
-        # Initialize the module if it's not already. We need this for `Open-ADTDisplayServer` to function properly.
+        # Initialize the module if it's not already. We need this for `Open-ADTClientServerProcess` to function properly.
         $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
 
         # Make this function continue on error.
@@ -111,10 +111,10 @@ function Get-ADTWindowTitle
             return
         }
 
-        # Instantiate a new DisplayServer object if one's not already present.
-        if (!$Script:ADT.DisplayServer)
+        # Instantiate a new ClientServerProcess object if one's not already present.
+        if (!$Script:ADT.ClientServerProcess)
         {
-            Open-ADTDisplayServer -User $runAsActiveUser
+            Open-ADTClientServerProcess -User $runAsActiveUser
         }
 
         # Announce commencement.
@@ -132,7 +132,7 @@ function Get-ADTWindowTitle
         {
             try
             {
-                if (($windowInfo = $Script:ADT.DisplayServer.GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess)))
+                if (($windowInfo = $Script:ADT.ClientServerProcess.GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess)))
                 {
                     $PSCmdlet.WriteObject($windowInfo, $false)
                 }

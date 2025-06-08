@@ -733,10 +733,10 @@ function Show-ADTInstallationWelcome
         # Internal worker function to bring up the dialog.
         function Show-ADTWelcomePrompt
         {
-            # Instantiate a new DisplayServer object if one's not already present.
-            if (!$Script:ADT.DisplayServer)
+            # Instantiate a new ClientServerProcess object if one's not already present.
+            if (!$Script:ADT.ClientServerProcess)
             {
-                Open-ADTDisplayServer -User $runAsActiveUser
+                Open-ADTClientServerProcess -User $runAsActiveUser
             }
 
             # Minimize all other windows.
@@ -748,7 +748,7 @@ function Show-ADTInstallationWelcome
             # Initialise the dialog's state if we haven't already done so.
             if ($initialized.Equals($false))
             {
-                if (!($initialized = $Script:ADT.DisplayServer.InitCloseAppsDialog($CloseProcesses)))
+                if (!($initialized = $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)))
                 {
                     $naerParams = @{
                         Exception = [System.ApplicationException]::new("Failed to initialize the welcome dialog for an unknown reason.")
@@ -761,7 +761,7 @@ function Show-ADTInstallationWelcome
             }
 
             # Show the dialog and return the result.
-            return $Script:ADT.DisplayServer.ShowCloseAppsDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+            return $Script:ADT.ClientServerProcess.ShowCloseAppsDialog($adtConfig.UI.DialogStyle, $dialogOptions)
         }
 
         # Internal worker function for updating the deferral history.
@@ -1090,7 +1090,7 @@ function Show-ADTInstallationWelcome
                             {
                                 if ($PromptToSave)
                                 {
-                                    if (!$Script:ADT.DisplayServer.PromptToCloseApps([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)))
+                                    if (!$Script:ADT.ClientServerProcess.PromptToCloseApps([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)))
                                     {
                                         $naerParams = @{
                                             Exception = [System.ApplicationException]::new("Failed to prompt user to close apps for an unknown reason.")

@@ -257,15 +257,15 @@ function Show-ADTInstallationRestartPrompt
                     return
                 }
 
-                # Instantiate a new DisplayServer object if one's not already present.
-                if (!$Script:ADT.DisplayServer)
+                # Instantiate a new ClientServerProcess object if one's not already present.
+                if (!$Script:ADT.ClientServerProcess)
                 {
-                    Open-ADTDisplayServer -User $runAsActiveUser
+                    Open-ADTClientServerProcess -User $runAsActiveUser
                 }
 
                 # Call the underlying function to open the restart prompt.
                 Write-ADTLogEntry -Message "Displaying restart prompt with $(if ($NoCountdown) { 'no' } else { "a [$CountdownSeconds] second" }) countdown."
-                $null = $Script:ADT.DisplayServer.ShowRestartDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+                $null = $Script:ADT.ClientServerProcess.ShowRestartDialog($adtConfig.UI.DialogStyle, $dialogOptions)
             }
             catch
             {

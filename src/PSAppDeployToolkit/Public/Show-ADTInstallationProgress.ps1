@@ -192,14 +192,14 @@ function Show-ADTInstallationProgress
                 return
             }
 
-            # Instantiate a new DisplayServer object if one's not already present.
-            if (!$Script:ADT.DisplayServer)
+            # Instantiate a new ClientServerProcess object if one's not already present.
+            if (!$Script:ADT.ClientServerProcess)
             {
-                Open-ADTDisplayServer -User $runAsActiveUser
+                Open-ADTClientServerProcess -User $runAsActiveUser
             }
 
             # Determine if progress window is open before proceeding.
-            $progressOpen = $Script:ADT.DisplayServer.ProgressDialogOpen()
+            $progressOpen = $Script:ADT.ClientServerProcess.ProgressDialogOpen()
 
             # Notify user that the software installation has started.
             if (!$progressOpen)
@@ -216,14 +216,14 @@ function Show-ADTInstallationProgress
         }
         else
         {
-            # Instantiate a new DisplayServer object if one's not already present.
-            if (!$Script:ADT.DisplayServer)
+            # Instantiate a new ClientServerProcess object if one's not already present.
+            if (!$Script:ADT.ClientServerProcess)
             {
-                Open-ADTDisplayServer -User $runAsActiveUser
+                Open-ADTClientServerProcess -User $runAsActiveUser
             }
 
             # Determine if progress window is open before proceeding.
-            $progressOpen = $Script:ADT.DisplayServer.ProgressDialogOpen()
+            $progressOpen = $Script:ADT.ClientServerProcess.ProgressDialogOpen()
         }
 
         # Call the underlying function to open the progress window.
@@ -269,7 +269,7 @@ function Show-ADTInstallationProgress
                         $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                     }
                     Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$($PSBoundParameters.StatusMessage)]."
-                    if (!$Script:ADT.DisplayServer.ShowProgressDialog($adtConfig.UI.DialogStyle, $dialogOptions))
+                    if (!$Script:ADT.ClientServerProcess.ShowProgressDialog($adtConfig.UI.DialogStyle, $dialogOptions))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new("Failed to open the progress dialog for an unknown reason.")
@@ -286,7 +286,7 @@ function Show-ADTInstallationProgress
                 else
                 {
                     Write-ADTLogEntry -Message "Updating the progress dialog with message: [$($PSBoundParameters.StatusMessage)]."
-                    if (!$Script:ADT.DisplayServer.UpdateProgressDialog($(if ($PSBoundParameters.ContainsKey('StatusMessage')) { $StatusMessage }), $(if ($PSBoundParameters.ContainsKey('StatusMessageDetail')) { $StatusMessageDetail }), $(if ($PSBoundParameters.ContainsKey('StatusBarPercentage')) { $StatusBarPercentage }), $(if ($PSBoundParameters.ContainsKey('MessageAlignment')) { $MessageAlignment })))
+                    if (!$Script:ADT.ClientServerProcess.UpdateProgressDialog($(if ($PSBoundParameters.ContainsKey('StatusMessage')) { $StatusMessage }), $(if ($PSBoundParameters.ContainsKey('StatusMessageDetail')) { $StatusMessageDetail }), $(if ($PSBoundParameters.ContainsKey('StatusBarPercentage')) { $StatusBarPercentage }), $(if ($PSBoundParameters.ContainsKey('MessageAlignment')) { $MessageAlignment })))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new("Failed to update the progress dialog for an unknown reason.")

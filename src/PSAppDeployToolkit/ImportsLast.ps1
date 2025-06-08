@@ -47,7 +47,7 @@ try
                 ModuleInit = $null
             }
             SessionState = $ExecutionContext.SessionState
-            DisplayServer = $null
+            ClientServerProcess = $null
             Sessions = $null
             TerminalServerMode = $false
             Environment = $null
@@ -116,11 +116,11 @@ catch
     throw
 }
 
-# Ensure that the display server is closed on module remove.
+# Ensure that the client/server process is closed on module remove.
 $ModuleInfo.OnRemove = {
-    if ($ADT.DisplayServer)
+    if ($ADT.ClientServerProcess)
     {
-        Close-ADTDisplayServer
+        Close-ADTClientServerProcess
     }
 }
 

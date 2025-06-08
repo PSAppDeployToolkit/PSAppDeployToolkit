@@ -199,15 +199,15 @@ function Show-ADTDialogBox
                     return
                 }
 
-                # Instantiate a new DisplayServer object if one's not already present.
-                if (!$Script:ADT.DisplayServer)
+                # Instantiate a new ClientServerProcess object if one's not already present.
+                if (!$Script:ADT.ClientServerProcess)
                 {
-                    Open-ADTDisplayServer -User $runAsActiveUser
+                    Open-ADTClientServerProcess -User $runAsActiveUser
                 }
 
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying dialog box with message: [$Text]."
-                $result = $Script:ADT.DisplayServer.ShowDialogBox($dialogOptions)
+                $result = $Script:ADT.ClientServerProcess.ShowDialogBox($dialogOptions)
 
                 # Process results.
                 if ($result -eq [PSADT.UserInterface.DialogResults.DialogBoxResult]::Timeout)

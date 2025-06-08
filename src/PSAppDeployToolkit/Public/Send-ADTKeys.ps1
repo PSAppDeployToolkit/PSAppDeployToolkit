@@ -104,7 +104,7 @@ function Send-ADTKeys
 
     begin
     {
-        # Initialize the module if it's not already. We need this for `Open-ADTDisplayServer` to function properly.
+        # Initialize the module if it's not already. We need this for `Open-ADTClientServerProcess` to function properly.
         $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
 
         # Make this function continue on error.
@@ -145,10 +145,10 @@ function Send-ADTKeys
             $PSCmdlet.ThrowTerminatingError($_)
         }
 
-        # Instantiate a new DisplayServer object if one's not already present.
-        if (!$Script:ADT.DisplayServer)
+        # Instantiate a new ClientServerProcess object if one's not already present.
+        if (!$Script:ADT.ClientServerProcess)
         {
-            Open-ADTDisplayServer -User $runAsActiveUser
+            Open-ADTClientServerProcess -User $runAsActiveUser
         }
 
         # Process each found window.
@@ -160,7 +160,7 @@ function Send-ADTKeys
                 {
                     # Send the Key sequence.
                     Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]."
-                    if (!$Script:ADT.DisplayServer.SendKeys($window.WindowHandle, $Keys))
+                    if (!$Script:ADT.ClientServerProcess.SendKeys($window.WindowHandle, $Keys))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new("Failed to send the requested keys for an unknown reason.")

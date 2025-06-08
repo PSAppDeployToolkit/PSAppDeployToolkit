@@ -47,7 +47,7 @@ function Get-ADTUserNotificationState
 
     begin
     {
-        # Initialize the module if it's not already. We need this for `Open-ADTDisplayServer` to function properly.
+        # Initialize the module if it's not already. We need this for `Open-ADTClientServerProcess` to function properly.
         $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
@@ -61,18 +61,18 @@ function Get-ADTUserNotificationState
             return
         }
 
-        # Instantiate a new DisplayServer object if one's not already present.
-        if (!$Script:ADT.DisplayServer)
+        # Instantiate a new ClientServerProcess object if one's not already present.
+        if (!$Script:ADT.ClientServerProcess)
         {
-            Open-ADTDisplayServer -User $runAsActiveUser
+            Open-ADTClientServerProcess -User $runAsActiveUser
         }
 
-        # Send the request off to the display server.
+        # Send the request off to the client/server process.
         try
         {
             try
             {
-                Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = $Script:ADT.DisplayServer.GetUserNotificationState()))]."
+                Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = $Script:ADT.ClientServerProcess.GetUserNotificationState()))]."
                 return $UserNotificationState
             }
             catch

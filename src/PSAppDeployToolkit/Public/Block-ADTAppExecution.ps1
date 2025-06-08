@@ -118,8 +118,8 @@ function Block-ADTAppExecution
                     return
                 }
 
-                # Configure the appropriate permissions for the display server.
-                Set-ADTPermissionsForDisplayServer
+                # Configure the appropriate permissions for the client/server process.
+                Set-ADTClientServerProcessPermissions
 
                 # Build out hashtable of parameters needed to construct the dialog.
                 $dialogOptions = @{

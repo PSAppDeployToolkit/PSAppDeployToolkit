@@ -21,7 +21,7 @@ function Private:Exit-ADTInvocation
     )
 
     # Attempt to close down any progress dialog here as an additional safety item.
-    $progressOpen = if ($Script:ADT.DisplayServer -and $Script:ADT.DisplayServer.ProgressDialogOpen())
+    $progressOpen = if ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.ProgressDialogOpen())
     {
         try
         {
