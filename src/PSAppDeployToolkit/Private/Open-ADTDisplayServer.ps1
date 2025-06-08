@@ -23,7 +23,7 @@ function Private:Open-ADTDisplayServer
             ErrorId = 'DisplayServerAlreadyActive'
             TargetObject = $Script:ADT.DisplayServer
         }
-        throw (New-ADTErrorRecord @naerParams)
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
     # Set the required file permissions to ensure the user can open the display server.
@@ -46,13 +46,13 @@ function Private:Open-ADTDisplayServer
         }
         $Script:ADT.DisplayServer.Dispose()
         $Script:ADT.DisplayServer = $null
-        throw (New-ADTErrorRecord @naerParams)
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
     catch
     {
         $Script:ADT.DisplayServer.Dispose()
         $Script:ADT.DisplayServer = $null
-        throw
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 
     # Ensure we properly close the display server upon the closure of the last active session.
