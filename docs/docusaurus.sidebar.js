@@ -57,6 +57,7 @@ module.exports = [
     'commands/Get-ADTShortcut',
     'commands/Get-ADTStringTable',
     'commands/Get-ADTUniversalDate',
+    'commands/Get-ADTUserNotificationState',
     'commands/Get-ADTUserProfiles',
     'commands/Get-ADTWindowTitle',
     'commands/Initialize-ADTFunction',
