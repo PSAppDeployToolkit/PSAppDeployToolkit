@@ -1,10 +1,9 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -13,33 +12,32 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Interop;
-using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Windows.Shell;
 using System.Windows.Threading;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using Windows.Win32;
-using Wpf.Ui.Appearance;
-using Wpf.Ui.Controls;
-using Wpf.Ui.Markup;
+using iNKORE.UI.WPF.Modern;
+using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
-    internal abstract partial class FluentDialog : FluentWindow, IDialogBase, INotifyPropertyChanged
+    internal abstract partial class FluentDialog : Window, IDialogBase, INotifyPropertyChanged
     {
         /// <summary>
         /// Static constructor to set up the theme and resources for the dialog.
         /// </summary>
         static FluentDialog()
         {
-            // Add these dictionaries here so they're available before the constructor is called.
-            Application.Current.Resources.MergedDictionaries.Add(new ThemesDictionary());
-            Application.Current.Resources.MergedDictionaries.Add(new ControlsDictionary());
+            Application.Current.Resources.MergedDictionaries.Add(new ThemeResources());
+            Application.Current.Resources.MergedDictionaries.Add(new XamlControlsResources());
         }
 
         /// <summary>
@@ -52,9 +50,26 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="countdownStopwatch"></param>
         private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
+            DataContext = this;
+
+            WindowChrome.SetWindowChrome(this, new WindowChrome()
+            {
+                GlassFrameThickness = new Thickness(0, 1, 0, 0),
+                UseAeroCaptionButtons = false,
+                CornerRadius = new CornerRadius(0),
+                ResizeBorderThickness = new Thickness(4),
+                NonClientFrameEdges = NonClientFrameEdges.None,
+                CaptionHeight = 36d,
+
+            });
+
+            WindowHelper.SetApplyBackground(this, false);
+
             // Initialize the window
             InitializeComponent();
 
+// TODO - Re-enable
+#if false
             // If the accent color is set, we don't need to watch for system theme changes
             if (null != options.FluentAccentColor)
             {
@@ -93,6 +108,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     }
                 }
             }
+#endif
 
             // Set basic properties
             Title = options.AppTitle;
@@ -367,7 +383,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="textBlock"></param>
         /// <param name="message"></param>
-        protected void FormatMessageWithHyperlinks(Wpf.Ui.Controls.TextBlock textBlock, string? message)
+        protected void FormatMessageWithHyperlinks(TextBlock textBlock, string? message)
         {
             // Throw if our process was started with ServiceUI anywhere as a parent process.
             if (ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase)))
@@ -461,7 +477,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// </summary>
         /// <param name="button"></param>
         /// <param name="text"></param>
-        protected void SetButtonContentWithAccelerator(Wpf.Ui.Controls.Button button, string? text)
+        protected void SetButtonContentWithAccelerator(Button button, string? text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -621,7 +637,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Adjust for workArea offset.
             string dialogPosName = _dialogPosition.ToString();
             left -= dialogPosName.EndsWith("Right") ? 18 : dialogPosName.EndsWith("Left") ? -18 : 0;
-            top -= dialogPosName.StartsWith("Bottom") ? 18 : dialogPosName.StartsWith("Top") ? -18 : 0;
+            top -= dialogPosName.StartsWith("Bottom") ? 14 : dialogPosName.StartsWith("Top") ? -14 : 0;
 
             // Set positions in DIPs.
             Left = _startingLeft = left;
@@ -677,7 +693,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                     // Set margin based on position
                     ActionButtons.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                     Grid.SetColumn(visibleButtons[i], i);
-                    Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[i];
+                    Button button = (Button)visibleButtons[i];
                     if (i == 0)
                     {
                         button.Margin = new Thickness(0, 0, 4, 0);
@@ -702,11 +718,12 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 Grid.SetColumn(visibleButtons[0], 1);
 
                 // Set appropriate margin
-                Wpf.Ui.Controls.Button button = (Wpf.Ui.Controls.Button)visibleButtons[0];
+                Button button = (Button)visibleButtons[0];
                 button.Margin = new Thickness(0, 0, 0, 0);
 
                 // Set to Primary appearance for single button
-                button.Appearance = ControlAppearance.Primary;
+                // TODO - Fix This
+                // button.Appearance = ControlAppearance.Primary;
             }
         }
 

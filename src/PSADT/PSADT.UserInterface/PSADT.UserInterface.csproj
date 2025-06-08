@@ -57,8 +57,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\lib\wpfui\src\Wpf.Ui.Tray\Wpf.Ui.Tray.csproj" />
-    <ProjectReference Include="..\..\..\lib\wpfui\src\Wpf.Ui\Wpf.Ui.csproj" />
     <ProjectReference Include="..\..\PSADT\PSADT\PSADT.csproj" />
   </ItemGroup>
 
@@ -87,6 +85,10 @@
     <Compile Update="Dialogs\Classic\PSADT.UserInterface.Dialogs.Classic.RestartDialog.cs">
       <SubType>Form</SubType>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
