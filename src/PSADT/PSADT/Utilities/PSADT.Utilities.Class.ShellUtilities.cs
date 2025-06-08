@@ -17,7 +17,7 @@ namespace PSADT.Utilities
         /// Refreshes the desktop icons and updates the environment variables in the system.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the operation fails.</exception>
-        public static void RefreshDesktopAndEnvironmentVariables()
+        internal static void RefreshDesktopAndEnvironmentVariables()
         {
             // Update desktop icons using SHChangeNotify, then notify all top-level windows that the environment variables have changed.
             Shell32.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSHNOWAIT, IntPtr.Zero, IntPtr.Zero);

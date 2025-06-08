@@ -47,17 +47,42 @@ function Update-ADTDesktop
 
     begin
     {
+        # Initialize the module if it's not already. We need this for `Open-ADTDisplayServer` to function properly.
+        $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
+        # Bypass if no one's logged onto the device.
+        if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            return
+        }
         Write-ADTLogEntry -Message 'Refreshing the Desktop and the Windows Explorer environment process block.'
+
+        # Instantiate a new DisplayServer object if one's not already present.
+        if (!$Script:ADT.DisplayServer)
+        {
+            Open-ADTDisplayServer -User $runAsActiveUser
+        }
+
+        # Send the request off to the display server.
         try
         {
             try
             {
-                [PSADT.Utilities.ShellUtilities]::RefreshDesktopAndEnvironmentVariables()
+                if (!$Script:ADT.DisplayServer.RefreshDesktopAndEnvironmentVariables())
+                {
+                    $naerParams = @{
+                        Exception = [System.ApplicationException]::new("Failed to refresh the desktop and environment variables for an unknown reason.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'RefreshDesktopAndEnvironmentVariablesUnknownError'
+                        RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
             }
             catch
             {

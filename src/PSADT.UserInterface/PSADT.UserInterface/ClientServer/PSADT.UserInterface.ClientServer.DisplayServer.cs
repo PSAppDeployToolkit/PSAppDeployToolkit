@@ -310,6 +310,19 @@ namespace PSADT.UserInterface.ClientServer
         }
 
         /// <summary>
+        /// Refreshes the desktop and environment variables.
+        /// </summary>
+        /// <remarks>This method invokes the "RefreshDesktopAndEnvironmentVariables" operation to update
+        /// the desktop and  environment variables. The return value indicates whether the operation was
+        /// successful.</remarks>
+        /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
+        public bool RefreshDesktopAndEnvironmentVariables()
+        {
+            _logSource = "Refresh-ADTDesktopAndEnvironmentVariables";
+            return Invoke("RefreshDesktopAndEnvironmentVariables");
+        }
+
+        /// <summary>
         /// Retrieves the result of the client process execution.
         /// </summary>
         /// <returns>The result of the client process execution as a <see cref="ProcessResult"/>.</returns>

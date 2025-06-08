@@ -424,6 +424,12 @@ namespace PSADT.UserInterface
                                     SendKeys.SendWait(parts[2]);
                                     outputWriter.WriteLine(true);
                                 }
+                                else if (parts[0] == "RefreshDesktopAndEnvironmentVariables")
+                                {
+                                    // Refresh the desktop and environment variables, then write back that we were successful.
+                                    ShellUtilities.RefreshDesktopAndEnvironmentVariables();
+                                    outputWriter.WriteLine(true);
+                                }
                                 else if (parts[0] == "Open")
                                 {
                                     // Write that we're good to go.
