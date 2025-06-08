@@ -44,6 +44,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 this.Icon = ClassicAssets.GetIcon(options.AppIconImage);
                 this.TopMost = options.DialogTopMost;
                 this.ActiveControl = this.buttonDefault;
+                this.SizeChanged += (s, e) => PositionForm();
                 this.FormClosing += Form_FormClosing;
                 this.Load += Form_Load;
                 this.ResumeLayout();
@@ -174,7 +175,6 @@ namespace PSADT.UserInterface.Dialogs.Classic
             PositionForm();
 
             // Start the persist timer if it's available.
-            startingPoint = this.Location;
             persistTimer?.Start();
             expiryTimer?.Start();
         }
@@ -323,7 +323,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
             top += dialogPosName.StartsWith("Bottom") ? 1 : dialogPosName.StartsWith("Top") ? -1 : 0;
 
             // Set the form’s location
-            Location = new Point((int)left, (int)top);
+            Location = startingPoint = new Point((int)left, (int)top);
         }
 
         /// <summary>
