@@ -205,16 +205,9 @@ namespace PSADT.Execution
                                     using (lpEnvironment)
                                     {
                                         // This is important so that a windowed application can be shown.
-                                        if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
+                                        using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
                                         {
-                                            using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
-                                            {
-                                                startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                                Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
-                                            }
-                                        }
-                                        else
-                                        {
+                                            startupInfo.lpDesktop = lpDesktop.ToPWSTR();
                                             Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                         }
                                     }
