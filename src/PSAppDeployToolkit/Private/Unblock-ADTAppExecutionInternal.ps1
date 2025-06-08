@@ -6,22 +6,6 @@
 
 function Private:Unblock-ADTAppExecutionInternal
 {
-    <#
-
-    .SYNOPSIS
-    Core logic used within Unblock-ADTAppExecution.
-
-    .DESCRIPTION
-    This function contains core logic used within Unblock-ADTAppExecution, separated out to facilitate calling via PowerShell without dependency on the toolkit.
-
-    .NOTES
-    This function deliberately does not use the module's CommandTable to ensure it can run without module dependency.
-
-    .LINK
-    https://psappdeploytoolkit.com
-
-    #>
-
     [CmdletBinding(DefaultParameterSetName = 'None')]
     param
     (

@@ -6,43 +6,6 @@
 
 function Private:Invoke-ADTServiceAndDependencyOperation
 {
-    <#
-
-    .SYNOPSIS
-    Process Windows service and its dependencies.
-
-    .DESCRIPTION
-    Process Windows service and its dependencies.
-
-    .PARAMETER Name
-    Specify the name of the service.
-
-    .PARAMETER SkipDependentServices
-    Choose to skip checking for dependent services.
-
-    .PARAMETER PendingStatusWait
-    The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
-
-    .PARAMETER PassThru
-    Return the System.ServiceProcess.ServiceController service object.
-
-    .INPUTS
-    None. You cannot pipe objects to this function.
-
-    .OUTPUTS
-    System.ServiceProcess.ServiceController. Returns the service object.
-
-    .EXAMPLE
-    Invoke-ADTServiceAndDependencyOperation -Name wuauserv -Operation Start
-
-    .EXAMPLE
-    Invoke-ADTServiceAndDependencyOperation -Name wuauserv -Operation Stop
-
-    .LINK
-    https://psappdeploytoolkit.com
-
-    #>
-
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'SkipDependentServices', Justification = "This parameter is used within a child function that isn't immediately visible to PSScriptAnalyzer.")]
     [CmdletBinding()]
     param

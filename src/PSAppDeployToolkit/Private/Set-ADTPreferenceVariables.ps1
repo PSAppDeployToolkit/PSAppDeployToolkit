@@ -6,50 +6,6 @@
 
 function Private:Set-ADTPreferenceVariables
 {
-    <#
-    .SYNOPSIS
-        Sets preference variables within the called scope based on CommonParameter values within the callstack.
-
-    .DESCRIPTION
-        Script module functions do not automatically inherit their caller's variables, therefore we walk the callstack to get the closest bound CommonParameter value and use it within the called scope.
-
-        This function is a helper function for any script module Advanced Function; by passing in the values of $ExecutionContext.SessionState, Set-ADTPreferenceVariables will set the caller's preference variables locally.
-
-    .PARAMETER SessionState
-        The $ExecutionContext.SessionState object from a script module Advanced Function. This is how the Set-ADTPreferenceVariables function sets variables in its callers' scope, even if that caller is in a different script module.
-
-    .PARAMETER Scope
-        A scope override, mostly so this can be called via Initialize-ADTFunction.
-
-    .EXAMPLE
-        Set-ADTPreferenceVariables -SessionState $ExecutionContext.SessionState
-
-        Imports the default PowerShell preference variables from the caller into the local scope.
-
-    .INPUTS
-        None
-
-        You cannot pipe objects to this function.
-
-    .OUTPUTS
-        None
-
-        This function does not return any output.
-
-    .NOTES
-        An active ADT session is required to use this function.
-
-        Original code inspired by: https://gallery.technet.microsoft.com/scriptcenter/Inherit-Preference-82343b9d
-
-        Tags: psadt<br />
-        Website: https://psappdeploytoolkit.com<br />
-        Copyright: © 2025 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
-        License: https://opensource.org/license/lgpl-3-0
-
-    .LINK
-        https://psappdeploytoolkit.com
-    #>
-
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
