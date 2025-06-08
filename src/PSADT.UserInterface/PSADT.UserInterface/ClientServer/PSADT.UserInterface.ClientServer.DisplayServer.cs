@@ -310,6 +310,16 @@ namespace PSADT.UserInterface.ClientServer
         }
 
         /// <summary>
+        /// Retrieves the result of the client process execution.
+        /// </summary>
+        /// <returns>The result of the client process execution as a <see cref="ProcessResult"/>.</returns>
+        /// <remarks>This method is for diagnostics purposes only and should only be called when the caller knows the client process has started but has failed.</remarks>
+        public ProcessResult GetClientProcessResult()
+        {
+            return _clientProcess!.Task.GetAwaiter().GetResult();
+        }
+
+        /// <summary>
         /// Displays a modal dialog of the specified type and style, passing the provided options, and returns the
         /// result.
         /// </summary>
@@ -443,7 +453,7 @@ namespace PSADT.UserInterface.ClientServer
             var response = _inputStreamReader.ReadLine();
             if (string.IsNullOrWhiteSpace(response))
             {
-                throw new InvalidDataException("The display client shut down outside of our control.");
+                throw new InvalidDataException("The client process returned a null response.");
             }
             if (response.StartsWith($"Error{Separator}", StringComparison.OrdinalIgnoreCase))
             {
