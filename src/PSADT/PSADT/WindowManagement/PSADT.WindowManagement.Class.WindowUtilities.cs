@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,7 +12,7 @@ namespace PSADT.WindowManagement
     /// <summary>
     /// Provides methods for interacting with UI automation on Windows.
     /// </summary>
-    public static class WindowUtilities
+    internal static class WindowUtilities
     {
         /// <summary>
         /// Retrieves information about visible windows associated with processes, filtered by optional criteria.
@@ -27,7 +28,7 @@ namespace PSADT.WindowManagement
         /// names match one or more of the specified names will be included.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the visible windows that match
         /// the specified filters. If no filters are provided, all visible windows are included.</returns>
-        public static IReadOnlyList<WindowInfo> GetProcessWindowInfo(string[]? windowTitleFilter = null, nint[]? windowHandleFilter = null, string[]? parentProcessFilter = null)
+        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(string[]? windowTitleFilter = null, nint[]? windowHandleFilter = null, string[]? parentProcessFilter = null)
         {
             // Get the list of processes based on the provided filters.
             var processes = null != windowHandleFilter && null != parentProcessFilter ? Process.GetProcesses().Where(p => windowHandleFilter.Contains(p.MainWindowHandle) && parentProcessFilter.Contains(p.ProcessName)) :
@@ -73,5 +74,17 @@ namespace PSADT.WindowManagement
             // Return the list of window information.
             return windowInfos.AsReadOnly();
         }
+
+        /// <summary>
+        /// Retrieves information about windows associated with a process, filtered by the specified options.
+        /// </summary>
+        /// <remarks>This method allows filtering windows based on specific criteria provided in the
+        /// <paramref name="options"/> parameter.  Use this method to retrieve detailed information about windows
+        /// associated with a process, such as their titles, handles, and parent processes.</remarks>
+        /// <param name="options">An object containing filtering criteria for the windows to retrieve, including window title, handle, and
+        /// parent process filters.</param>
+        /// <returns>A read-only list of <see cref="WindowInfo"/> objects representing the windows that match the specified
+        /// filters.  The list will be empty if no windows match the criteria.</returns>
+        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options) => GetProcessWindowInfo(options.WindowTitleFilter, options.WindowHandleFilter, options.ParentProcessFilter);
     }
 }

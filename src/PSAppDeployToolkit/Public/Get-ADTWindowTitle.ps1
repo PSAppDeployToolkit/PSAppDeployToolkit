@@ -32,9 +32,6 @@ function Get-ADTWindowTitle
     .PARAMETER ParentProcess
         One or more process names of the application window to search for.
 
-    .PARAMETER GetAllWindowTitles
-        Get titles for all open windows on the system.
-
     .INPUTS
         None
 
@@ -98,12 +95,28 @@ function Get-ADTWindowTitle
 
     begin
     {
+        # Initialize the module if it's not already. We need this for `Open-ADTDisplayServer` to function properly.
+        $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
+        # Bypass if no one's logged onto the device.
+        if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            return
+        }
+
+        # Instantiate a new DisplayServer object if one's not already present.
+        if (!$Script:ADT.DisplayServer)
+        {
+            Open-ADTDisplayServer -User $runAsActiveUser
+        }
+
         # Announce commencement.
         if ($WindowTitle -or $WindowHandle -or $ParentProcess)
         {
@@ -119,7 +132,7 @@ function Get-ADTWindowTitle
         {
             try
             {
-                if (($windowInfo = [PSADT.WindowManagement.WindowUtilities]::GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess)))
+                if (($windowInfo = $Script:ADT.DisplayServer.GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess)))
                 {
                     $PSCmdlet.WriteObject($windowInfo, $false)
                 }

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace PSADT.WindowManagement
 {
     /// <summary>
     /// Represents information about a window in the system.
     /// </summary>
+    [DataContract]
     public sealed record WindowInfo
     {
         /// <summary>
@@ -27,26 +29,31 @@ namespace PSADT.WindowManagement
         /// <summary>
         /// Gets the title of the window.
         /// </summary>
+        [DataMember]
         public readonly string WindowTitle;
 
         /// <summary>
         /// Gets the handle to the window.
         /// </summary>
+        [DataMember]
         public readonly IntPtr WindowHandle;
 
         /// <summary>
         /// Gets the name of the parent process that owns the window.
         /// </summary>
+        [DataMember]
         public readonly string? ParentProcess;
 
         /// <summary>
         /// Gets the handle to the main window of the parent process.
         /// </summary>
+        [DataMember]
         public readonly IntPtr ParentProcessMainWindowHandle;
 
         /// <summary>
         /// Gets the ID of the parent process.
         /// </summary>
+        [DataMember]
         public readonly int ParentProcessId;
     }
 }

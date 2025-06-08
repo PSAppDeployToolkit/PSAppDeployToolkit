@@ -424,6 +424,17 @@ namespace PSADT.UserInterface
                                     SendKeys.SendWait(parts[2]);
                                     outputWriter.WriteLine(true);
                                 }
+                                else if (parts[0] == "GetProcessWindowInfo")
+                                {
+                                    // Confirm the length of our parts showing the dialog and writing back the result.
+                                    if (parts.Length != 2)
+                                    {
+                                        throw new ProgramException("The GetProcessWindowInfo command requires exactly one argument: WindowInfoOptions.", ExitCode.InvalidArguments);
+                                    }
+
+                                    // Get the window information based on the provided options and serialize it for the caller.
+                                    outputWriter.WriteLine(SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(parts[1]))));
+                                }
                                 else if (parts[0] == "RefreshDesktopAndEnvironmentVariables")
                                 {
                                     // Refresh the desktop and environment variables, then write back that we were successful.
