@@ -63,21 +63,23 @@ function Test-ADTPowerPoint
         {
             try
             {
+                # Bypass if no one's logged onto the device.
+                if (!(Get-ADTRunAsActiveUser))
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                    return
+                }
+
                 # Return early if we're not running PowerPoint or we can't interactively check.
                 if (!($PowerPointProcess = Get-Process -Name $procName -ErrorAction Ignore))
                 {
                     Write-ADTLogEntry -Message 'PowerPoint application is not running.'
                     return ($presenting = $false)
                 }
-                if (![System.Environment]::UserInteractive)
-                {
-                    Write-ADTLogEntry -Message 'Unable to run check to see if PowerPoint is in fullscreen mode or Presentation Mode because current process is not interactive. Configure script to run in interactive mode in your deployment tool. If using SCCM Application Model, then make sure "Allow users to view and interact with the program installation" is selected. If using SCCM Package Model, then make sure "Allow users to interact with this program" is selected.' -Severity 2
-                    return
-                }
 
                 # Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "Powerpoint-" for non-English language systems.
                 # There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
-                if (Get-ADTWindowTitle -GetAllWindowTitles | & { process { if (($_.ParentProcess -eq $procName) -and ($_.WindowTitle -match '^PowerPoint(-| Slide Show)')) { return $_ } } } | Select-Object -First 1)
+                if (Get-ADTWindowTitle -ParentProcess $procName -WindowTitle '^PowerPoint(-| Slide Show)')
                 {
                     Write-ADTLogEntry -Message "Detected that PowerPoint process [$procName] has a window with a title that beings with [PowerPoint Slide Show] or [PowerPoint-]."
                     return ($presenting = $true)
@@ -87,8 +89,7 @@ function Test-ADTPowerPoint
 
                 # If previous detection method did not detect PowerPoint in fullscreen mode, then check if PowerPoint is in Presentation Mode (check only works on Windows Vista or higher).
                 # Note: The below method does not detect PowerPoint presentation mode if the presentation is on a monitor that does not have current mouse input control.
-                Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = [PSADT.Utilities.ShellUtilities]::GetUserNotificationState()))]."
-                switch ($UserNotificationState)
+                switch (Get-ADTUserNotificationState)
                 {
                     ([PSADT.LibraryInterfaces.QUERY_USER_NOTIFICATION_STATE]::QUNS_PRESENTATION_MODE)
                     {

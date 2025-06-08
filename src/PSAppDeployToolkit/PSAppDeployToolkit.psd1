@@ -115,6 +115,7 @@
         'Get-ADTShortcut'
         'Get-ADTStringTable'
         'Get-ADTUniversalDate'
+        'Get-ADTUserNotificationState'
         'Get-ADTUserProfiles'
         'Get-ADTWindowTitle'
         'Initialize-ADTFunction'

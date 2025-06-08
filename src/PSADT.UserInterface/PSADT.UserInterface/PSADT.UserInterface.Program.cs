@@ -441,6 +441,11 @@ namespace PSADT.UserInterface
                                     ShellUtilities.RefreshDesktopAndEnvironmentVariables();
                                     outputWriter.WriteLine(true);
                                 }
+                                else if (parts[0] == "GetUserNotificationState")
+                                {
+                                    // Get the user notification state and write it back to the output pipe.
+                                    outputWriter.WriteLine(SerializeObject(ShellUtilities.GetUserNotificationState()));
+                                }
                                 else if (parts[0] == "Open")
                                 {
                                     // Write that we're good to go.

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.Execution;
+using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
@@ -347,6 +348,20 @@ namespace PSADT.UserInterface.ClientServer
         {
             _logSource = "Refresh-ADTDesktopAndEnvironmentVariables";
             return Invoke("RefreshDesktopAndEnvironmentVariables");
+        }
+
+        /// <summary>
+        /// Retrieves the current user notification state.
+        /// </summary>
+        /// <remarks>This method deserializes the user notification state from an input source. Ensure
+        /// that the input source contains valid serialized data for <see
+        /// cref="QUERY_USER_NOTIFICATION_STATE"/>.</remarks>
+        /// <returns>An instance of <see cref="QUERY_USER_NOTIFICATION_STATE"/> representing the user's notification state.</returns>
+        public QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
+        {
+            _logSource = "Get-ADTUserNotificationState";
+            _outputStreamWriter.WriteLine("GetUserNotificationState");
+            return SerializationUtilities.DeserializeFromString<QUERY_USER_NOTIFICATION_STATE>(ReadInput());
         }
 
         /// <summary>
