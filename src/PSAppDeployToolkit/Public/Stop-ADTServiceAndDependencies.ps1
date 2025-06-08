@@ -55,7 +55,6 @@ function Stop-ADTServiceAndDependencies
         https://psappdeploytoolkit.com/docs/reference/functions/Stop-ADTServiceAndDependencies
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     param
     (

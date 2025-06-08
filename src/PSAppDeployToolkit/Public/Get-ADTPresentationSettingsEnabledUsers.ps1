@@ -40,7 +40,6 @@ function Get-ADTPresentationSettingsEnabledUsers
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTPresentationSettingsEnabledUsers
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     [OutputType([PSADT.Types.UserProfile])]
     param

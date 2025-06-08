@@ -6,7 +6,6 @@
 
 function Private:Set-ADTPreferenceVariables
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (

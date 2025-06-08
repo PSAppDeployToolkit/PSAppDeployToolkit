@@ -110,7 +110,6 @@ function Resolve-ADTErrorRecord
         # Allows selecting and filtering the properties on the error object if they exist.
         filter Get-ErrorPropertyNames
         {
-            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
             [CmdletBinding()]
             param
             (

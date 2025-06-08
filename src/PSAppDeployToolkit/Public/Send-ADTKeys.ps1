@@ -73,7 +73,6 @@ function Send-ADTKeys
         https://psappdeploytoolkit.com/docs/reference/functions/Send-ADTKeys
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     param
     (

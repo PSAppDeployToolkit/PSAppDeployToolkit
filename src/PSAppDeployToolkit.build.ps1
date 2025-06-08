@@ -425,7 +425,7 @@ Add-BuildTask FormattingCheck {
 # Synopsis: Invokes PSScriptAnalyzer against the Module source path.
 Add-BuildTask Analyze {
     Write-Build White '      Performing Module ScriptAnalyzer checks...'
-    if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:BuildRoot -ExcludeRule PSUseShouldProcessForStateChangingFunctions -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
+    if (($scriptAnalyzerResults = Invoke-ScriptAnalyzer -Path $Script:BuildRoot -ExcludeRule PSUseShouldProcessForStateChangingFunctions, PSUseSingularNouns -Recurse -Verbose:$false | Where-Object { !$_.RuleName.Equals('PSUseToExportFieldsInManifest') -or !$_.ScriptName.Equals('PSAppDeployToolkit.Extensions.psd1') }))
     {
         $scriptAnalyzerResults | Format-Table
         throw '      One or more PSScriptAnalyzer errors/warnings where found.'

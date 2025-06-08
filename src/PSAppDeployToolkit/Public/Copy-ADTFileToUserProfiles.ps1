@@ -94,7 +94,6 @@ function Copy-ADTFileToUserProfiles
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTFileToUserProfiles
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]

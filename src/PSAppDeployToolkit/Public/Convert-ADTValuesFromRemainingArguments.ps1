@@ -43,7 +43,6 @@ function Convert-ADTValuesFromRemainingArguments
         https://psappdeploytoolkit.com/docs/reference/functions/Convert-ADTValuesFromRemainingArguments
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
     [CmdletBinding()]
     [OutputType([System.Collections.Generic.Dictionary[System.String, System.Object]])]
     param

@@ -39,7 +39,6 @@ function Private:Import-ADTModuleDataFile
     # Internal function to process the imported data.
     function Update-ADTImportedDataValues
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
         [CmdletBinding()]
         param
         (

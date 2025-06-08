@@ -215,7 +215,6 @@ function Exit-Script
 
 function Invoke-HKCURegistrySettingsForAllUsers
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -332,7 +331,6 @@ function Get-FreeDiskSpace
 function Remove-InvalidFileNameChars
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -454,7 +452,6 @@ function Get-InstalledApplication
 function Remove-MSIApplications
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable', '', Justification = '$_ is intentionally overwritten in this function to expand the input array.')]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ArgumentList', Justification = "This parameter is passed to an underlying function via `$PSBoundParameters, therefore this warning is benign.")]
@@ -674,7 +671,6 @@ function Get-FileVersion
 
 function Get-UserProfiles
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -762,7 +758,6 @@ function Update-Desktop
 function Update-SessionEnvironmentVariables
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -942,7 +937,6 @@ function Remove-File
 
 function Copy-FileToUserProfiles
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
@@ -1949,7 +1943,6 @@ function Get-UniversalDate
 
 function Test-ServiceExists
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2793,7 +2786,6 @@ function Convert-RegistryPath
 
 function Test-MSUpdates
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2872,7 +2864,6 @@ function Test-Battery
 function Start-ServiceAndDependencies
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -2949,7 +2940,6 @@ function Start-ServiceAndDependencies
 function Stop-ServiceAndDependencies
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -3151,7 +3141,6 @@ function Remove-RegistryKey
 function Remove-FileFromUserProfiles
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This compatibility wrapper function cannot support ShouldProcess for backwards compatiblity purposes.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -3291,7 +3280,6 @@ function Get-RegistryKey
 
 function Install-MSUpdates
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -3895,7 +3883,6 @@ function Invoke-SCCMTask
 
 function Install-SCCMSoftwareUpdates
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
@@ -3947,7 +3934,6 @@ function Install-SCCMSoftwareUpdates
 
 function Send-Keys
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This compatibility wrapper function cannot have its name changed for backwards compatiblity purposes.")]
     [CmdletBinding()]
     param
     (
