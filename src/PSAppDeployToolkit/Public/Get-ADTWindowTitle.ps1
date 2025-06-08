@@ -41,9 +41,9 @@ function Get-ADTWindowTitle
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.WindowInfo
+        PSADT.WindowManagement.WindowInfo
 
-        Returns a PSADT.Types.WindowInfo object with the following properties:
+        Returns a PSADT.WindowManagement.WindowInfo object with the following properties:
 
         - WindowTitle
         - WindowHandle
@@ -119,7 +119,7 @@ function Get-ADTWindowTitle
         {
             try
             {
-                if (($windowInfo = [PSADT.Utilities.WindowUtilities]::GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess)))
+                if (($windowInfo = [PSADT.WindowManagement.WindowUtilities]::GetProcessWindowInfo($WindowTitle, $WindowHandle, $ParentProcess)))
                 {
                     $PSCmdlet.WriteObject($windowInfo, $false)
                 }

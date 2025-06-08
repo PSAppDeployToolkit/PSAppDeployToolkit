@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PSADT.Types
+namespace PSADT.WindowManagement
 {
     /// <summary>
     /// Represents information about a window in the system.
