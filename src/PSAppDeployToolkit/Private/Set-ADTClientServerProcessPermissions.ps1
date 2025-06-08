@@ -6,8 +6,16 @@
 
 function Private:Set-ADTClientServerProcessPermissions
 {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.TerminalServices.SessionInfo]$User = (Get-ADTRunAsActiveUser -InformationAction SilentlyContinue)
+    )
+
     # If there's no active user on the device, return early.
-    if (!($runAsActiveUser = Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+    if (!$User)
     {
         return
     }
@@ -16,7 +24,7 @@ function Private:Set-ADTClientServerProcessPermissions
     $currentWindowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     try
     {
-        if ($runAsActiveUser.SID.Equals($currentWindowsIdentity.User))
+        if ($User.SID.Equals($currentWindowsIdentity.User))
         {
             return
         }
