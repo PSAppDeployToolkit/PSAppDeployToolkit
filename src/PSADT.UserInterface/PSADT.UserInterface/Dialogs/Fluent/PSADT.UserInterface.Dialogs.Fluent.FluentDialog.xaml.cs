@@ -497,18 +497,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
-        /// Converts a 32-bit unsigned integer to a <see cref="Color"/> structure.
-        /// </summary>
-        /// <remarks>The integer is interpreted as an ARGB value, where the most significant byte represents the alpha channel, followed by the red, green, and blue channels in order.</remarks>
-        /// <param name="color">A 32-bit unsigned integer representing the ARGB color value.</param>
-        /// <returns>A <see cref="Color"/> structure corresponding to the specified ARGB value.</returns>
-        private static Color IntToColor(uint color)
-        {
-            var colorBytes = BitConverter.GetBytes(color);
-            return Color.FromArgb(colorBytes[3], colorBytes[2], colorBytes[1], colorBytes[0]);
-        }
-
-        /// <summary>
         /// Sets the application icon displayed in the header and the window's taskbar icon.
         /// Uses a cache for performance.
         /// </summary>
