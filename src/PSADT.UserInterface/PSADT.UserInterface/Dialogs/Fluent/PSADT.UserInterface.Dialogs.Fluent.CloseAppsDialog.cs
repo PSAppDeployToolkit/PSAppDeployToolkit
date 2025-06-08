@@ -133,7 +133,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             if (!DeferralsAvailable())
             {
                 ButtonRight.IsEnabled = false;
-               
                 return;
             }
 
