@@ -54,5 +54,7 @@ function Private:Open-ADTDisplayServer
         $Script:ADT.DisplayServer = $null
         throw
     }
+
+    # Ensure we properly close the display server upon the closure of the last active session.
     Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTDisplayServer'
 }

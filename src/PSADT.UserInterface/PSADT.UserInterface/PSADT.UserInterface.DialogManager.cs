@@ -196,7 +196,7 @@ namespace PSADT.UserInterface
         /// <returns></returns>
         private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseOptions options, BaseState? state = null)
         {
-            return (TResult)InvokeDialogAction(() =>
+            return InvokeDialogAction<TResult>(() =>
             {
                 using (var dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state))
                 {
@@ -281,7 +281,7 @@ namespace PSADT.UserInterface
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value that indicates which button the user clicked in the message box.</returns>
         internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, TimeSpan Timeout = default)
         {
-            return (MESSAGEBOX_RESULT)InvokeDialogAction(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
+            return InvokeDialogAction<MESSAGEBOX_RESULT>(() => User32.MessageBoxTimeout(IntPtr.Zero, Prompt, Title, Options, 0, Timeout));
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace PSADT.UserInterface
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the button that the user clicked to close the dialog.</returns>
         private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
         {
-            return (MESSAGEBOX_RESULT)InvokeDialogAction(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
+            return InvokeDialogAction<MESSAGEBOX_RESULT>(() => ComCtl32.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
         }
 
         /// <summary>
@@ -310,13 +310,13 @@ namespace PSADT.UserInterface
         /// cref="System.Windows.Forms.DialogResult.Cancel"/> if the user canceled.</returns>
         internal static System.Windows.Forms.DialogResult ShowHelpConsole(HelpConsoleOptions options)
         {
-            return (System.Windows.Forms.DialogResult)InvokeDialogAction(() => new Dialogs.Classic.HelpConsole(options).ShowDialog());
+            return InvokeDialogAction<System.Windows.Forms.DialogResult>(() => new Dialogs.Classic.HelpConsole(options).ShowDialog());
         }
 
         /// <summary>
         /// Initializes the WPF application and invokes the specified action on the UI thread.
         /// </summary>
-        private static object InvokeDialogAction(Delegate callback)
+        private static TResult InvokeDialogAction<TResult>(Delegate callback)
         {
             // Initialize the WPF application if necessary, otherwise just invoke the callback.
             if (!appInitialized.IsSet)
@@ -332,8 +332,14 @@ namespace PSADT.UserInterface
                 appThread.Start();
                 appInitialized.Wait();
             }
-            return app!.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, callback);
+            return (TResult)app!.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, callback);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="callback"></param>
+        private static void InvokeDialogAction(Action callback) => InvokeDialogAction<object>(callback);
 
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
