@@ -115,7 +115,7 @@ namespace PSADT.SafeHandles
         /// <summary>
         /// Gets the size of the allocated memory block.
         /// </summary>
-        public int Length { get; protected set; } = length;
+        internal int Length { get; private protected set; } = length;
 
         /// <summary>
         /// Represents a null safe handle for memory.

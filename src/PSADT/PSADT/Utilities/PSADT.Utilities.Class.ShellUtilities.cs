@@ -11,7 +11,7 @@ namespace PSADT.Utilities
     /// <summary>
     /// Provides methods for interacting with the Windows Explorer.
     /// </summary>
-    public static class ShellUtilities
+    internal static class ShellUtilities
     {
         /// <summary>
         /// Refreshes the desktop icons and updates the environment variables in the system.
@@ -42,7 +42,7 @@ namespace PSADT.Utilities
         /// Minimizes all open windows on the desktop.
         /// </summary>
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
-        public static void MinimizeAllWindows()
+        internal static void MinimizeAllWindows()
         {
             User32.SendMessage(TrayWnd, PInvoke.WM_COMMAND, User32.MIN_ALL, IntPtr.Zero);
         }
@@ -51,7 +51,7 @@ namespace PSADT.Utilities
         /// Restores all minimized windows on the desktop to their previous state.
         /// </summary>
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no  windows are currently minimized.</remarks>
-        public static void RestoreAllWindows()
+        internal static void RestoreAllWindows()
         {
             User32.SendMessage(TrayWnd, PInvoke.WM_COMMAND, User32.MIN_ALL_UNDO, IntPtr.Zero);
         }

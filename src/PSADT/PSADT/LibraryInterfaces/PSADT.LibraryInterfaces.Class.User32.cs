@@ -14,7 +14,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// CsWin32 P/Invoke wrappers for the user32.dll library.
     /// </summary>
-    public static class User32
+    internal static class User32
     {
         /// <summary>
         /// Enables a menu item for the given menu handle.
@@ -24,7 +24,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="uIDEnableItem"></param>
         /// <param name="uEnable"></param>
         /// <returns></returns>
-        public static int EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable)
+        internal static int EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable)
         {
             return PInvoke.EnableMenuItem((HMENU)hMenu, uIDEnableItem, (MENU_ITEM_FLAGS)uEnable);
         }
@@ -35,7 +35,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="hMenu"></param>
         /// <returns></returns>
-        public static bool DestroyMenu(IntPtr hMenu)
+        internal static bool DestroyMenu(IntPtr hMenu)
         {
             var res = PInvoke.DestroyMenu((HMENU)hMenu);
             if (!res)
@@ -51,7 +51,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="hWnd"></param>
         /// <returns></returns>
-        public static bool IsWindowVisible(IntPtr hWnd)
+        internal static bool IsWindowVisible(IntPtr hWnd)
         {
             return PInvoke.IsWindowVisible((HWND)hWnd);
         }
@@ -62,7 +62,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="hWnd"></param>
         /// <returns></returns>
-        public static bool IsWindowEnabled(IntPtr hWnd)
+        internal static bool IsWindowEnabled(IntPtr hWnd)
         {
             return PInvoke.IsWindowEnabled((HWND)hWnd);
         }
@@ -72,7 +72,7 @@ namespace PSADT.LibraryInterfaces
         /// This method uses IntPtr for compatibility within PowerShell.
         /// </summary>
         /// <returns></returns>
-        public static IntPtr GetForegroundWindow()
+        internal static IntPtr GetForegroundWindow()
         {
             var res = PInvoke.GetForegroundWindow();
             if (res == HWND.Null)

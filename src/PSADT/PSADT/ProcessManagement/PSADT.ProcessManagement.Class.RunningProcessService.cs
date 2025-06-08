@@ -9,13 +9,13 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
-    public sealed class RunningProcessService(ProcessDefinition[] processDefinitions) : IDisposable
+    internal sealed class RunningProcessService(ProcessDefinition[] processDefinitions) : IDisposable
     {
         /// <summary>
         /// Starts the polling task to check for running processes.
         /// </summary>
         /// <exception cref="InvalidOperationException"></exception>
-        public void Start()
+        internal void Start()
         {
             // We can't restart the polling task if it's already running.
             if (_pollingTask != null)
@@ -32,7 +32,7 @@ namespace PSADT.ProcessManagement
         /// Stops the polling task and waits for it to complete.
         /// </summary>
         /// <exception cref="InvalidOperationException"></exception>
-        public void Stop()
+        internal void Stop()
         {
             // We can't stop the polling task if it's not running.
             if (null == _pollingTask)
@@ -114,7 +114,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Event that is raised when the list of running processes changes.
         /// </summary>
-        public IReadOnlyList<RunningProcess> RunningProcesses
+        internal IReadOnlyList<RunningProcess> RunningProcesses
         {
             get
             {
@@ -138,7 +138,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the list of processes to display on a CloseAppsDialog.
         /// </summary>
-        public IReadOnlyList<ProcessToClose> ProcessesToClose
+        internal IReadOnlyList<ProcessToClose> ProcessesToClose
         {
             get
             {
@@ -162,7 +162,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Indicates whether the service is running or not.
         /// </summary>
-        public bool IsRunning => null != _pollingTask;
+        internal bool IsRunning => null != _pollingTask;
 
         /// <summary>
         /// Disposes of the resources used by the <see cref="RunningProcessService"/> class.

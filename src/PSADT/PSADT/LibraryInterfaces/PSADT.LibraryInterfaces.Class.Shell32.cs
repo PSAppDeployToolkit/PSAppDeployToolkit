@@ -16,7 +16,7 @@ namespace PSADT.LibraryInterfaces
     /// <summary>
     /// CsWin32 P/Invoke wrappers for the shell32.dll library.
     /// </summary>
-    public static class Shell32
+    internal static class Shell32
     {
         /// <summary>
         /// Execution information for the ShellExecuteEx function.
@@ -185,7 +185,7 @@ namespace PSADT.LibraryInterfaces
         /// </summary>
         /// <param name="AppID"></param>
         /// <returns></returns>
-        public static int SetCurrentProcessExplicitAppUserModelID(string AppID)
+        internal static int SetCurrentProcessExplicitAppUserModelID(string AppID)
         {
             return PInvoke.SetCurrentProcessExplicitAppUserModelID(AppID).ThrowOnFailure();
         }
