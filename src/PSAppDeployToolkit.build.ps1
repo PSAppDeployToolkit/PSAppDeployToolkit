@@ -169,16 +169,18 @@ function Confirm-ADTAdmxTemplateMatchesConfig
 # Define our C# solutions to compile.
 $buildItems = @(
     @{
-        SourcePath = 'src\PSADT.Invoke'
-        SolutionPath = 'src\PSADT.Invoke\PSADT.Invoke.slnx'
-        OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
-        OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
+        SourcePath = 'src\PSADT'
+        SolutionPath = 'src\PSADT\PSADT.slnx'
+        BinaryPath = 'src\PSADT\PSADT.ClientServer.Client\bin\Debug\net462'
+        OutputPath = 'src\PSAppDeployToolkit\lib'
+        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Client.exe', 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Server.dll', 'src\PSAppDeployToolkit\lib\PSADT.dll', 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.dll'
     },
     @{
-        SourcePath = 'src\PSADT.UserInterface', 'src\PSADT'
-        SolutionPath = 'src\PSADT.UserInterface\PSADT.UserInterface.slnx'
-        OutputPath = 'src\PSAppDeployToolkit\lib'
-        OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.exe', 'src\PSAppDeployToolkit\lib\PSADT.dll'
+        SourcePath = 'src\PSADT.Invoke'
+        SolutionPath = 'src\PSADT.Invoke\PSADT.Invoke.slnx'
+        BinaryPath = 'src\PSADT.Invoke\PSADT.Invoke\bin\Release\net462'
+        OutputPath = 'src\PSAppDeployToolkit\Frontend\v4', 'src\PSAppDeployToolkit\Frontend\v3'
+        OutputFile = 'src\PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe', 'src\PSAppDeployToolkit\Frontend\v3\Deploy-Application.exe'
     }
 )
 
@@ -337,7 +339,7 @@ Add-BuildTask DotNetBuild {
             # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
             if ($buildType.Equals('Debug'))
             {
-                $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.SolutionPath.Replace('.slnx', ''), 'bin\Debug\net462\*')
+                $sourcePath = [System.IO.Path]::Combine($Script:RepoRootPath, $buildItem.BinaryPath, '*')
                 $buildItem.OutputPath | ForEach-Object {
                     $destPath = [System.IO.Path]::Combine($Script:RepoRootPath, $_)
                     Write-Build Gray "          Copying from $sourcePath to $destPath..."
@@ -839,7 +841,7 @@ Add-BuildTask Build {
             throw 'AzureSignTool not found.'
         }
         Write-Build Gray '        Signing module...'
-        Get-ChildItem -Path $Script:BuildModuleRoot -Include '*.ps*1', 'PSADT.dll', 'PSADT.UserInterface.exe', 'Wpf.Ui*.dll', 'Deploy-Application.exe', 'Invoke-AppDeployToolkit.exe' -Recurse | ForEach-Object {
+        Get-ChildItem -Path $Script:BuildModuleRoot -Include '*.ps*1', 'PSADT*.dll', 'PSADT.ClientServer.Client.exe', 'Wpf.Ui*.dll', 'Deploy-Application.exe', 'Invoke-AppDeployToolkit.exe' -Recurse | ForEach-Object {
             & azuresigntool sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 "$_"
             if ($LASTEXITCODE -ne 0) { throw "Failed to sign file `"$_`". Exit code: $LASTEXITCODE" }
         }

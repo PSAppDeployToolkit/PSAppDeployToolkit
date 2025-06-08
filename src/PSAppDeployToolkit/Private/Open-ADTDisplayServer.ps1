@@ -31,7 +31,7 @@ function Private:Open-ADTDisplayServer
     Set-ADTPermissionsForDisplayServer
 
     # Instantiate a new DisplayServer object as required, then add the necessary callback.
-    $Script:ADT.DisplayServer = [PSADT.UserInterface.ClientServer.DisplayServer]::new($User)
+    $Script:ADT.DisplayServer = [PSADT.ClientServer.ServerInstance]::new($User)
     try
     {
         $Script:ADT.DisplayServer.Open()

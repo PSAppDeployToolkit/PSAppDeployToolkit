@@ -31,23 +31,23 @@ function Private:Show-ADTNoWaitDialog
     {
         ([PSADT.UserInterface.Dialogs.DialogType]::DialogBox)
         {
-            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.DialogBoxOptions]$Options, [PSADT.UserInterface.DialogOptions.DialogBoxOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.DialogBoxOptions]$Options, [PSADT.UserInterface.DialogOptions.DialogBoxOptions])
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::HelpConsole)
         {
-            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]$Options, [PSADT.UserInterface.DialogOptions.HelpConsoleOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]$Options, [PSADT.UserInterface.DialogOptions.HelpConsoleOptions])
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::InputDialog)
         {
-            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.InputDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.InputDialogOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.InputDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.InputDialogOptions])
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::CustomDialog)
         {
-            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.CustomDialogOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.CustomDialogOptions])
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::RestartDialog)
         {
-            [PSADT.UserInterface.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.RestartDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.RestartDialogOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.RestartDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.RestartDialogOptions])
         }
         default
         {
@@ -66,5 +66,5 @@ function Private:Show-ADTNoWaitDialog
     Set-ADTPermissionsForDisplayServer -ExcludeAssets:($Type.Equals([PSADT.UserInterface.Dialogs.DialogType]::HelpConsole))
 
     # Farm this out to a new process.
-    Start-ADTProcessAsUser -Username $User.NTAccount -FilePath "$Script:PSScriptRoot\lib\PSADT.UserInterface.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -MsiExecWaitTime 1 -CreateNoWindow -NoWait -InformationAction SilentlyContinue
+    Start-ADTProcessAsUser -Username $User.NTAccount -FilePath "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe" -ArgumentList "/SingleDialog -DialogType $Type -DialogStyle $Style -DialogOptions $optionsString" -MsiExecWaitTime 1 -CreateNoWindow -NoWait -InformationAction SilentlyContinue
 }

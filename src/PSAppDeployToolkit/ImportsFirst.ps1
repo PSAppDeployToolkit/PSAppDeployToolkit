@@ -93,7 +93,7 @@ try
     # Store build information pertaining to this module's state.
     New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
             Manifest = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName 'PSAppDeployToolkit.psd1'
-            Assemblies = Get-ChildItem -LiteralPath $PSScriptRoot\lib -File | & { process { if ($_.Name -match '^PSADT(.+)?\.(exe|dll)$') { return $_.FullName } } }
+            Assemblies = (Get-ChildItem -LiteralPath $PSScriptRoot\lib -File -Filter PSADT*.dll).FullName
             Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
             Signed = $(if (!$MinimumStartup) { (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid) })
         }).AsReadOnly()
@@ -154,7 +154,7 @@ try
                 }
                 else
                 {
-                    [System.Reflection.Assembly]::LoadFrom($_)
+                    Add-Type -LiteralPath $_
                 }
             }
         }
