@@ -8,16 +8,16 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
+using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Types;
 using PSADT.UserInterface.Utilities;
-using PSADT.UserInterface.DialogState;
+using iNKORE.UI.WPF.Modern;
 
 namespace PSADT.UserInterface.Dialogs.Fluent
 {
@@ -143,9 +143,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             {
                 // Only enable the button if there are deferrals remaining
                 ButtonRight.IsEnabled = _deferralsRemaining > 0;
-                ButtonRight.Foreground = ButtonRight.IsEnabled
-                    ? (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"]
-                    : (Brush)Application.Current.Resources["TextFillColorDisabledBrush"];
 
                 // Update text value
                 DeferRemainingValueTextBlock.Text = _deferralsRemaining.ToString();
@@ -156,15 +153,13 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Update text color based on remaining deferrals
                 if (_deferralsRemaining == 0)
                 {
-                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                    DeferRemainingValueTextBlock.SetResourceReference(ForegroundProperty, ThemeKeys.SystemFillColorCriticalBrushKey);
+                    DeferRemainingValueTextBlock.FontWeight = FontWeights.ExtraBold;
                 }
                 else if (_deferralsRemaining <= 1)
                 {
-                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-                }
-                else
-                {
-                    DeferRemainingValueTextBlock.Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+                    DeferRemainingValueTextBlock.SetResourceReference(ForegroundProperty, ThemeKeys.SystemFillColorCautionBrushKey);
+                    DeferRemainingValueTextBlock.FontWeight = FontWeights.ExtraBold;
                 }
             }
             if (_deferralDeadline.HasValue)
@@ -172,36 +167,26 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 // Set button state based on deadline
                 TimeSpan timeRemaining = _deferralDeadline!.Value - DateTime.Now;
                 ButtonRight.IsEnabled = timeRemaining > TimeSpan.Zero;
-                ButtonRight.Foreground = ButtonRight.IsEnabled
-                    ? (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"]
-                    : (Brush)Application.Current.Resources["TextFillColorDisabledBrush"];
-
 
                 // Update text content
                 DateTimeFormatInfo dateTimeFormatInfo = new DateTimeFormatInfo();
                 DateTimeOffset deferralDeadlineOffset = new DateTimeOffset((DateTime)_deferralDeadline!);
                 string displayText = deferralDeadlineOffset.ToLocalTime().ToString("f");
-                Brush textBrush;
                 if (ButtonRight.IsEnabled)
                 {
                     if (timeRemaining < TimeSpan.FromDays(1))
                     {
                         // Less than 1 day remaining - use caution color
-                        textBrush = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+                        DeferDeadlineValueTextBlock.SetResourceReference(ForegroundProperty, ThemeKeys.SystemFillColorCautionBrushKey);
                         DeferDeadlineValueTextBlock.FontWeight = FontWeights.ExtraBold;
-                    }
-                    else
-                    {
-                        textBrush = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
                     }
                 }
                 else
                 {
-                    textBrush = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                    DeferDeadlineValueTextBlock.SetResourceReference(ForegroundProperty, ThemeKeys.SystemFillColorCriticalBrushKey);
                     DeferDeadlineValueTextBlock.FontWeight = FontWeights.ExtraBold;
                 }
                 DeferDeadlineValueTextBlock.Text = displayText;
-                DeferDeadlineValueTextBlock.Foreground = textBrush;
                 AutomationProperties.SetName(DeferDeadlineValueTextBlock, displayText);
             }
         }

@@ -1,6 +1,5 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Media;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
 
@@ -68,7 +67,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="e"></param>
         protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
-            // Just minimise the window.
+            // Just minimize the window.
             WindowState = WindowState.Minimized;
         }
 
@@ -89,7 +88,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 Dispatcher.Invoke(() =>
                 {
                     ButtonRight.IsEnabled = false;
-                    ButtonRight.Foreground = (Brush)Application.Current.Resources["TextFillColorDisabledBrush"];
                     RestoreWindow();
                 });
             }
