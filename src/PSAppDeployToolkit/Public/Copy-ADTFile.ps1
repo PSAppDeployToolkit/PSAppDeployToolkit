@@ -256,13 +256,19 @@ function Copy-ADTFile
                             $copyFileSplat.ErrorAction = $PSBoundParameters.ErrorAction
                         }
                         Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
-                        Copy-ADTFile @copyFileSplat -Path ((Join-Path $robocopySource $robocopyFile))
+                        if (Get-ChildItem -Path (Join-Path $robocopySource $robocopyFile) -File -Force -ErrorAction Ignore)
+                        {
+                            Copy-ADTFile @copyFileSplat -Path (Join-Path $robocopySource $robocopyFile)
+                        }
 
                         # Copy all files from subfolders, appending file name to subfolder path and repeat Copy-ADTFile.
                         Get-ChildItem -LiteralPath $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
                             process
                             {
-                                Copy-ADTFile @copyFileSplat -Path (Join-Path $_.FullName $robocopyFile)
+                                if (Get-ChildItem -Path (Join-Path $_.FullName $robocopyFile) -File -Force -ErrorAction Ignore)
+                                {
+                                    Copy-ADTFile @copyFileSplat -Path (Join-Path $_.FullName $robocopyFile)
+                                }
                             }
                         }
 
