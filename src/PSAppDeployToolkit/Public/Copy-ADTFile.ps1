@@ -104,7 +104,7 @@ function Copy-ADTFile
         [System.String]$FileCopyMode,
 
         [Parameter(Mandatory = $false)]
-        [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
+        [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IA:RASHCNETO /IS /IT /IM /XX /MT:4 /R:1 /W:1',
 
         [Parameter(Mandatory = $false)]
         [System.String]$RobocopyAdditionalParams
