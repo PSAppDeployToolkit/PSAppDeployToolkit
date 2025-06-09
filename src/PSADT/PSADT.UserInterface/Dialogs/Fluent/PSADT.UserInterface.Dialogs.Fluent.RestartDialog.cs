@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;

@@ -28,68 +28,12 @@
     RenderOptions.BitmapScalingMode="HighQuality"
     ResizeMode="NoResize"
     SizeToContent="Height"
-    SnapsToDevicePixels="True"
     TextOptions.TextFormattingMode="Display"
-    TextOptions.TextHintingMode="Animated"
-    TextOptions.TextRenderingMode="ClearType"
+    SnapsToDevicePixels="True"
     Topmost="True"
     UseLayoutRounding="True"
     mc:Ignorable="d"
     >
-
-    <!--<Window.Resources>
-        <psconv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
-
-    -->
-    <!-- Animation styles for ListView items -->
-    <!--
-        <Style x:Key="ListViewItemAnimationStyle" BasedOn="{StaticResource {x:Type ui:ListViewItem}}" TargetType="ui:ListViewItem">
-            <Setter Property="IsTabStop" Value="False" />
-            <Setter Property="Focusable" Value="False" />
-            <Style.Triggers>
-                <Trigger Property="componentModel:DesignerProperties.IsInDesignMode" Value="False">
-                    <Setter Property="Opacity" Value="0" />
-                    <Setter Property="RenderTransform">
-                        <Setter.Value>
-                            <TranslateTransform X="-20" Y="0" />
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-                <EventTrigger RoutedEvent="Loaded">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
-                                FillBehavior="HoldEnd"
-                                Storyboard.TargetProperty="Opacity"
-                                From="0"
-                                To="1"
-                                Duration="0:0:0.6"
-                                />
-                            <DoubleAnimation
-                                FillBehavior="HoldEnd"
-                                Storyboard.TargetProperty="RenderTransform.X"
-                                From="-20"
-                                To="0"
-                                Duration="0:0:0.6"
-                                >
-                                <DoubleAnimation.EasingFunction>
-                                    <CircleEase EasingMode="EaseOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="0">
-                    <Setter Property="Background" Value="Transparent" />
-                </Trigger>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                    <Setter Property="Background" Value="Transparent" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>-->
-    <!--
-
-    </Window.Resources>-->
 
     <Window.Resources>
         <ResourceDictionary>
@@ -97,6 +41,67 @@
                 <ui:ThemeResources />
                 <ui:XamlControlsResources />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <psconv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
+
+            <!-- TextBlock styles for countdown state colors -->
+            <Style x:Key="CautionTextBlockStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                <Setter Property="FontWeight" Value="ExtraBold" />
+            </Style>
+
+            <Style x:Key="CriticalTextBlockStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                <Setter Property="FontWeight" Value="ExtraBold" />
+            </Style>
+
+            <!-- Animation styles for ListView items -->
+            <Style x:Key="ListViewItemAnimationStyle" BasedOn="{StaticResource {x:Type ui:ListViewItem}}" TargetType="ui:ListViewItem">
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="Focusable" Value="False" />
+                <Style.Triggers>
+                    <Trigger Property="componentModel:DesignerProperties.IsInDesignMode" Value="False">
+                        <Setter Property="Opacity" Value="0" />
+                        <Setter Property="RenderTransform">
+                            <Setter.Value>
+                                <TranslateTransform X="-20" Y="0" />
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation
+                                    FillBehavior="HoldEnd"
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="0"
+                                    To="1"
+                                    Duration="0:0:0.6"
+                                    />
+                                <DoubleAnimation
+                                    FillBehavior="HoldEnd"
+                                    Storyboard.TargetProperty="RenderTransform.X"
+                                    From="-20"
+                                    To="0"
+                                    Duration="0:0:0.6"
+                                    >
+                                    <DoubleAnimation.EasingFunction>
+                                        <CircleEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                    <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Trigger>
+                    <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
         </ResourceDictionary>
     </Window.Resources>
 
@@ -108,6 +113,7 @@
 
         <Grid.RowDefinitions>
             <RowDefinition x:Name="TopHeaderRow" Height="Auto" />
+            <RowDefinition x:Name="PreHeaderRow" Height="Auto" />
             <RowDefinition x:Name="CenterPanelRow" Height="Auto" />
             <RowDefinition x:Name="BottomActionButtonRow" Height="Auto" />
         </Grid.RowDefinitions>
@@ -116,20 +122,21 @@
         <Grid
             x:Name="GridRow0Vertical"
             Grid.Row="0"
-            Grid.RowSpan="3"
+            Grid.RowSpan="4"
             Grid.Column="0"
             AutomationProperties.Name="Accent Sidebar"
+            Background="{DynamicResource {x:Static ui:ThemeKeys.SystemFillColorSolidAttentionBackgroundBrushKey}}"
             >
 
             <Rectangle
                 x:Name="AccentSidebar"
-                Fill="{DynamicResource {x:Static ui:ThemeKeys.AccentFillColorDefaultBrushKey}}"
+                Fill="{DynamicResource {x:Static ui:ThemeKeys.AccentFillColorTertiaryBrushKey}}"
                 Opacity="1"
                 />
 
             <ui:ImageIcon
                 Width="16"
-                Margin="1,8,0,0"
+                Margin="0,8,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 AutomationProperties.Name="PSAppDeployToolkit Logo"
@@ -169,13 +176,13 @@
         <Grid
             x:Name="GridRow1Vertical"
             Grid.Row="0"
-            Grid.RowSpan="3"
+            Grid.RowSpan="4"
             Grid.Column="1"
             >
             <Rectangle
                 x:Name="MainPanelBackground"
-                Fill="{DynamicResource {x:Static ui:ThemeKeys.SolidBackgroundFillColorBaseBrushKey}}"
-                Opacity=".8"
+                Fill="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundAltHighBrushKey}}"
+                Opacity=".7"
                 />
         </Grid>
 
@@ -185,9 +192,8 @@
             Grid.Row="0"
             Grid.Column="1"
             Width="Auto"
-            Margin="24,24,24,8"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Top"
+            Margin="24,24,24,16"
+            VerticalAlignment="Center"
             AutomationProperties.Name="Header Panel"
             >
             <ikw:SimpleStackPanel
@@ -196,8 +202,8 @@
                 >
                 <Image
                     x:Name="AppIconImage"
-                    Width="64"
-                    Height="64"
+                    Width="72"
+                    Height="72"
                     Margin="0,0,12,0"
                     AutomationProperties.Name="Application Icon"
                     Stretch="Uniform"
@@ -210,12 +216,13 @@
                         x:Name="AppTitleTextBlock"
                         Width="420"
                         MaxWidth="420"
-                        HorizontalAlignment="Stretch"
+                        Margin="0,0,0,4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
                         AutomationProperties.Name="Application Title"
                         FontSize="28"
                         FontWeight="Bold"
                         Text="Excessively Long Vendor Application Title 1.1 x64 EN"
-                        TextAlignment="Left"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="WrapWithOverflow"
                         />
@@ -223,15 +230,15 @@
                         x:Name="SubtitleTextBlock"
                         Width="420"
                         MaxWidth="420"
-                        Margin="0,4,0,0"
-                        HorizontalAlignment="Stretch"
+                        Margin="0,0,0,0"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Subtitle"
                         FontSize="13"
+                        FontWeight="SemiBold"
                         Text="PSAppDeployToolkit - Installation Type"
-                        TextAlignment="Left"
                         TextTrimming="CharacterEllipsis"
-                        TextWrapping="Wrap"
+                        TextWrapping="WrapWithOverflow"
                         />
                 </ikw:SimpleStackPanel>
             </ikw:SimpleStackPanel>
@@ -239,16 +246,15 @@
 
         <Border
             x:Name="ContentBorder"
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.Column="1"
-            Margin="24,8,24,8"
-            VerticalAlignment="Top"
+            Margin="24,0,24,0"
+            VerticalAlignment="Center"
             AutomationProperties.Name="Content Card"
             Background="{DynamicResource {x:Static ui:ThemeKeys.CardBackgroundFillColorDefaultBrushKey}}"
             BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.CardStrokeColorDefaultBrushKey}}"
             BorderThickness="1"
             CornerRadius="4"
-            SnapsToDevicePixels="True"
             >
 
             <ikw:SimpleStackPanel
@@ -268,7 +274,8 @@
                         x:Name="MessageTextBlock"
                         Margin="16,16,16,16"
                         AutomationProperties.Name="Message Text"
-                        Text="Test Message. This will be replaced when the application executes."
+                        Text="Test Message. **This will be replaced when the application executes**. This is cool"
+                        FontSize="15"
                         TextAlignment="Left"
                         TextWrapping="Wrap"
                         />
@@ -277,6 +284,7 @@
                         x:Name="CustomMessageTextBlock"
                         Margin="16,0,16,16"
                         AutomationProperties.Name="Additional Message Text"
+                        FontSize="15"
                         Text="This is a custom message that can be added by the customer as an additional block of text. This can be added to any dialog."
                         TextAlignment="Left"
                         TextWrapping="Wrap"
@@ -301,7 +309,6 @@
                         x:Name="CloseAppsListView"
                         MaxHeight="168"
                         Margin="24,8,24,8"
-                        Padding="0"
                         d:ItemsSource="{d:SampleData ItemCount=3}"
                         AutomationProperties.Name="Close Applications ListView"
                         ItemsSource="{Binding AppsToCloseCollection}"
@@ -313,16 +320,11 @@
                         VirtualizingPanel.IsVirtualizing="True"
                         VirtualizingPanel.ScrollUnit="Pixel"
                         VirtualizingPanel.VirtualizationMode="Recycling"
-                        >
-                        <!-- TODO
                         Visibility="{Binding AppsToCloseCollection.Count, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=True}"
-                        ViewState="GridView"
-                        animation style for ListView items
+                        >
                         <ui:ListView.ItemContainerStyle>
                             <StaticResource ResourceKey="ListViewItemAnimationStyle" />
-                        </ui:ListView.ItemContainerStyle>-->
-                        <!-- Set alternation count to apply alternating styles -->
-                        <ui:ListView.AlternationCount>2</ui:ListView.AlternationCount>
+                        </ui:ListView.ItemContainerStyle>
                         <ui:ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -365,8 +367,8 @@
                                         Margin="8,0,16,4"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Name"
-                                        FontSize="13"
-                                        FontWeight="Medium"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
                                         Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorTertiaryBrushKey}}"
                                         Text="{Binding Name, Mode=OneWay}"
                                         TextAlignment="Left"
@@ -396,6 +398,7 @@
                         Margin="16,16,16,16"
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="Progress Detail Text"
+                        FontSize="12"
                         FontWeight="SemiBold"
                         Text="Secondary Progress Message for more details ..."
                         TextTrimming="CharacterEllipsis"
@@ -415,6 +418,8 @@
                             x:Name="ProgressBar"
                             Height="4"
                             VerticalAlignment="Center"
+                            Background="{DynamicResource {x:Static ui:ThemeKeys.ProgressRingBackgroundThemeBrushKey}}"
+                            Foreground="{DynamicResource {x:Static ui:ThemeKeys.ProgressRingForegroundThemeBrushKey}}"
                             IsIndeterminate="True"
                             />
                     </Border>
@@ -457,7 +462,7 @@
 
                     <DockPanel
                         x:Name="CountdownDockPanel"
-                        Margin="24,16,24,16"
+                        Margin="24,12,24,12"
                         >
 
                         <ui:FontIcon
@@ -479,9 +484,7 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             AutomationProperties.Name="Countdown Timer Value"
-                            FontSize="15"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource {x:Static ui:ThemeKeys.TextFillColorPrimaryBrushKey}}"
+                            Style="{DynamicResource {x:Static ui:ThemeKeys.BaseTextBlockStyleKey}}"
                             Text="00:00:00"
                             />
                     </DockPanel>
@@ -503,7 +506,7 @@
 
                     <DockPanel
                         x:Name="DeferRemainingDockPanel"
-                        Margin="24,16,24,16"
+                        Margin="24,12,24,12"
                         >
 
                         <ui:FontIcon
@@ -522,9 +525,7 @@
                             x:Name="DeferRemainingValueTextBlock"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            FontSize="15"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource {x:Static ui:ThemeKeys.TextFillColorPrimaryBrushKey}}"
+                            Style="{DynamicResource {x:Static ui:ThemeKeys.BaseTextBlockStyleKey}}"
                             Text="3"
                             TextWrapping="WrapWithOverflow"
                             />
@@ -545,13 +546,12 @@
 
                     <DockPanel
                         x:Name="DeferDeadlineDockPanel"
-                        Margin="24,16,24,16"
+                        Margin="24,12,24,12"
                         >
 
                         <ui:FontIcon
                             FontSize="24"
-                            Icon="{x:Static ui:FluentSystemIcons.CalendarClock_24_Regular
-                            }"
+                            Icon="{x:Static ui:FluentSystemIcons.CalendarClock_24_Regular}"
                             />
 
                         <TextBlock
@@ -565,10 +565,8 @@
                             x:Name="DeferDeadlineValueTextBlock"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            FontSize="15"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource {x:Static ui:ThemeKeys.TextFillColorPrimaryBrushKey}}"
-                            Text="August 15, 2025 5.30PM"
+                            Style="{DynamicResource {x:Static ui:ThemeKeys.BaseTextBlockStyleKey}}"
+                            Text="August 15, 2025 5:30 PM"
                             TextWrapping="WrapWithOverflow"
                             />
 
@@ -580,14 +578,14 @@
         <!-- Button Panel - Variable buttons based on dialog type -->
         <ikw:SimpleStackPanel
             x:Name="ButtonPanel"
-            Grid.Row="2"
+            Grid.Row="3"
             Grid.Column="1"
             AutomationProperties.Name="Action Buttons Panel"
             Visibility="Visible"
             >
             <Grid
                 x:Name="ActionButtons"
-                Margin="24,8,24,24"
+                Margin="24,16,24,24"
                 HorizontalAlignment="Stretch"
                 >
                 <Grid.ColumnDefinitions>
@@ -606,7 +604,6 @@
                     KeyboardNavigation.TabIndex="0"
                     Style="{DynamicResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"
                     />
-
 
                 <Button
                     x:Name="ButtonMiddle"

@@ -50,65 +50,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// <param name="countdownStopwatch"></param>
         private protected FluentDialog(BaseOptions options, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
-            DataContext = this;
-
-            WindowChrome.SetWindowChrome(this, new WindowChrome()
-            {
-                GlassFrameThickness = new Thickness(0, 1, 0, 0),
-                UseAeroCaptionButtons = false,
-                CornerRadius = new CornerRadius(0),
-                ResizeBorderThickness = new Thickness(4),
-                NonClientFrameEdges = NonClientFrameEdges.None,
-                CaptionHeight = 36d,
-
-            });
-
-            WindowHelper.SetApplyBackground(this, false);
-
             // Initialize the window
             InitializeComponent();
 
-// TODO - Re-enable
-#if false
-            // If the accent color is set, we don't need to watch for system theme changes
+            // If the accent color is passed through, update via ThemeManager
             if (null != options.FluentAccentColor)
             {
-                SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, false);
-                ApplicationAccentColorManager.Apply(IntToColor(options.FluentAccentColor.Value), ApplicationThemeManager.GetAppTheme(), false);
+                ThemeManager.Current.AccentColor = IntToColor(options.FluentAccentColor.Value);
             }
-            else
-            {
-                SystemThemeWatcher.Watch(this, WindowBackdropType.Acrylic, true);
-            }
-
-            // See https://github.com/lepoco/wpfui/issues/1188 for more info.
-            var brushes = new Dictionary<string, SolidColorBrush>
-            {
-                ["SystemAccentColor"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
-                ["SystemAccentColorPrimary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorPrimary"]),
-                ["SystemAccentColorSecondary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorSecondary"]),
-                ["SystemAccentColorTertiary"] = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorTertiary"]),
-                ["WpfUiSystemAccentColor"] = new SolidColorBrush(ApplicationAccentColorManager.SystemAccent),
-                ["WpfUiSystemAccentColorPrimary"] = new SolidColorBrush(ApplicationAccentColorManager.PrimaryAccent),
-                ["WpfUiSystemAccentColorSecondary"] = new SolidColorBrush(ApplicationAccentColorManager.SecondaryAccent),
-                ["WpfUiSystemAccentColorTertiary"] = new SolidColorBrush(ApplicationAccentColorManager.TertiaryAccent)
-            };
-            ResourceDictionary themeDictionary = Application.Current.Resources.MergedDictionaries.First(static d => d.Source.AbsolutePath.StartsWith("/Wpf.Ui;component/Resources/Theme/"));
-            var converter = new ResourceReferenceExpressionConverter();
-            foreach (DictionaryEntry entry in themeDictionary)
-            {
-                if (entry.Value is SolidColorBrush brush)
-                {
-                    var dynamicColor = brush.ReadLocalValue(SolidColorBrush.ColorProperty);
-                    if (dynamicColor is not Color &&
-                        converter.ConvertTo(dynamicColor, typeof(MarkupExtension)) is DynamicResourceExtension dynamicResource &&
-                        brushes.ContainsKey((string)dynamicResource.ResourceKey))
-                    {
-                        themeDictionary[entry.Key] = brushes[(string)dynamicResource.ResourceKey];
-                    }
-                }
-            }
-#endif
 
             // Set basic properties
             Title = options.AppTitle;
@@ -135,15 +84,23 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Topmost = options.DialogTopMost;
 
             // Set supplemental options also
-            _customMessageText = customMessageText;
+            _customMessageText = null != customMessageText ? customMessageText : string.Empty;
             _countdownDuration = countdownDuration;
             _countdownWarningDuration = countdownWarningDuration;
             _countdownStopwatch = null != countdownStopwatch ? countdownStopwatch : new();
             CountdownStackPanel.Visibility = _countdownDuration.HasValue ? Visibility.Visible : Visibility.Collapsed;
 
             // Pre-format the custom message if we have one
-            FormatMessageWithHyperlinks(CustomMessageTextBlock, _customMessageText);
-            CustomMessageTextBlock.Visibility = string.IsNullOrWhiteSpace(_customMessageText) ? Visibility.Collapsed : Visibility.Visible;
+            if (!string.IsNullOrWhiteSpace(_customMessageText))
+            {
+                FormatMessageWithHyperlinks(CustomMessageTextBlock, _customMessageText);
+                CustomMessageTextBlock.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                CustomMessageTextBlock.Visibility = Visibility.Collapsed;
+            }
+
 
             // Set everything to not visible by default, it's up to the derived class to enable what they need.
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
@@ -378,12 +335,20 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             e.Handled = true;
         }
 
+        private static readonly Regex _markdownRegex = new Regex(
+            @"(?<PlainUrl>(?i)\b(?:(?:https?|ftp|mailto):(?://)?|www\.|ftp\.)[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$])" + @"|" +
+            @"(?<Accent>'(?<AccentText>[^']+)')" + @"|" +
+            @"(?<Bold>\*\*(?<BoldText>[^*]+)\*\*)" + @"|" +
+            @"(?<Italic>(?<!\*)\*(?<ItalicText>[^*]+)\*(?!\*))",
+            RegexOptions.Compiled);
+
         /// <summary>
-        /// Formats the message text with clickable hyperlinks, supporting both plain URLs and Markdown-style links [text](url).
+        /// Formats the message text with enhanced markdown support including hyperlinks, bold, italic, and accent colored.
+        /// Supports: [text](url), **bold**, *italic*, __bold__, _italic_, and colored quotes (> warning:, > info:, > error:, > success:).
         /// </summary>
         /// <param name="textBlock"></param>
         /// <param name="message"></param>
-        protected void FormatMessageWithHyperlinks(TextBlock textBlock, string? message)
+        protected void FormatMessageWithHyperlinks(TextBlock textBlock, string message)
         {
             // Throw if our process was started with ServiceUI anywhere as a parent process.
             if (ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase)))
@@ -391,84 +356,136 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 throw new InvalidOperationException("Hyperlinks are only permitted when ServiceUI is not used to start the toolkit.");
             }
 
-            // Ensure the textblock is cleared and reset.
-            textBlock.Inlines.Clear();
-
             // Don't waste time on an empty string.
+            textBlock.Inlines.Clear();
             if (string.IsNullOrWhiteSpace(message))
             {
                 return;
             }
 
-            // Regex to find Markdown links `[text](url)` or plain URLs.
-            // Group 1: Full Markdown link (optional)
-            // Group 2: Link text from Markdown (optional)
-            // Group 3: URL from Markdown (optional)
-            // Group 4: Full plain URL (optional)
-            var linkRegex = new Regex(
-                @"(\[([^\]]+)\]\(([^)\s]+)\))" + @"|" + // Markdown link: [text](url)
-                @"((?i)\b(?:(?:https?|ftp|mailto):(?://)?|www\.|ftp\.)[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$])", // Plain URL
-                RegexOptions.Compiled);
-
-            // Process each found match and convert into a URI object
-            int lastPos = 0;
-            foreach (Match match in linkRegex.Matches(message))
+            var lastPos = 0;
+            foreach (Match match in _markdownRegex.Matches(message))
             {
-                // Add text before the hyperlink
+                // Add text before the current match
                 if (match.Index > lastPos)
                 {
-                    textBlock.Inlines.Add(new Run(message!.Substring(lastPos, match.Index - lastPos)));
+                    textBlock.Inlines.Add(new Run(message.Substring(lastPos, match.Index - lastPos)));
                 }
 
-                string displayText, url;
-                if (match.Groups[1].Success) // Markdown link matched
-                {
-                    displayText = match.Groups[2].Value;
-                    url = match.Groups[3].Value;
-                }
-                else // Plain URL matched
-                {
-                    url = match.Groups[4].Value;
-                    displayText = url; // Display the URL itself as text
-                }
+                // Process the matched element
+                ProcessMatch(textBlock, match);
 
-                // Ensure the URL has a scheme for Process.Start
-                string navigateUrl = url;
-                if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) &&
-                    navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) || navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase))
-                {
-                    navigateUrl = "http://" + navigateUrl; // Assume http for www/ftp starts if no scheme
-                }
-
-                // Add the URL as a proper hyperlink
-                try
-                {
-                    Uri uri = new Uri(navigateUrl); // Validate and create Uri
-                    Hyperlink link = new Hyperlink(new Run(displayText))
-                    {
-                        NavigateUri = uri,
-                        ToolTip = $"Open link: {url}" // Use original URL in tooltip
-                    };
-                    link.RequestNavigate += Hyperlink_RequestNavigate;
-                    textBlock.Inlines.Add(link);
-                }
-                catch (UriFormatException)
-                {
-                    // If it's not a valid URI, just add the original matched text (could be Markdown or plain URL)
-                    textBlock.Inlines.Add(new Run(match.Value));
-                }
-                catch (ArgumentNullException)
-                {
-                    // Handle potential null argument
-                    textBlock.Inlines.Add(new Run(match.Value));
-                }
                 lastPos = match.Index + match.Length;
             }
 
-            // Add any remaining text after the last hyperlink
-            if (lastPos < message!.Length)
+            // Add any remaining text after the last match
+            if (lastPos < message.Length)
             {
                 textBlock.Inlines.Add(new Run(message.Substring(lastPos)));
+            }
+        }
+
+        /// <summary>
+        /// Processes a regex match and adds the corresponding formatted text to the TextBlock.
+        /// </summary>
+        /// <param name="textBlock">The TextBlock to add the formatted text to.</param>
+        /// <param name="match">The regex match to process.</param>
+        private void ProcessMatch(TextBlock textBlock, Match match)
+        {
+            if (match.Groups["PlainUrl"].Success)
+            {
+                ProcessPlainUrl(textBlock, match.Groups["PlainUrl"].Value);
+            }
+            else if (match.Groups["Accent"].Success)
+            {
+                AddAccentText(textBlock, match.Groups["AccentText"].Value);
+            }
+            else if (match.Groups["Bold"].Success)
+            {
+                AddBoldText(textBlock, match.Groups["BoldText"].Value);
+            }
+            else if (match.Groups["Italic"].Success)
+            {
+                AddItalicText(textBlock, match.Groups["ItalicText"].Value);
+            }
+        }
+
+        /// <summary>
+        /// Adds accent-colored text to the TextBlock.
+        /// </summary>
+        /// <param name="textBlock">The TextBlock to add the text to.</param>
+        /// <param name="text">The text to add.</param>
+        private static void AddAccentText(TextBlock textBlock, string text)
+        {
+            var accentRun = new Run(text) { FontWeight = FontWeights.Bold };
+            accentRun.SetResourceReference(ForegroundProperty, ThemeKeys.AccentTextFillColorPrimaryBrushKey);
+            textBlock.Inlines.Add(accentRun);
+        }
+
+        /// <summary>
+        /// Adds bold text to the TextBlock.
+        /// </summary>
+        /// <param name="textBlock">The TextBlock to add the text to.</param>
+        /// <param name="text">The text to add.</param>
+        private static void AddBoldText(TextBlock textBlock, string text)
+        {
+            textBlock.Inlines.Add(new Run(text) { FontWeight = FontWeights.Bold });
+        }
+
+        /// <summary>
+        /// Adds italicized text to the TextBlock.
+        /// </summary>
+        /// <param name="textBlock">The TextBlock to add the text to.</param>
+        /// <param name="text">The text to add.</param>
+        private static void AddItalicText(TextBlock textBlock, string text)
+        {
+            textBlock.Inlines.Add(new Run(text) { FontStyle = FontStyles.Italic });
+        }
+
+        /// <summary>
+        /// Processes a plain URL.
+        /// </summary>
+        /// <param name="textBlock"></param>
+        /// <param name="url"></param>
+        private void ProcessPlainUrl(TextBlock textBlock, string url)
+        {
+            ProcessUrlLink(textBlock, url, url);
+        }
+
+        /// <summary>
+        /// Creates a hyperlink with the specified display text and URL.
+        /// </summary>
+        /// <param name="textBlock"></param>
+        /// <param name="displayText"></param>
+        /// <param name="url"></param>
+        private void ProcessUrlLink(TextBlock textBlock, string displayText, string url)
+        {
+            // Ensure the URL has a scheme for Process.Start
+            string navigateUrl = url;
+            if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+            {
+                if (navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ||
+                    navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase))
+                {
+                    navigateUrl = "http://" + navigateUrl;
+                }
+            }
+
+            // Add the URL as a proper hyperlink
+            if (Uri.TryCreate(navigateUrl, UriKind.Absolute, out var uri))
+            {
+                var link = new Hyperlink(new Run(displayText))
+                {
+                    NavigateUri = uri,
+                    ToolTip = $"Open link: {url}"
+                };
+                link.RequestNavigate += Hyperlink_RequestNavigate;
+                textBlock.Inlines.Add(link);
+            }
+            else
+            {
+                // If it's not a valid URI, just add as plain text
+                textBlock.Inlines.Add(new Run(displayText));
             }
         }
 
@@ -492,7 +509,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
-        /// Updates the Grid RowDefinition based on the current content
+        /// Updates the Grid RowDefinition based on the current content.
         /// </summary>
         protected void UpdateRowDefinition()
         {
@@ -559,7 +576,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
-        /// Positions the window on the screen based on the specified window position
+        /// Positions the window on the screen based on the specified dialog position.
         /// </summary>
         private void PositionWindow()
         {
@@ -656,7 +673,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
-        /// Updates the layout of the action buttons based on their visibility.
+        /// Updates the layout of the action buttons based on which buttons are visible.
         /// </summary>
         private void UpdateButtonLayout()
         {
@@ -722,8 +739,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 button.Margin = new Thickness(0, 0, 0, 0);
 
                 // Set to Primary appearance for single button
-                // TODO - Fix This
-                // button.Appearance = ControlAppearance.Primary;
+                button.Style = (Style)FindResource(ThemeKeys.AccentButtonStyleKey);
             }
         }
 
@@ -751,7 +767,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         private void UpdateCountdownDisplay()
         {
             // Get the current remaining time.
-            var countdownRemainingTime = _countdownDuration!.Value - _countdownStopwatch.Elapsed;
+            if (_countdownDuration is null)
+            {
+                return;
+            }
+            var countdownRemainingTime = _countdownDuration.Value - _countdownStopwatch.Elapsed;
             if (countdownRemainingTime < TimeSpan.Zero)
             {
                 countdownRemainingTime = TimeSpan.Zero;
@@ -761,17 +781,14 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             CountdownValueTextBlock.Text = $"{countdownRemainingTime.Hours}h {countdownRemainingTime.Minutes}m {countdownRemainingTime.Seconds}s";
             AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {countdownRemainingTime.Hours} hours, {countdownRemainingTime.Minutes} minutes, {countdownRemainingTime.Seconds} seconds");
 
-            // Update text color based on remaining time
+            // Update text color based on remaining time using style application
             if (countdownRemainingTime.TotalSeconds <= 60)
             {
-                CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                CountdownValueTextBlock.FontWeight = FontWeights.ExtraBold;
-
+                CountdownValueTextBlock.Style = (Style)FindResource("CriticalTextBlockStyle");
             }
-            else if ((null != _countdownWarningDuration) && (_countdownStopwatch.Elapsed >= _countdownWarningDuration))
+            else if (_countdownWarningDuration.HasValue && _countdownStopwatch.Elapsed >= _countdownWarningDuration.Value)
             {
-                CountdownValueTextBlock.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-                CountdownValueTextBlock.FontWeight = FontWeights.ExtraBold;
+                CountdownValueTextBlock.Style = (Style)FindResource("CautionTextBlockStyle");
             }
         }
 

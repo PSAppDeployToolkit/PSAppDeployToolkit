@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using System.Management.Automation.Language;
@@ -35,13 +35,13 @@ namespace PSADT.UserInterface.TestHarness
             var stringTable = (Hashtable)stringsAst.Find(x => x is HashtableAst, false).SafeGetValue();
 
             // Set up parameters for testing
-            string appTitle = "Adobe Reader CS 2025 x64 EN";
-            string subtitle = "Bisto Systems Ltd - App Install";
+            string appTitle = "Super Street Fighter 2 Turbo XL";
+            string subtitle = "CapComNom Entertainment Ltd - App Install";
             string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
             string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\Banner.Classic.png");
-            var FluentAccentColor = ValueTypeConverter.ToInt(0xFFFFB900); // Yellow
+            // var FluentAccentColor = ValueTypeConverter.ToInt(0xFF01C9D9); // Cyan
             DialogPosition dialogPosition = DialogPosition.BottomRight;
-            // DialogPosition dialogPosition = DialogPosition.Center;
+            //DialogPosition dialogPosition = DialogPosition.Center;
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
             DeploymentType deploymentType = DeploymentType.Install;
@@ -72,14 +72,15 @@ namespace PSADT.UserInterface.TestHarness
                 new("photoshop", "Adobe Photoshop"),
             };
 
-            TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(90);
+            TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(580);
 
-            TimeSpan countdownDuration = TimeSpan.FromSeconds(90);
+            TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
 
-            string customMessageText = "This is a custom message that can be added using the -CustomText parameter on Show-ADTInstallationWelcome (also now available on Show-ADTInstallationRestartPrompt).";
+            string customMessageText = "Oh yeah. You can do *italics* now. And **bold text strings**. And 'accent colored text strings!' This is a custom message that can be added using the *-CustomText* parameter on *Show-ADTInstallationWelcome* and *Show-ADTInstallationRestartPrompt*.";
 
             uint deferralsRemaining = 3;
-            DateTime deferralDeadline = DateTime.Parse("2025-09-20T13:00:00");
+            DateTime deferralDeadline = DateTime.Parse("2025-06-20T13:00:00");
+
             // DateTime? deferralDeadline = null;
             string progressMessageText = "Performing pre-flight checks…";
             string progressDetailMessageText = "Testing your system to ensure compatibility, please wait…";
@@ -87,9 +88,9 @@ namespace PSADT.UserInterface.TestHarness
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(80);
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(70);
 
+            string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed?";
 
-            string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you've not had much sleep and you're clearly cranky, are you sure you want to proceed?";
-
+            string initialInputText = "You can replace me opr leave me blank";
 
             string ButtonLeftText = "LeftButton";
             string ButtonMiddleText = "MiddleButton";
@@ -100,7 +101,7 @@ namespace PSADT.UserInterface.TestHarness
             var closeAppsDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                //{ "FluentAccentColor", FluentAccentColor },
+                // { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color:  Cyan
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -117,7 +118,7 @@ namespace PSADT.UserInterface.TestHarness
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                //{ "FluentAccentColor", FluentAccentColor },
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color:  Cyan
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -126,12 +127,13 @@ namespace PSADT.UserInterface.TestHarness
                 { "AppIconImage", appIconImage },
                 { "AppBannerImage", appBannerImage },
                 { "ProgressMessageText", progressMessageText },
-                { "ProgressDetailMessageText", progressDetailMessageText }
+                { "ProgressDetailMessageText", progressDetailMessageText },
+                { "AdditionalOption", true }
             });
             var customDialogOptions = new CustomDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                //{ "FluentAccentColor", FluentAccentColor },
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFD00063) }, // Accent Color:  Cyan
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -146,10 +148,32 @@ namespace PSADT.UserInterface.TestHarness
                 { "Icon", DialogSystemIcon.Information },
                 { "MessageAlignment", DialogMessageAlignment.Left }
             });
+
+            var inputDialogOptions = new InputDialogOptions(new Hashtable
+            {
+                { "DialogExpiryDuration", dialogExpiryDuration },
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFF00FF) }, // Accent Color:  Cyan
+                { "DialogPosition", dialogPosition },
+                { "DialogTopMost", dialogTopMost },
+                { "DialogAllowMove", dialogAllowMove },
+                { "AppTitle", appTitle },
+                { "Subtitle", subtitle },
+                { "AppIconImage", appIconImage },
+                { "AppBannerImage", appBannerImage },
+                { "MessageText", customDialogMessageText },
+                { "InitialInputText", initialInputText },
+                { "ButtonLeftText", ButtonLeftText },
+                { "ButtonRightText", ButtonRightText },
+                { "Icon", DialogSystemIcon.Information },
+                { "MessageAlignment", DialogMessageAlignment.Left }
+            })
+            {
+                
+            };
             var restartDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                //{ "FluentAccentColor", FluentAccentColor },
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFF6B00) }, // Accent Color:  Orange
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
@@ -193,7 +217,13 @@ namespace PSADT.UserInterface.TestHarness
                     // #################################################################################
 
                     // Show Custom Dialog for completion
-                    var customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
+                    var inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
+
+
+                // #################################################################################
+
+                // Show Custom Dialog for completion
+                var customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
 
                     Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
                 }
