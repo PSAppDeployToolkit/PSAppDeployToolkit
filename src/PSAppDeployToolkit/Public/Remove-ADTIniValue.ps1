@@ -58,7 +58,13 @@ function Remove-ADTIniValue
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+            if (![System.IO.File]::Exists($_))
+            {
+                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+            }
+            return ![System.String]::IsNullOrWhiteSpace($_)
+        })]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
