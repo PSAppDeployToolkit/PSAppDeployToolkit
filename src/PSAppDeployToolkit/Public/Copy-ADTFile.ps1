@@ -184,7 +184,7 @@ function Copy-ADTFile
             {
                 try
                 {
-                    if (!(Test-Path -Path $srcPath))
+                    if (!(Get-ChildItem -Path $srcPath -Recurse -Force))
                     {
                         if (!$ContinueFileCopyOnError)
                         {
