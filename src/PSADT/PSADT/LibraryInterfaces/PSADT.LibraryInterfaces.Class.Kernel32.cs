@@ -167,7 +167,7 @@ namespace PSADT.LibraryInterfaces
             var res = PInvoke.WritePrivateProfileSection(lpAppName, lpString, lpFileName);
             if (!res)
             {
-            throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
         }
