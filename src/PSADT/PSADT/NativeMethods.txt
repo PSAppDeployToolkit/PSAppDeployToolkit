@@ -37,8 +37,8 @@ GetExitCodeProcess
 GetExitCodeThread
 GetForegroundWindow
 GetNativeSystemInfo
-GetPrivateProfileSectionNames
 GetPrivateProfileSection
+GetPrivateProfileSectionNames
 GetPrivateProfileString
 GetProcAddress
 GetProcessId
