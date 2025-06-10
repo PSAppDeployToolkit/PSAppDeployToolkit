@@ -113,6 +113,7 @@ try
 
                 # Add in system assemblies.
                 Add-Type -AssemblyName @(
+                    'Microsoft.PowerShell.Commands.Management'
                     'System.ServiceProcess'
                     'System.Windows.Forms'
                 )

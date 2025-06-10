@@ -609,10 +609,10 @@ namespace PSADT.Module
 
 
                 // Perform checks that need to factor in user context.
-                if ((adtEnv["usersLoggedOn"] is var usersLoggedOn) && (null != usersLoggedOn))
+                if ((adtEnv["usersLoggedOn"] is ReadOnlyCollection<NTAccount> usersLoggedOn) && (usersLoggedOn.Count > 0))
                 {
                     // Log details for all currently logged on users.
-                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn)}].");
+                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
                     WriteLogEntry($"Session information for all logged on users:\n{(string)ModuleDatabase.InvokeScript(ScriptBlock.Create("$args[0] | & $Script:CommandTable.'Format-List' | & $Script:CommandTable.'Out-String' -Width ([System.Int32]::MaxValue)"), adtEnv["LoggedOnUserSessions"]!).First().BaseObject}", false);
 
                     // Check if the current process is running in the context of one of the logged on users

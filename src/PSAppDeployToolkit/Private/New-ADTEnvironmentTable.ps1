@@ -53,7 +53,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('envHomePath', [System.Environment]::GetEnvironmentVariable('HOMEPATH'))
     $variables.Add('envHomeShare', [System.Environment]::GetEnvironmentVariable('HOMESHARE'))
     $variables.Add('envLocalAppData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::LocalApplicationData))
-    $variables.Add('envLogicalDrives', [System.Environment]::GetLogicalDrives())
+    $variables.Add('envLogicalDrives', [System.Collections.Generic.IReadOnlyList[System.String]][System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.Environment]::GetLogicalDrives())
     $variables.Add('envProgramData', [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))
     $variables.Add('envPublic', [System.Environment]::GetEnvironmentVariable('PUBLIC'))
     $variables.Add('envSystemDrive', [System.IO.Path]::GetPathRoot([System.Environment]::SystemDirectory).TrimEnd('\'))
@@ -106,15 +106,15 @@ function Private:New-ADTEnvironmentTable
         }
 
         # Set the logon server and remove backslashes at the beginning.
-        $variables.envLogonServer = $(try
-            {
-                [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & { process { if ($_ -and !$_.Contains('\\MicrosoftAccount')) { [System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName } } }
-            }
-            catch
-            {
-                # If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
-                Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | Select-Object -ExpandProperty DCName -ErrorAction Ignore
-            })
+        $variables.envLogonServer = try
+        {
+            [System.Environment]::GetEnvironmentVariable('LOGONSERVER') | & { process { if ($_ -and !$_.Contains('\\MicrosoftAccount')) { [System.Net.Dns]::GetHostEntry($_.TrimStart('\')).HostName } } }
+        }
+        catch
+        {
+            # If running in system context or if GetHostEntry fails, fall back on the logonserver value stored in the registry
+            Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Group Policy\History' -ErrorAction Ignore | Select-Object -ExpandProperty DCName -ErrorAction Ignore
+        }
         while ($variables.envLogonServer -and $variables.envLogonServer.StartsWith('\'))
         {
             $variables.envLogonServer = $variables.envLogonServer.Substring(1)
@@ -173,10 +173,11 @@ function Private:New-ADTEnvironmentTable
     }
 
     ## Variables: Operating System
+    $osInfo = Get-ADTOperatingSystemInfo
     $variables.Add('envOS', (Get-CimInstance -ClassName Win32_OperatingSystem -Verbose:$false))
     $variables.Add('envOSName', $variables.envOS.Caption.Trim())
     $variables.Add('envOSServicePack', $variables.envOS.CSDVersion)
-    $variables.Add('envOSVersion', [PSADT.OperatingSystem.OSVersionInfo]::Current.Version)
+    $variables.Add('envOSVersion', $osInfo.Version)
     $variables.Add('envOSVersionMajor', $variables.envOSVersion.Major)
     $variables.Add('envOSVersionMinor', $variables.envOSVersion.Minor)
     $variables.Add('envOSVersionBuild', $(if ($variables.envOSVersion.Build -ge 0) { $variables.envOSVersion.Build }))
@@ -187,14 +188,8 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('IsServerOS', $variables.envOSProductType -eq 3)
     $variables.Add('IsDomainControllerOS', $variables.envOSProductType -eq 2)
     $variables.Add('IsWorkstationOS', $variables.envOSProductType -eq 1)
-    $variables.Add('IsMultiSessionOS', [PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS)
-    $variables.Add('envOSProductTypeName', $(switch ($variables.envOSProductType)
-            {
-                3 { 'Server'; break }
-                2 { 'Domain Controller'; break }
-                1 { 'Workstation'; break }
-                default { 'Unknown'; break }
-            }))
+    $variables.Add('IsMultiSessionOS', $osInfo.IsWorkstationEnterpriseMultiSessionOS)
+    $variables.Add('envOSProductTypeName', [Microsoft.PowerShell.Commands.ProductType]$variables.envOSProductType)
 
     ## Variables: Office C2R version, bitness and channel
     $variables.Add('envOfficeVars', (Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction Ignore))
@@ -286,7 +281,7 @@ function Private:New-ADTEnvironmentTable
     ## Variables: Permissions/Accounts
     $variables.Add('CurrentProcessToken', [System.Security.Principal.WindowsIdentity]::GetCurrent())
     $variables.Add('CurrentProcessSID', [System.Security.Principal.SecurityIdentifier]$variables.CurrentProcessToken.User)
-    $variables.Add('ProcessNTAccount', $variables.CurrentProcessToken.Name)
+    $variables.Add('ProcessNTAccount', [System.Security.Principal.NTAccount]$variables.CurrentProcessToken.Name)
     $variables.Add('ProcessNTAccountSID', $variables.CurrentProcessSID.Value)
     $variables.Add('IsAdmin', (Test-ADTCallerIsAdmin))
     $variables.Add('IsLocalSystemAccount', $variables.CurrentProcessSID.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
@@ -301,10 +296,20 @@ function Private:New-ADTEnvironmentTable
 
     ## Variables: Logged on user information
     $variables.Add('LoggedOnUserSessions', (Get-ADTLoggedOnUser -InformationAction SilentlyContinue))
-    $variables.Add('usersLoggedOn', ($variables.LoggedOnUserSessions | & { process { if ($_) { $_.NTAccount } } }))
-    $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_ -and $_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
-    $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_ -and $_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
-    $variables.Add('RunAsActiveUser', $(if ($variables.LoggedOnUserSessions) { Get-ADTRunAsActiveUser -UserSessionInfo $variables.LoggedOnUserSessions -InformationAction SilentlyContinue }))
+    if ($variables.LoggedOnUserSessions)
+    {
+        $variables.Add('usersLoggedOn', [System.Collections.Generic.IReadOnlyList[System.Security.Principal.NTAccount]][System.Collections.ObjectModel.ReadOnlyCollection[System.Security.Principal.NTAccount]][System.Security.Principal.NTAccount[]]$variables.LoggedOnUserSessions.NTAccount)
+        $variables.Add('CurrentLoggedOnUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsCurrentSession) { return $_ } } } | Select-Object -First 1))
+        $variables.Add('CurrentConsoleUserSession', ($variables.LoggedOnUserSessions | & { process { if ($_.IsConsoleSession) { return $_ } } } | Select-Object -First 1))
+        $variables.Add('RunAsActiveUser', (Get-ADTRunAsActiveUser -UserSessionInfo $variables.LoggedOnUserSessions -InformationAction SilentlyContinue))
+    }
+    else
+    {
+        $variables.Add('usersLoggedOn', $null)
+        $variables.Add('CurrentLoggedOnUserSession', $null)
+        $variables.Add('CurrentConsoleUserSession', $null)
+        $variables.Add('RunAsActiveUser', $null)
+    }
 
     ## Variables: User profile information.
     $variables.Add('dirUserProfile', [System.IO.Directory]::GetParent($variables.envPublic))
@@ -312,7 +317,7 @@ function Private:New-ADTEnvironmentTable
     $variables.Add('runasUserProfile', $(if ($variables.userProfileName) { Join-Path -Path $variables.dirUserProfile -ChildPath $variables.userProfileName -Resolve -ErrorAction Ignore }))
 
     ## Variables: Invalid FileName Characters
-    $variables.Add('invalidFileNameChars', [System.IO.Path]::GetInvalidFileNameChars())
+    $variables.Add('invalidFileNameChars', [System.Collections.Generic.IReadOnlyList[System.Char]][System.Collections.ObjectModel.ReadOnlyCollection[System.Char]][System.IO.Path]::GetInvalidFileNameChars())
     $variables.Add('invalidFileNameCharsRegExPattern', "[$([System.Text.RegularExpressions.Regex]::Escape([System.String]::Join([System.String]::Empty, $variables.invalidFileNameChars)))]")
 
     ## Variables: RegEx Patterns
