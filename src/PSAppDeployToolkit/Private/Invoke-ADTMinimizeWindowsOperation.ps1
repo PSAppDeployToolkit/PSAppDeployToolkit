@@ -18,12 +18,6 @@ function Private:Invoke-ADTMinimizeWindowsOperation
         [System.Management.Automation.SwitchParameter]$RestoreAllWindows
     )
 
-    # Instantiate a new ClientServerProcess object if one's not already present.
-    if (!$Script:ADT.ClientServerProcess)
-    {
-        Open-ADTClientServerProcess
-    }
-
     # Invoke the specified action.
     if (!$Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)())
     {
