@@ -9,9 +9,9 @@ function Private:Show-ADTNoWaitDialog
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.TerminalServices.SessionInfo]$User = (Get-ADTRunAsActiveUser -InformationAction SilentlyContinue),
+        [PSADT.TerminalServices.SessionInfo]$User,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

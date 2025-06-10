@@ -9,9 +9,9 @@ function Private:Open-ADTClientServerProcess
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.TerminalServices.SessionInfo]$User = (Get-ADTRunAsActiveUser -InformationAction SilentlyContinue)
+        [PSADT.TerminalServices.SessionInfo]$User
     )
 
     # Throw if there's already a client/server process present. This is an unexpected scenario.
