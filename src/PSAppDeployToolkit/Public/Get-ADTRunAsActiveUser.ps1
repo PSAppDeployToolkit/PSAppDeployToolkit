@@ -15,9 +15,6 @@ function Get-ADTRunAsActiveUser
 
         The active console user will be chosen first. If no active console user is found, for multi-session operating systems, the first logged-on user will be used instead.
 
-    .PARAMETER UserSessionInfo
-        An array of UserSessionInfo objects to enumerate through. If not supplied, a fresh query will be performed.
-
     .INPUTS
         None
 
@@ -45,32 +42,35 @@ function Get-ADTRunAsActiveUser
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTRunAsActiveUser
     #>
 
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [PSADT.TerminalServices.SessionInfo[]]$UserSessionInfo = (Get-ADTLoggedOnUser -InformationAction SilentlyContinue)
-    )
-
     # Determine the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account.
     # The active console user will be chosen first. Failing that, for multi-session operating systems, the first logged on user will be used instead.
+    Write-ADTLogEntry -Message 'Finding the active user session on this device.'
+    $currentWindowsIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     try
     {
-        Write-ADTLogEntry -Message 'Finding the active user session on this device.'
         $sessionInfoMember = if ([PSADT.OperatingSystem.OSVersionInfo]::Current.IsWorkstationEnterpriseMultiSessionOS) { 'IsCurrentSession' } else { 'IsActiveUserSession' }
-        foreach ($userSessionInfo in $UserSessionInfo)
+        $userSessions = Get-ADTLoggedOnUser -InformationAction SilentlyContinue
+        foreach ($session in $userSessions)
         {
-            if ($userSessionInfo.NTAccount -and $userSessionInfo.$sessionInfoMember)
+            if ($currentWindowsIdentity.User.Equals($session.SID) -and $session.IsActiveUserSession)
             {
-                Write-ADTLogEntry -Message "The active user session on this device is [$($userSessionInfo.NTAccount)]."
-                return $userSessionInfo
+                Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
+                return $session
+            }
+        }
+        foreach ($session in $userSessions)
+        {
+            if ($session.NTAccount -and $session.$sessionInfoMember)
+            {
+                Write-ADTLogEntry -Message "The active user session on this device is [$($session.NTAccount)]."
+                return $session
             }
         }
         Write-ADTLogEntry -Message 'There was no active user session found on this device.'
     }
-    catch
+    finally
     {
-        $PSCmdlet.ThrowTerminatingError($_)
+        $currentWindowsIdentity.Dispose()
+        $currentWindowsIdentity = $null
     }
 }
