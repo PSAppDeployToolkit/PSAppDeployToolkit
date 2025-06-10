@@ -67,7 +67,7 @@ function Get-ADTIniValue
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Section -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
                 }
                 return $true
             })]
@@ -77,7 +77,7 @@ function Get-ADTIniValue
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified key cannot be null, empty, or whitespace.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Key -ProvidedValue $_ -ExceptionMessage 'The specified key cannot be null, empty, or whitespace.'))
                 }
                 return $true
             })]

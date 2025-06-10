@@ -68,7 +68,8 @@ function Set-ADTIniSection
     #>
 
     [CmdletBinding()]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]$FilePath,
@@ -77,14 +78,15 @@ function Set-ADTIniSection
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Section -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
                 }
-                return ![System.String]::IsNullOrWhiteSpace($_)
+                return $true
             })]
         [System.String]$Section,
 
         [Parameter(Mandatory = $true)]
         [AllowNull()]
+        [AllowEmptyCollection()]
         [System.Collections.IDictionary]$Content,
 
         [Parameter(Mandatory = $false)]
@@ -140,7 +142,7 @@ function Set-ADTIniSection
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to write INI value."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to write INI section."
         }
     }
 

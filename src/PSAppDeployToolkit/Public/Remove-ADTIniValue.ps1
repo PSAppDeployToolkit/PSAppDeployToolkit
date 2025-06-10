@@ -59,19 +59,19 @@ function Remove-ADTIniValue
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-            if (![System.IO.File]::Exists($_))
-            {
-                $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
-            }
-            return ![System.String]::IsNullOrWhiteSpace($_)
-        })]
+                if (![System.IO.File]::Exists($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                }
+                return ![System.String]::IsNullOrWhiteSpace($_)
+            })]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Section -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
                 }
                 return $true
             })]
@@ -81,7 +81,7 @@ function Remove-ADTIniValue
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified key cannot be null, empty, or whitespace.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Key -ProvidedValue $_ -ExceptionMessage 'The specified key cannot be null, empty, or whitespace.'))
                 }
                 return $true
             })]

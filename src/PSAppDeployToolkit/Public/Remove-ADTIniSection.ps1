@@ -63,9 +63,9 @@ function Remove-ADTIniSection
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Section -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
                 }
-                return ![System.String]::IsNullOrWhiteSpace($_)
+                return $true
             })]
         [System.String]$Section
     )
