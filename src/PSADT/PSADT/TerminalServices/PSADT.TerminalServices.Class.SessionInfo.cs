@@ -32,12 +32,12 @@ namespace PSADT.TerminalServices
         /// <param name="clientDirectory"></param>
         /// <param name="clientBuildNumber"></param>
         public SessionInfo(
-            NTAccount? ntAccount,
-            SecurityIdentifier? sid,
-            string? userName,
-            string? domainName,
+            NTAccount ntAccount,
+            SecurityIdentifier sid,
+            string userName,
+            string domainName,
             uint sessionId,
-            string? sessionName,
+            string sessionName,
             LibraryInterfaces.WTS_CONNECTSTATE_CLASS connectState,
             bool isCurrentSession,
             bool isConsoleSession,
@@ -78,22 +78,22 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The NTAccount for the session's user.
         /// </summary>
-        public readonly NTAccount? NTAccount;
+        public readonly NTAccount NTAccount;
 
         /// <summary>
         /// The SID for the session's user.
         /// </summary>
-        public readonly SecurityIdentifier? SID;
+        public readonly SecurityIdentifier SID;
 
         /// <summary>
         /// The username for the session's user.
         /// </summary>
-        public readonly string? UserName;
+        public readonly string UserName;
 
         /// <summary>
         /// The domain name for the session's user.
         /// </summary>
-        public readonly string? DomainName;
+        public readonly string DomainName;
 
         /// <summary>
         /// The Id of the session.
@@ -103,7 +103,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The session name for the session.
         /// </summary>
-        public readonly string? SessionName;
+        public readonly string SessionName;
 
         /// <summary>
         /// The connection state of the session.
