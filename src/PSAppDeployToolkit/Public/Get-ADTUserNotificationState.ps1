@@ -47,24 +47,16 @@ function Get-ADTUserNotificationState
 
     begin
     {
-        # Initialize the module if it's not already. We need this for `Open-ADTClientServerProcess` to function properly.
-        $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         # Bypass if no one's logged onto the device.
-        if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+        if (!($runAsActiveUser = Get-ADTClientServerUser))
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return
-        }
-
-        # Instantiate a new ClientServerProcess object if one's not already present.
-        if (!$Script:ADT.ClientServerProcess)
-        {
-            Open-ADTClientServerProcess -User $runAsActiveUser
         }
 
         # Send the request off to the client/server process.
@@ -72,7 +64,7 @@ function Get-ADTUserNotificationState
         {
             try
             {
-                Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = $Script:ADT.ClientServerProcess.GetUserNotificationState()))]."
+                Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = Invoke-ADTClientServerOperation -GetUserNotificationState -User $runAsActiveUser))]."
                 return $UserNotificationState
             }
             catch

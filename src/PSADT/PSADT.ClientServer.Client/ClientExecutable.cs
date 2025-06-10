@@ -48,6 +48,10 @@ namespace PSADT.ClientServer
                 {
                     Console.WriteLine(ShowModalDialog(ConvertArgsToDictionary(args)));
                 }
+                else if (args.Any(static arg => arg.Equals("/GetUserNotificationState")))
+                {
+                    Console.WriteLine(GetUserNotificationState());
+                }
                 else if (args.Any(static arg => arg.Equals("/ClientServer")))
                 {
                     EnterClientServerMode(ConvertArgsToDictionary(args));
@@ -425,7 +429,7 @@ namespace PSADT.ClientServer
                                 else if (parts[0] == "GetUserNotificationState")
                                 {
                                     // Get the user notification state and write it back to the output pipe.
-                                    outputWriter.WriteLine(SerializeObject(ShellUtilities.GetUserNotificationState()));
+                                    outputWriter.WriteLine(GetUserNotificationState());
                                 }
                                 else if (parts[0] == "Open")
                                 {
@@ -522,6 +526,18 @@ namespace PSADT.ClientServer
                 DialogType.CloseAppsDialog => SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(dialogOptions), (CloseAppsDialogState)closeAppsDialogState!)),
                 _ => throw new ProgramException($"The specified DialogType of [{dialogType}] is not supported.", ExitCode.UnsupportedDialog),
             };
+        }
+
+        /// <summary>
+        /// Retrieves the current user notification state as a serialized string.
+        /// </summary>
+        /// <remarks>The user notification state indicates the current state of user notifications, such
+        /// as whether the user is available, busy, or away.  The returned string is a serialized representation of the
+        /// state, which can be deserialized for further processing.</remarks>
+        /// <returns>A serialized string representing the current user notification state.</returns>
+        private static string GetUserNotificationState()
+        {
+            return SerializeObject(ShellUtilities.GetUserNotificationState());
         }
 
         /// <summary>

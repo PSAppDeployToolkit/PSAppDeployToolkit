@@ -12,7 +12,11 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [System.Management.Automation.SwitchParameter]$ShowModalDialog,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
+        [System.Management.Automation.SwitchParameter]$GetUserNotificationState,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
         [ValidateNotNullOrEmpty()]
         [PSADT.TerminalServices.SessionInfo]$User,
 
