@@ -167,14 +167,6 @@ function Show-ADTDialogBox
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return
         }
-        if ($Force)
-        {
-            Write-ADTLogEntry -Message "Forcibly displaying dialog box with message: $Text..."
-        }
-        else
-        {
-            Write-ADTLogEntry -Message "Displaying dialog box with message: $Text..."
-        }
 
         try
         {
