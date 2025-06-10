@@ -31,23 +31,23 @@ function Private:Show-ADTNoWaitDialog
     {
         ([PSADT.UserInterface.Dialogs.DialogType]::DialogBox)
         {
-            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.DialogBoxOptions]$Options, [PSADT.UserInterface.DialogOptions.DialogBoxOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.DialogBoxOptions]$Options)
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::HelpConsole)
         {
-            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]$Options, [PSADT.UserInterface.DialogOptions.HelpConsoleOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]$Options)
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::InputDialog)
         {
-            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.InputDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.InputDialogOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.InputDialogOptions]$Options)
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::CustomDialog)
         {
-            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.CustomDialogOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$Options)
         }
         ([PSADT.UserInterface.Dialogs.DialogType]::RestartDialog)
         {
-            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.RestartDialogOptions]$Options, [PSADT.UserInterface.DialogOptions.RestartDialogOptions])
+            [PSADT.Utilities.SerializationUtilities]::SerializeToString([PSADT.UserInterface.DialogOptions.RestartDialogOptions]$Options)
         }
         default
         {
