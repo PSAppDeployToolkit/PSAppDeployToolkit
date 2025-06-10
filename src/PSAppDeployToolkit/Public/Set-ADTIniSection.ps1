@@ -71,17 +71,17 @@ function Set-ADTIniSection
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$FilePath,
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if ([string]::IsNullOrWhiteSpace($_))
+                if ([System.String]::IsNullOrWhiteSpace($_))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [string]$Section,
+        [System.String]$Section,
 
         [Parameter(Mandatory = $true)]
         [AllowNull()]
