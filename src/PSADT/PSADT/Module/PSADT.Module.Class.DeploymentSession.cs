@@ -1413,7 +1413,7 @@ namespace PSADT.Module
         /// <summary>
         /// Buffer for log entries.
         /// </summary>
-        private static readonly List<LogEntry> LogBuffer = [];
+        private readonly List<LogEntry> LogBuffer = [];
 
         /// <summary>
         /// Bitfield with settings for this deployment.
