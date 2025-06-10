@@ -191,15 +191,9 @@ function Show-ADTDialogBox
                     return
                 }
 
-                # Instantiate a new ClientServerProcess object if one's not already present.
-                if (!$Script:ADT.ClientServerProcess)
-                {
-                    Open-ADTClientServerProcess -User $runAsActiveUser
-                }
-
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying dialog box with message: [$Text]."
-                $result = $Script:ADT.ClientServerProcess.ShowDialogBox($dialogOptions)
+                $result = Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType DialogBox -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
 
                 # Process results.
                 if ($result -eq [PSADT.UserInterface.DialogResults.DialogBoxResult]::Timeout)
