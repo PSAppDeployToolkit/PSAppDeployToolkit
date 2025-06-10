@@ -638,7 +638,7 @@ namespace PSADT.Module
                     // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
                     if (adtEnv["RunAsActiveUser"] is SessionInfo RunAsActiveUser)
                     {
-                        WriteLogEntry($"The active logged on user is [{RunAsActiveUser.NTAccount}].");
+                        WriteLogEntry($"The active logged on user who will receive UI elements is [{RunAsActiveUser.NTAccount}].");
                     }
                 }
                 else
