@@ -48,7 +48,8 @@ function Get-ADTIniSection
 
     [CmdletBinding()]
     [OutputType([Collections.Specialized.OrderedDictionary])]
-    param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
                 if (![System.IO.File]::Exists($_))
@@ -63,9 +64,9 @@ function Get-ADTIniSection
         [ValidateScript({
                 if ([System.String]::IsNullOrWhiteSpace($_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Section -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
                 }
-                return ![System.String]::IsNullOrWhiteSpace($_)
+                return $true
             })]
         [System.String]$Section
     )
