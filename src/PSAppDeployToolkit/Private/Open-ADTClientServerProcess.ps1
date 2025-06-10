@@ -31,7 +31,7 @@ function Private:Open-ADTClientServerProcess
     Set-ADTClientServerProcessPermissions -User $User
 
     # Instantiate a new ClientServerProcess object as required, then add the necessary callback.
-    $Script:ADT.ClientServerProcess = [PSADT.ClientServer.ServerInstance]::new($User)
+    $Script:ADT.ClientServerProcess = [PSADT.ClientServer.ServerInstance]::new($User.NTAccount)
     try
     {
         $Script:ADT.ClientServerProcess.Open()

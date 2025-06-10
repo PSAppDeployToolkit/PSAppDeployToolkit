@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,6 @@ using PSADT.Execution;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
-using PSADT.TerminalServices;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
@@ -39,7 +39,7 @@ namespace PSADT.ClientServer
         /// <remarks>This constructor creates anonymous pipe streams for input and output communication.
         /// The input stream is configured for reading, while the output stream is configured for writing. The output
         /// stream is set to automatically flush data to ensure timely communication.</remarks>
-        public ServerInstance(SessionInfo user)
+        public ServerInstance(NTAccount user)
         {
             // Initialize the anonymous pipe streams for inter-process communication.
             _user = user ?? throw new ArgumentNullException(nameof(user), "User cannot be null.");
@@ -66,7 +66,7 @@ namespace PSADT.ClientServer
                 _assemblyLocation,
                 ["/ClientServer", "-InputPipe", _outputPipeServer.GetClientHandleAsString(), "-OutputPipe", _inputPipeServer.GetClientHandleAsString(), "-LogPipe", _logPipeServer.GetClientHandleAsString()],
                 null,
-                _user.NTAccount,
+                _user,
                 false,
                 false,
                 false,
@@ -635,7 +635,7 @@ namespace PSADT.ClientServer
         /// <remarks>This field stores details about the user's session, such as authentication or
         /// user-specific data. It is intended for internal use and should not be exposed directly to external
         /// consumers.</remarks>
-        private readonly SessionInfo _user;
+        private readonly NTAccount _user;
 
         /// <summary>
         /// Represents the source identifier for logging related to the "Show-ADTModalDialog" functionality.
