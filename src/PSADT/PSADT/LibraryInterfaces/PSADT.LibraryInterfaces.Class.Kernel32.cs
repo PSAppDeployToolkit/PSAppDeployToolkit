@@ -144,7 +144,7 @@ namespace PSADT.LibraryInterfaces
         internal static uint GetPrivateProfileString(string lpAppName, string lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
         {
             var res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName);
-            if (res == 0)
+            if (res == 0 && (WIN32_ERROR)Marshal.GetLastWin32Error() != WIN32_ERROR.NO_ERROR)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
