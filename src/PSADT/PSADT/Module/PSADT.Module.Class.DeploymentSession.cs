@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO.Compression;
 using System.Security.Principal;
 using System.Management.Automation;
@@ -18,6 +17,7 @@ using Microsoft.Win32;
 using PSADT.ProcessManagement;
 using PSADT.TerminalServices;
 using PSADT.Utilities;
+using PSADT.Types;
 
 namespace PSADT.Module
 {
@@ -57,12 +57,18 @@ namespace PSADT.Module
                 // Extrapolate the Toolkit options from the config hashtable.
                 var configToolkit = (Hashtable)adtConfig["Toolkit"]!;
 
+                // Pre-cache reused environment variables.
+                var appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
+                var appDeployMainScriptVersion = ((Version)adtEnv["appDeployMainScriptVersion"]!).ToString();
+                var usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
+                var RunAsActiveUser = (SessionInfo?)adtEnv["RunAsActiveUser"];
+                var currentLanguage = (string)adtEnv["currentLanguage"]!;
+                var envOSArchitecture = (SystemArchitecture)adtEnv["envOSArchitecture"]!;
+                var processNtAccount = (NTAccount)adtEnv["ProcessNTAccount"]!;
+                var isAdmin = (bool)adtEnv["IsAdmin"]!;
+
                 // Set up other variable values based on incoming dictionary.
-                if (noExitOnClose.HasValue && noExitOnClose.Value)
-                {
-                    Settings |= DeploymentSettings.NoExitOnClose;
-                }
-                if (null != parameters)
+                if (null != parameters && parameters.Count > 0)
                 {
                     if (parameters.TryGetValue("DeploymentType", out paramValue) && (null != paramValue))
                     {
@@ -181,6 +187,10 @@ namespace PSADT.Module
                         _logName = (string)paramValue;
                     }
                 }
+                if (noExitOnClose.HasValue && noExitOnClose.Value)
+                {
+                    Settings |= DeploymentSettings.NoExitOnClose;
+                }
 
                 // Establish script directories.
                 if (null != _scriptDirectory)
@@ -245,16 +255,15 @@ namespace PSADT.Module
                         {
                             // Get the first MSI file in the Files directory.
                             string[] msiFiles = Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase)).ToArray();
-                            var envOSArchitecture = adtEnv["envOSArchitecture"]!.ToString();
                             var formattedOSArch = string.Empty;
 
                             // Build out the OS architecture string.
                             formattedOSArch = envOSArchitecture switch
                             {
-                                "X86" => "x86",
-                                "AMD64" => "x64",
-                                "ARM64" => "arm64",
-                                _ => envOSArchitecture,
+                                SystemArchitecture.i386 => "x86",
+                                SystemArchitecture.AMD64 => "x64",
+                                SystemArchitecture.ARM64 => "arm64",
+                                _ => envOSArchitecture.ToString(),
                             };
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
@@ -353,7 +362,7 @@ namespace PSADT.Module
                 // Set up sample variables if Dot Sourcing the script, app details have not been specified.
                 if (string.IsNullOrWhiteSpace(_appName))
                 {
-                    _appName = (string)adtEnv["appDeployToolkitName"]!;
+                    _appName = appDeployToolkitName;
 
                     if (!string.IsNullOrWhiteSpace(_appVendor))
                     {
@@ -361,11 +370,11 @@ namespace PSADT.Module
                     }
                     if (string.IsNullOrWhiteSpace(_appVersion))
                     {
-                        _appVersion = adtEnv["appDeployMainScriptVersion"]!.ToString()!;
+                        _appVersion = appDeployMainScriptVersion;
                     }
                     if (string.IsNullOrWhiteSpace(_appLang))
                     {
-                        _appLang = (string)adtEnv["currentLanguage"]!;
+                        _appLang = currentLanguage;
                     }
                     if (string.IsNullOrWhiteSpace(_appRevision))
                     {
@@ -400,7 +409,7 @@ namespace PSADT.Module
                 _installName = Regex.Replace(Regex.Replace(_installName!.Trim('_').Replace(" ", null), "_+", "_"), invalidChars, string.Empty);
 
                 // Set the Defer History registry path.
-                RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{adtEnv["appDeployToolkitName"]}\DeferHistory";
+                RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{appDeployToolkitName}\DeferHistory";
                 RegKeyDeferHistory = $@"{RegKeyDeferBase}\{_installName}";
 
 
@@ -438,13 +447,13 @@ namespace PSADT.Module
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                 if (string.IsNullOrWhiteSpace(_logName))
                 {
-                    if ((bool)adtEnv["IsAdmin"]!)
+                    if (isAdmin)
                     {
-                        _logName = $"{_installName}_{adtEnv["appDeployToolkitName"]}_{_deploymentType}.log";
+                        _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}.log";
                     }
                     else
                     {
-                        _logName = $"{_installName}_{adtEnv["appDeployToolkitName"]}_{_deploymentType}_{adtEnv["envUserName"]}.log";
+                        _logName = $"{_installName}_{appDeployToolkitName}_{_deploymentType}_{adtEnv["envUserName"]}.log";
                     }
                 }
                 _logName = Regex.Replace(_logName, invalidChars, string.Empty);
@@ -548,28 +557,28 @@ namespace PSADT.Module
                 }
                 var adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
                 var adtDurations = (PSObject)adtData.Properties["Durations"].Value;
-                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] module version is [{adtEnv["appDeployMainScriptVersion"]}].");
-                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
-                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
-                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] module path is ['{adtEnv["appDeployToolkitPath"]}'].");
-                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] config path is ['{string.Join("', '", (string[])adtDirectories.Properties["Config"].Value)}'].");
-                WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] string path is ['{string.Join("', '", (string[])adtDirectories.Properties["Strings"].Value)}'].");
+                WriteLogEntry($"[{appDeployToolkitName}] module version is [{appDeployMainScriptVersion}].");
+                WriteLogEntry($"[{appDeployToolkitName}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
+                WriteLogEntry($"[{appDeployToolkitName}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
+                WriteLogEntry($"[{appDeployToolkitName}] module path is ['{adtEnv["appDeployToolkitPath"]}'].");
+                WriteLogEntry($"[{appDeployToolkitName}] config path is ['{string.Join("', '", (string[])adtDirectories.Properties["Config"].Value)}'].");
+                WriteLogEntry($"[{appDeployToolkitName}] string path is ['{string.Join("', '", (string[])adtDirectories.Properties["Strings"].Value)}'].");
 
                 // Announce session instantiation mode.
                 if (null != callerSessionState)
                 {
-                    WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverity.Warning);
+                    WriteLogEntry($"[{appDeployToolkitName}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverity.Warning);
                     WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", LogSeverity.Warning);
                 }
                 else
                 {
-                    WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] session mode is [Native].");
+                    WriteLogEntry($"[{appDeployToolkitName}] session mode is [Native].");
                 }
 
                 // Test and warn if this toolkit was started with ServiceUI anywhere as a parent process.
                 if (ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase)))
                 {
-                    WriteLogEntry($"[{adtEnv["appDeployToolkitName"]}] was started with ServiceUI as a parent process. This is no longer required as of [4.1.0] and will not be supported in a later release.", LogSeverity.Warning);
+                    WriteLogEntry($"[{appDeployToolkitName}] was started with ServiceUI as a parent process. This is no longer required as of [4.1.0] and will not be supported in a later release.", LogSeverity.Warning);
                 }
 
 
@@ -578,9 +587,9 @@ namespace PSADT.Module
 
 
                 // Check current permissions and exit if not running with Administrator rights.
-                if ((bool)configToolkit["RequireAdmin"]! && !(bool)adtEnv["IsAdmin"]!)
+                if ((bool)configToolkit["RequireAdmin"]! && !isAdmin)
                 {
-                    throw new UnauthorizedAccessException($"[{adtEnv["appDeployToolkitName"]}] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.");
+                    throw new UnauthorizedAccessException($"[{appDeployToolkitName}] has a toolkit config option [RequireAdmin] set to [True] and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator or change the option in the config file to not require Administrator rights.");
                 }
 
 
@@ -590,11 +599,11 @@ namespace PSADT.Module
 
                 // Report on all determined system info.
                 WriteLogEntry($"Computer Name is [{adtEnv["envComputerNameFQDN"]}].");
-                WriteLogEntry($"Current User is [{adtEnv["ProcessNTAccount"]}].");
-                WriteLogEntry($"OS Version is [{adtEnv["envOSName"]}{$" {adtEnv["envOSServicePack"]}".Trim()} {adtEnv["envOSArchitecture"]} {adtEnv["envOSVersion"]}].");
+                WriteLogEntry($"Current User is [{processNtAccount}].");
+                WriteLogEntry($"OS Version is [{adtEnv["envOSName"]}{$" {adtEnv["envOSServicePack"]}".Trim()} {envOSArchitecture} {adtEnv["envOSVersion"]}].");
                 WriteLogEntry($"OS Type is [{adtEnv["envOSProductTypeName"]}].");
                 WriteLogEntry($"Hardware Platform is [{adtEnv["envHardwareType"]}].");
-                WriteLogEntry($"Current Culture is [{CultureInfo.CurrentCulture.Name}], language is [{adtEnv["currentLanguage"]}] and UI language is [{adtEnv["currentUILanguage"]}].");
+                WriteLogEntry($"Current Culture is [{adtEnv["culture"]}], language is [{currentLanguage}] and UI language is [{adtEnv["currentUILanguage"]}].");
                 WriteLogEntry($"PowerShell Host is [{((PSHost)adtEnv["envHost"]!).Name}] with version [{adtEnv["envHostVersionSemantic"] ?? adtEnv["envHostVersion"]}].");
                 WriteLogEntry($"PowerShell Version is [{adtEnv["envPSVersionSemantic"] ?? adtEnv["envPSVersion"]} {adtEnv["psArchitecture"]}].");
                 WriteLogEntry($"PowerShell Process Path is [{adtEnv["envPSProcessPath"]}].");
@@ -609,7 +618,7 @@ namespace PSADT.Module
 
 
                 // Perform checks that need to factor in user context.
-                if ((adtEnv["usersLoggedOn"] is ReadOnlyCollection<NTAccount> usersLoggedOn) && (usersLoggedOn.Count > 0))
+                if (usersLoggedOn?.Count > 0)
                 {
                     // Log details for all currently logged on users.
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
@@ -618,11 +627,11 @@ namespace PSADT.Module
                     // Check if the current process is running in the context of one of the logged on users
                     if (adtEnv["CurrentLoggedOnUserSession"] is SessionInfo CurrentLoggedOnUserSession)
                     {
-                        WriteLogEntry($"Current process is running with user account [{adtEnv["ProcessNTAccount"]}] under logged on user session for [{CurrentLoggedOnUserSession.NTAccount}].");
+                        WriteLogEntry($"Current process is running with user account [{processNtAccount}] under logged on user session for [{CurrentLoggedOnUserSession.NTAccount}].");
                     }
                     else
                     {
-                        WriteLogEntry($"Current process is running under a system account [{adtEnv["ProcessNTAccount"]}].");
+                        WriteLogEntry($"Current process is running under a system account [{processNtAccount}].");
                     }
 
                     // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
@@ -636,7 +645,7 @@ namespace PSADT.Module
                     }
 
                     // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-                    if (adtEnv["RunAsActiveUser"] is SessionInfo RunAsActiveUser)
+                    if (null != RunAsActiveUser)
                     {
                         WriteLogEntry($"The active logged on user who will receive UI elements is [{RunAsActiveUser.NTAccount}].");
                     }
@@ -706,7 +715,7 @@ namespace PSADT.Module
                     if (!string.IsNullOrWhiteSpace((string?)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\Diagnostics\AutoPilot", "CloudAssignedTenantId", null)))
                     {
                         WriteLogEntry("The device is Autopilot-enrolled, checking ESP User Account setup phase.");
-                        if (((SessionInfo)adtEnv["RunAsActiveUser"])?.SID is SecurityIdentifier userSid)
+                        if (RunAsActiveUser?.SID is SecurityIdentifier userSid)
                         {
                             var fsRegData = moduleSessionState.InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
                             if (null != fsRegData)
@@ -783,7 +792,7 @@ namespace PSADT.Module
                     else if ((bool)configToolkit["SessionDetection"]!)
                     {
                         // If the process is not able to display a UI, enable silent mode.
-                        if (null == adtEnv["usersLoggedOn"])
+                        if (null == usersLoggedOn)
                         {
                             deployModeChanged = true;
                             _deployMode = DeployMode.Silent;
