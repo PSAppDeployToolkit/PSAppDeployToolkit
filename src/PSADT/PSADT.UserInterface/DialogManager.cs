@@ -98,7 +98,19 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and buttons.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
-        internal static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options) => ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
+        internal static string ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
+        {
+            if (options.MinimizeWindows)
+            {
+                ShellUtilities.MinimizeAllWindows();
+            }
+            var res = ShowModalDialog<string>(DialogType.CustomDialog, dialogStyle, options);
+            if (options.MinimizeWindows)
+            {
+                ShellUtilities.RestoreAllWindows();
+            }
+            return res;
+        }
 
         /// <summary>
         /// Displays an input dialog box with the specified style and options, and returns the result.
@@ -107,7 +119,19 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options for configuring the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog result (e.g., OK or Cancel).</returns>
-        internal static InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options) => ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
+        internal static InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options)
+        {
+            if (options.MinimizeWindows)
+            {
+                ShellUtilities.MinimizeAllWindows();
+            }
+            var res = ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
+            if (options.MinimizeWindows)
+            {
+                ShellUtilities.RestoreAllWindows();
+            }
+            return res;
+        }
 
         /// <summary>
         /// Displays a modal dialog prompting the user to restart the application.

@@ -338,27 +338,9 @@ function Show-ADTInstallationPrompt
                     Close-ADTInstallationProgress
                 }
 
-                # Instantiate a new ClientServerProcess object if one's not already present.
-                if (!$Script:ADT.ClientServerProcess)
-                {
-                    Open-ADTClientServerProcess -User $runAsActiveUser
-                }
-
-                # Minimize all other windows
-                if ($MinimizeWindows)
-                {
-                    Invoke-ADTMinimizeWindowsOperation -MinimizeAllWindows
-                }
-
                 # Call the underlying function to open the message prompt.
                 Write-ADTLogEntry -Message "Displaying custom installation prompt with message: [$Message]."
-                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($adtConfig.UI.DialogStyle, $dialogOptions)
-
-                # Restore minimized windows.
-                if ($MinimizeWindows)
-                {
-                    Invoke-ADTMinimizeWindowsOperation -RestoreAllWindows
-                }
+                $result = Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', $null) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
 
                 # Process results.
                 if ($result -eq 'Timeout')

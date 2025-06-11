@@ -23,6 +23,10 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("MessageText value is null or invalid.", (Exception?)null);
             }
+            if (options["minimizeWindows"] is not bool minimizeWindows)
+            {
+                throw new ArgumentNullException("MinimizeWindows value is null or invalid.", (Exception?)null);
+            }
 
             // Test and set optional values.
             if (options.ContainsKey("MessageAlignment"))
@@ -68,6 +72,7 @@ namespace PSADT.UserInterface.DialogOptions
 
             // The hashtable was correctly defined, assign the remaining values.
             MessageText = messageText;
+            MinimizeWindows = minimizeWindows;
 
             // At least one button must be defined before we finish.
             if (string.IsNullOrWhiteSpace(ButtonLeftText) && string.IsNullOrWhiteSpace(ButtonMiddleText) && string.IsNullOrWhiteSpace(ButtonRightText))
@@ -111,5 +116,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly DialogSystemIcon? Icon;
+
+        /// <summary>
+        /// Gets a value indicating whether windows should be minimized.
+        /// </summary>
+        [DataMember]
+        public readonly bool MinimizeWindows;
     }
 }
