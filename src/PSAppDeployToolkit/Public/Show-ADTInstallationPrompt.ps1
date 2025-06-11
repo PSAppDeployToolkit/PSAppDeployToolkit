@@ -254,7 +254,7 @@ function Show-ADTInstallationPrompt
                 }
 
                 # Bypass if no one's logged on to answer the dialog.
-                if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+                if (!($runAsActiveUser = Get-ADTClientServerUser))
                 {
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
                     return
@@ -315,12 +315,20 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
+                $dialogOptions = if ($RequestInput)
+                {
+                    [PSADT.UserInterface.DialogOptions.InputDialogOptions]$dialogOptions
+                }
+                else
+                {
+                    [PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions
+                }
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message "Displaying custom installation prompt asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Message]."
-                    Show-ADTNoWaitDialog -User $runAsActiveUser -Type $PSCmdlet.ParameterSetName.Replace('Show', $null) -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
+                    Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType $PSCmdlet.ParameterSetName.Replace('Show', $null) -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 

@@ -204,7 +204,7 @@ function Show-ADTInstallationRestartPrompt
                 }
 
                 # Just restart the computer if no one's logged on to answer the dialog.
-                if (!($runAsActiveUser = ($adtEnv = Get-ADTEnvironmentTable).RunAsActiveUser))
+                if (!($runAsActiveUser = Get-ADTClientServerUser))
                 {
                     Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
                     Start-Process -FilePath $adtEnv.envPSProcessPath -ArgumentList "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -Command Start-Sleep -Seconds $SilentCountdownSeconds; Restart-Computer -Force" -WindowStyle Hidden -ErrorAction Ignore
@@ -241,6 +241,7 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
+                [PSADT.UserInterface.DialogOptions.RestartDialogOptions]$dialogOptions = $dialogOptions
 
                 # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.
                 if ($adtSession)
@@ -253,7 +254,7 @@ function Show-ADTInstallationRestartPrompt
                     {
                         Write-ADTLogEntry -Message "Invoking $($MyInvocation.MyCommand.Name) asynchronously with a [$CountdownSeconds] second countdown..."
                     }
-                    Show-ADTNoWaitDialog -User $runAsActiveUser -Type RestartDialog -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
+                    Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType RestartDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 

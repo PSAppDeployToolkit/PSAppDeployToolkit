@@ -162,12 +162,12 @@ function Show-ADTDialogBox
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.deployMode)]. Text: $Text"
             return
         }
-        elseif (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+        if (!($runAsActiveUser = Get-ADTClientServerUser))
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return
         }
-        elseif ($Force)
+        if ($Force)
         {
             Write-ADTLogEntry -Message "Forcibly displaying dialog box with message: $Text..."
         }
@@ -181,7 +181,7 @@ function Show-ADTDialogBox
             try
             {
                 # Instantiate dialog options as required.
-                $dialogOptions = @{
+                [PSADT.UserInterface.DialogOptions.DialogBoxOptions]$dialogOptions = @{
                     AppTitle = $Title
                     MessageText = $Text
                     DialogButtons = $Buttons
@@ -195,7 +195,7 @@ function Show-ADTDialogBox
                 if ($NoWait)
                 {
                     Write-ADTLogEntry -Message "Displaying dialog box asynchronously to [$($runAsActiveUser.NTAccount)] with message: [$Text]."
-                    Show-ADTNoWaitDialog -User $runAsActiveUser -Type DialogBox -Style $adtConfig.UI.DialogStyle -Options $dialogOptions
+                    Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType DialogBox -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions -NoWait
                     return
                 }
 

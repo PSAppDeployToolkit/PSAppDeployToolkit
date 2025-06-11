@@ -44,9 +44,9 @@ namespace PSADT.ClientServer
                 {
                     ShowHelpDialog();
                 }
-                else if (args.Any(static arg => arg.Equals("/SingleDialog")))
+                else if (args.Any(static arg => arg.Equals("/ShowModalDialog")))
                 {
-                    EnterSingleUseMode(ConvertArgsToDictionary(args));
+                    Console.WriteLine(ShowModalDialog(ConvertArgsToDictionary(args)));
                 }
                 else if (args.Any(static arg => arg.Equals("/ClientServer")))
                 {
@@ -134,24 +134,6 @@ namespace PSADT.ClientServer
 
             // This data should never change once read, so return read-only.
             return new ReadOnlyDictionary<string, string>(arguments);
-        }
-
-        /// <summary>
-        /// Displays a single dialog based on the specified arguments.
-        /// </summary>
-        /// <remarks>This method validates the provided arguments and displays the appropriate dialog
-        /// based on the specified <c>"DialogType"</c>. If any required argument is missing or invalid, the method
-        /// writes an error message to the console and terminates the application with an appropriate exit code.</remarks>
-        /// <param name="arguments">A read-only dictionary containing the arguments required to configure and display the dialog.  The following
-        /// keys are expected: <list type="bullet"> <item> <description> <c>"DialogType"</c>: Specifies the type of
-        /// dialog to display. Must be a valid <see cref="DialogType"/> value. </description> </item> <item>
-        /// <description> <c>"DialogStyle"</c>: Specifies the style of the dialog. Must be a valid <see
-        /// cref="DialogStyle"/> value. </description> </item> <item> <description> <c>"DialogOptions"</c>: A
-        /// JSON-encoded string containing the options specific to the dialog type. </description> </item> </list></param>
-        private static void EnterSingleUseMode(ReadOnlyDictionary<string, string> arguments)
-        {
-            // Show the dialog and write the result to the console.
-            Console.WriteLine(ShowModalDialog(arguments));
         }
 
         /// <summary>
@@ -520,7 +502,7 @@ namespace PSADT.ClientServer
             }
 
             // Confirm we have dialog options and they're not null/invalid.
-            if (!arguments.TryGetValue("DialogOptions", out string? dialogOptions))
+            if (!arguments.TryGetValue("Options", out string? dialogOptions))
             {
                 throw new ProgramException("The required DialogOptions were not specified on the command line.", ExitCode.NoDialogOptions);
             }
