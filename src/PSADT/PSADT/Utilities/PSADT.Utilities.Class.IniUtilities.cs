@@ -133,9 +133,9 @@ namespace PSADT.Utilities
                 foreach (DictionaryEntry kvp in keyValuePairs)
                 {
                     string key = kvp.Key?.ToString()?.Trim() ?? string.Empty;
-                    if (string.IsNullOrEmpty(key))
+                    if (string.IsNullOrWhiteSpace(key))
                     {
-                        continue;
+                        throw new ArgumentException($"Invalid key in dictionary: Key cannot be null, empty, or whitespace.", nameof(keyValuePairs));
                     }
 
                     entries.Append(key);
