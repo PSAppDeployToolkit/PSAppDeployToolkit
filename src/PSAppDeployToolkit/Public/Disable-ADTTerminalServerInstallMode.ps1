@@ -53,8 +53,9 @@ function Disable-ADTTerminalServerInstallMode
 
     process
     {
-        if (!$Script:ADT.TerminalServerMode)
+        if (![PSADT.LibraryInterfaces.Kernel32]::TermsrvAppInstallMode())
         {
+            Write-ADTLogEntry -Message "This terminal server is already in user execute mode."
             return
         }
 

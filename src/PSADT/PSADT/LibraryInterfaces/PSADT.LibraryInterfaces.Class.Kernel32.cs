@@ -671,5 +671,17 @@ namespace PSADT.LibraryInterfaces
             }
             return res;
         }
+
+        /// <summary>
+        /// Determines whether the system is currently in Terminal Services application installation mode.
+        /// </summary>
+        /// <remarks>Terminal Services application installation mode is used to install applications in a
+        /// way that  supports multiple users on a terminal server. This method can be used to check the current mode 
+        /// before performing operations that depend on the installation mode.</remarks>
+        /// <returns><see langword="true"/> if the system is in Terminal Services application installation mode; otherwise, <see
+        /// langword="false"/>.</returns>
+        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool TermsrvAppInstallMode();
     }
 }

@@ -49,7 +49,6 @@ try
             SessionState = $ExecutionContext.SessionState
             ClientServerProcess = $null
             Sessions = $null
-            TerminalServerMode = $false
             Environment = $null
             Language = $null
             Config = $null
