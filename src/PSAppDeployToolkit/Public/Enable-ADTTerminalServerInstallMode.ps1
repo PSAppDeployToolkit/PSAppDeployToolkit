@@ -8,10 +8,10 @@ function Enable-ADTTerminalServerInstallMode
 {
     <#
     .SYNOPSIS
-        Changes to user install mode for Remote Desktop Session Host/Citrix servers.
+        Changes the current Remote Desktop Session Host/Citrix server to user install mode.
 
     .DESCRIPTION
-        The Enable-ADTTerminalServerInstallMode function changes the server mode to user install mode for Remote Desktop Session Host/Citrix servers. This is useful for ensuring that applications are installed in a way that is compatible with multi-user environments.
+        The Enable-ADTTerminalServerInstallMode function changes the current Remote Desktop Session Host/Citrix server to user install mode. This is useful for ensuring that applications are installed in a way that is compatible with multi-user environments.
 
     .INPUTS
         None
@@ -26,7 +26,7 @@ function Enable-ADTTerminalServerInstallMode
     .EXAMPLE
         Enable-ADTTerminalServerInstallMode
 
-        This example changes the server mode to user install mode for Remote Desktop Session Host/Citrix servers.
+        This example changes the current Remote Desktop Session Host/Citrix server to user install mode.
 
     .NOTES
         An active ADT session is NOT required to use this function.
