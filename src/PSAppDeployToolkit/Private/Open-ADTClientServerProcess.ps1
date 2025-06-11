@@ -39,7 +39,7 @@ function Private:Open-ADTClientServerProcess
     catch [System.IO.InvalidDataException]
     {
         $naerParams = @{
-            TargetObject = $clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult()
+            TargetObject = $clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true)
             Exception = [System.IO.InvalidDataException]::new("Failed to open the instantiated client/server process.$(if (!$clientResult.ExitCode.Equals([PSADT.Execution.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdErr) { " Error Output: [$([System.String]::Join("`n", $clientResult.StdErr))]" })", $_.Exception)
             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
             ErrorId = 'ClientServerProcessOpenFailure'

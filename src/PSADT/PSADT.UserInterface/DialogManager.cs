@@ -27,6 +27,7 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options specifying the applications to be closed and other dialog configurations.</param>
+        /// <param name="state">The current state of the dialog, including services for tracking running processes and logging.</param>
         /// <returns>A string representing the user's response or selection from the dialog.</returns>
         internal static CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options, CloseAppsDialogState state)
         {

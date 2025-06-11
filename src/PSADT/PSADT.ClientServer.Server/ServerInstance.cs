@@ -356,13 +356,22 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Retrieves the result of the client process execution.
+        /// Retrieves the result of the client process task.
         /// </summary>
-        /// <returns>The result of the client process execution as a <see cref="ProcessResult"/>.</returns>
-        /// <remarks>This method is for diagnostics purposes only and should only be called when the caller knows the client process has started but has failed.</remarks>
-        public ProcessResult GetClientProcessResult()
+        /// <remarks>This method blocks the current thread if <paramref name="iKnowWhatImDoing"/> is <see
+        /// langword="true"/>. Use with caution, as blocking the thread can lead to deadlocks or performance issues in
+        /// asynchronous environments.</remarks>
+        /// <param name="iKnowWhatImDoing">A value indicating whether the caller understands the risks of blocking the current thread. If <see
+        /// langword="true"/>, the method will synchronously wait for the client process task to complete.</param>
+        /// <returns>The result of the client process task if <paramref name="iKnowWhatImDoing"/> is <see langword="true"/>; 
+        /// otherwise, <see langword="null"/>.</returns>
+        public ProcessResult GetClientProcessResult(bool iKnowWhatImDoing)
         {
-            return _clientProcess!.Task.GetAwaiter().GetResult();
+            if (iKnowWhatImDoing)
+            {
+                return _clientProcess!.Task.GetAwaiter().GetResult();
+            }
+            return null!;
         }
 
         /// <summary>
