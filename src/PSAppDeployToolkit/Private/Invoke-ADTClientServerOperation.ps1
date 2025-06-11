@@ -59,6 +59,30 @@ function Private:Invoke-ADTClientServerOperation
     # Ensure the permissions are correct on all files before proceeding.
     Set-ADTClientServerProcessPermissions -User $User
 
+    # Go into client/server mode if a session is active and we're not asked to wait.
+    if ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait)
+    {
+        # Instantiate a new ClientServerProcess object if one's not already present.
+        if (!$Script:ADT.ClientServerProcess)
+        {
+            Open-ADTClientServerProcess -User $User
+        }
+
+        # Invoke the right method depending on the mode.
+        if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
+        {
+            return $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
+        }
+        elseif ($PSBoundParameters.ContainsKey('Options'))
+        {
+            return $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
+        }
+        else
+        {
+            return $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
+        }
+    }
+
     # Sanitise $PSBoundParameters, we'll use it to generate our arguments.
     $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
     $null = $PSBoundParameters.Remove('NoWait')
