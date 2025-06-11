@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Management.Automation.Language;
@@ -38,6 +38,7 @@ namespace PSADT.UserInterface.TestHarness
             string appTitle = "Super Street Fighter 2 Turbo XL";
             string subtitle = "CapComNom Entertainment Ltd - App Install";
             string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
+            string appIconDarkImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIconDark.png");
             string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\Banner.Classic.png");
             // var FluentAccentColor = ValueTypeConverter.ToInt(0xFF01C9D9); // Cyan
             DialogPosition dialogPosition = DialogPosition.BottomRight;
@@ -45,7 +46,6 @@ namespace PSADT.UserInterface.TestHarness
             bool dialogTopMost = true;
             bool dialogAllowMove = false;
             DeploymentType deploymentType = DeploymentType.Install;
-
 
             ProcessDefinition[] appsToClose =
             {
@@ -90,7 +90,10 @@ namespace PSADT.UserInterface.TestHarness
 
             string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed?";
 
-            string initialInputText = "You can replace me opr leave me blank";
+            string inputDialogMessageText = "Enter the Server Name provided by your local IT team:";
+            string inputDialogTextBox = "Server Name, e.g. remotesf2txl.capnomnom.ca";
+            string inputDialogButtonLeftText = "Continue";
+            string inputDialogButtonRightText = "Cancel";
 
             string ButtonLeftText = "LeftButton";
             string ButtonMiddleText = "MiddleButton";
@@ -101,13 +104,14 @@ namespace PSADT.UserInterface.TestHarness
             var closeAppsDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                // { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color:  Cyan
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF107C10) }, // Accent Color: Green #107C10
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppIconDarkImage", appIconDarkImage },
                 { "AppBannerImage", appBannerImage },
                 { "CountdownDuration", countdownDuration },
                 { "DeferralsRemaining", deferralsRemaining },
@@ -118,13 +122,14 @@ namespace PSADT.UserInterface.TestHarness
             var progressDialogOptions = new ProgressDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color:  Cyan
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF01C9D9) }, // Accent Color: Cyan #00B7C3
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppIconDarkImage", appIconDarkImage },
                 { "AppBannerImage", appBannerImage },
                 { "ProgressMessageText", progressMessageText },
                 { "ProgressDetailMessageText", progressDetailMessageText },
@@ -133,13 +138,14 @@ namespace PSADT.UserInterface.TestHarness
             var customDialogOptions = new CustomDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFD00063) }, // Accent Color:  Cyan
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFFB900) }, // Accent Color: Yellow #FFB900
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppIconDarkImage", appIconDarkImage },
                 { "AppBannerImage", appBannerImage },
                 { "MessageText", customDialogMessageText },
                 { "ButtonLeftText", ButtonLeftText },
@@ -152,34 +158,35 @@ namespace PSADT.UserInterface.TestHarness
             var inputDialogOptions = new InputDialogOptions(new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFF00FF) }, // Accent Color:  Cyan
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFE81123) }, // Accent Color: Red #E81123
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppIconDarkImage", appIconDarkImage },
                 { "AppBannerImage", appBannerImage },
-                { "MessageText", customDialogMessageText },
-                { "InitialInputText", initialInputText },
-                { "ButtonLeftText", ButtonLeftText },
-                { "ButtonRightText", ButtonRightText },
+                { "MessageText", inputDialogMessageText },
+                { "InitialInputText", inputDialogTextBox },
+                { "ButtonLeftText", inputDialogButtonLeftText },
+                { "ButtonRightText", inputDialogButtonRightText },
                 { "Icon", DialogSystemIcon.Information },
                 { "MessageAlignment", DialogMessageAlignment.Left }
             })
             {
-                
             };
             var restartDialogOptions = new Hashtable
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFF6B00) }, // Accent Color:  Orange
+                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFE3008C) }, // Accent Color: Purple #E3008C
                 { "DialogPosition", dialogPosition },
                 { "DialogTopMost", dialogTopMost },
                 { "DialogAllowMove", dialogAllowMove },
                 { "AppTitle", appTitle },
                 { "Subtitle", subtitle },
                 { "AppIconImage", appIconImage },
+                { "AppIconDarkImage", appIconDarkImage },
                 { "AppBannerImage", appBannerImage },
                 { "CountdownDuration", restartCountdownDuration },
                 { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
@@ -189,12 +196,13 @@ namespace PSADT.UserInterface.TestHarness
 
             try
             {
-                // Show CloseApps Dialog
                 var closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
 
                 Console.WriteLine($"CloseApps Dialog DialogResult: {closeAppsResult}");
 
                 // #################################################################################
+
+                // Show CloseApps Dialog
 
                 if (closeAppsResult != CloseAppsDialogResult.Defer)
                 {
@@ -216,25 +224,27 @@ namespace PSADT.UserInterface.TestHarness
 
                     // #################################################################################
 
-                    // Show Custom Dialog for completion
-                    var inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
+                    // Show Custom Dialog
 
-
-                // #################################################################################
-
-                // Show Custom Dialog for completion
-                var customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
+                    var customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
 
                     Console.WriteLine($"Custom Dialog DialogResult: {customResult}");
+
+                    // #################################################################################
+
+                    // Show Input Dialog
+
+                    var inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
+
+                    // #################################################################################
+
+                    // Show Restart Dialog
                 }
                 else
                 {
                     Console.WriteLine("Installation deferred or cancelled.");
                 }
 
-                // #################################################################################
-
-                // Show Restart Dialog
                 var restartResult = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
 
                 Console.WriteLine($"Restart Dialog DialogResult: {restartResult}");

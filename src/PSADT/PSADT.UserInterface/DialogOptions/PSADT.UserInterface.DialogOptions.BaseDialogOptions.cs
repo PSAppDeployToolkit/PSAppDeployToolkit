@@ -37,6 +37,10 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("AppIconImage value is null or invalid.", (Exception?)null);
             }
+            if (options["AppIconDarkImage"] is not string appIconDarkImage || string.IsNullOrWhiteSpace(appIconDarkImage))
+            {
+                throw new ArgumentNullException("AppIconDarkImage value is null or invalid.", (Exception?)null);
+            }
             if (options["AppBannerImage"] is not string appBannerImage || string.IsNullOrWhiteSpace(appBannerImage))
             {
                 throw new ArgumentNullException("AppBannerImage value is null or invalid.", (Exception?)null);
@@ -51,6 +55,11 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new FileNotFoundException("The specified AppIconImage cannot be found", appIconImage);
             }
+            // But we can skip performing this one
+            // if (!File.Exists(appIconDarkImage))
+            // {
+            //     throw new FileNotFoundException("The specified AppIconDarkImage cannot be found", appIconDarkImage);
+            // }
             if (!File.Exists(appBannerImage))
             {
                 throw new FileNotFoundException("The specified AppBannerImage cannot be found", appBannerImage);
@@ -102,6 +111,7 @@ namespace PSADT.UserInterface.DialogOptions
             AppTitle = appTitle;
             Subtitle = subTitle;
             AppIconImage = appIconImage;
+            AppIconDarkImage = appIconDarkImage;
             AppBannerImage = appBannerImage;
             DialogTopMost = dialogTopMost;
         }
@@ -123,6 +133,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly string AppIconImage;
+
+        /// <summary>
+        /// The image file path for the application icon (dark mode) to be displayed in the dialog.
+        /// </summary>
+        [DataMember]
+        public readonly string AppIconDarkImage;
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.

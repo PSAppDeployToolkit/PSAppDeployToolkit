@@ -101,7 +101,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 CustomMessageTextBlock.Visibility = Visibility.Collapsed;
             }
 
-
             // Set everything to not visible by default, it's up to the derived class to enable what they need.
             CloseAppsStackPanel.Visibility = Visibility.Collapsed;
             CloseAppsSeparator.Visibility = Visibility.Collapsed;
@@ -115,7 +114,15 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             ButtonRight.Visibility = Visibility.Collapsed;
 
             // Set app icon
-            SetDialogIcon(options.AppIconImage);
+            if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark && File.Exists(options.AppIconDarkImage))
+            {
+                SetDialogIcon(options.AppIconDarkImage);
+            }
+            else
+            {
+                SetDialogIcon(options.AppIconImage);
+            }
+
 
             // Set the expiry timer if specified.
             if (null != options.DialogExpiryDuration && options.DialogExpiryDuration.Value != TimeSpan.Zero)
@@ -394,7 +401,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         {
             if (match.Groups["PlainUrl"].Success)
             {
-                ProcessPlainUrl(textBlock, match.Groups["PlainUrl"].Value);
+                ProcessUrlLink(textBlock, match.Groups["PlainUrl"].Value);
             }
             else if (match.Groups["Accent"].Success)
             {
@@ -443,22 +450,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         }
 
         /// <summary>
-        /// Processes a plain URL.
+        /// Creates a hyperlink with the specified URL.
         /// </summary>
         /// <param name="textBlock"></param>
         /// <param name="url"></param>
-        private void ProcessPlainUrl(TextBlock textBlock, string url)
-        {
-            ProcessUrlLink(textBlock, url, url);
-        }
-
-        /// <summary>
-        /// Creates a hyperlink with the specified display text and URL.
-        /// </summary>
-        /// <param name="textBlock"></param>
-        /// <param name="displayText"></param>
-        /// <param name="url"></param>
-        private void ProcessUrlLink(TextBlock textBlock, string displayText, string url)
+        private void ProcessUrlLink(TextBlock textBlock, string url)
         {
             // Ensure the URL has a scheme for Process.Start
             string navigateUrl = url;
@@ -474,7 +470,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Add the URL as a proper hyperlink
             if (Uri.TryCreate(navigateUrl, UriKind.Absolute, out var uri))
             {
-                var link = new Hyperlink(new Run(displayText))
+                var link = new Hyperlink(new Run(url))
                 {
                     NavigateUri = uri,
                     ToolTip = $"Open link: {url}"
@@ -485,7 +481,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             else
             {
                 // If it's not a valid URI, just add as plain text
-                textBlock.Inlines.Add(new Run(displayText));
+                textBlock.Inlines.Add(new Run(url));
             }
         }
 
@@ -534,42 +530,42 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Uses a cache for performance.
         /// </summary>
         /// <param name="dialogIconPath">Path or URI to the icon image file. Defaults to embedded resource if null.</param>
-        private void SetDialogIcon(string dialogIconPath)
+                private void SetDialogIcon(string dialogIconPath)
         {
             // Try to get from cache first.
             if (!_dialogIconCache.TryGetValue(dialogIconPath, out var bitmapSource))
             {
                 // Nothing cached. If we have an icon, get the highest resolution frame.
                 if (Path.GetExtension(dialogIconPath).Equals(".ico", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Use IconBitmapDecoder to get the icon frame.
-                    var iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
-
-                    // Make it shareable across threads
-                    if (iconFrame.CanFreeze)
                     {
-                        iconFrame.Freeze();
-                    }
-                    _dialogIconCache.Add(dialogIconPath, iconFrame);
-                    bitmapSource = iconFrame;
-                }
-                else
-                {
-                    // Use BeginInit/EndInit pattern for better performance.
-                    var bitmapImage = new BitmapImage();
-                    bitmapImage.BeginInit();
-                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
-                    bitmapImage.EndInit();
+                        // Use IconBitmapDecoder to get the icon frame.
+                        var iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
 
-                    // Make it shareable across threads
-                    if (bitmapImage.CanFreeze)
-                    {
-                        bitmapImage.Freeze();
+                        // Make it shareable across threads
+                        if (iconFrame.CanFreeze)
+                        {
+                            iconFrame.Freeze();
+                        }
+                        _dialogIconCache.Add(dialogIconPath, iconFrame);
+                        bitmapSource = iconFrame;
                     }
-                    _dialogIconCache.Add(dialogIconPath, bitmapImage);
-                    bitmapSource = bitmapImage;
-                }
+                    else
+                    {
+                        // Use BeginInit/EndInit pattern for better performance.
+                        var bitmapImage = new BitmapImage();
+                        bitmapImage.BeginInit();
+                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
+                        bitmapImage.EndInit();
+
+                        // Make it shareable across threads
+                        if (bitmapImage.CanFreeze)
+                        {
+                            bitmapImage.Freeze();
+                        }
+                        _dialogIconCache.Add(dialogIconPath, bitmapImage);
+                        bitmapSource = bitmapImage;
+                    }
             }
             AppIconImage.Source = bitmapSource;
             Icon = bitmapSource;
@@ -855,7 +851,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         protected readonly TimeSpan? _countdownDuration;
 
         /// <summary>
-        /// An optional countdown to zero for when the dialog can be no longer minimised.
+        /// An optional countdown to zero for when the dialog can be no longer minimized.
         /// </summary>
         protected readonly TimeSpan? _countdownWarningDuration;
 
