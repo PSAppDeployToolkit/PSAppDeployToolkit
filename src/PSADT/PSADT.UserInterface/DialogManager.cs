@@ -210,37 +210,28 @@ namespace PSADT.UserInterface
         /// Displays a balloon tip notification in the system tray with the specified title, text, and icon.
         /// </summary>
         /// <remarks>This method sets the AppUserModelID for the current process to ensure compatibility with Windows 10 toast notifications. It also updates the registry with the provided application title and icon to correct stale information from previous runs. The balloon tip is displayed for a default duration of 7 seconds or until the user closes it.</remarks>
-        /// <param name="TrayTitle">The title of the application to associate with the notification. This is used to set the AppUserModelID for Windows toast notifications.</param>
-        /// <param name="TrayIcon">The file path or resource identifier of the icon to display in the system tray and notification.</param>
-        /// <param name="BalloonTipTitle">The title of the balloon tip notification.</param>
-        /// <param name="BalloonTipText">The text content of the balloon tip notification.</param>
-        /// <param name="BalloonTipIcon">The icon to display in the balloon tip, such as <see cref="System.Windows.Forms.ToolTipIcon.Info"/> or <see cref="System.Windows.Forms.ToolTipIcon.Error"/>.</param>
+        /// <param name="options">The configuration options for the balloon tip, including title, text, icon, and other settings.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous operation. The task completes when the balloon tip is closed.</returns>
-        internal static void ShowBalloonTip(string TrayTitle, string TrayIcon, string BalloonTipTitle, string BalloonTipText, System.Windows.Forms.ToolTipIcon BalloonTipIcon)
+        internal static void ShowBalloonTip(BalloonTipOptions options)
         {
             // Set the AUMID for this process so the Windows 10 toast has the correct title.
-            Shell32.SetCurrentProcessExplicitAppUserModelID(TrayTitle);
+            Shell32.SetCurrentProcessExplicitAppUserModelID(options.TrayTitle);
 
             // Correct the registry data for the AUMID. This can reference stale info from a previous run.
-            var regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{TrayTitle}";
-            Registry.SetValue(regKey, "DisplayName", TrayTitle, RegistryValueKind.String);
-            Registry.SetValue(regKey, "IconUri", TrayIcon, RegistryValueKind.ExpandString);
+            var regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.TrayTitle}";
+            Registry.SetValue(regKey, "DisplayName", options.TrayTitle, RegistryValueKind.String);
+            Registry.SetValue(regKey, "IconUri", options.TrayIcon, RegistryValueKind.ExpandString);
 
-            // Create a new NotifyIcon instance and set its properties. We don't
-            // have this in a using statement because if disposal occurs too soon,
-            // the resulting toast notification on Windows 10/11 renders incorrectly.
-            // The NotifyIcon object will still be disposed at some point, either
-            // by the garbage collector, or when our BalloonTipClosed event fires.
-            System.Windows.Forms.NotifyIcon notifyIcon = new()
+            // Don't let this dispose until the balloon tip closes. If it disposes too early, Windows won't show the BalloonTipIcon properly.
+            // It's worth noting that while a timeout can be specified, Windows doesn't necessarily honour it and will likely show for ~7 seconds only.
+            using (var notifyIcon = new System.Windows.Forms.NotifyIcon { Icon = Dialogs.Classic.ClassicAssets.GetIcon(options.TrayIcon), Visible = true })
             {
-                Icon = Dialogs.Classic.ClassicAssets.GetIcon(TrayIcon),
-                BalloonTipTitle = BalloonTipTitle,
-                BalloonTipText = BalloonTipText,
-                BalloonTipIcon = BalloonTipIcon,
-                Visible = true,
-            };
-            notifyIcon.BalloonTipClosed += (s, _) => ((System.Windows.Forms.NotifyIcon?)s)?.Dispose();
-            notifyIcon.ShowBalloonTip(7000); // Default timeout for a Windows 10 toast is 7 seconds.
+                ManualResetEventSlim balloonTipClosed = new();
+                notifyIcon.BalloonTipClosed += (_, _) => balloonTipClosed.Set();
+                notifyIcon.BalloonTipClicked += (_, _) => balloonTipClosed.Set();
+                notifyIcon.ShowBalloonTip(ValueTypeConverter.ToInt(options.BalloonTipTime), options.BalloonTipTitle, options.BalloonTipText, options.BalloonTipIcon);
+                balloonTipClosed.Wait();
+            }
         }
 
         /// <summary>

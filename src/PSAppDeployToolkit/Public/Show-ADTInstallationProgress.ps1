@@ -206,7 +206,7 @@ function Show-ADTInstallationProgress
             {
                 try
                 {
-                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.Start.$deploymentType
+                    Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.Start.$deploymentType -NoWait
                 }
                 catch
                 {

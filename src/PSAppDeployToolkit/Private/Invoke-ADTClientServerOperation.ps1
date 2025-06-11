@@ -12,6 +12,9 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [System.Management.Automation.SwitchParameter]$ShowModalDialog,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
+        [System.Management.Automation.SwitchParameter]$ShowBalloonTip,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [System.Management.Automation.SwitchParameter]$GetProcessWindowInfo,
 
@@ -22,6 +25,7 @@ function Private:Invoke-ADTClientServerOperation
         [System.Management.Automation.SwitchParameter]$RefreshDesktopAndEnvironmentVariables,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RefreshDesktopAndEnvironmentVariables')]
@@ -37,11 +41,13 @@ function Private:Invoke-ADTClientServerOperation
         [PSADT.UserInterface.Dialogs.DialogStyle]$DialogStyle,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [ValidateNotNullOrEmpty()]
         [System.Object]$Options,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 

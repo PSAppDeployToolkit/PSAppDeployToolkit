@@ -261,17 +261,14 @@ namespace PSADT.ClientServer
         /// Ensure that the provided icon paths or identifiers are valid and accessible. The method may return <see
         /// langword="false"/> if the operation fails, such as when the system tray is not available or the parameters
         /// are invalid.</remarks>
-        /// <param name="TrayTitle">The title of the system tray icon.</param>
-        /// <param name="TrayIcon">The file path or identifier of the icon to display in the system tray.</param>
-        /// <param name="BalloonTipTitle">The title of the balloon tip notification.</param>
-        /// <param name="BalloonTipText">The text content of the balloon tip notification.</param>
-        /// <param name="BalloonTipIcon">The icon to display in the balloon tip. Must be a valid <see cref="System.Windows.Forms.ToolTipIcon"/>
+        /// <param name="options">The configuration options for the balloon tip, including its title, text, icon, and duration. This parameter
+        /// cannot be null.</param>
         /// value.</param>
         /// <returns><see langword="true"/> if the balloon tip was successfully displayed; otherwise, <see langword="false"/>.</returns>
-        public bool ShowBalloonTip(string TrayTitle, string TrayIcon, string BalloonTipTitle, string BalloonTipText, System.Windows.Forms.ToolTipIcon BalloonTipIcon)
+        public bool ShowBalloonTip(BalloonTipOptions options)
         {
             _logSource = "Show-ADTBalloonTip";
-            return Invoke($"ShowBalloonTip{ArgumentSeparator}{TrayTitle}{ArgumentSeparator}{TrayIcon}{ArgumentSeparator}{BalloonTipTitle}{ArgumentSeparator}{BalloonTipText}{ArgumentSeparator}{BalloonTipIcon}");
+            return Invoke($"ShowBalloonTip{ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
         }
 
         /// <summary>

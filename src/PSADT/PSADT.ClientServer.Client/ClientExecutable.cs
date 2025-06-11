@@ -48,6 +48,10 @@ namespace PSADT.ClientServer
                 {
                     Console.WriteLine(ShowModalDialog(ConvertArgsToDictionary(args)));
                 }
+                else if (args.Any(static arg => arg.Equals("/ShowBalloonTip")))
+                {
+                    Console.WriteLine(SerializeObject(ShowBalloonTip(ConvertArgsToDictionary(args))));
+                }
                 else if (args.Any(static arg => arg.Equals("/GetProcessWindowInfo")))
                 {
                     Console.WriteLine(GetProcessWindowInfo(ConvertArgsToDictionary(args)));
@@ -303,21 +307,12 @@ namespace PSADT.ClientServer
                             }
                             else if (parts[0] == "ShowBalloonTip")
                             {
-                                // Confirm the length of our parts showing the balloon tip and writing back the result.
-                                if (parts.Length != 6)
+                                // Confirm we have a valid number of arguments before calling ShowBalloonTip().
+                                if (parts.Length != 2)
                                 {
-                                    throw new ProgramException("The ShowBalloonTip command requires exactly five arguments: TrayTitle, TrayIcon, BalloonTipTitle, BalloonTipText, and BalloonTipIcon.", ExitCode.InvalidArguments);
+                                    throw new ProgramException("The ShowBalloonTip command requires exactly one argument: Options.", ExitCode.InvalidArguments);
                                 }
-
-                                // Confirm the BalloonTipIcon is valid.
-                                if (!Enum.TryParse(parts[5], true, out System.Windows.Forms.ToolTipIcon balloonTipIcon))
-                                {
-                                    throw new ProgramException($"The specified BalloonTipIcon of [{parts[5]}] is invalid.", ExitCode.InvalidArguments);
-                                }
-
-                                // Show the ballloon tip with the provided parameters.
-                                DialogManager.ShowBalloonTip(parts[1], parts[2], parts[3], parts[4], balloonTipIcon);
-                                outputWriter.WriteLine(true);
+                                outputWriter.WriteLine(ShowBalloonTip(new Dictionary<string, string> { { "Options", parts[1] } }));
                             }
                             else if (parts[0] == "MinimizeAllWindows")
                             {
@@ -452,6 +447,22 @@ namespace PSADT.ClientServer
                 DialogType.CloseAppsDialog => SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState!)),
                 _ => throw new ProgramException($"The specified DialogType of [{dialogType}] is not supported.", ExitCode.UnsupportedDialog),
             };
+        }
+
+        /// <summary>
+        /// Displays a balloon tip notification using the specified arguments.
+        /// </summary>
+        /// <remarks>The method expects the <paramref name="arguments"/> dictionary to contain valid data
+        /// that can be deserialized into a <see cref="BalloonTipOptions"/> object. If the deserialization fails or the
+        /// options are invalid, the behavior of the method may be undefined.</remarks>
+        /// <param name="arguments">A read-only dictionary containing key-value pairs that define the options for the balloon tip. Keys and
+        /// values must conform to the expected format for deserialization into <see cref="BalloonTipOptions"/>.</param>
+        /// <returns>A serialized string representing the result of the operation. Returns <see langword="true"/> if the balloon
+        /// tip was successfully displayed.</returns>
+        private static bool ShowBalloonTip(IReadOnlyDictionary<string, string> arguments)
+        {
+            DialogManager.ShowBalloonTip(DeserializeString<BalloonTipOptions>(GetOptionsFromArguments(arguments)));
+            return true;
         }
 
         /// <summary>

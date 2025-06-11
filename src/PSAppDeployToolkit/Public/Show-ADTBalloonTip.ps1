@@ -22,7 +22,10 @@ function Show-ADTBalloonTip
         Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'.
 
     .PARAMETER BalloonTipTime
-        This parameter is obsolete and will be removed in PSAppDeployToolkit 4.2.0.
+        Time in milliseconds to display the balloon tip. Default: 10000.
+
+    .PARAMETER NoWait
+        Creates the balloon tip asynchronously.
 
     .INPUTS
         None
@@ -66,12 +69,14 @@ function Show-ADTBalloonTip
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = 'Info',
+        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
 
         [Parameter(Mandatory = $false)]
-        [System.Obsolete("This parameter will be removed in PSAppDeployToolkit 4.2.0.")]
         [ValidateNotNullOrEmpty()]
-        [System.UInt32]$BalloonTipTime = 10000
+        [System.UInt32]$BalloonTipTime = 10000,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoWait
     )
 
     dynamicparam
@@ -101,15 +106,13 @@ function Show-ADTBalloonTip
         $adtConfig = Get-ADTConfig
 
         # Set up defaults if not specified.
-        if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
+        $BalloonTipTitle = if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
         {
-            $PSBoundParameters.Add('BalloonTipTitle', $adtSession.InstallTitle)
+            $adtSession.InstallTitle
         }
-
-        # Log the deprecation of -WaitSeconds to the log.
-        if ($PSBoundParameters.ContainsKey('BalloonTipTime'))
+        else
         {
-            Write-ADTLogEntry -Message "The parameter [BalloonTipTime] is obsolete and will be removed in PSAppDeployToolkit 4.2.0." -Severity 2
+            $PSBoundParameters.BalloonTipTitle
         }
     }
 
@@ -141,21 +144,31 @@ function Show-ADTBalloonTip
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation/Microphone in Use Detected: $true]. BalloonTipText: $BalloonTipText"
                     return
                 }
-                if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+                if (!($runAsActiveUser = Get-ADTClientServerUser))
                 {
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
                     return
                 }
 
-                # Instantiate a new ClientServerProcess object if one's not already present.
-                if (!$Script:ADT.ClientServerProcess)
-                {
-                    Open-ADTClientServerProcess -User $runAsActiveUser
+                # Establish options class for displaying the balloon tip.
+                [PSADT.UserInterface.DialogOptions.BalloonTipOptions]$options = @{
+                    TrayTitle = $adtConfig.Toolkit.CompanyName
+                    TrayIcon = $adtConfig.Assets.Logo
+                    BalloonTipTitle = $BalloonTipTitle
+                    BalloonTipText = $BalloonTipText
+                    BalloonTipIcon = $BalloonTipIcon
+                    BalloonTipTime = $BalloonTipTime
                 }
 
-                # Display the balloon tip via the dialog manager, it'll handle lifetime and disposal for us.
+                # Display the balloon tip via our client/server process.
+                if ($NoWait)
+                {
+                    Write-ADTLogEntry -Message "Displaying balloon tip notification asynchronously with message [$BalloonTipText]."
+                    Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options $options -NoWait
+                    return
+                }
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                if (!$Script:ADT.ClientServerProcess.ShowBalloonTip($adtConfig.Toolkit.CompanyName, $adtConfig.Assets.Logo, $PSBoundParameters.BalloonTipTitle, $BalloonTipText, $BalloonTipIcon))
+                if (!(Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options $options))
                 {
                     $naerParams = @{
                         Exception = [System.ApplicationException]::new("Failed to show the balloon tip for an unknown reason.")
