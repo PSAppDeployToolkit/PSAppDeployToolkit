@@ -53,7 +53,7 @@ namespace PSADT.Utilities
                 throw new ArgumentException($"Section [{section}] was not found in the INI file.");
             }
 
-            var buffer = new char[65536];
+            Span<char> buffer = stackalloc char[65536];
 
             uint res;
             try
@@ -69,7 +69,7 @@ namespace PSADT.Utilities
                 return null;
             }
 
-            var entries = new string(buffer, 0, (int)res).Split('\0');
+            var entries = buffer.Slice(0, (int)res).ToString().Split('\0');
             var dictionary = new OrderedDictionary();
 
             foreach (var entry in entries)
@@ -102,11 +102,11 @@ namespace PSADT.Utilities
         /// <returns>Array of section names</returns>
         public static string[] GetSectionNames(string filepath)
         {
-            var buffer = new char[65536];
+            Span<char> buffer = stackalloc char[65536];
             var res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
             var names = new string(buffer, 0, (int)res).Split('\0').Where(name => !string.IsNullOrEmpty(name)).ToArray();
 
-            return names;
+            return buffer.Slice(0, (int)res).ToString().TrimRemoveNull().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name)).ToList().AsReadOnly();
         }
 
         /// <summary>
