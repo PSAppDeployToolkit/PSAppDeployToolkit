@@ -10,6 +10,11 @@ namespace PSADT.UserInterface.DialogOptions
     /// Options for all dialogs.
     /// </summary>
     [DataContract]
+    [KnownType(typeof(CloseAppsDialogOptions))]
+    [KnownType(typeof(CustomDialogOptions))]
+    [KnownType(typeof(InputDialogOptions))]
+    [KnownType(typeof(ProgressDialogOptions))]
+    [KnownType(typeof(RestartDialogOptions))]
     public abstract record BaseOptions
     {
         /// <summary>
