@@ -203,7 +203,7 @@ function Private:Invoke-ADTClientServerOperation
                 ErrorId = "$($PSCmdlet.ParameterSetName)Error"
                 RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
             }
-            throw (New-ADTErrorRecord @naerParams)
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         $PSCmdlet.WriteObject($result, $false); return
     }
