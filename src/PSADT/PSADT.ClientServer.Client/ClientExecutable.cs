@@ -56,6 +56,10 @@ namespace PSADT.ClientServer
                 {
                     Console.WriteLine(GetUserNotificationState());
                 }
+                else if (args.Any(static arg => arg.Equals("/RefreshDesktopAndEnvironmentVariables")))
+                {
+                    Console.WriteLine(SerializeObject(RefreshDesktopAndEnvironmentVariables()));
+                }
                 else if (args.Any(static arg => arg.Equals("/ClientServer")))
                 {
                     EnterClientServerMode(ConvertArgsToDictionary(args));
@@ -427,8 +431,7 @@ namespace PSADT.ClientServer
                                 else if (parts[0] == "RefreshDesktopAndEnvironmentVariables")
                                 {
                                     // Refresh the desktop and environment variables, then write back that we were successful.
-                                    ShellUtilities.RefreshDesktopAndEnvironmentVariables();
-                                    outputWriter.WriteLine(true);
+                                    outputWriter.WriteLine(RefreshDesktopAndEnvironmentVariables());
                                 }
                                 else if (parts[0] == "GetUserNotificationState")
                                 {
@@ -550,6 +553,17 @@ namespace PSADT.ClientServer
         private static string GetUserNotificationState()
         {
             return SerializeObject(ShellUtilities.GetUserNotificationState());
+        }
+
+        /// <summary>
+        /// Refreshes the desktop environment and updates system environment variables.
+        /// </summary>
+        /// <returns>A serialized string representation of the operation result. Returns <see langword="true"/> if the operation
+        /// succeeds.</returns>
+        private static bool RefreshDesktopAndEnvironmentVariables()
+        {
+            ShellUtilities.RefreshDesktopAndEnvironmentVariables();
+            return true;
         }
 
         /// <summary>
