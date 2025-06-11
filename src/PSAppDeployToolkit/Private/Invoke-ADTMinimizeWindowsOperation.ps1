@@ -18,6 +18,18 @@ function Private:Invoke-ADTMinimizeWindowsOperation
         [System.Management.Automation.SwitchParameter]$RestoreAllWindows
     )
 
+    # Throw if there's no client/server process active.
+    if (!$Script:ADT.ClientServerProcess)
+    {
+        $naerParams = @{
+            Exception = [System.InvalidOperationException]::new("There is currently no client/server process active.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+            ErrorId = 'ClientServerProcessNull'
+            TargetObject = $Script:ADT.ClientServerProcess
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
+
     # Invoke the specified action.
     if (!$Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)())
     {
