@@ -150,16 +150,7 @@ function Send-ADTKeys
                 {
                     # Send the Key sequence.
                     Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]."
-                    if (!(Invoke-ADTClientServerOperation -SendKeys -User $runAsActiveUser -Options ([PSADT.Types.SendKeysOptions]::new($window.WindowHandle, $Keys))))
-                    {
-                        $naerParams = @{
-                            Exception = [System.ApplicationException]::new("Failed to send the requested keys for an unknown reason.")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'SendKeysUnknownError'
-                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
-                    }
+                    $null = Invoke-ADTClientServerOperation -SendKeys -User $runAsActiveUser -Options ([PSADT.Types.SendKeysOptions]::new($window.WindowHandle, $Keys))
                     if ($WaitDuration)
                     {
                         Write-ADTLogEntry -Message "Sleeping for [$($WaitDuration.TotalSeconds)] seconds."

@@ -69,18 +69,29 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Invoke the right method depending on the mode.
-        if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
+        $result = if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
         {
-            return $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
+            $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
         }
         elseif ($PSBoundParameters.ContainsKey('Options'))
         {
-            return $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
+            $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
         }
         else
         {
-            return $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
+            $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
         }
+        if (!$result)
+        {
+            $naerParams = @{
+                Exception = [System.ApplicationException]::new("Failed to perform the $($PSCmdlet.ParameterSetName) operation for an unknown reason.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId = "$($PSCmdlet.ParameterSetName)Error"
+                RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+            }
+            throw (New-ADTErrorRecord @naerParams)
+        }
+        $PSCmdlet.WriteObject($result, $false); return
     }
 
     # Sanitise $PSBoundParameters, we'll use it to generate our arguments.

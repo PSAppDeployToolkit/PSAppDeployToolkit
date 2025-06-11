@@ -65,17 +65,7 @@ function Update-ADTDesktop
         {
             try
             {
-                # This will always return $true upon success; we should never get a $false.
-                if (!(Invoke-ADTClientServerOperation -RefreshDesktopAndEnvironmentVariables -User $runAsActiveUser))
-                {
-                    $naerParams = @{
-                        Exception = [System.ApplicationException]::new("Failed to refresh the desktop and environment variables for an unknown reason.")
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'RefreshDesktopAndEnvironmentVariablesUnknownError'
-                        RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
+                $null = Invoke-ADTClientServerOperation -RefreshDesktopAndEnvironmentVariables -User $runAsActiveUser
             }
             catch
             {

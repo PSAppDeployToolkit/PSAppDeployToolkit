@@ -168,16 +168,7 @@ function Show-ADTBalloonTip
                     return
                 }
                 Write-ADTLogEntry -Message "Displaying balloon tip notification with message [$BalloonTipText]."
-                if (!(Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options $options))
-                {
-                    $naerParams = @{
-                        Exception = [System.ApplicationException]::new("Failed to show the balloon tip for an unknown reason.")
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'BalloonTipShowError'
-                        RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
+                $null = Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options $options
             }
             catch
             {
