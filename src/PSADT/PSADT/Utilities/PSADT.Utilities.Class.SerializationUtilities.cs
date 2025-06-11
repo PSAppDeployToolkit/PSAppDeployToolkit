@@ -86,12 +86,23 @@ namespace PSADT.Utilities
             using (var ms = new MemoryStream(Convert.FromBase64String(str)))
             using (var reader = new StreamReader(ms))
             {
-                if (typeRegex.Match(reader.ReadToEnd()) is not Match match || !match.Success)
+                // Work out the type name via regex if we can.
+                string dcsData = reader.ReadToEnd(); string typeName = string.Empty;
+                if (primitiveRegex.Match(dcsData) is Match primitive && primitive.Success)
+                {
+                    typeName = primitive.Groups[1].Value;
+                }
+                else if (typeRegex.Match(dcsData) is Match match && match.Success)
+                {
+                    typeName = $"{match.Groups[2].Value}.{match.Groups[1].Value}";
+                }
+                else
                 {
                     throw new InvalidOperationException("The input string does not contain a valid type name in the expected format.");
                 }
                 ms.Position = 0; reader.DiscardBufferedData();
-                string typeName = $"{match.Groups[2].Value}.{match.Groups[1].Value}";
+
+                // Get the type object from the lookup table and return a deserialised object.
                 if (!typesTable.TryGetValue(typeName, out Type? type))
                 {
                     throw new InvalidOperationException($"The type [{typeName}] could not be found in the current AppDomain.");
@@ -110,7 +121,7 @@ namespace PSADT.Utilities
         /// values are the corresponding <see cref="Type"/> objects.</returns>
         private static ReadOnlyDictionary<string, Type> BuildTypesLookupTable()
         {
-            // Build out a lookup table of types and return as a ReadOnlyDictionary.
+            // Build out a lookup table of types from loaded assemblies.
             Dictionary<string, Type> typesLookup = [];
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -123,6 +134,23 @@ namespace PSADT.Utilities
                     }
                 }
             }
+
+            // Bit of a hack, but inject some types for primitives.
+            typesLookup["int"] = typeof(int);
+            typesLookup["long"] = typeof(long);
+            typesLookup["string"] = typeof(string);
+            typesLookup["boolean"] = typeof(bool);
+            typesLookup["double"] = typeof(double);
+            typesLookup["float"] = typeof(float);
+            typesLookup["decimal"] = typeof(decimal);
+            typesLookup["char"] = typeof(char);
+            typesLookup["byte"] = typeof(sbyte);
+            typesLookup["unsignedByte"] = typeof(byte);
+            typesLookup["unsignedShort"] = typeof(ushort);
+            typesLookup["unsignedInt"] = typeof(uint);
+            typesLookup["unsignedLong"] = typeof(ulong);
+
+            // Return a read-only dictionary to prevent modification of the types lookup table.
             return new ReadOnlyDictionary<string, Type>(typesLookup);
         }
 
@@ -133,6 +161,14 @@ namespace PSADT.Utilities
         /// cref="BuildTypesLookupTable"/> method. It provides a thread-safe, immutable lookup table for type
         /// associations.</remarks>
         private static readonly ReadOnlyDictionary<string, Type> typesTable = BuildTypesLookupTable();
+
+        /// <summary>
+        /// Represents a compiled regular expression used to match primitive type names in a specific format.
+        /// </summary>
+        /// <remarks>The regular expression checks for type names enclosed in angle brackets, such as
+        /// `<int>` or `<string>`. Supported types include common primitives like int, long, string, boolean, and
+        /// various numeric types.</remarks>
+        private static readonly Regex primitiveRegex = new Regex(@"^<(int|long|string|boolean|double|float|decimal|char|byte|unsignedByte|unsignedShort|unsignedInt|unsignedLong)", RegexOptions.Compiled);
 
         /// <summary>
         /// Represents a compiled regular expression used to extract the type name from a DataContract namespace URI.
