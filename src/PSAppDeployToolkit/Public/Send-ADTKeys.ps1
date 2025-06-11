@@ -103,9 +103,6 @@ function Send-ADTKeys
 
     begin
     {
-        # Initialize the module if it's not already. We need this for `Open-ADTClientServerProcess` to function properly.
-        $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
         $gawtParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
@@ -124,7 +121,7 @@ function Send-ADTKeys
     process
     {
         # Bypass if no one's logged onto the device.
-        if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+        if (!($runAsActiveUser = Get-ADTClientServerUser))
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return
@@ -144,12 +141,6 @@ function Send-ADTKeys
             $PSCmdlet.ThrowTerminatingError($_)
         }
 
-        # Instantiate a new ClientServerProcess object if one's not already present.
-        if (!$Script:ADT.ClientServerProcess)
-        {
-            Open-ADTClientServerProcess -User $runAsActiveUser
-        }
-
         # Process each found window.
         foreach ($window in $Windows)
         {
@@ -159,7 +150,7 @@ function Send-ADTKeys
                 {
                     # Send the Key sequence.
                     Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]."
-                    if (!$Script:ADT.ClientServerProcess.SendKeys($window.WindowHandle, $Keys))
+                    if (!(Invoke-ADTClientServerOperation -SendKeys -User $runAsActiveUser -Options ([PSADT.Types.SendKeysOptions]::new($window.WindowHandle, $Keys))))
                     {
                         $naerParams = @{
                             Exception = [System.ApplicationException]::new("Failed to send the requested keys for an unknown reason.")

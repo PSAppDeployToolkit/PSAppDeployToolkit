@@ -24,11 +24,15 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'RefreshDesktopAndEnvironmentVariables')]
         [System.Management.Automation.SwitchParameter]$RefreshDesktopAndEnvironmentVariables,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
+        [System.Management.Automation.SwitchParameter]$SendKeys,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RefreshDesktopAndEnvironmentVariables')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [ValidateNotNullOrEmpty()]
         [PSADT.TerminalServices.SessionInfo]$User,
 
@@ -43,6 +47,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [ValidateNotNullOrEmpty()]
         [System.Object]$Options,
 

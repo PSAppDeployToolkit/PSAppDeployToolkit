@@ -7,9 +7,9 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Windows.Forms;
 using PSADT.LibraryInterfaces;
 using PSADT.ProcessManagement;
+using PSADT.Types;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Dialogs;
@@ -63,6 +63,10 @@ namespace PSADT.ClientServer
                 else if (args.Any(static arg => arg.Equals("/RefreshDesktopAndEnvironmentVariables")))
                 {
                     Console.WriteLine(SerializeObject(RefreshDesktopAndEnvironmentVariables()));
+                }
+                else if (args.Any(static arg => arg.Equals("/SendKeys")))
+                {
+                    Console.WriteLine(SerializeObject(SendKeys(ConvertArgsToDictionary(args))));
                 }
                 else if (args.Any(static arg => arg.Equals("/ClientServer")))
                 {
@@ -329,22 +333,11 @@ namespace PSADT.ClientServer
                             else if (parts[0] == "SendKeys")
                             {
                                 // Confirm the length of our parts showing the dialog and writing back the result.
-                                if (parts.Length != 3)
+                                if (parts.Length != 2)
                                 {
-                                    throw new ProgramException("The SendKeys command requires exactly two arguments: WindowHandle, and Keys.", ExitCode.InvalidArguments);
+                                    throw new ProgramException("The SendKeys command requires exactly one argument: Options.", ExitCode.InvalidArguments);
                                 }
-
-                                // Bring the window to the front and make sure it's enabled.
-                                HWND hwnd = (HWND)(IntPtr)int.Parse(parts[1]);
-                                WindowTools.BringWindowToFront(hwnd);
-                                if (!User32.IsWindowEnabled(hwnd))
-                                {
-                                    throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
-                                }
-
-                                // Send the keys and write back that we were successful.
-                                SendKeys.SendWait(parts[2]);
-                                outputWriter.WriteLine(true);
+                                outputWriter.WriteLine(SendKeys(new Dictionary<string, string> { { "Options", parts[1] } }));
                             }
                             else if (parts[0] == "GetProcessWindowInfo")
                             {
@@ -503,6 +496,34 @@ namespace PSADT.ClientServer
         private static bool RefreshDesktopAndEnvironmentVariables()
         {
             ShellUtilities.RefreshDesktopAndEnvironmentVariables();
+            return true;
+        }
+
+        /// <summary>
+        /// Sends a sequence of keystrokes to the specified window.
+        /// </summary>
+        /// <remarks>This method brings the specified window to the foreground and ensures it is enabled 
+        /// before sending the keystrokes. If the window is disabled, such as when a modal dialog  is displayed, an <see
+        /// cref="InvalidOperationException"/> is thrown.</remarks>
+        /// <param name="arguments">A read-only dictionary containing the arguments required for the operation.  The dictionary must include a
+        /// serialized representation of the options,  which specify the target window handle and the keys to send.</param>
+        /// <returns><see langword="true"/> if the operation completes successfully.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the target window is disabled, preventing the keystrokes from being sent.</exception>
+        private static bool SendKeys(IReadOnlyDictionary<string, string> arguments)
+        {
+            // Deserialise the received options.
+            var options = DeserializeString<SendKeysOptions>(GetOptionsFromArguments(arguments));
+
+            // Bring the window to the front and make sure it's enabled.
+            HWND hwnd = (HWND)options.WindowHandle;
+            WindowTools.BringWindowToFront(hwnd);
+            if (!User32.IsWindowEnabled(hwnd))
+            {
+                throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
+            }
+
+            // Send the keys and write back that we were successful.
+            System.Windows.Forms.SendKeys.SendWait(options.Keys);
             return true;
         }
 

@@ -12,6 +12,7 @@ using PSADT.Execution;
 using PSADT.LibraryInterfaces;
 using PSADT.Module;
 using PSADT.ProcessManagement;
+using PSADT.Types;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Dialogs;
@@ -300,14 +301,13 @@ namespace PSADT.ClientServer
         /// <remarks>Ensure that the specified window handle is valid and the target window is capable of
         /// receiving keystrokes. The format of the <paramref name="keys"/> parameter may depend on the underlying
         /// implementation.</remarks>
-        /// <param name="windowHandle">A handle to the target window where the keystrokes will be sent.</param>
-        /// <param name="keys">The string representing the sequence of keystrokes to send. This can include special keys or key
-        /// combinations.</param>
+        /// <param name="options">The configuration options that specify the keys to send and their associated behavior. This parameter cannot
+        /// be null.</param>
         /// <returns><see langword="true"/> if the keystrokes were successfully sent; otherwise, <see langword="false"/>.</returns>
-        public bool SendKeys(IntPtr windowHandle, string keys)
+        public bool SendKeys(SendKeysOptions options)
         {
             _logSource = "Send-ADTKeys";
-            return Invoke($"SendKeys{ArgumentSeparator}{windowHandle}{ArgumentSeparator}{keys}");
+            return Invoke($"SendKeys{ArgumentSeparator}{options}");
         }
 
         /// <summary>
