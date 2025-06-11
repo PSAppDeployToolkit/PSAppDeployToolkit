@@ -30,6 +30,12 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'RefreshDesktopAndEnvironmentVariables')]
         [System.Management.Automation.SwitchParameter]$RefreshDesktopAndEnvironmentVariables,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'MinimizeAllWindows')]
+        [System.Management.Automation.SwitchParameter]$MinimizeAllWindows,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'RestoreAllWindows')]
+        [System.Management.Automation.SwitchParameter]$RestoreAllWindows,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [System.Management.Automation.SwitchParameter]$SendKeys,
 
@@ -40,6 +46,8 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RefreshDesktopAndEnvironmentVariables')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'MinimizeAllWindows')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'RestoreAllWindows')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [ValidateNotNullOrEmpty()]
         [PSADT.TerminalServices.SessionInfo]$User,
@@ -76,7 +84,9 @@ function Private:Invoke-ADTClientServerOperation
     Set-ADTClientServerProcessPermissions -User $User
 
     # Go into client/server mode if a session is active and we're not asked to wait.
-    if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps)$') -or [PSADT.UserInterface.Dialogs.DialogType]::CloseAppsDialog.Equals($DialogType) -or ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait))
+    if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|MinimizeAllWindows|RestoreAllWindows)$') -or
+        [PSADT.UserInterface.Dialogs.DialogType]::CloseAppsDialog.Equals($DialogType) -or
+        ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait))
     {
         # Instantiate a new ClientServerProcess object if one's not already present.
         if (!$Script:ADT.ClientServerProcess)
