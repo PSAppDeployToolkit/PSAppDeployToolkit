@@ -480,7 +480,7 @@ namespace PSADT.ClientServer
         private static string GetProcessWindowInfo(IReadOnlyDictionary<string, string> arguments)
         {
             // Get the window info and return the serialised result for the caller to handle.
-            return SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(arguments))));
+            return SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(arguments))).ToArray());
         }
 
         /// <summary>

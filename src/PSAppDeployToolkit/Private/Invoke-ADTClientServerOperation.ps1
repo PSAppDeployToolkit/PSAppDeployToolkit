@@ -131,7 +131,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Return the result to the caller. Don't let PowerShell enumerate collections/lists!
-    if (($return = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut))))
+    if (($return = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString([System.String]::Join([System.String]::Empty, $result.StdOut))))
     {
         $PSCmdlet.WriteObject($return, $false)
     }

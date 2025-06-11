@@ -125,17 +125,26 @@ namespace PSADT.Utilities
             Dictionary<string, Type> typesLookup = [];
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
+                // Skip non-PSADT assemblies.
+                if (null == assembly.FullName || !assembly.FullName.StartsWith("PSADT"))
+                {
+                    continue;
+                }
                 foreach (var type in assembly.GetTypes())
                 {
-                    if (null != type && type.IsPublic && null != type.FullName)
+                    // Skip non-public types and types without a full name.
+                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName)
                     {
-                        // Don't use .Add() here so types can clobber mscorlib if necessary.
-                        typesLookup[type.FullName] = type;
+                        continue;
                     }
+
+                    // Add the type, as well as an array lookup.
+                    typesLookup[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName.Replace(type.Name, $"{type.Name}[]"))!;
+                    typesLookup[type.FullName] = type;
                 }
             }
 
-            // Bit of a hack, but inject some types for primitives.
+            // Inject types for primitives also.
             typesLookup["int"] = typeof(int);
             typesLookup["long"] = typeof(long);
             typesLookup["string"] = typeof(string);
