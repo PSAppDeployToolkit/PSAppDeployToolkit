@@ -177,11 +177,14 @@ function Show-ADTInstallationProgress
     process
     {
         # Bypass if no one's logged on to answer the dialog.
-        if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+        if (!($runAsActiveUser = Get-ADTClientServerUser))
         {
             Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return
         }
+
+        # Determine if progress window is open before proceeding.
+        $progressOpen = Invoke-ADTClientServerOperation -ProgressDialogOpen -User $runAsActiveUser
 
         # Return early in silent mode.
         if ($adtSession)
@@ -191,15 +194,6 @@ function Show-ADTInstallationProgress
                 Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Status message: $($PSBoundParameters.StatusMessage)"
                 return
             }
-
-            # Instantiate a new ClientServerProcess object if one's not already present.
-            if (!$Script:ADT.ClientServerProcess)
-            {
-                Open-ADTClientServerProcess -User $runAsActiveUser
-            }
-
-            # Determine if progress window is open before proceeding.
-            $progressOpen = $Script:ADT.ClientServerProcess.ProgressDialogOpen()
 
             # Notify user that the software installation has started.
             if (!$progressOpen)
@@ -214,17 +208,6 @@ function Show-ADTInstallationProgress
                 }
             }
         }
-        else
-        {
-            # Instantiate a new ClientServerProcess object if one's not already present.
-            if (!$Script:ADT.ClientServerProcess)
-            {
-                Open-ADTClientServerProcess -User $runAsActiveUser
-            }
-
-            # Determine if progress window is open before proceeding.
-            $progressOpen = $Script:ADT.ClientServerProcess.ProgressDialogOpen()
-        }
 
         # Call the underlying function to open the progress window.
         try
@@ -232,9 +215,9 @@ function Show-ADTInstallationProgress
             try
             {
                 # Perform the dialog action.
-                if (!$progressOpen)
+                $null = if (!$progressOpen)
                 {
-                    # Create the new progress dialog.
+                    # Create the necessary options.
                     $dialogOptions = @{
                         AppTitle = $PSBoundParameters.Title
                         Subtitle = $PSBoundParameters.Subtitle
@@ -268,34 +251,38 @@ function Show-ADTInstallationProgress
                     {
                         $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                     }
-                    Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$($PSBoundParameters.StatusMessage)]."
-                    if (!$Script:ADT.ClientServerProcess.ShowProgressDialog($adtConfig.UI.DialogStyle, $dialogOptions))
-                    {
-                        $naerParams = @{
-                            Exception = [System.ApplicationException]::new("Failed to open the progress dialog for an unknown reason.")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'ProgressDialogOpenError'
-                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
-                    }
+                    [PSADT.UserInterface.DialogOptions.ProgressDialogOptions]$dialogOptions = $dialogOptions
 
-                    # Add a callback to close it as we've opened for the first time.
+                    # Create the new progress dialog.
+                    Write-ADTLogEntry -Message "Creating the progress dialog in a separate thread with message: [$($PSBoundParameters.StatusMessage)]."
+                    Invoke-ADTClientServerOperation -ShowProgressDialog -User $runAsActiveUser -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
                     Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTInstallationProgress'
                 }
                 else
                 {
+                    # Update the dialog as required.
                     Write-ADTLogEntry -Message "Updating the progress dialog with message: [$($PSBoundParameters.StatusMessage)]."
-                    if (!$Script:ADT.ClientServerProcess.UpdateProgressDialog($(if ($PSBoundParameters.ContainsKey('StatusMessage')) { $StatusMessage }), $(if ($PSBoundParameters.ContainsKey('StatusMessageDetail')) { $StatusMessageDetail }), $(if ($PSBoundParameters.ContainsKey('StatusBarPercentage')) { $StatusBarPercentage }), $(if ($PSBoundParameters.ContainsKey('MessageAlignment')) { $MessageAlignment })))
-                    {
-                        $naerParams = @{
-                            Exception = [System.ApplicationException]::new("Failed to update the progress dialog for an unknown reason.")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'ProgressDialogUpdateError'
-                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
+                    $iacsoParams = @{
+                        UpdateProgressDialog = $true
+                        User = $runAsActiveUser
                     }
+                    if ($PSBoundParameters.ContainsKey('StatusMessage'))
+                    {
+                        $iacsoParams.Add('ProgressMessage', $PSBoundParameters.StatusMessage)
+                    }
+                    if ($PSBoundParameters.ContainsKey('StatusMessageDetail'))
+                    {
+                        $iacsoParams.Add('ProgressDetailMessage', $PSBoundParameters.StatusMessageDetail)
+                    }
+                    if ($PSBoundParameters.ContainsKey('StatusBarPercentage'))
+                    {
+                        $iacsoParams.Add('ProgressPercentage', $StatusBarPercentage)
+                    }
+                    if ($PSBoundParameters.ContainsKey('MessageAlignment'))
+                    {
+                        $iacsoParams.Add('MessageAlignment', $MessageAlignment)
+                    }
+                    Invoke-ADTClientServerOperation @iacsoParams
                 }
             }
             catch

@@ -57,12 +57,6 @@ function Close-ADTInstallationProgress
         {
             try
             {
-                # Return early if there's no progress dialog open at all.
-                if (!$Script:ADT.ClientServerProcess -or !$Script:ADT.ClientServerProcess.ProgressDialogOpen())
-                {
-                    return
-                }
-
                 # Return early if we're silent, a window wouldn't have ever opened.
                 if ($adtSession -and $adtSession.IsSilent())
                 {
@@ -70,23 +64,30 @@ function Close-ADTInstallationProgress
                     return
                 }
 
+                # Bypass if no one's logged on to answer the dialog.
+                if (!($runAsActiveUser = Get-ADTClientServerUser))
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+                    return
+                }
+
+                # Return early if there's no progress dialog open at all.
+                if (!(Invoke-ADTClientServerOperation -ProgressDialogOpen -User $runAsActiveUser))
+                {
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no progress dialog open."
+                    return
+                }
+
                 # Call the underlying function to close the progress window.
                 Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-                if (!$Script:ADT.ClientServerProcess.CloseProgressDialog())
-                {
-                    $naerParams = @{
-                        Exception = [System.ApplicationException]::new("Failed to close the progress dialog for an unknown reason.")
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'ProgressDialogCloseError'
-                        RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
+                Invoke-ADTClientServerOperation -CloseProgressDialog -User $runAsActiveUser | Out-Null
                 Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $MyInvocation.MyCommand
 
                 # We only send balloon tips when a session is active.
                 if (!$adtSession)
                 {
+                    # Close the client/server process when we're running sessionless.
+                    Close-ADTClientServerProcess
                     return
                 }
 

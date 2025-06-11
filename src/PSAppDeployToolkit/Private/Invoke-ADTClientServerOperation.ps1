@@ -7,6 +7,7 @@
 function Private:Invoke-ADTClientServerOperation
 {
     [CmdletBinding()]
+    [OutputType([System.Boolean])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'InitCloseAppsDialog')]
@@ -14,6 +15,18 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]
         [System.Management.Automation.SwitchParameter]$PromptToCloseApps,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ProgressDialogOpen')]
+        [System.Management.Automation.SwitchParameter]$ProgressDialogOpen,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
+        [System.Management.Automation.SwitchParameter]$ShowProgressDialog,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'UpdateProgressDialog')]
+        [System.Management.Automation.SwitchParameter]$UpdateProgressDialog,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'CloseProgressDialog')]
+        [System.Management.Automation.SwitchParameter]$CloseProgressDialog,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [System.Management.Automation.SwitchParameter]$ShowModalDialog,
@@ -41,6 +54,10 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InitCloseAppsDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ProgressDialogOpen')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UpdateProgressDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'CloseProgressDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
@@ -64,10 +81,28 @@ function Private:Invoke-ADTClientServerOperation
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.Dialogs.DialogType]$DialogType,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.Dialogs.DialogStyle]$DialogStyle,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ProgressMessage = [NullString]::Value,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ProgressDetailMessage = [NullString]::Value,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
+        [ValidateNotNullOrEmpty()]
+        [System.Nullable[System.Double]]$ProgressPercentage,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.UserInterface.Dialogs.DialogMessageAlignment]$MessageAlignment,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
@@ -84,13 +119,22 @@ function Private:Invoke-ADTClientServerOperation
     Set-ADTClientServerProcessPermissions -User $User
 
     # Go into client/server mode if a session is active and we're not asked to wait.
-    if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|MinimizeAllWindows|RestoreAllWindows)$') -or
+    if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|MinimizeAllWindows|RestoreAllWindows)$') -or
         [PSADT.UserInterface.Dialogs.DialogType]::CloseAppsDialog.Equals($DialogType) -or
         ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait))
     {
         # Instantiate a new ClientServerProcess object if one's not already present.
         if (!$Script:ADT.ClientServerProcess)
         {
+            # No point proceeding further for this operation.
+            if ($PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen'))
+            {
+                return $false
+            }
+            if ($PSCmdlet.ParameterSetName.Equals('CloseProgressDialog'))
+            {
+                return $true
+            }
             Open-ADTClientServerProcess -User $User
         }
 
@@ -107,6 +151,14 @@ function Private:Invoke-ADTClientServerOperation
         {
             $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
         }
+        elseif ($PSCmdlet.ParameterSetName.Equals('ShowProgressDialog'))
+        {
+            $Script:ADT.ClientServerProcess.ShowProgressDialog($DialogStyle, $Options)
+        }
+        elseif ($PSCmdlet.ParameterSetName.Equals('UpdateProgressDialog'))
+        {
+            $Script:ADT.ClientServerProcess.UpdateProgressDialog($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment)
+        }
         elseif ($PSBoundParameters.ContainsKey('Options'))
         {
             $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
@@ -115,7 +167,7 @@ function Private:Invoke-ADTClientServerOperation
         {
             $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
         }
-        if (!$result)
+        if (($null -eq $result) -or (!$result -and !$PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen')))
         {
             $naerParams = @{
                 Exception = [System.ApplicationException]::new("Failed to perform the $($PSCmdlet.ParameterSetName) operation for an unknown reason.")
