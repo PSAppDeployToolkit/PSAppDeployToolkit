@@ -21,6 +21,7 @@
     AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
     AutomationProperties.Name="PSAppDeployToolkit Dialog"
     Background="Transparent"
+    BorderThickness="1"
     FontFamily="Segoe UI Variable"
     FontSize="14"
     FontWeight="Regular"
@@ -125,18 +126,17 @@
             Grid.RowSpan="4"
             Grid.Column="0"
             AutomationProperties.Name="Accent Sidebar"
-            Background="{DynamicResource {x:Static ui:ThemeKeys.SystemFillColorSolidAttentionBackgroundBrushKey}}"
             >
 
             <Rectangle
                 x:Name="AccentSidebar"
-                Fill="{DynamicResource {x:Static ui:ThemeKeys.AccentFillColorSecondaryBrushKey}}"
+                Fill="{DynamicResource {x:Static ui:ThemeKeys.AccentFillColorTertiaryBrushKey}}"
                 Opacity="1"
                 />
 
             <ui:ImageIcon
-                Width="20"
-                Margin="1,8,0,0"
+                Width="16"
+                Margin="0,8,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 AutomationProperties.Name="PSAppDeployToolkit Logo"
@@ -146,22 +146,22 @@
                         <DrawingImage.Drawing>
                             <DrawingGroup ClipGeometry="M0,0 V1024 H1024 V0 H0 Z">
                                 <GeometryDrawing
-                                    Brush="{DynamicResource {x:Static ui:ThemeKeys.SystemAccentColorDark2BrushKey}}"
+                                    Brush="{DynamicResource {x:Static ui:ThemeKeys.TextOnAccentFillColorSecondaryBrushKey}}"
                                     Geometry="F1 M1024,1024z M0,0z M564.13619,317.54327L629.03676,381.55297 713.13405,297.17748C735.16237,275.07445,735.16237,239.11107,713.13405,217.00951L562.26491,65.63842C551.59987,54.93627 537.41921,49.04272 522.3362,49.04272 507.25222,49.04272 493.07155,54.93676 482.40554,65.63891L397.45431,150.8731 564.13619,317.54327z"
                                     />
 
                                 <GeometryDrawing
-                                    Brush="{DynamicResource {x:Static ui:ThemeKeys.SystemAccentColorDark2BrushKey}}"
+                                    Brush="{DynamicResource {x:Static ui:ThemeKeys.TextOnAccentFillColorSecondaryBrushKey}}"
                                     Geometry="F1 M1024,1024z M0,0z M629.33602,644.98327L564.91353,708.1961 396.90859,874.81567 482.56862,960.75903C493.23366,971.46264 507.41432,977.35717 522.49831,977.35717 537.58132,977.35717 551.76198,971.46264 562.428,960.75805L713.29519,809.39086C735.32449,787.28686,735.32449,751.32397,713.29519,729.22338L629.33602,644.98327z"
                                     />
 
                                 <GeometryDrawing
-                                    Brush="{DynamicResource {x:Static ui:ThemeKeys.SystemAccentColorDark2BrushKey}}"
+                                    Brush="{DynamicResource {x:Static ui:ThemeKeys.TextOnAccentFillColorSecondaryBrushKey}}"
                                     Geometry="F1 M1024,1024z M0,0z M969.44069,471.42651L818.5735,320.05444C807.90748,309.35278 793.72682,303.45923 778.64381,303.45923 763.55983,303.45923 749.37916,309.35278 738.71315,320.05493L653.43581,405.61725 714.59664,465.93878C727.47408,478.58331 734.59225,495.53741 734.59225,513.63165 734.59225,531.72589 727.46383,548.69024 714.51998,561.39972L655.41854,619.39111 738.71413,702.96215C749.37917,713.66576 763.55983,719.56029 778.64382,719.56029 793.72683,719.56029 807.90749,713.66576 818.57351,702.96117L969.4407,551.59398C991.47,529.48998,991.47,493.52709,969.4407,471.4265z"
                                     />
 
                                 <GeometryDrawing
-                                    Brush="{DynamicResource {x:Static ui:ThemeKeys.SystemAccentColorDark2BrushKey}}"
+                                    Brush="{DynamicResource {x:Static ui:ThemeKeys.TextOnAccentFillColorSecondaryBrushKey}}"
                                     Geometry="F1 M1024,1024z M0,0z M693.53048,487.29809L632.25759,426.86621 607.85818,402.80163 542.99728,338.8308 376.27652,172.12145 376.27628,172.12169 236.0461,31.90063C228.67598,24.531,216.74141,24.47338,209.30196,31.77709L43.72774,194.3059C40.08809,197.87865 38.03731,202.76488 38.03731,207.86498 38.03731,212.96508 40.08809,217.85131 43.72774,221.42406L339.74629,512.00218 43.72774,802.57592C40.08809,806.14867 38.03731,811.0349 38.03731,816.135 38.03731,821.2351 40.08809,826.12133 43.72774,829.69408L209.30294,992.22289C212.99923,995.8518 217.80587,997.6643 222.61251,997.66381 227.4504,997.66332 232.28927,995.82592 235.99142,992.15404L375.69046,853.52733 375.73038,853.56737 543.84299,686.84105 608.15787,623.73424 634.23978,598.14232 693.50119,539.99388C700.65353,532.97093 704.59201,523.60863 704.59201,513.63158 704.59201,503.65453 700.65353,494.29222 693.53049,487.29808z M581.33187,596.81848L562.428,577.85132C551.76198,567.14966 537.58132,561.25611 522.49831,561.25611 507.41433,561.25611 493.23366,567.14966 482.56765,577.85181L331.69949,729.22388C309.67019,751.32398,309.67019,787.28687,331.69949,809.39087L348.8652,826.61347 222.54416,951.97242 84.16037,816.13502 380.17892,525.56129C383.81857,521.98854 385.86935,517.10279 385.86935,512.00221 385.86935,506.90211 383.81857,502.01588 380.17892,498.44313L84.16036,207.86499 222.48751,72.08178 349.45058,199.03674 331.53737,217.00952C309.51003,239.11108,309.51003,275.07446,331.53737,297.17749L482.40651,448.54517C493.07253,459.24927 507.25319,465.1438 522.3362,465.1438 537.41921,465.1438 551.59987,459.24927 562.26589,448.54468L581.032,429.71656 605.4319,453.78138 587.84499,471.42701C565.81569,493.52711,565.81667,529.49,587.84499,551.594L607.41329,571.22706 581.33187,596.81849z"
                                     />
 
@@ -182,7 +182,7 @@
             <Rectangle
                 x:Name="MainPanelBackground"
                 Fill="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundAltHighBrushKey}}"
-                Opacity=".7"
+                Opacity=".62"
                 />
         </Grid>
 
@@ -192,7 +192,7 @@
             Grid.Row="0"
             Grid.Column="1"
             Width="Auto"
-            Margin="24,24,24,8"
+            Margin="24,28,24,8"
             VerticalAlignment="Center"
             AutomationProperties.Name="Header Panel"
             >
@@ -202,9 +202,9 @@
                 >
                 <Image
                     x:Name="AppIconImage"
-                    Width="72"
-                    Height="72"
-                    Margin="0,0,12,0"
+                    Width="64"
+                    Height="64"
+                    Margin="0,0,8,0"
                     AutomationProperties.Name="Application Icon"
                     Stretch="Uniform"
                     />
@@ -216,7 +216,6 @@
                         x:Name="AppTitleTextBlock"
                         Width="420"
                         MaxWidth="420"
-                        Margin="0,0,0,4"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Application Title"
@@ -228,14 +227,12 @@
                         />
                     <TextBlock
                         x:Name="SubtitleTextBlock"
-                        Width="420"
-                        MaxWidth="420"
-                        Margin="0,2,0,0"
+                        Width="430"
+                        MaxWidth="430"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Subtitle"
                         FontSize="13"
-                        FontWeight="SemiBold"
                         Text="PSAppDeployToolkit - Installation Type"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="WrapWithOverflow"
@@ -252,7 +249,7 @@
             VerticalAlignment="Center"
             AutomationProperties.Name="Content Card"
             Background="{DynamicResource {x:Static ui:ThemeKeys.CardBackgroundFillColorDefaultBrushKey}}"
-            BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.ControlElevationBorderBrushKey}}"
+            BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.CardStrokeColorDefaultBrushKey}}"
             BorderThickness="1"
             CornerRadius="4"
             >
@@ -274,7 +271,7 @@
                         x:Name="MessageTextBlock"
                         Margin="16,16,16,16"
                         AutomationProperties.Name="Message Text"
-                        FontSize="15"
+                        Style="{DynamicResource {x:Static ui:ThemeKeys.BodyTextBlockStyleKey}}"
                         Text="Test Message. **This will be replaced when the application executes**. This is cool"
                         TextAlignment="Left"
                         TextWrapping="Wrap"
@@ -284,7 +281,7 @@
                         x:Name="CustomMessageTextBlock"
                         Margin="16,0,16,16"
                         AutomationProperties.Name="Additional Message Text"
-                        FontSize="15"
+                        Style="{DynamicResource {x:Static ui:ThemeKeys.BodyTextBlockStyleKey}}"
                         Text="This is a custom message that can be added by the customer as an additional block of text. This can be added to any dialog."
                         TextAlignment="Left"
                         TextWrapping="Wrap"
@@ -368,7 +365,6 @@
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="Process Name"
                                         FontSize="12"
-                                        FontWeight="SemiBold"
                                         Foreground="{DynamicResource {x:Static ui:ThemeKeys.AccentTextFillColorTertiaryBrushKey}}"
                                         Text="{Binding Name, Mode=OneWay}"
                                         TextAlignment="Left"
