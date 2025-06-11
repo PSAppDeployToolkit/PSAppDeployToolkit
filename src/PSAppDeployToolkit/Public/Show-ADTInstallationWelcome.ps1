@@ -733,10 +733,17 @@ function Show-ADTInstallationWelcome
         # Internal worker function to bring up the dialog.
         function Show-ADTWelcomePrompt
         {
-            # Instantiate a new ClientServerProcess object if one's not already present.
-            if (!$Script:ADT.ClientServerProcess)
+            # Initialise the dialog's state if we haven't already done so.
+            if ($initialized.Equals($false))
             {
-                Open-ADTClientServerProcess -User $runAsActiveUser
+                $null = if ($CloseProcesses)
+                {
+                    Invoke-ADTClientServerOperation -InitCloseAppsDialog -User $runAsActiveUser -CloseProcesses $CloseProcesses
+                }
+                else
+                {
+                    Invoke-ADTClientServerOperation -InitCloseAppsDialog -User $runAsActiveUser
+                }
             }
 
             # Minimize all other windows.
@@ -745,23 +752,8 @@ function Show-ADTInstallationWelcome
                 Invoke-ADTMinimizeWindowsOperation -MinimizeAllWindows
             }
 
-            # Initialise the dialog's state if we haven't already done so.
-            if ($initialized.Equals($false))
-            {
-                if (!($initialized = $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)))
-                {
-                    $naerParams = @{
-                        Exception = [System.ApplicationException]::new("Failed to initialize the welcome dialog for an unknown reason.")
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'CloseAppsDialogInitError'
-                        RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
-                    }
-                    throw (New-ADTErrorRecord @naerParams)
-                }
-            }
-
             # Show the dialog and return the result.
-            return $Script:ADT.ClientServerProcess.ShowCloseAppsDialog($adtConfig.UI.DialogStyle, $dialogOptions)
+            return Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType CloseAppsDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
         }
 
         # Internal worker function for updating the deferral history.
@@ -807,7 +799,7 @@ function Show-ADTInstallationWelcome
                 }
 
                 # Bypass if no one's logged on to answer the dialog.
-                if (!($runAsActiveUser = (Get-ADTEnvironmentTable).RunAsActiveUser))
+                if (!($runAsActiveUser = Get-ADTClientServerUser))
                 {
                     Write-ADTLogEntry -Message "Running $($MyInvocation.MyCommand.Name) silently as there is no active user logged onto the system."
                     $Silent = $true
@@ -1090,16 +1082,7 @@ function Show-ADTInstallationWelcome
                             {
                                 if ($PromptToSave)
                                 {
-                                    if (!$Script:ADT.ClientServerProcess.PromptToCloseApps([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout)))
-                                    {
-                                        $naerParams = @{
-                                            Exception = [System.ApplicationException]::new("Failed to prompt user to close apps for an unknown reason.")
-                                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                            ErrorId = 'PromptToCloseAppsError'
-                                            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
-                                        }
-                                        throw (New-ADTErrorRecord @naerParams)
-                                    }
+                                    $null = Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToSaveTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
                                 }
                                 else
                                 {
@@ -1207,6 +1190,14 @@ function Show-ADTInstallationWelcome
         catch
         {
             Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
+        finally
+        {
+            # Close the client/server process if we're running without a session.
+            if (!$adtSession)
+            {
+                Close-ADTClientServerProcess
+            }
         }
     }
 

@@ -9,6 +9,12 @@ function Private:Invoke-ADTClientServerOperation
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true, ParameterSetName = 'InitCloseAppsDialog')]
+        [System.Management.Automation.SwitchParameter]$InitCloseAppsDialog,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]
+        [System.Management.Automation.SwitchParameter]$PromptToCloseApps,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [System.Management.Automation.SwitchParameter]$ShowModalDialog,
 
@@ -27,6 +33,8 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [System.Management.Automation.SwitchParameter]$SendKeys,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'InitCloseAppsDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
@@ -35,6 +43,14 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [ValidateNotNullOrEmpty()]
         [PSADT.TerminalServices.SessionInfo]$User,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'InitCloseAppsDialog')]
+        [ValidateNotNullOrEmpty()]
+        [PSADT.ProcessManagement.ProcessDefinition[]]$CloseProcesses,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]
+        [ValidateNotNullOrEmpty()]
+        [System.TimeSpan]$PromptToCloseTimeout,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [ValidateNotNullOrEmpty()]
@@ -60,7 +76,7 @@ function Private:Invoke-ADTClientServerOperation
     Set-ADTClientServerProcessPermissions -User $User
 
     # Go into client/server mode if a session is active and we're not asked to wait.
-    if ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait)
+    if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps)$') -or [PSADT.UserInterface.Dialogs.DialogType]::CloseAppsDialog.Equals($DialogType) -or ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait))
     {
         # Instantiate a new ClientServerProcess object if one's not already present.
         if (!$Script:ADT.ClientServerProcess)
@@ -72,6 +88,14 @@ function Private:Invoke-ADTClientServerOperation
         $result = if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
         {
             $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
+        }
+        elseif ($PSCmdlet.ParameterSetName.Equals('InitCloseAppsDialog'))
+        {
+            $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)
+        }
+        elseif ($PSCmdlet.ParameterSetName.Equals('PromptToCloseApps'))
+        {
+            $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
         }
         elseif ($PSBoundParameters.ContainsKey('Options'))
         {
