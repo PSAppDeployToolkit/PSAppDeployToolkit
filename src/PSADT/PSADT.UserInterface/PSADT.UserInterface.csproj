@@ -12,7 +12,6 @@
     <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
     <Nullable>enable</Nullable>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
-    <UserSecretsId>1f9c9b02-c540-4d44-95e4-075d460f0854</UserSecretsId>
     <RootNamespace>PSADT.UserInterface</RootNamespace>
     <AssemblyName>PSADT.UserInterface</AssemblyName>
     <Product>PSAppDeployToolkit User Interface Library</Product>
