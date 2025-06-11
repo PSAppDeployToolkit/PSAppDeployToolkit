@@ -135,7 +135,35 @@ function Private:Invoke-ADTClientServerOperation
             {
                 return $true
             }
-            Open-ADTClientServerProcess -User $User
+
+            # Instantiate a new ClientServerProcess object as required, then add the necessary callback.
+            Write-ADTLogEntry -Message 'Instantiating user client/server process.'
+            $Script:ADT.ClientServerProcess = [PSADT.ClientServer.ServerInstance]::new($User.NTAccount)
+            try
+            {
+                $Script:ADT.ClientServerProcess.Open()
+            }
+            catch [System.IO.InvalidDataException]
+            {
+                $naerParams = @{
+                    TargetObject = $clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true)
+                    Exception = [System.IO.InvalidDataException]::new("Failed to open the instantiated client/server process.$(if (!$clientResult.ExitCode.Equals([PSADT.Execution.ProcessManager]::TimeoutExitCode)) { " Exit Code: [$($clientResult.ExitCode)]." })$(if ($clientResult.StdErr) { " Error Output: [$([System.String]::Join("`n", $clientResult.StdErr))]" })", $_.Exception)
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'ClientServerProcessOpenFailure'
+                }
+                $Script:ADT.ClientServerProcess.Dispose()
+                $Script:ADT.ClientServerProcess = $null
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+            catch
+            {
+                $Script:ADT.ClientServerProcess.Dispose()
+                $Script:ADT.ClientServerProcess = $null
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
+
+            # Ensure we properly close the client/server process upon the closure of the last active session.
+            Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTClientServerProcess'
         }
 
         # Invoke the right method depending on the mode.
