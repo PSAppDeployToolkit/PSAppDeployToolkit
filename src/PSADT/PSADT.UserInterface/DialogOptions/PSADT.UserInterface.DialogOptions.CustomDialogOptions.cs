@@ -23,7 +23,7 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException("MessageText value is null or invalid.", (Exception?)null);
             }
-            if (options["minimizeWindows"] is not bool minimizeWindows)
+            if (options["MinimizeWindows"] is not bool minimizeWindows)
             {
                 throw new ArgumentNullException("MinimizeWindows value is null or invalid.", (Exception?)null);
             }
