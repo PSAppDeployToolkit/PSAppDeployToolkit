@@ -12,10 +12,14 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [System.Management.Automation.SwitchParameter]$ShowModalDialog,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
+        [System.Management.Automation.SwitchParameter]$GetProcessWindowInfo,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
         [System.Management.Automation.SwitchParameter]$GetUserNotificationState,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetUserNotificationState')]
         [ValidateNotNullOrEmpty()]
         [PSADT.TerminalServices.SessionInfo]$User,
@@ -29,6 +33,7 @@ function Private:Invoke-ADTClientServerOperation
         [PSADT.UserInterface.Dialogs.DialogStyle]$DialogStyle,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [ValidateNotNullOrEmpty()]
         [System.Object]$Options,
 
@@ -115,6 +120,9 @@ function Private:Invoke-ADTClientServerOperation
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
-    # Return the result to the caller.
-    return [PSADT.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut))
+    # Return the result to the caller. Don't let PowerShell enumerate collections/lists!
+    if (($return = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString($($result.StdOut))))
+    {
+        $PSCmdlet.WriteObject($return, $false)
+    }
 }

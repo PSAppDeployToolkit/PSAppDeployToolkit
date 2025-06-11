@@ -320,20 +320,14 @@ namespace PSADT.ClientServer
         /// <remarks>This method allows filtering windows based on their titles, handles, or parent
         /// process names. Filters can be combined to narrow down the results. If no windows match the specified
         /// filters, the returned list will be empty.</remarks>
-        /// <param name="windowTitleFilter">An optional array of window title substrings to filter the results. Only windows whose titles contain one of
-        /// the specified substrings will be included. If <see langword="null"/>, no filtering by window title is
-        /// applied.</param>
-        /// <param name="windowHandleFilter">An optional array of window handles to filter the results. Only windows with matching handles will be
-        /// included. If <see langword="null"/>, no filtering by window handle is applied.</param>
-        /// <param name="parentProcessFilter">An optional array of parent process names to filter the results. Only windows associated with processes
-        /// whose names match one of the specified values will be included. If <see langword="null"/>, no filtering by
-        /// parent process name is applied.</param>
+        /// <param name="options">An object specifying the criteria for retrieving window information, such as filtering or sorting
+        /// preferences.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the windows that match the
         /// specified filters. If no filters are provided, all windows are included in the result.</returns>
-        public IReadOnlyList<WindowInfo> GetProcessWindowInfo(string[]? windowTitleFilter = null, nint[]? windowHandleFilter = null, string[]? parentProcessFilter = null)
+        public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             _logSource = "Get-ADTWindowTitle";
-            _outputStreamWriter.WriteLine($"GetProcessWindowInfo{ArgumentSeparator}{SerializationUtilities.SerializeToString(new WindowInfoOptions(windowTitleFilter, windowHandleFilter, parentProcessFilter))}");
+            _outputStreamWriter.WriteLine($"GetProcessWindowInfo{ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
             return SerializationUtilities.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadInput());
         }
 

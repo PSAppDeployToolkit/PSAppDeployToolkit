@@ -48,6 +48,10 @@ namespace PSADT.ClientServer
                 {
                     Console.WriteLine(ShowModalDialog(ConvertArgsToDictionary(args)));
                 }
+                else if (args.Any(static arg => arg.Equals("/GetProcessWindowInfo")))
+                {
+                    Console.WriteLine(GetProcessWindowInfo(ConvertArgsToDictionary(args)));
+                }
                 else if (args.Any(static arg => arg.Equals("/GetUserNotificationState")))
                 {
                     Console.WriteLine(GetUserNotificationState());
@@ -314,16 +318,16 @@ namespace PSADT.ClientServer
                                     // Confirm the length of our parts showing the dialog and writing back the result.
                                     if (parts.Length != 4)
                                     {
-                                        throw new ProgramException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and DialogOptions.", ExitCode.InvalidArguments);
+                                        throw new ProgramException("The ShowModalDialog command requires exactly three arguments: DialogType, DialogStyle, and Options.", ExitCode.InvalidArguments);
                                     }
-                                    outputWriter.WriteLine(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "DialogOptions", parts[3] } }, closeAppsDialogState));
+                                    outputWriter.WriteLine(ShowModalDialog(new Dictionary<string, string> { { "DialogType", parts[1] }, { "DialogStyle", parts[2] }, { "Options", parts[3] } }, closeAppsDialogState));
                                 }
                                 else if (parts[0] == "ShowProgressDialog")
                                 {
                                     // Confirm the length of our parts showing the dialog and writing back the result.
                                     if (parts.Length != 3)
                                     {
-                                        throw new ProgramException("The ShowProgressDialog command requires exactly two arguments: DialogStyle, and DialogOptions.", ExitCode.InvalidArguments);
+                                        throw new ProgramException("The ShowProgressDialog command requires exactly two arguments: DialogStyle, and Options.", ExitCode.InvalidArguments);
                                     }
 
                                     // Confirm the DialogStyle is valid.
@@ -418,7 +422,7 @@ namespace PSADT.ClientServer
                                     }
 
                                     // Get the window information based on the provided options and serialize it for the caller.
-                                    outputWriter.WriteLine(SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(parts[1]))));
+                                    outputWriter.WriteLine(GetProcessWindowInfo(new Dictionary<string, string> { { "Options", parts[1] } }));
                                 }
                                 else if (parts[0] == "RefreshDesktopAndEnvironmentVariables")
                                 {
@@ -505,27 +509,35 @@ namespace PSADT.ClientServer
                 throw new ProgramException($"The specified DialogStyle of [{dialogStyleArg}] is invalid.", ExitCode.NoDialogStyle);
             }
 
-            // Confirm we have dialog options and they're not null/invalid.
-            if (!arguments.TryGetValue("Options", out string? dialogOptions))
-            {
-                throw new ProgramException("The required DialogOptions were not specified on the command line.", ExitCode.NoDialogOptions);
-            }
-            if (null == dialogOptions || string.IsNullOrWhiteSpace(dialogOptions))
-            {
-                throw new ProgramException($"The specified DialogOptions are null or invalid.", ExitCode.InvalidDialogOptions);
-            }
-
             // Show the dialog and return the serialised result for the caller to handle.
             return dialogType switch
             {
-                DialogType.DialogBox => SerializeObject(DialogManager.ShowDialogBox(DeserializeString<DialogBoxOptions>(dialogOptions))),
-                DialogType.HelpConsole => SerializeObject(DialogManager.ShowHelpConsole(DeserializeString<HelpConsoleOptions>(dialogOptions))),
-                DialogType.InputDialog => SerializeObject(DialogManager.ShowInputDialog(dialogStyle, DeserializeString<InputDialogOptions>(dialogOptions))),
-                DialogType.CustomDialog => SerializeObject(DialogManager.ShowCustomDialog(dialogStyle, DeserializeString<CustomDialogOptions>(dialogOptions))),
-                DialogType.RestartDialog => SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(dialogOptions))),
-                DialogType.CloseAppsDialog => SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(dialogOptions), (CloseAppsDialogState)closeAppsDialogState!)),
+                DialogType.DialogBox => SerializeObject(DialogManager.ShowDialogBox(DeserializeString<DialogBoxOptions>(GetOptionsFromArguments(arguments)))),
+                DialogType.HelpConsole => SerializeObject(DialogManager.ShowHelpConsole(DeserializeString<HelpConsoleOptions>(GetOptionsFromArguments(arguments)))),
+                DialogType.InputDialog => SerializeObject(DialogManager.ShowInputDialog(dialogStyle, DeserializeString<InputDialogOptions>(GetOptionsFromArguments(arguments)))),
+                DialogType.CustomDialog => SerializeObject(DialogManager.ShowCustomDialog(dialogStyle, DeserializeString<CustomDialogOptions>(GetOptionsFromArguments(arguments)))),
+                DialogType.RestartDialog => SerializeObject(DialogManager.ShowRestartDialog(dialogStyle, DeserializeString<RestartDialogOptions>(GetOptionsFromArguments(arguments)))),
+                DialogType.CloseAppsDialog => SerializeObject(DialogManager.ShowCloseAppsDialog(dialogStyle, DeserializeString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState)closeAppsDialogState!)),
                 _ => throw new ProgramException($"The specified DialogType of [{dialogType}] is not supported.", ExitCode.UnsupportedDialog),
             };
+        }
+
+        /// <summary>
+        /// Retrieves information about a process's window based on the provided arguments.
+        /// </summary>
+        /// <remarks>This method processes the input arguments to extract options, retrieves the relevant
+        /// window information, and serializes the result for further handling by the caller. Ensure that the <paramref
+        /// name="arguments"/> dictionary contains valid keys and values required for deserialization into <see
+        /// cref="WindowInfoOptions"/>.</remarks>
+        /// <param name="arguments">A read-only dictionary containing key-value pairs that specify options for retrieving window information.
+        /// Keys and values must conform to the expected format for deserialization into <see
+        /// cref="WindowInfoOptions"/>.</param>
+        /// <returns>A serialized string representation of the window information. The format and content of the string depend on
+        /// the options provided in <paramref name="arguments"/>.</returns>
+        private static string GetProcessWindowInfo(IReadOnlyDictionary<string, string> arguments)
+        {
+            // Get the window info and return the serialised result for the caller to handle.
+            return SerializeObject(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(arguments))));
         }
 
         /// <summary>
@@ -541,40 +553,63 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Deserializes the provided dialog options string into an object of the specified type.
+        /// Retrieves the value of the "Options" key from the provided arguments dictionary.
         /// </summary>
-        /// <remarks>If an error occurs during deserialization, the application will terminate with an exit code indicating invalid dialog options.</remarks>
-        /// <typeparam name="T">The type to which the dialog options string should be deserialized.</typeparam>
-        /// <param name="dialogOptions">A JSON-formatted string containing the dialog options to deserialize.</param>
-        /// <returns>The deserialized object of type <typeparamref name="T"/>.</returns>
-        private static T DeserializeString<T>(string dialogOptions)
+        /// <remarks>This method ensures that the "Options" key exists and its value is valid. If the key
+        /// is missing or the value is invalid, a <see cref="ProgramException"/> is thrown.</remarks>
+        /// <param name="arguments">A read-only dictionary containing key-value pairs of command-line arguments. Must include a valid "Options"
+        /// key.</param>
+        /// <returns>The value associated with the "Options" key in the dictionary.</returns>
+        /// <exception cref="ProgramException">Thrown if the "Options" key is missing, null, or contains only whitespace.</exception>
+        private static string GetOptionsFromArguments(IReadOnlyDictionary<string, string> arguments)
+        {
+            // Confirm we have options and they're not null/invalid.
+            if (!arguments.TryGetValue("Options", out string? options))
+            {
+                throw new ProgramException("The required options were not specified on the command line.", ExitCode.NoOptions);
+            }
+            if (null == options || string.IsNullOrWhiteSpace(options))
+            {
+                throw new ProgramException($"The specified options are null or invalid.", ExitCode.InvalidOptions);
+            }
+            return options;
+        }
+
+        /// <summary>
+        /// Deserializes the specified string into an object of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize.</typeparam>
+        /// <param name="input">The string representation of the object to deserialize. Cannot be null or empty.</param>
+        /// <returns>An object of type <typeparamref name="T"/> deserialized from the input string.</returns>
+        /// <exception cref="ProgramException">Thrown if an error occurs during deserialization, such as invalid input format or type mismatch.</exception>
+        private static T DeserializeString<T>(string input)
         {
             try
             {
-                return SerializationUtilities.DeserializeFromString<T>(dialogOptions);
+                return SerializationUtilities.DeserializeFromString<T>(input);
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"An error occurred while deserializing the dialog options.", ex, ExitCode.InvalidDialogOptions);
+                throw new ProgramException($"An error occurred while deserializing the provided input.", ex, ExitCode.InvalidOptions);
             }
         }
 
         /// <summary>
-        /// Serializes the specified dialog result object to a string.
+        /// Serializes the specified object into a string representation.
         /// </summary>
-        /// <remarks>This method serializes the provided dialog result object using a utility method.  If an error occurs during serialization, the application will log the error, terminate with an exit code, and rethrow the exception.</remarks>
-        /// <typeparam name="T">The type of the dialog result object to serialize.</typeparam>
-        /// <param name="dialogResult">The dialog result object to be serialized. Cannot be null.</param>
-        /// <returns>A string representation of the serialized dialog result.</returns>
-        private static string SerializeObject<T>(T dialogResult)
+        /// <typeparam name="T">The type of the object to serialize.</typeparam>
+        /// <param name="result">The object to be serialized. Cannot be null.</param>
+        /// <returns>A string representation of the serialized object.</returns>
+        /// <exception cref="ProgramException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
+        private static string SerializeObject<T>(T result)
         {
             try
             {
-                return SerializationUtilities.SerializeToString(dialogResult);
+                return SerializationUtilities.SerializeToString(result);
             }
             catch (Exception ex)
             {
-                throw new ProgramException($"An error occurred while serializing the dialog result.", ex, ExitCode.InvalidDialogResult);
+                throw new ProgramException($"An error occurred while serializing the provided result.", ex, ExitCode.InvalidResult);
             }
         }
 
@@ -588,15 +623,15 @@ namespace PSADT.ClientServer
             NoArguments = 1,
             InvalidArguments = 2,
             InvalidMode = 3,
+            NoOptions = 4,
+            InvalidOptions = 5,
+            InvalidResult = 6,
 
             NoDialogType = 10,
             InvalidDialog = 11,
             UnsupportedDialog = 12,
             NoDialogStyle = 13,
             InvalidDialogStyle = 14,
-            NoDialogOptions = 15,
-            InvalidDialogOptions = 16,
-            InvalidDialogResult = 17,
 
             NoOutputPipe = 20,
             NoInputPipe = 21,

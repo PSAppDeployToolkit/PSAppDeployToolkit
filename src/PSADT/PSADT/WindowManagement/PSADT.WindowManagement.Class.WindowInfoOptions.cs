@@ -15,7 +15,7 @@ namespace PSADT.WindowManagement
     /// <param name="parentProcessFilter">An array of strings specifying parent process names to match. Only windows associated with processes whose names
     /// match one of the strings in this array will be included. If null, no filtering by parent process is applied.</param>
     [DataContract]
-    internal sealed record WindowInfoOptions
+    public sealed record WindowInfoOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowInfoOptions"/> class with optional filters for window
@@ -27,7 +27,7 @@ namespace PSADT.WindowManagement
         /// filtering is applied based on window handles.</param>
         /// <param name="parentProcessFilter">An optional array of strings specifying parent process names to filter. If <see langword="null"/>, no
         /// filtering is applied based on parent processes.</param>
-        internal WindowInfoOptions(string[]? windowTitleFilter = null, nint[]? windowHandleFilter = null, string[]? parentProcessFilter = null)
+        public WindowInfoOptions(string[]? windowTitleFilter = null, nint[]? windowHandleFilter = null, string[]? parentProcessFilter = null)
         {
             WindowTitleFilter = windowTitleFilter;
             WindowHandleFilter = windowHandleFilter;
@@ -38,7 +38,7 @@ namespace PSADT.WindowManagement
         /// Gets the filter criteria for window titles.
         /// </summary>
         [DataMember]
-        internal readonly string[]? WindowTitleFilter;
+        public readonly string[]? WindowTitleFilter;
 
         /// <summary>
         /// Represents a filter for window handles used to determine which windows are included in certain operations.
@@ -46,7 +46,7 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the native integer (nint) values of window handles to be
         /// filtered.  If the array is <see langword="null"/>, no filtering is applied.</remarks>
         [DataMember]
-        internal readonly nint[]? WindowHandleFilter;
+        public readonly nint[]? WindowHandleFilter;
 
         /// <summary>
         /// Represents a filter for parent process names used to determine specific conditions or behaviors.
@@ -55,6 +55,6 @@ namespace PSADT.WindowManagement
         /// array is null or empty,  no filtering is applied. This member is intended for internal use and should not be
         /// accessed directly.</remarks>
         [DataMember]
-        internal readonly string[]? ParentProcessFilter;
+        public readonly string[]? ParentProcessFilter;
     }
 }
