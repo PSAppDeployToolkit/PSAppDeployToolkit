@@ -64,7 +64,7 @@ function Test-ADTPowerPoint
             try
             {
                 # Bypass if no one's logged onto the device.
-                if (!(Get-ADTRunAsActiveUser -InformationAction SilentlyContinue))
+                if (!(Get-ADTClientServerUser))
                 {
                     Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
                     return

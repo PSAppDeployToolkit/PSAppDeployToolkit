@@ -144,7 +144,7 @@ function Start-ADTProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Security.Principal.NTAccount]$Username = (Get-ADTRunAsActiveUser | Select-Object -ExpandProperty NTAccount),
+        [System.Security.Principal.NTAccount]$Username = (Get-ADTClientServerUser | Select-Object -ExpandProperty NTAccount),
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

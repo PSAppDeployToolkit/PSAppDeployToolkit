@@ -204,7 +204,7 @@ function Set-ADTActiveSetup
 
         # Define initial variables.
         $ActiveSetupFileName = [System.IO.Path]::GetFileName($StubExePath)
-        $runAsActiveUser = Get-ADTRunAsActiveUser
+        $runAsActiveUser = Get-ADTClientServerUser
         $CUStubExePath = $null
         $CUArguments = $null
         $StubExeExt = [System.IO.Path]::GetExtension($StubExePath)
