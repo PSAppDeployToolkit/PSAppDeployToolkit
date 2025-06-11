@@ -28,7 +28,6 @@ function Private:Open-ADTClientServerProcess
 
     # Set the required file permissions to ensure the user can open the client/server process.
     Write-ADTLogEntry -Message 'Instantiating user client/server process.'
-    Set-ADTClientServerProcessPermissions -User $User
 
     # Instantiate a new ClientServerProcess object as required, then add the necessary callback.
     $Script:ADT.ClientServerProcess = [PSADT.ClientServer.ServerInstance]::new($User.NTAccount)
