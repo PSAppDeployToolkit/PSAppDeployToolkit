@@ -152,6 +152,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "ButtonMiddleText", ButtonMiddleText },
                 { "ButtonRightText", ButtonRightText },
                 { "Icon", DialogSystemIcon.Information },
+                { "MinimizeWindows", false },
                 { "MessageAlignment", DialogMessageAlignment.Left }
             });
 
@@ -172,6 +173,7 @@ namespace PSADT.UserInterface.TestHarness
                 { "ButtonLeftText", inputDialogButtonLeftText },
                 { "ButtonRightText", inputDialogButtonRightText },
                 { "Icon", DialogSystemIcon.Information },
+                { "MinimizeWindows", false },
                 { "MessageAlignment", DialogMessageAlignment.Left }
             })
             {

@@ -84,7 +84,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             Topmost = options.DialogTopMost;
 
             // Set supplemental options also
-            _customMessageText = null != customMessageText ? customMessageText : string.Empty;
+            _customMessageText = customMessageText;
             _countdownDuration = countdownDuration;
             _countdownWarningDuration = countdownWarningDuration;
             _countdownStopwatch = null != countdownStopwatch ? countdownStopwatch : new();
@@ -93,7 +93,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             // Pre-format the custom message if we have one
             if (!string.IsNullOrWhiteSpace(_customMessageText))
             {
-                FormatMessageWithHyperlinks(CustomMessageTextBlock, _customMessageText);
+                FormatMessageWithHyperlinks(CustomMessageTextBlock, _customMessageText!);
                 CustomMessageTextBlock.Visibility = Visibility.Visible;
             }
             else
@@ -342,13 +342,6 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             e.Handled = true;
         }
 
-        private static readonly Regex _markdownRegex = new Regex(
-            @"(?<PlainUrl>(?i)\b(?:(?:https?|ftp|mailto):(?://)?|www\.|ftp\.)[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$])" + @"|" +
-            @"(?<Accent>'(?<AccentText>[^']+)')" + @"|" +
-            @"(?<Bold>\*\*(?<BoldText>[^*]+)\*\*)" + @"|" +
-            @"(?<Italic>(?<!\*)\*(?<ItalicText>[^*]+)\*(?!\*))",
-            RegexOptions.Compiled);
-
         /// <summary>
         /// Formats the message text with enhanced markdown support including hyperlinks, bold, italic, and accent colored.
         /// Supports: [text](url), **bold**, *italic*, __bold__, _italic_, and colored quotes (> warning:, > info:, > error:, > success:).
@@ -530,42 +523,42 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Uses a cache for performance.
         /// </summary>
         /// <param name="dialogIconPath">Path or URI to the icon image file. Defaults to embedded resource if null.</param>
-                private void SetDialogIcon(string dialogIconPath)
+        private void SetDialogIcon(string dialogIconPath)
         {
             // Try to get from cache first.
             if (!_dialogIconCache.TryGetValue(dialogIconPath, out var bitmapSource))
             {
                 // Nothing cached. If we have an icon, get the highest resolution frame.
                 if (Path.GetExtension(dialogIconPath).Equals(".ico", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Use IconBitmapDecoder to get the icon frame.
-                        var iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
+                {
+                    // Use IconBitmapDecoder to get the icon frame.
+                    var iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(f => f.PixelWidth * f.PixelHeight).First();
 
-                        // Make it shareable across threads
-                        if (iconFrame.CanFreeze)
-                        {
-                            iconFrame.Freeze();
-                        }
-                        _dialogIconCache.Add(dialogIconPath, iconFrame);
-                        bitmapSource = iconFrame;
-                    }
-                    else
+                    // Make it shareable across threads
+                    if (iconFrame.CanFreeze)
                     {
-                        // Use BeginInit/EndInit pattern for better performance.
-                        var bitmapImage = new BitmapImage();
-                        bitmapImage.BeginInit();
-                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
-                        bitmapImage.EndInit();
-
-                        // Make it shareable across threads
-                        if (bitmapImage.CanFreeze)
-                        {
-                            bitmapImage.Freeze();
-                        }
-                        _dialogIconCache.Add(dialogIconPath, bitmapImage);
-                        bitmapSource = bitmapImage;
+                        iconFrame.Freeze();
                     }
+                    _dialogIconCache.Add(dialogIconPath, iconFrame);
+                    bitmapSource = iconFrame;
+                }
+                else
+                {
+                    // Use BeginInit/EndInit pattern for better performance.
+                    var bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.UriSource = new Uri(dialogIconPath, UriKind.Absolute);
+                    bitmapImage.EndInit();
+
+                    // Make it shareable across threads
+                    if (bitmapImage.CanFreeze)
+                    {
+                        bitmapImage.Freeze();
+                    }
+                    _dialogIconCache.Add(dialogIconPath, bitmapImage);
+                    bitmapSource = bitmapImage;
+                }
             }
             AppIconImage.Source = bitmapSource;
             Icon = bitmapSource;
@@ -884,6 +877,22 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// Dialog icon cache for improved performance
         /// </summary>
         private static readonly Dictionary<string, BitmapSource> _dialogIconCache = [];
+
+        /// <summary>
+        /// Represents a compiled regular expression used to parse and identify specific Markdown elements.
+        /// </summary>
+        /// <remarks>This regular expression matches the following Markdown elements: <list type="bullet">
+        /// <item> <description> Plain URLs, including HTTP, FTP, and email links. </description> </item> <item>
+        /// <description> Text enclosed in single quotes, representing accented text. </description> </item> <item>
+        /// <description> Text enclosed in double asterisks (**), representing bold text. </description> </item> <item>
+        /// <description> Text enclosed in single asterisks (*), representing italic text. </description> </item>
+        /// </list> The regular expression is compiled for improved performance during repeated use.</remarks>
+        private static readonly Regex _markdownRegex = new Regex(
+            @"(?<PlainUrl>(?i)\b(?:(?:https?|ftp|mailto):(?://)?|www\.|ftp\.)[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$])" + @"|" +
+            @"(?<Accent>'(?<AccentText>[^']+)')" + @"|" +
+            @"(?<Bold>\*\*(?<BoldText>[^*]+)\*\*)" + @"|" +
+            @"(?<Italic>(?<!\*)\*(?<ItalicText>[^*]+)\*(?!\*))",
+            RegexOptions.Compiled);
 
         /// <summary>
         /// Event handler for when a window property has changed.
