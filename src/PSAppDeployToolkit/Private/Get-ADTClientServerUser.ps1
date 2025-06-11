@@ -13,7 +13,7 @@ function Private:Get-ADTClientServerUser
     }
     else
     {
-        Get-ADTRunAsActiveUser
+        Get-ADTRunAsActiveUser 4>$null
     }
     if ($runAsActiveUser)
     {
