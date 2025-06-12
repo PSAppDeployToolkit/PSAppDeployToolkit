@@ -51,7 +51,7 @@ namespace PSADT.Utilities
             var sections = GetSectionNames(filepath);
             if (!sections.Contains(section, StringComparer.OrdinalIgnoreCase))
             {
-                throw new ArgumentException($"Section [{section}] was not found in the INI file.");
+                throw new ArgumentException($"Section [{section}] was not found in the INI file. Sections found: {string.Join(", ", sections)}", nameof(section));
             }
 
             Span<char> buffer = stackalloc char[65536];
@@ -61,13 +61,9 @@ namespace PSADT.Utilities
             {
                 res = Kernel32.GetPrivateProfileSection(section, buffer, filepath);
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
-            }
-            if (res == 0)
-            {
-                return null;
+                throw new Exception($"Failed to get section [{section}] from the INI file.", ex);
             }
 
             var entries = buffer.Slice(0, (int)res).ToString().Split('\0');
