@@ -518,11 +518,11 @@ function Set-ADTActiveSetup
                     Write-ADTLogEntry -Message "Session 0 detected: Executing Active Setup StubPath file for currently logged in user [$($runAsActiveUser.NTAccount)]."
                     $processResult = if ($CUArguments)
                     {
-                        Start-ADTProcessAsUser -FilePath $CUStubExePath -ArgumentList $CUArguments -CreateNoWindow -PassThru:$PassThru
+                        Start-ADTProcessAsUser -FilePath $CUStubExePath -ArgumentList $CUArguments -ExpandEnvironmentVariables -CreateNoWindow -PassThru:$PassThru
                     }
                     else
                     {
-                        Start-ADTProcessAsUser -FilePath $CUStubExePath -CreateNoWindow -PassThru:$PassThru
+                        Start-ADTProcessAsUser -FilePath $CUStubExePath -ExpandEnvironmentVariables -CreateNoWindow -PassThru:$PassThru
                     }
 
                     Write-ADTLogEntry -Message "Adding Active Setup Key for the current user: [$HKCURegKey]."
