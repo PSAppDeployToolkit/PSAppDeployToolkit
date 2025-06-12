@@ -52,13 +52,18 @@ namespace PSADT.UserInterface
                 // Announce the current countdown information.
                 if (null != options.CountdownDuration)
                 {
+                    var elapsed = options.CountdownDuration - state.CountdownStopwatch.Elapsed;
+                    if (elapsed < TimeSpan.Zero)
+                    {
+                        elapsed = TimeSpan.Zero;
+                    }
                     if (procsRunning?.Count > 0)
                     {
-                        state.LogWriter.WriteLine($"Close applications countdown has [{options.CountdownDuration - state.CountdownStopwatch.Elapsed}] seconds remaining.");
+                        state.LogWriter.WriteLine($"Close applications countdown has [{elapsed}] seconds remaining.");
                     }
                     else
                     {
-                        state.LogWriter.WriteLine($"Countdown has [{options.CountdownDuration - state.CountdownStopwatch.Elapsed}] seconds remaining.");
+                        state.LogWriter.WriteLine($"Countdown has [{elapsed}] seconds remaining.");
                     }
                 }
             }
