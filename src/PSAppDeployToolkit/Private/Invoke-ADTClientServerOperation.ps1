@@ -202,6 +202,7 @@ function Private:Invoke-ADTClientServerOperation
                 Exception = [System.ApplicationException]::new("Failed to perform the $($PSCmdlet.ParameterSetName) operation for an unknown reason.")
                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                 ErrorId = "$($PSCmdlet.ParameterSetName)Error"
+                TargetObject = $result
                 RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
@@ -290,10 +291,20 @@ function Private:Invoke-ADTClientServerOperation
         }
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
+    if ((($return = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString([System.String]::Join([System.String]::Empty, $result.StdOut))) -is [System.Boolean]) -and !$result.Equals($true) -and !$PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen'))
+    {
+        $naerParams = @{
+            Exception = [System.ApplicationException]::new("Failed to perform the $($PSCmdlet.ParameterSetName) operation for an unknown reason.")
+            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+            ErrorId = "$($PSCmdlet.ParameterSetName)Error"
+            TargetObject = $result
+            RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+        }
+        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+    }
 
     # Return the result to the caller. Don't let PowerShell enumerate collections/lists!
-    if (($PSCmdlet.ParameterSetName -match '^(ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState)$') -and
-        ($return = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString([System.String]::Join([System.String]::Empty, $result.StdOut))))
+    if ($PSCmdlet.ParameterSetName -match '^(ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState)$')
     {
         $PSCmdlet.WriteObject($return, $false)
     }
