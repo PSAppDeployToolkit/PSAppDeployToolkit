@@ -167,33 +167,33 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Invoke the right method depending on the mode.
-        $result = if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
+        if ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
         {
-            $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
+            $result = $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
         }
         elseif ($PSCmdlet.ParameterSetName.Equals('InitCloseAppsDialog'))
         {
-            $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)
+            $result = $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)
         }
         elseif ($PSCmdlet.ParameterSetName.Equals('PromptToCloseApps'))
         {
-            $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
+            $result = $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
         }
         elseif ($PSCmdlet.ParameterSetName.Equals('ShowProgressDialog'))
         {
-            $Script:ADT.ClientServerProcess.ShowProgressDialog($DialogStyle, $Options)
+            $result = $Script:ADT.ClientServerProcess.ShowProgressDialog($DialogStyle, $Options)
         }
         elseif ($PSCmdlet.ParameterSetName.Equals('UpdateProgressDialog'))
         {
-            $Script:ADT.ClientServerProcess.UpdateProgressDialog($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment)
+            $result = $Script:ADT.ClientServerProcess.UpdateProgressDialog($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment)
         }
         elseif ($PSBoundParameters.ContainsKey('Options'))
         {
-            $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
+            $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
         }
         else
         {
-            $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
+            $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
         }
         if (($null -eq $result) -or (!$result -and !$PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen')))
         {
