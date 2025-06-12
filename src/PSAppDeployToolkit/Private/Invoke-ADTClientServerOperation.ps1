@@ -196,102 +196,91 @@ function Private:Invoke-ADTClientServerOperation
         {
             $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
         }
-        if (($null -eq $result) -or (($result -is [System.Boolean]) -and !$result.Equals($true) -and !$PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen')))
+    }
+    else
+    {
+        # Sanitise $PSBoundParameters, we'll use it to generate our arguments.
+        $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
+        $null = $PSBoundParameters.Remove('NoWait')
+        $null = $PSBoundParameters.Remove('User')
+        if ($PSBoundParameters.ContainsKey('Options'))
+        {
+            $PSBoundParameters.Options = [PSADT.Utilities.SerializationUtilities]::SerializeToString($Options)
+        }
+
+        # Set up the parameters for Start-ADTProcessAsUser.
+        $sapauParams = @{
+            Username = $User.NTAccount
+            FilePath = "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe"
+            ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($PSBoundParameters.Count -gt 0) { $PSBoundParameters.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
+            MsiExecWaitTime = 1
+            CreateNoWindow = $true
+            InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+        }
+
+        # Farm this out to a new process.
+        $return = if ($NoWait)
+        {
+            Start-ADTProcessAsUser @sapauParams -NoWait
+            return
+        }
+        else
+        {
+            Start-ADTProcessAsUser @sapauParams -PassThru
+        }
+
+        # Confirm we were successful in our operation.
+        if ($return -isnot [PSADT.Execution.ProcessResult])
         {
             $naerParams = @{
-                Exception = [System.ApplicationException]::new("Failed to perform the $($PSCmdlet.ParameterSetName) operation for an unknown reason.")
+                Exception = [System.InvalidOperationException]::new("The client/server process failed to start.")
                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = "$($PSCmdlet.ParameterSetName)Error"
-                TargetObject = $result
-                RecommendedAction = "Please report this issue to the PSAppDeployToolkit development team."
+                ErrorId = 'ClientServerInvocationFailure'
+                TargetObject = $return
+                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+        if ($return.StdErr.Count -ne 0)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new($($return.StdErr))
+                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId = 'ClientServerResultError'
+                TargetObject = $return
+                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+        if ($return.ExitCode -ne 0)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The client/server process failed with exit code [$($return.ExitCode)].")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId = 'ClientServerRuntimeFailure'
+                TargetObject = $return
+                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+        if ($return.StdOut.Count -eq 0)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The client/server process returned no result.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                ErrorId = 'ClientServerResultNull'
+                TargetObject = $return
+                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
-        # Only write a result out for modes where we're expecting a result.
-        if ($PSCmdlet.ParameterSetName -match '^(ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState)$')
-        {
-            $PSCmdlet.WriteObject($result, $false)
-        }
-        return
+        # Deserialise the result for returning to the caller.
+        $result = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString([System.String]::Join([System.String]::Empty, $return.StdOut))
     }
 
-    # Sanitise $PSBoundParameters, we'll use it to generate our arguments.
-    $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
-    $null = $PSBoundParameters.Remove('NoWait')
-    $null = $PSBoundParameters.Remove('User')
-    if ($PSBoundParameters.ContainsKey('Options'))
-    {
-        $PSBoundParameters.Options = [PSADT.Utilities.SerializationUtilities]::SerializeToString($Options)
-    }
-
-    # Set up the parameters for Start-ADTProcessAsUser.
-    $sapauParams = @{
-        Username = $User.NTAccount
-        FilePath = "$Script:PSScriptRoot\lib\PSADT.ClientServer.Client.exe"
-        ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($PSBoundParameters.Count -gt 0) { $PSBoundParameters.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
-        MsiExecWaitTime = 1
-        CreateNoWindow = $true
-        InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-    }
-
-    # Farm this out to a new process.
-    $result = if ($NoWait)
-    {
-        Start-ADTProcessAsUser @sapauParams -NoWait
-        return
-    }
-    else
-    {
-        Start-ADTProcessAsUser @sapauParams -PassThru
-    }
-
-    # Confirm we were successful in our operation.
-    if ($result -isnot [PSADT.Execution.ProcessResult])
-    {
-        $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("The client/server process failed to start.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-            ErrorId = 'ClientServerInvocationFailure'
-            TargetObject = $result
-            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-    }
-    if ($result.StdErr.Count -ne 0)
-    {
-        $naerParams = @{
-            Exception = [System.InvalidOperationException]::new($($result.StdErr))
-            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-            ErrorId = 'ClientServerResultError'
-            TargetObject = $result
-            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-    }
-    if ($result.ExitCode -ne 0)
-    {
-        $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("The client/server process failed with exit code [$($result.ExitCode)].")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-            ErrorId = 'ClientServerRuntimeFailure'
-            TargetObject = $result
-            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-    }
-    if ($result.StdOut.Count -eq 0)
-    {
-        $naerParams = @{
-            Exception = [System.InvalidOperationException]::new("The client/server process returned no result.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-            ErrorId = 'ClientServerResultNull'
-            TargetObject = $result
-            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-    }
-    if ((($return = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString([System.String]::Join([System.String]::Empty, $result.StdOut))) -is [System.Boolean]) -and !$result.Equals($true) -and !$PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen'))
+    # Test that the received result is valid and expected.
+    if (($null -eq $result) -or (($result -is [System.Boolean]) -and !$result.Equals($true) -and !$PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen')))
     {
         $naerParams = @{
             Exception = [System.ApplicationException]::new("Failed to perform the $($PSCmdlet.ParameterSetName) operation for an unknown reason.")
@@ -303,9 +292,9 @@ function Private:Invoke-ADTClientServerOperation
         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
     }
 
-    # Return the result to the caller. Don't let PowerShell enumerate collections/lists!
+    # Only write a result out for modes where we're expecting a result.
     if ($PSCmdlet.ParameterSetName -match '^(ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState)$')
     {
-        $PSCmdlet.WriteObject($return, $false)
+        $PSCmdlet.WriteObject($result, $false)
     }
 }
