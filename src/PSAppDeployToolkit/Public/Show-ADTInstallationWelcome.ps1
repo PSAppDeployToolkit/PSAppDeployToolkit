@@ -736,7 +736,7 @@ function Show-ADTInstallationWelcome
             # Initialise the dialog's state if we haven't already done so.
             if ($initialized.Equals($false))
             {
-                $null = if ($CloseProcesses)
+                (Get-Variable -Name initialized).Value = if ($CloseProcesses)
                 {
                     Invoke-ADTClientServerOperation -InitCloseAppsDialog -User $runAsActiveUser -CloseProcesses $CloseProcesses
                 }
