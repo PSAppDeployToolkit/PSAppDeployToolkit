@@ -29,13 +29,15 @@ function Private:Set-ADTClientServerProcessPermissions
         $currentWindowsIdentity = $null
     }
 
-    # Initialize the module if it's not already so we can retrieve the asset paths.
-    $null = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
-
-    # Set required permissions on this module's library and configured asset files.
+    # Set required permissions on this module's library files.
     $builtinUsersSid = [System.Security.Principal.SecurityIdentifier]::new([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid, $null)
     $saipParams = @{ User = "*$($builtinUsersSid.Value)"; Permission = 'ReadAndExecute'; PermissionType = 'Allow'; Method = 'AddAccessRule'; InformationAction = 'SilentlyContinue' }
     Set-ADTItemPermission @saipParams -Path $Script:PSScriptRoot\lib -Inheritance ObjectInherit -Propagation InheritOnly
-    Set-ADTItemPermission @saipParams -Path ($adtConfig = Get-ADTConfig).Assets.Logo
-    Set-ADTItemPermission @saipParams -Path $adtConfig.Assets.Banner
+
+    # Set required permissions on the initialised assets.
+    if (Test-ADTModuleInitialized)
+    {
+        Set-ADTItemPermission @saipParams -Path ($adtConfig = Get-ADTConfig).Assets.Logo
+        Set-ADTItemPermission @saipParams -Path $adtConfig.Assets.Banner
+    }
 }
