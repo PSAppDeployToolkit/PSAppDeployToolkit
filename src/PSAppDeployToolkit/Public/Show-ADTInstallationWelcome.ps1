@@ -749,7 +749,7 @@ function Show-ADTInstallationWelcome
             # Minimize all other windows.
             if ($MinimizeWindows)
             {
-                Invoke-ADTClientServerOperation -MinimizeAllWindows -User $runAsActiveUser
+                $null = Invoke-ADTClientServerOperation -MinimizeAllWindows -User $runAsActiveUser
             }
 
             # Show the dialog and return the result.
@@ -1131,7 +1131,7 @@ function Show-ADTInstallationWelcome
                             # Restore minimized windows.
                             if ($MinimizeWindows)
                             {
-                                Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
+                                $null = Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
                             }
 
                             # If there's an active session, update deferral values and close it out.
@@ -1150,7 +1150,7 @@ function Show-ADTInstallationWelcome
                             # Restore minimized windows.
                             if ($MinimizeWindows)
                             {
-                                Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
+                                $null = Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
                             }
 
                             # If there's an active session, update deferral values and close it out.
