@@ -122,15 +122,15 @@ function Set-ADTIniSection
                     $null = New-Item -Path $FilePath -ItemType File -Force
                 }
 
-                if ($null -eq $Content -or $Content.Count -eq 0)
-                {
-                    $Content = @{}
-                    Write-ADTLogEntry -Message "Writing empty INI section: [FilePath = $FilePath] [Section = $Section]"
-                }
-                else
+                if ($null -ne $Content -and $Content.Count -gt 0)
                 {
                     $logContent = $Content.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } }
                     Write-ADTLogEntry -Message "Writing INI section: [FilePath = $FilePath] [Section = $Section] Content:$logContent"
+                }
+                else
+                {
+                    $Content = @{}
+                    Write-ADTLogEntry -Message "Writing empty INI section: [FilePath = $FilePath] [Section = $Section]"
                 }
 
                 [PSADT.Utilities.IniUtilities]::WriteSection($Section, $Content, $FilePath)
