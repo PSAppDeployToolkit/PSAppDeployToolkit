@@ -747,7 +747,7 @@ Add-BuildTask Build {
         }
 
         # Throw if there's any AST values matching PowerShell's environment provider.
-        if ($scrAst.FindAll({ $args[0].ToString() -match '^(\$?env:|(Microsoft.PowerShell.Core\\)?Environment::)' }, $true).Count)
+        if ($scrAst.FindAll({ $args[0].ToString() -match '^(\$?env:|(Microsoft.PowerShell.Core\\)?Environment::)' }, $true).Count -and !$file.Name.Equals('Update-ADTEnvironmentPsProvider.ps1'))
         {
             throw "The usage of PowerShell environment provider or drive within [$($file.Name)] is forbidden."
         }

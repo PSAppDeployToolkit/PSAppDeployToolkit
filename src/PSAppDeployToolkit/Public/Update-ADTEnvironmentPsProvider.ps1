@@ -84,7 +84,7 @@ function Update-ADTEnvironmentPsProvider
                             {
                                 if ($_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$')
                                 {
-                                    [System.Environment]::SetEnvironmentVariable($_.Name, $_.Value)
+                                    Set-Item -LiteralPath "Microsoft.PowerShell.Core\Environment::$($_.Name)" -Value $_.Value
                                 }
                             }
                         }
@@ -92,7 +92,7 @@ function Update-ADTEnvironmentPsProvider
                 }
 
                 # Set PATH environment variable separately because it is a combination of the user and machine environment variables.
-                [System.Environment]::SetEnvironmentVariable('PATH', [System.String]::Join(';', (([System.Environment]::GetEnvironmentVariable('PATH', 'Machine'), [System.Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';').Trim() | & { process { if ($_) { return $_ } } } | Select-Object -Unique)))
+                Set-Item -LiteralPath Microsoft.PowerShell.Core\Environment::PATH -Value ([System.String]::Join(';', (([System.Environment]::GetEnvironmentVariable('PATH', 'Machine'), [System.Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';').Trim() | & { process { if ($_) { return $_ } } } | Select-Object -Unique)))
             }
             catch
             {
