@@ -8,7 +8,7 @@ function Update-ADTEnvironmentPsProvider
 {
     <#
     .SYNOPSIS
-        Updates the environment variables for the current PowerShell session with any environment variable changes that may have occurred during script execution.
+        Updates the environment variables for the current PowerShell session with any environment variable changes that may have occurred during script execution. This function has been deprecated and will be removed from PSAppDeployToolkit 4.2.0.
 
     .DESCRIPTION
         Environment variable changes that take place during script execution are not visible to the current PowerShell session.
@@ -54,7 +54,8 @@ function Update-ADTEnvironmentPsProvider
 
     begin
     {
-        # Perform initial setup.
+        # Announce deprecation to callers.
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.2.0. Please raise a case at [https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues] if you require this function." -Severity 2
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Determine the user SID to base things off of.
