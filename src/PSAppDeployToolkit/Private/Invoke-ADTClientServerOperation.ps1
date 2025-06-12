@@ -196,7 +196,7 @@ function Private:Invoke-ADTClientServerOperation
         {
             $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
         }
-        if (($null -eq $result) -or (!$result -and !$PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen')))
+        if (($null -eq $result) -or (!$result.Equals($true) -and !$PSCmdlet.ParameterSetName.Equals('ProgressDialogOpen')))
         {
             $naerParams = @{
                 Exception = [System.ApplicationException]::new("Failed to perform the $($PSCmdlet.ParameterSetName) operation for an unknown reason.")
