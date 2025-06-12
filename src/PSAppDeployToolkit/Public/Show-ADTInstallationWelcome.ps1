@@ -749,7 +749,7 @@ function Show-ADTInstallationWelcome
             # Minimize all other windows.
             if ($MinimizeWindows)
             {
-                $null = Invoke-ADTClientServerOperation -MinimizeAllWindows -User $runAsActiveUser
+                Invoke-ADTClientServerOperation -MinimizeAllWindows -User $runAsActiveUser
             }
 
             # Show the dialog and return the result.
@@ -1089,7 +1089,7 @@ function Show-ADTInstallationWelcome
                             {
                                 if ($PromptToSave)
                                 {
-                                    $null = Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToCloseTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
+                                    Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToCloseTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
                                 }
                                 else
                                 {
@@ -1131,7 +1131,7 @@ function Show-ADTInstallationWelcome
                             # Restore minimized windows.
                             if ($MinimizeWindows)
                             {
-                                $null = Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
+                                Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
                             }
 
                             # If there's an active session, update deferral values and close it out.
@@ -1150,7 +1150,7 @@ function Show-ADTInstallationWelcome
                             # Restore minimized windows.
                             if ($MinimizeWindows)
                             {
-                                $null = Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
+                                Invoke-ADTClientServerOperation -RestoreAllWindows -User $runAsActiveUser
                             }
 
                             # If there's an active session, update deferral values and close it out.

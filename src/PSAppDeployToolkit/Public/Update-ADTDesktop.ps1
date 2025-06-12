@@ -65,7 +65,7 @@ function Update-ADTDesktop
         {
             try
             {
-                $null = Invoke-ADTClientServerOperation -RefreshDesktopAndEnvironmentVariables -User $runAsActiveUser
+                Invoke-ADTClientServerOperation -RefreshDesktopAndEnvironmentVariables -User $runAsActiveUser
             }
             catch
             {

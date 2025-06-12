@@ -80,7 +80,7 @@ function Close-ADTInstallationProgress
 
                 # Call the underlying function to close the progress window.
                 Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-                Invoke-ADTClientServerOperation -CloseProgressDialog -User $runAsActiveUser | Out-Null
+                Invoke-ADTClientServerOperation -CloseProgressDialog -User $runAsActiveUser
                 Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $MyInvocation.MyCommand
 
                 # We only send balloon tips when a session is active.

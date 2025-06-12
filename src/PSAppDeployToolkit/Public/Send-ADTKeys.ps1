@@ -150,7 +150,7 @@ function Send-ADTKeys
                 {
                     # Send the Key sequence.
                     Write-ADTLogEntry -Message "Sending key(s) [$Keys] to window title [$($window.WindowTitle)] with window handle [$($window.WindowHandle)]."
-                    $null = Invoke-ADTClientServerOperation -SendKeys -User $runAsActiveUser -Options ([PSADT.Types.SendKeysOptions]::new($window.WindowHandle, $Keys))
+                    Invoke-ADTClientServerOperation -SendKeys -User $runAsActiveUser -Options ([PSADT.Types.SendKeysOptions]::new($window.WindowHandle, $Keys))
                     if ($WaitDuration)
                     {
                         Write-ADTLogEntry -Message "Sleeping for [$($WaitDuration.TotalSeconds)] seconds."

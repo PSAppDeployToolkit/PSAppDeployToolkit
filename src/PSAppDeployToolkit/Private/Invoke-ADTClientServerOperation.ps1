@@ -206,7 +206,13 @@ function Private:Invoke-ADTClientServerOperation
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        $PSCmdlet.WriteObject($result, $false); return
+
+        # Only write a result out for modes where we're expecting a result.
+        if ($PSCmdlet.ParameterSetName -match '^(ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState)$')
+        {
+            $PSCmdlet.WriteObject($result, $false)
+        }
+        return
     }
 
     # Sanitise $PSBoundParameters, we'll use it to generate our arguments.
@@ -286,7 +292,8 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Return the result to the caller. Don't let PowerShell enumerate collections/lists!
-    if (($return = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString([System.String]::Join([System.String]::Empty, $result.StdOut))))
+    if (($PSCmdlet.ParameterSetName -match '^(ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState)$') -and
+        ($return = [PSADT.Utilities.SerializationUtilities]::DeserializeFromString([System.String]::Join([System.String]::Empty, $result.StdOut))))
     {
         $PSCmdlet.WriteObject($return, $false)
     }
