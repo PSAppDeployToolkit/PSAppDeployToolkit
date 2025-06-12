@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -68,6 +69,7 @@ namespace PSADT.UserInterface.Dialogs.Fluent
             DataContext = this;
 
             // Store original and alternative texts
+            _continueOnProcessClosure = options.ContinueOnProcessClosure;
             _closeAppsNoProcessesMessageText = options.Strings.Fluent.DialogMessageNoProcesses;
             _closeAppsMessageText = options.Strings.Fluent.DialogMessage;
             _buttonLeftText = options.Strings.Fluent.ButtonLeftText;
@@ -252,6 +254,10 @@ namespace PSADT.UserInterface.Dialogs.Fluent
                 CloseAppsStackPanel.Visibility = Visibility.Collapsed;
                 CloseAppsSeparator.Visibility = Visibility.Collapsed;
                 ButtonLeft.IsEnabled = true;
+                if (_continueOnProcessClosure)
+                {
+                    ButtonLeft.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                }
             }
         }
 
@@ -417,6 +423,11 @@ namespace PSADT.UserInterface.Dialogs.Fluent
         /// The number of deferrals remaining, if applicable.
         /// </summary>
         private readonly uint? _deferralsRemaining;
+
+        /// <summary>
+        /// Indicates whether the continue button should be implied when all processes have closed.
+        /// </summary>
+        private readonly bool _continueOnProcessClosure;
 
         /// <summary>
         /// Indicates whether the countdown is forced.

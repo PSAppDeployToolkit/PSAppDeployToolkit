@@ -57,6 +57,7 @@ namespace PSADT.UserInterface.Dialogs.Classic
                 countdownClose = options.Strings.Classic.CountdownClose;
                 countdownDefer = options.Strings.Classic.CountdownDefer;
                 buttonContinueToolTipText = options.Strings.Classic.ButtonContinueTooltip;
+                continueOnProcessClosure = options.ContinueOnProcessClosure;
 
                 // Set up the picturebox.
                 SetPictureBox(this.pictureBanner, options);
@@ -336,6 +337,10 @@ namespace PSADT.UserInterface.Dialogs.Classic
                     this.buttonCloseProcesses.Enabled = false;
                     this.buttonCloseProcesses.Visible = false;
                     this.buttonContinue.Enabled = true;
+                    if (continueOnProcessClosure)
+                    {
+                        buttonContinue.PerformClick();
+                    }
                 }
             });
         }
@@ -349,6 +354,11 @@ namespace PSADT.UserInterface.Dialogs.Classic
         /// Text used on the continue button's tooltip.
         /// </summary>
         private readonly string? buttonContinueToolTipText;
+
+        /// <summary>
+        /// Indicates whether the continue button should be implied when all processes have closed.
+        /// </summary>
+        private readonly bool continueOnProcessClosure;
 
         /// <summary>
         /// A restart countdown timer to perform an automatic reboot.

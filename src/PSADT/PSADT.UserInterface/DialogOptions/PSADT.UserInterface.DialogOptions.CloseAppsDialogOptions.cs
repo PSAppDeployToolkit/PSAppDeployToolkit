@@ -48,6 +48,14 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 UnlimitedDeferrals = unlimitedDeferrals;
             }
+            if (options.ContainsKey("ContinueOnProcessClosure"))
+            {
+                if (options["ContinueOnProcessClosure"] is not bool continueOnProcessClosure)
+                {
+                    throw new ArgumentOutOfRangeException("ContinueOnProcessClosure value is not valid.", (Exception?)null);
+                }
+                ContinueOnProcessClosure = continueOnProcessClosure;
+            }
             if (options.ContainsKey("CountdownDuration"))
             {
                 if (options["CountdownDuration"] is not TimeSpan countdownDuration)
@@ -108,6 +116,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly bool UnlimitedDeferrals;
+
+        /// <summary>
+        /// Indicates whether the continue button should be implied when all processes have closed.
+        /// </summary>
+        [DataMember]
+        public readonly bool ContinueOnProcessClosure;
 
         /// <summary>
         /// The duration of the countdown before the dialog automatically closes.

@@ -963,6 +963,10 @@ function Show-ADTInstallationWelcome
                         {
                             $dialogOptions.Add('UnlimitedDeferrals', $true)
                         }
+                        if ($AllowDeferCloseProcesses)
+                        {
+                            $dialogOptions.Add('ContinueOnProcessClosure', $true)
+                        }
                     }
                     if (!$dialogOptions.ContainsKey('DeferralsRemaining') -and !$dialogOptions.ContainsKey('DeferralDeadline'))
                     {
@@ -1054,7 +1058,10 @@ function Show-ADTInstallationWelcome
                         if ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Continue))
                         {
                             # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
-                            Write-ADTLogEntry -Message 'The user selected to continue...'
+                            if (!$AllowDeferCloseProcesses -and !($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
+                            {
+                                Write-ADTLogEntry -Message 'The user selected to continue...'
+                            }
                             for ($i = 0; $i -lt 5; $i++)
                             {
                                 if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
