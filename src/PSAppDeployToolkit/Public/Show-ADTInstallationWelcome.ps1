@@ -1082,7 +1082,7 @@ function Show-ADTInstallationWelcome
                             {
                                 if ($PromptToSave)
                                 {
-                                    $null = Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToSaveTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
+                                    $null = Invoke-ADTClientServerOperation -PromptToCloseApps -User $runAsActiveUser -PromptToCloseTimeout ([System.TimeSpan]::FromSeconds($adtConfig.UI.PromptToSaveTimeout))
                                 }
                                 else
                                 {
