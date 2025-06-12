@@ -37,7 +37,7 @@ namespace PSADT.WindowManagement
                             Process.GetProcesses();
 
             // Create a list to hold the window information.
-            Regex? windowTitleRegex = null != windowTitleFilter ? new(Regex.Escape(string.Join("|", windowTitleFilter)), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
+            Regex? windowTitleRegex = null != windowTitleFilter ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
             List<WindowInfo> windowInfos = new List<WindowInfo>();
             foreach (var window in WindowTools.EnumWindows())
             {
