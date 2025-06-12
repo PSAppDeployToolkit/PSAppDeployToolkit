@@ -36,6 +36,9 @@ function Start-ADTProcess
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
+    .PARAMETER ExpandEnvironmentVariables
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
+
     .PARAMETER UseShellExecute
         Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
 
@@ -221,6 +224,17 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
+        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
         # Identity: UseShellExecute (only present in sets where identity is "UseShellExecute")
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
@@ -443,7 +457,7 @@ function Start-ADTProcess
             try
             {
                 # Validate and find the fully qualified path for the $FilePath variable.
-                if ([System.IO.Path]::HasExtension($FilePath) -and ![System.IO.Path]::IsPathRooted($FilePath))
+                if (!$ExpandEnvironmentVariables -and [System.IO.Path]::HasExtension($FilePath) -and ![System.IO.Path]::IsPathRooted($FilePath))
                 {
                     if (!($fqPath = Get-Item -LiteralPath ("$WorkingDirectory;$($ExecutionContext.SessionState.Path.CurrentLocation.Path);$([System.Environment]::GetEnvironmentVariable('PATH'))".Split(';').Where({ ![System.String]::IsNullOrWhiteSpace($_) }).TrimEnd('\') -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
                     {
@@ -495,6 +509,7 @@ function Start-ADTProcess
                     $Username,
                     $UseLinkedAdminToken,
                     $InheritEnvironmentVariables,
+                    $ExpandEnvironmentVariables,
                     $UseShellExecute,
                     $Verb,
                     $CreateNoWindow,

@@ -25,6 +25,7 @@ namespace PSADT.Execution
         /// <param name="username"></param>
         /// <param name="useLinkedAdminToken"></param>
         /// <param name="inheritEnvironmentVariables"></param>
+        /// <param name="expandEnvironmentVariables"></param>
         /// <param name="useShellExecute"></param>
         /// <param name="verb"></param>
         /// <param name="createNoWindow"></param>
@@ -41,6 +42,7 @@ namespace PSADT.Execution
             NTAccount? username = null,
             bool useLinkedAdminToken = false,
             bool inheritEnvironmentVariables = false,
+            bool expandEnvironmentVariables = false,
             bool useShellExecute = false,
             string? verb = null,
             bool createNoWindow = false,
@@ -78,7 +80,7 @@ namespace PSADT.Execution
             {
                 WorkingDirectory = workingDirectory!.Trim();
             }
-            else if (Path.GetDirectoryName(filePath) is string fileDir && !string.IsNullOrWhiteSpace(fileDir))
+            else if (!expandEnvironmentVariables && Path.GetDirectoryName(filePath) is string fileDir && !string.IsNullOrWhiteSpace(fileDir))
             {
                 WorkingDirectory = fileDir;
             }
@@ -108,6 +110,7 @@ namespace PSADT.Execution
             Username = username;
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
+            ExpandEnvironmentVariables = expandEnvironmentVariables;
             UseShellExecute = useShellExecute;
             WaitForChildProcesses = waitForChildProcesses;
             NoTerminateOnTimeout = noTerminateOnTimeout;
@@ -159,6 +162,11 @@ namespace PSADT.Execution
         /// Gets a value indicating whether to inherit the environment variables of the current process.
         /// </summary>
         public readonly bool InheritEnvironmentVariables;
+
+        /// <summary>
+        /// Indicates whether environment variables in the input should be expanded.
+        /// </summary>
+        public readonly bool ExpandEnvironmentVariables;
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.

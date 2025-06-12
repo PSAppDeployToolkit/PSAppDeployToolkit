@@ -26,10 +26,11 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- [-CreateNoWindow] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses] -Timeout <TimeSpan>
- [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>]
- [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
- [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
+ [-ExpandEnvironmentVariables] [-CreateNoWindow] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>]
+ [-WaitForChildProcesses] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ### Username_CreateNoWindow_NoWait
@@ -37,10 +38,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- [-CreateNoWindow] [-NoWait] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses]
- [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru]
- [<CommonParameters>]
+ [-ExpandEnvironmentVariables] [-CreateNoWindow] [-NoWait] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>]
+ [-WaitForChildProcesses] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>]
+ [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### Username_CreateNoWindow_Wait
@@ -48,10 +49,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- [-CreateNoWindow] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses]
- [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru]
- [<CommonParameters>]
+ [-ExpandEnvironmentVariables] [-CreateNoWindow] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>]
+ [-WaitForChildProcesses] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>]
+ [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### Username_WindowStyle_Timeout
@@ -59,10 +60,11 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- -WindowStyle <ProcessWindowStyle> [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses]
- -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>]
- [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
- [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
+ [-ExpandEnvironmentVariables] -WindowStyle <ProcessWindowStyle> [-WaitForMsiExec]
+ [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses] -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>]
+ [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>]
+ [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### Username_WindowStyle_NoWait
@@ -70,10 +72,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- -WindowStyle <ProcessWindowStyle> [-NoWait] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>]
- [-WaitForChildProcesses] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
- [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>]
- [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
+ [-ExpandEnvironmentVariables] -WindowStyle <ProcessWindowStyle> [-NoWait] [-WaitForMsiExec]
+ [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
+ [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### Username_WindowStyle_Wait
@@ -81,10 +83,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- -WindowStyle <ProcessWindowStyle> [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses]
- [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru]
- [<CommonParameters>]
+ [-ExpandEnvironmentVariables] -WindowStyle <ProcessWindowStyle> [-WaitForMsiExec]
+ [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses] [-SuccessExitCodes <Int32[]>]
+ [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
+ [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### Username_CreateWindow_Timeout
@@ -92,8 +94,8 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses] -Timeout <TimeSpan>
- [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>]
+ [-ExpandEnvironmentVariables] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses]
+ -Timeout <TimeSpan> [-TimeoutAction <ActionPreference>] [-NoTerminateOnTimeout] [-SuccessExitCodes <Int32[]>]
  [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
  [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
@@ -103,10 +105,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- [-NoWait] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses]
- [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
- [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru]
- [<CommonParameters>]
+ [-ExpandEnvironmentVariables] [-NoWait] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>]
+ [-WaitForChildProcesses] [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>]
+ [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>]
+ [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
 ```
 
 ### Username_CreateWindow_Wait
@@ -114,9 +116,10 @@ Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentL
 ```powershell
 Start-ADTProcess -FilePath <String> [-ArgumentList <String[]>] [-SecureArgumentList]
  [-WorkingDirectory <String>] -Username <NTAccount> [-UseLinkedAdminToken] [-InheritEnvironmentVariables]
- [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses] [-SuccessExitCodes <Int32[]>]
- [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>] [-PriorityClass <ProcessPriorityClass>]
- [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru] [<CommonParameters>]
+ [-ExpandEnvironmentVariables] [-WaitForMsiExec] [-MsiExecWaitTime <TimeSpan>] [-WaitForChildProcesses]
+ [-SuccessExitCodes <Int32[]>] [-RebootExitCodes <Int32[]>] [-IgnoreExitCodes <String[]>]
+ [-PriorityClass <ProcessPriorityClass>] [-StreamEncoding <Encoding>] [-ExitOnProcessFailure] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ### UseShellExecute_CreateNoWindow_Timeout
@@ -468,6 +471,22 @@ Accept wildcard characters: False
 ### -InheritEnvironmentVariables
 
 Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Username_CreateNoWindow_Timeout, Username_CreateNoWindow_NoWait, Username_CreateNoWindow_Wait, Username_WindowStyle_Timeout, Username_WindowStyle_NoWait, Username_WindowStyle_Wait, Username_CreateWindow_Timeout, Username_CreateWindow_NoWait, Username_CreateWindow_Wait
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExpandEnvironmentVariables
+
+Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
 ```yaml
 Type: SwitchParameter

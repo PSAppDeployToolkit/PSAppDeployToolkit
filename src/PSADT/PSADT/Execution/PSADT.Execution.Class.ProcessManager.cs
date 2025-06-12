@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
@@ -208,7 +210,8 @@ namespace PSADT.Execution
                                         using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
                                         {
                                             startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                            Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                            var commandLine = launchInfo.ExpandEnvironmentVariables ? ExpandEnvironmentVariables(launchInfo.CommandLine, lpEnvironment) : launchInfo.CommandLine;
+                                            Kernel32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                         }
                                     }
                                 }
@@ -408,6 +411,93 @@ namespace PSADT.Execution
                     output.Add(text);
                 }
             }
+        }
+
+        /// <summary>
+        /// Converts a native environment block into a read-only dictionary of environment variables.
+        /// </summary>
+        /// <remarks>This method processes a native environment block, which is a contiguous block of
+        /// memory containing null-terminated strings in the format "Name=Value". It extracts these strings and converts
+        /// them into a dictionary for easier access in managed code.</remarks>
+        /// <param name="environmentBlock">A handle to the native environment block. The handle must be valid and contain environment variables in the
+        /// format "Name=Value".</param>
+        /// <returns>A read-only dictionary containing the environment variables as key-value pairs. The keys are
+        /// case-insensitive.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="environmentBlock"/> is invalid, empty, or contains entries that are not in the
+        /// expected "Name=Value" format.</exception>
+        private static ReadOnlyDictionary<string, string> EnvironmentBlockToDictionary(SafeEnvironmentBlockHandle environmentBlock)
+        {
+            if (environmentBlock.IsInvalid)
+            {
+                throw new ArgumentException("The environment block is invalid.", nameof(environmentBlock));
+            }
+            bool envBlockAddRef = false;
+            try
+            {
+                environmentBlock.DangerousAddRef(ref envBlockAddRef);
+                var envBlockPtr = environmentBlock.DangerousGetHandle();
+                var envDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                while (true)
+                {
+                    // Marshal.PtrToStringUni will read up to the first null terminator.
+                    string entry = Marshal.PtrToStringUni(envBlockPtr)!;
+                    if (string.IsNullOrWhiteSpace(entry))
+                    {
+                        break;
+                    }
+
+                    // Split into name and value (only on the first '=').
+                    int idx = entry.IndexOf('=');
+                    if (idx < 0)
+                    {
+                        throw new ArgumentException($"Invalid environment variable entry: '{entry}'. Expected format is 'Name=Value'.", nameof(environmentBlock));
+                    }
+
+                    // Add the valid entry and advance pointer past this string + its null terminator.
+                    envDict.Add(entry.Substring(0, idx), entry.Substring(idx + 1));
+                    envBlockPtr += (entry.Length + 1) * sizeof(char);
+                }
+                if (envDict.Count == 0)
+                {
+                    throw new ArgumentException("The environment block is empty.", nameof(environmentBlock));
+                }
+                return new ReadOnlyDictionary<string, string>(envDict);
+            }
+            finally
+            {
+                if (envBlockAddRef)
+                {
+                    environmentBlock.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Expands environment variable placeholders in the specified input string using the provided environment
+        /// block.
+        /// </summary>
+        /// <remarks>This method uses the provided environment block to resolve environment variable
+        /// placeholders. Placeholders are expected to be in the format <c>%VariableName%</c>. If a placeholder does not
+        /// match any environment variable in the block, it remains unchanged in the output.</remarks>
+        /// <param name="input">The input string containing environment variable placeholders in the format <c>%VariableName%</c>.</param>
+        /// <param name="environment">A handle to the environment block used for resolving environment variables. The handle must be valid and not
+        /// invalid.</param>
+        /// <returns>A string with all recognized environment variable placeholders replaced by their corresponding values.
+        /// Placeholders that cannot be resolved are left unchanged.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is <see langword="null"/>, empty, or consists only of whitespace. Thrown
+        /// if <paramref name="environment"/> is invalid.</exception>
+        private static string ExpandEnvironmentVariables(string input, SafeEnvironmentBlockHandle environment)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                throw new ArgumentException("Input cannot be null or empty.", nameof(input));
+            }
+            if (environment.IsInvalid)
+            {
+                throw new ArgumentException("The environment block is invalid.", nameof(environment));
+            }
+            var envDict = EnvironmentBlockToDictionary(environment);
+            return Regex.Replace(input, "%([^%]+)%", m => envDict.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : m.Groups[1].Value);
         }
 
         /// <summary>

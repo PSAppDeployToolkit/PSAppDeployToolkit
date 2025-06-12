@@ -36,6 +36,9 @@ function Start-ADTProcessAsUser
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
+    .PARAMETER ExpandEnvironmentVariables
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
+
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
 
@@ -166,6 +169,9 @@ function Start-ADTProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
         # Window Option: WindowStyle (only in sets where window is "WindowStyle")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]
