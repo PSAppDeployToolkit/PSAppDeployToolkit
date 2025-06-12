@@ -8,7 +8,7 @@ function Install-ADTMSUpdates
 {
     <#
     .SYNOPSIS
-        Install all Microsoft Updates in a given directory.
+        Install all Microsoft Updates in a given directory. This function has been deprecated and will be removed from PSAppDeployToolkit 4.2.0.
 
     .DESCRIPTION
         Install all Microsoft Updates of type ".exe", ".msu", or ".msp" in a given directory (recursively search directory). The function will check if the update is already installed and skip it if it is. It handles older redistributables and different types of updates appropriately.

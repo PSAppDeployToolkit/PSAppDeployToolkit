@@ -8,7 +8,7 @@ function Get-ADTUniversalDate
 {
     <#
     .SYNOPSIS
-        Returns the date/time for the local culture in a universal sortable date time pattern.
+        Returns the date/time for the local culture in a universal sortable date time pattern. This function has been deprecated and will be removed from PSAppDeployToolkit 4.2.0.
 
     .DESCRIPTION
         Converts the current datetime or a datetime string for the current culture into a universal sortable date time pattern, e.g. 2013-08-22 11:51:52Z.

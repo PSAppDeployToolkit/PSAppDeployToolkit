@@ -8,7 +8,7 @@ function Block-ADTAppExecution
 {
     <#
     .SYNOPSIS
-        Block the execution of an application(s).
+        Block the execution of an application(s). This function is now deprecated and the block execution technology will be removed in PSAppDeployToolkit 4.2.0.
 
     .DESCRIPTION
         This function is called when you pass the -BlockExecution parameter to the Stop-RunningApplications function. It does the following:
