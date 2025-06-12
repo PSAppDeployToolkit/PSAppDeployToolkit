@@ -134,7 +134,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             if ($PSCmdlet.ParameterSetName.Equals('CloseProgressDialog'))
             {
-                return $true
+                return
             }
 
             # Instantiate a new ClientServerProcess object as required, then add the necessary callback.
