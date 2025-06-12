@@ -36,11 +36,10 @@ namespace PSADT.ProcessManagement
             }
             Name = name;
 
-            if (string.IsNullOrWhiteSpace(description))
+            if (!string.IsNullOrWhiteSpace(description))
             {
-                throw new ArgumentNullException("Description value is null or invalid.", (Exception?)null);
+                Description = description;
             }
-            Description = description;
         }
 
         /// <summary>
@@ -56,12 +55,8 @@ namespace PSADT.ProcessManagement
             }
 
             // Test and set optional values.
-            if (properties.ContainsKey("Description"))
+            if (properties["Description"] is string description && !string.IsNullOrWhiteSpace(description))
             {
-                if (properties["Description"] is not string description || string.IsNullOrWhiteSpace(description))
-                {
-                    throw new ArgumentOutOfRangeException("Description value is not valid.", (Exception?)null);
-                }
                 Description = description;
             }
 
