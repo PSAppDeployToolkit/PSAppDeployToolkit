@@ -21,7 +21,7 @@ namespace PSADT.Utilities
         /// <param name="key"></param>
         /// <param name="filepath"></param>
         /// <returns></returns>
-        public static string GetSectionKeyValue(string section, string key, string filepath)
+        public static string GetSectionKeyValue(string filepath, string section, string key)
         {
             Span<char> buffer = stackalloc char[4096];
             var res = Kernel32.GetPrivateProfileString(section, key, null, buffer, filepath);
@@ -35,7 +35,7 @@ namespace PSADT.Utilities
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="filepath"></param>
-        public static void WriteSectionKeyValue(string section, string? key, string? value, string filepath)
+        public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value)
         {
             Kernel32.WritePrivateProfileString(section, key, value, filepath);
         }
@@ -46,7 +46,7 @@ namespace PSADT.Utilities
         /// <param name="section">The section name</param>
         /// <param name="filepath">Path to the INI file</param>
         /// <returns>OrderedDictionary of key/value pairs in the section</returns>
-        public static OrderedDictionary? GetSection(string section, string filepath)
+        public static OrderedDictionary? GetSection(string filepath, string section)
         {
             var sections = GetSectionNames(filepath);
             if (!sections.Contains(section, StringComparer.OrdinalIgnoreCase))
@@ -111,7 +111,7 @@ namespace PSADT.Utilities
         /// <param name="section">The section name</param>
         /// <param name="content">INI content to write</param>
         /// <param name="filepath">Path to the INI file</param>
-        public static void WriteSection(string section, IDictionary? content, string filepath)
+        public static void WriteSection(string filepath, string section, IDictionary? content)
         {
             if (content == null)
             {

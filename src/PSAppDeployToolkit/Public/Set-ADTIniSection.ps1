@@ -133,7 +133,7 @@ function Set-ADTIniSection
                     Write-ADTLogEntry -Message "Writing empty INI section: [FilePath = $FilePath] [Section = $Section]"
                 }
 
-                [PSADT.Utilities.IniUtilities]::WriteSection($Section, $Content, $FilePath)
+                [PSADT.Utilities.IniUtilities]::WriteSection($FilePath, $Section, $Content)
             }
             catch
             {
