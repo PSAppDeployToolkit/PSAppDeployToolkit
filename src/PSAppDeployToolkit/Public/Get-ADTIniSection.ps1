@@ -84,7 +84,7 @@ function Get-ADTIniSection
             try
             {
                 # Get the section from the INI file
-                $iniSection = [PSADT.Utilities.IniUtilities]::GetSection($Section, $FilePath)
+                $iniSection = [PSADT.Utilities.IniUtilities]::GetSection($FilePath, $Section)
 
                 if ($null -eq $iniSection -or $iniSection.Count -eq 0)
                 {

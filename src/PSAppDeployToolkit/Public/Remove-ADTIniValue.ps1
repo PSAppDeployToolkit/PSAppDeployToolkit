@@ -100,7 +100,7 @@ function Remove-ADTIniValue
             try
             {
                 Write-ADTLogEntry -Message "Removing INI value: [Section = $Section] [Key = $Key]."
-                [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, [NullString]::Value, $FilePath)
+                [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($FilePath, $Section, $Key, [NullString]::Value)
             }
             catch
             {

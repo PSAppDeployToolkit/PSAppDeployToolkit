@@ -122,7 +122,7 @@ function Set-ADTIniValue
 
                 # Write out the section key/value pair to the file.
                 Write-ADTLogEntry -Message "Writing INI value: [FilePath = $FilePath] [Section = $Section] [Key = $Key] [Value = $Value]."
-                [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($Section, $Key, $Value, $FilePath)
+                [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($FilePath, $Section, $Key, $Value)
             }
             catch
             {
