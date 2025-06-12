@@ -20,7 +20,12 @@ function Set-ADTIniSection
         Section within the INI file.
 
 	.PARAMETER Content
-		A hashtable or dictionary object containing the key-value pairs to set in the specified section. This will overwrite the entire section so that it only contains the content specified - if $null or an empty hashtable is provided, the section will be set to empty. Supply an ordered hashtable to maintain the order of keys in the INI file. Values can be strings, numbers, booleans, enums, or null.
+		A hashtable or dictionary object containing the key-value pairs to set in the specified section.
+        Supply an ordered hashtable to preserve the order of supplied entries. Values can be strings, numbers, booleans, enums, or null.
+        Supply $null or an empty hashtable in combination with -Overwrite to empty an entire section.
+
+    .PARAMETER Overwrite
+        Specifies whether the provided INI content should overwrite all existing section content.
 
     .PARAMETER Force
         Specifies whether the INI file should be created if it does not already exist.
@@ -35,25 +40,22 @@ function Set-ADTIniSection
 
         This function does not return any output.
 
-    .EXAMPLE
-        Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content @{'KeyFileName' = 'MyFile.ID'}
-
-        Sets the 'Notes' section to only contain the content specified, supplied as hashtable.
 
     .EXAMPLE
         Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content ([ordered]@{'KeyFileName' = 'MyFile.ID'; 'KeyFileType' = 'ID'})
 
-        Sets the 'Notes' section to only contain the content specified, supplied as an ordered hashtable to maintain the desired order.
+        Adds the provided content to the 'Notes' section, preserving input order
 
     .EXAMPLE
-        Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content @{}
+        Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content @{'KeyFileName' = 'MyFile.ID'} -Overwrite
 
-       Sets the 'Notes' section to be empty by sending an empty hashtable.
+        Overwrites the 'Notes' section to only contain the content specified.
+
 
     .EXAMPLE
-        Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content $null
+        Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content $null -Overwrite
 
-       Sets the 'Notes' section to be empty by sending a null value.
+        Sets the 'Notes' section to be empty by sending null content in combination with the -Overwrite switch.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -90,6 +92,9 @@ function Set-ADTIniSection
         [System.Collections.IDictionary]$Content,
 
         [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Overwrite,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Force
     )
 
@@ -122,18 +127,41 @@ function Set-ADTIniSection
                     $null = New-Item -Path $FilePath -ItemType File -Force
                 }
 
-                if ($null -ne $Content -and $Content.Count -gt 0)
+                if ($null -eq $Content)
                 {
-                    $logContent = $Content.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } }
-                    Write-ADTLogEntry -Message "Writing INI section: [FilePath = $FilePath] [Section = $Section] Content:$logContent"
+                    $Content = @{}
+                }
+
+                if (!$Overwrite)
+                {
+                    if ($Content.Count -eq 0)
+                    {
+                        Write-ADTLogEntry -Message "No content provided to write to INI section: [FilePath = $FilePath] [Section = $Section]."
+                        return
+                    }
+                    try
+                    {
+                        $writeContent = [PSADT.Utilities.IniUtilities]::GetSection($FilePath, $Section)
+                        foreach ($key in $Content.Keys)
+                        {
+                            $writeContent[$key] = $Content[$key]
+                        }
+                    }
+                    catch
+                    {
+                        # Expected to end up here if the section does not currently exist
+                        $writeContent = $Content
+                    }
                 }
                 else
                 {
-                    $Content = @{}
-                    Write-ADTLogEntry -Message "Writing empty INI section: [FilePath = $FilePath] [Section = $Section]"
+                    $writeContent = $Content
                 }
 
-                [PSADT.Utilities.IniUtilities]::WriteSection($FilePath, $Section, $Content)
+                $logContent = $Content.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } }
+                Write-ADTLogEntry -Message "$(if ($Overwrite) {'Overwriting'} else {'Writing'}) INI section: [FilePath = $FilePath] [Section = $Section] Content:$logContent"
+
+                [PSADT.Utilities.IniUtilities]::WriteSection($FilePath, $Section, $writeContent)
             }
             catch
             {
