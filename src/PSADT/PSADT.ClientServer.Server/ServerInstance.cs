@@ -43,7 +43,7 @@ namespace PSADT.ClientServer
         public ServerInstance(NTAccount user)
         {
             // Initialize the anonymous pipe streams for inter-process communication.
-            _user = user ?? throw new ArgumentNullException(nameof(user), "User cannot be null.");
+            Username = user ?? throw new ArgumentNullException(nameof(user), "User cannot be null.");
             _outputPipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable);
             _inputPipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
             _logPipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
@@ -67,7 +67,7 @@ namespace PSADT.ClientServer
                 _assemblyLocation,
                 ["/ClientServer", "-InputPipe", _outputPipeServer.GetClientHandleAsString(), "-OutputPipe", _inputPipeServer.GetClientHandleAsString(), "-LogPipe", _logPipeServer.GetClientHandleAsString()],
                 null,
-                _user,
+                Username,
                 false,
                 false,
                 false,
@@ -545,6 +545,14 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Represents the session information for the current user.
+        /// </summary>
+        /// <remarks>This field stores details about the user's session, such as authentication or
+        /// user-specific data. It is intended for internal use and should not be exposed directly to external
+        /// consumers.</remarks>
+        public readonly NTAccount Username;
+
+        /// <summary>
         /// Gets a value indicating whether the process is currently running.
         /// </summary>
         public bool IsRunning => null != _clientProcess && _clientProcess.Task.Status.Equals(TaskStatus.Running);
@@ -628,14 +636,6 @@ namespace PSADT.ClientServer
         /// <remarks>This field is used internally to signal cancellation for the log writer task. It is
         /// initialized as a new instance of <see cref="CancellationTokenSource"/>.</remarks>
         private CancellationTokenSource _logWriterTaskCts = new();
-
-        /// <summary>
-        /// Represents the session information for the current user.
-        /// </summary>
-        /// <remarks>This field stores details about the user's session, such as authentication or
-        /// user-specific data. It is intended for internal use and should not be exposed directly to external
-        /// consumers.</remarks>
-        private readonly NTAccount _user;
 
         /// <summary>
         /// Represents the source identifier for logging related to the "Show-ADTModalDialog" functionality.
