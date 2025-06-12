@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
@@ -100,13 +101,12 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="filepath">Path to the INI file</param>
         /// <returns>Array of section names</returns>
-        public static string[] GetSectionNames(string filepath)
+        private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
             Span<char> buffer = stackalloc char[65536];
             var res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
-            var names = new string(buffer, 0, (int)res).Split('\0').Where(name => !string.IsNullOrEmpty(name)).ToArray();
 
-            return buffer.Slice(0, (int)res).ToString().TrimRemoveNull().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name)).ToList().AsReadOnly();
+            return buffer.Slice(0, (int)res).ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name)).ToList().AsReadOnly();
         }
 
         /// <summary>
