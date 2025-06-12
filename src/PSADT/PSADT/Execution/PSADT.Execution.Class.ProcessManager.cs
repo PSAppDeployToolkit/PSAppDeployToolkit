@@ -210,8 +210,18 @@ namespace PSADT.Execution
                                         using (var lpDesktop = SafeCoTaskMemHandle.StringToUni(@"winsta0\default"))
                                         {
                                             startupInfo.lpDesktop = lpDesktop.ToPWSTR();
-                                            var commandLine = launchInfo.ExpandEnvironmentVariables ? ExpandEnvironmentVariables(launchInfo.CommandLine, lpEnvironment) : launchInfo.CommandLine;
-                                            Kernel32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                            string? workingDirectory = launchInfo.WorkingDirectory;
+                                            string commandLine = launchInfo.CommandLine;
+                                            if (launchInfo.ExpandEnvironmentVariables)
+                                            {
+                                                var environmentDictionary = EnvironmentBlockToDictionary(lpEnvironment);
+                                                commandLine = ExpandEnvironmentVariables(launchInfo.CommandLine, environmentDictionary);
+                                                if (null != workingDirectory)
+                                                {
+                                                    workingDirectory = ExpandEnvironmentVariables(workingDirectory, environmentDictionary);
+                                                }
+                                            }
+                                            Kernel32.CreateProcessAsUser(hPrimaryToken, null, commandLine, null, null, true, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
                                         }
                                     }
                                 }
@@ -486,18 +496,17 @@ namespace PSADT.Execution
         /// Placeholders that cannot be resolved are left unchanged.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is <see langword="null"/>, empty, or consists only of whitespace. Thrown
         /// if <paramref name="environment"/> is invalid.</exception>
-        private static string ExpandEnvironmentVariables(string input, SafeEnvironmentBlockHandle environment)
+        private static string ExpandEnvironmentVariables(string input, ReadOnlyDictionary<string, string> environment)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
                 throw new ArgumentException("Input cannot be null or empty.", nameof(input));
             }
-            if (environment.IsInvalid)
+            if (null == environment)
             {
                 throw new ArgumentException("The environment block is invalid.", nameof(environment));
             }
-            var envDict = EnvironmentBlockToDictionary(environment);
-            return Regex.Replace(input, "%([^%]+)%", m => envDict.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : m.Groups[1].Value);
+            return Regex.Replace(input, "%([^%]+)%", m => environment.TryGetValue(m.Groups[1].Value, out var envVar) ? envVar : m.Groups[1].Value);
         }
 
         /// <summary>
