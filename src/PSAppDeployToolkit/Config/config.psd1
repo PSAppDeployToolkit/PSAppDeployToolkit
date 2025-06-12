@@ -12,7 +12,7 @@
 
     MSI = @{
         # Installation parameters used for non-silent MSI actions.
-        InstallParams = 'REBOOT=ReallySuppress /QB-!'
+        InstallParams = 'REBOOT=ReallySuppress /QN'
 
         # Logging level used for MSI logging.
         LoggingOptions = '/L*V'
