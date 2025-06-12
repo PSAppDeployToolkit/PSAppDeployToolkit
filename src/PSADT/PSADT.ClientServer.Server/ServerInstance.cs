@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Linq;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -326,7 +325,7 @@ namespace PSADT.ClientServer
         {
             _logSource = "Get-ADTWindowTitle";
             _outputStreamWriter.WriteLine($"GetProcessWindowInfo{ArgumentSeparator}{SerializationUtilities.SerializeToString(options)}");
-            return SerializationUtilities.DeserializeFromString<WindowInfo[]>(ReadInput()).ToList().AsReadOnly();
+            return SerializationUtilities.DeserializeFromString<ReadOnlyCollection<WindowInfo>>(ReadInput());
         }
 
         /// <summary>

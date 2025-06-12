@@ -121,6 +121,9 @@ namespace PSADT.Utilities
         /// values are the corresponding <see cref="Type"/> objects.</returns>
         private static ReadOnlyDictionary<string, Type> BuildTypesLookupTable()
         {
+            // Store base asembly name for ReadOnlyCollection types.
+            string rocAssemblyBaseName = Regex.Replace(typeof(ReadOnlyCollection<object>).AssemblyQualifiedName!, @"\[.+\]", "[[{0}]]");
+
             // Build out a lookup table of types from loaded assemblies.
             Dictionary<string, Type> typesLookup = [];
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -132,13 +135,12 @@ namespace PSADT.Utilities
                 }
                 foreach (var type in assembly.GetTypes())
                 {
-                    // Skip non-public types and types without a full name.
+                    // For valid types, generate lookups for ReadOnlyCollections of the type, Arrays of the type, and the type itself.
                     if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName)
                     {
                         continue;
                     }
-
-                    // Add the type, as well as an array lookup.
+                    typesLookup[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(rocAssemblyBaseName, type.AssemblyQualifiedName))!;
                     typesLookup[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName.Replace(type.Name, $"{type.Name}[]"))!;
                     typesLookup[type.FullName] = type;
                 }
