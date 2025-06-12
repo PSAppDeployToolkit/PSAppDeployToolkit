@@ -45,12 +45,19 @@ namespace PSADT.Module
             var stackFrames = new StackTrace(true).GetFrames().Skip(1); string callerFileName = string.Empty; string callerSource = string.Empty;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation") == true))
             {
-                var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT")); var method = invoker.GetMethod()!;
+                // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
+                var invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
+                if (null == invoker.GetFileName())
+                {
+                    invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT"));
+                }
+                var method = invoker.GetMethod()!;
                 callerFileName = invoker.GetFileName()!;
                 callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
             }
             else
             {
+                // Get the first PowerShell stack frame that contains a valid command.
                 var invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!CallerCommandRegex.IsMatch(command) || (CallerScriptBlockRegex.IsMatch(command) && CallerScriptLocationRegex.IsMatch(f.GetScriptLocation()))));
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
                 callerSource = invoker.GetCommand();
