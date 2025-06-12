@@ -71,7 +71,7 @@ namespace PSADT.Utilities
 
             foreach (var entry in entries)
             {
-                if (string.IsNullOrEmpty(entry)) continue;
+                if (string.IsNullOrWhiteSpace(entry)) continue;
 
                 var separatorIndex = entry.IndexOf('=');
                 if (separatorIndex <= 0) continue;
