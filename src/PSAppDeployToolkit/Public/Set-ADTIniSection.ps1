@@ -20,7 +20,7 @@ function Set-ADTIniSection
         Section within the INI file.
 
 	.PARAMETER Content
-		A hashtable or dictionary object containing the key-value pairs to set in the specified section.
+		A hashtable or dictionary object containing the key-value pairs to set in the specified section. This will overwrite the entire section so that it only contains the content specified - if $null or an empty hashtable is provided, the section will be set to empty. Supply an ordered hashtable to maintain the order of keys in the INI file. Values can be strings, numbers, booleans, enums, or null.
 
     .PARAMETER Force
         Specifies whether the INI file should be created if it does not already exist.
