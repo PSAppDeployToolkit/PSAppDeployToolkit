@@ -55,7 +55,6 @@ namespace PSADT.Utilities
             }
 
             Span<char> buffer = stackalloc char[65536];
-
             uint res;
             try
             {
@@ -66,19 +65,22 @@ namespace PSADT.Utilities
                 throw new Exception($"Failed to get section [{section}] from the INI file.", ex);
             }
 
-            var entries = buffer.Slice(0, (int)res).ToString().Split('\0');
             var dictionary = new OrderedDictionary();
-
-            foreach (var entry in entries)
+            foreach (var entry in buffer.Slice(0, (int)res).ToString().Split('\0'))
             {
-                if (string.IsNullOrWhiteSpace(entry)) continue;
+                if (string.IsNullOrWhiteSpace(entry))
+                {
+                    continue;
+                }
 
                 var separatorIndex = entry.IndexOf('=');
-                if (separatorIndex <= 0) continue;
+                if (separatorIndex <= 0)
+                {
+                    continue;
+                }
 
                 var key = entry.Substring(0, separatorIndex);
                 var value = entry.Substring(separatorIndex + 1);
-
                 if (dictionary.Contains(key))
                 {
                     dictionary[key] = value;
@@ -88,7 +90,6 @@ namespace PSADT.Utilities
                     dictionary.Add(key, value);
                 }
             }
-
             return dictionary;
         }
 
@@ -101,7 +102,6 @@ namespace PSADT.Utilities
         {
             Span<char> buffer = stackalloc char[65536];
             var res = Kernel32.GetPrivateProfileSectionNames(buffer, filepath);
-
             return buffer.Slice(0, (int)res).ToString().Split('\0').Where(name => !string.IsNullOrWhiteSpace(name)).ToList().AsReadOnly();
         }
 
